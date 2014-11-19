@@ -1,0 +1,16 @@
+{
+   "servers": [
+   {"hostname": "test1", "port": "22345"},
+   {"hostname": "test2", "port":"22345"}, 
+   {"hostname": "test3", "port": "22345"},
+   {"hostname": "test4", "port": "22345"},
+   {"hostname": "test5", "port": "22345"},
+   {"hostname": "test6", "port": "22345"}
+   ],
+  
+   "clients": [
+   {"hostname": "test-client", "port": "22345"}
+   ],
+
+   "oms": {"hostname": "test-oms", "port": "22346"}
+}

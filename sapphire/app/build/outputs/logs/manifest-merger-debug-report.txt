@@ -1,0 +1,47 @@
+-- Merging decision tree log ---
+manifest
+ADDED from C:\DCAP-Sapphire\sapphire\app\src\main\AndroidManifest.xml:1:1-17:12
+INJECTED from C:\DCAP-Sapphire\sapphire\app\src\main\AndroidManifest.xml:1:1-17:12
+INJECTED from C:\DCAP-Sapphire\sapphire\app\src\main\AndroidManifest.xml:1:1-17:12
+INJECTED from C:\DCAP-Sapphire\sapphire\app\src\main\AndroidManifest.xml:1:1-17:12
+INJECTED from C:\DCAP-Sapphire\sapphire\app\src\main\AndroidManifest.xml:1:1-17:12
+INJECTED from C:\DCAP-Sapphire\sapphire\app\src\main\AndroidManifest.xml:1:1-17:12
+INJECTED from C:\DCAP-Sapphire\sapphire\app\src\main\AndroidManifest.xml:1:1-17:12
+	package
+		ADDED from C:\DCAP-Sapphire\sapphire\app\src\main\AndroidManifest.xml:2:5-27
+		INJECTED from C:\DCAP-Sapphire\sapphire\app\src\main\AndroidManifest.xml
+		INJECTED from C:\DCAP-Sapphire\sapphire\app\src\main\AndroidManifest.xml
+	android:versionName
+		ADDED from C:\DCAP-Sapphire\sapphire\app\src\main\AndroidManifest.xml:4:5-30
+		INJECTED from C:\DCAP-Sapphire\sapphire\app\src\main\AndroidManifest.xml
+		INJECTED from C:\DCAP-Sapphire\sapphire\app\src\main\AndroidManifest.xml
+	xmlns:android
+		ADDED from C:\DCAP-Sapphire\sapphire\app\src\main\AndroidManifest.xml:1:11-69
+	android:versionCode
+		ADDED from C:\DCAP-Sapphire\sapphire\app\src\main\AndroidManifest.xml:3:5-28
+		INJECTED from C:\DCAP-Sapphire\sapphire\app\src\main\AndroidManifest.xml
+		INJECTED from C:\DCAP-Sapphire\sapphire\app\src\main\AndroidManifest.xml
+uses-sdk
+ADDED from C:\DCAP-Sapphire\sapphire\app\src\main\AndroidManifest.xml:6:5-8:41
+INJECTED from C:\DCAP-Sapphire\sapphire\app\src\main\AndroidManifest.xml:6:5-8:41
+INJECTED from C:\DCAP-Sapphire\sapphire\app\src\main\AndroidManifest.xml:6:5-8:41
+INJECTED from C:\DCAP-Sapphire\sapphire\app\src\main\AndroidManifest.xml:6:5-8:41
+INJECTED from C:\DCAP-Sapphire\sapphire\app\src\main\AndroidManifest.xml:6:5-8:41
+	android:targetSdkVersion
+		ADDED from C:\DCAP-Sapphire\sapphire\app\src\main\AndroidManifest.xml:8:9-38
+		INJECTED from C:\DCAP-Sapphire\sapphire\app\src\main\AndroidManifest.xml
+		INJECTED from C:\DCAP-Sapphire\sapphire\app\src\main\AndroidManifest.xml
+	android:minSdkVersion
+		ADDED from C:\DCAP-Sapphire\sapphire\app\src\main\AndroidManifest.xml:7:9-34
+		INJECTED from C:\DCAP-Sapphire\sapphire\app\src\main\AndroidManifest.xml
+		INJECTED from C:\DCAP-Sapphire\sapphire\app\src\main\AndroidManifest.xml
+application
+ADDED from C:\DCAP-Sapphire\sapphire\app\src\main\AndroidManifest.xml:10:5-15:19
+	android:label
+		ADDED from C:\DCAP-Sapphire\sapphire\app\src\main\AndroidManifest.xml:13:9-41
+	android:icon
+		ADDED from C:\DCAP-Sapphire\sapphire\app\src\main\AndroidManifest.xml:12:9-45
+	android:allowBackup
+		ADDED from C:\DCAP-Sapphire\sapphire\app\src\main\AndroidManifest.xml:11:9-35
+	android:theme
+		ADDED from C:\DCAP-Sapphire\sapphire\app\src\main\AndroidManifest.xml:14:9-40

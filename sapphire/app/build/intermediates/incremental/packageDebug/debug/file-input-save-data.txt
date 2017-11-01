@@ -1,0 +1,24 @@
+#Internal package file, do not edit.
+#Tue Oct 31 11:14:13 PDT 2017
+2.base=C\:\\Users\\s00432254\\AndroidStudioProjects\\sapphire\\app\\build\\intermediates\\res\\debug\\resources-debug.ap_
+5.file=C\:\\Users\\s00432254\\AndroidStudioProjects\\sapphire\\app\\build\\intermediates\\transforms\\dexMerger\\debug\\0\\classes.dex
+5.set=DEX
+3.base=C\:\\Users\\s00432254\\AndroidStudioProjects\\sapphire\\app\\build\\intermediates\\res\\debug\\resources-debug.ap_
+6.file=C\:\\Users\\s00432254\\AndroidStudioProjects\\sapphire\\app\\build\\intermediates\\res\\debug\\resources-debug.ap_\\resources.arsc
+2.set=ANDROID_RESOURCE
+4.base=C\:\\Users\\s00432254\\AndroidStudioProjects\\sapphire\\app\\build\\intermediates\\res\\debug\\resources-debug.ap_
+count=7
+0.file=C\:\\Users\\s00432254\\AndroidStudioProjects\\sapphire\\app\\build\\intermediates\\res\\debug\\resources-debug.ap_\\res\\drawable-xhdpi-v4\\ic_launcher.png
+5.base=C\:\\Users\\s00432254\\AndroidStudioProjects\\sapphire\\app\\build\\intermediates\\transforms\\dexMerger\\debug\\0
+4.set=ANDROID_RESOURCE
+6.base=C\:\\Users\\s00432254\\AndroidStudioProjects\\sapphire\\app\\build\\intermediates\\res\\debug\\resources-debug.ap_
+1.file=C\:\\Users\\s00432254\\AndroidStudioProjects\\sapphire\\app\\build\\intermediates\\res\\debug\\resources-debug.ap_\\res\\drawable-xxhdpi-v4\\ic_launcher.png
+1.set=ANDROID_RESOURCE
+2.file=C\:\\Users\\s00432254\\AndroidStudioProjects\\sapphire\\app\\build\\intermediates\\res\\debug\\resources-debug.ap_\\res\\drawable-mdpi-v4\\ic_launcher.png
+6.set=ANDROID_RESOURCE
+0.base=C\:\\Users\\s00432254\\AndroidStudioProjects\\sapphire\\app\\build\\intermediates\\res\\debug\\resources-debug.ap_
+3.file=C\:\\Users\\s00432254\\AndroidStudioProjects\\sapphire\\app\\build\\intermediates\\res\\debug\\resources-debug.ap_\\AndroidManifest.xml
+3.set=ANDROID_RESOURCE
+1.base=C\:\\Users\\s00432254\\AndroidStudioProjects\\sapphire\\app\\build\\intermediates\\res\\debug\\resources-debug.ap_
+4.file=C\:\\Users\\s00432254\\AndroidStudioProjects\\sapphire\\app\\build\\intermediates\\res\\debug\\resources-debug.ap_\\res\\drawable-hdpi-v4\\ic_launcher.png
+0.set=ANDROID_RESOURCE

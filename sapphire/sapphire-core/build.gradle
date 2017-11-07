@@ -1,0 +1,23 @@
+apply plugin: 'java'
+
+dependencies {
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+    compile project(':java.rmi')
+    compile 'org.json:json:20171018'
+}
+
+task deleteJar(type: Delete) {
+    delete 'libs/sapphire-core.jar'
+}
+
+task createJar(type: Copy) {
+    from('build/intermediates/bundles/release/')
+    into('libs/jars/')
+    include('classes.jar')
+    rename('classes.jar', 'sapphire-core.jar')
+}
+
+createJar.dependsOn(deleteJar, build)
+
+sourceCompatibility = "1.6"
+targetCompatibility = "1.6"

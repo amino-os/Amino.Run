@@ -1,0 +1,45 @@
+local.properties
+
+# OSX leaves these everywhere on SMB shares
+._*
+
+# OSX trash
+.DS_Store
+
+# Eclipse files
+.classpath
+.project
+.settings/**
+
+# Vscode files
+.vscode
+
+# Emacs save files
+*~
+\#*\#
+.\#*
+
+# Vim-related files
+[._]*.s[a-w][a-z]
+[._]s[a-w][a-z]
+*.un~
+Session.vim
+.netrwhist
+
+# cscope-related files
+cscope.*
+
+.tags*
+
+# Config directories created by gcloud and gsutil on Jenkins
+/.config/gcloud*/
+/.gsutil/
+
+# direnv .envrc files
+.envrc
+
+# make-related metadata
+/.make/
+
+/bazel-*
+*.pyc

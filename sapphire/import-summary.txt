@@ -8,7 +8,6 @@ should evaluate whether these are still needed in your project and if
 so manually move them:
 
 * ic_launcher-web.png
-* logging.properties
 * proguard-project.txt
 
 Replaced Jars with Dependencies:
@@ -21,16 +20,30 @@ the .jar file in your project was of an older version than the
 dependency we picked, which could render the project not compileable.
 You can disable the jar replacement in the import wizard and try again:
 
-android-support-v4.jar => com.android.support:support-v4:18.0.0
+android-support-v4.jar => com.android.support:support-v4:18.+
 
 Moved Files:
 ------------
 Android Gradle projects use a different directory structure than ADT
 Eclipse projects. Here's how the projects were restructured:
 
-* AndroidManifest.xml => app/src/main/AndroidManifest.xml
-* res/ => app/src/main/res/
-* src/ => app/src/main/java/
+* AndroidManifest.xml => hanksTodo\src\main\AndroidManifest.xml
+* res\ => hanksTodo\src\main\res\
+* src\ => hanksTodo\src\main\java\
+
+Missing Android Support Repository:
+-----------------------------------
+Some useful libraries, such as the Android Support Library, are
+installed from a special Maven repository, which should be installed
+via the SDK manager.
+
+It looks like this library is missing from your SDK installation at:
+null
+
+To install it, open the SDK manager, and in the Extras category,
+select "Android Support Repository". You may also want to install the
+"Google Repository" if you want to use libraries like Google Play
+Services.
 
 Next Steps:
 -----------

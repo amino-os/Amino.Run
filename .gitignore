@@ -17,6 +17,7 @@ local.properties
 .idea/**/workspace.xml
 .idea/**/tasks.xml
 .idea/dictionaries
+*.iml
 
 # Sensitive or high-churn files:
 .idea/**/dataSources/
@@ -97,5 +98,3 @@ cscope.*
 
 /bazel-*
 *.pyc
-*.bin
-*.lock

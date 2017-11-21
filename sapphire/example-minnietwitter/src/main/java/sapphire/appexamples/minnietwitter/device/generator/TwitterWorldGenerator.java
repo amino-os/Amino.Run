@@ -66,10 +66,10 @@ public class TwitterWorldGenerator {
 		List<Timeline> timelines = new ArrayList<Timeline>();
 		
 		try {
-			registry = LocateRegistry.getRegistry(args[0],Integer.parseInt(args[1]));
+			registry = LocateRegistry.getRegistry(args[0], Integer.parseInt(args[1]));
 			OMSServer server = (OMSServer) registry.lookup("SapphireOMS");
 
-            KernelServer nodeServer = new KernelServerImpl(new InetSocketAddress("10.0.2.15", Integer.parseInt(args[1])), new InetSocketAddress(args[2], Integer.parseInt(args[3])));
+            KernelServer nodeServer = new KernelServerImpl(new InetSocketAddress(args[2], Integer.parseInt(args[3])), new InetSocketAddress(args[0], Integer.parseInt(args[1])));
             
             /* Get Twitter and User Manager */
 			TwitterManager tm = (TwitterManager) server.getAppEntryPoint();

@@ -101,3 +101,4 @@ cscope.*
 
 /bazel-*
 *.pyc
+*.jar

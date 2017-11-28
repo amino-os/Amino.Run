@@ -25,12 +25,14 @@ import sapphire.runtime.Sapphire;
 
 public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 	public static abstract class SapphireClientPolicyLibrary implements SapphireClientPolicyUpcalls {
+		private static final long serialVersionUID = 2375001795308542171L;
 		/*
 		 * INTERNAL FUNCTIONS (Used by sapphire runtime system)
 		 */
 	}
 
 	public static abstract class SapphireServerPolicyLibrary implements SapphireServerPolicyUpcalls {
+		private static final long serialVersionUID = 2375001795308542172L;
 		protected AppObject appObject;
 		protected KernelOID oid;
 		static Logger logger = Logger.getLogger("sapphire.policy.SapphirePolicyLibrary");
@@ -142,6 +144,7 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 	}
 
 	public static abstract class SapphireGroupPolicyLibrary implements SapphireGroupPolicyUpcalls {
+		private static final long serialVersionUID = 2375001795308542173L;
 		protected String appObjectClassName;
 		protected ArrayList<Object> params;
 		protected KernelOID oid;

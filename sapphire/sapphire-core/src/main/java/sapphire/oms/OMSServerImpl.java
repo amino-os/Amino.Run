@@ -127,13 +127,26 @@ public class OMSServerImpl implements OMSServer{
         */
        @Override
        public AppObjectStub getAppEntryPoint() throws RemoteException {
+       		logger.info("Get App Etnry point");
     	   if (appEntryPoint != null) {
+			   logger.info("Get App Etnry point is null");
     		   return appEntryPoint;
     	   } else {
+			   logger.info("Get App Etnry point is NOT null ");
     		   	InetSocketAddress host = serverManager.getServerInRegion(serverManager.getRegions().get(0));
-    		   	KernelServer server = serverManager.getServer(host); 
-    		   	appEntryPoint = server.startApp(appEntryClassName);
-    		   	return appEntryPoint;
+    		   	KernelServer server = serverManager.getServer(host);
+			   logger.info("Get App Etnry point: host is " + host.getAddress() + " port: "+host.getPort());
+			   logger.info("Get App Etnry point: server is " + server + " and class name is " + appEntryClassName);
+
+			   try {
+				   appEntryPoint = server.startApp(appEntryClassName);
+				   logger.info("Successfully starte the app: " + appEntryPoint.toString());
+				   return appEntryPoint;
+			   }
+			   catch (Exception e) {
+			   		logger.warning("Failed with exception: "+ e.getMessage());
+					return null;
+			   }
     	   }
        }
        
@@ -159,10 +172,12 @@ public class OMSServerImpl implements OMSServer{
     		   OMSServer omsStub = (OMSServer) UnicastRemoteObject.exportObject(oms, 0);
     		   Registry registry = LocateRegistry.createRegistry(port);
     		   registry.rebind("SapphireOMS", omsStub);
-    		   logger.info("OMS ready");
+    		   logger.info("OMS ready port:" + port);
     	   	   for (Iterator<InetSocketAddress> it = oms.getServers().iterator(); it.hasNext();) {
-        		   InetSocketAddress address = it.next();
-        		   logger.fine("   " + address.getHostName().toString() + ":" + address.getPort());
+
+				   InetSocketAddress address = it.next();
+				   logger.info("OMS servers found: " + address.getAddress()+ " port: " + address.getPort());
+				   logger.fine("   " + address.getHostName().toString() + ":" + address.getPort());
         	   }
     	   } catch (Exception e) {
     		   logger.severe("Server exception: " + e.toString());

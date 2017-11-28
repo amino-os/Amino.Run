@@ -39,6 +39,8 @@ public class KernelServerManager {
 		ArrayList<InetSocketAddress> region = new ArrayList<InetSocketAddress>();
 		region.add(address);
 		regions.put(address.toString(), region);
+		logger.info("Registered kernel server => " + address.getAddress() + ":" + address.getPort());
+
 	}
 	
 	/**
@@ -52,13 +54,19 @@ public class KernelServerManager {
     }
     
     public KernelServer getServer(InetSocketAddress address) {
+    	logger.info("Get server called for " + address.getAddress() +":"+address.getPort());
+
     	if (servers.containsKey(address)) {
+    		logger.info("found matching server => " + address.getAddress() + ":" + address.getPort());
+
     		return servers.get(address);
     	} else {
     		KernelServer server = null;
     		try {
     			Registry registry = LocateRegistry.getRegistry(address.getHostName(), address.getPort());
     			server = (KernelServer) registry.lookup("SapphireKernelServer");
+
+				logger.info("found server by look up => " + server.toString());
     			servers.put(address, server);
     		} catch (Exception e) {
     			logger.log(Level.SEVERE, "Could not find kernel server: "+e.toString());

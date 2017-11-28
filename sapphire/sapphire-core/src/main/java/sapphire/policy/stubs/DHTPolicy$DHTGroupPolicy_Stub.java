@@ -6,7 +6,7 @@ package sapphire.policy.stubs;
 
 
 public final class DHTPolicy$DHTGroupPolicy_Stub extends sapphire.policy.dht.DHTPolicy.DHTGroupPolicy implements sapphire.kernel.common.KernelObjectStub {
-
+    private static final long serialVersionUID = -6297032571186258361L;
     sapphire.kernel.common.KernelOID $__oid = null;
     java.net.InetSocketAddress $__hostname = null;
 

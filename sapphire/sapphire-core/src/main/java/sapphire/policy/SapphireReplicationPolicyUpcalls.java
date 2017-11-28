@@ -7,6 +7,10 @@ import sapphire.policy.SapphirePolicy.SapphireGroupPolicy;
 import sapphire.policy.SapphirePolicy.SapphireServerPolicy;
 
 public interface SapphireReplicationPolicyUpcalls extends Serializable {
+	/**
+	 * serialVersionUID
+	 */
+	public static final long serialVersionUID = -6297032571186258361L;
 	public interface SapphireReplicationServerUpcalls extends Serializable {
 		public void onCreate(SapphireGroupPolicy group);
 		public SapphireGroupPolicy getGroup();

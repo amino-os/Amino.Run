@@ -15,7 +15,8 @@ public class MainActivity extends Activity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		new GenerateWorld().execute("10.0.2.2", "22346", "10.0.2.15", "22345");
+//		new GenerateWorld().execute("10.0.2.2", "22346", "10.0.2.15", "22345");
+		new GenerateWorld().execute("192.168.10.231", "22346", "10.0.2.15", "22345");
 		setContentView(R.layout.activity_main);
 	}
 

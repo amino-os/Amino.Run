@@ -6,7 +6,7 @@ package sapphire.policy.stubs;
 
 
 public final class CacheLeasePolicy$CacheLeaseServerPolicy_Stub extends sapphire.policy.cache.CacheLeasePolicy.CacheLeaseServerPolicy implements sapphire.kernel.common.KernelObjectStub {
-
+    private static final long serialVersionUID = -6297032571186258341L;
     sapphire.kernel.common.KernelOID $__oid = null;
     java.net.InetSocketAddress $__hostname = null;
 

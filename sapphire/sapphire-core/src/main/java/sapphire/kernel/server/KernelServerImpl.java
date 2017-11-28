@@ -100,9 +100,11 @@ public class KernelServerImpl implements KernelServer{
 	 */
 	public KernelOID newKernelObject(Class<?> cl, Object ... args) throws KernelObjectNotCreatedException {
 		KernelOID oid = null;
+		logger.info("New kernel object.");
 		// get OID
 		try {
 			oid = oms.registerKernelObject(host);
+			logger.info("New kernel object oid." + oid.toString());
 		} catch (RemoteException e) {
 			throw new KernelObjectNotCreatedException("Error making RPC to OMS: "+e);
 		}
@@ -148,6 +150,7 @@ public class KernelServerImpl implements KernelServer{
 	}
 	
 	public Serializable getObject(KernelOID oid) throws KernelObjectNotFoundException {
+		logger.info("getObject." + oid.toString());
 		KernelObject object = objectManager.lookupObject(oid);
 		return object.getObject();
 	}
@@ -173,10 +176,13 @@ public class KernelServerImpl implements KernelServer{
 	 */
 	@Override
 	public AppObjectStub startApp(String className) throws RemoteException {
+		logger.info("Start app + " + className		);
 		AppObjectStub appEntryPoint = null;
 		try {
 			AppEntryPoint entryPoint =  (AppEntryPoint) Class.forName(className).newInstance();
+			logger.info("Got the end point: " + entryPoint.toString());
             appEntryPoint = entryPoint.start();
+			logger.info("Entry point started fine: " + entryPoint.toString());
 		} catch (Exception e) {
 			logger.severe("Could not start app");
 			e.printStackTrace();

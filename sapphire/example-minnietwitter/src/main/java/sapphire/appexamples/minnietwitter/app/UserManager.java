@@ -8,11 +8,11 @@ import java.util.Map;
 import sapphire.app.AppObjectNotCreatedException;
 import sapphire.app.SapphireObject;
 import static sapphire.runtime.Sapphire.*;
-import sapphire.policy.dht.DHTPolicy;
+//import sapphire.policy.dht.DHTPolicy;
 import sapphire.policy.interfaces.dht.DHTInterface;
 import sapphire.policy.interfaces.dht.DHTKey;
 
-public class UserManager implements SapphireObject<DHTPolicy>, DHTInterface {
+public class UserManager implements SapphireObject, DHTInterface {
 	Map<DHTKey, User> users;
 	private TagManager tm;
 

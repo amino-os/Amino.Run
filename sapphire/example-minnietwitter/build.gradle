@@ -1,3 +1,4 @@
+//apply plugin: 'com.android.library'
 apply plugin: 'com.android.application'
 
 android {
@@ -25,4 +26,18 @@ android {
 dependencies {
     compile 'com.android.support:support-v4:18.0.0'
     compile project(':sapphire-core')
+    compile fileTree(include: ['*.jar'], dir: 'libs')
 }
+
+task deleteJar(type: Delete) {
+    delete 'libs/example-minnietwitter.jar'
+}
+
+task createJar(type: Copy) {
+    from('build/intermediates/bundles/debug/')
+    into('libs/jars/')
+    include('classes.jar')
+    rename('classes.jar', 'example-minnietwitter.jar')
+}
+
+createJar.dependsOn(deleteJar, build)

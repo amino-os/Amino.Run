@@ -46,7 +46,12 @@ public class KernelServerManager {
 	/**
      */
     public ArrayList<InetSocketAddress> getServers() {
-    	return new ArrayList<InetSocketAddress>(servers.keySet());
+		ArrayList<InetSocketAddress> nodes = new ArrayList<InetSocketAddress>();
+		for (ArrayList<InetSocketAddress> addresses : this.regions.values()){
+			nodes.add(addresses.get(0)); //assuming only one single server in one region
+		}
+
+		return nodes;
     }
 
     public ArrayList<String> getRegions() {

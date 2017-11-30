@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import sapphire.app.SapphireObject;
+import sapphire.policy.ShiftPolicy;
+
 import static sapphire.runtime.Sapphire.*;
 
 public class User implements SapphireObject {

@@ -6,6 +6,7 @@ import java.rmi.registry.Registry;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 import sapphire.appexamples.minnietwitter.app.TagManager;
 import sapphire.appexamples.minnietwitter.app.Timeline;
@@ -89,22 +90,36 @@ public class TwitterWorldGenerator {
             System.out.println("Added users!");
             
             /* Generate events */
+            int cnt = 0;
+
             for (int i = 0; i < USERS_NUM * EVENTS_PER_USER; i++) {
             	int userId = i % USERS_NUM;
             	String event = events[gen.nextInt(events.length)];
-            	
-            	if (event.equals("TWEET")) {
+
+				TimeUnit.MILLISECONDS.sleep(100);
+				System.out.println("Tweet counts: " + cnt++);
+
+//            	if (event.equals("TWEET")) {
             		long start = System.nanoTime();
             		String tweet = getTweet();
-            		Timeline t = timelines.get(userId);
-            		t.tweet(tweet);
+
+            		for (int j=0; j< 10; j++) {
+            			try {
+							Timeline t = timelines.get(userId);
+
+							t.tweet(tweet);
+							break;
+						} catch(Exception e) {
+            				System.out.print(", Failed "+ j);
+						}
+					}
             		long end = System.nanoTime();
-            		System.out.println("@user" + Integer.toString(userId) + " tweeted: " + tweet + " in: " + ((end - start) / 1000000) + "ms");
+            		System.out.println("\n@user" + Integer.toString(userId) + " tweeted: " + tweet + " in: " + ((end - start) / 1000000) + "ms");
             		continue;
-            	}
-            	
+//            	}
+            	/*
             	if (event.equals("RETWEET") && userId > 0) {
-            		/* Retweet one of the last 10 tweets of some user */
+            		*//* Retweet one of the last 10 tweets of some user *//*
             		long start = System.nanoTime();
             		int id = getId(userId);
             		List<Tweet> lastTweets = timelines.get(id).getTweets(0, 10);
@@ -119,7 +134,7 @@ public class TwitterWorldGenerator {
             	
             	if (event.equals("FAVORITE") && userId > 0) {
             		long start = System.nanoTime();
-            		/* Favorite one of the last 10 tweets of some user */
+            		*//* Favorite one of the last 10 tweets of some user *//*
             		int id = getId(userId);
             		List<Tweet> lastTweets = timelines.get(id).getTweets(0, 10);
             		if (lastTweets.size() > 0) {
@@ -127,7 +142,7 @@ public class TwitterWorldGenerator {
             			long end = System.nanoTime();
             			System.out.println("@user" + Integer.toString(userId) + " favorited from @user" + Integer.toString(id) + " in: " + ((end - start) / 1000000) + "ms");
             		}
-            	}
+            	}*/
             }
             
             System.out.println("Done populating!");

@@ -11,7 +11,6 @@ import sapphire.policy.SapphirePolicyLibrary.SapphireServerPolicyLibrary;
 import sapphire.runtime.Sapphire;
 
 public abstract class DefaultSapphirePolicyUpcallImpl extends SapphirePolicyLibrary {
-	private static final long serialVersionUID = 2375001795308542371L;
 
 	public abstract static class DefaultSapphireClientPolicyUpcallImpl extends SapphireClientPolicyLibrary {
 		private static final long serialVersionUID = 2375001795308542374L;

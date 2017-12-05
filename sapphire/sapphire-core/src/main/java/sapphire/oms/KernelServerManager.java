@@ -34,12 +34,12 @@ public class KernelServerManager {
 	
 	public void registerKernelServer(InetSocketAddress address) throws RemoteException, NotBoundException {
 		//this.servers.putIfAbsent(address, null);
-		logger.info("New kernel server: " + address.toString());
+		System.out.println("New kernel server: " + address.toString());
 		// TODO For now, let each server be a region
 		ArrayList<InetSocketAddress> region = new ArrayList<InetSocketAddress>();
 		region.add(address);
 		regions.put(address.toString(), region);
-		logger.info("Registered kernel server => " + address.getAddress() + ":" + address.getPort());
+		System.out.println("Registered kernel server => " + address.getAddress() + ":" + address.getPort());
 
 	}
 	
@@ -59,11 +59,8 @@ public class KernelServerManager {
     }
     
     public KernelServer getServer(InetSocketAddress address) {
-    	logger.info("Get server called for " + address.getAddress() +":"+address.getPort());
 
     	if (servers.containsKey(address)) {
-    		logger.info("found matching server => " + address.getAddress() + ":" + address.getPort());
-
     		return servers.get(address);
     	} else {
     		KernelServer server = null;
@@ -71,7 +68,6 @@ public class KernelServerManager {
     			Registry registry = LocateRegistry.getRegistry(address.getHostName(), address.getPort());
     			server = (KernelServer) registry.lookup("SapphireKernelServer");
 
-				logger.info("found server by look up => " + server.toString());
     			servers.put(address, server);
     		} catch (Exception e) {
     			logger.log(Level.SEVERE, "Could not find kernel server: "+e.toString());

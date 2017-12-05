@@ -65,25 +65,28 @@ public class OMSServerImpl implements OMSServer{
         * Register a new host for this kernel object. Used to move a kernel object
         */
        public void registerKernelObject(KernelOID oid, InetSocketAddress host) throws RemoteException, KernelObjectNotFoundException {
-    	   logger.info("Registering new host for " + oid.toString() + " on " + host.toString());
-    	   kernelObjectManager.register(oid, host);
+       		// TODO (sungwook moon, 12/5/2017) revert back to logger.info after demo.
+       		System.out.println("Sapphire Kernel requested to register Sapphire object - " + oid.toString()
+					+ " - to " + host.getAddress().getHostAddress() + ":"+host.getPort());
+       		kernelObjectManager.register(oid, host);
        }
-       
+
        /**
         * Find the host for a kernel object
         * @return the host IP address
         */
        public InetSocketAddress lookupKernelObject(KernelOID oid) throws RemoteException, KernelObjectNotFoundException {
-    	   logger.info("Found host for " + oid.toString() + " host: " + kernelObjectManager.lookup(oid));
-    	   return kernelObjectManager.lookup(oid);
+       		// TODO (sungwook moon, 12/5/2017) revert back to logger.info after demo.
+       		System.out.println("Client requested to look up for Sapphire object of " + oid.toString() + ". Object found at " + kernelObjectManager.lookup(oid));
+       		return kernelObjectManager.lookup(oid);
        }
 
        @Override
        public void registerKernelServer(InetSocketAddress host) throws RemoteException, NotBoundException {
-    	   serverManager.registerKernelServer(host);   		
+    	   serverManager.registerKernelServer(host);
        }
 
-       
+
 	   /**
 	    * Gets the list servers in the system
 	    * 
@@ -127,24 +130,21 @@ public class OMSServerImpl implements OMSServer{
         */
        @Override
        public AppObjectStub getAppEntryPoint() throws RemoteException {
-       		logger.info("Get App Etnry point");
+		   System.out.println("Client requested for Sapphire object.");
+
     	   if (appEntryPoint != null) {
-			   logger.info("Get App Etnry point is null");
     		   return appEntryPoint;
     	   } else {
-			   logger.info("Get App Etnry point is NOT null ");
     		   	InetSocketAddress host = serverManager.getServerInRegion(serverManager.getRegions().get(0));
     		   	KernelServer server = serverManager.getServer(host);
-			   logger.info("Get App Etnry point: host is " + host.getAddress() + " port: "+host.getPort());
-			   logger.info("Get App Etnry point: server is " + server + " and class name is " + appEntryClassName);
+    		   	System.out.println("Sapphire object location: " + host.getAddress());
 
 			   try {
 				   appEntryPoint = server.startApp(appEntryClassName);
-				   logger.info("Successfully starte the app: " + appEntryPoint.toString());
 				   return appEntryPoint;
 			   }
 			   catch (Exception e) {
-			   		logger.warning("Failed with exception: "+ e.getMessage());
+			   		logger.warning("Failed to start app entry point with exception: "+ e.getMessage());
 					return null;
 			   }
     	   }

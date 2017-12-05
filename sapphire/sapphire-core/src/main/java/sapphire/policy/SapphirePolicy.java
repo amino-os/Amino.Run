@@ -8,7 +8,6 @@ package sapphire.policy;
  *  implement the sapphire API for policies. 
  */
 public abstract class SapphirePolicy extends DefaultSapphirePolicyUpcallImpl {
-	private static final long serialVersionUID = -6297032571186258361L;
 	public abstract static class SapphireClientPolicy extends DefaultSapphireClientPolicyUpcallImpl {
 		private static final long serialVersionUID = -6297332571186258361L;
 	}

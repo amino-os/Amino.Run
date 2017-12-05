@@ -11,6 +11,8 @@ import sapphire.kernel.server.KernelServerImpl;
 
 public class ShiftPolicy extends SapphirePolicy {
 
+	// TODO (Sungwook, 12/5/2017) serialVersionUID needs to follow certain rules for the sequencing and
+	// TODO (continue...) stub generator should generate serialVersionUIDs for stubs.
 	public static class ShiftClientPolicy extends DefaultSapphirePolicy.DefaultClientPolicy {
 		private static final long serialVersionUID = -6003032571186258361L;
 		SapphireServerPolicy server = null;
@@ -62,26 +64,25 @@ public class ShiftPolicy extends SapphirePolicy {
 		@Override
 		public Object onRPC(String method, ArrayList<Object> params) throws Exception {
 			this.shiftRPCLoad ++;
-			logger.info("[shift] onRPC " + this.oid + " method: " + method + ", times been called:" + this.shiftRPCLoad );
 			Object obj = super.onRPC(method, params);
 
 			if (this.shiftRPCLoad > 0 && this.shiftRPCLoad % this.LOAD == 0) {
-				logger.info("[shift] time to shift off");
+				System.out.println("[ShiftPolicy] Limit reached at " + this.LOAD + ". Shift policy triggered.");
 				OMSServer oms = GlobalKernelReferences.nodeServer.oms;
 				ArrayList<InetSocketAddress> servers = oms.getServers();
+
 				for (InetSocketAddress node : servers) {
-					logger.info("[shift] shifting candidate: " + node );
+//					logger.info("[ShiftPolicy] Server (" + cnt + "): " + node );
 				}
 
 				KernelServerImpl localKernel = GlobalKernelReferences.nodeServer;
 				InetSocketAddress localAddress = localKernel.getLocalHost();
-				logger.info("[shift] local kernel address: " + localAddress );
-
 				InetSocketAddress shiftWinner = this.getNextShiftTarget(servers, localAddress);
+
 				if (shiftWinner.equals(localAddress)) {
-					logger.info("[shift] no target to shift" );
+					System.out.println("[ShiftPolicy] There are no targets to migrate Sapphire object to." );
 				} else {
-					logger.info("[shift] shifting SO " + this.oid + " to " + shiftWinner);
+					System.out.println("[ShiftPolicy] Shifting Sapphire object " + this.oid + " to " + shiftWinner);
 					localKernel.moveKernelObjectToServer(shiftWinner, this.oid);
 				}
 			}

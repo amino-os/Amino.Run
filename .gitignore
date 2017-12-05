@@ -102,3 +102,4 @@ cscope.*
 /bazel-*
 *.pyc
 *.jar
+sapphire/.idea/workspace.xml

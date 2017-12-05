@@ -70,8 +70,9 @@ public class KernelServerImpl implements KernelServer{
 	public Object makeKernelRPC(KernelRPC rpc) throws RemoteException, KernelObjectNotFoundException, KernelObjectMigratingException, KernelRPCException {
 		KernelObject object = null;
 		object = objectManager.lookupObject(rpc.getOID());
-		
-		logger.info("Invoking RPC on Kernel Object with OID: " + rpc.getOID() + "with rpc:" + rpc.getMethod() + " params: " + rpc.getParams().toString());
+
+		// TODO (sungwook moon, 12/5/2017) Remove for demo purpose as extra messages can be confusing. Uncomment after demo.
+//		logger.info("Invoking RPC on Kernel Object with OID: " + rpc.getOID() + "with rpc:" + rpc.getMethod() + " params: " + rpc.getParams().toString());
 		Object ret = null;
 		try {
 			ret = object.invoke(rpc.getMethod(), rpc.getParams());
@@ -100,17 +101,17 @@ public class KernelServerImpl implements KernelServer{
 	 */
 	public KernelOID newKernelObject(Class<?> cl, Object ... args) throws KernelObjectNotCreatedException {
 		KernelOID oid = null;
-		logger.info("New kernel object.");
 		// get OID
 		try {
 			oid = oms.registerKernelObject(host);
-			logger.info("New kernel object oid." + oid.toString());
 		} catch (RemoteException e) {
 			throw new KernelObjectNotCreatedException("Error making RPC to OMS: "+e);
 		}
 		
 		// Create the actual kernel object stored in the object manager
 		objectManager.newObject(oid, cl, args);
+
+		// TODO (Sungwook Moon, 12/5/2017): logger.fine does not seem working. Replace them all with logger.info after confirmation.
 		logger.fine("Created new Kernel Object on host: " + host + " with OID: " + oid.getID());
 		
 		return oid;
@@ -124,14 +125,17 @@ public class KernelServerImpl implements KernelServer{
 	 * @throws KernelObjectNotFoundException
 	 */
 	public void moveKernelObjectToServer(InetSocketAddress host, KernelOID oid) throws RemoteException, KernelObjectNotFoundException {
+
+		String targetHostInfo = host.getAddress().getHostAddress() + ":" + host.getPort();
+		String thisHostInfo = this.host.getAddress().getHostAddress() + ":" + this.host.getPort();
+
 		if (host.equals(this.host)) {
+			logger.info("[moveKernelObjectToServer] Host " +targetHostInfo+ "is equal to this host: " + thisHostInfo);
 			return;
 		}
 		
 		KernelObject object = objectManager.lookupObject(oid);
 		object.coalesce();
-		
-		logger.fine("Moving object " + oid.toString() + " to " + host.toString());
 		
 		try {
 			client.copyObjectToServer(host, oid, object);
@@ -145,12 +149,14 @@ public class KernelServerImpl implements KernelServer{
 		} catch (RemoteException e) {
 			throw new RemoteException("Could not contact oms to update kernel object host.");
 		}
-		
 		objectManager.removeObject(oid);
+
+		// TODO (sungwook moon, 12/5/2017) Remove after demo or consider converting to logger.info.
+		System.out.println("[moveKernelObjectToServer] Sapphire object migration for " + oid + " from "
+				+ thisHostInfo + " to " + targetHostInfo + " was successful.");
 	}
 	
 	public Serializable getObject(KernelOID oid) throws KernelObjectNotFoundException {
-		logger.info("getObject." + oid.toString());
 		KernelObject object = objectManager.lookupObject(oid);
 		return object.getObject();
 	}
@@ -176,15 +182,13 @@ public class KernelServerImpl implements KernelServer{
 	 */
 	@Override
 	public AppObjectStub startApp(String className) throws RemoteException {
-		logger.info("Start app + " + className		);
+		System.out.println("[startApp] Starting app for the first time: + " + className);
 		AppObjectStub appEntryPoint = null;
 		try {
 			AppEntryPoint entryPoint =  (AppEntryPoint) Class.forName(className).newInstance();
-			logger.info("Got the end point: " + entryPoint.toString());
             appEntryPoint = entryPoint.start();
-			logger.info("Entry point started fine: " + entryPoint.toString());
 		} catch (Exception e) {
-			logger.severe("Could not start app");
+			logger.severe("[startApp] Could not start app");
 			e.printStackTrace();
 		}
 		return appEntryPoint;
@@ -243,7 +247,6 @@ public class KernelServerImpl implements KernelServer{
 			oms.registerKernelServer(host);
 			
 			logger.info("Server ready!");
-			System.out.println("Server ready!");
 			
 			/* Start a thread that print memory stats */
 			server.getMemoryStatThread().start();

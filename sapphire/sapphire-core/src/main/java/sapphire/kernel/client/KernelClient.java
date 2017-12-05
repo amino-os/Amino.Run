@@ -38,7 +38,7 @@ public class KernelClient {
 	 */
 	private KernelServer addHost(InetSocketAddress host) {
 		try {
-		    Registry registry = LocateRegistry.getRegistry(host.getHostName(), host.getPort());
+		    Registry registry = LocateRegistry.getRegistry(host.getAddress().getHostAddress(), host.getPort());
 		    KernelServer server = (KernelServer) registry.lookup("SapphireKernelServer");
 		    servers.put(host, server);
 		    return server;
@@ -105,7 +105,7 @@ public class KernelClient {
 	 */
 	public Object makeKernelRPC(KernelObjectStub stub, KernelRPC rpc) throws KernelObjectNotFoundException, Exception {
 		InetSocketAddress host = stub.$__getHostname();
-		logger.info("Making RPC to " + host.toString() + " RPC: " + rpc.toString());
+		System.out.println("Making RPC to " + host.toString());
 
 		// Check whether this object is local.
 		KernelServer server;
@@ -119,6 +119,15 @@ public class KernelClient {
 		try {
 			return tryMakeKernelRPC(server, rpc);
 		} catch (KernelObjectNotFoundException e) {
+			logger.info("[makeKernelRPC] Kernel object was migrating: " + e.getMessage());
+			return lookupAndTryMakeKernelRPC(stub, rpc);
+		} catch (KernelRPCException e) {
+			logger.info("[makeKernelRPC] RPC call failed. Sapphire object might have been on the move. Finding new server.");
+			return lookupAndTryMakeKernelRPC(stub, rpc);
+		} catch (Exception e) {
+			logger.info("[makeKernelRPC] Could not make RPC call. Sapphire object might have been on the move. Finding new server.");
+//			logger.info("[makeKernelRPC] Could not make call to : " + rpc.toString() + "due to " + e.getMessage()
+//					+ " Sapphire object might have been on the move. Finding new server.");
 			return lookupAndTryMakeKernelRPC(stub, rpc);
 		}
 	}

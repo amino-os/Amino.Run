@@ -18,17 +18,15 @@ More specifically, DCAP project will deliver the following two pieces:
 
 # Schedule
 
-* *Charter*: 01/04/2018 
-  * *Why* do we invest in DCAP? *What* customer issues do we address?
-  * *What* are the competative advantages of DCAP? *What* is the uniqueness of DCAP? *Why* customers choose DCAP, rather than other solutions?
-  * *What* are the key technologies in DCAP? 
-* *PDCP*: 03/30/2018
-  * *POC completes*: All potential risks should have been identified
-  * *Design completes*: Clear design at module level. All risk areas should have mutually agreed mitigation plans 
-  * A *clear* scope on what we will deliver by 08/30/2018
-  
-* *TDCP*: 08/30/2018
-  * Deliver
+|Phase | Date | Objective | Tasks|
+|------|------|-----------|------|
+|*Charter*| 01/04/2018 | * *Why* invest in DCAP? <br/> * *What* are the competative advantages? <br/> * *Why* customers choose DCAP? | Prepare charter PPTs |
+| *PDCP*| 03/30/2018 |* POC Complete <br/> * Design Complete<br/> * Project Delivery Defined|  * Set up code repository and CI/CD process <br/> * Compose 5+ sophysticated DMs <br/> * Write/Port an application onto DCAP to demonstrate the power of DCAP <br/> * Finalize the design to solve NAT issue <br/> * Finalize the design to replace RMI with gPRC <br/> * Identify all potential risk areas <br/> * Come up proposals to mitigate each risk |
+|*TDCP*| 08/30/2018 | Deliver DCAP | * Compose 20+ DMs <br/> * Develop a complicated application with DCAP <br/> * Deliver a toolset DCAP application compilation and packaging <br/> * Replace OMS with a high availability implementation <br/> * Replace Java Registry with a high availability implementation <br/> * Replace RMI with gRPC <br/> * Support code offloading between any two endpoints, e.g. between devices, between servers, or between devices and servers. <br/> * All DCAP deliveries pass acceptance tests|
+|*Future*| TBD (not in the scope of this project) | Enhance DCAP | * Support multiple languages <br/> * Develop collaboration tools to ficilitate cross team development with DCAP <br/> * Explore the integration with related technologies, e.g. Istio, Kubernetes, etc.
+
+
+
   
 # Technical Challenges
 

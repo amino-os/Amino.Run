@@ -5,7 +5,7 @@ android {
     buildToolsVersion "27.0.0"
 
     defaultConfig {
-        applicationId "sapphire.app"
+        applicationId "com.example.minnietwitter"
         minSdkVersion 8
         targetSdkVersion 17
     }
@@ -16,10 +16,13 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
         }
     }
+    dexOptions {
+        preDexLibraries = false
+        additionalParameters =["--core-library"]
+    }
 }
 
 dependencies {
     compile 'com.android.support:support-v4:18.0.0'
-    compile project(':java.rmi')
     compile project(':sapphire-core')
 }

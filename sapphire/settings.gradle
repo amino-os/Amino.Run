@@ -2,7 +2,6 @@
 include ':sapphire-core'
 
 // Sapphire's Dependencies
-include ':app'
 include ':java.rmi'
 include ':javax.rmi'
 include ':javax.activity'
@@ -10,3 +9,4 @@ include ':apache.harmony'
 
 // Example Apps
 include ':hanksTodo'
+include ':example-minnietwitter'

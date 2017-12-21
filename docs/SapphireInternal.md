@@ -1,3 +1,7 @@
+# Sapphire Overview
+
+![](./images/SapphireOverview.png)
+
 # Remote Interfaces
 
 Sapphire declares two `Remote` interfaces: `KernelServer` and `OMSServer`. Most methods in these two interfaces can be easily replaced with `gRPC`, except for `KernelServer.copyKernelObject`.
@@ -87,16 +91,16 @@ Sapphire uses `RMI` in its internal implementation. Applications running on top 
 
 `KernelServer` contains a `ObjectManager` which keeps track of the mapping between kernel object ID to the reference of the object.
 
-![](./KernelServerOMS.png)
+![](./images/KernelServerOMS.png)
 
 The following sequence chart demonstrate the high level interactions between client, OMS Server, and Kernel Server.
 
-![](./OMSServerKernelServerInteractionSequence.png)
+![](./images/OMSServerKernelServerInteractionSequence.png)
 
 # Stubs
 
 Sapphire generates many `stub` classes. The following chart shows the relationship between these `stub` classes. We then uses the source code to explain how these `stubs` work together to process a remote method invocation. 
-![](./SapphireStubStructure.png)
+![](./images/SapphireStubStructure.png)
 
 ### `App_Stub`
 
@@ -253,6 +257,12 @@ The remote `KernelServer` receives the `makeKernelRPC` call. It locates the obje
 	}
 ```	
 
+# AppEntry Creation
+
+Every application written in Sapphire has one `AppEntryPoint` which is the starting point of the application. The following sequence chart shows how a client (e.g. `TwitterWorldGenerator`) gets the `AppEntryPoint` (e.g. `MinnieTwitterStart`) from OMS, and how OMS creates `AppEntryPoint` on Kernel Server behind the scene.
+
+![](./images/AppEntryCreationSequence.png)
+
 # Sapphire Advantages
 
 > While cloud storage systems simplify the task of meeting mobile/cloud requirements for range of applications (marked as general purpose in Figure 1.2), they leave significant work for application programmers. Because both client and server components are typically stateless, the application must still re-start servers (for availability), <span style="color:blue">cache locally on mobile clients (for responsiveness)</span>, spin up more servers (for scalability), <span style="color:blue">coordinate between clients and servers (for consistency)</span>, <span style="color:blue">checkpoint both clients and servers (for fault-tolerance)</span>, and <span style="color:blue">poll servers (for reactivity)</span>. Simply stated, building a mobile/cloud application using a cloud storage system is the modern-day equivalent of building a desktop application with only a file system.
@@ -277,8 +287,14 @@ Is Sapphire able to provide fault-tolerance to stateful applications? How does i
 
 * What unique competative advantage will DCAP deliver? Why should developers chose DCAP, rather than other options like BaaS, Istio, etc?
 
+* How do DCAP customers use DCAP? 
+
 * What is the relationship between DCAP and serverless? How do we use DCAP idea to achieve serverless at anywhere and serverless at any scale?
 
 * What is DCAP? A platform, a SDK, or a combination of both?
 
 * What are the key technologies behind DCAP?
+
+* How about we create a clone for every device on the cloud?
+
+* We need concrete examples for `peer-to-peer`, `code-offloading`, and `replication` DM. 

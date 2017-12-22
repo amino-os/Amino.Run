@@ -8,13 +8,14 @@
 
 # Objectives
 
-The goal of DCAP (Distributed Cloud Application Platform) project is to build a *distributed programming platform*, based on the ideas in [Sapphire](https://sapphire.cs.washington.edu/papers/sapphire-osdi14.pdf) paper, which aims to simplify the programming of today's highly distributed mobile/cloud applications.
+The goal of DCAP (Distributed Cloud Application Platform) project is to build a *distributed mobile programming platform*, based on the ideas in [Sapphire](https://sapphire.cs.washington.edu/papers/sapphire-osdi14.pdf) paper, which aims to simplify the programming of today's highly distributed mobile/cloud applications.
 
-More specifically, DCAP project will deliver the following two pieces:
+DCAP provides two unique features to application programmers:
 
-* *SDK*: a software library with 20+ predefined *DM*s which support a wide range of management tasks commonly occur in a distribued environment, such as consistent client-side caching, durable transactions, Paxos replication, and dynamic code offloading, etc.  
- 
-* *Kernel*: a light weight distributed runtime which manages and executes DCAP applications, i.e applications written with DCAP SDK. 
+* DCAP supports code *offloading* - it allows *objects* to move between devices, edges, and servers in central cloud
+
+* DCAP provides a collection of pre-built *DM*s which solve a wide range of distributed system tasks, such as offloading and caching - it frees application programmers from writing complex distributed logics
+
 
 # Schedule
 

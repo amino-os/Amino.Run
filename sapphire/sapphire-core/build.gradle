@@ -2,8 +2,8 @@ apply plugin: 'java'
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile project(':java.rmi')
     compile 'org.json:json:20171018'
+    compile project(':dependencies:java.rmi')
 }
 
 task deleteJar(type: Delete) {

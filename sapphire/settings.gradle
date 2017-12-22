@@ -2,11 +2,11 @@
 include ':sapphire-core'
 
 // Sapphire's Dependencies
-include ':java.rmi'
-include ':javax.rmi'
-include ':javax.activity'
-include ':apache.harmony'
+include ':dependencies:java.rmi'
+include ':dependencies:javax.rmi'
+include ':dependencies:javax.activity'
+include ':dependencies:apache.harmony'
 
 // Example Apps
-include ':hanksTodo'
-include ':example-minnietwitter'
+include ':examples:hanksTodo'
+include ':examples:example-minnietwitter'

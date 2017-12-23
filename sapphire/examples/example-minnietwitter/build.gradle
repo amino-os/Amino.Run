@@ -1,13 +1,13 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 17
+    compileSdkVersion 27
     buildToolsVersion "27.0.0"
 
     defaultConfig {
         applicationId "com.example.minnietwitter"
-        minSdkVersion 8
-        targetSdkVersion 17
+        minSdkVersion 24
+        targetSdkVersion 27
     }
 
     buildTypes {
@@ -23,6 +23,6 @@ android {
 }
 
 dependencies {
-    compile 'com.android.support:support-v4:18.0.0'
+    compile 'com.android.support:support-v4:27.0.2'
     compile project(':sapphire-core')
 }

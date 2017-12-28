@@ -109,12 +109,12 @@ Sapphire uses `RMI` in its internal implementation. Applications running on top 
 
 The following sequence chart demonstrate the high level interactions between client, OMS Server, and Kernel Server.
 
-![](./images/OMSServerKernelServerInteractionSequence.png)
+![](./images/DCAP_RemoteMethodInvocationSequence.png)
 
 # Stubs
 
 Sapphire generates many `stub` classes. The following chart shows the relationship between these `stub` classes. We then uses the source code to explain how these `stubs` work together to process a remote method invocation. 
-![](./images/SapphireStubStructure.png)
+![](./images/DCAP_StubStructure.png)
 
 ### `App_Stub`
 

@@ -68,26 +68,30 @@ As shwon in the followign diagram, DM consists of many automatically generated c
 ![](./images/DMList.png)
 
 ### Immutable
-*Efficient distribution and access for immutable SOs*
+> Efficient distribution and access for immutable SOs
 
 Immutable SO objects are objects whose internal states never change. What is the meaning of efficient *distribution* and *access* for immutable SOs? Does *distribution* refer to the creation and migration of SOs? What is the difference between this DM and the `LoadBalancedFrontEnd` DM?
 
+<span style="color:blue">Should *immutable* be a property declared on Sapphire object, or a DM implementation?</span>
+
 ### AtLeastOnceRPC
-*Automatically retry RPCs for bounded amount of time*
+> Automatically retry RPCs for bounded amount of time
 
 This DM can be implemented by adding *retry* logics in the DM's `proxy` module. This DM may take some configurations, e.g. retry interval, max retry number, Exception types to retry etc. 
 
 ### KeepInPlace / KeepInRegion / KeepOnDevice
-*Keep SO where it was created (e.g., to access device-specific APIs)*
+> Keep SO where it was created (e.g., to access device-specific APIs)
 
 If I understand correctly, by default, SOs cannot move. In order to make a SO mobile, the SO must be managed by some special DM which has the object moving capability. Do we really need a `KeepInPlace` DM? If a SO is not supposed to move, we simply don't associate any DM to this SO. Is my understanding correct?
 
 Rather than defining *KeepInPlace* as a DM, I feel that it is better to define it as annotation on *Sapphire objects*. If a *Sapphire object* is declared as *KeepInPlace*, then no DM should move it.
 
-Similarly, it is better to define *KeepInRegion* and *KeepOnDevice* as annotations on *Sapphire objects* too.
+<span style="color:blue">Should *KeepInRegion* and *KeepOnDevice* properties declaredon Sapphire objects, or DM implementations?</span>
 
 ### ExplicitCaching
-ask Irene
+> Caching w/ explicit push and pull calls from application
+
+
 
 ### WriteThroughCaching
 Update local and remote

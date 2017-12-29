@@ -64,37 +64,56 @@ As shwon in the followign diagram, DM consists of many automatically generated c
 ![](./images/DCAP_RemoteMethodInvocationSequence.png)
 
 # DM List
+Here are 26 DMs proposed in Sapphire paper. I will start by writing down my personal thoughts on each DM. The purpose is to trigger disccusions within the team so that we can quickly build up concensus on the purpose, the implementation, and the value of each DM. 
+
+I will assign a rate, LOW/MED/HIGH, to each DM to indicate its value to App developers. Again, it is my perosnal judgement. You are welcome to chime in with your opinions.
 
 ![](./images/DMList.png)
 
-### Immutable
+### Immutable (N/A)
 > Efficient distribution and access for immutable SOs
 
-Immutable SO objects are objects whose internal states never change. What is the meaning of efficient *distribution* and *access* for immutable SOs? Does *distribution* refer to the creation and migration of SOs? What is the difference between this DM and the `LoadBalancedFrontEnd` DM?
+<span style="color:blue">Should *immutable* be a property declared on Sapphire object, or a DM?</span> 
 
-<span style="color:blue">Should *immutable* be a property declared on Sapphire object, or a DM implementation?</span>
-
-### AtLeastOnceRPC
+### AtLeastOnceRPC (LOW)
 > Automatically retry RPCs for bounded amount of time
 
-This DM can be implemented by adding *retry* logics in the DM's `proxy` module. This DM may take some configurations, e.g. retry interval, max retry number, Exception types to retry etc. 
+This DM will retry failed operations until timeout is reached.
 
-### KeepInPlace / KeepInRegion / KeepOnDevice
+The value of this DM is rated because many SDKs provide similar retry mechanism. App developers have a lot of choices.
+
+By the way, to make this DM work properly, we have to make one change to the current DM mechanism:
+
+* Provide Operation Level Support in DM: DMs today are proxies of Sapphire objects in which case DM logics are applied to all operations of a Sapphire object. Retry configuration, however, may vary a lot from operation to operation. DM should provide operation level support.
+
+
+### KeepInPlace / KeepInRegion / KeepOnDevice (N/A)
 > Keep SO where it was created (e.g., to access device-specific APIs)
 
-If I understand correctly, by default, SOs cannot move. In order to make a SO mobile, the SO must be managed by some special DM which has the object moving capability. Do we really need a `KeepInPlace` DM? If a SO is not supposed to move, we simply don't associate any DM to this SO. Is my understanding correct?
+If I understand correctly, by default, SOs cannot move. In order to make a SO mobile, the SO must be managed by some special DM which has the object moving capability. Do we really need a `KeepInPlace` DM? If a SO is not supposed to move, we simply don't associate any DM to this SO. 
 
 Rather than defining *KeepInPlace* as a DM, I feel that it is better to define it as annotation on *Sapphire objects*. If a *Sapphire object* is declared as *KeepInPlace*, then no DM should move it.
 
 <span style="color:blue">Should *KeepInRegion* and *KeepOnDevice* properties declaredon Sapphire objects, or DM implementations?</span>
 
-### ExplicitCaching
+### ExplicitCaching (LOW)
 > Caching w/ explicit push and pull calls from application
 
+<span style="color:blue">Not sure what it is...</span>
 
+### WriteThroughCaching (LOW)
+> Caching w/ writes serialized to server and stale, local reads
 
-### WriteThroughCaching
-Update local and remote
+*WriteThroughCache* directs write operations (i.e. mutable operations) onto cached object and through to remote object before confirming write completion. Read operations (i.e. immutable operations) will be invoked on cached object directly.
+
+State changes on remote object caused by one client will not automatically invalidate to cached objects on other clients. Therefore *WriteThroughCache* may contain staled object.
+
+The value of this DM is rated as LOW because 
+
+* Many matual cache libraries out there. 
+* It is not difficult for developers to write their customized client side write through cache. It is not a big deal for them even if we don't provide this DM. 
+
+<span style="color:blue">To make *WriteThroughCache* work, DM needs a mechanism to distinguish *mutable* operations and *immutable* operations.</span>
 
 ### ConsistentCaching
 

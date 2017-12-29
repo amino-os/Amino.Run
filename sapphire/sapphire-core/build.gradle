@@ -4,6 +4,8 @@ dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     compile 'org.json:json:20171018'
     compile project(':dependencies:java.rmi')
+    testCompile 'junit:junit:4.12'
+    testCompile 'org.mockito:mockito-core:1.+'
 }
 
 task deleteJar(type: Delete) {

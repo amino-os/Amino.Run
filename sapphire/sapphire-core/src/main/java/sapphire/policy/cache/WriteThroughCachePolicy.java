@@ -73,7 +73,7 @@ public class WriteThroughCachePolicy extends SapphirePolicy {
          */
         boolean isMethodMutable(String method, ArrayList<Object> params) {
             // TODO: determine mutability of method based on annotation or other mechanism
-            return false;
+            return true;
         }
     }
 

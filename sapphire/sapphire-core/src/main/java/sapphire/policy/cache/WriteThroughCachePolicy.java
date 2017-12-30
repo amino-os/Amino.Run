@@ -1,9 +1,6 @@
 package sapphire.policy.cache;
 
-import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.Random;
 import java.util.logging.Logger;
 
 import sapphire.common.AppObject;

@@ -4,11 +4,15 @@ import java.util.ArrayList;
 import java.util.logging.Logger;
 import java.net.InetSocketAddress;
 
-// sapphire rt
 import sapphire.kernel.common.GlobalKernelReferences;
 import sapphire.oms.OMSServer;
 import sapphire.kernel.server.KernelServerImpl;
 
+/**
+ * This class defines ShiftPolicy which serves the purpose of demonstration only.
+ * Note that it does not provide any values; thus, should not be used outside of testing or demonstration.
+ * It moves the Sapphire object to another Sapphire Kernel server when the number of RPC (RMI) is more than 5.
+ */
 public class ShiftPolicy extends SapphirePolicy {
 
 	public static class ShiftClientPolicy extends DefaultSapphirePolicy.DefaultClientPolicy {
@@ -63,7 +67,7 @@ public class ShiftPolicy extends SapphirePolicy {
 			Object obj = super.onRPC(method, params);
 
 			if (this.shiftRPCLoad > 0 && this.shiftRPCLoad % this.LOAD == 0) {
-				System.out.println("[ShiftPolicy] Limit reached at " + this.LOAD + ". Shift policy triggered.");
+				logger.info("[ShiftPolicy] Limit reached at " + this.LOAD + ". Shift policy triggered.");
 				OMSServer oms = GlobalKernelReferences.nodeServer.oms;
 				ArrayList<InetSocketAddress> servers = oms.getServers();
 
@@ -72,9 +76,9 @@ public class ShiftPolicy extends SapphirePolicy {
 				InetSocketAddress shiftWinner = this.getNextShiftTarget(servers, localAddress);
 
 				if (shiftWinner.equals(localAddress)) {
-					System.out.println("[ShiftPolicy] There are no targets to migrate Sapphire object to." );
+					logger.info("[ShiftPolicy] There are no targets to migrate Sapphire object to." );
 				} else {
-					System.out.println("[ShiftPolicy] Shifting Sapphire object " + this.oid + " to " + shiftWinner);
+					logger.info("[ShiftPolicy] Shifting Sapphire object " + this.oid + " to " + shiftWinner);
 					localKernel.moveKernelObjectToServer(shiftWinner, this.oid);
 				}
 			}

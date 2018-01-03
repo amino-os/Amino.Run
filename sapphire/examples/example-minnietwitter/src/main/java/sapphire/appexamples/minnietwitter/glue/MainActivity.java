@@ -15,7 +15,7 @@ public class MainActivity extends Activity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		new GenerateWorld().execute("192.168.10.191", "22346", "10.0.2.15", "22345");
+		new GenerateWorld().execute(Configuration.hostAddress);
 		setContentView(R.layout.activity_main);
 	}
 

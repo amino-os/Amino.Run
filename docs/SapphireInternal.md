@@ -2,6 +2,27 @@
 
 ![](./images/SapphireOverview.png)
 
+### Sapphire Object
+Sapphire object is the base management unit in Sapphire. In above diagram, each circle represents one Sapphire object. The dots inside the circle (i.e. the Sapphire object) represents normal Java objects. One Sapphire object may contain a set of Java objects. The solid arrow lines between dots are *local* method invocations between Java objects. The dashed arrow lines between circles are *remote* method invocations between Sapphire objects. Methods on normal Java objects can only be invoked *locally* by objects reside on the same host. Sapphire objects however may have *remote methods* which can be invoked by objects reside on different hosts. 
+
+Deployment Kernel has the capability to move a Sapphire object from one host to another. Behind the scene, Deployment Kernel will serialize the whole Sapphire object, including all Java objects belong to the Sapphire object, on one end, ships the bytes to the destination host, and then do the deserialization there.
+
+Sapphire objects are created by applications with static helper method `Sapphire.new_()`. To invoke a method on a Sapphire object, applications have to first get a reference to the Sapphire object from OMS Server. 
+
+### OMS
+OMS, Object Management Service, keeps track of the location of all Sapphire objects. Unlike normal Java objects which can be created by Java `new` keyword, Sapphire object must be created with a special Sapphire helper method `Sapphire.new_`. Upon Sapphire object creation, method `Sapphire.new_` will generate a globally unique ID for the Sapphire object, and register the object in OMS. OMS provides API to search Sapphire objects. Given a Sapphire object ID, OMS can tell the IP of the host on which the Sapphire object runs. Whenever a Sapphire object is moved or deleted, OMS will be updated accordingly.
+
+### Kernel Server
+Kernel Server provides runtime environment for Sapphire objects. Each host runs a Kernel Server instance. Kernel Server exposes a set of *remote* API which can be invoked remotely. Sapphire assumes that any Kernel Server can invoke the *remote* API on any other Kernel Server regardless where the Kernel Server lives.
+
+### DM
+Every DM, Deployment Manager, has three components: a proxy, a instance manager, and a coordinator. When users create Sapphire object, he/she can optionally associate a DM to the Sapphire object. Not all Sapphire object has DMs. But if a DM is specified for a Sapphire object, then during the creation of the Sapphire object, helper method `Sapphire.new_` will inject codes into the `stub` of the Sapphire object, in which case any method invocation on the Sapphire object will first be processed by the `proxy`, `instance manager` and the `coordinator` of the DM before reach the actual Sapphire object. Each DM provides one specific functionality. The Sapphire paper listed 26 DMs. 
+
+### Kernel Object
+*Kernel object* is a wrapper of the *actual* Java object - it contains a reference to the actual Java object and exposes a `invoke` method which allows any public methods defined on the actual Java object to be invoked with reflection.
+
+Kernel objects are created with [`KernelServerImpl.newKernelObject`](https://github.com/Huawei-PaaS/DCAP-Sapphire/blob/master/sapphire/sapphire-core/src/main/java/sapphire/kernel/server/KernelServerImpl.java#L101) method. Every kernel object has a unique `oid` and is registered in OMS server. `KernelServer` interface also exposes a few APIs to copy and move kernel objects.
+
 # Remote Interfaces
 
 Sapphire declares two `Remote` interfaces: `KernelServer` and `OMSServer`. Most methods in these two interfaces can be easily replaced with `gRPC`, except for `KernelServer.copyKernelObject`.
@@ -95,12 +116,12 @@ Sapphire uses `RMI` in its internal implementation. Applications running on top 
 
 The following sequence chart demonstrate the high level interactions between client, OMS Server, and Kernel Server.
 
-![](./images/OMSServerKernelServerInteractionSequence.png)
+![](./images/DCAP_RemoteMethodInvocationSequence.png)
 
 # Stubs
 
 Sapphire generates many `stub` classes. The following chart shows the relationship between these `stub` classes. We then uses the source code to explain how these `stubs` work together to process a remote method invocation. 
-![](./images/SapphireStubStructure.png)
+![](./images/DCAP_StubStructure.png)
 
 ### `App_Stub`
 
@@ -261,7 +282,7 @@ The remote `KernelServer` receives the `makeKernelRPC` call. It locates the obje
 
 Every application written in Sapphire has one `AppEntryPoint` which is the starting point of the application. The following sequence chart shows how a client (e.g. `TwitterWorldGenerator`) gets the `AppEntryPoint` (e.g. `MinnieTwitterStart`) from OMS, and how OMS creates `AppEntryPoint` on Kernel Server behind the scene.
 
-![](./images/AppEntryCreationSequence.png)
+![](./images/DCAP_AppEntryCreationSequence.png)
 
 # Sapphire Advantages
 
@@ -278,14 +299,14 @@ Systems like Kubernetes provides functionalities to restart servers, spin up mor
 
 DM does have values. It is much easier to write leader election logics with `etcd`'s lease API. However, even with the support from etcd, writng a correct leader election logics is still tricky and can take about 500 lines of codes. This is where DM shines. But DM logics can be added into microservice framework as well.
 
->BaaS systems meet somemobile/cloud requirements and help programmers meet the rest. They are highly available, responsive and scalable. They offer weak or no consistency, and some provide notifications for more efficient reactivity. However, the <span style="color:blue">application must still be stateless</span>, so programmersmust checkpoint to the back-end (or log to a local disk) aſter every operation for fault-tolerance. Finally, <span style="color:blue">programmers typically cannot run application code on the more powerful and secure cloud servers.</span>
+>BaaS systems meet some mobile/cloud requirements and help programmers meet the rest. They are highly available, responsive and scalable. They offer weak or no consistency, and some provide notifications for more efficient reactivity. However, the <span style="color:blue">application must still be stateless</span>, so programmers must checkpoint to the back-end (or log to a local disk) after every operation for fault-tolerance. Finally, <span style="color:blue">programmers typically cannot run application code on the more powerful and secure cloud servers.</span>
 
 Is Sapphire able to provide fault-tolerance to stateful applications? How does it do that? Why programmers cannot run application code on more powerful cloud servers? Are we talking about code offloading? 
 
-> Sapphire is designed to deploy applications acrossmobile devices and cloud servers. 
+> Sapphire is designed to deploy applications across mobile devices and cloud servers. 
 # Questions
 
-* What unique competative advantage will DCAP deliver? Why should developers chose DCAP, rather than other options like BaaS, Istio, etc?
+* What unique competitive advantage will DCAP deliver? Why should developers chose DCAP, rather than other options like BaaS, Istio, etc?
 
 * How do DCAP customers use DCAP? 
 

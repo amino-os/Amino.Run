@@ -5,7 +5,7 @@ dependencies {
 }
 
 task deleteJar(type: Delete) {
-    delete 'libs/hankdtodo.jar'
+    delete 'libs/hankstodo.jar'
 }
 
 task createJar(type: Copy) {

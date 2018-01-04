@@ -18,7 +18,7 @@ the working folder assumes the Saphhire git dir
 * python ./generate_app_stubs_on_host.py
 * cd sapphire/examples/hankdTodo
 * gradle build
-* cd deployment
+* cd deployment/tests
 * ./local_int_start.sh
 
 

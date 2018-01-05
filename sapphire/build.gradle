@@ -5,13 +5,28 @@ buildscript {
         jcenter()
     }
     dependencies {
+        /**
+         * Be careful at upgrading to higher version of gradle (e.g., > 3.0):
+         * Compilation may work but application will have error when executed due to AAPT2 exception.
+         * Disabling AAPT2 will hide an issue with AAPT2 and may cause to stop unit tests to work.
+         * Please update only after either the issue is fixed on Android side or fix the bug in the project for AAPT2.
+         * https://issuetracker.google.com/issues/38454212
+         * https://github.com/requery/requery/issues/467
+         */
         classpath 'com.android.tools.build:gradle:2.3.3'
     }
 }
-
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.3.3'
+}
 allprojects {
     repositories {
         jcenter()
         google()
+    }
+
+    project.ext {
+        compileSdkVersion=27
+        buildToolsVersion="27.0.2"
     }
 }

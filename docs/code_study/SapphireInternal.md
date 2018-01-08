@@ -1,6 +1,6 @@
 # Sapphire Overview
 
-![](./images/SapphireOverview.png)
+![](../images/SapphireOverview.png)
 
 ### Sapphire Object
 Sapphire object is the base management unit in Sapphire. In above diagram, each circle represents one Sapphire object. The dots inside the circle (i.e. the Sapphire object) represents normal Java objects. One Sapphire object may contain a set of Java objects. The solid arrow lines between dots are *local* method invocations between Java objects. The dashed arrow lines between circles are *remote* method invocations between Sapphire objects. Methods on normal Java objects can only be invoked *locally* by objects reside on the same host. Sapphire objects however may have *remote methods* which can be invoked by objects reside on different hosts. 
@@ -112,16 +112,16 @@ Sapphire uses `RMI` in its internal implementation. Applications running on top 
 
 `KernelServer` contains a `ObjectManager` which keeps track of the mapping between kernel object ID to the reference of the object.
 
-![](./images/KernelServerOMS.png)
+![](../images/KernelServerOMS.png)
 
 The following sequence chart demonstrate the high level interactions between client, OMS Server, and Kernel Server.
 
-![](./images/DCAP_RemoteMethodInvocationSequence.png)
+![](../images/DCAP_RemoteMethodInvocationSequence.png)
 
 # Stubs
 
 Sapphire generates many `stub` classes. The following chart shows the relationship between these `stub` classes. We then uses the source code to explain how these `stubs` work together to process a remote method invocation. 
-![](./images/DCAP_StubStructure.png)
+![](../images/DCAP_StubStructure.png)
 
 ### `App_Stub`
 
@@ -282,7 +282,7 @@ The remote `KernelServer` receives the `makeKernelRPC` call. It locates the obje
 
 Every application written in Sapphire has one `AppEntryPoint` which is the starting point of the application. The following sequence chart shows how a client (e.g. `TwitterWorldGenerator`) gets the `AppEntryPoint` (e.g. `MinnieTwitterStart`) from OMS, and how OMS creates `AppEntryPoint` on Kernel Server behind the scene.
 
-![](./images/DCAP_AppEntryCreationSequence.png)
+![](../images/DCAP_AppEntryCreationSequence.png)
 
 # Sapphire Advantages
 
@@ -297,7 +297,7 @@ Systems like Kubernetes provides functionalities to restart servers, spin up mor
 
 >For example, lock services (Figure 1.2) help applications provide consistency by avoiding conflicts, but programmers must still call the lock service at appropriate times to achieve consistency. Likewise, notification services help applications efficiently achieve reactivity by eliminating the need for polling; however, programmers must still send and subscribe to notifications correctly to propagate updates to other users. 
 
-DM does have values. It is much easier to write leader election logics with `etcd`'s lease API. However, even with the support from etcd, writng a correct leader election logics is still tricky and can take about 500 lines of codes. This is where DM shines. But DM logics can be added into microservice framework as well.
+DM does have values. It is much easier to write leader election logics with `etcd`'s lease API. However, even with the support from etcd, writing a correct leader election logics is still tricky and can take about 500 lines of codes. This is where DM shines. But DM logics can be added into micro-service framework as well.
 
 >BaaS systems meet some mobile/cloud requirements and help programmers meet the rest. They are highly available, responsive and scalable. They offer weak or no consistency, and some provide notifications for more efficient reactivity. However, the <span style="color:blue">application must still be stateless</span>, so programmers must checkpoint to the back-end (or log to a local disk) after every operation for fault-tolerance. Finally, <span style="color:blue">programmers typically cannot run application code on the more powerful and secure cloud servers.</span>
 
@@ -310,7 +310,7 @@ Is Sapphire able to provide fault-tolerance to stateful applications? How does i
 
 * How do DCAP customers use DCAP? 
 
-* What is the relationship between DCAP and serverless? How do we use DCAP idea to achieve serverless at anywhere and serverless at any scale?
+* What is the relationship between DCAP and server-less? How do we use DCAP idea to achieve server-less at anywhere and server-less at any scale?
 
 * What is DCAP? A platform, a SDK, or a combination of both?
 

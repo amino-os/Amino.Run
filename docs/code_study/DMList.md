@@ -53,22 +53,22 @@ public class UserManager {
 ```
 # DM Injection
 
-![](./images/SapphireOverview.png)
+![](../images/SapphireOverview.png)
 
 In the above diagram, the dashed arrow lines are remote method invocations between Sapphire objects, the solid arrow lines are local method invocations within a Sapphire object (i.e. within JVM). DMs sit below Sapphire objects. They are essentially proxies for Sapphire objects. When one object calls a remote method on another Sapphire object, the request will first be processed by the DM on client side, (i.e. `DM.Proxy`), the DM on server side (i.e. `DM.InstanceManager`) , and then finally be sent to the real Java object.
 
-As shwon in the followign diagram, DM consists of many automatically generated components. All these components are wired up by DCAP automatically. Therefore as an App developer, you cannot use normal Java `new` keyword to create a Sapphire object. Sapphire objects have to be created by [`Sapphire._new()`](https://github.com/Huawei-PaaS/DCAP-Sapphire/blob/master/sapphire/sapphire-core/src/main/java/sapphire/runtime/Sapphire.java). Moreover, to invoke a method on an Sapphire object, you must first get the reference to object from OMS - OMS will return a *stub* of the actual Sapphire object.
+As shown in the following diagram, DM consists of many automatically generated components. All these components are wired up by DCAP automatically. Therefore as an App developer, you cannot use normal Java `new` keyword to create a Sapphire object. Sapphire objects have to be created by [`Sapphire._new()`](https://github.com/Huawei-PaaS/DCAP-Sapphire/blob/master/sapphire/sapphire-core/src/main/java/sapphire/runtime/Sapphire.java). Moreover, to invoke a method on an Sapphire object, you must first get the reference to object from OMS - OMS will return a *stub* of the actual Sapphire object.
  
-![](./images/DCAP_StubStructure.png)
+![](../images/DCAP_StubStructure.png)
 
-![](./images/DCAP_RemoteMethodInvocationSequence.png)
+![](../images/DCAP_RemoteMethodInvocationSequence.png)
 
 # DM List
-Here are 26 DMs proposed in Sapphire paper. I will start by writing down my personal thoughts on each DM. The purpose is to trigger disccusions within the team so that we can quickly build up concensus on the purpose, the implementation, and the value of each DM. 
+Here are 26 DMs proposed in Sapphire paper. I will start by writing down my personal thoughts on each DM. The purpose is to trigger discussions within the team so that we can quickly build up consensus on the purpose, the implementation, and the value of each DM. 
 
-I will assign a rate, LOW/MED/HIGH, to each DM to indicate its value to App developers. Again, it is my perosnal judgement. You are welcome to chime in with your opinions.
+I will assign a rate, LOW/MED/HIGH, to each DM to indicate its value to App developers. Again, it is my personal judgement. You are welcome to chime in with your opinions.
 
-![](./images/DMList.png)
+![](../images/DMList.png)
 
 ### Immutable (N/A)
 > Efficient distribution and access for immutable SOs
@@ -94,7 +94,7 @@ If I understand correctly, by default, SOs cannot move. In order to make a SO mo
 
 Rather than defining *KeepInPlace* as a DM, I feel that it is better to define it as annotation on *Sapphire objects*. If a *Sapphire object* is declared as *KeepInPlace*, then no DM should move it.
 
-<span style="color:blue">Should *KeepInRegion* and *KeepOnDevice* properties declaredon Sapphire objects, or DM implementations?</span>
+<span style="color:blue">Should *KeepInRegion* and *KeepOnDevice* properties declared declared on Sapphire objects, or DM     simplementations?</span>declared on
 
 ### ExplicitCaching (LOW)
 > Caching w/ explicit push and pull calls from application
@@ -110,7 +110,7 @@ State changes on remote object caused by one client will not automatically inval
 
 The value of this DM is rated as LOW because 
 
-* Many matual cache libraries out there. 
+* Many mutual cache libraries out there. 
 * It is not difficult for developers to write their customized client side write through cache. It is not a big deal for them even if we don't provide this DM. 
 
 <span style="color:blue">To make *WriteThroughCache* work, DM needs a mechanism to distinguish *mutable* operations and *immutable* operations.</span>

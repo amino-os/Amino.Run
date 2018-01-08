@@ -38,6 +38,7 @@ Mobile applications are commonly modeled as client server architecture where cli
 <i>and</i> <var>I</var><sub><var>v</var></sub> <= <var>r</var><sub><var>v</var></sub>, &forall;<var>v</var> &isin; <var>V</var></p>
 <i>and</i> <var>I</var><sub><var>i</var></sub> x &Sum;<sub><var>j</var>&isin;<var>group(i)</var</sub>(1 - <var>I</var><sub><var>j</var></sub>) + (1 - <var>I</var><sub><var>i</var></sub>) x &Sum;<sub><var>j&isin;group(i)</var></sub><var>I<sub>j</sub></var> == 0
 </div>
+
 * **Model for Latency Reduction**:
 <div align="center">
 <p>

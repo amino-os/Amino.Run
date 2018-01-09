@@ -18,7 +18,7 @@ https://github.com/kubernetes/community/blob/master/contributors/guide/github-wo
 #### 3. git clone https://github.com/Huawei-PaaS/DCAP-Sapphire
 
 #### 4. Open Android Studio.
-* Open Sapphire project from the local repo you just cloned.
+* Open Sapphire project from the local repo you just cloned. (i.e open DCAP-Sapphire/sapphire/)
 * Android Studio will ask you about missing files - click OK.
 
 #### 5. Update IP address in application and minnieTwitter app with yours.
@@ -26,8 +26,8 @@ https://github.com/kubernetes/community/blob/master/contributors/guide/github-wo
 * Go to Run -> Edit Configuration
 * Select the following components and change IP addresses that start with 192.168... to your IP. Don't change the port number:
 OMS-for-minnieTwitter, Kernel-for-minnietwitter
-* Go to examples/example/minnietwitter/src/main/java/sapphire.appexamples.minnietwitter/glue/MainActivity.java/sapphire
-* Update the first agument (IP address) to your IP address. Don't change the port number or the second argument.
+* Go to examples/example/minnietwitter/src/main/java/sapphire.appexamples.minnietwitter/glue/Configuration.java
+* Update the first agument (IP address) to your IP address. Don't change the port number or the second argument. (the second argument (IP Address) corresponds to the IP address of the device where this app would run, if running on a real android device, then update it to the IP address of the real android device)
 
 #### 6. Make project and sync Gradle (order does not matter).
 * If it fails, just restart and try it again.

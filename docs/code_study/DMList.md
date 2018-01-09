@@ -116,16 +116,62 @@ The value of this DM is rated as LOW because
 <span style="color:blue">To make *WriteThroughCache* work, DM needs a mechanism to distinguish *mutable* operations and *immutable* operations.</span>
 
 ### ConsistentCaching
+> Caching w/ updates sent to every replica for strict consistency
+
+*ConsistentCaching* caches Sapphire object instance on local. *Read* operations will be invoked on local cached object. *Write* operations will be directed to remote Sapphire object. If the Sapphire object has multiple *replicas*, *write* operations will be invoked on all replicas.
+
+* Should updates be propagated to all *replicas*, or be propagated to all *cached objects*? My interpretation is that the updates will be propagated to all replicas. The cached object, therefore, may contain stale data.
+* What if the update propagation failed on some replica? 
+* Should update propagation occur synchronously or asynchronously?
+
 
 ### SerializableRPC
-* Do we serialize across SO replicas? 
+> Serialize all RPCs to SO with server-side locking
 
-### Locking Transaction
+* For Sapphire objects with multiple replicas, should RPCs be serialized across all replicas, or serialized against one specific replica?
+
+### LockingTransactions
+> Multi-RPC transactions w/ locking, no concurrent transactions 
+
+*LockingTransactions* uses lock to enforce the serial execution of transactions each of which consists of one or many RPC calls.
+
+* How do users specify transaction boundary? Say, I would like to put operation A and B into one transaction, how do I specify it in DM?
+* Are serialization enforced across all Sapphire object replicas, or just against one Sapphire object replica?
+* Should this DM take care of state rollback from failed transactions?
+* Can users call methods on multiple Sapphire objects in one transaction, e.g. SO1.A() and SO2.B()?
+
+### ExplicitCheckpoint
+> App-controlled checkpointing to disk, revert last checkpoint on failure
+
+*ExplicitCheckpoint* allows users to manually checkpoint Sapphire object state via `SO.checkpoint()` API. Sapphire ojbect state will be saved on local host. Users can manually revert Sapphire object to the last checkpoint by calling `SO.revert()` API.
+
+* Description says *revert last checkpoint on failure*. Is this *revert* done by system, or by users manually?
+* If *revert* is performed by system automatically, then *on which failures* should the system revert Sapphire object to last checkpoint?
+
+### PeriodicCheckpoint
+> Checkpoint to disk every N RPCs, revert to last checkpoint on failure
+
+*PeriodicCheckpoint* periodically, e.g. every N RPCs, saves Sapphire object state on local host. This DM saves Sapphire object before invokes any method on the Sapphire object. If RPC invocation succeeds, result will be returned to client. If RPC invocation fails, Sapphire object will be reverted to last checkpoint, and an error will be thrown to client.
+
+* What is the use case of this DM?
+* What if a Sapphire object dies? Will we loose checkpoint data?
 
 ### DurableSerializableRPC
+> Durable serializable RPCs, revert to last successful RPC on failure
+
+*DurableSerializableRPC* will 1) save Sapphire object state on local host, 2) grab a lock for the RPC call, and 3) invoke RPC on the Sapphire object. If RPC call succeeds, the result will be returned to client. If RPC call fails, the Sapphire object state will be restored, and an error will be thrown back to the client.  
+
+* What is the difference between *DurableSerializableRPC* and *DurableTransactions*? Looks like *DurableSerializableRPC* deals with one RPC call, but *DurableTransactions* deals with multiple RPC calls in one transaction.
 
 ### DurableTransactions
-* Difference between ExplicitMigration and ExplicitCodOffloading?
-* Difference between Offloading and Migration
+> Durably committed transactions, revert to last commit on failure
+
+*DurableTransactions* will 1) save Sapphire object state on local host, 2) grab a lock for the transaction, and 3) invoke multiple *update* operations specified in the transaction boundry on the Sapphire object. If any *update* operation fail, the Sapphire object state will be restored, and an error will be thrown back to the client.  
+
+* Can one transaction involve multiple Sapphire object?
+* If the Sapphire object has multiple replicas, should the updates be propagated to other replicas?
+
+### CodeOffloading
+* What is the difference between Offloading and Migration
 
 

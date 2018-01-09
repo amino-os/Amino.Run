@@ -128,6 +128,8 @@ The value of this DM is rated as LOW because
 ### SerializableRPC
 > Serialize all RPCs to SO with server-side locking
 
+Main logic of this DM occurs on server side. Upon receiving a RPC request, *SerializableRPC* will 1) grab a lock on the Sapphire object, and 2) invoke the RPC on the Sapphire object. All method invocations on the Sapphire object will go through the lock and therefore will be serialized. 
+
 * For Sapphire objects with multiple replicas, should RPCs be serialized across all replicas, or serialized against one specific replica?
 
 ### LockingTransactions

@@ -70,12 +70,15 @@ I will assign a rate, LOW/MED/HIGH, to each DM to indicate its value to App deve
 
 ![](../images/DMList.png)
 
-### Immutable (N/A)
+## Primitives
+
+### Immutable (N/A) 19 LoC
+
 > Efficient distribution and access for immutable SOs
 
 <span style="color:blue">Should *immutable* be a property declared on Sapphire object, or a DM?</span> 
 
-### AtLeastOnceRPC (LOW)
+### AtLeastOnceRPC (LOW) 27 LoC
 > Automatically retry RPCs for bounded amount of time
 
 This DM will retry failed operations until timeout is reached.
@@ -87,7 +90,7 @@ By the way, to make this DM work properly, we have to make one change to the cur
 * Provide Operation Level Support in DM: DMs today are proxies of Sapphire objects in which case DM logics are applied to all operations of a Sapphire object. Retry configuration, however, may vary a lot from operation to operation. DM should provide operation level support.
 
 
-### KeepInPlace / KeepInRegion / KeepOnDevice (N/A)
+### KeepInPlace / KeepInRegion / KeepOnDevice (N/A) . 15/15/45 LoC
 > Keep SO where it was created (e.g., to access device-specific APIs)
 
 If I understand correctly, by default, SOs cannot move. In order to make a SO mobile, the SO must be managed by some special DM which has the object moving capability. Do we really need a `KeepInPlace` DM? If a SO is not supposed to move, we simply don't associate any DM to this SO. 
@@ -96,12 +99,17 @@ Rather than defining *KeepInPlace* as a DM, I feel that it is better to define i
 
 <span style="color:blue">Should *KeepInRegion* and *KeepOnDevice* properties declared declared on Sapphire objects, or DM     simplementations?</span>declared on
 
-### ExplicitCaching (LOW)
+## Caching
+
+### ExplicitCaching (LOW) 41 LoC
 > Caching w/ explicit push and pull calls from application
 
 <span style="color:blue">Not sure what it is...</span>
 
-### WriteThroughCaching (LOW)
+### LeaseCaching 133 LoC
+> Caching w/ server granting leases, local reads and writes for lease-holder
+
+### WriteThroughCaching (LOW) 43 LoC
 > Caching w/ writes serialized to server and stale, local reads
 
 *WriteThroughCache* directs write operations (i.e. mutable operations) onto cached object and through to remote object before confirming write completion. Read operations (i.e. immutable operations) will be invoked on cached object directly.
@@ -115,7 +123,7 @@ The value of this DM is rated as LOW because
 
 <span style="color:blue">To make *WriteThroughCache* work, DM needs a mechanism to distinguish *mutable* operations and *immutable* operations.</span>
 
-### ConsistentCaching
+### ConsistentCaching 98 LoC
 > Caching w/ updates sent to every replica for strict consistency
 
 *ConsistentCaching* caches Sapphire object instance on local. *Read* operations will be invoked on local cached object. *Write* operations will be directed to remote Sapphire object. If the Sapphire object has multiple *replicas*, *write* operations will be invoked on all replicas.
@@ -124,15 +132,16 @@ The value of this DM is rated as LOW because
 * What if the update propagation failed on some replica? 
 * Should update propagation occur synchronously or asynchronously?
 
+## Serializability
 
-### SerializableRPC
+### SerializableRPC 10 LoC
 > Serialize all RPCs to SO with server-side locking
 
 Main logic of this DM occurs on server side. Upon receiving a RPC request, *SerializableRPC* will 1) grab a lock on the Sapphire object, and 2) invoke the RPC on the Sapphire object. All method invocations on the Sapphire object will go through the lock and therefore will be serialized. 
 
 * For Sapphire objects with multiple replicas, should RPCs be serialized across all replicas, or serialized against one specific replica?
 
-### LockingTransactions
+### LockingTransactions 81 LoC
 > Multi-RPC transactions w/ locking, no concurrent transactions 
 
 *LockingTransactions* uses lock to enforce the serial execution of transactions each of which consists of one or many RPC calls.
@@ -142,7 +151,12 @@ Main logic of this DM occurs on server side. Upon receiving a RPC request, *Seri
 * Should this DM take care of state rollback from failed transactions?
 * Can users call methods on multiple Sapphire objects in one transaction, e.g. SO1.A() and SO2.B()?
 
-### ExplicitCheckpoint
+### OptimisticTransactions 92 LoC
+> Transactions with optimistic concurrency control, abort on conict
+
+## Checkpointing
+
+### ExplicitCheckpoint 51 LoC
 > App-controlled checkpointing to disk, revert last checkpoint on failure
 
 *ExplicitCheckpoint* allows users to manually checkpoint Sapphire object state via `SO.checkpoint()` API. Sapphire ojbect state will be saved on local host. Users can manually revert Sapphire object to the last checkpoint by calling `SO.revert()` API.
@@ -150,7 +164,7 @@ Main logic of this DM occurs on server side. Upon receiving a RPC request, *Seri
 * Description says *revert last checkpoint on failure*. Is this *revert* done by system, or by users manually?
 * If *revert* is performed by system automatically, then *on which failures* should the system revert Sapphire object to last checkpoint?
 
-### PeriodicCheckpoint
+### PeriodicCheckpoint 65 LoC
 > Checkpoint to disk every N RPCs, revert to last checkpoint on failure
 
 *PeriodicCheckpoint* periodically, e.g. every N RPCs, saves Sapphire object state on local host. This DM saves Sapphire object before invokes any method on the Sapphire object. If RPC invocation succeeds, result will be returned to client. If RPC invocation fails, Sapphire object will be reverted to last checkpoint, and an error will be thrown to client.
@@ -158,14 +172,14 @@ Main logic of this DM occurs on server side. Upon receiving a RPC request, *Seri
 * What is the use case of this DM?
 * What if a Sapphire object dies? Will we loose checkpoint data?
 
-### DurableSerializableRPC
+### DurableSerializableRPC 29 LoC
 > Durable serializable RPCs, revert to last successful RPC on failure
 
 *DurableSerializableRPC* will 1) save Sapphire object state on local host, 2) grab a lock for the RPC call, and 3) invoke RPC on the Sapphire object. If RPC call succeeds, the result will be returned to client. If RPC call fails, the Sapphire object state will be restored, and an error will be thrown back to the client.  
 
 * What is the difference between *DurableSerializableRPC* and *DurableTransactions*? Looks like *DurableSerializableRPC* deals with one RPC call, but *DurableTransactions* deals with multiple RPC calls in one transaction.
 
-### DurableTransactions
+### DurableTransactions 112 LoC
 > Durably committed transactions, revert to last commit on failure
 
 *DurableTransactions* will 1) save Sapphire object state on local host, 2) grab a lock for the transaction, and 3) invoke multiple *update* operations specified in the transaction boundry on the Sapphire object. If any *update* operation fail, the Sapphire object state will be restored, and an error will be thrown back to the client.  
@@ -173,7 +187,40 @@ Main logic of this DM occurs on server side. Upon receiving a RPC request, *Seri
 * Can one transaction involve multiple Sapphire object?
 * If the Sapphire object has multiple replicas, should the updates be propagated to other replicas?
 
-### CodeOffloading
+## Replication
+
+### ConsensusRSM-cluster 129 LoC
+> Single cluster replicated SO w/ atomic RPCs across at least f + 1 replicas
+
+### ConsensusRSM-Geo 132 LoC
+> Geo-replicated SO w/ atomic RPCs across at least f + 1 replicas
+
+### ConsensusRSM-P2P 138 LoC
+> SO replicated across client devices w/ atomic RPCs over f + 1 replicas
+
+## Mobility
+
+### ExplicitMigration 20 LoC
+> Dynamic placement of SO with explicit move call from application
+
+### DynamicMigration 57 LoC
+> Adaptive, dynamic placement to minimize latency based on accesses
+
+### ExplicitCodeOffloading 49 Loc
+> Dynamic code offloading with offload call from application
+
+### CodeOffloading 95 LoC
+> Adaptive, dynamic code ooading based on measured latencies
+
 * What is the difference between Offloading and Migration
 
+## Scalability
 
+### LoadBalancedFrontend 53 LoC
+> Simple load balancing w/ static number of replicas and no consistency
+
+### ScaleUpFrontend 88 LoC
+> Load-balancing w/ dynamic allocation of replicas and no consistency
+
+### LoadBalancedMasterSlave 177 LoC
+> Dynamic allocation of load-balanced M-S replicas w/ eventual consistency

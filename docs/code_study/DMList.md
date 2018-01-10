@@ -219,8 +219,19 @@ Main logic of this DM occurs on server side. Upon receiving a RPC request, *Seri
 ### LoadBalancedFrontend 53 LoC
 > Simple load balancing w/ static number of replicas and no consistency
 
+Quinton: On the client side of the DM for a server Sapphire Object, all RPC's to a server Sapphire Object from a given client are load balanced (using simple round robin load balancing) equally across all replicas of the server Sapphire Object.  More details on Round Robin load balancing are available [here](http://www.jscape.com/blog/load-balancing-algorithms).  Each client side DM instance should randomise the order in which it performs round robin against replicas, so that all clients do not target replicas in the same order, leading to unbalanced load.
+
+* In the initial implementation:
+  * load balancing should be implemented inside the DM.  In future load balancing DM's, we can delegate the load balancing to an external load balancing system (e.g. [istio](https://istio.io/)
+  * no attempt needs to be made to perform health checking against replicas.  If a replica is dead or slow, calls to it are simply slow or result in errors.  In future load balancing DM's, we can add health checking, retries etc.
+  * if new replicas of the SO are added (by some agent outside of the DM), these replicas are simply added to round robin rotation, with no attempt made to backfill additional load to the new, relatively idle replicas.  In future versions, such additional features can be added.
+  * a configurable value for the number of concurrent requests supported per replica per should be provided.  This should be enforced on the server side of the DM.  If the number of concurrent requests against a given replica exceeds that number, requests to that server replica should fail (in the server DM) with an appropriate exception (indicating server overload).  In a later version, a configurable length client-side and/or server side queue can be added to deal better with such overload situations..
+  
 ### ScaleUpFrontend 88 LoC
 > Load-balancing w/ dynamic allocation of replicas and no consistency
+
+Quinton: As above, but when a given replica reaches it's full capacity (see above), the server-side DM for that replica should create one additional replica.  A given server-side DM instance should not create more than 1 replica per n milliseconds (with n being configurable).  This is to limit the rate at which scale-up can occur.  When the load at a given replica drops to approximately p * (m-2)/m (where m is the current number of replicas, and p is the maximum concurrency setting per replica), then the server-side DM for that replica should remove one replica (randomly chosen).  This is because there are in theory two more replicas than required, so one can be removed.  The number of replicas should not be reduced below 2 (in case one fails).  The aforementioned algorithm is inadequate in a production environment, but is good enough to illustrate the concept.  In later versions, more sophisticated and configurable scale-up and scale-down algorithms can be implmented, and DM's which offload scale-up to external agents (e.g. istio, kubernetes HPA or similar) can be implemented.
+
 
 ### LoadBalancedMasterSlave 177 LoC
 > Dynamic allocation of load-balanced M-S replicas w/ eventual consistency

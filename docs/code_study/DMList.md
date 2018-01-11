@@ -97,14 +97,14 @@ By the way, to make this DM work properly, we have to make one change to the cur
 ### KeepInPlace / KeepInRegion / KeepOnDevice (N/A) . 15/15/45 LoC
 > Keep SO where it was created (e.g., to access device-specific APIs)
 
-If I understand correctly, by default, SOs cannot move. In order to make a SO mobile, the SO must be managed by some special DM which has the object moving capability. Do we really need a `KeepInPlace` DM? If a SO is not supposed to move, we simply don't associate any DM to this SO. 
+Terry: If I understand correctly, by default, SOs cannot move. In order to make a SO mobile, the SO must be managed by some special DM which has the object moving capability. Do we really need a `KeepInPlace` DM? If a SO is not supposed to move, we simply don't associate any DM to this SO. 
 
-Rather than defining *KeepInPlace* as a DM, I feel that it is better to define it as annotation on *Sapphire objects*. If a *Sapphire object* is declared as *KeepInPlace*, then no DM should move it.
+Terry: Rather than defining *KeepInPlace* as a DM, I feel that it is better to define it as annotation on *Sapphire objects*. If a *Sapphire object* is declared as *KeepInPlace*, then no DM should move it.
 
 <span style="color:blue">Should *KeepInRegion* and *KeepOnDevice* properties declared declared on Sapphire objects, or DM     simplementations?</span>declared on
 
 Quinton:
-1. On failure, the DM needs to recreate the sapphire object.  So even KeepInPlace needs to do this, on the same server where the original was.  
+1. On failure, the DM presumably needs to recreate the sapphire object.  So even KeepInPlace needs to do this, on the same server where the original was.  
 2. The DM associated with a Sapphire object (actually class) is in practise a kind of annotation (as discussed above).  So for consistency we should use one mechanism for this, even for KeepInPlace.
 
 ## Caching
@@ -176,14 +176,24 @@ The value of this DM is rated as LOW because
 
 <span style="color:blue">To make *WriteThroughCache* work, DM needs a mechanism to distinguish *mutable* operations and *immutable* operations.</span>
 
+Quinton: Firstly, same argument as above for why we should implement this anyway.  It's dead simple, and avoids devs having to break out into some other APi to get caching behaviour. Secondly, the way mutable and immutable operations are distinguished in the Sapphire paper are using diff (on abject state before and after the operation.  It suggests (and I agree) that a method annotation would be a better approach.
+
 ### ConsistentCaching 98 LoC
 > Caching w/ updates sent to every replica for strict consistency
 
-*ConsistentCaching* caches Sapphire object instance on local. *Read* operations will be invoked on local cached object. *Write* operations will be directed to remote Sapphire object. If the Sapphire object has multiple *replicas*, *write* operations will be invoked on all replicas.
+*ConsistentCaching* caches Sapphire object instance on local machine. *Read* operations will be invoked on local cached object. *Write* operations will be directed to remote Sapphire object. If the Sapphire object has multiple *replicas*, *write* operations will be invoked on all replicas.
 
-* Should updates be propagated to all *replicas*, or be propagated to all *cached objects*? My interpretation is that the updates will be propagated to all replicas. The cached object, therefore, may contain stale data.
+Terry: * Should updates be propagated to all *replicas*, or be propagated to all *cached objects*? My interpretation is that the updates will be propagated to all replicas. The cached object, therefore, may contain stale data.
+
+Quinton: My understanding is that the replicas are the cached objects.  So reads go to any replica, and writes go to all replicas.  We can confirm with Irene.  This is in practise quite difficult to do reliably (e.g. what happens if writes to some replicas fail, and the rollbacks to the successfully updated replicas fail to roll back etc).
+
 * What if the update propagation failed on some replica? 
+
+Quinton: Aah yes, see above.
+
 * Should update propagation occur synchronously or asynchronously?
+
+Quinton: Synchronously, otherwise replicas are only eventually consistent, not strictly consistent, as per the definition.
 
 ## Serializability
 

@@ -76,6 +76,8 @@ I will assign a rate, LOW/MED/HIGH, to each DM to indicate its value to App deve
 
 > Efficient distribution and access for immutable SOs
 
+Quinton: I guess that this means that a local read-only replica of this sapphire object can be instantiated at each client.  All reads go to the local replica, and all writes fail.  That is pretty trivial to implement, and practically very useful. useful. We should check with Irene that this was the intention.
+
 <span style="color:blue">Should *immutable* be a property declared on Sapphire object, or a DM?</span> 
 
 ### AtLeastOnceRPC (LOW) 27 LoC
@@ -84,6 +86,8 @@ I will assign a rate, LOW/MED/HIGH, to each DM to indicate its value to App deve
 This DM will retry failed operations until timeout is reached.
 
 The value of this DM is rated because many SDKs provide similar retry mechanism. App developers have a lot of choices.
+
+Quinton: The implementation of this DM is so simple that I think we should implement it anyway, so that app developers do not need to use a separate SDK for retries, unless they really want to.  Similarly, regarding the comment below, I think that a single retry policy across all operations on a given Sapphire objects is a fine place to start.  We can add per-operation retry configuration as and when actually required by an app.
 
 By the way, to make this DM work properly, we have to make one change to the current DM mechanism:
 
@@ -98,6 +102,10 @@ If I understand correctly, by default, SOs cannot move. In order to make a SO mo
 Rather than defining *KeepInPlace* as a DM, I feel that it is better to define it as annotation on *Sapphire objects*. If a *Sapphire object* is declared as *KeepInPlace*, then no DM should move it.
 
 <span style="color:blue">Should *KeepInRegion* and *KeepOnDevice* properties declared declared on Sapphire objects, or DM     simplementations?</span>declared on
+
+Quinton:
+1. On failure, the DM needs to recreate the sapphire object.  So even KeepInPlace needs to do this, on the same server where the original was.  
+2. The DM associated with a Sapphire object (actually class) is in practise a kind of annotation (as discussed above).  So for consistency we should use one mechanism for this, even for KeepInPlace.
 
 ## Caching
 
@@ -152,7 +160,7 @@ Main logic of this DM occurs on server side. Upon receiving a RPC request, *Seri
 * Can users call methods on multiple Sapphire objects in one transaction, e.g. SO1.A() and SO2.B()?
 
 ### OptimisticTransactions 92 LoC
-> Transactions with optimistic concurrency control, abort on conict
+> Transactions with optimistic concurrency control, abort on conflict
 
 ## Checkpointing
 
@@ -189,30 +197,73 @@ Main logic of this DM occurs on server side. Upon receiving a RPC request, *Seri
 
 ## Replication
 
+Quinton: These are essentially all identical except for where the replicas live - in the same cluster/cloud zone, across zones in a cloud region/geo-location, across cloud regions, or across mobile devices (P2P).
+
 ### ConsensusRSM-cluster 129 LoC
 > Single cluster replicated SO w/ atomic RPCs across at least f + 1 replicas
+
+Quinton: This is essentially the [PAXOS](https://en.wikipedia.org/wiki/Paxos_(computer_science)) or [Raft](https://en.wikipedia.org/wiki/Raft_(computer_science)) consensus algorithms.  It seems impossible to implement even rough approximations of these effectively in 130 lines of code without using existing consensus libraries (e.g. [etcd](https://github.com/coreos/etcd), or [raft](https://raft.github.io/)). 
+
 
 ### ConsensusRSM-Geo 132 LoC
 > Geo-replicated SO w/ atomic RPCs across at least f + 1 replicas
 
+Quinton: See above.
+
 ### ConsensusRSM-P2P 138 LoC
 > SO replicated across client devices w/ atomic RPCs over f + 1 replicas
 
+Quinton: From Irene's thesis: "Peer-to-peer. We built peer-to-peer DMs to support the direct sharing of SOs across client mobile
+devices without needing to go through the cloud. These DMs dynamically place replicas on nodes
+that contain references to the SO. We implemented the DM using a centralized Coordinator that
+attempts to place replicas as close to the callers as possible, without exceeding an application-specified
+maximum number of replicas. We show the performance impact of this P2P scheme in Section 2.7."
+
 ## Mobility
+
+> Quinton: From Irene's thesis: 
+> Code-offloading. The code-offloading DMs are useful for compute-intensive applications. The
+CodeOffloading DM supports transparent object migration based on the performance trade-off
+between locating an object on a device or in the cloud, while the ExplicitCodeOffloading DM allows
+the application to decide when to move computation. The ExplicitCodeOffloading DM gives the
+application more control than the automated CodeOffloading DM, but is less transparent because
+the SO must interact with the DM.
+Once the DK creates the Sapphire Object on a mobile device, the automated CodeOffloading DM
+replicates the object in the cloud. The device-side DM Instance Manager then runs several RPCs
+locally and asks the cloud-side Instance Manager to do the same, calculating the cost of running
+on each side. An adaptive algorithm, based on Q-learning [214], gradually chooses the lowest-cost
+option for each RPC. Periodically, the DM retests the alternatives to dynamically adapt to changing
+behavior since the cost of offloading computation depends on the type of computation and the
+network connection, which can change over time.
+
+Quinton: It seems that CodeOffloading as described above is only suitable for operations that do not read or write state, or only read immutable state.  Otherwise the method invocation cannot be done interchangably on sifferent replicas (e.g. either on a mobile device or a cloud server).  Or else such a code offloading DM needs to be combined with Consistent or Explicit caching.  That way the operation can be executed on any replica, and the resulting state changes propagated to the copies where it was not executed?  Or else the objects need to be migrated to a particular location where all mutating operations need to be invoked.  But for SO's with multiple clients, this seems effectively impossible (e.g. if multiple mobile devices access the same SO, that SO cannot reside on either of the mobile devices - it must reside e.g. on a cloud machine). This whole concept of code offloading vs migration is quite vague and confusing to me.  We need to discuss further with UW/Irene.
 
 ### ExplicitMigration 20 LoC
 > Dynamic placement of SO with explicit move call from application
 
+Quinton: The intention here is fairly clear, but exactly what calls the application is required to make to move the object are not.  We just need to decide what those calls should look like.  I'm not convinced that this is very useful in practise - ideally placement would be done by a DM, with requirement information provided by the app where necessary (e.g. "place me near these SO's"). I don't really like the idea of placement logic bleeding to the application - that's what Sapphire is supposed to avoid.  This sentiment is echo'd in Irene's thesis above.
+
+Assume that the general intention is as follows: 
+1. When the SO is created, the system decides where to place it (initially this could be random - the current implementation just [places it on the first available server](https://github.com/Huawei-PaaS/DCAP-Sapphire/blob/master/sapphire/sapphire-core/src/main/java/sapphire/oms/OMSServerImpl.java#L133)).
+2. The application can discover where the system placed it, and request it to be moved to a different server if required.
+
+
 ### DynamicMigration 57 LoC
 > Adaptive, dynamic placement to minimize latency based on accesses
+
+Quinton: This one seems quite tricky, but super-valuable.  Here's an initial proposal (although it's not clear how to fit this into 57 LoC.  We should discuss this with UW/Irene.
+
+1. Initial placement is random as above.
+2. If the SO is a server only (incoming RPC's only)
+  * Server-side of DM keeps track of a sliding window of clients that have accessed it in the recent past (configurable), and a weighted average of latencies to each client (ideally using timestamps on the RPC requests, but that's subject to client-server closck skew, so we need to think more about this - probably need round trip delay from the server to the client instead).
 
 ### ExplicitCodeOffloading 49 Loc
 > Dynamic code offloading with offload call from application
 
 ### CodeOffloading 95 LoC
-> Adaptive, dynamic code ooading based on measured latencies
+> Adaptive, dynamic code offloading based on measured latencies
 
-* What is the difference between Offloading and Migration
+* What exactly is the difference between Offloading and Migration
 
 ## Scalability
 

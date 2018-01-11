@@ -257,6 +257,13 @@ Quinton: This one seems quite tricky, but super-valuable.  Here's an initial pro
 1. Initial placement is random as above.
 2. If the SO is a server only (incoming RPC's only)
   * Server-side of DM keeps track of a sliding window of clients that have accessed it in the recent past (configurable), and a weighted average of latencies to each client (ideally using timestamps on the RPC requests, but that's subject to client-server closck skew, so we need to think more about this - probably need round trip delay from the server to the client instead).
+  
+Terry: RPC latency is relatively easy. We can be measured it at client side by client side proxy of the DM. This latency includes server side latency (i.e. processing time on server) and the data transmitting time. This latency is a relative value so it will be not affected by clock skews.
+
+Placement decision is the hard part. Suppose a sapphire object serves multiple clients. Moving the object close to one client may cause the RPC latency increase on other clients. We need to find a global optimal placement for the Sapphire object, not just good for one client.  
+
+Second, the root cause of bad latency is often not clear. Suppose a client experience bad latency on one API. Will the latency be reduced if we move the Sapphire object close to the client? Maybe, maybe not. 
+
 
 ### ExplicitCodeOffloading 49 Loc
 > Dynamic code offloading with offload call from application

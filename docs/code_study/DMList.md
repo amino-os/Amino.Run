@@ -204,6 +204,7 @@ Quinton: These are essentially all identical except for where the replicas live 
 
 Quinton: This is essentially the [PAXOS](https://en.wikipedia.org/wiki/Paxos_(computer_science)) or [Raft](https://en.wikipedia.org/wiki/Raft_(computer_science)) consensus algorithms.  It seems impossible to implement even rough approximations of these effectively in 130 lines of code without using existing consensus libraries (e.g. [etcd](https://github.com/coreos/etcd), or [raft](https://raft.github.io/)). 
 
+Terry: I have a different interpretation. According to the DM description, I don't think the author plans to achieve strong consistency and consensus as provided by PAXOS or Raft. It looks to me that this DM just tries to provide quorum based rpc calls. When client issues a RPC request to a Sapphire object, the DM (either the client side proxy or the server side proxy) will send the RPC request to 2f replicas, returns *success* if the RPC call succeeded on f + 1 replicas, throws exception otherwise. 
 
 ### ConsensusRSM-Geo 132 LoC
 > Geo-replicated SO w/ atomic RPCs across at least f + 1 replicas

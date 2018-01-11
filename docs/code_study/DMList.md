@@ -212,26 +212,37 @@ Main logic of this DM occurs on server side. Upon receiving a RPC request, *Seri
 ### ExplicitCheckpoint 51 LoC
 > App-controlled checkpointing to disk, revert last checkpoint on failure
 
-*ExplicitCheckpoint* allows users to manually checkpoint Sapphire object state via `SO.checkpoint()` API. Sapphire ojbect state will be saved on local host. Users can manually revert Sapphire object to the last checkpoint by calling `SO.revert()` API.
+*ExplicitCheckpoint* allows users to manually checkpoint Sapphire object state via `SO.checkpoint()` API. Sapphire object state will be saved on local host. Users can manually revert Sapphire object to the last checkpoint by calling `SO.revert()` API.
 
 * Description says *revert last checkpoint on failure*. Is this *revert* done by system, or by users manually?
-* If *revert* is performed by system automatically, then *on which failures* should the system revert Sapphire object to last checkpoint?
+
+Quinton: It explicitly says above "users can manually revert".
+
+Terry: * If *revert* is performed by system automatically, then *on which failures* should the system revert Sapphire object to last checkpoint?
+
+Quinton: See above.
 
 ### PeriodicCheckpoint 65 LoC
 > Checkpoint to disk every N RPCs, revert to last checkpoint on failure
 
 *PeriodicCheckpoint* periodically, e.g. every N RPCs, saves Sapphire object state on local host. This DM saves Sapphire object before invokes any method on the Sapphire object. If RPC invocation succeeds, result will be returned to client. If RPC invocation fails, Sapphire object will be reverted to last checkpoint, and an error will be thrown to client.
 
-* What is the use case of this DM?
-* What if a Sapphire object dies? Will we loose checkpoint data?
+Terry: * What is the use case of this DM?
+
+Quinton: I think that's pretty clear from the description above. It enables atomic transactions via RPC invocations.  So the state of the object cannot end up in a partially consistent state (e.g. if an exception gets throuwn part-way through a method).
+
+Terry: * What if a Sapphire object dies? Will we loose checkpoint data?
+
+Quinton: No, I think we can probably avoid that, by persisting the state to the local disk (indexed by object-id or whatever).  If the local disk/server fails, then the checkpoint will of course disappear.  To cover that we can also support checkpointing to remote, redundant, distributed storage (e.g. Diamond or Tapir).
 
 ### DurableSerializableRPC 29 LoC
 > Durable serializable RPCs, revert to last successful RPC on failure
 
 *DurableSerializableRPC* will 1) save Sapphire object state on local host, 2) grab a lock for the RPC call, and 3) invoke RPC on the Sapphire object. If RPC call succeeds, the result will be returned to client. If RPC call fails, the Sapphire object state will be restored, and an error will be thrown back to the client.  
 
-* What is the difference between *DurableSerializableRPC* and *DurableTransactions*? Looks like *DurableSerializableRPC* deals with one RPC call, but *DurableTransactions* deals with multiple RPC calls in one transaction.
+Terry: * What is the difference between *DurableSerializableRPC* and *DurableTransactions*? Looks like *DurableSerializableRPC* deals with one RPC call, but *DurableTransactions* deals with multiple RPC calls in one transaction.
 
+Quinton: Yes, Irene describes serializable consistency and transactions [here](https://irenezhang.net/blog/2015/02/01/consistency.html)
 ### DurableTransactions 112 LoC
 > Durably committed transactions, revert to last commit on failure
 
@@ -289,7 +300,12 @@ Quinton: It seems that CodeOffloading as described above is only suitable for op
 ### ExplicitMigration 20 LoC
 > Dynamic placement of SO with explicit move call from application
 
-Quinton: The intention here is fairly clear, but exactly what calls the application is required to make to move the object are not.  We just need to decide what those calls should look like.  I'm not convinced that this is very useful in practise - ideally placement would be done by a DM, with requirement information provided by the app where necessary (e.g. "place me near these SO's"). I don't really like the idea of placement logic bleeding to the application - that's what Sapphire is supposed to avoid.  This sentiment is echo'd in Irene's thesis above.
+Quinton: The intention here is fairly clear, but exactly what calls the application is required to make to move the object are not.  In theory, according to the paper:
+
+getNodes() Get list of all nodes
+pin(node) Move SO to a node.
+
+But those functions don't actually exist in the code.  So we need to decide what those calls should look like.  I'm not convinced that this is very useful in practise - ideally placement would be done by a DM, with requirement information provided by the app where necessary (e.g. "place me near these SO's"). I don't really like the idea of placement logic bleeding to the application - that's what Sapphire is supposed to avoid.  This sentiment is echo'd in Irene's thesis above.
 
 Assume that the general intention is as follows: 
 1. When the SO is created, the system decides where to place it (initially this could be random - the current implementation just [places it on the first available server](https://github.com/Huawei-PaaS/DCAP-Sapphire/blob/master/sapphire/sapphire-core/src/main/java/sapphire/oms/OMSServerImpl.java#L133)).
@@ -303,14 +319,12 @@ Quinton: This one seems quite tricky, but super-valuable.  Here's an initial pro
 
 1. Initial placement is random as above.
 2. If the SO is a server only (incoming RPC's only)
-  * Server-side of DM keeps track of a sliding window of clients that have accessed it in the recent past (configurable), and a weighted average of latencies to each client (ideally using timestamps on the RPC requests, but that's subject to client-server closck skew, so we need to think more about this - probably need round trip delay from the server to the client instead).
-  
-Terry: RPC latency is relatively easy. We can be measured it at client side by client side proxy of the DM. This latency includes server side latency (i.e. processing time on server) and the data transmitting time. This latency is a relative value so it will be not affected by clock skews.
-
-Placement decision is the hard part. Suppose a sapphire object serves multiple clients. Moving the object close to one client may cause the RPC latency increase on other clients. We need to find a global optimal placement for the Sapphire object, not just good for one client.  
-
-Second, the root cause of bad latency is often not clear. Suppose a client experience bad latency on one API. Will the latency be reduced if we move the Sapphire object close to the client? Maybe, maybe not. 
-
+  * Server-side of DM keeps track of a sliding window of clients that have accessed it in the recent past (configurable), and a weighted average of latencies to each client (ideally using timestamps on the RPC requests, but that's subject to client-server clock skew, so we need to think more about this - probably need round trip delay from the server to the client and back instead). Terry: RPC latency is relatively easy. We can be measured it at client side by client side proxy of the DM. This latency includes server side latency (i.e. processing time on server) and the data transmitting time. This latency is a relative value so it will be not affected by clock skews.  (quinton: Yes, but the client needs to propagate that data to the server somehow - that's what I was getting at.  Se we either need to measure the latency at the server end, or find a way to propagate the latency data from the client to the server - or some other agent that knows the latencies from all clients, and can move the server appropriately).
+3. TODO...
+4. If the SO is a client only... (needs to be moved as close to all it's servers as possible).
+5. If the SO is both a client and a server (combination of client and server cases above - it seems that to do this properly we will need to build a call graph of the entire sapphire application, and optimize the whole graph.  Something like [flow graphs](https://en.wikipedia.org/wiki/Flow_network) might prove useful.  We have some existing research collaboration with [Ionel Gog](https://www.cl.cam.ac.uk/~icg27/) at Cambridge University on [this stuff](http://firmament.io/)). 
+Terry: Placement decision is the hard part. Suppose a sapphire object serves multiple clients. Moving the object close to one client may cause the RPC latency increase on other clients. We need to find a global optimal placement for the Sapphire object, not just good for one client.  Second, the root cause of bad latency is often not clear. Suppose a client experience bad latency on one API. Will the latency be reduced if we move the Sapphire object close to the client? Maybe, maybe not. 
+Quinton: Agreed.  Placement seems hard.  Irene mentioned using [Q-learning](https://en.wikipedia.org/wiki/Q-learning) which is non-trivial, and supports the assertion that there is no obvious simple algorithm.  See also the flow graph discussion above.
 
 ### ExplicitCodeOffloading 49 Loc
 > Dynamic code offloading with offload call from application

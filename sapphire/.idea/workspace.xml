@@ -10,255 +10,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c3fc393e-05ce-4179-b859-7d69553dbee4" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/vcs.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/.gitignore" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/.gitignore" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/build.gradle" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/build.gradle" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/kernel/vm/Objects.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/kernel/vm/Objects.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/kernel/vm/Threads.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/kernel/vm/Threads.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/kernel/vm/VM.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/kernel/vm/VM.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/luni/util/InputStreamHelper.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/luni/util/InputStreamHelper.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/DefaultRMIClassLoaderSpi.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/DefaultRMIClassLoaderSpi.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/MarshalledObjectInputStream.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/MarshalledObjectInputStream.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/MarshalledObjectOutputStream.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/MarshalledObjectOutputStream.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/activation/ActivationGroupImpl.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/activation/ActivationGroupImpl.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/activation/NodeInfo.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/activation/NodeInfo.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/activation/Rmid.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/activation/Rmid.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/activation/RmidMBean.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/activation/RmidMBean.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/activation/RmidMonitor.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/activation/RmidMonitor.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/activation/RmidMonitorAdapter.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/activation/RmidMonitorAdapter.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/activation/RmidMonitorFactory.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/activation/RmidMonitorFactory.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/activation/Rmid_Skel.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/activation/Rmid_Skel.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/activation/Rmid_Stub.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/activation/Rmid_Stub.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/activation/package.html" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/activation/package.html" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/client/ClientConnection.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/client/ClientConnection.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/client/ClientConnectionManager.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/client/ClientConnectionManager.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/client/ClientRemoteCall.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/client/ClientRemoteCall.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/client/package.html" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/client/package.html" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/common/ClassList.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/common/ClassList.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/common/CreateThreadAction.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/common/CreateThreadAction.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/common/EclipseJavaCompiler.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/common/EclipseJavaCompiler.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/common/ExecJavaCompiler.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/common/ExecJavaCompiler.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/common/GetBooleanPropAction.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/common/GetBooleanPropAction.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/common/GetLongPropAction.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/common/GetLongPropAction.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/common/GetStringPropAction.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/common/GetStringPropAction.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/common/InterruptThreadAction.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/common/InterruptThreadAction.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/common/JavaCompiler.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/common/JavaCompiler.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/common/JavaCompilerException.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/common/JavaCompilerException.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/common/MethodJavaCompiler.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/common/MethodJavaCompiler.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/common/RMIConstants.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/common/RMIConstants.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/common/RMIHash.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/common/RMIHash.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/common/RMIHashException.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/common/RMIHashException.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/common/RMILog.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/common/RMILog.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/common/RMIProperties.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/common/RMIProperties.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/common/RMIUtil.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/common/RMIUtil.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/common/SubProcess.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/common/SubProcess.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/common/package.html" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/common/package.html" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/compiler/ClassStub.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/compiler/ClassStub.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/compiler/Indenter.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/compiler/Indenter.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/compiler/Main.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/compiler/Main.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/compiler/RMICompiler.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/compiler/RMICompiler.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/compiler/RMICompilerException.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/compiler/RMICompilerException.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/compiler/RmicConstants.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/compiler/RmicConstants.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/compiler/RmicStrings.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/compiler/RmicStrings.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/compiler/RmicUtil.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/compiler/RmicUtil.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/compiler/package.html" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/compiler/package.html" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/internal/nls/Messages.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/internal/nls/Messages.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/internal/nls/messages.properties" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/internal/nls/messages.properties" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/package.html" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/package.html" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/registry/RegistryImpl.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/registry/RegistryImpl.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/registry/RegistryImpl_Skel.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/registry/RegistryImpl_Skel.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/registry/RegistryImpl_Stub.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/registry/RegistryImpl_Stub.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/registry/package.html" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/registry/package.html" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/remoteref/ActivatableRef.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/remoteref/ActivatableRef.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/remoteref/ActivatableServerRef.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/remoteref/ActivatableServerRef.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/remoteref/UnicastRef.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/remoteref/UnicastRef.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/remoteref/UnicastRef2.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/remoteref/UnicastRef2.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/remoteref/UnicastServerRef.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/remoteref/UnicastServerRef.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/remoteref/UnicastServerRef2.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/remoteref/UnicastServerRef2.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/remoteref/package.html" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/remoteref/package.html" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/server/ClientDGC.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/server/ClientDGC.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/server/DGCImpl.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/server/DGCImpl.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/server/DGCImpl_Skel.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/server/DGCImpl_Skel.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/server/DGCImpl_Stub.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/server/DGCImpl_Stub.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/server/ExportManager.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/server/ExportManager.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/server/RMIObjectInfo.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/server/RMIObjectInfo.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/server/RMIObjectTable.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/server/RMIObjectTable.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/server/RMIReference.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/server/RMIReference.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/server/RemoteRefBase.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/server/RemoteRefBase.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/server/ServerConnection.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/server/ServerConnection.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/server/ServerConnectionManager.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/server/ServerConnectionManager.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/server/ServerRemoteCall.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/server/ServerRemoteCall.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/server/package.html" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/server/package.html" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/transport/DefaultRMISocketFactory.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/transport/DefaultRMISocketFactory.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/transport/Endpoint.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/transport/Endpoint.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/transport/RMIObjectInputStream.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/transport/RMIObjectInputStream.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/transport/RMIObjectOutputStream.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/transport/RMIObjectOutputStream.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/transport/RMIProtocolConstants.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/transport/RMIProtocolConstants.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/transport/SocketWrapper.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/transport/SocketWrapper.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/transport/package.html" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/transport/package.html" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/transport/proxy/HttpConnection.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/transport/proxy/HttpConnection.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/transport/proxy/HttpInboundSocket.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/transport/proxy/HttpInboundSocket.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/transport/proxy/HttpInputStream.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/transport/proxy/HttpInputStream.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/transport/proxy/HttpOutboundSocket.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/transport/proxy/HttpOutboundSocket.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/transport/proxy/HttpOutputStream.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/transport/proxy/HttpOutputStream.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/transport/proxy/HttpProxyRMISocketFactory.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/transport/proxy/HttpProxyRMISocketFactory.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/transport/proxy/HttpServerConnection.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/transport/proxy/HttpServerConnection.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/transport/proxy/HttpServerSocket.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/transport/proxy/HttpServerSocket.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/transport/proxy/Proxy.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/transport/proxy/Proxy.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/transport/proxy/ProxyConstants.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/transport/proxy/ProxyConstants.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/transport/proxy/ProxyRMISocketFactory.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/transport/proxy/ProxyRMISocketFactory.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/transport/proxy/package.html" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/transport/proxy/package.html" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/transport/tcp/DirectRMISocketFactory.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/transport/tcp/DirectRMISocketFactory.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/transport/tcp/TcpConnection.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/transport/tcp/TcpConnection.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/transport/tcp/TcpServerConnection.java" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/transport/tcp/TcpServerConnection.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/apache.harmony/src/main/java/org/apache/harmony/rmi/transport/tcp/package.html" afterPath="$PROJECT_DIR$/dependencies/apache.harmony/src/main/java/org/apache/harmony/rmi/transport/tcp/package.html" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/example-minnietwitter/build.gradle" afterPath="$PROJECT_DIR$/examples/example-minnietwitter/build.gradle" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/example-minnietwitter/src/main/AndroidManifest.xml" afterPath="$PROJECT_DIR$/examples/example-minnietwitter/src/main/AndroidManifest.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/example-minnietwitter/src/main/java/sapphire/appexamples/minnietwitter/app/Tag.java" afterPath="$PROJECT_DIR$/examples/example-minnietwitter/src/main/java/sapphire/appexamples/minnietwitter/app/Tag.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/example-minnietwitter/src/main/java/sapphire/appexamples/minnietwitter/app/TagManager.java" afterPath="$PROJECT_DIR$/examples/example-minnietwitter/src/main/java/sapphire/appexamples/minnietwitter/app/TagManager.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/example-minnietwitter/src/main/java/sapphire/appexamples/minnietwitter/app/Timeline.java" afterPath="$PROJECT_DIR$/examples/example-minnietwitter/src/main/java/sapphire/appexamples/minnietwitter/app/Timeline.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/example-minnietwitter/src/main/java/sapphire/appexamples/minnietwitter/app/Tweet.java" afterPath="$PROJECT_DIR$/examples/example-minnietwitter/src/main/java/sapphire/appexamples/minnietwitter/app/Tweet.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/example-minnietwitter/src/main/java/sapphire/appexamples/minnietwitter/app/TweetContainer.java" afterPath="$PROJECT_DIR$/examples/example-minnietwitter/src/main/java/sapphire/appexamples/minnietwitter/app/TweetContainer.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/example-minnietwitter/src/main/java/sapphire/appexamples/minnietwitter/app/TwitterManager.java" afterPath="$PROJECT_DIR$/examples/example-minnietwitter/src/main/java/sapphire/appexamples/minnietwitter/app/TwitterManager.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/example-minnietwitter/src/main/java/sapphire/appexamples/minnietwitter/app/User.java" afterPath="$PROJECT_DIR$/examples/example-minnietwitter/src/main/java/sapphire/appexamples/minnietwitter/app/User.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/example-minnietwitter/src/main/java/sapphire/appexamples/minnietwitter/app/UserInfo.java" afterPath="$PROJECT_DIR$/examples/example-minnietwitter/src/main/java/sapphire/appexamples/minnietwitter/app/UserInfo.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/example-minnietwitter/src/main/java/sapphire/appexamples/minnietwitter/app/UserManager.java" afterPath="$PROJECT_DIR$/examples/example-minnietwitter/src/main/java/sapphire/appexamples/minnietwitter/app/UserManager.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/example-minnietwitter/src/main/java/sapphire/appexamples/minnietwitter/app/Util.java" afterPath="$PROJECT_DIR$/examples/example-minnietwitter/src/main/java/sapphire/appexamples/minnietwitter/app/Util.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/example-minnietwitter/src/main/java/sapphire/appexamples/minnietwitter/app/stubs/TagManager_Stub.java" afterPath="$PROJECT_DIR$/examples/example-minnietwitter/src/main/java/sapphire/appexamples/minnietwitter/app/stubs/TagManager_Stub.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/example-minnietwitter/src/main/java/sapphire/appexamples/minnietwitter/app/stubs/Timeline_Stub.java" afterPath="$PROJECT_DIR$/examples/example-minnietwitter/src/main/java/sapphire/appexamples/minnietwitter/app/stubs/Timeline_Stub.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/example-minnietwitter/src/main/java/sapphire/appexamples/minnietwitter/app/stubs/TwitterManager_Stub.java" afterPath="$PROJECT_DIR$/examples/example-minnietwitter/src/main/java/sapphire/appexamples/minnietwitter/app/stubs/TwitterManager_Stub.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/example-minnietwitter/src/main/java/sapphire/appexamples/minnietwitter/app/stubs/UserManager_Stub.java" afterPath="$PROJECT_DIR$/examples/example-minnietwitter/src/main/java/sapphire/appexamples/minnietwitter/app/stubs/UserManager_Stub.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/example-minnietwitter/src/main/java/sapphire/appexamples/minnietwitter/app/stubs/User_Stub.java" afterPath="$PROJECT_DIR$/examples/example-minnietwitter/src/main/java/sapphire/appexamples/minnietwitter/app/stubs/User_Stub.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/example-minnietwitter/src/main/java/sapphire/appexamples/minnietwitter/cloud/MinnieTwitterStart.java" afterPath="$PROJECT_DIR$/examples/example-minnietwitter/src/main/java/sapphire/appexamples/minnietwitter/cloud/MinnieTwitterStart.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/example-minnietwitter/src/main/java/sapphire/appexamples/minnietwitter/device/TwitterActivityOne.java" afterPath="$PROJECT_DIR$/examples/example-minnietwitter/src/main/java/sapphire/appexamples/minnietwitter/device/TwitterActivityOne.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/example-minnietwitter/src/main/java/sapphire/appexamples/minnietwitter/device/TwitterActivityTwo.java" afterPath="$PROJECT_DIR$/examples/example-minnietwitter/src/main/java/sapphire/appexamples/minnietwitter/device/TwitterActivityTwo.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/example-minnietwitter/src/main/java/sapphire/appexamples/minnietwitter/device/generator/TwitterWorldGenerator.java" afterPath="$PROJECT_DIR$/examples/example-minnietwitter/src/main/java/sapphire/appexamples/minnietwitter/device/generator/TwitterWorldGenerator.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/example-minnietwitter/src/main/java/sapphire/appexamples/minnietwitter/glue/MainActivity.java" afterPath="$PROJECT_DIR$/examples/example-minnietwitter/src/main/java/sapphire/appexamples/minnietwitter/glue/MainActivity.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/example-minnietwitter/src/main/res/drawable-hdpi/ic_launcher.png" afterPath="$PROJECT_DIR$/examples/example-minnietwitter/src/main/res/drawable-hdpi/ic_launcher.png" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/example-minnietwitter/src/main/res/drawable-mdpi/ic_launcher.png" afterPath="$PROJECT_DIR$/examples/example-minnietwitter/src/main/res/drawable-mdpi/ic_launcher.png" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/example-minnietwitter/src/main/res/drawable-xhdpi/ic_launcher.png" afterPath="$PROJECT_DIR$/examples/example-minnietwitter/src/main/res/drawable-xhdpi/ic_launcher.png" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/example-minnietwitter/src/main/res/drawable-xxhdpi/ic_launcher.png" afterPath="$PROJECT_DIR$/examples/example-minnietwitter/src/main/res/drawable-xxhdpi/ic_launcher.png" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/example-minnietwitter/src/main/res/layout/activity_main.xml" afterPath="$PROJECT_DIR$/examples/example-minnietwitter/src/main/res/layout/activity_main.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/example-minnietwitter/src/main/res/menu/main.xml" afterPath="$PROJECT_DIR$/examples/example-minnietwitter/src/main/res/menu/main.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/example-minnietwitter/src/main/res/values-sw600dp/dimens.xml" afterPath="$PROJECT_DIR$/examples/example-minnietwitter/src/main/res/values-sw600dp/dimens.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/example-minnietwitter/src/main/res/values-sw720dp-land/dimens.xml" afterPath="$PROJECT_DIR$/examples/example-minnietwitter/src/main/res/values-sw720dp-land/dimens.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/example-minnietwitter/src/main/res/values-v11/styles.xml" afterPath="$PROJECT_DIR$/examples/example-minnietwitter/src/main/res/values-v11/styles.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/example-minnietwitter/src/main/res/values-v14/styles.xml" afterPath="$PROJECT_DIR$/examples/example-minnietwitter/src/main/res/values-v14/styles.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/example-minnietwitter/src/main/res/values/dimens.xml" afterPath="$PROJECT_DIR$/examples/example-minnietwitter/src/main/res/values/dimens.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/example-minnietwitter/src/main/res/values/strings.xml" afterPath="$PROJECT_DIR$/examples/example-minnietwitter/src/main/res/values/strings.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/example-minnietwitter/src/main/res/values/styles.xml" afterPath="$PROJECT_DIR$/examples/example-minnietwitter/src/main/res/values/styles.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/hanksTodo/build.gradle" afterPath="$PROJECT_DIR$/examples/hanksTodo/build.gradle" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/hanksTodo/src/main/AndroidManifest.xml" afterPath="$PROJECT_DIR$/examples/hanksTodo/src/main/AndroidManifest.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/hanksTodo/src/main/java/sapphire/appexamples/hankstodo/app/TodoList.java" afterPath="$PROJECT_DIR$/examples/hanksTodo/src/main/java/sapphire/appexamples/hankstodo/app/TodoList.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/hanksTodo/src/main/java/sapphire/appexamples/hankstodo/app/TodoListManager.java" afterPath="$PROJECT_DIR$/examples/hanksTodo/src/main/java/sapphire/appexamples/hankstodo/app/TodoListManager.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/hanksTodo/src/main/java/sapphire/appexamples/hankstodo/cloud/TodoStart.java" afterPath="$PROJECT_DIR$/examples/hanksTodo/src/main/java/sapphire/appexamples/hankstodo/cloud/TodoStart.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/hanksTodo/src/main/java/sapphire/appexamples/hankstodo/device/TodoActivity.java" afterPath="$PROJECT_DIR$/examples/hanksTodo/src/main/java/sapphire/appexamples/hankstodo/device/TodoActivity.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/hanksTodo/src/main/java/sapphire/appexamples/hankstodo/glue/DisplayMessageActivity.java" afterPath="$PROJECT_DIR$/examples/hanksTodo/src/main/java/sapphire/appexamples/hankstodo/glue/DisplayMessageActivity.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/hanksTodo/src/main/java/sapphire/appexamples/hankstodo/glue/MainActivity.java" afterPath="$PROJECT_DIR$/examples/hanksTodo/src/main/java/sapphire/appexamples/hankstodo/glue/MainActivity.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/hanksTodo/src/main/res/drawable-hdpi/ic_launcher.png" afterPath="$PROJECT_DIR$/examples/hanksTodo/src/main/res/drawable-hdpi/ic_launcher.png" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/hanksTodo/src/main/res/drawable-mdpi/ic_launcher.png" afterPath="$PROJECT_DIR$/examples/hanksTodo/src/main/res/drawable-mdpi/ic_launcher.png" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/hanksTodo/src/main/res/drawable-xhdpi/ic_launcher.png" afterPath="$PROJECT_DIR$/examples/hanksTodo/src/main/res/drawable-xhdpi/ic_launcher.png" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/hanksTodo/src/main/res/drawable-xxhdpi/ic_launcher.png" afterPath="$PROJECT_DIR$/examples/hanksTodo/src/main/res/drawable-xxhdpi/ic_launcher.png" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/hanksTodo/src/main/res/layout/activity_main.xml" afterPath="$PROJECT_DIR$/examples/hanksTodo/src/main/res/layout/activity_main.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/hanksTodo/src/main/res/menu/main.xml" afterPath="$PROJECT_DIR$/examples/hanksTodo/src/main/res/menu/main.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/hanksTodo/src/main/res/values-sw600dp/dimens.xml" afterPath="$PROJECT_DIR$/examples/hanksTodo/src/main/res/values-sw600dp/dimens.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/hanksTodo/src/main/res/values-sw720dp-land/dimens.xml" afterPath="$PROJECT_DIR$/examples/hanksTodo/src/main/res/values-sw720dp-land/dimens.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/hanksTodo/src/main/res/values-v11/styles.xml" afterPath="$PROJECT_DIR$/examples/hanksTodo/src/main/res/values-v11/styles.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/hanksTodo/src/main/res/values-v14/styles.xml" afterPath="$PROJECT_DIR$/examples/hanksTodo/src/main/res/values-v14/styles.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/hanksTodo/src/main/res/values/dimens.xml" afterPath="$PROJECT_DIR$/examples/hanksTodo/src/main/res/values/dimens.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/hanksTodo/src/main/res/values/strings.xml" afterPath="$PROJECT_DIR$/examples/hanksTodo/src/main/res/values/strings.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/hanksTodo/src/main/res/values/styles.xml" afterPath="$PROJECT_DIR$/examples/hanksTodo/src/main/res/values/styles.xml" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/java.rmi/.gitignore" afterPath="$PROJECT_DIR$/dependencies/java.rmi/.gitignore" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/java.rmi/build.gradle" afterPath="$PROJECT_DIR$/dependencies/java.rmi/build.gradle" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/java.rmi/src/main/java/java/rmi/AccessException.java" afterPath="$PROJECT_DIR$/dependencies/java.rmi/src/main/java/java/rmi/AccessException.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/java.rmi/src/main/java/java/rmi/AlreadyBoundException.java" afterPath="$PROJECT_DIR$/dependencies/java.rmi/src/main/java/java/rmi/AlreadyBoundException.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/java.rmi/src/main/java/java/rmi/ConnectException.java" afterPath="$PROJECT_DIR$/dependencies/java.rmi/src/main/java/java/rmi/ConnectException.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/java.rmi/src/main/java/java/rmi/ConnectIOException.java" afterPath="$PROJECT_DIR$/dependencies/java.rmi/src/main/java/java/rmi/ConnectIOException.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/java.rmi/src/main/java/java/rmi/MarshalException.java" afterPath="$PROJECT_DIR$/dependencies/java.rmi/src/main/java/java/rmi/MarshalException.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/java.rmi/src/main/java/java/rmi/MarshalledObject.java" afterPath="$PROJECT_DIR$/dependencies/java.rmi/src/main/java/java/rmi/MarshalledObject.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/java.rmi/src/main/java/java/rmi/Naming.java" afterPath="$PROJECT_DIR$/dependencies/java.rmi/src/main/java/java/rmi/Naming.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/java.rmi/src/main/java/java/rmi/NoSuchObjectException.java" afterPath="$PROJECT_DIR$/dependencies/java.rmi/src/main/java/java/rmi/NoSuchObjectException.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/java.rmi/src/main/java/java/rmi/NotBoundException.java" afterPath="$PROJECT_DIR$/dependencies/java.rmi/src/main/java/java/rmi/NotBoundException.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/java.rmi/src/main/java/java/rmi/RMISecurityException.java" afterPath="$PROJECT_DIR$/dependencies/java.rmi/src/main/java/java/rmi/RMISecurityException.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/java.rmi/src/main/java/java/rmi/RMISecurityManager.java" afterPath="$PROJECT_DIR$/dependencies/java.rmi/src/main/java/java/rmi/RMISecurityManager.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/java.rmi/src/main/java/java/rmi/Remote.java" afterPath="$PROJECT_DIR$/dependencies/java.rmi/src/main/java/java/rmi/Remote.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/java.rmi/src/main/java/java/rmi/RemoteException.java" afterPath="$PROJECT_DIR$/dependencies/java.rmi/src/main/java/java/rmi/RemoteException.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/java.rmi/src/main/java/java/rmi/ServerError.java" afterPath="$PROJECT_DIR$/dependencies/java.rmi/src/main/java/java/rmi/ServerError.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/java.rmi/src/main/java/java/rmi/ServerException.java" afterPath="$PROJECT_DIR$/dependencies/java.rmi/src/main/java/java/rmi/ServerException.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/java.rmi/src/main/java/java/rmi/ServerRuntimeException.java" afterPath="$PROJECT_DIR$/dependencies/java.rmi/src/main/java/java/rmi/ServerRuntimeException.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/java.rmi/src/main/java/java/rmi/StubNotFoundException.java" afterPath="$PROJECT_DIR$/dependencies/java.rmi/src/main/java/java/rmi/StubNotFoundException.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/java.rmi/src/main/java/java/rmi/UnexpectedException.java" afterPath="$PROJECT_DIR$/dependencies/java.rmi/src/main/java/java/rmi/UnexpectedException.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/java.rmi/src/main/java/java/rmi/UnknownHostException.java" afterPath="$PROJECT_DIR$/dependencies/java.rmi/src/main/java/java/rmi/UnknownHostException.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/java.rmi/src/main/java/java/rmi/UnmarshalException.java" afterPath="$PROJECT_DIR$/dependencies/java.rmi/src/main/java/java/rmi/UnmarshalException.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/java.rmi/src/main/java/java/rmi/activation/Activatable.java" afterPath="$PROJECT_DIR$/dependencies/java.rmi/src/main/java/java/rmi/activation/Activatable.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/java.rmi/src/main/java/java/rmi/activation/ActivateFailedException.java" afterPath="$PROJECT_DIR$/dependencies/java.rmi/src/main/java/java/rmi/activation/ActivateFailedException.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/java.rmi/src/main/java/java/rmi/activation/ActivationDesc.java" afterPath="$PROJECT_DIR$/dependencies/java.rmi/src/main/java/java/rmi/activation/ActivationDesc.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/java.rmi/src/main/java/java/rmi/activation/ActivationException.java" afterPath="$PROJECT_DIR$/dependencies/java.rmi/src/main/java/java/rmi/activation/ActivationException.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/java.rmi/src/main/java/java/rmi/activation/ActivationGroup.java" afterPath="$PROJECT_DIR$/dependencies/java.rmi/src/main/java/java/rmi/activation/ActivationGroup.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/java.rmi/src/main/java/java/rmi/activation/ActivationGroupDesc.java" afterPath="$PROJECT_DIR$/dependencies/java.rmi/src/main/java/java/rmi/activation/ActivationGroupDesc.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/java.rmi/src/main/java/java/rmi/activation/ActivationGroupID.java" afterPath="$PROJECT_DIR$/dependencies/java.rmi/src/main/java/java/rmi/activation/ActivationGroupID.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/java.rmi/src/main/java/java/rmi/activation/ActivationGroup_Stub.java" afterPath="$PROJECT_DIR$/dependencies/java.rmi/src/main/java/java/rmi/activation/ActivationGroup_Stub.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/java.rmi/src/main/java/java/rmi/activation/ActivationID.java" afterPath="$PROJECT_DIR$/dependencies/java.rmi/src/main/java/java/rmi/activation/ActivationID.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/java.rmi/src/main/java/java/rmi/activation/ActivationInstantiator.java" afterPath="$PROJECT_DIR$/dependencies/java.rmi/src/main/java/java/rmi/activation/ActivationInstantiator.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/java.rmi/src/main/java/java/rmi/activation/ActivationMonitor.java" afterPath="$PROJECT_DIR$/dependencies/java.rmi/src/main/java/java/rmi/activation/ActivationMonitor.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/java.rmi/src/main/java/java/rmi/activation/ActivationSystem.java" afterPath="$PROJECT_DIR$/dependencies/java.rmi/src/main/java/java/rmi/activation/ActivationSystem.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/java.rmi/src/main/java/java/rmi/activation/Activator.java" afterPath="$PROJECT_DIR$/dependencies/java.rmi/src/main/java/java/rmi/activation/Activator.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/java.rmi/src/main/java/java/rmi/activation/UnknownGroupException.java" afterPath="$PROJECT_DIR$/dependencies/java.rmi/src/main/java/java/rmi/activation/UnknownGroupException.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/java.rmi/src/main/java/java/rmi/activation/UnknownObjectException.java" afterPath="$PROJECT_DIR$/dependencies/java.rmi/src/main/java/java/rmi/activation/UnknownObjectException.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/java.rmi/src/main/java/java/rmi/activation/package.html" afterPath="$PROJECT_DIR$/dependencies/java.rmi/src/main/java/java/rmi/activation/package.html" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/java.rmi/src/main/java/java/rmi/dgc/DGC.java" afterPath="$PROJECT_DIR$/dependencies/java.rmi/src/main/java/java/rmi/dgc/DGC.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/java.rmi/src/main/java/java/rmi/dgc/Lease.java" afterPath="$PROJECT_DIR$/dependencies/java.rmi/src/main/java/java/rmi/dgc/Lease.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/java.rmi/src/main/java/java/rmi/dgc/VMID.java" afterPath="$PROJECT_DIR$/dependencies/java.rmi/src/main/java/java/rmi/dgc/VMID.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/java.rmi/src/main/java/java/rmi/dgc/package.html" afterPath="$PROJECT_DIR$/dependencies/java.rmi/src/main/java/java/rmi/dgc/package.html" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/java.rmi/src/main/java/java/rmi/package.html" afterPath="$PROJECT_DIR$/dependencies/java.rmi/src/main/java/java/rmi/package.html" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/java.rmi/src/main/java/java/rmi/registry/LocateRegistry.java" afterPath="$PROJECT_DIR$/dependencies/java.rmi/src/main/java/java/rmi/registry/LocateRegistry.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/java.rmi/src/main/java/java/rmi/registry/Registry.java" afterPath="$PROJECT_DIR$/dependencies/java.rmi/src/main/java/java/rmi/registry/Registry.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/java.rmi/src/main/java/java/rmi/registry/RegistryHandler.java" afterPath="$PROJECT_DIR$/dependencies/java.rmi/src/main/java/java/rmi/registry/RegistryHandler.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/java.rmi/src/main/java/java/rmi/registry/package.html" afterPath="$PROJECT_DIR$/dependencies/java.rmi/src/main/java/java/rmi/registry/package.html" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/java.rmi/src/main/java/java/rmi/server/ExportException.java" afterPath="$PROJECT_DIR$/dependencies/java.rmi/src/main/java/java/rmi/server/ExportException.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/java.rmi/src/main/java/java/rmi/server/LoaderHandler.java" afterPath="$PROJECT_DIR$/dependencies/java.rmi/src/main/java/java/rmi/server/LoaderHandler.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/java.rmi/src/main/java/java/rmi/server/LogStream.java" afterPath="$PROJECT_DIR$/dependencies/java.rmi/src/main/java/java/rmi/server/LogStream.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/java.rmi/src/main/java/java/rmi/server/ObjID.java" afterPath="$PROJECT_DIR$/dependencies/java.rmi/src/main/java/java/rmi/server/ObjID.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/java.rmi/src/main/java/java/rmi/server/Operation.java" afterPath="$PROJECT_DIR$/dependencies/java.rmi/src/main/java/java/rmi/server/Operation.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/java.rmi/src/main/java/java/rmi/server/RMIClassLoader.java" afterPath="$PROJECT_DIR$/dependencies/java.rmi/src/main/java/java/rmi/server/RMIClassLoader.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/java.rmi/src/main/java/java/rmi/server/RMIClassLoaderSpi.java" afterPath="$PROJECT_DIR$/dependencies/java.rmi/src/main/java/java/rmi/server/RMIClassLoaderSpi.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/java.rmi/src/main/java/java/rmi/server/RMIClientSocketFactory.java" afterPath="$PROJECT_DIR$/dependencies/java.rmi/src/main/java/java/rmi/server/RMIClientSocketFactory.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/java.rmi/src/main/java/java/rmi/server/RMIFailureHandler.java" afterPath="$PROJECT_DIR$/dependencies/java.rmi/src/main/java/java/rmi/server/RMIFailureHandler.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/java.rmi/src/main/java/java/rmi/server/RMIServerSocketFactory.java" afterPath="$PROJECT_DIR$/dependencies/java.rmi/src/main/java/java/rmi/server/RMIServerSocketFactory.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/java.rmi/src/main/java/java/rmi/server/RMISocketFactory.java" afterPath="$PROJECT_DIR$/dependencies/java.rmi/src/main/java/java/rmi/server/RMISocketFactory.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/java.rmi/src/main/java/java/rmi/server/RemoteCall.java" afterPath="$PROJECT_DIR$/dependencies/java.rmi/src/main/java/java/rmi/server/RemoteCall.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/java.rmi/src/main/java/java/rmi/server/RemoteObject.java" afterPath="$PROJECT_DIR$/dependencies/java.rmi/src/main/java/java/rmi/server/RemoteObject.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/java.rmi/src/main/java/java/rmi/server/RemoteObjectInvocationHandler.java" afterPath="$PROJECT_DIR$/dependencies/java.rmi/src/main/java/java/rmi/server/RemoteObjectInvocationHandler.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/java.rmi/src/main/java/java/rmi/server/RemoteRef.java" afterPath="$PROJECT_DIR$/dependencies/java.rmi/src/main/java/java/rmi/server/RemoteRef.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/java.rmi/src/main/java/java/rmi/server/RemoteServer.java" afterPath="$PROJECT_DIR$/dependencies/java.rmi/src/main/java/java/rmi/server/RemoteServer.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/java.rmi/src/main/java/java/rmi/server/RemoteStub.java" afterPath="$PROJECT_DIR$/dependencies/java.rmi/src/main/java/java/rmi/server/RemoteStub.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/java.rmi/src/main/java/java/rmi/server/ServerCloneException.java" afterPath="$PROJECT_DIR$/dependencies/java.rmi/src/main/java/java/rmi/server/ServerCloneException.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/java.rmi/src/main/java/java/rmi/server/ServerNotActiveException.java" afterPath="$PROJECT_DIR$/dependencies/java.rmi/src/main/java/java/rmi/server/ServerNotActiveException.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/java.rmi/src/main/java/java/rmi/server/ServerRef.java" afterPath="$PROJECT_DIR$/dependencies/java.rmi/src/main/java/java/rmi/server/ServerRef.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/java.rmi/src/main/java/java/rmi/server/Skeleton.java" afterPath="$PROJECT_DIR$/dependencies/java.rmi/src/main/java/java/rmi/server/Skeleton.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/java.rmi/src/main/java/java/rmi/server/SkeletonMismatchException.java" afterPath="$PROJECT_DIR$/dependencies/java.rmi/src/main/java/java/rmi/server/SkeletonMismatchException.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/java.rmi/src/main/java/java/rmi/server/SkeletonNotFoundException.java" afterPath="$PROJECT_DIR$/dependencies/java.rmi/src/main/java/java/rmi/server/SkeletonNotFoundException.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/java.rmi/src/main/java/java/rmi/server/SocketSecurityException.java" afterPath="$PROJECT_DIR$/dependencies/java.rmi/src/main/java/java/rmi/server/SocketSecurityException.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/java.rmi/src/main/java/java/rmi/server/UID.java" afterPath="$PROJECT_DIR$/dependencies/java.rmi/src/main/java/java/rmi/server/UID.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/java.rmi/src/main/java/java/rmi/server/UnicastRemoteObject.java" afterPath="$PROJECT_DIR$/dependencies/java.rmi/src/main/java/java/rmi/server/UnicastRemoteObject.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/java.rmi/src/main/java/java/rmi/server/Unreferenced.java" afterPath="$PROJECT_DIR$/dependencies/java.rmi/src/main/java/java/rmi/server/Unreferenced.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/java.rmi/src/main/java/java/rmi/server/package.html" afterPath="$PROJECT_DIR$/dependencies/java.rmi/src/main/java/java/rmi/server/package.html" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/javax.activity/.gitignore" afterPath="$PROJECT_DIR$/dependencies/javax.activity/.gitignore" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/javax.activity/build.gradle" afterPath="$PROJECT_DIR$/dependencies/javax.activity/build.gradle" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/javax.activity/src/main/java/javax/activity/ActivityCompletedException.java" afterPath="$PROJECT_DIR$/dependencies/javax.activity/src/main/java/javax/activity/ActivityCompletedException.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/javax.activity/src/main/java/javax/activity/ActivityRequiredException.java" afterPath="$PROJECT_DIR$/dependencies/javax.activity/src/main/java/javax/activity/ActivityRequiredException.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/javax.activity/src/main/java/javax/activity/InvalidActivityException.java" afterPath="$PROJECT_DIR$/dependencies/javax.activity/src/main/java/javax/activity/InvalidActivityException.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/javax.rmi/.gitignore" afterPath="$PROJECT_DIR$/dependencies/javax.rmi/.gitignore" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/javax.rmi/build.gradle" afterPath="$PROJECT_DIR$/dependencies/javax.rmi/build.gradle" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/javax.rmi/src/main/java/rmi/ssl/SslRMIClientSocketFactory.java" afterPath="$PROJECT_DIR$/dependencies/javax.rmi/src/main/java/rmi/ssl/SslRMIClientSocketFactory.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/javax.rmi/src/main/java/rmi/ssl/SslRMIServerSocketFactory.java" afterPath="$PROJECT_DIR$/dependencies/javax.rmi/src/main/java/rmi/ssl/SslRMIServerSocketFactory.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/gradle.xml" afterPath="$PROJECT_DIR$/.idea/gradle.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/modules.xml" afterPath="$PROJECT_DIR$/.idea/modules.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/build.gradle" afterPath="$PROJECT_DIR$/build.gradle" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/gradle/wrapper/gradle-wrapper.properties" afterPath="$PROJECT_DIR$/gradle/wrapper/gradle-wrapper.properties" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sapphire-core/build.gradle" afterPath="$PROJECT_DIR$/sapphire-core/build.gradle" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/settings.gradle" afterPath="$PROJECT_DIR$/settings.gradle" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sapphire-core/src/main/java/sapphire/oms/KernelServerManager.java" afterPath="$PROJECT_DIR$/sapphire-core/src/main/java/sapphire/oms/KernelServerManager.java" />
     </list>
     <ignored path="sapphire.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -290,31 +42,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="build.gradle" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/dependencies/java.rmi/build.gradle">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="135">
-              <caret line="9" column="0" lean-forward="false" selection-start-line="9" selection-start-column="0" selection-end-line="9" selection-end-column="0" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="build.gradle" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/dependencies/javax.activity/build.gradle">
+      <file leaf-file-name="TwitterManager.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/examples/example-minnietwitter/src/main/java/sapphire/appexamples/minnietwitter/app/TwitterManager.java">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="0">
-              <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="TwitterWorldGenerator.java" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/examples/example-minnietwitter/src/main/java/sapphire/appexamples/minnietwitter/device/generator/TwitterWorldGenerator.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="188">
-              <caret line="19" column="13" lean-forward="false" selection-start-line="19" selection-start-column="13" selection-end-line="19" selection-end-column="13" />
+              <caret line="0" column="8" lean-forward="false" selection-start-line="0" selection-start-column="8" selection-end-line="0" selection-end-column="46" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -322,42 +54,19 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="build.gradle" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/dependencies/javax.rmi/build.gradle">
+      <file leaf-file-name="KernelServerImpl.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/sapphire-core/src/main/java/sapphire/kernel/server/KernelServerImpl.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="135">
-              <caret line="9" column="0" lean-forward="false" selection-start-line="9" selection-start-column="0" selection-end-line="9" selection-end-column="0" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="build.gradle" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/examples/example-minnietwitter/build.gradle">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="360">
-              <caret line="24" column="14" lean-forward="false" selection-start-line="24" selection-start-column="14" selection-end-line="24" selection-end-column="14" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="build.gradle" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/examples/hanksTodo/build.gradle">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="361">
-              <caret line="30" column="1" lean-forward="false" selection-start-line="30" selection-start-column="1" selection-end-line="30" selection-end-column="1" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="MainActivity.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/examples/example-minnietwitter/src/main/java/sapphire/appexamples/minnietwitter/glue/MainActivity.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="60">
-              <caret line="12" column="13" lean-forward="false" selection-start-line="12" selection-start-column="13" selection-end-line="12" selection-end-column="13" />
-              <folding />
+            <state relative-caret-position="231">
+              <caret line="34" column="0" lean-forward="false" selection-start-line="34" selection-start-column="0" selection-end-line="34" selection-end-column="0" />
+              <folding>
+                <element signature="e#5039#5040#0" expanded="true" />
+                <element signature="e#5057#5058#0" expanded="true" />
+                <element signature="e#5197#5198#0" expanded="true" />
+                <element signature="e#5217#5218#0" expanded="true" />
+                <element signature="e#6099#6100#0" expanded="true" />
+                <element signature="e#6135#6136#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -365,28 +74,84 @@
       <file leaf-file-name="MinnieTwitterStart.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/examples/example-minnietwitter/src/main/java/sapphire/appexamples/minnietwitter/cloud/MinnieTwitterStart.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="60">
-              <caret line="8" column="13" lean-forward="false" selection-start-line="8" selection-start-column="13" selection-end-line="8" selection-end-column="13" />
+            <state relative-caret-position="210">
+              <caret line="14" column="1" lean-forward="false" selection-start-line="14" selection-start-column="1" selection-end-line="14" selection-end-column="1" />
+              <folding>
+                <element signature="imports" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="MainActivity.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/examples/example-minnietwitter/src/main/java/sapphire/appexamples/minnietwitter/glue/MainActivity.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="504">
+              <caret line="32" column="39" lean-forward="false" selection-start-line="32" selection-start-column="39" selection-end-line="32" selection-end-column="39" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="build.gradle" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/dependencies/apache.harmony/build.gradle">
+      <file leaf-file-name="TwitterWorldGenerator.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/examples/example-minnietwitter/src/main/java/sapphire/appexamples/minnietwitter/device/generator/TwitterWorldGenerator.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="0">
-              <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+            <state relative-caret-position="232">
+              <caret line="100" column="0" lean-forward="false" selection-start-line="100" selection-start-column="0" selection-end-line="100" selection-end-column="0" />
+              <folding>
+                <marker date="1515627031255" expanded="false" signature="2822:2828" ph="&lt;~&gt;" />
+                <marker date="1515627031255" expanded="false" signature="3622:3632" ph="&lt;~&gt;" />
+                <marker date="1515627031255" expanded="false" signature="4242:4248" ph="&lt;~&gt;" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="Timeline.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/examples/example-minnietwitter/src/main/java/sapphire/appexamples/minnietwitter/app/Timeline.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="122">
+              <caret line="49" column="66" lean-forward="false" selection-start-line="49" selection-start-column="66" selection-end-line="49" selection-end-column="66" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="java.rmi.iml" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/dependencies/java.rmi/java.rmi.iml">
+      <file leaf-file-name="KernelServerManager.java" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/sapphire-core/src/main/java/sapphire/oms/KernelServerManager.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="0">
-              <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+            <state relative-caret-position="203">
+              <caret line="46" column="76" lean-forward="false" selection-start-line="46" selection-start-column="76" selection-end-line="46" selection-end-column="76" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="Configuration.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/examples/example-minnietwitter/src/main/java/sapphire/appexamples/minnietwitter/glue/Configuration.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="105">
+              <caret line="5" column="0" lean-forward="false" selection-start-line="5" selection-start-column="0" selection-end-line="5" selection-end-column="0" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="UserManager.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/examples/example-minnietwitter/src/main/java/sapphire/appexamples/minnietwitter/app/UserManager.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="189">
+              <caret line="19" column="21" lean-forward="false" selection-start-line="19" selection-start-column="21" selection-end-line="19" selection-end-column="21" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="AppObjectStub.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/sapphire-core/src/main/java/sapphire/common/AppObjectStub.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="84">
+              <caret line="6" column="17" lean-forward="false" selection-start-line="6" selection-start-column="17" selection-end-line="6" selection-end-column="17" />
               <folding />
             </state>
           </provider>
@@ -5676,11 +5441,14 @@
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="y" value="23" />
-    <option name="width" value="1680" />
-    <option name="height" value="964" />
+    <option name="x" value="1911" />
+    <option name="y" value="-9" />
+    <option name="width" value="1938" />
+    <option name="height" value="1218" />
   </component>
-  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
   <component name="ProjectReloadState">
     <option name="STATE" value="1" />
   </component>
@@ -5699,8 +5467,70 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="Scratches" />
+      <pane id="AndroidView" />
+      <pane id="Scope">
+        <subPane subId="Production">
+          <PATH>
+            <PATH_ELEMENT USER_OBJECT="Root">
+              <option name="myItemId" value="" />
+              <option name="myItemType" value="" />
+            </PATH_ELEMENT>
+          </PATH>
+        </subPane>
+        <subPane subId="Project Files">
+          <PATH>
+            <PATH_ELEMENT USER_OBJECT="Root">
+              <option name="myItemId" value="" />
+              <option name="myItemType" value="" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT USER_OBJECT="sapphire-core">
+              <option name="myItemId" value="" />
+              <option name="myItemType" value="" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT USER_OBJECT="sapphire-core">
+              <option name="myItemId" value="" />
+              <option name="myItemType" value="" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT USER_OBJECT="Root">
+              <option name="myItemId" value="" />
+              <option name="myItemType" value="" />
+            </PATH_ELEMENT>
+          </PATH>
+        </subPane>
+      </pane>
       <pane id="ProjectPane">
         <subPane>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="External Libraries" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ExternalLibrariesNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="External Libraries" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ExternalLibrariesNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="mockito-core-1.10.19" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.NamedLibraryElementNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="mockito-core-1.10.19.jar" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
           <PATH>
             <PATH_ELEMENT>
               <option name="myItemId" value="sapphire" />
@@ -5735,6 +5565,456 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire-core" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire-core" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="main" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="java" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="runtime" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire-core" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="main" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="java" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="policy" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire-core" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="main" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="java" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="policy" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="servercache" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire-core" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="main" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="java" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="policy" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="serializability" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire-core" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="main" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="java" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="policy" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="explicitcaching" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire-core" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="main" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="java" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="policy" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="dht" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire-core" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="main" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="java" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="policy" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="cache" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire-core" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="main" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="java" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="policy" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="atleastoncerpc" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire-core" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="main" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="java" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="oms" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire-core" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="main" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="java" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="kernel" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="server" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire-core" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="main" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="java" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="kernel" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire-core" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="main" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="java" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
               <option name="myItemId" value="examples" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
@@ -5754,6 +6034,184 @@
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="hanksTodo" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="examples" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="hanksTodo" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="main" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="examples" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="hanksTodo" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="main" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="java" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="hankstodo" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="glue" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="examples" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="hanksTodo" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="main" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="java" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="hankstodo" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="device" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="examples" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="hanksTodo" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="main" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="java" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="hankstodo" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="cloud" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="examples" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="hanksTodo" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="main" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="java" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="hankstodo" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="app" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -5911,48 +6369,6 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="device" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="generator" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="sapphire" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="sapphire" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="examples" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="example-minnietwitter" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="src" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="main" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="java" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="minnietwitter" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
               <option name="myItemId" value="cloud" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
@@ -5995,42 +6411,150 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="examples" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="example-minnietwitter" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="main" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="java" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="minnietwitter" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="app" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="stubs" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="dependencies" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="dependencies" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="javax.rmi" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="dependencies" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="javax.activity" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="dependencies" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="java.rmi" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="dependencies" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="apache.harmony" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sapphire" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value=".gradle" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
         </subPane>
       </pane>
-      <pane id="Scope">
-        <subPane subId="Production">
-          <PATH>
-            <PATH_ELEMENT USER_OBJECT="Root">
-              <option name="myItemId" value="" />
-              <option name="myItemType" value="" />
-            </PATH_ELEMENT>
-          </PATH>
-        </subPane>
-        <subPane subId="Project Files">
-          <PATH>
-            <PATH_ELEMENT USER_OBJECT="Root">
-              <option name="myItemId" value="" />
-              <option name="myItemType" value="" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT USER_OBJECT="sapphire-core">
-              <option name="myItemId" value="" />
-              <option name="myItemType" value="" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT USER_OBJECT="sapphire-core">
-              <option name="myItemId" value="" />
-              <option name="myItemType" value="" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT USER_OBJECT="Root">
-              <option name="myItemId" value="" />
-              <option name="myItemType" value="" />
-            </PATH_ELEMENT>
-          </PATH>
-        </subPane>
-      </pane>
-      <pane id="Scratches" />
-      <pane id="AndroidView" />
       <pane id="PackagesPane" />
     </panes>
   </component>
@@ -6153,7 +6677,7 @@
       <option name="ACTIVITY_CLASS" value="" />
       <method>
         <option name="Android.Gradle.BeforeRunTask" enabled="true" />
-        <option name="com.android.instantApps.provision.BeforeRunTask" enabled="true" clearCache="false" clearProvisionedDevices="false" myTimestamp="1513919184076" />
+        <option name="com.android.instantApps.provision.BeforeRunTask" enabled="true" clearCache="false" clearProvisionedDevices="false" myTimestamp="1515635767019" />
       </method>
     </configuration>
     <configuration default="true" type="AndroidTestRunConfigurationType" factoryName="Android Instrumented Tests">
@@ -6201,7 +6725,7 @@
       </Profilers>
       <method>
         <option name="Android.Gradle.BeforeRunTask" enabled="true" />
-        <option name="com.android.instantApps.provision.BeforeRunTask" enabled="true" clearCache="false" clearProvisionedDevices="false" myTimestamp="1513919184076" />
+        <option name="com.android.instantApps.provision.BeforeRunTask" enabled="true" clearCache="false" clearProvisionedDevices="false" myTimestamp="1515635767019" />
       </method>
     </configuration>
     <configuration default="true" type="Application" factoryName="Application">
@@ -6233,27 +6757,6 @@
         </option>
         <option name="vmOptions" />
       </ExternalSystemSettings>
-      <method />
-    </configuration>
-    <configuration default="true" type="JUnit" factoryName="JUnit">
-      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
-      <module name="" />
-      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
-      <option name="ALTERNATIVE_JRE_PATH" />
-      <option name="PACKAGE_NAME" />
-      <option name="MAIN_CLASS_NAME" />
-      <option name="METHOD_NAME" />
-      <option name="TEST_OBJECT" value="class" />
-      <option name="VM_PARAMETERS" />
-      <option name="PARAMETERS" />
-      <option name="WORKING_DIRECTORY" />
-      <option name="ENV_VARIABLES" />
-      <option name="PASS_PARENT_ENVS" value="true" />
-      <option name="TEST_SEARCH_SCOPE">
-        <value defaultName="singleModule" />
-      </option>
-      <envs />
-      <patterns />
       <method />
     </configuration>
     <configuration default="true" type="JarApplication" factoryName="JAR Application">
@@ -6302,24 +6805,6 @@
       <envs />
       <method />
     </configuration>
-    <configuration default="true" type="PythonConfigurationType" factoryName="Python">
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <module name="apache.harmony" />
-      <option name="SCRIPT_NAME" value="" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <method />
-    </configuration>
     <configuration default="true" type="Remote" factoryName="Remote">
       <option name="USE_SOCKET_TRANSPORT" value="true" />
       <option name="SERVER_MODE" value="false" />
@@ -6354,84 +6839,6 @@
       <envs />
       <properties />
       <listeners />
-      <method />
-    </configuration>
-    <configuration default="true" type="Tox" factoryName="Tox">
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <module name="apache.harmony" />
-      <method />
-    </configuration>
-    <configuration default="true" type="tests" factoryName="Doctests">
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <module name="apache.harmony" />
-      <option name="SCRIPT_NAME" value="" />
-      <option name="CLASS_NAME" value="" />
-      <option name="METHOD_NAME" value="" />
-      <option name="FOLDER_NAME" value="" />
-      <option name="TEST_TYPE" value="TEST_SCRIPT" />
-      <option name="PATTERN" value="" />
-      <option name="USE_PATTERN" value="false" />
-      <method />
-    </configuration>
-    <configuration default="true" type="tests" factoryName="Nosetests">
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <module name="apache.harmony" />
-      <option name="_new_regexPattern" value="&quot;&quot;" />
-      <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;.&quot;" />
-      <option name="_new_targetType" value="&quot;PATH&quot;" />
-      <method />
-    </configuration>
-    <configuration default="true" type="tests" factoryName="Unittests">
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <module name="apache.harmony" />
-      <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;.&quot;" />
-      <option name="_new_targetType" value="&quot;PATH&quot;" />
-      <method />
-    </configuration>
-    <configuration default="true" type="tests" factoryName="py.test">
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <module name="apache.harmony" />
-      <option name="_new_keywords" value="&quot;&quot;" />
-      <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;.&quot;" />
-      <option name="_new_targetType" value="&quot;PATH&quot;" />
       <method />
     </configuration>
     <configuration default="false" name="app" type="AndroidRunConfigurationType" factoryName="Android App">
@@ -6480,7 +6887,7 @@
       <option name="ACTIVITY_CLASS" value="" />
       <method>
         <option name="Android.Gradle.BeforeRunTask" enabled="true" />
-        <option name="com.android.instantApps.provision.BeforeRunTask" enabled="true" clearCache="false" clearProvisionedDevices="false" myTimestamp="1513919184087" />
+        <option name="com.android.instantApps.provision.BeforeRunTask" enabled="true" clearCache="false" clearProvisionedDevices="false" myTimestamp="1515635767020" />
       </method>
     </configuration>
     <configuration default="false" name="example-minnietwitter" type="AndroidRunConfigurationType" factoryName="Android App" activateToolWindowBeforeRun="false">
@@ -6529,7 +6936,7 @@
       <option name="ACTIVITY_CLASS" value="sapphire.appexamples.minnietwitter.device.generator.TwitterWorldGenerator" />
       <method>
         <option name="Android.Gradle.BeforeRunTask" enabled="true" />
-        <option name="com.android.instantApps.provision.BeforeRunTask" enabled="true" clearCache="false" clearProvisionedDevices="false" myTimestamp="1513919184087" />
+        <option name="com.android.instantApps.provision.BeforeRunTask" enabled="true" clearCache="false" clearProvisionedDevices="false" myTimestamp="1515635767020" />
       </method>
     </configuration>
     <configuration default="false" name="hanksTodo" type="AndroidRunConfigurationType" factoryName="Android App">
@@ -6578,7 +6985,7 @@
       <option name="ACTIVITY_CLASS" value="" />
       <method>
         <option name="Android.Gradle.BeforeRunTask" enabled="true" />
-        <option name="com.android.instantApps.provision.BeforeRunTask" enabled="true" clearCache="false" clearProvisionedDevices="false" myTimestamp="1513919184087" />
+        <option name="com.android.instantApps.provision.BeforeRunTask" enabled="true" clearCache="false" clearProvisionedDevices="false" myTimestamp="1515635767020" />
       </method>
     </configuration>
     <configuration default="false" name="OMS-for-minnietwitter" type="Application" factoryName="Application">
@@ -6628,25 +7035,6 @@
         <item index="0" class="java.lang.String" itemvalue="Android JUnit.All in app" />
       </list>
     </recent_temporary>
-    <configuration default="true" type="tests" factoryName="Attests">
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <module name="apache.harmony" />
-      <option name="SCRIPT_NAME" value="" />
-      <option name="CLASS_NAME" value="" />
-      <option name="METHOD_NAME" value="" />
-      <option name="FOLDER_NAME" value="" />
-      <option name="TEST_TYPE" value="TEST_SCRIPT" />
-      <option name="PATTERN" value="" />
-      <option name="USE_PATTERN" value="false" />
-      <method />
-    </configuration>
     <configuration name="&lt;template&gt;" type="Applet" default="true" selected="false">
       <option name="MAIN_CLASS_NAME" />
       <option name="HTML_FILE_NAME" />
@@ -6706,42 +7094,66 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="23" width="1680" height="964" extended-state="0" />
+    <frame x="1911" y="-9" width="1938" height="1218" extended-state="6" />
+    <editor active="true" />
     <layout>
       <window_info id="Android Profiler" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32939035" sideWeight="0.4985638" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32665095" sideWeight="0.4065934" order="12" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4415459" sideWeight="0.4015625" order="12" side_tool="false" content_ui="tabs" />
       <window_info id="Build Variants" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.24908425" sideWeight="0.545611" order="3" side_tool="true" content_ui="tabs" />
       <window_info id="Palette&#9;" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Image Layers" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Capture Analysis" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32665095" sideWeight="0.5769231" order="7" side_tool="true" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32665095" sideWeight="0.46947497" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32629558" sideWeight="0.46770832" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32900944" sideWeight="0.497558" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32900944" sideWeight="0.4847375" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="Logcat" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32900944" sideWeight="0.492674" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Captures" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.24969475" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Capture Tool" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
-      <window_info id="Gradle Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.30070755" sideWeight="0.2973138" order="11" side_tool="true" content_ui="tabs" />
+      <window_info id="Gradle Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.37303784" sideWeight="0.30260417" order="11" side_tool="true" content_ui="tabs" />
       <window_info id="Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.35897437" sideWeight="0.7710843" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.25572917" sideWeight="0.7710843" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Gradle" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.24908425" sideWeight="0.45438898" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Device File Explorer" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="true" content_ui="tabs" />
       <window_info id="Theme Preview" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Debug" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.30070755" sideWeight="0.7026862" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.37303784" sideWeight="0.69739586" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33760685" sideWeight="0.17627677" order="5" side_tool="true" content_ui="tabs" />
-      <window_info id="Data View" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
+      <window_info id="Android Profiler" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Build Variants" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.24908425" sideWeight="0.545611" order="3" side_tool="true" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32665095" sideWeight="0.5769231" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Android Monitor" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.32900944" sideWeight="0.82417583" order="8" side_tool="false" content_ui="tabs" />
+      <window_info id="Logcat" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32900944" sideWeight="0.492674" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Capture Tool" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="3" side_tool="false" content_ui="combo" />
+      <window_info id="Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.24908425" sideWeight="0.45438898" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Android Model" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32967034" sideWeight="0.5" order="4" side_tool="true" content_ui="tabs" />
+      <window_info id="Device File Explorer" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="true" content_ui="tabs" />
+      <window_info id="Debug" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.30070755" sideWeight="0.7026862" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Data View" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32939035" sideWeight="0.4985638" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32665095" sideWeight="0.4065934" order="12" side_tool="false" content_ui="tabs" />
+      <window_info id="Palette&#9;" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Image Layers" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="Capture Analysis" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Preview" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32665095" sideWeight="0.46947497" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32900944" sideWeight="0.497558" order="9" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32900944" sideWeight="0.4847375" order="10" side_tool="false" content_ui="tabs" />
+      <window_info id="Captures" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.24969475" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Gradle Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.30070755" sideWeight="0.2973138" order="11" side_tool="true" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.35897437" sideWeight="0.7710843" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3278302" sideWeight="0.4945055" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Gradle" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
+      <window_info id="Theme Preview" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33760685" sideWeight="0.17627677" order="5" side_tool="true" content_ui="tabs" />
     </layout>
     <layout-to-restore>
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
@@ -6834,181 +7246,31 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/src/sapphire/dms/SapphirePolicy.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/sapphire/dms/SapphirePolicyLibrary.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-779">
-          <caret line="53" column="36" lean-forward="false" selection-start-line="53" selection-start-column="36" selection-end-line="53" selection-end-column="36" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/sapphire/dms/SapphirePolicyUpcalls.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/sapphire/dms/SapphireReplicationPolicyUpcalls.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/sapphire/dms/DefaultSapphirePolicyUpcallImpl.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/sapphire/dms/SapphireCachingPolicyUpcalls.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/sapphire/dms/SapphireDurabilityPolicyUpcalls.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/sapphire/oms/SapphireInstanceManager.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/sapphire/oms/OMSServerImpl.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="646">
-          <caret line="191" column="52" lean-forward="false" selection-start-line="191" selection-start-column="24" selection-end-line="191" selection-end-column="52" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/sapphire/dms/cache/CacheLeasePolicy.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-2505">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/sapphire/oms/SapphireObjectManager.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-164">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/sapphire/app/SapphireObject.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/sapphire/common/AppObject.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/sapphire/common/AppObjectStub.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/sapphire/common/ObjectHandler.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/sapphire/common/SapphireObjectID.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/sapphire/common/SapphireObjectNotAvailableException.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/sapphire/common/SapphireReplicaID.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/sapphire/compiler/AppStub.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/sapphire/compiler/GlobalStubConstants.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/sapphire/compiler/PolicyStub.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/sapphire/kernel/server/KernelServerImpl.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="30">
-          <caret line="2" column="0" lean-forward="false" selection-start-line="2" selection-start-column="0" selection-end-line="2" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/sapphire/kernel/server/KernelObjectManager.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="585">
-          <caret line="51" column="24" lean-forward="false" selection-start-line="51" selection-start-column="24" selection-end-line="51" selection-end-column="24" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$USER_HOME$/Library/Android/sdk/platforms/android-17/android.jar!/android/os/AsyncTask.class">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="397">
-          <caret line="87" column="0" lean-forward="false" selection-start-line="87" selection-start-column="0" selection-end-line="87" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/sapphire/kernel/server/KernelServer.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="30">
-          <caret line="2" column="0" lean-forward="false" selection-start-line="2" selection-start-column="0" selection-end-line="2" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$PROJECT_DIR$/src/sapphire/dms/SapphirePolicy.java" />
+    <entry file="file://$PROJECT_DIR$/src/sapphire/dms/SapphirePolicyLibrary.java" />
+    <entry file="file://$PROJECT_DIR$/src/sapphire/dms/SapphirePolicyUpcalls.java" />
+    <entry file="file://$PROJECT_DIR$/src/sapphire/dms/SapphireReplicationPolicyUpcalls.java" />
+    <entry file="file://$PROJECT_DIR$/src/sapphire/dms/DefaultSapphirePolicyUpcallImpl.java" />
+    <entry file="file://$PROJECT_DIR$/src/sapphire/dms/SapphireCachingPolicyUpcalls.java" />
+    <entry file="file://$PROJECT_DIR$/src/sapphire/dms/SapphireDurabilityPolicyUpcalls.java" />
+    <entry file="file://$PROJECT_DIR$/src/sapphire/oms/SapphireInstanceManager.java" />
+    <entry file="file://$PROJECT_DIR$/src/sapphire/oms/OMSServerImpl.java" />
+    <entry file="file://$PROJECT_DIR$/src/sapphire/dms/cache/CacheLeasePolicy.java" />
+    <entry file="file://$PROJECT_DIR$/src/sapphire/oms/SapphireObjectManager.java" />
+    <entry file="file://$PROJECT_DIR$/src/sapphire/app/SapphireObject.java" />
+    <entry file="file://$PROJECT_DIR$/src/sapphire/common/AppObject.java" />
+    <entry file="file://$PROJECT_DIR$/src/sapphire/common/AppObjectStub.java" />
+    <entry file="file://$PROJECT_DIR$/src/sapphire/common/ObjectHandler.java" />
+    <entry file="file://$PROJECT_DIR$/src/sapphire/common/SapphireObjectID.java" />
+    <entry file="file://$PROJECT_DIR$/src/sapphire/common/SapphireObjectNotAvailableException.java" />
+    <entry file="file://$PROJECT_DIR$/src/sapphire/common/SapphireReplicaID.java" />
+    <entry file="file://$PROJECT_DIR$/src/sapphire/compiler/AppStub.java" />
+    <entry file="file://$PROJECT_DIR$/src/sapphire/compiler/GlobalStubConstants.java" />
+    <entry file="file://$PROJECT_DIR$/src/sapphire/compiler/PolicyStub.java" />
+    <entry file="file://$PROJECT_DIR$/src/sapphire/kernel/server/KernelServerImpl.java" />
+    <entry file="file://$PROJECT_DIR$/src/sapphire/kernel/server/KernelObjectManager.java" />
+    <entry file="jar://$USER_HOME$/Library/Android/sdk/platforms/android-17/android.jar!/android/os/AsyncTask.class" />
+    <entry file="file://$PROJECT_DIR$/src/sapphire/kernel/server/KernelServer.java" />
     <entry file="file://$PROJECT_DIR$/example-minnietwitter/src/main/java/sapphire/appexamples/minnietwitter/glue/MainActivity.java" />
     <entry file="file://$PROJECT_DIR$/example-minnietwitter/src/main/java/sapphire/appexamples/minnietwitter/device/TwitterActivityOne.java" />
     <entry file="file://$PROJECT_DIR$/example-minnietwitter/src/main/java/sapphire/appexamples/minnietwitter/device/TwitterActivityTwo.java" />
@@ -7046,7 +7308,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="45">
           <caret line="3" column="16" lean-forward="false" selection-start-line="3" selection-start-column="16" selection-end-line="3" selection-end-column="16" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -7061,7 +7322,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -7069,7 +7329,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="45">
           <caret line="3" column="24" lean-forward="false" selection-start-line="3" selection-start-column="24" selection-end-line="3" selection-end-column="24" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -7085,7 +7344,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="105">
           <caret line="7" column="22" lean-forward="false" selection-start-line="7" selection-start-column="22" selection-end-line="7" selection-end-column="22" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -7093,7 +7351,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="195">
           <caret line="13" column="48" lean-forward="false" selection-start-line="13" selection-start-column="48" selection-end-line="13" selection-end-column="48" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -7101,7 +7358,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -7109,7 +7365,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -7117,7 +7372,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="135">
           <caret line="9" column="0" lean-forward="false" selection-start-line="9" selection-start-column="0" selection-end-line="9" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -7125,7 +7379,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -7133,7 +7386,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="135">
           <caret line="9" column="0" lean-forward="false" selection-start-line="9" selection-start-column="0" selection-end-line="9" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -7141,7 +7393,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="360">
           <caret line="24" column="14" lean-forward="false" selection-start-line="24" selection-start-column="14" selection-end-line="24" selection-end-column="14" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -7149,32 +7400,35 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="361">
           <caret line="30" column="1" lean-forward="false" selection-start-line="30" selection-start-column="1" selection-end-line="30" selection-end-column="1" />
-          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/examples/example-minnietwitter/src/main/java/sapphire/appexamples/minnietwitter/glue/MainActivity.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="60">
-          <caret line="12" column="13" lean-forward="false" selection-start-line="12" selection-start-column="13" selection-end-line="12" selection-end-column="13" />
+        <state relative-caret-position="504">
+          <caret line="32" column="39" lean-forward="false" selection-start-line="32" selection-start-column="39" selection-end-line="32" selection-end-column="39" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/examples/example-minnietwitter/src/main/java/sapphire/appexamples/minnietwitter/cloud/MinnieTwitterStart.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="60">
-          <caret line="8" column="13" lean-forward="false" selection-start-line="8" selection-start-column="13" selection-end-line="8" selection-end-column="13" />
-          <folding />
+        <state relative-caret-position="210">
+          <caret line="14" column="1" lean-forward="false" selection-start-line="14" selection-start-column="1" selection-end-line="14" selection-end-column="1" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/examples/example-minnietwitter/src/main/java/sapphire/appexamples/minnietwitter/device/generator/TwitterWorldGenerator.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="188">
-          <caret line="19" column="13" lean-forward="false" selection-start-line="19" selection-start-column="13" selection-end-line="19" selection-end-column="13" />
+        <state relative-caret-position="232">
+          <caret line="100" column="0" lean-forward="false" selection-start-line="100" selection-start-column="0" selection-end-line="100" selection-end-column="0" />
           <folding>
-            <element signature="imports" expanded="true" />
+            <marker date="1515627031255" expanded="false" signature="2822:2828" ph="&lt;~&gt;" />
+            <marker date="1515627031255" expanded="false" signature="3622:3632" ph="&lt;~&gt;" />
+            <marker date="1515627031255" expanded="false" signature="4242:4248" ph="&lt;~&gt;" />
           </folding>
         </state>
       </provider>

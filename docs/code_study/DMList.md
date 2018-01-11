@@ -117,6 +117,51 @@ Quinton:
 ### LeaseCaching 133 LoC
 > Caching w/ server granting leases, local reads and writes for lease-holder
 
+Quinton: From Irene's thesis: "Figure 2.4 shows a simplified definition of the LeasedCaching DM that we provide in the Sapphire
+Library. We include code for the Proxy component and the function declarations from the Instance
+Manager. This DM does not have a Coordinator because it does not need centralized management.
+The LeasedCaching DM is not replicated, so DK will only create one Instance Manager. The
+Instance Manager hands out mutually exclusive leases to Proxies (which reside with the remote
+reference to the SO) and uses timeouts to deal with failed Proxies. The Proxy with a valid lease can
+read or write to a local copy of the SO. Read-only operations do not incur communication costs,
+which saves latency over a slow network, but updates are synchronously propogated to the Instance
+Manager in case of Proxy failure.
+When the application invokes a method on an SO with this DM attached, the caller’s Proxy: 
+
+1. verifies that it holds a lease, 
+2. performs the method call on its local copy, 
+3. checks whether the
+object has been modified (using diff()), and 
+4. synchronizes the remote object with its cached
+copy if the object changed, using an update() call to the Instance Manager.
+
+Each Proxy stores the lease in the Lease object (line 3) and a local copy of the Sapphire Object
+(line 4). If the Proxy does not hold a valid lease, it must get one from the Instance Manager (line
+8) before invoking its local SO copy. If the Proxy is not able to get the lease, the DM throws a
+SONotAvailableException (line 10). The application is prepared for any RPC to an SO to fail, so it will
+catch the exception and deal with it. The application also knows that the SO uses the LeasedCaching
+SOM, so it understands the error string (line 11).
+If the Proxy is able to get a lease from the Instance Manager, the lease will contain an up-to-date
+copy of the SO (line 13). The Proxy will make a clean copy of the SO (line 17), invoke the method on
+its local copy (line 18) and then diff the local copy with the clean copy to check for updates (line 19).
+If the SO changed, the Proxy will update the Instance Manager’s copy of the SO (line 20). The copy
+and diff is necessary because the Proxy does not know which SO methods might write to the SO,
+thus requiring an update to the Instance Manager. If the DM had more insight into the SO (i.e., the
+SO lets the DM know which methods are read-only), we could skip this step.
+The example illustrates a few interesting properties of DMs. First, DM code is application agnostic
+and can perform only a limited set of operations on the SO that it manages. In particular, it can
+interpose only on method calls to its SO, and it manipulates the managed SO as a black box. For
+example, there are DMs that automatically cache an SO, but no DMs that cache a part of an SO. This
+ensures a clean separation of object management code from application logic and allows the DM to
+be reused across different applications and objects.
+Second, a DM cannot span more than one Sapphire Object: it performs operations only on the
+object that it manages. We chose not to support cross-SO management because it would require
+the DM to better understand the application; as well, it might cause conflicts between the DMs of
+different SOs. As a result, there are DMs that provide multi-RPC transactions on a single SO, but we
+do not support cross-SO transactions. However, the programmer could combine multiple Sapphire
+Objects into one SO or implement concurrency support at the application level to achieve the same
+effect.
+
 ### WriteThroughCaching (LOW) 43 LoC
 > Caching w/ writes serialized to server and stale, local reads
 

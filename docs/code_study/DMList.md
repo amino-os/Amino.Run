@@ -1,3 +1,5 @@
+**Description on DM implementation has been moved to DMInternal.md.**
+
 # DM List
 Here are 26 DMs proposed in Sapphire paper. I will start by writing down my personal thoughts on each DM. The purpose is to trigger discussions within the team so that we can quickly build up consensus on the purpose, the implementation, and the value of each DM. 
 

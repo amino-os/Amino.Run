@@ -1,4 +1,4 @@
-package sapphire.policy.explicitcaching;
+package sapphire.policy.cache.explicitcaching;
 
 import sapphire.common.AppObject;
 import sapphire.policy.DefaultSapphirePolicy;
@@ -23,12 +23,12 @@ public class ExplicitCachingPolicy extends DefaultSapphirePolicy{
         }
 
         // for unit test use
-        public void setCopy(AppObject copy) {
+        void setCopy(AppObject copy) {
             this.cachedCopy = copy;
         }
 
         // for unit test use
-        public AppObject getCachedCopy() {
+        AppObject getCachedCopy() {
             return cachedCopy;
         }
 
@@ -61,7 +61,7 @@ public class ExplicitCachingPolicy extends DefaultSapphirePolicy{
                 this.cachedCopy = ((ExplicitCachingServerPolicy)this.getServer()).getCopy();
             }
 
-            if (!((Object)this.cachedCopy.getObject() instanceof ExplicitCacher)) {
+            if (!(this.cachedCopy.getObject() instanceof ExplicitCacher)) {
                 throw new IllegalArgumentException("should be subclass of ExcplicitCacher");
             }
 

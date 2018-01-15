@@ -1,4 +1,4 @@
-package sapphire.policy.explicitcaching;
+package sapphire.policy.cache.explicitcaching;
 
 import org.junit.Before;
 import org.junit.Test;

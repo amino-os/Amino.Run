@@ -30,6 +30,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.net.BindException;
+import java.net.InetAddress;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.rmi.ServerError;
@@ -154,6 +155,22 @@ public class UnicastServerRef extends UnicastRef implements ServerRef {
     }
 
     /**
+     * Constructs UnicastServerRef listening on the port specified and
+     * having the given client and server socket factories.
+     *
+     * @param port port where this UnicastServerRef will listen for connections
+     * @param csf client-side socket factory for creating client sockets
+     * @param ssf server-side socket factory for creating server sockets
+     * @param isKernelServer to specify a kernel server is calling the method
+     */
+    public UnicastServerRef(int port,
+                            RMIClientSocketFactory csf,
+                            RMIServerSocketFactory ssf,
+                            boolean isKernelServer) {
+        this(port, csf, ssf, new ObjID(), isKernelServer);
+    }
+
+    /**
      * Constructs UnicastServerRef listening on the port specified,
      * using specified client and server socket factories and
      * having the given ObjID.
@@ -170,6 +187,28 @@ public class UnicastServerRef extends UnicastRef implements ServerRef {
         super();
         isLocal = true;
         ep = new Endpoint(port, csf, ssf);
+        this.objId = objId;
+    }
+
+    /**
+     * Constructs UnicastServerRef listening on the port specified,
+     * using specified client and server socket factories and
+     * having the given ObjID.
+     *
+     * @param port port where this UnicastServerRef will listen for connections
+     * @param csf client-side socket factory for creating client sockets
+     * @param ssf server-side socket factory for creating server sockets
+     * @param objId Object ID of remote object
+     * @param isKernelServer to specify a kernel server is calling the method
+     */
+    public UnicastServerRef(int port,
+                            RMIClientSocketFactory csf,
+                            RMIServerSocketFactory ssf,
+                            ObjID objId,
+                            boolean isKernelServer) {
+        super();
+        isLocal = true;
+        ep = new Endpoint(port, csf, ssf, isKernelServer);
         this.objId = objId;
     }
 

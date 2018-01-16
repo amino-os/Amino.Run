@@ -141,7 +141,7 @@ public class UnicastRemoteObject extends RemoteServer {
         if (csf != null || ssf != null) {
             sref = new UnicastServerRef2(port, csf, ssf);
         } else {
-            sref = new UnicastServerRef(port, csf, ssf);
+            sref = new UnicastServerRef(port, csf, ssf, true);
         }
         Remote stub = ExportManager.exportObject(obj, sref,
                 useProxyStubs);

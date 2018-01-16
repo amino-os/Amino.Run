@@ -40,6 +40,7 @@ import org.apache.harmony.rmi.common.GetLongPropAction;
 import org.apache.harmony.rmi.common.GetStringPropAction;
 import org.apache.harmony.rmi.common.RMIProperties;
 import org.apache.harmony.rmi.internal.nls.Messages;
+import org.apache.harmony.rmi.Utils;
 
 
 /**
@@ -104,6 +105,27 @@ public class Endpoint {
                     RMIClientSocketFactory csf,
                     RMIServerSocketFactory ssf) {
         host = getLocalHost();
+        this.port = port;
+        this.csf = csf;
+        this.ssf = ssf;
+    }
+
+    /**
+     * Constructs Local Endpoint.
+     *
+     * @param port port number
+     * @param csf client-side socket factory
+     * @param isKernelServer to specify a kernel server is calling the method
+     */
+    public Endpoint(int port,
+                    RMIClientSocketFactory csf,
+                    RMIServerSocketFactory ssf,
+                    boolean isKernelServer) {
+        if (isKernelServer) {
+            host = Utils.getIPAddress(true);
+        } else {
+            host = getLocalHost();
+        }
         this.port = port;
         this.csf = csf;
         this.ssf = ssf;
@@ -357,7 +379,6 @@ public class Endpoint {
 
         try {
             InetAddress iaddr = InetAddress.getLocalHost();
-            byte[] addr = iaddr.getAddress();
 
             if (useLocalHostName) {
                 localHost = getFQDN(iaddr);

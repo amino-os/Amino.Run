@@ -190,7 +190,9 @@ public class Sapphire {
 		Field[] fields = obj.getClass().getSuperclass().getFields();
 		for (Field f : fields) {
 			f.setAccessible(true);
-			f.set(obj, null);
+			if (!f.getName().endsWith("serialVersionUID")) {
+				f.set(obj, null);
+			}
 		}
 
 		// Replace the values in stub with new values - is this necessary?

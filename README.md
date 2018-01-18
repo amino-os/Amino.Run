@@ -7,7 +7,7 @@
 * Read [papers](https://sapphire.cs.washington.edu/research/)
 * Read [Sapphire source code](https://sapphire.cs.washington.edu/code.html)
 * Read [code study notes](./docs/code_study/)
-* Read [Kubernetes Deployment Guide](https://github.com/kubernetes/community/blob/master/contributors/devel/development.md). 
+* Read [github workflow guide](https://github.com/kubernetes/community/blob/master/contributors/devel/development.md). Please follow this workflow to submit pull requests.
 
 # Important Links
 * [Design Docs](./docs/design_proposals/)

@@ -10,6 +10,7 @@ import java.io.ObjectOutputStream;
 
 import sapphire.common.AppObject;
 import sapphire.policy.DefaultSapphirePolicy;
+import sapphire.policy.checkpoint.CheckpointPolicyBase;
 
 /**
  * Created by quinton on 1/15/18.
@@ -22,22 +23,18 @@ import sapphire.policy.DefaultSapphirePolicy;
  * perform logging and/or other similar operations.
  * TODO: Perhaps improve this by e.g. using annotations instead, and possibly supporting both pre- and post- operation  hooks.
  **/
-public class ExplicitCheckpointPolicy extends DefaultSapphirePolicy{
-    public static class ExplicitCheckpointClientPolicy extends DefaultClientPolicy {}
+public class ExplicitCheckpointPolicy extends CheckpointPolicyBase{
+    public static class ClientPolicy extends CheckpointPolicyBase.ClientPolicy {}
 
-    public static class ExplicitCheckpointServerPolicy extends DefaultServerPolicy {
-        // TODO: Generate sensible file name based on AppObject class, instance and date/time/sequence number
-        // TODO: Or probably better, allow the client to specify a file to checkpoint to and from, and delete as required.
-        private String checkPointFileName = "checkpoint.dat";
-
+    public static class ServerPolicy extends CheckpointPolicyBase.ServerPolicy {
         @Override
         public Object onRPC(String method, ArrayList<Object> params) throws Exception {
             if (isSaveCheckpoint(method)) {
-                saveCheckpoint();
+                this.saveCheckpoint();
                 return null;
             }
             else if (isRestoreCheckpoint(method)) {
-                restoreCheckpoint();
+                this.restoreCheckpoint();
                 return null;
             }
             else {
@@ -54,54 +51,6 @@ public class ExplicitCheckpointPolicy extends DefaultSapphirePolicy{
             // TODO better check than simple base name
             return method.contains(".restoreCheckpoint(");
         }
-
-        /**
-         * Save a checkpoint of the object to disk
-         * @throws Exception
-         * TODO: Instead of interacting with OS directly in DM, it is better to delegate the work to Kernel server.
-         * DMs should interacts with kernel server and kernel server should interacts with OS.
-         * this decoupling allows us to add more functionality in kernel server
-         * e.g.
-         * 1. Garbage Collection: Kernel server may keep all checkpoint files under one dedicated directory, and kernel server may have background thread to garbage collect expired checkpoint files.
-         * 2. Data Encryption: Kernel server may choose to encrypt data files.
-         */
-        synchronized void saveCheckpoint() throws Exception {
-            ObjectOutputStream oos = null;
-            try {
-                FileOutputStream ofs = new FileOutputStream(this.checkPointFileName);
-                oos = new ObjectOutputStream(ofs);
-                this.appObject.writeObject(oos);
-                oos.flush();
-            }
-            finally {
-                if (oos!=null) {
-                    /* TODO: If the object was only partially written, we might leave an unreadable file.
-                       Handle partially written files here by deleting them, or rolling back to a previous checkpoint.
-                     */
-                    oos.close();
-                }
-            }
-        }
-
-        /**
-         * Restore a checkpoint of the object from disk
-         * @throws Exception
-         * TODO: See above.
-         */
-        synchronized void restoreCheckpoint() throws Exception {
-            ObjectInputStream ois = null;
-            try {
-                FileInputStream ifs = new FileInputStream(this.checkPointFileName);
-                ois = new ObjectInputStream(ifs);
-                this.appObject.readObject(ois);
-            }
-            finally {
-                if (ois != null) {
-                    ois.close();
-                }
-            }
-        }
     }
-
-    public static class ExplicitCheckpointGroupPolicy extends DefaultGroupPolicy {}
+    public static class GroupPolicy extends CheckpointPolicyBase.ServerPolicy {}
 }

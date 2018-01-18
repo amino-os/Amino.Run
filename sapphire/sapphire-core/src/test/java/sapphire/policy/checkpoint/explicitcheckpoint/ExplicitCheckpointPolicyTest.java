@@ -31,8 +31,8 @@ import static org.mockito.Mockito.withSettings;
  */
 
 public class ExplicitCheckpointPolicyTest {
-    ExplicitCheckpointPolicy.ExplicitCheckpointClientPolicy client;
-    ExplicitCheckpointPolicy.ExplicitCheckpointServerPolicy server;
+    ExplicitCheckpointPolicy.ClientPolicy client;
+    ExplicitCheckpointPolicy.ServerPolicy server;
     private ExplicitCheckpointerTest so;
     private AppObject appObject;
     private ArrayList<Object> noParams, oneParam, twoParam;
@@ -40,8 +40,8 @@ public class ExplicitCheckpointPolicyTest {
 
     @Before
     public void setUp() throws Exception {
-        this.client = spy(ExplicitCheckpointPolicy.ExplicitCheckpointClientPolicy.class);
-        this.server = spy(ExplicitCheckpointPolicy.ExplicitCheckpointServerPolicy.class);
+        this.client = spy(ExplicitCheckpointPolicy.ClientPolicy.class);
+        this.server = spy(ExplicitCheckpointPolicy.ServerPolicy.class);
         so = new ExplicitCheckpointerTestStub();
         appObject = new AppObject(so);
         server.$__initialize(appObject);
@@ -74,7 +74,7 @@ public class ExplicitCheckpointPolicyTest {
     }
 
     @Test
-    public void saveAndRestoreSnapshot() throws Exception {
+    public void saveAndRestoreCheckpoint() throws Exception {
         String saveMethodName = "public void sapphire.policy.checkpoint.explicitcheckpoint.ExplicitCheckpointerImpl.saveCheckpoint() throws java.lang.Exception",
                 restoreMethodName = "public void sapphire.policy.checkpoint.explicitcheckpoint.ExplicitCheckpointerImpl.restoreCheckpoint() throws java.lang.Exception",
                 setMethodName = "public void sapphire.policy.checkpoint.explicitcheckpoint.ExplicitCheckpointerTest.setI(int)",
@@ -103,7 +103,7 @@ public class ExplicitCheckpointPolicyTest {
         // Verify that the object has been restored
         this.client.onRPC(getMethodName, noParams);
         verify(this.server).onRPC(getMethodName, noParams);
-        // TODO: How to verify that the get returned the correct value?
+        assertEquals(((ExplicitCheckpointerTest)appObject.getObject()).getI(), 1);
     }
 }
 

@@ -107,8 +107,8 @@ public class PeriodicCheckpointPolicyTest {
             throw new Exception("Set i to " + i + " and then threw an exception");
         }
     }
+    // Stub because AppObject expects a stub/subclass of the original class.
+    public static class PeriodicCheckpointerTestStub extends PeriodicCheckpointPolicyTest.PeriodicCheckpointerTest implements Serializable {}
 }
 
 
-// Stub because AppObject expects a stub/subclass of the original class.
-class PeriodicCheckpointerTestStub extends PeriodicCheckpointPolicyTest.PeriodicCheckpointerTest implements Serializable {}

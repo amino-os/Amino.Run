@@ -61,3 +61,4 @@ I = G - G .* (L * L') - G .* (R * R')
 
 ## References
 * [MAUI: Making Smartphones Last Longer with Code Offload](https://www.microsoft.com/en-us/research/wp-content/uploads/2010/06/maui.pdf)
+* [Framework for context-aware computation offloading in mobile cloud computing](https://journalofcloudcomputing.springeropen.com/articles/10.1186/s13677-016-0071-y)

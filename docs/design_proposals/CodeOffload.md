@@ -10,13 +10,16 @@ Mobile applications are commonly modeled as client server architecture where cli
 
 ## Use Cases
 
-*  	**Moving Object to Improve Responsiveness**: The optimal placement of an object, on a device or on a server, depends on the configuration of the device hardware and the characteristics of the object. The following diagram demonstrates both points. For example, for the OCR application, cloud offloading over Wifi connection works for tablets, but not for phones. Similar, on the same mobile phone, cloud offloading over 3G connection works for Sudoku, but not for ChessAI.
+* **Moving Object to Improve Responsiveness**: The optimal placement of an object, on a device or on a server, depends on the configuration of the device hardware and the characteristics of the object. The following diagram demonstrates both points. For example, for the OCR application, cloud offloading over Wifi connection works for tablets, but not for phones. Similar, on the same mobile phone, cloud offloading over 3G connection works for Sudoku, but not for ChessAI.
 
 ![](../images/CodeOffloadPerformance.png)
 
 * **Moving Object to Save Power Consumption**: When a mobile device is running low on battery power, we may consider moving objects from device to server, or vice versa, to reduce the power consumption on device. 
 
 ## Cost Model
+
+The following cost model is based on the model proposed in [MAUI](https://www.microsoft.com/en-us/research/wp-content/uploads/2010/06/maui.pdf).
+
 * <i>G</i> = <i>(V, E)</i> : Call graph of a mobile app. Each vertex <i>v</i> &isin; <i>V</i> represents a method in the call stack, and each edge <i>e</i> = <i>(u, v)</i> represents an invocation of method <i>v</i> from method <i>u</i>
 * <var>E</var><sub><var>v</var></sub><sup>l</sup> : Energy it takes to execute method <var>v</var> locally
 * <var>T</var><sub><var>v</var></sub><sup>l</sup> : Time it takes to execute method <var>v</var> locally

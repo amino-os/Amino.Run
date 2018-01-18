@@ -73,11 +73,11 @@ public class ObjectHandler implements Serializable {
 		this.object = object;
 	}
 
-	private void writeObject(ObjectOutputStream out) throws IOException {
+	public void writeObject(ObjectOutputStream out) throws IOException {
 		out.writeObject(object);
 	}
 
-	private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+	public void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
 		Object obj = in.readObject();
 		fillMethodTable(obj);
 		this.object = (Serializable) obj;

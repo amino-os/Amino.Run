@@ -15,13 +15,13 @@ import sapphire.common.AppObject;
 import static org.junit.Assert.*;
 
 public class SerializableRPCClientPolicyTest {
-    private SerializableRPCPolicy.SerializableRPCClientPolicy client;
-    private SerializableRPCPolicy.SerializableRPCServerPolicy server;
+    private SerializableRPCPolicy.ClientPolicy client;
+    private SerializableRPCPolicy.ServerPolicy server;
 
     @Before
     public void setUp() throws Exception {
-        client = new SerializableRPCPolicy.SerializableRPCClientPolicy();
-        server = new SerializableRPCPolicy.SerializableRPCServerPolicy();
+        client = new SerializableRPCPolicy.ClientPolicy();
+        server = new SerializableRPCPolicy.ServerPolicy();
         client.setServer(server);
         Object object = new Counter_Stub();
         AppObject appObject = new AppObject(object);
@@ -94,7 +94,6 @@ public class SerializableRPCClientPolicyTest {
         private int value = 0;
 
         public int addOne() throws Exception {
-            Thread.sleep(500L);
             value++;
             return value;
         }

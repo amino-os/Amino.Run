@@ -14,7 +14,10 @@ import sapphire.common.AppObject;
 
 import static org.junit.Assert.*;
 
-public class SerializableRPCClientPolicyTest {
+/**
+ * @author terryz
+ */
+public class SerializableRPCPolicyTest {
     private SerializableRPCPolicy.ClientPolicy client;
     private SerializableRPCPolicy.ServerPolicy server;
 
@@ -30,7 +33,7 @@ public class SerializableRPCClientPolicyTest {
 
     @org.junit.Test
     public void testSerializableRPCsOnServer() throws Exception {
-        final String methodName = "public int sapphire.policy.serializability.SerializableRPCClientPolicyTest$Counter.addOne() throws java.lang.Exception";
+        final String methodName = "public int sapphire.policy.serializability.SerializableRPCPolicyTest$Counter.addOne() throws java.lang.Exception";
         final int len = 5;
         List<FutureTask<Object>> taskList = new ArrayList<FutureTask<Object>>();
 
@@ -50,7 +53,7 @@ public class SerializableRPCClientPolicyTest {
 
     @org.junit.Test
     public void testSerializableRPCsOnClient() throws Exception {
-        final String methodName = "public int sapphire.policy.serializability.SerializableRPCClientPolicyTest$Counter.addOne() throws java.lang.Exception";
+        final String methodName = "public int sapphire.policy.serializability.SerializableRPCPolicyTest$Counter.addOne() throws java.lang.Exception";
         final int len = 5;
         List<FutureTask<Object>> taskList = new ArrayList<FutureTask<Object>>();
 

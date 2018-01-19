@@ -1,5 +1,5 @@
 ## Objective
-*LockingTransactions* DM uses lock to enforce, on a *single Sapphire object, the serial execution of transactions each of which consists of one or many RPC calls.
+*LockingTransactions* DM uses lock to enforce, on a *single Sapphire* object, the serial execution of transactions each of which consists of one or many RPC calls.
 
 Transactions should satisfy ACID properties. Note that these are not standard database ACID definitions. I modified them to suit our DCAP use cases. 
 * Atomicity: Either all RPCs in the entire transaction gets executed or nothing gets executed

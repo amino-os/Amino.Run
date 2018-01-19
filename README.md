@@ -8,6 +8,8 @@
 * Read [Sapphire source code](https://sapphire.cs.washington.edu/code.html)
 * Read [code study notes](./docs/code_study/)
 * Read [github workflow guide](https://github.com/kubernetes/community/blob/master/contributors/devel/development.md). Please follow this workflow to submit pull requests.
+* Follows instructions in [this document](https://github.com/Huawei-PaaS/DCAP-Sapphire/blob/master/docs/Development.md) to set up environment
+
 
 # Important Links
 * [Design Docs](./docs/design_proposals/)

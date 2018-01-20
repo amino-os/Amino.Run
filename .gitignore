@@ -102,3 +102,4 @@ cscope.*
 /bazel-*
 *.pyc
 sapphire/.idea/workspace.xml
+sapphire/sapphire-core/src/main/java/sapphire/policy/stubs/

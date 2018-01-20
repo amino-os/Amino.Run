@@ -25,12 +25,13 @@ public class TwitterActivityOne {
 
 			System.out.println("Connected to the OMS: " + server);
 			
-            KernelServer nodeServer = new KernelServerImpl(new InetSocketAddress("192.168.10.191", Integer.parseInt(args[1])), new InetSocketAddress(args[2], Integer.parseInt(args[3])));
+            KernelServer nodeServer = new KernelServerImpl(new InetSocketAddress(args[0], Integer.parseInt(args[1])), new InetSocketAddress(args[2], Integer.parseInt(args[3])));
             
 			TwitterManager tm = (TwitterManager) server.getAppEntryPoint();
             System.out.println("Received Twitter Manager Stub: " + tm);
             
             UserManager userManger = tm.getUserManager();
+            userManger.addUser("user12", "pwd");
             User u = userManger.getUser("user12");
             Timeline timeline = u.getTimeline();
             

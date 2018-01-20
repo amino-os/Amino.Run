@@ -3,8 +3,6 @@ This integration test runs on linux hosts (cloud) only.
 Its purpose is to provide small env that is able to evaluate DM in action.
 
 ### instructions
-the working folder assumes the Saphhire git dir
-(TODO) to automate the whole process
 ```
 # Set DCAP_ROOT
 DCAP_ROOT="Replace with your local path to DCAP-Sapphire"

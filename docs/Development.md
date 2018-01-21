@@ -25,11 +25,11 @@ https://github.com/kubernetes/community/blob/master/contributors/guide/github-wo
 * Check your computers IP first.
 * Go to Run -> Edit Configuration
 * Configure *OMS-Twitter*
-![OMS-Twitter](images/OMS-Twitter)
+![OMS-Twitter](images/OMS-Twitter.png)
 * Configure *KernelServer-Twitter*
-![KernelServer-Twitter](images/KernelServer-Twitter)
+![KernelServer-Twitter](images/KernelServer-Twitter.png)
 * Configure *MinnieTwitter*
-![MinnieTwitter](images/MinnieTwitter)
+![MinnieTwitter](images/MinnieTwitter.png)
 
 * Select the following components and change IP addresses that start with 192.168... to your IP. Don't change the port number:
 * Go to examples/example/minnietwitter/src/main/java/sapphire.appexamples.minnietwitter/glue/Configuration.java

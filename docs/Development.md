@@ -23,29 +23,33 @@
 
 #### Check Host IP
 * Lookup your host IP and note it down
-![CheckIp](images/CheckIPAddress)
+![CheckIp](images/CheckIPAddress.png)
 
 #### Configure OMS-Twitter
 * Go to Run -> Edit Configuration
-* Configure *OMS-Twitter*. Specify the IP address and the port number on which OMS runs. If you plan to run OMS, Kernel Server, and application all on your local desktop, then you can use the IP address you noted down in the previous step.
+* Specify the IP address and the port number on which OMS runs. If you plan to run OMSon your local desktop, then you can use the IP address you noted down in the previous step. 
+* Specify the class name of the App Entry
 ![OMS-Twitter](images/OMS-Twitter.png)
 
 #### Start OMS-Twitter
-* Start OMS
-![StartOMS](images/StartOMS.png]
+* Start OMS. Go to `Run` menu in Android Studio, click `Run...`, and then choose `OMS-minnietwitter` to start OMS.
+![StartOMS](images/StartOMS.png)
 
 #### Configure KernelServer-Twitter
 * Go to Run -> Edit Configuration
-* Configure *KernelServer-Twitter*
+* Specify Kernel Server IP and port. Kernel server ip is the ip of the host on which you plan to start kernel server. It is usually your local host ip. 
+* Specify OMS IP and port. OMS IP and port must match the ip and port you used to start OMS.
 ![KernelServer-Twitter](images/KernelServer-Twitter.png)
 
 #### Start KernelServer-Twitter
 * Start Kernel Server
-![StartKernelServer](images/StartKernelServer.png]
+* Go to `Run` menu in Android Studio, click `Run...`, and then choose `KernelServer-minnietwitter` to start kernel server.
+![StartKernelServer](images/StartKernelServer.png)
 
 #### Configure MinnieTwitter
-* Open `examples/example/minnietwitter/src/main/java/sapphire.appexamples.minnietwitter/glue/Configuration.java`
-* Update the first agument (IP address) to your IP address. Don't change the port number or the second argument. (the second argument (IP Address) corresponds to the IP address of the device where this app would run, if running on a real android device, then update it to the IP address of the real android device)
+* Open `examples/example/minnietwitter/src/main/java/sapphire.appexamples.minnietwitter/glue/Configuration.java` in editor.
+* Specify OMS IP and Port (the first two arguments). OMS IP and port must match the ip and port you used to start OMS.
+* Specify Kernel Server IP and Port (the last two arguments). If you run the app on a real android device, then update it to the IP address of the real android device. If you run the app in simulator, then keep the ip as `10.0.2.15`.
 ![MinnieTwitterConfiguration](images/MinnieTwitterConfiguration.png)
 
 * Go to Run -> Edit Configuration
@@ -57,7 +61,7 @@
 * Choose Oreo to download SDK and all other necessary components. This can take a while. You can choose any Nexus phones.
 
 #### Start MinnieTwitter
-* Start MinnieTwitter
+* Start MinnieTwitter. Go to Android Studio `Run` menu, click on `Run...`, and choose `example-minnietwitter` to start minnietwitter.
 ![StartMinnieTwitter](images/StartMinnieTwitter.png)
 
 

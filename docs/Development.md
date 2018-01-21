@@ -1,5 +1,5 @@
 ## Read Development Workflow
-DCAP team follows Kubernetes development workflow. Please read [Kubernetes Development Workflow Guide](https://github.com/kubernetes/community/blob/master/contributors/guide/github-workflow.md) closely.
+* DCAP team follows Kubernetes development workflow. Please read [Kubernetes Development Workflow Guide](https://github.com/kubernetes/community/blob/master/contributors/guide/github-workflow.md) closely.
 
 ## Install Android Studio
 * Install Android Studio (Windows or Linux all are fine). Latest version or 3.0
@@ -7,7 +7,6 @@ DCAP team follows Kubernetes development workflow. Please read [Kubernetes Devel
 * Install JDK (latest version) if you don't have one.
 
 ## Checkout Out Code
-* Read [Kubernetes Development Workflow Guide](https://github.com/kubernetes/community/blob/master/contributors/guide/github-workflow.md).
 * Fork your own repository from [DCAP-Sapphire repository](https://github.com/Huawei-PaaS/DCAP-Sapphire) 
 * `git clone` from your own repository
 * Make sure to sync with the latest source before creating a pull request to Huawei-PaaS/DCAP-Sapphire.
@@ -24,10 +23,11 @@ DCAP team follows Kubernetes development workflow. Please read [Kubernetes Devel
 
 #### Check Host IP
 * Lookup your host IP and note it down
+![CheckIp](images/CheckIPAddress)
 
 #### Configure OMS-Twitter
 * Go to Run -> Edit Configuration
-* Configure *OMS-Twitter*
+* Configure *OMS-Twitter*. Specify the IP address and the port number on which OMS runs. If you plan to run OMS, Kernel Server, and application all on your local desktop, then you can use the IP address you noted down in the previous step.
 ![OMS-Twitter](images/OMS-Twitter.png)
 
 #### Start OMS-Twitter

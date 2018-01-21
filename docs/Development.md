@@ -10,30 +10,36 @@ https://github.com/kubernetes/community/blob/master/contributors/guide/github-wo
 * Download Gradle update if necessary (Android Studio will inform you).
 * Install JDK (latest version) if you don't have one.
 
-#### 2. Read development workflow (we follow similar approach to Kubernetes).
-* Fork your own branch.
+#### 2. Be Familiar with Development Workflow
+* Read [development workflow](https://github.com/kubernetes/community/blob/master/contributors/guide/github-workflow.md).  We follow Kubernetes workflow.
+* Fork your own repository from [DCAP-Sapphire repository](https://github.com/Huawei-PaaS/DCAP-Sapphire) 
+* `git clone` from your own repository
 * Make sure to sync with the latest source before creating a pull request to Huawei-PaaS/DCAP-Sapphire.
 * Make sure to rebase your code instead of simple git pull (read carefully about git pull part from above link).
 
-#### 3. git clone https://github.com/Huawei-PaaS/DCAP-Sapphire
-
-#### 4. Open Android Studio.
+#### 3. Open Android Studio.
 * Open Sapphire project from the local repo you just cloned. (i.e open DCAP-Sapphire/sapphire/)
 * Android Studio will ask you about missing files - click OK.
 
-#### 5. Update IP address in application and minnieTwitter app with yours.
+#### 4. Update IP address in application and minnieTwitter app with yours.
 * Check your computers IP first.
 * Go to Run -> Edit Configuration
+* Configure *OMS-Twitter*
+![OMS-Twitter](images/OMS-Twitter)
+* Configure *KernelServer-Twitter*
+![KernelServer-Twitter](images/KernelServer-Twitter)
+* Configure *MinnieTwitter*
+![MinnieTwitter](images/MinnieTwitter)
+
 * Select the following components and change IP addresses that start with 192.168... to your IP. Don't change the port number:
-OMS-for-minnieTwitter, Kernel-for-minnietwitter
 * Go to examples/example/minnietwitter/src/main/java/sapphire.appexamples.minnietwitter/glue/Configuration.java
 * Update the first agument (IP address) to your IP address. Don't change the port number or the second argument. (the second argument (IP Address) corresponds to the IP address of the device where this app would run, if running on a real android device, then update it to the IP address of the real android device)
 
-#### 6. Make project and sync Gradle (order does not matter).
+#### 5. Make project and sync Gradle (order does not matter).
 * If it fails, just restart and try it again.
 * Android Studio may show the bar for Gradle sync. If not: Tools>Android>Sync with Gradle files.
 
-#### 7. Congrats! Now you are ready to run OMS and Kernels.
+#### 6. Congrats! Now you are ready to run OMS and Kernels.
 * Run > Debug
 * Choose OMS. Edit Configuration may pop up when module is not set. In this case, you can simply designate Sapphire-core at 'Use classpath of module'.
 * Wait until you see the bottom window showing "OMS Ready" message.
@@ -42,7 +48,7 @@ OMS-for-minnieTwitter, Kernel-for-minnietwitter
 * Wait until you see the bottom window showing "New kernel server" message along with IP address of the kernel.
 * Click on OMS debug window to see Kernel connection message.
 
-#### 8. You are almost done. Now you need to run Android emulator.
+#### 7. You are almost done. Now you need to run Android emulator.
 * Run > Debug
 * Choose minnieTwitter
 * It will pop up a Window where you can create a new virtual device (emulator) or you can register Android phone. For Huawei phone, please install HiSuite so you can see the device from Android Studio.

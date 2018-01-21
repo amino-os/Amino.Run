@@ -52,5 +52,5 @@ public class ExplicitCheckpointPolicy extends CheckpointPolicyBase{
             return method.contains(".restoreCheckpoint(");
         }
     }
-    public static class GroupPolicy extends CheckpointPolicyBase.ServerPolicy {}
+    public static class GroupPolicy extends CheckpointPolicyBase.GroupPolicy {}
 }

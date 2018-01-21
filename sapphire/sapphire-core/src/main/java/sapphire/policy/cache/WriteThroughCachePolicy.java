@@ -1,11 +1,9 @@
 package sapphire.policy.cache;
 
 import java.util.ArrayList;
-import java.util.logging.Logger;
 
 import sapphire.common.AppObject;
 import sapphire.policy.DefaultSapphirePolicy;
-import sapphire.policy.SapphirePolicy;
 
 /**
  * <code><WriteThroughCache</code> directs write operations onto cached object and through to
@@ -20,14 +18,14 @@ import sapphire.policy.SapphirePolicy;
  */
 public class WriteThroughCachePolicy extends DefaultSapphirePolicy {
 
-    public static class WriteThroughCacheClientPolicy extends DefaultClientPolicy {
-        private WriteThroughCachePolicy.WriteThroughCacheServerPolicy server;
+    public static class ClientPolicy extends DefaultClientPolicy {
+        private ServerPolicy server;
         // TODO: Add a timeout for cachedObject
         private AppObject cachedObject = null;
 
         @Override
         public void setServer(SapphireServerPolicy server) {
-            this.server = (WriteThroughCachePolicy.WriteThroughCacheServerPolicy) server;
+            this.server = (ServerPolicy) server;
         }
 
         @Override
@@ -61,10 +59,12 @@ public class WriteThroughCachePolicy extends DefaultSapphirePolicy {
         }
     }
 
-    public static class WriteThroughCacheServerPolicy extends DefaultServerPolicy {
+    public static class ServerPolicy extends DefaultServerPolicy {
         public AppObject getObject() {
             return sapphire_getAppObject();
         }
     }
+
+    public static class GroupPolicy extends DefaultGroupPolicy {}
 }
 

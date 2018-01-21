@@ -2,11 +2,8 @@ package sapphire.policy.cache;
 
 import org.junit.Before;
 
-import java.io.Serializable;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Hashtable;
 import java.util.List;
 
 import sapphire.common.AppObject;
@@ -22,15 +19,15 @@ import static org.mockito.Mockito.when;
 
 
 public class WriteThroughCachePolicyTest {
-    private WriteThroughCachePolicy.WriteThroughCacheClientPolicy client;
-    private WriteThroughCachePolicy.WriteThroughCacheServerPolicy server;
+    private WriteThroughCachePolicy.ClientPolicy client;
+    private WriteThroughCachePolicy.ServerPolicy server;
     private Object object;
     private AppObject appObject;
 
     @Before
     public void setUp() throws Exception {
-        client = spy(WriteThroughCachePolicy.WriteThroughCacheClientPolicy.class);
-        server = spy(WriteThroughCachePolicy.WriteThroughCacheServerPolicy.class);
+        client = spy(WriteThroughCachePolicy.ClientPolicy.class);
+        server = spy(WriteThroughCachePolicy.ServerPolicy.class);
         client.setServer(this.server);
         object = new ArrayList<Object>(Arrays.asList("Hello"));
         appObject = new AppObject(object);

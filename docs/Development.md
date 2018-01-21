@@ -25,43 +25,47 @@
 * Lookup your host IP and note it down
 ![CheckIp](images/CheckIPAddress.png)
 
-#### Configure OMS-Twitter
-* Go to Run -> Edit Configuration
+#### Configure OMS-minnietwitter
+* Go to `Run` -> `Edit Configurations...` in Android Studio
+* Create configuration `OMS-minnietwitter` according to the following screen shot if it does not exist
 * Specify the IP address and the port number on which OMS runs. If you plan to run OMSon your local desktop, then you can use the IP address you noted down in the previous step. 
 * Specify the class name of the App Entry
 ![OMS-Twitter](images/OMS-Twitter.png)
 
 #### Start OMS-Twitter
-* Start OMS. Go to `Run` menu in Android Studio, click `Run...`, and then choose `OMS-minnietwitter` to start OMS.
+* Go to `Run` menu in Android Studio, click `Run...`, and choose `OMS-minnietwitter` to start OMS
+* You should see `OMS ready` message in console if OMS starts successfully
 ![StartOMS](images/StartOMS.png)
 
-#### Configure KernelServer-Twitter
-* Go to Run -> Edit Configuration
+#### Configure KernelServer-minnietwitter
+* Go to `Run` -> `Edit Configurations...` in Android Studio
+* Create configuration `KermelServer-minnietwitter` according to the following screen shot if it does not exist
 * Specify Kernel Server IP and port. Kernel server ip is the ip of the host on which you plan to start kernel server. It is usually your local host ip. 
-* Specify OMS IP and port. OMS IP and port must match the ip and port you used to start OMS.
+* Specify OMS IP and port. OMS IP and port **must match** the ip and port you used to start OMS in the previous step.
 ![KernelServer-Twitter](images/KernelServer-Twitter.png)
 
 #### Start KernelServer-Twitter
-* Start Kernel Server
-* Go to `Run` menu in Android Studio, click `Run...`, and then choose `KernelServer-minnietwitter` to start kernel server.
+* Go to `Run` menu in Android Studio, click `Run...`, and then `KernelServer-minnietwitter` to start kernel server.
+* You should see `Server ready!` messsage in console when kernel server starts up successfully
 ![StartKernelServer](images/StartKernelServer.png)
 
 #### Configure MinnieTwitter
 * Open `examples/example/minnietwitter/src/main/java/sapphire.appexamples.minnietwitter/glue/Configuration.java` in editor.
-* Specify OMS IP and Port (the first two arguments). OMS IP and port must match the ip and port you used to start OMS.
+* Specify OMS IP and Port (the first two arguments). OMS IP and port **must match** the ip and port you used to start OMS.
 * Specify Kernel Server IP and Port (the last two arguments). If you run the app on a real android device, then update it to the IP address of the real android device. If you run the app in simulator, then keep the ip as `10.0.2.15`.
 ![MinnieTwitterConfiguration](images/MinnieTwitterConfiguration.png)
 
-* Go to Run -> Edit Configuration
-* Configure *MinnieTwitter*
+* Go to `Run` -> `Edit Configuration...` in Android Studio
+* Create configuration `example-minnietwitter` according to the following screen shot if it does not exist
 ![MinnieTwitter](images/MinnieTwitter.png)
 
 #### Create Virtual Device
 * When you run MinnieTwitter Android App, Android studio will pop up a Window to let you create a new virtual device (emulator) or you can register Android phone. For Huawei phone, please install HiSuite so you can see the device from Android Studio.
-* Choose Oreo to download SDK and all other necessary components. This can take a while. You can choose any Nexus phones.
+* Choose Oreo to download SDK and all other necessary components. This can take a while. You can choose any Nexus phones
 
 #### Start MinnieTwitter
-* Start MinnieTwitter. Go to Android Studio `Run` menu, click on `Run...`, and choose `example-minnietwitter` to start minnietwitter.
+* Go to Android Studio `Run` menu, click on `Run...`, and choose `example-minnietwitter` to start minnietwitter
+* You should see `Tweet 1` message in console if minnietwitter starts successfully
 ![StartMinnieTwitter](images/StartMinnieTwitter.png)
 
 

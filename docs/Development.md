@@ -69,18 +69,24 @@
 ![StartMinnieTwitter](images/StartMinnieTwitter.png)
 
 
-## Running OMS and Sapphire kernel in command prompt (Windows. For Linux, please replace ; to :)
-If you want to manually run a Sapphire kernel (e.g., want to run on a remote server), you can execute them by running the following script after copying the jar files. Please replace IP addresses and port number to your need as necessary. In the example, 192.168.10.231 22346 is the host address for OMS, and 192.168.10.231 31111 is the host address for Sapphire Kernel. Please first create a policy file with similar content as in the following for RMI to work: 
+## Running OMS and Sapphire kernel in command prompt
+If you want to manually run a Sapphire kernel (e.g., want to run on a remote server), you can execute them by running the following script after copying the jar files. Please replace IP addresses and port number to your need as necessary. In the example, 192.168.10.231 22346 is the host address for OMS, and 192.168.10.231 31111 is the host address for Sapphire Kernel. Please first create a policy file with similar content as in the following for RMI to work.
+
+**Notes: The following scripts are for Windows users. For Linux users, please replace `;` with `:`.**
+```
 grant {
   permission java.security.AllPermission;
 };
-
+```
 OMS:
+```
 java -cp sapphire-core.jar;java.rmi.jar;minnietwitter.jar;apache.harmony.jar sapphire.oms.OMSServerImpl 192.168.10.231 22346 sapphire.appexamples.minnietwitter.cloud.MinnieTwitterStart
+```
 
 Sapphire Kernel:
+```
 java -Djava.security.manager -Djava.rmi.server.useCodebaseOnly=false -Djava.security.policy=./client.policy -cp sapphire-core.jar;java.rmi.jar;minnietwitter.jar;apache.harmony.jar sapphire.kernel.server.KernelServerImpl 192.168.10.231 31111 192.168.10.231 22346
-
+```
 ## Stub File Generation
 If you change or create a new deployment manager(policy), you will need to generate stub files again.
 java -cp sapphire-core.jar;java.rmi.jar;apache.harmony.jar sapphire.compiler.StubGenerator DCAP-Sapphire/sapphire/sapphire-core/src/main/java/sapphire/policy sapphire.policy.stubs DCAP-Sapphire/sapphire/sapphire-core/src/main/java/sapphire/policy/stubs

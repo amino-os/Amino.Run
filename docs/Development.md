@@ -25,26 +25,26 @@
 * Lookup your host IP and note it down
 ![CheckIp](images/CheckIPAddress.png)
 
-#### Configure OMS-minnietwitter
+#### Configure OMS
 * Go to `Run` -> `Edit Configurations...` in Android Studio
 * Create configuration `OMS-minnietwitter` according to the following screen shot if it does not exist
-* Specify the IP address and the port number on which OMS runs. If you plan to run OMSon your local desktop, then you can use the IP address you noted down in the previous step. 
+* Specify the IP address and the port number on which OMS runs. If you plan to run OMS on your local desktop, then you can use the IP address you noted down in the previous step. 
 * Specify the class name of the App Entry
 ![OMS-Twitter](images/OMS-Twitter.png)
 
-#### Start OMS-Twitter
+#### Start OMS
 * Go to `Run` menu in Android Studio, click `Run...`, and choose `OMS-minnietwitter` to start OMS
 * You should see `OMS ready` message in console if OMS starts successfully
 ![StartOMS](images/StartOMS.png)
 
-#### Configure KernelServer-minnietwitter
+#### Configure Kernel Server
 * Go to `Run` -> `Edit Configurations...` in Android Studio
 * Create configuration `KermelServer-minnietwitter` according to the following screen shot if it does not exist
 * Specify Kernel Server IP and port. Kernel server ip is the ip of the host on which you plan to start kernel server. It is usually your local host ip. 
 * Specify OMS IP and port. OMS IP and port **must match** the ip and port you used to start OMS in the previous step.
 ![KernelServer-Twitter](images/KernelServer-Twitter.png)
 
-#### Start KernelServer-Twitter
+#### Start Kernel Server
 * Go to `Run` menu in Android Studio, click `Run...`, and then `KernelServer-minnietwitter` to start kernel server.
 * You should see `Server ready!` messsage in console when kernel server starts up successfully
 ![StartKernelServer](images/StartKernelServer.png)
@@ -69,7 +69,7 @@
 ![StartMinnieTwitter](images/StartMinnieTwitter.png)
 
 
-## Running OMS and Sapphire kernel in command prompt
+## Run OMS and Kernel Server in CLI
 If you want to manually run a Sapphire kernel (e.g., want to run on a remote server), you can execute them by running the following script after copying the jar files. Please replace IP addresses and port number to your need as necessary. In the example, 192.168.10.231 22346 is the host address for OMS, and 192.168.10.231 31111 is the host address for Sapphire Kernel. Please first create a policy file with similar content as in the following for RMI to work.
 
 **Notes: The following scripts are for Windows users. For Linux users, please replace `;` with `:`.**

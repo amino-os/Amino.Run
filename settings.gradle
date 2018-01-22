@@ -1,1 +1,1 @@
-include ':app'
+include ':app', ':dependencies:java.rmi', ':dependencies:apache.harmony', ':sapphire-core'

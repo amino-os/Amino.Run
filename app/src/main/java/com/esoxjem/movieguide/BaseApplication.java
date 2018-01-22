@@ -1,7 +1,6 @@
 package com.esoxjem.movieguide;
 
 import android.app.Application;
-import android.os.StrictMode;
 
 import com.esoxjem.movieguide.details.DetailsComponent;
 import com.esoxjem.movieguide.details.DetailsModule;
@@ -9,7 +8,6 @@ import com.esoxjem.movieguide.favorites.FavoritesModule;
 import com.esoxjem.movieguide.listing.ListingComponent;
 import com.esoxjem.movieguide.listing.ListingModule;
 import com.esoxjem.movieguide.network.NetworkModule;
-import com.esoxjem.movieguide.listing.sorting.SortingModule;
 
 /**
  * @author arun
@@ -24,7 +22,8 @@ public class BaseApplication extends Application
     public void onCreate()
     {
         super.onCreate();
-        StrictMode.enableDefaults();
+        //StrictMode.enableDefaults();
+
         appComponent = createAppComponent();
     }
 

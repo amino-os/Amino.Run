@@ -15,8 +15,9 @@ public class FavoritesModule
 {
     @Provides
     @Singleton
-    FavoritesInteractor provideFavouritesInteractor(FavoritesStore store)
+    //FavoritesInteractor provideFavouritesInteractor(FavoritesStore store)
+    FavoritesInteractor provideFavouritesInteractor()
     {
-        return new FavoritesInteractorImpl(store);
+        return new FavoritesInteractorImpl();
     }
 }

@@ -1,26 +1,41 @@
 package com.esoxjem.movieguide.listing;
 
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 
-import com.esoxjem.movieguide.R;
 import com.esoxjem.movieguide.Constants;
+import com.esoxjem.movieguide.Movie;
+import com.esoxjem.movieguide.R;
 import com.esoxjem.movieguide.details.MovieDetailsActivity;
 import com.esoxjem.movieguide.details.MovieDetailsFragment;
-import com.esoxjem.movieguide.Movie;
+import com.esoxjem.movieguide.favorites.FavoritesStore;
+import com.esoxjem.movieguide.favorites.FavoritesStoreManager;
+import com.esoxjem.movieguide.favorites.FavoritesShare;
+
+import java.net.InetSocketAddress;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+
+import sapphire.kernel.server.KernelServer;
+import sapphire.kernel.server.KernelServerImpl;
+import sapphire.oms.OMSServer;
 
 public class MoviesListingActivity extends AppCompatActivity implements MoviesListingFragment.Callback
 {
     public static final String DETAILS_FRAGMENT = "DetailsFragment";
     private boolean twoPaneMode;
+    public static FavoritesStoreManager favoritesStoreManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+        //new GenerateWorld().execute("192.168.10.34", "22346", "10.0.2.15", "22345");
+        //new getfstore().execute("192.168.10.34", "22346", "10.0.2.15", "22345");
         setContentView(R.layout.activity_main);
         setToolbar();
 
@@ -99,4 +114,37 @@ public class MoviesListingActivity extends AppCompatActivity implements MoviesLi
                 .replace(R.id.movie_details_container, movieDetailsFragment, DETAILS_FRAGMENT)
                 .commit();
     }
+
+    /*
+    private class getfstore extends AsyncTask<String, Void, String> {
+        protected String doInBackground(String... params) {
+            String response = null;
+            Registry registry;
+            try {
+
+                String[] args = new String[]{ "192.168.10.34", "22346", "10.0.2.15", "22345" };
+                //String[] args = new String[]{ "127.0.0.1", "58230", "10.0.2.15", "22345" };
+                registry = LocateRegistry.getRegistry(args[0], Integer.parseInt(args[1]));
+                OMSServer server = (OMSServer) registry.lookup("SapphireOMS");
+                System.out.println(server);
+                KernelServer nodeServer = new KernelServerImpl(new InetSocketAddress(args[2], Integer.parseInt(args[3])), new InetSocketAddress(args[0], Integer.parseInt(args[1])));
+                //KernelServer nodeServer = new KernelServerImpl(new InetSocketAddress(args[2], Integer.parseInt(args[3])), server);
+
+                favoritesStoreManager = (FavoritesStoreManager) server.getAppEntryPoint();
+                //favoritesStore=favoritesStoreManager.getFavoritesStore();
+                Simple so=favoritesStoreManager.getsimple();
+                int cnt=so.getMap();
+                //favoritesStore = (FavoritesStore) server.start();
+
+
+            } catch (Exception e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            return response;
+        }
+
+    }
+    */
+
 }

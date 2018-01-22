@@ -112,6 +112,12 @@ public class StubGenerator {
 	/* TODO: Support for multiple packages for app stubs; right now you must run this for each app package that contains a SapphireObject */
 	public static void main(String args[]) {
 		// TODO: Create destFolder if it doesn't exist or delete existing stubs
+		File dest = new File(args[2]);
+		if (! dest.exists()) {
+		    System.out.println(String.format("Creating dir %s.", dest.getPath()));
+			dest.mkdir();
+		}
+
 		generateStubs(args[0], args[1], args[2]);
 	}
 }

@@ -143,7 +143,7 @@ class FavoritesInteractorImpl implements FavoritesInteractor
                 KernelServer nodeServer = new KernelServerImpl(new InetSocketAddress(args[2], Integer.parseInt(args[3])), new InetSocketAddress(args[0], Integer.parseInt(args[1])));
                 favoritesStoreManager = (FavoritesStoreManager) server.getAppEntryPoint();
                 favoritesShare=favoritesStoreManager.getFavoritesShare();
-                favoritesStore=favoritesStoreManager.getFavoritesStore();
+                favoritesStore=favoritesStoreManager.getFavoritesStore("movieguide");
                 //favoritesStore.getFavorites();
 
                 List<String> movieidmaplist = favoritesStore.getFavorites();

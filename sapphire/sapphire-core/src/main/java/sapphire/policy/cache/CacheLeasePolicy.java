@@ -66,11 +66,11 @@ public class CacheLeasePolicy extends SapphirePolicy {
 	 *
 	 */
 	public static class CacheLeaseClientPolicy extends SapphireClientPolicy {
-		private CacheLeaseServerPolicy server;
+		protected CacheLeaseServerPolicy server;
 		private CacheLeaseGroupPolicy group;
-		private Integer lease = -1;
-		private Date leaseTimeout;
-		private AppObject cachedObject = null;
+		protected Integer lease = -1;
+		protected Date leaseTimeout;
+		protected AppObject cachedObject = null;
 
 		@Override
 		public void onCreate(SapphireGroupPolicy group) {
@@ -92,64 +92,77 @@ public class CacheLeasePolicy extends SapphirePolicy {
 			this.server = (CacheLeaseServerPolicy) server;
 		}
 
-		private Boolean leaseStillValid() {
+		protected Boolean leaseStillValid() {
 			System.out.println("Lease: "+lease.toString());
 			if (lease > 0) {
 				Date currentTime = new Date();
 				System.out.println("Lease timeout: "+leaseTimeout.toString()+" current time: "+currentTime.toString());
-				return true; //currentTime.getTime() < leaseTimeout.getTime();
+				return true; //currentTime.getTime() < leaseTimeout.getTime();  // TODO: Check for timeout!
 			} else {
 				return false;
 			}
 		}
 		
-		private void sync() {
+		protected void sync() {
 			server.syncObject(lease, cachedObject.getObject());
 		}
 		
 		@Override
 		public Object onRPC(String method, ArrayList<Object> params) throws Exception {
 			Object ret = null;
-			if (leaseStillValid()) {
-				ret = cachedObject.invoke(method, params);
-				if (true) {
-					sync();
-				}
-			} else {
-				try {
-					CacheLease cachelease = null;
-					if (lease > 0) {
-						cachelease = server.getLease(lease);
-					} else {
-						cachelease = server.getLease();
-					}
-					
-					if (cachelease == null) {
-						throw new SapphireObjectNotAvailableException("Could not get lease.");
-					}
-					
-					// If we have a new lease, then the object might have changed
-					if (!cachelease.getLease().equals(lease)) {
-						cachedObject = cachelease.getCachedObject();
-					}
-					lease = cachelease.getLease();
-					leaseTimeout = cachelease.getLeaseTimeout();
-					ret = cachedObject.invoke(method, params);					
-				} catch (RemoteException e) {
-					throw new SapphireObjectNotAvailableException("Could not contact Sapphire server.");
-				} catch (KernelObjectNotFoundException e) {
-					throw new SapphireObjectNotAvailableException("Could not find server policy object.");					
-				}
+			if (!leaseStillValid()) {
+				getNewLease();
+			}
+			ret = cachedObject.invoke(method, params);
+			if (true) {  // TODO: isMutable?
+				sync();
 			}
 			return ret;
 		}
 
-		private void writeObject(ObjectOutputStream out) throws IOException {
+		protected void getNewLease() throws Exception {
+			try {
+				CacheLease cachelease = null;
+				if (lease > 0) {
+					cachelease = server.getLease(lease);
+				} else {
+					cachelease = server.getLease();
+				}
+
+				if (cachelease == null) {
+					throw new SapphireObjectNotAvailableException("Could not get lease.");
+				}
+
+				// If we have a new lease, then the object might have changed
+				if (!cachelease.getLease().equals(lease)) {
+					cachedObject = cachelease.getCachedObject();
+				}
+				lease = cachelease.getLease();
+				leaseTimeout = cachelease.getLeaseTimeout();
+			} catch (RemoteException e) {
+				throw new SapphireObjectNotAvailableException("Could not contact Sapphire server.");
+			} catch (KernelObjectNotFoundException e) {
+				throw new SapphireObjectNotAvailableException("Could not find server policy object.");
+			}
+		}
+
+		protected void releaseCurrentLease() throws Exception {
+			try {
+				server.releaseLease(lease);
+			}
+			finally {
+				lease = -1;
+				leaseTimeout = new Date(0L); // The beginning of time.
+				cachedObject = null;
+			}
+		}
+
+		protected void writeObject(ObjectOutputStream out) throws IOException {
 			 out.writeObject(server);
 			 out.writeObject(group);
 		 }
 	     
-		 private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+		 protected void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
 			 server = (CacheLeaseServerPolicy) in.readObject();
 			 group = (CacheLeaseGroupPolicy) in.readObject();
 			 lease = -1;
@@ -232,6 +245,16 @@ public class CacheLeasePolicy extends SapphirePolicy {
 			} else {
 				// Someone else's lease expired, so you can have a new lease
 				return getNewLease();
+			}
+		}
+
+		public void releaseLease(Integer lease) throws Exception {
+			if (this.lease == lease) {
+				this.lease = 0;
+				this.leaseTimeout = new Date(0L);
+			}
+			else {
+				throw new Exception("Attempt to release expired server lease " + lease + " Current server leas is " + this.lease);
 			}
 		}
 		

@@ -13,9 +13,8 @@ import sapphire.policy.cache.CacheLeasePolicy;
  */
 public class LockingTransactionPolicy extends CacheLeasePolicy {
 	/**
-	 * Cache lease client policy. The client side proxy for the cache that holds the
-	 * cached object, gets leases from the server and writes locally. 
-	 * @author iyzhang
+	 * Locking Transaction client policy. The client side proxy that holds the
+	 * cached object, gets leases from the server and writes locally during transactions.
 	 *
 	 */
 	public static class ClientPolicy extends CacheLeasePolicy.CacheLeaseClientPolicy {
@@ -82,7 +81,7 @@ public class LockingTransactionPolicy extends CacheLeasePolicy {
                     rollbackTransaction();
                     throw new Exception("Transaction timed out.  Transaction rolled back.");
                 } else {
-                    sync(); // Copy the results of the
+                    sync(); // Copy the results of the transaction to the server.
                     releaseCurrentLease();
                     transactionInProgress = false;
                 }
@@ -98,6 +97,12 @@ public class LockingTransactionPolicy extends CacheLeasePolicy {
             } else {
                 throw new NoTransactionStartedException("No transaction to roll back");
             }
+        }
+
+        // To make visible for unit testing, because superclass is in a different package.
+        @Override
+        protected void sync() {
+            super.sync();
         }
     }
 

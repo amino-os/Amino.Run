@@ -23,9 +23,9 @@ import sapphire.policy.serializability.LockingTransactionPolicy;
  *
  */
 public class CacheLeasePolicy extends SapphirePolicy {
-	public static final long DEFAULT_LEASE_PERIOD = 10;
+	public static final long DEFAULT_LEASE_PERIOD = 10 * 60 * 1000; // milliseconds
 	/** stick in some buffer to account for differences in time **/
-	static final int LEASE_BUFFER = 1; // TODO: Quinton.  This won't work.  Don't rely on clocks being in sync.
+	static final int LEASE_BUFFER = 1 * 60 * 1000; // milliseconds TODO: Quinton.  This won't work.  Don't rely on clocks being in sync.
 	// Rather rely on server sending back a duration.  Both client and server expire after that duration.
 	// The lease on the server is then guaranteed to expire before the lease on the client, by exactly the amount of
 	// network latency between the client and the server, which is typically less than 1 sec.
@@ -96,10 +96,10 @@ public class CacheLeasePolicy extends SapphirePolicy {
 
 		protected Boolean leaseStillValid() {
 			System.out.println("Lease: "+lease.toString());
-			if (lease != CacheLease.NO_LEASE) {
+			if (!lease.equals(CacheLease.NO_LEASE)) {
 				Date currentTime = new Date();
 				System.out.println("Lease timeout: "+leaseTimeout.toString()+" current time: "+currentTime.toString());
-				return  leaseTimeout.compareTo(currentTime) < 0;
+				return  leaseTimeout.compareTo(currentTime) > 0;
 			} else {
 				return false;
 			}
@@ -125,7 +125,7 @@ public class CacheLeasePolicy extends SapphirePolicy {
 		protected void getNewLease(long timeoutMillisec) throws Exception {
 			try {
 				CacheLease cachelease = null;
-				if (lease != CacheLease.NO_LEASE) {
+				if (!lease.equals(CacheLease.NO_LEASE)) {
 					cachelease = server.getLease(lease, timeoutMillisec);
 				} else {
 					cachelease = server.getLease(timeoutMillisec);
@@ -206,7 +206,7 @@ public class CacheLeasePolicy extends SapphirePolicy {
 
 		private Date generateTimeout(long leasePeriodMillisec) {
 			Date currentTime = new Date();
-			return new Date(currentTime.getTime() + leasePeriodMillisec * 60000);  // TODO: Quinton. These units are wrong - fix them!
+			return new Date(currentTime.getTime() + leasePeriodMillisec);
 		}
 		
 		private CacheLease getNewLease(long timeoutMillisec) {
@@ -217,9 +217,9 @@ public class CacheLeasePolicy extends SapphirePolicy {
 		}
 		
 		private Boolean leaseStillValid() {
-			if (lease != CacheLease.NO_LEASE) {
+			if (!lease.equals(CacheLease.NO_LEASE)) {
 				Date currentTime = new Date();
-				return currentTime.getTime() < leaseTimeout.getTime() + LEASE_BUFFER * 60000;
+				return currentTime.getTime() < leaseTimeout.getTime() + LEASE_BUFFER;
 			} else {
 				return false;
 			}

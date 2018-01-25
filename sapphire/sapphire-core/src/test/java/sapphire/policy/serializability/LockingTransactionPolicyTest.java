@@ -2,14 +2,14 @@ package sapphire.policy.serializability;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Matchers;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.UUID;
 
 import sapphire.common.AppObject;
 import sapphire.common.Utils;
-import sapphire.policy.checkpoint.explicitcheckpoint.ExplicitCheckpointPolicy;
-import sapphire.policy.checkpoint.explicitcheckpoint.ExplicitCheckpointerTest;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.doReturn;
@@ -55,7 +55,7 @@ public class LockingTransactionPolicyTest {
         this.client.onRPC(methodName, noParams);
         verify(this.server).onRPC(methodName, noParams);
        // Check that DM methods were not called
-        verify(this.server, never()).getLease();
+        verify(this.server, never()).getLease((Matchers.anyLong()));
     }
 
     @Test
@@ -80,7 +80,7 @@ public class LockingTransactionPolicyTest {
         // Commit the transaction
         this.client.onRPC(commitMethodName, noParams);
         // Check that it got sync'd to the server.
-        verify(this.server).syncObject((Integer)any(), (Serializable)any());
+        verify(this.server).syncObject((UUID) any(), (Serializable)any());
 
         // Verify that the object has been updated
         this.client.onRPC(getMethodName, noParams);

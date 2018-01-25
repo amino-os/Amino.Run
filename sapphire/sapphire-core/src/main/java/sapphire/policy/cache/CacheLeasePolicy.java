@@ -15,7 +15,6 @@ import sapphire.common.AppObject;
 import sapphire.common.SapphireObjectNotAvailableException;
 import sapphire.kernel.common.KernelObjectNotFoundException;
 import sapphire.policy.SapphirePolicy;
-import sapphire.policy.serializability.LockingTransactionPolicy;
 
 /**
  * A caching policy between the mobile device and the server that uses leases for writing.
@@ -23,9 +22,9 @@ import sapphire.policy.serializability.LockingTransactionPolicy;
  *
  */
 public class CacheLeasePolicy extends SapphirePolicy {
-	public static final long DEFAULT_LEASE_PERIOD = 10 * 60 * 1000; // milliseconds
+	public static final long DEFAULT_LEASE_PERIOD = 10 * 1000; // milliseconds
 	/** stick in some buffer to account for differences in time **/
-	static final int LEASE_BUFFER = 1 * 60 * 1000; // milliseconds TODO: Quinton.  This won't work.  Don't rely on clocks being in sync.
+	static final int LEASE_BUFFER = 1 * 1000; // milliseconds TODO: Quinton.  This won't work.  Don't rely on clocks being in sync.
 	// Rather rely on server sending back a duration.  Both client and server expire after that duration.
 	// The lease on the server is then guaranteed to expire before the lease on the client, by exactly the amount of
 	// network latency between the client and the server, which is typically less than 1 sec.
@@ -258,7 +257,7 @@ public class CacheLeasePolicy extends SapphirePolicy {
 				this.leaseTimeout = new Date(0L);
 			}
 			else {
-				throw new LeaseExpiredException("Attempt to release expired server lease " + lease + " Current server leas is " + this.lease);
+				throw new LeaseExpiredException("Attempt to release expired server lease " + lease + " Current server lease is " + this.lease);
 			}
 		}
 		

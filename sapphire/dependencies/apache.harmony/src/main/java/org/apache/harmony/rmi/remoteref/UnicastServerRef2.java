@@ -60,6 +60,22 @@ public class UnicastServerRef2 extends UnicastServerRef {
     }
 
     /**
+     * Constructs UnicastServerRef2 listening on the port specified and
+     * having the given client and server socket factories.
+     *
+     * @param port port where this UnicastServerRef2 will listen for connections
+     * @param csf client-side socket factory for creating client sockets
+     * @param ssf server-side socket factory for creating server sockets
+     * @param isKernelServer to specify a kernel server is calling the method
+     */
+    public UnicastServerRef2(int port,
+                             RMIClientSocketFactory csf,
+                             RMIServerSocketFactory ssf,
+                             boolean isKernelServer) {
+        this(port, csf, ssf, new ObjID(), isKernelServer);
+    }
+
+    /**
      * Constructs UnicastServerRef2 listening on the port specified,
      * using specified client and server socket factories and
      * having the given ObjID.
@@ -74,6 +90,25 @@ public class UnicastServerRef2 extends UnicastServerRef {
                              RMIServerSocketFactory ssf,
                              ObjID objId) {
         super(port, csf, ssf, objId);
+    }
+
+    /**
+     * Constructs UnicastServerRef2 listening on the port specified,
+     * using specified client and server socket factories and
+     * having the given ObjID.
+     *
+     * @param port port where this UnicastServerRef2 will listen for connections
+     * @param csf client-side socket factory for creating client sockets
+     * @param ssf server-side socket factory for creating server sockets
+     * @param objId Object ID of remote object
+     * @param isKernelServer to specify a kernel server is calling the method
+     */
+    public UnicastServerRef2(int port,
+                             RMIClientSocketFactory csf,
+                             RMIServerSocketFactory ssf,
+                             ObjID objId,
+                             boolean isKernelServer) {
+        super(port, csf, ssf, objId, isKernelServer);
     }
 
     /**

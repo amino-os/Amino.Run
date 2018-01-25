@@ -13,6 +13,9 @@ public class LockingTransactionImpl implements LockingTransaction, Serializable 
     public void startTransaction() throws Exception {}
 
     @Override
+    public void startTransaction(long timeoutMillisec) {}
+
+    @Override
     public void commitTransaction() throws Exception {}
 
     @Override

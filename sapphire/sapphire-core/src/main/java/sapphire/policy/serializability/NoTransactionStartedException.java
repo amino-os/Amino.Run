@@ -6,5 +6,6 @@ package sapphire.policy.serializability;
 
 class NoTransactionStartedException extends Exception {
     public NoTransactionStartedException(String s) {
+        super(s);
     }
 }

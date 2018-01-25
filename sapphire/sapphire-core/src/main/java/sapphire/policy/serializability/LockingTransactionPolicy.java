@@ -23,7 +23,7 @@ public class LockingTransactionPolicy extends CacheLeasePolicy {
         @Override
         public Object onRPC(String method, ArrayList<Object> params) throws Exception {
             if (isStartTransaction(method)) {
-                this.startTransaction();
+                this.startTransaction(params);
                 return null;
             } else if (isCommitTransaction(method)) {
                 this.commitTransaction();
@@ -66,9 +66,14 @@ public class LockingTransactionPolicy extends CacheLeasePolicy {
             return method.contains(".rollbackTransaction(");
         }
 
-        public synchronized void startTransaction() throws Exception {
+        public synchronized void startTransaction(ArrayList<Object> params) throws Exception {
             if (!transactionInProgress) {
-                getNewLease();
+                if(!params.isEmpty()) {
+                    getNewLease((Integer)params.get(0));
+                }
+                else {
+                    getNewLease(CacheLeasePolicy.DEFAULT_LEASE_PERIOD);
+                }
                 transactionInProgress = true;
             } else {
                 throw new TransactionAlreadyStartedException("Transaction already started on Sapphire object.  Rollback or commit before starting a new transaction.");

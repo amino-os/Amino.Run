@@ -7,7 +7,7 @@ import java.io.Serializable;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Random;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -15,9 +15,7 @@ import sapphire.common.AppObject;
 import sapphire.common.SapphireObjectNotAvailableException;
 import sapphire.kernel.common.KernelObjectNotFoundException;
 import sapphire.policy.SapphirePolicy;
-import sapphire.policy.SapphirePolicy.SapphireClientPolicy;
-import sapphire.policy.SapphirePolicy.SapphireGroupPolicy;
-import sapphire.policy.SapphirePolicy.SapphireServerPolicy;
+import sapphire.policy.serializability.LockingTransactionPolicy;
 
 /**
  * A caching policy between the mobile device and the server that uses leases for writing.
@@ -25,9 +23,12 @@ import sapphire.policy.SapphirePolicy.SapphireServerPolicy;
  *
  */
 public class CacheLeasePolicy extends SapphirePolicy {
-	static final int LEASE_PERIOD = 10;
+	public static final long DEFAULT_LEASE_PERIOD = 10;
 	/** stick in some buffer to account for differences in time **/
-	static final int LEASE_BUFFER = 1;
+	static final int LEASE_BUFFER = 1; // TODO: Quinton.  This won't work.  Don't rely on clocks being in sync.
+	// Rather rely on server sending back a duration.  Both client and server expire after that duration.
+	// The lease on the server is then guaranteed to expire before the lease on the client, by exactly the amount of
+	// network latency between the client and the server, which is typically less than 1 sec.
 
 	/**
 	 * Object representing a lease. Includes a lease ID, a timeout for the lease and the cached app object
@@ -35,18 +36,19 @@ public class CacheLeasePolicy extends SapphirePolicy {
 	 *
 	 */
 	public static class CacheLease implements Serializable {
-		private Integer lease;
+		public static final UUID NO_LEASE = new UUID(0L, 0L); // This is an invalid UUID
+		private UUID lease;
 		private Date leaseTimeout;
 		private AppObject cachedObject;
 		
-		public CacheLease(Integer lease, Date leaseTimeout, AppObject cachedObject) {
+		public CacheLease(UUID lease, Date leaseTimeout, AppObject cachedObject) {
 			this.lease = lease;
 			this.leaseTimeout = leaseTimeout;
 			this.cachedObject = cachedObject;
 			assert(cachedObject != null);
 		}
 		
-		public Integer getLease() {
+		public UUID getLease() {
 			return lease;
 		}
 		
@@ -68,7 +70,7 @@ public class CacheLeasePolicy extends SapphirePolicy {
 	public static class CacheLeaseClientPolicy extends SapphireClientPolicy {
 		protected CacheLeaseServerPolicy server;
 		private CacheLeaseGroupPolicy group;
-		protected Integer lease = -1;
+		protected UUID lease = CacheLease.NO_LEASE;
 		protected Date leaseTimeout;
 		protected AppObject cachedObject = null;
 
@@ -94,10 +96,10 @@ public class CacheLeasePolicy extends SapphirePolicy {
 
 		protected Boolean leaseStillValid() {
 			System.out.println("Lease: "+lease.toString());
-			if (lease > 0) {
+			if (lease != CacheLease.NO_LEASE) {
 				Date currentTime = new Date();
 				System.out.println("Lease timeout: "+leaseTimeout.toString()+" current time: "+currentTime.toString());
-				return true; //currentTime.getTime() < leaseTimeout.getTime();  // TODO: Check for timeout!
+				return  leaseTimeout.compareTo(currentTime) < 0;
 			} else {
 				return false;
 			}
@@ -111,7 +113,7 @@ public class CacheLeasePolicy extends SapphirePolicy {
 		public Object onRPC(String method, ArrayList<Object> params) throws Exception {
 			Object ret = null;
 			if (!leaseStillValid()) {
-				getNewLease();
+				getNewLease(CacheLeasePolicy.DEFAULT_LEASE_PERIOD);
 			}
 			ret = cachedObject.invoke(method, params);
 			if (true) {  // TODO: isMutable?
@@ -120,13 +122,13 @@ public class CacheLeasePolicy extends SapphirePolicy {
 			return ret;
 		}
 
-		protected void getNewLease() throws Exception {
+		protected void getNewLease(long timeoutMillisec) throws Exception {
 			try {
 				CacheLease cachelease = null;
-				if (lease > 0) {
-					cachelease = server.getLease(lease);
+				if (lease != CacheLease.NO_LEASE) {
+					cachelease = server.getLease(lease, timeoutMillisec);
 				} else {
-					cachelease = server.getLease();
+					cachelease = server.getLease(timeoutMillisec);
 				}
 
 				if (cachelease == null) {
@@ -140,9 +142,9 @@ public class CacheLeasePolicy extends SapphirePolicy {
 				lease = cachelease.getLease();
 				leaseTimeout = cachelease.getLeaseTimeout();
 			} catch (RemoteException e) {
-				throw new SapphireObjectNotAvailableException("Could not contact Sapphire server.");
+				throw new SapphireObjectNotAvailableException("Could not contact Sapphire server.", e);
 			} catch (KernelObjectNotFoundException e) {
-				throw new SapphireObjectNotAvailableException("Could not find server policy object.");
+				throw new SapphireObjectNotAvailableException("Could not find server policy object.", e);
 			}
 		}
 
@@ -151,7 +153,7 @@ public class CacheLeasePolicy extends SapphirePolicy {
 				server.releaseLease(lease);
 			}
 			finally {
-				lease = -1;
+				lease = CacheLease.NO_LEASE;
 				leaseTimeout = new Date(0L); // The beginning of time.
 				cachedObject = null;
 			}
@@ -165,7 +167,7 @@ public class CacheLeasePolicy extends SapphirePolicy {
 		 protected void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
 			 server = (CacheLeaseServerPolicy) in.readObject();
 			 group = (CacheLeaseGroupPolicy) in.readObject();
-			 lease = -1;
+			 lease = CacheLease.NO_LEASE;
 			 cachedObject = null;
 		 }
 
@@ -178,14 +180,12 @@ public class CacheLeasePolicy extends SapphirePolicy {
 	 */
 	public static class CacheLeaseServerPolicy extends SapphireServerPolicy {
 		static private Logger logger = Logger.getLogger("sapphire.policy.DHTPolicy.CacheLeaseServerPolicy");
-		private Integer lease;
+		private UUID lease;
 		private Date leaseTimeout;
-		private Random leaseGenerator;
 		private CacheLeaseGroupPolicy group;
 
 		public CacheLeaseServerPolicy() {
-			leaseGenerator = new Random();
-			lease = -1;
+			lease = CacheLease.NO_LEASE;
 		}
 
 		@Override
@@ -201,19 +201,23 @@ public class CacheLeasePolicy extends SapphirePolicy {
 
 		
 		private Date generateTimeout() {
+			return generateTimeout(DEFAULT_LEASE_PERIOD);
+		}
+
+		private Date generateTimeout(long leasePeriodMillisec) {
 			Date currentTime = new Date();
-			return new Date(currentTime.getTime() + LEASE_PERIOD * 60000);
+			return new Date(currentTime.getTime() + leasePeriodMillisec * 60000);  // TODO: Quinton. These units are wrong - fix them!
 		}
 		
-		private CacheLease getNewLease() {
+		private CacheLease getNewLease(long timeoutMillisec) {
 			// Always generate a positive lease id
-			lease = leaseGenerator.nextInt(Integer.MAX_VALUE);
-			leaseTimeout = generateTimeout();
+			lease = UUID.randomUUID();
+			leaseTimeout = generateTimeout(timeoutMillisec);
 			return new CacheLease(lease, leaseTimeout, sapphire_getAppObject());
 		}
 		
 		private Boolean leaseStillValid() {
-			if (lease > 0) {
+			if (lease != CacheLease.NO_LEASE) {
 				Date currentTime = new Date();
 				return currentTime.getTime() < leaseTimeout.getTime() + LEASE_BUFFER * 60000;
 			} else {
@@ -221,44 +225,44 @@ public class CacheLeasePolicy extends SapphirePolicy {
 			}
 		}
 
-		public CacheLease getLease() throws Exception {
+		public CacheLease getLease(long timeoutMillisec) throws Exception {
 			if (leaseStillValid()) {
 				logger.log(Level.INFO, "Someone else holds the lease.");
 				return null;
 			} else {
-				CacheLease cachelease = getNewLease();
+				CacheLease cachelease = getNewLease(timeoutMillisec);
 				logger.log(Level.INFO, "Granted lease "+cachelease.getLease().toString()+" on object "+cachelease.getCachedObject().toString()+" until "+cachelease.getLeaseTimeout().toString());
 				return cachelease;
 			}
 		}
 		
-		public CacheLease getLease(Integer lease) throws Exception {
+		public CacheLease getLease(UUID lease, long timeoutMillisec) throws Exception {
 			logger.log(Level.INFO, "Get lease "+lease.toString()+" currentlease: "+this.lease.toString());
 
 			if (this.lease.equals(lease)) {
 				// This person still has the lease, so just return it and renew the lease
-				leaseTimeout = generateTimeout();
+				leaseTimeout = generateTimeout(timeoutMillisec);
 				return new CacheLease(lease, leaseTimeout, null);
 			} else if (leaseStillValid()) {
 				// Someone else has a valid lease still, so this person can't have it
 				return null;
 			} else {
 				// Someone else's lease expired, so you can have a new lease
-				return getNewLease();
+				return getNewLease(timeoutMillisec);
 			}
 		}
 
-		public void releaseLease(Integer lease) throws Exception {
+		public void releaseLease(UUID lease) throws Exception {
 			if (this.lease == lease) {
-				this.lease = 0;
+				this.lease = CacheLease.NO_LEASE;
 				this.leaseTimeout = new Date(0L);
 			}
 			else {
-				throw new Exception("Attempt to release expired server lease " + lease + " Current server leas is " + this.lease);
+				throw new LeaseExpiredException("Attempt to release expired server lease " + lease + " Current server leas is " + this.lease);
 			}
 		}
 		
-		public void syncObject(Integer lease, Serializable object) {
+		public void syncObject(UUID lease, Serializable object) {
 			appObject.setObject(object);
 		}
 

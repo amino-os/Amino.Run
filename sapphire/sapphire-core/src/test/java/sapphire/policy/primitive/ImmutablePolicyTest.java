@@ -1,6 +1,7 @@
 package sapphire.policy.primitive;
 
 import org.junit.Before;
+import org.junit.Test;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -36,7 +37,7 @@ public class ImmutablePolicyTest {
         server.$__initialize(appObject);
     }
 
-    @org.junit.Test
+    @Test
     public void execOnImmutableObjectRepeatedly() throws Exception {
         final String methodName = "public int sapphire.policy.primitive.ImmutablePolicyTest$SO.getValue() throws java.lang.Exception";
         final int len = 5;
@@ -68,7 +69,7 @@ public class ImmutablePolicyTest {
         verify(server, never()).onRPC(methodName, new ArrayList<Object>());
 
         // verify that server.getObject was only invoked once
-        verify(server, times(1)).getObject();
+        verify(server, times(1)).sapphire_getAppObject();
     }
 
     public static class SO implements Serializable {

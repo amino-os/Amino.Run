@@ -296,7 +296,7 @@ Quinton: It seems that CodeOffloading as described above is only suitable for op
 
 > Dynamic placement of SO with explicit move call from application
 
-Status: Implemented by https://github.com/Huawei-PaaS/DCAP-Sapphire/pull/53
+Status: Implemented by [Malepati Bala Siva Sai Akhil](https://huawei.slack.com/team/U8KLR4NRK)  https://github.com/Huawei-PaaS/DCAP-Sapphire/pull/53
 
 Quinton: The intention here is fairly clear, but exactly what calls the application is required to make to move the object are not.  In theory, according to the paper:
 

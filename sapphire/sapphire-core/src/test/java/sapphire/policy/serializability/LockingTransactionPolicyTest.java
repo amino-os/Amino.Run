@@ -100,23 +100,26 @@ public class LockingTransactionPolicyTest {
         assertEquals(1, so.getI());
 
         // Start a transaction
-        // TODO: Fix this - java.io.NotSerializableException: java.lang.reflect.Method
-        // It doesn't make sense to me why the above is happening.  Assume something funky with Mockito.
-        // AppObject clone = (AppObject)Utils.ObjectCloner.deepCopy(appObject);
-        // We need to override the implementation in this case, because
-        // doReturn(clone).when(this.server.sapphire_getAppObject());
+        AppObject clone = (AppObject)Utils.ObjectCloner.deepCopy(appObject);
+        // We need to mock the implementation in this case, because in this fake unit test environment,
+        // RMI does not occur, so client and server DM's end up referring to the same object (rather than
+        // different objects, due to RMI serialization.
+        doReturn(clone).when(this.server).sapphire_getAppObject();
         this.client.onRPC(startMethodName, noParams);
         // Update the object again, this time to 2
         this.client.onRPC(setMethodName, twoParam);
         verify(this.server, never()).onRPC(setMethodName, twoParam);
-        assertEquals(2, so.getI());
+        // Check that the client has the new value.
+        assertEquals(2, this.client.onRPC(getMethodName, noParams));
+        // Check that the server has the old value.
+        assertEquals(1, so.getI());
         // Rollback the transaction
         this.client.onRPC(rollbackMethodName, noParams);
 
-        // Verify that the object has been restored
-        int val = (Integer)this.client.onRPC(getMethodName, noParams);
-        // TODO Because the above cloning does not work, this check fails, so currently disabled.
-        // assertEquals(1, val);
+        // Verify that the object has been restored when viewed from the client.
+        assertEquals(1, this.client.onRPC(getMethodName, noParams));
+        // ... and on the server.
+        assertEquals(1, so.getI());
 
         verify(this.server).onRPC(getMethodName, noParams);
     }

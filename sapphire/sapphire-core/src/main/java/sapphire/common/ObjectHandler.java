@@ -73,13 +73,27 @@ public class ObjectHandler implements Serializable {
 		this.object = object;
 	}
 
-	public void writeObject(ObjectOutputStream out) throws IOException {
+	private void writeObject(ObjectOutputStream out) throws IOException {
 		out.writeObject(object);
 	}
 
-	public void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+	/**
+	 * Write the object to a stream.
+	 * @param out
+	 * @throws IOException
+	 * Note - it's not possible to simply make writeObject public, as java serialization requires it to be private.
+	 */
+	public void write(ObjectOutputStream out) throws IOException {
+		this.writeObject(out);
+	}
+
+	private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
 		Object obj = in.readObject();
 		fillMethodTable(obj);
 		this.object = (Serializable) obj;
+	}
+
+	public void read(ObjectInputStream in) throws IOException, ClassNotFoundException {
+		this.readObject(in);
 	}
 }

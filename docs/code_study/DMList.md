@@ -13,12 +13,16 @@ I will assign a rate, LOW/MED/HIGH, to each DM to indicate its value to App deve
 
 > Efficient distribution and access for immutable SOs
 
+Status: Implemented by Donghui https://github.com/Huawei-PaaS/DCAP-Sapphire/pull/50
+
 Quinton: I guess that this means that a local read-only replica of this sapphire object can be instantiated at each client.  All reads go to the local replica, and all writes fail.  That is pretty trivial to implement, and practically very useful. useful. We should check with Irene that this was the intention.
 
 <span style="color:blue">Should *immutable* be a property declared on Sapphire object, or a DM?</span> 
 
 ### AtLeastOnceRPC (LOW) 27 LoC
 > Automatically retry RPCs for bounded amount of time
+
+Status: Implemented by @h-w-chen https://github.com/Huawei-PaaS/DCAP-Sapphire/pull/19
 
 This DM will retry failed operations until timeout is reached.
 
@@ -32,6 +36,7 @@ By the way, to make this DM work properly, we have to make one change to the cur
 
 
 ### KeepInPlace / KeepInRegion / KeepOnDevice (N/A) . 15/15/45 LoC
+
 > Keep SO where it was created (e.g., to access device-specific APIs)
 
 Terry: If I understand correctly, by default, SOs cannot move. In order to make a SO mobile, the SO must be managed by some special DM which has the object moving capability. Do we really need a `KeepInPlace` DM? If a SO is not supposed to move, we simply don't associate any DM to this SO. 
@@ -47,12 +52,18 @@ Quinton:
 ## Caching
 
 ### ExplicitCaching (LOW) 41 LoC
+
 > Caching w/ explicit push and pull calls from application
+
+Status: Implemented by @h-w-chen https://github.com/Huawei-PaaS/DCAP-Sapphire/pull/21
 
 <span style="color:blue">Not sure what it is...</span>
 
 ### LeaseCaching 133 LoC
+
 > Caching w/ server granting leases, local reads and writes for lease-holder
+
+Status: Implemented by Irene.  https://github.com/Huawei-PaaS/DCAP-Sapphire/blob/master/sapphire/sapphire-core/src/main/java/sapphire/policy/cache/CacheLeasePolicy.java . Still needs unit tests.
 
 Quinton: From Irene's thesis: "Figure 2.4 shows a simplified definition of the LeasedCaching DM that we provide in the Sapphire
 Library. We include code for the Proxy component and the function declarations from the Instance
@@ -100,7 +111,10 @@ Objects into one SO or implement concurrency support at the application level to
 effect.
 
 ### WriteThroughCaching (LOW) 43 LoC
+
 > Caching w/ writes serialized to server and stale, local reads
+
+Status: Implemented by @DonghuiZhuo https://github.com/Huawei-PaaS/DCAP-Sapphire/pull/20
 
 *WriteThroughCache* directs write operations (i.e. mutable operations) onto cached object and through to remote object before confirming write completion. Read operations (i.e. immutable operations) will be invoked on cached object directly.
 
@@ -116,7 +130,10 @@ The value of this DM is rated as LOW because
 Quinton: Firstly, same argument as above for why we should implement this anyway.  It's dead simple, and avoids devs having to break out into some other APi to get caching behaviour. Secondly, the way mutable and immutable operations are distinguished in the Sapphire paper are using diff (on abject state before and after the operation.  It suggests (and I agree) that a method annotation would be a better approach.
 
 ### ConsistentCaching 98 LoC
+
 > Caching w/ updates sent to every replica for strict consistency
+
+Status: Not yet implemented (as of 2018-01-30).
 
 *ConsistentCaching* caches Sapphire object instance on local machine. *Read* operations will be invoked on local cached object. *Write* operations will be directed to remote Sapphire object. If the Sapphire object has multiple *replicas*, *write* operations will be invoked on all replicas.
 
@@ -135,14 +152,20 @@ Quinton: Synchronously, otherwise replicas are only eventually consistent, not s
 ## Serializability
 
 ### SerializableRPC 10 LoC
+
 > Serialize all RPCs to SO with server-side locking
+
+Status: Implemented by @h-w-chen https://github.com/Huawei-PaaS/DCAP-Sapphire/pull/21
 
 Main logic of this DM occurs on server side. Upon receiving a RPC request, *SerializableRPC* will 1) grab a lock on the Sapphire object, and 2) invoke the RPC on the Sapphire object. All method invocations on the Sapphire object will go through the lock and therefore will be serialized. 
 
 * For Sapphire objects with multiple replicas, should RPCs be serialized across all replicas, or serialized against one specific replica?
 
 ### LockingTransactions 81 LoC
-> Multi-RPC transactions w/ locking, no concurrent transactions 
+
+> Multi-RPC transactions w/ locking, no concurrent transactions
+
+Status: Implemented by @quinton-hoole https://github.com/Huawei-PaaS/DCAP-Sapphire/pull/49
 
 *LockingTransactions* uses lock to enforce the serial execution of transactions each of which consists of one or many RPC calls.
 
@@ -152,12 +175,18 @@ Main logic of this DM occurs on server side. Upon receiving a RPC request, *Seri
 * Can users call methods on multiple Sapphire objects in one transaction, e.g. SO1.A() and SO2.B()?
 
 ### OptimisticTransactions 92 LoC
+
 > Transactions with optimistic concurrency control, abort on conflict
+
+Status: Not yet implemented.
 
 ## Checkpointing
 
 ### ExplicitCheckpoint 51 LoC
+
 > App-controlled checkpointing to disk, revert last checkpoint on failure
+
+Status: Implemented by @quinton-hoole https://github.com/Huawei-PaaS/DCAP-Sapphire/pull/36
 
 *ExplicitCheckpoint* allows users to manually checkpoint Sapphire object state via `SO.checkpoint()` API. Sapphire object state will be saved on local host. Users can manually revert Sapphire object to the last checkpoint by calling `SO.revert()` API.
 
@@ -170,7 +199,10 @@ Terry: * If *revert* is performed by system automatically, then *on which failur
 Quinton: See above.
 
 ### PeriodicCheckpoint 65 LoC
+
 > Checkpoint to disk every N RPCs, revert to last checkpoint on failure
+
+Status: Implemented by @quinton-hoole https://github.com/Huawei-PaaS/DCAP-Sapphire/pull/37
 
 *PeriodicCheckpoint* periodically, e.g. every N RPCs, saves Sapphire object state on local host. This DM saves Sapphire object before invokes any method on the Sapphire object. If RPC invocation succeeds, result will be returned to client. If RPC invocation fails, Sapphire object will be reverted to last checkpoint, and an error will be thrown to client.
 
@@ -183,15 +215,22 @@ Terry: * What if a Sapphire object dies? Will we loose checkpoint data?
 Quinton: No, I think we can probably avoid that, by persisting the state to the local disk (indexed by object-id or whatever).  If the local disk/server fails, then the checkpoint will of course disappear.  To cover that we can also support checkpointing to remote, redundant, distributed storage (e.g. Diamond or Tapir).
 
 ### DurableSerializableRPC 29 LoC
+
 > Durable serializable RPCs, revert to last successful RPC on failure
+
+Status: Implemented by @quinton-hoole https://github.com/Huawei-PaaS/DCAP-Sapphire/pull/39
 
 *DurableSerializableRPC* will 1) save Sapphire object state on local host, 2) grab a lock for the RPC call, and 3) invoke RPC on the Sapphire object. If RPC call succeeds, the result will be returned to client. If RPC call fails, the Sapphire object state will be restored, and an error will be thrown back to the client.  
 
 Terry: * What is the difference between *DurableSerializableRPC* and *DurableTransactions*? Looks like *DurableSerializableRPC* deals with one RPC call, but *DurableTransactions* deals with multiple RPC calls in one transaction.
 
 Quinton: Yes, Irene describes serializable consistency and transactions [here](https://irenezhang.net/blog/2015/02/01/consistency.html)
+
 ### DurableTransactions 112 LoC
+
 > Durably committed transactions, revert to last commit on failure
+
+Status: Not yet implemented.  Very similar to ExplicitTransactions plus DurableSerializableRPC above.  Should be trivial.  Quinton can do this.
 
 *DurableTransactions* will 1) save Sapphire object state on local host, 2) grab a lock for the transaction, and 3) invoke multiple *update* operations specified in the transaction boundry on the Sapphire object. If any *update* operation fail, the Sapphire object state will be restored, and an error will be thrown back to the client.  
 
@@ -203,7 +242,10 @@ Quinton: Yes, Irene describes serializable consistency and transactions [here](h
 Quinton: These are essentially all identical except for where the replicas live - in the same cluster/cloud zone, across zones in a cloud region/geo-location, across cloud regions, or across mobile devices (P2P).
 
 ### ConsensusRSM-cluster 129 LoC
+
 > Single cluster replicated SO w/ atomic RPCs across at least f + 1 replicas
+
+Status: Implementation started by @quinton-hoole (2018-01-30).  Will form part of HA demo in Feb/Mar 2018.
 
 Quinton: This is essentially the [PAXOS](https://en.wikipedia.org/wiki/Paxos_(computer_science)) or [Raft](https://en.wikipedia.org/wiki/Raft_(computer_science)) consensus algorithms.  It seems impossible to implement even rough approximations of these effectively in 130 lines of code without using existing consensus libraries (e.g. [etcd](https://github.com/coreos/etcd), or [raft](https://raft.github.io/)). 
 
@@ -212,12 +254,18 @@ Terry: I have a different interpretation. According to the DM description, I don
 Quinton: Yes, the problem with that simple approach is that it doesn't work properly in practise.  That's precisely why PAXOS or RAFT or equivalent consensus algorithms are required, to cover all the edge cases. We could certainly start with the simple approach as you describe, but it's not useful in production, and we'll eventually need to use PAXOS or RAFT, I'm pretty sure.  More detail here:  https://en.wikipedia.org/wiki/Consensus_(computer_science)
 
 ### ConsensusRSM-Geo 132 LoC
+
 > Geo-replicated SO w/ atomic RPCs across at least f + 1 replicas
+
+Status: Not yet implemented.  Trivial extension of the above across zones/geographies.
 
 Quinton: See above.
 
 ### ConsensusRSM-P2P 138 LoC
+
 > SO replicated across client devices w/ atomic RPCs over f + 1 replicas
+
+Status: Not yet implemented.
 
 Quinton: From Irene's thesis: "Peer-to-peer. We built peer-to-peer DMs to support the direct sharing of SOs across client mobile
 devices without needing to go through the cloud. These DMs dynamically place replicas on nodes
@@ -245,7 +293,10 @@ network connection, which can change over time.
 Quinton: It seems that CodeOffloading as described above is only suitable for operations that do not read or write state, or only read immutable state.  Otherwise the method invocation cannot be done interchangably on different replicas (e.g. either on a mobile device or a cloud server).  Or else such a code offloading DM needs to be combined with Consistent or Explicit caching.  That way the operation can be executed on any replica, and the resulting state changes propagated to the copies where it was not executed?  Or else the objects need to be migrated to a particular location where all mutating operations need to be invoked.  But for SO's with multiple clients, this seems effectively impossible (e.g. if multiple mobile devices access the same SO, that SO cannot reside on either of the mobile devices - it must reside e.g. on a cloud machine). This whole concept of code offloading vs migration is quite vague and confusing to me.  We need to discuss further with UW/Irene.
 
 ### ExplicitMigration 20 LoC
+
 > Dynamic placement of SO with explicit move call from application
+
+Status: Implemented by https://github.com/Huawei-PaaS/DCAP-Sapphire/pull/53
 
 Quinton: The intention here is fairly clear, but exactly what calls the application is required to make to move the object are not.  In theory, according to the paper:
 
@@ -260,7 +311,10 @@ Assume that the general intention is as follows:
 
 
 ### DynamicMigration 57 LoC
+
 > Adaptive, dynamic placement to minimize latency based on accesses
+
+Status: Not yet implemented.  @Donghui-Zhuo and Olesya Melnichenko <olesya.melnichenko@huawei.com> are looking into it.
 
 Quinton: This one seems quite tricky, but super-valuable.  Here's an initial proposal (although it's not clear how to fit this into 57 LoC.  We should discuss this with UW/Irene.
 
@@ -274,17 +328,26 @@ Terry: Placement decision is the hard part. Suppose a sapphire object serves mul
 Quinton: Agreed.  Placement seems hard.  Irene mentioned using [Q-learning](https://en.wikipedia.org/wiki/Q-learning) which is non-trivial, and supports the assertion that there is no obvious simple algorithm.  See also the flow graph discussion above.
 
 ### ExplicitCodeOffloading 49 Loc
+
 > Dynamic code offloading with offload call from application
 
+Status: Not yet implemented (2018-01-30)
+
 ### CodeOffloading 95 LoC
+
 > Adaptive, dynamic code offloading based on measured latencies
+
+Status: Not yet implemented (2018-01-30)
 
 * What exactly is the difference between Offloading and Migration
 
 ## Scalability
 
 ### LoadBalancedFrontend 53 LoC
+
 > Simple load balancing w/ static number of replicas and no consistency
+
+Status: Not yet implemented (2018-01-30)
 
 Quinton: On the client side of the DM for a server Sapphire Object, all RPC's to a server Sapphire Object from a given client are load balanced (using simple round robin load balancing) equally across all replicas of the server Sapphire Object.  More details on Round Robin load balancing are available [here](http://www.jscape.com/blog/load-balancing-algorithms).  Each client side DM instance should randomise the order in which it performs round robin against replicas, so that all clients do not target replicas in the same order, leading to unbalanced load.
 
@@ -295,12 +358,18 @@ Quinton: On the client side of the DM for a server Sapphire Object, all RPC's to
   * a configurable value for the number of concurrent requests supported per replica per should be provided.  This should be enforced on the server side of the DM.  If the number of concurrent requests against a given replica exceeds that number, requests to that server replica should fail (in the server DM) with an appropriate exception (indicating server overload).  In a later version, a configurable length client-side and/or server side queue can be added to deal better with such overload situations..
   
 ### ScaleUpFrontend 88 LoC
+
 > Load-balancing w/ dynamic allocation of replicas and no consistency
+
+Status: Not yet implemented (2018-01-30)
 
 Quinton: As above, but when a given replica reaches it's full capacity (see above), the server-side DM for that replica should create one additional replica.  A given server-side DM instance should not create more than 1 replica per n milliseconds (with n being configurable).  This is to limit the rate at which scale-up can occur.  When the load at a given replica drops to approximately p * (m-2)/m (where m is the current number of replicas, and p is the maximum concurrency setting per replica), then the server-side DM for that replica should remove one replica (randomly chosen).  This is because there are in theory two more replicas than required, so one can be removed.  The number of replicas should not be reduced below 2 (in case one fails).  The aforementioned algorithm is inadequate in a production environment, but is good enough to illustrate the concept.  In later versions, more sophisticated and configurable scale-up and scale-down algorithms can be implmented, and DM's which offload scale-up to external agents (e.g. istio, kubernetes HPA or similar) can be implemented.
 
 
 ### LoadBalancedMasterSlave 177 LoC
+
 > Dynamic allocation of load-balanced M-S replicas w/ eventual consistency
+
+Status: Not yet implemented (2018-01-30)
 
 Quinton: As above for read requests (i.e read requests are load balanced across all replicas, with auto-scale-up and scale-down of replicas).  In addition, write requests are all directed to an elected master replica, that (asynchronously) replicates all writes to all replicas (with retries on failures - see AtLeasetOnceRPC as above).  In the inital version, simple master election will be implmented by all client-side DM's selecting the lowest numbered existing replica as the master.  In later versions, more sophisticated master election can be implemented (e.g. by adding health checks, removal of non-responsive master, and using an external etcd/zookeeper or similar to manage master election in the standard way, e.g. [like this](https://www.projectcalico.org/using-etcd-for-elections/) or [this](http://techblog.outbrain.com/2011/07/leader-election-with-zookeeper/).

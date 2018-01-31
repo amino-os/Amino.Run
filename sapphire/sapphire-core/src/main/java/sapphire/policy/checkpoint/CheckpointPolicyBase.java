@@ -38,7 +38,7 @@ public abstract class CheckpointPolicyBase extends DefaultSapphirePolicy{
             try {
                 FileOutputStream ofs = new FileOutputStream(this.checkPointFileName);
                 oos = new ObjectOutputStream(ofs);
-                this.appObject.writeObject(oos);
+                this.appObject.write(oos);
                 oos.flush();
             }
             finally {
@@ -61,7 +61,7 @@ public abstract class CheckpointPolicyBase extends DefaultSapphirePolicy{
             try {
                 FileInputStream ifs = new FileInputStream(this.checkPointFileName);
                 ois = new ObjectInputStream(ifs);
-                this.appObject.readObject(ois);
+                this.appObject.read(ois);
             }
             finally {
                 if (ois != null) {

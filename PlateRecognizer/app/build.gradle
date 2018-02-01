@@ -1,13 +1,14 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 23
-    buildToolsVersion "23.0.3"
+    compileSdkVersion 26
+    //buildToolsVersion "23.0.3"
+    buildToolsVersion "26.0.2"
 
     defaultConfig {
         applicationId "com.aiseminar.platerecognizer"
-        minSdkVersion 18
-        targetSdkVersion 23
+        minSdkVersion 16
+        targetSdkVersion 26
         versionCode 1
         versionName "1.0"
     }
@@ -19,7 +20,7 @@ android {
 
     task buildNative(type: Exec, description: 'Compile JNI source via NDK') {
         def ndkDir = android.ndkDirectory
-        commandLine "$ndkDir/ndk-build",
+        commandLine "$ndkDir/ndk-build.cmd",
                 '-C', file('src/main/jni').absolutePath, // Change src/main/jni the relative path to your jni source
                 '-j', Runtime.runtime.availableProcessors(),
                 'all',
@@ -28,7 +29,7 @@ android {
 
     task cleanNative(type: Exec, description: 'Clean JNI object files') {
         def ndkDir = android.ndkDirectory
-        commandLine "$ndkDir/ndk-build",
+        commandLine "$ndkDir/ndk-build.cmd",
                 '-C', file('src/main/jni').absolutePath, // Change src/main/jni the relative path to your jni source
                 'clean'
     }
@@ -50,7 +51,8 @@ android {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     testCompile 'junit:junit:4.12'
-    compile 'com.android.support:appcompat-v7:23.4.0'
+    //compile 'com.android.support:appcompat-v7:23.4.0'
+    compile 'com.android.support:appcompat-v7:26.1.0'
     compile 'com.jakewharton:butterknife:7.0.1'
     compile 'cn.pedant.sweetalert:library:1.3'
 }

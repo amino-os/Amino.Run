@@ -37,6 +37,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 
 import butterknife.Bind;
@@ -454,9 +456,17 @@ public class CameraActivity extends BaseActivity implements SurfaceHolder.Callba
             CameraActivity.this.sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.parse("file://" + pictureFile.getAbsolutePath())));
 
             // 进行车牌识别
+            //SimpleDateFormat dfs = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+            //long start = dfs.getTime();
+            //long end = dfs.getTime();
+            Calendar calendar = Calendar.getInstance();
+            long start =calendar.getTimeInMillis();
             String plate = mPlateRecognizer.recognize(pictureFile.getAbsolutePath());
+            long end = calendar.getTimeInMillis();
+            long gap =start-end;
             if (null != plate && ! plate.equalsIgnoreCase("0")) {
-                mTvPlateResult.setText(plate);
+                mTvPlateResult.setText(plate+":s"+start+":e"+end);
+
             } else {
                 mTvPlateResult.setText("请调整角度");
             }

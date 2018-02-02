@@ -20,6 +20,7 @@ public abstract class DefaultSapphirePolicyUpcallImpl extends SapphirePolicyLibr
 			try {
 				ret = getServer().onRPC(method, params);
 			} catch (RemoteException e) {
+				// TODO: Quinton: This looks like a bug.  RemoteExceptions are silently swallowed and null is returned.
 				setServer(getGroup().onRefRequest());
 			}
 			return ret;

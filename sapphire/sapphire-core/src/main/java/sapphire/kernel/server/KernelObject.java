@@ -43,7 +43,7 @@ public class KernelObject extends ObjectHandler {
 		coalesced = true;
 		while (rpcCounter.availablePermits() < MAX_CONCURRENT_RPCS - 1) {
 			try {
-				Thread.sleep(10);
+				Thread.sleep(10); //TODO: Quinton: Why sleep for an arbitrary amount of time here?  Seems like we need to block on a semaphore here instead.
 			} catch (InterruptedException e) {
 				continue;
 			}

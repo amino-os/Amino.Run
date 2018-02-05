@@ -2,6 +2,7 @@ package sapphire.policy.serializability;
 
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.Date;
 
 import sapphire.common.SapphireObjectNotAvailableException;
 import sapphire.kernel.common.KernelObjectNotFoundException;
@@ -86,28 +87,41 @@ public class LockingTransactionPolicy extends CacheLeasePolicy {
                     rollbackTransaction();
                     throw new Exception("Transaction timed out.  Transaction rolled back.");
                 } else {
-                    sync(); // Copy the results of the transaction to the server.
-                    releaseCurrentLease();
-                    transactionInProgress = false;
+                    sync(); // Copy the results of the transaction to the server and release lease
                 }
             } else {
                 throw new NoTransactionStartedException("No transaction to commit");
             }
         }
 
+        @Override
+        public void releaseCurrentLease() throws Exception {
+            try {
+                super.releaseCurrentLease();
+            }
+            finally {
+                transactionInProgress = false;
+            }
+        }
+
+
         public synchronized void rollbackTransaction() throws Exception {
             if (transactionInProgress) {
                 releaseCurrentLease();
-                transactionInProgress = false;
             } else {
                 throw new NoTransactionStartedException("No transaction to roll back");
             }
         }
 
-        // To make visible for unit testing, because superclass is in a different package.
         @Override
-        protected void sync() {
-            super.sync();
+        protected void sync() throws Exception {
+            try {
+                super.sync();
+            }
+            finally {
+                releaseCurrentLease();
+            }
+
         }
     }
 

@@ -12,6 +12,21 @@ task deleteJar(type: Delete) {
     delete 'libs/sapphire-core.jar'
 }
 
+// run `gradle delstubs` to remove stub java files
+task delstubs(type: Delete) {
+    delete fileTree('src/main/java/sapphire/policy/stubs') {
+        include '**/*_Stub.java'
+    }
+}
+
+// TODO: We could use gradle to do automatic incremental builds.  
+// Details can be found at https://blog.gradle.org/introducing-incremental-build-support
+task genstubs(type: Exec) {
+  dependsOn 'delstubs', 'build'
+  executable "sh"
+  args "-c", "pushd ../../generators && python generate_policy_stubs_on_host.py && popd"
+}
+
 task createJar(type: Copy) {
     from('build/intermediates/bundles/release/')
     into('libs/jars/')

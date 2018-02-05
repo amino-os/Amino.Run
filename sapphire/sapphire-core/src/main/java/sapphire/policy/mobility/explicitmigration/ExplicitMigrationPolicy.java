@@ -1,16 +1,13 @@
-package sapphire.policy.migration.explicitmigration;
-
+package sapphire.policy.mobility.explicitmigration;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
-import java.util.Random;
 import java.util.logging.Logger;
 
 import sapphire.kernel.common.GlobalKernelReferences;
 import sapphire.kernel.server.KernelServerImpl;
 import sapphire.oms.OMSServer;
-import sapphire.policy.checkpoint.CheckpointPolicyBase;
-import sapphire.policy.migration.MigrationPolicyBase;
+import sapphire.policy.mobility.MigrationPolicyBase;
 
 /**
  * Created by mbssaiakhil on 1/22/18.
@@ -30,7 +27,7 @@ public class ExplicitMigrationPolicy extends MigrationPolicyBase {
         @Override
         public Object onRPC(String method, ArrayList<Object> params) throws Exception {
             if (isMigrateObject(method)) {
-                migrateObject();
+                migrateObject((InetSocketAddress)params.get(0));
                 return null;
             }
             else {
@@ -41,27 +38,26 @@ public class ExplicitMigrationPolicy extends MigrationPolicyBase {
         /**
          * Migrates Sapphire Object to different Server
          * @throws Exception
-         * Currently the migrateObject migrates the object to a random Server other than the one SO
-         * is currently on. Later it can be extended by using many metrics like CPU, Memory
-         * utilization by other servers. Can be thought more regarding this.
+         * migrateObject migrates the object to the specified Kernel Server
          */
-        public void migrateObject() throws Exception {
-            logger.info("[ExplicitMigrationPolicy] Performing explicit migration of the object");
+        public void migrateObject(InetSocketAddress destinationAddr) throws Exception {
+            logger.info("[ExplicitMigrationPolicy] Performing Explicit Migration of the object");
             OMSServer oms = GlobalKernelReferences.nodeServer.oms;
             ArrayList<InetSocketAddress> servers = oms.getServers();
 
             KernelServerImpl localKernel = GlobalKernelReferences.nodeServer;
             InetSocketAddress localAddress = localKernel.getLocalHost();
-            ArrayList<InetSocketAddress> otherKernelServers = getOtherKernelServers(servers, localAddress);
+            ArrayList<InetSocketAddress> allOtherKernelServers = getAllOtherKernelServers(servers, localAddress);
 
-            if (otherKernelServers.isEmpty()) {
-                logger.info("[ExplicitMigrationPolicy] There are no target servers to migrate Sapphire Object" );
-            } else {
-                Random rand = new Random();
-                InetSocketAddress randomTarget = otherKernelServers.get(rand.nextInt(otherKernelServers.size()));
-                logger.info("[ExplicitMigrationPolicy] Shifting object " + this.oid + " to " + randomTarget);
-                localKernel.moveKernelObjectToServer(randomTarget, this.oid);
+            if (localAddress.equals(destinationAddr)) {
+                throw new DestinationSameAsSourceKernelServerException("The local and destinations Kernel Server address of migrations are same");
+
+            } else if (!(allOtherKernelServers.contains(destinationAddr))) {
+                throw new NotFoundDestinationKernelServerException("The destinations address passed is not present as one of the Kernel Servers");
             }
+
+            logger.info("[ExplicitMigrationPolicy] Explicitly Migrating object " + this.oid + " to " + destinationAddr);
+            localKernel.moveKernelObjectToServer(destinationAddr, this.oid);
         }
 
         Boolean isMigrateObject(String method) {
@@ -69,5 +65,5 @@ public class ExplicitMigrationPolicy extends MigrationPolicyBase {
             return method.contains(".migrateObject(");
         }
     }
-    public static class GroupPolicy extends CheckpointPolicyBase.ServerPolicy {}
+    public static class GroupPolicy extends MigrationPolicyBase.GroupPolicy {}
 }

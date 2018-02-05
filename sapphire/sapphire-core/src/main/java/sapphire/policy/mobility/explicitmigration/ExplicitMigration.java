@@ -1,4 +1,6 @@
-package sapphire.policy.migration.explicitmigration;
+package sapphire.policy.mobility.explicitmigration;
+
+import java.net.InetSocketAddress;
 
 /**
  * Created by mbssaiakhil on 1/22/18.
@@ -8,5 +10,5 @@ package sapphire.policy.migration.explicitmigration;
  */
 
 public interface ExplicitMigration {
-    public void migrateObject() throws Exception;
+    public void migrateObject(InetSocketAddress destinationAddr) throws Exception;
 }

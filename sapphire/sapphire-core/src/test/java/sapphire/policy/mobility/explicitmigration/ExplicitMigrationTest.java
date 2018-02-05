@@ -1,4 +1,4 @@
-package sapphire.policy.migration.explicitmigration;
+package sapphire.policy.mobility.explicitmigration;
 
 /**
  * Created by mbssaiakhil on 23/1/18.

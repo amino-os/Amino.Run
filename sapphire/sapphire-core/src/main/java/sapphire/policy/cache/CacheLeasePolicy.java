@@ -54,12 +54,16 @@ public class CacheLeasePolicy extends SapphirePolicy {
 		public Date getLeaseTimeout() {
 			return leaseTimeout;
 		}
-		
+
+		public void setLeaseTimeout(Date timeOut) {
+			leaseTimeout = timeOut;
+		}
+
 		public AppObject getCachedObject() {
 			return cachedObject;
 		}
 	}
-	
+
 	/**
 	 * Cache lease client policy. The client side proxy for the cache that holds the
 	 * cached object, gets leases from the server and writes locally. 
@@ -104,7 +108,7 @@ public class CacheLeasePolicy extends SapphirePolicy {
 			}
 		}
 		
-		protected void sync() {
+		protected void sync() throws Exception {
 			server.syncObject(lease, cachedObject.getObject());
 		}
 		
@@ -199,11 +203,11 @@ public class CacheLeasePolicy extends SapphirePolicy {
 		}
 
 		
-		private Date generateTimeout() {
+		protected Date generateTimeout() {
 			return generateTimeout(DEFAULT_LEASE_PERIOD);
 		}
 
-		private Date generateTimeout(long leasePeriodMillisec) {
+		protected Date generateTimeout(long leasePeriodMillisec) {
 			Date currentTime = new Date();
 			return new Date(currentTime.getTime() + leasePeriodMillisec);
 		}
@@ -261,7 +265,7 @@ public class CacheLeasePolicy extends SapphirePolicy {
 			}
 		}
 		
-		public void syncObject(UUID lease, Serializable object) {
+		public void syncObject(UUID lease, Serializable object) throws Exception {
 			appObject.setObject(object);
 		}
 

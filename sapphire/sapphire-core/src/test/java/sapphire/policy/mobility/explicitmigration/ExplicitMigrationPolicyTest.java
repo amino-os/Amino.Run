@@ -25,17 +25,22 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import sapphire.policy.mobility.explicitmigration.ExplicitMigrationPolicyTestConstants;
+
 /**
- * Created by mbssaiakhil on 23/1/18.
+ * Created by Malepati Bala Siva Sai Akhil on 23/1/18.
  */
 
 @RunWith(MockitoJUnitRunner.class)
 public class ExplicitMigrationPolicyTest {
+
+    public static class ExplicitMigrationTest extends ExplicitMigrationImpl {}
+
     ExplicitMigrationPolicy.ClientPolicy client;
     ExplicitMigrationPolicy.ServerPolicy server;
-    private sapphire.policy.mobility.explicitmigration.ExplicitMigrationTest so;
+    private ExplicitMigrationTest so;
     private AppObject appObject;
-    private ArrayList<Object> noParams, oneParam;
+    private ArrayList<Object> noParams;
 
     @Rule
     public ExpectedException thrown = ExpectedException.none();
@@ -50,20 +55,17 @@ public class ExplicitMigrationPolicyTest {
         server.$__initialize(appObject);
         this.client.setServer(this.server);
         noParams = new ArrayList<Object>();
-        oneParam = new ArrayList<Object>();
-        oneParam.add(new InetSocketAddress("192.168.42.146", 22342));
     }
 
     @Test
     public void regularRPC() throws Exception {
         String methodName = "public java.lang.String java.lang.Object.toString()";
-        InetSocketAddress testDestAddr = new InetSocketAddress("192.168.42.146", 22342);
 
         this.client.onRPC(methodName, noParams);
         verify(this.server).onRPC(methodName, noParams);
 
         // Check that DM methods were not called
-        verify(this.server, never()).migrateObject(testDestAddr);
+        verify(this.server, never()).migrateObject(ExplicitMigrationPolicyTestConstants.regularRPC_testDestAddr);
     }
 
     // ToDo: Mock the oms of KernelServerImpl and getServers() of OMSServer or OMSServerImpl
@@ -74,47 +76,43 @@ public class ExplicitMigrationPolicyTest {
     @Test @Ignore
     public void basicExplicitMigration() throws Exception {
         String explicitMigrateObject = "public void sapphire.policy.mobility.explicitmigration.ExplicitMigrationImpl.migrateObject() throws java.lang.Exception";
-        InetSocketAddress testDestAddr = new InetSocketAddress("192.168.42.146", 22342);
 
         // After mocking following should be the server list returned from getServers() of OMSServerImpl
         ArrayList<InetSocketAddress> mockedServerList = new ArrayList<InetSocketAddress>();
-        mockedServerList.add(new InetSocketAddress("192.168.42.145", 22342));
-        mockedServerList.add(new InetSocketAddress("192.168.42.146", 22342));
+        mockedServerList.add(ExplicitMigrationPolicyTestConstants.basicExplicitMigration_kernelServerAddr1);
+        mockedServerList.add(ExplicitMigrationPolicyTestConstants.basicExplicitMigration_kernelServerAddr2);
 
-        // After mocking following should be localServerAddress
-        InetSocketAddress localServerAddr = new InetSocketAddress("192.168.42.145", 22342);
+        // After mocking ExplicitMigrationPolicyTestConstants.basicExplicitMigration_localServerAddr should be localServerAddress
 
-        ArrayList<InetSocketAddress> someList = new ArrayList<InetSocketAddress>();
-        someList.add(testDestAddr);
+        ArrayList<Object> testDestAddrList = new ArrayList<Object>();
+        testDestAddrList.add(ExplicitMigrationPolicyTestConstants.basicExplicitMigration_testDestAddr);
 
-        this.client.onRPC(explicitMigrateObject, oneParam);
-        verify(this.server).onRPC(explicitMigrateObject, oneParam);
+        this.client.onRPC(explicitMigrateObject, testDestAddrList);
+        verify(this.server).onRPC(explicitMigrateObject, testDestAddrList);
 
         // Check that DM methods were called only once
-        verify(this.server, times(1)).migrateObject(testDestAddr);
+        verify(this.server, times(1)).migrateObject(ExplicitMigrationPolicyTestConstants.basicExplicitMigration_testDestAddr);
     }
 
     @Test @Ignore
     public void selfExplicitMigration() throws Exception {
         String explicitMigrateObject = "public void sapphire.policy.mobility.explicitmigration.ExplicitMigrationImpl.migrateObject() throws java.lang.Exception";
-        InetSocketAddress testDestAddr = new InetSocketAddress("192.168.42.146", 22342);
 
         // After mocking following should be the server list returned from getServers() of OMSServerImpl
         ArrayList<InetSocketAddress> mockedServerList = new ArrayList<InetSocketAddress>();
-        mockedServerList.add(new InetSocketAddress("192.168.42.145", 22342));
-        mockedServerList.add(new InetSocketAddress("192.168.42.146", 22342));
+        mockedServerList.add(ExplicitMigrationPolicyTestConstants.selfExplicitMigration_kernelServerAddr1);
+        mockedServerList.add(ExplicitMigrationPolicyTestConstants.selfExplicitMigration_kernelServerAddr2);
 
-        // After mocking following should be localServerAddress
-        InetSocketAddress localServerAddr = new InetSocketAddress("192.168.42.146", 22342);
+        // After mocking ExplicitMigrationPolicyTestConstants.selfExplicitMigration_localServerAddr should be localServerAddress
 
-        ArrayList<InetSocketAddress> someList = new ArrayList<InetSocketAddress>();
-        someList.add(testDestAddr);
+        ArrayList<Object> testDestAddrList = new ArrayList<Object>();
+        testDestAddrList.add(ExplicitMigrationPolicyTestConstants.selfExplicitMigration_testDestAddr);
 
-        this.client.onRPC(explicitMigrateObject, oneParam);
-        verify(this.server).onRPC(explicitMigrateObject, oneParam);
+        this.client.onRPC(explicitMigrateObject, testDestAddrList);
+        verify(this.server).onRPC(explicitMigrateObject, testDestAddrList);
 
         // Check that DM methods were called only once
-        verify(this.server, times(1)).migrateObject(testDestAddr);
+        verify(this.server, times(1)).migrateObject(ExplicitMigrationPolicyTestConstants.selfExplicitMigration_testDestAddr);
 
         thrown.expect(DestinationSameAsSourceKernelServerException.class);
         thrown.expectMessage("The local and destinations Kernel Server address of migrations are same");
@@ -123,25 +121,23 @@ public class ExplicitMigrationPolicyTest {
     @Test @Ignore
     public void destinationNotFoundExplicitMigration() throws Exception {
         String explicitMigrateObject = "public void sapphire.policy.mobility.explicitmigration.ExplicitMigrationImpl.migrateObject() throws java.lang.Exception";
-        InetSocketAddress testDestAddr = new InetSocketAddress("192.168.42.145", 22342);
 
         // After mocking following should be the server list returned from getServers() of OMSServerImpl
         ArrayList<InetSocketAddress> mockedServerList = new ArrayList<InetSocketAddress>();
-        mockedServerList.add(new InetSocketAddress("192.168.42.145", 22342));
-        mockedServerList.add(new InetSocketAddress("192.168.42.146", 22342));
-        mockedServerList.add(new InetSocketAddress("192.168.42.147", 22342));
+        mockedServerList.add(ExplicitMigrationPolicyTestConstants.destinationNotFoundExplicitMigration_kernelServerAddr1);
+        mockedServerList.add(ExplicitMigrationPolicyTestConstants.destinationNotFoundExplicitMigration_kernelServerAddr2);
+        mockedServerList.add(ExplicitMigrationPolicyTestConstants.destinationNotFoundExplicitMigration_kernelServerAddr3);
 
-        // After mocking following should be localServerAddress
-        InetSocketAddress localServerAddr = new InetSocketAddress("192.168.42.148", 22342);
+        // After mocking ExplicitMigrationPolicyTestConstants.destinationNotFoundExplicitMigration_localServerAddr should be localServerAddress
 
-        ArrayList<InetSocketAddress> someList = new ArrayList<InetSocketAddress>();
-        someList.add(testDestAddr);
+        ArrayList<Object> testDestAddrList = new ArrayList<Object>();
+        testDestAddrList.add(ExplicitMigrationPolicyTestConstants.destinationNotFoundExplicitMigration_testDestAddr);
 
-        this.client.onRPC(explicitMigrateObject, oneParam);
-        verify(this.server).onRPC(explicitMigrateObject, oneParam);
+        this.client.onRPC(explicitMigrateObject, testDestAddrList);
+        verify(this.server).onRPC(explicitMigrateObject, testDestAddrList);
 
         // Check that DM methods were called only once
-        verify(this.server, times(1)).migrateObject(testDestAddr);
+        verify(this.server, times(1)).migrateObject(ExplicitMigrationPolicyTestConstants.destinationNotFoundExplicitMigration_testDestAddr);
 
         thrown.expect(NotFoundDestinationKernelServerException.class);
         thrown.expectMessage("The destinations address passed is not present as one of the Kernel Servers");
@@ -149,5 +145,5 @@ public class ExplicitMigrationPolicyTest {
 }
 
 // Stub because AppObject expects a stub/subclass of the original class.
-class ExplicitMigrationTestStub extends ExplicitMigrationTest implements Serializable {}
+class ExplicitMigrationTestStub extends ExplicitMigrationPolicyTest.ExplicitMigrationTest implements Serializable {}
 

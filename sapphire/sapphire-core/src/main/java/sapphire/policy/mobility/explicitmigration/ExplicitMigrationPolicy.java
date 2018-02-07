@@ -8,6 +8,7 @@ import sapphire.kernel.common.GlobalKernelReferences;
 import sapphire.kernel.server.KernelServerImpl;
 import sapphire.oms.OMSServer;
 import sapphire.policy.DefaultSapphirePolicy;
+import sapphire.kernel.common.KernelObjectMigratingException;
 
 /**
  * Created by Malepati Bala Siva Sai Akhil on 1/22/18.
@@ -19,10 +20,51 @@ import sapphire.policy.DefaultSapphirePolicy;
  **/
 
 public class ExplicitMigrationPolicy extends DefaultSapphirePolicy {
-    public static class ClientPolicy extends DefaultClientPolicy {}
+    public static class ClientPolicy extends DefaultClientPolicy {
+        private static Logger logger = Logger.getLogger(ExplicitMigrationPolicy.ClientPolicy.class.getName());
+
+        Object ret = null;
+
+        // Number of retries to perform the RPC before throwing the exception to the user
+        private static final int retryTimes = 10;
+
+        private int cnt = 0;
+
+        @Override
+        public Object onRPC(String method, ArrayList<Object> params) throws Exception {
+            // While migrating if an RPC comes to the Server Side, KernelObjectMigratingException is
+            // thrown from server side and exception would go to user, in order to avoid throwing exception
+            // to user, catching the exception here in the client policy and retrying. If even after retryTimes,
+            // we get the same KernelObjectMigratingException, then we throw the same to the user
+            while (true) {
+                try {
+                    if (isMigrateObject(method)) {
+                        ret = getServer().onRPC(method, params);
+                        return ret;
+                    } else {
+                        return super.onRPC(method, params);
+                    }
+                } catch (KernelObjectMigratingException e) {
+                    logger.info("Caught KernelObjectMigratingException at client policy of ExplicitMigration Policy, retrying migration for count " + cnt++);
+                    if (cnt < retryTimes) {
+                        continue;
+                    } else {
+                        cnt = 0;
+                        logger.info("Retry times has exceeded, so throwing the KernelObjectMigratingException to user");
+                        throw new KernelObjectMigratingException();
+                    }
+                }
+            }
+        }
+
+        Boolean isMigrateObject(String method) {
+            // TODO better check than simple base name
+            return method.contains(".migrateObject(");
+        }
+    }
 
     public static class ServerPolicy extends DefaultServerPolicy {
-        private static Logger logger = Logger.getLogger(SapphireServerPolicy.class.getName());
+        private static Logger logger = Logger.getLogger(ExplicitMigrationPolicy.ServerPolicy.class.getName());
 
         @Override
         public Object onRPC(String method, ArrayList<Object> params) throws Exception {

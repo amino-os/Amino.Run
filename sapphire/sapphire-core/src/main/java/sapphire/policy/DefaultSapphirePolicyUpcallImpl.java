@@ -3,12 +3,8 @@ package sapphire.policy;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 
-import sapphire.common.AppObject;
-import sapphire.kernel.common.KernelOID;
 import sapphire.policy.SapphirePolicy.SapphireServerPolicy;
-import sapphire.policy.SapphirePolicyLibrary.SapphireGroupPolicyLibrary;
-import sapphire.policy.SapphirePolicyLibrary.SapphireServerPolicyLibrary;
-import sapphire.runtime.Sapphire;
+import sapphire.runtime.MethodInvocationRequest;
 
 public abstract class DefaultSapphirePolicyUpcallImpl extends SapphirePolicyLibrary {
 
@@ -30,6 +26,10 @@ public abstract class DefaultSapphirePolicyUpcallImpl extends SapphirePolicyLibr
 		public Object onRPC(String method, ArrayList<Object> params) throws Exception {
 			/* The default behavior is to just invoke the method on the Sapphire Object this Server Policy Object manages */
 			return appObject.invoke(method, params);
+		}
+
+		public Object onRPC(MethodInvocationRequest request) throws Exception {
+			return this.onRPC(request.getMethodName(), request.getParams());
 		}
 	}
 	

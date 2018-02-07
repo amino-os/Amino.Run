@@ -4,8 +4,9 @@ import sapphire.common.AppObject;
 import sapphire.common.Utils;
 import sapphire.policy.SapphirePolicy;
 import sapphire.policy.SapphirePolicyUpcalls.SapphireServerPolicyUpcalls;
+import sapphire.policy.scalability.masterslave.MethodInvocationRequest;
+import sapphire.policy.scalability.masterslave.MethodInvocationResponse;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
@@ -28,6 +29,10 @@ public class AppObjectShimServerPolicy implements SapphireServerPolicyUpcalls{
     @Override
     public Object onRPC(String method, ArrayList<Object> params) throws Exception {
         return appObject.invoke(method, params);
+    }
+
+    public MethodInvocationResponse onRPC(MethodInvocationRequest request) {
+        throw new UnsupportedOperationException("onRPC not supported in AppObjectShimServerPolicy");
     }
 
     @Override

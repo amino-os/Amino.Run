@@ -1,9 +1,9 @@
 package sapphire.policy;
 
 import sapphire.policy.SapphirePolicy.SapphireServerPolicy;
+import sapphire.policy.transaction.IllegalComponentException;
 import sapphire.policy.transaction.TransactionContext;
 import sapphire.policy.transaction.TwoPCClient;
-import sapphire.policy.transaction.IllegalComponentException;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;

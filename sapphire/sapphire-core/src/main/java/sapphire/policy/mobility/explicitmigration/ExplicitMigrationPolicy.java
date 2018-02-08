@@ -2,6 +2,7 @@ package sapphire.policy.mobility.explicitmigration;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import sapphire.kernel.common.GlobalKernelReferences;
@@ -23,33 +24,30 @@ public class ExplicitMigrationPolicy extends DefaultSapphirePolicy {
     public static class ClientPolicy extends DefaultClientPolicy {
         private static Logger logger = Logger.getLogger(ExplicitMigrationPolicy.ClientPolicy.class.getName());
 
-        Object ret = null;
-
-        // Number of retries to perform the RPC before throwing the exception to the user
-        private static final int retryTimes = 10;
-
-        private int cnt = 0;
+        // Maximum time interval for wait before retrying (in seconds)
+        private static final long MAX_WAIT_INTERVAL = 10;
+        // Minimum time interval for wait before retrying (in seconds)
+        private static final long MIN_WAIT_INTERVAL = 1;
 
         @Override
         public Object onRPC(String method, ArrayList<Object> params) throws Exception {
+            int retryCount = 0;
+            long delay;
             // While migrating if an RPC comes to the Server Side, KernelObjectMigratingException is
             // thrown from server side and exception would go to user, in order to avoid throwing exception
             // to user, catching the exception here in the client policy and retrying. If even after retryTimes,
             // we get the same KernelObjectMigratingException, then we throw the same to the user
             while (true) {
                 try {
-                    if (isMigrateObject(method)) {
-                        ret = getServer().onRPC(method, params);
-                        return ret;
-                    } else {
-                        return super.onRPC(method, params);
-                    }
+                    return super.onRPC(method, params);
                 } catch (KernelObjectMigratingException e) {
-                    logger.info("Caught KernelObjectMigratingException at client policy of ExplicitMigration Policy, retrying migration for count " + cnt++);
-                    if (cnt < retryTimes) {
+                    logger.info("Caught KernelObjectMigratingException at client policy of ExplicitMigration Policy: " + e + " retrying migration for count " + retryCount++);
+                    delay = getWaitTimeExp(retryCount);
+                    if (delay < MAX_WAIT_INTERVAL) {
+                        Thread.sleep(TimeUnit.SECONDS.toMillis(delay));
+                        // as delay is within MAX_WAIT_INTERVAL, trying again to perform the RPC before throwing the exception to the user
                         continue;
                     } else {
-                        cnt = 0;
                         logger.info("Retry times has exceeded, so throwing the KernelObjectMigratingException to user");
                         throw new KernelObjectMigratingException();
                     }
@@ -57,9 +55,11 @@ public class ExplicitMigrationPolicy extends DefaultSapphirePolicy {
             }
         }
 
-        Boolean isMigrateObject(String method) {
-            // TODO better check than simple base name
-            return method.contains(".migrateObject(");
+        // getWaitTimeExp(...) returns the next wait interval, in seconds, using
+        // an exponential backoff algorithm
+        public long getWaitTimeExp(int retryCount) {
+            long waitTime = ((long) Math.pow(2, retryCount) * MIN_WAIT_INTERVAL);
+            return waitTime;
         }
     }
 
@@ -83,7 +83,7 @@ public class ExplicitMigrationPolicy extends DefaultSapphirePolicy {
         * migrateObject migrates the object to the specified Kernel Server
         */
         public void migrateObject(InetSocketAddress destinationAddr) throws Exception {
-            logger.info("[ExplicitMigrationPolicy] Performing Explicit Migration of the object to Destination Kernel Server with address as " + destinationAddr);
+            logger.info("Performing Explicit Migration of the object to Destination Kernel Server with address as " + destinationAddr);
             OMSServer oms = GlobalKernelReferences.nodeServer.oms;
             ArrayList<InetSocketAddress> servers = oms.getServers();
 
@@ -91,13 +91,13 @@ public class ExplicitMigrationPolicy extends DefaultSapphirePolicy {
             InetSocketAddress localAddress = localKernel.getLocalHost();
 
             if (localAddress.equals(destinationAddr)) {
-                throw new DestinationSameAsSourceKernelServerException("The local and destinations Kernel Server address of migrations are same");
-
+                logger.info("Explicit Migration of the object successfully done");
+                return;
             } else if (!(servers.contains(destinationAddr))) {
                 throw new NotFoundDestinationKernelServerException("The destinations address passed is not present as one of the Kernel Servers");
             }
 
-            logger.info("[ExplicitMigrationPolicy] Explicitly Migrating object " + this.oid + " to " + destinationAddr);
+            logger.info("Explicitly Migrating object " + this.oid + " to " + destinationAddr);
             localKernel.moveKernelObjectToServer(destinationAddr, this.oid);
         }
 

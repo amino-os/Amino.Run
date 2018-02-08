@@ -19,16 +19,16 @@ import sapphire.policy.DefaultSapphirePolicy;
 public class OptConcurrentTransactPolicy extends DefaultSapphirePolicy {
 
     public static class Transaction implements Serializable {
-        private UUID TransactId;
+        private UUID transactId;
         private AppObject cachedObject;
 
-        public Transaction(UUID TransactId, AppObject cachedObject) {
-            this.TransactId = TransactId;
+        public Transaction(UUID transactId, AppObject cachedObject) {
+            this.transactId = transactId;
             this.cachedObject = cachedObject;
         }
 
         public UUID getTransactId() {
-            return TransactId;
+            return transactId;
         }
 
         public AppObject getCachedObject() {
@@ -115,21 +115,21 @@ public class OptConcurrentTransactPolicy extends DefaultSapphirePolicy {
     }
 
     public static class ServerPolicy extends DefaultServerPolicy {
-        private UUID TransactId;
+        private UUID transactId;
         public ServerPolicy() {
-            TransactId = UUID.randomUUID();
+            transactId = UUID.randomUUID();
         }
 
         public Transaction getTransaction() throws Exception {
-            return new Transaction(TransactId, sapphire_getAppObject());
+            return new Transaction(transactId, sapphire_getAppObject());
         }
 
         synchronized public void syncObject(UUID transactId, Serializable object) throws Exception {
 
-            if (transactId.equals(this.TransactId)) {
+            if (transactId.equals(this.transactId)) {
                 // App object synchronization is allowed only when transaction id matches
                 appObject.setObject(object);
-                TransactId = UUID.randomUUID();
+                this.transactId = UUID.randomUUID();
             }
             else {
                 throw new Exception("Some other client updated the object. Transaction "
@@ -140,7 +140,7 @@ public class OptConcurrentTransactPolicy extends DefaultSapphirePolicy {
         @Override
         public Object onRPC(String method, ArrayList<Object> params) throws Exception {
             // TODO: Should we update the transaction id here ? If no, we don't have to override it
-            //TransactId = UUID.randomUUID();
+            //this.transactId = UUID.randomUUID();
             return super.onRPC(method, params);
         }
     }

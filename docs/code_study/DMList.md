@@ -370,6 +370,6 @@ Quinton: As above, but when a given replica reaches it's full capacity (see abov
 
 > Dynamic allocation of load-balanced M-S replicas w/ eventual consistency
 
-Status: Not yet implemented (2018-01-30)
+Status: Not yet implemented (2018-01-30) @Donghui is working on it.
 
 Quinton: As above for read requests (i.e read requests are load balanced across all replicas, with auto-scale-up and scale-down of replicas).  In addition, write requests are all directed to an elected master replica, that (asynchronously) replicates all writes to all replicas (with retries on failures - see AtLeasetOnceRPC as above).  In the inital version, simple master election will be implmented by all client-side DM's selecting the lowest numbered existing replica as the master.  In later versions, more sophisticated master election can be implemented (e.g. by adding health checks, removal of non-responsive master, and using an external etcd/zookeeper or similar to manage master election in the standard way, e.g. [like this](https://www.projectcalico.org/using-etcd-for-elections/) or [this](http://techblog.outbrain.com/2011/07/leader-election-with-zookeeper/).

@@ -6,18 +6,20 @@ import java.util.ArrayList;
 /**
  * @author terryz
  */
-// TODO (Terry): Replace with a custom serializer
-public class MethodInvocationRequest implements Serializable {
+public final class MethodInvocationRequest implements Serializable {
+    /**
+     * Method types
+     */
     public enum MethodType {READ, WRITE};
 
     private final String methodName;
     private final ArrayList<Object> params;
-    private final MethodType type;
+    private final MethodType methodType;
 
-    public MethodInvocationRequest(String methodName, MethodType type, ArrayList<Object> params) {
-        this.methodName = methodName;
-        this.type = type;
-        this.params = params;
+    private MethodInvocationRequest(Builder builder) {
+        this.methodName = builder.methodName;
+        this.methodType = builder.methodType;
+        this.params = builder.params;
     }
 
     public ArrayList<Object> getParams() {
@@ -28,30 +30,8 @@ public class MethodInvocationRequest implements Serializable {
         return methodName;
     }
 
-    public MethodType getType() {
-        return type;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof MethodInvocationRequest)) return false;
-
-        MethodInvocationRequest that = (MethodInvocationRequest) o;
-
-        if (getMethodName() != null ? !getMethodName().equals(that.getMethodName()) : that.getMethodName() != null)
-            return false;
-        if (getParams() != null ? !getParams().equals(that.getParams()) : that.getParams() != null)
-            return false;
-        return getType() == that.getType();
-    }
-
-    @Override
-    public int hashCode() {
-        int result = getMethodName() != null ? getMethodName().hashCode() : 0;
-        result = 31 * result + (getParams() != null ? getParams().hashCode() : 0);
-        result = 31 * result + (getType() != null ? getType().hashCode() : 0);
-        return result;
+    public MethodType getMethodType() {
+        return methodType;
     }
 
     @Override
@@ -59,7 +39,34 @@ public class MethodInvocationRequest implements Serializable {
         return "MethodInvocationRequest{" +
                 "methodName='" + methodName + '\'' +
                 ", params=" + params +
-                ", type=" + type +
+                ", methodType=" + methodType +
                 '}';
+    }
+
+    public static class Builder {
+        private String methodName;
+        private ArrayList<Object> params;
+        private MethodType methodType;
+
+        public Builder(String methodName) {
+            this.methodName = methodName;
+        }
+
+        public Builder params(ArrayList<Object> params) {
+            this.params = params;
+            return this;
+        }
+
+        public Builder methodType(MethodType type) {
+            this.methodType = type;
+            return this;
+        }
+
+        public MethodInvocationRequest build() {
+            if (null == methodName || methodName.trim().isEmpty()) {
+                throw new IllegalArgumentException("method name is not specified");
+            }
+            return new MethodInvocationRequest(this);
+        }
     }
 }

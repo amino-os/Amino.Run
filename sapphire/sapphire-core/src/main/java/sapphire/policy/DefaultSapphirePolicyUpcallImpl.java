@@ -27,10 +27,6 @@ public abstract class DefaultSapphirePolicyUpcallImpl extends SapphirePolicyLibr
 			/* The default behavior is to just invoke the method on the Sapphire Object this Server Policy Object manages */
 			return appObject.invoke(method, params);
 		}
-
-		public Object onRPC(MethodInvocationRequest request) throws Exception {
-			return this.onRPC(request.getMethodName(), request.getParams());
-		}
 	}
 	
 	public abstract static class DefaultSapphireGroupPolicyUpcallImpl extends SapphireGroupPolicyLibrary {

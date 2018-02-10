@@ -1,12 +1,26 @@
 package sapphire.policy.scalability;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import sapphire.common.AppObject;
 import sapphire.policy.DefaultSapphirePolicy;
 import sapphire.runtime.MethodInvocationRequest;
+import sapphire.runtime.MethodInvocationResponse;
+
+import static sapphire.runtime.MethodInvocationRequest.MethodType.READ;
+import static sapphire.runtime.MethodInvocationRequest.MethodType.WRITE;
+import static sapphire.runtime.MethodInvocationResponse.ReturnCode.FAIL;
+import static sapphire.runtime.MethodInvocationResponse.ReturnCode.REDIRECT;
+import static sapphire.runtime.MethodInvocationResponse.ReturnCode.SUCCESS;
 
 /**
  * {@code LoadBalancedMasterSlavePolicy} directs write requests to <em>master</em> replica and
@@ -56,7 +70,7 @@ import sapphire.runtime.MethodInvocationRequest;
  * <p>
  * <em>Thread Model:</em>
  * <ol>
- *      <li>State Transition Thread:</li> 
+ *      <li>State Transition Thread:</li>
  *      <li>Object Method Invocation Thread:</li>
  *      <li>Replication Thread:</li>
  * </ol>
@@ -77,13 +91,15 @@ import sapphire.runtime.MethodInvocationRequest;
  */
 
 public class LoadBalancedMasterSlavePolicy extends DefaultSapphirePolicy {
-    private static Logger logger = Logger.getLogger(LoadBalancedMasterSlavePolicy.class.getName());
 
+    /**
+     * Client side policy
+     */
     public static class ClientPolicy extends DefaultClientPolicy {
         @Override
         public Object onRPC(String method, ArrayList<Object> params) throws Exception {
             GroupPolicy group = (GroupPolicy)getGroup();
-            ServerPolicy master = group.getMasterServer();
+            SapphireServerPolicy master = group.getMaster().get(0);
 
             Object ret = null;
             try {
@@ -93,6 +109,8 @@ public class LoadBalancedMasterSlavePolicy extends DefaultSapphirePolicy {
                 //
                 // A byproduct of this approach is that users will not read stale data.
                 // We may consider distinguish read operation and write operation in the future.
+
+                // TODO (Terry): Need to expand RMI to take MethodInvocationRequest
                 ret = master.onRPC(method, params);
             } catch (Exception e) {
                 // handle exceptions
@@ -101,9 +119,15 @@ public class LoadBalancedMasterSlavePolicy extends DefaultSapphirePolicy {
         }
     }
 
+    /**
+     * Server side policy
+     */
     public static class ServerPolicy extends DefaultServerPolicy {
-        private final ScheduledExecutorService scheduler =
-                Executors.newScheduledThreadPool(1);
+        private static Logger logger = Logger.getLogger(LoadBalancedMasterSlavePolicy.ServerPolicy.class.getName());
+
+        private final ScheduledExecutorService replicationExecutor = Executors.newSingleThreadScheduledExecutor();
+        private final ExecutorService mInvocationExecutor = Executors.newSingleThreadExecutor();
+        private final ExecutorService sTransitionExecutor = Executors.newSingleThreadExecutor();
 
         private final StateManager stateMgr;
         private final ILogger requstLogger;
@@ -113,38 +137,109 @@ public class LoadBalancedMasterSlavePolicy extends DefaultSapphirePolicy {
             this.stateMgr = new StateManager(String.valueOf(System.identityHashCode(this)));
             this.requstLogger = new MemoryLogger();
             this.requestReplicator = new AsyncReplicator();
+            // TODO (Terry): start async replication thread
         }
 
-        @Override
-        public Object onRPC(MethodInvocationRequest request) throws Exception {
-            Object ret = null;
+        /**
+         *
+         * @param request
+         * @return
+         */
+        public MethodInvocationResponse onRPC(MethodInvocationRequest request) {
+            GroupPolicy group = (GroupPolicy)getGroup();
+
             switch (this.stateMgr.getCurrentStateName()) {
                 case CANDIDATE:
+                    if (request.getMethodType() == READ) {
+                        ArrayList<SapphireServerPolicy> servers = group.getServers();
+                        return new MethodInvocationResponse.Builder(REDIRECT, servers).build();
+                    } else if (request.getMethodType() == WRITE) {
+                        // redirect to master
+                        ArrayList<SapphireServerPolicy> master = group.getMaster();
+                        return new MethodInvocationResponse.Builder(REDIRECT, master).build();
+                    }
+                    break;
+
                 case SLAVE:
-                    throw new Exception("");
+                    if (request.getMethodType() == READ) {
+                        return invokeMethod(request);
+                    } else if (request.getMethodType() == WRITE) {
+                        // redirect to master
+                        ArrayList<SapphireServerPolicy> master = group.getMaster();
+                        return new MethodInvocationResponse.Builder(REDIRECT, master).build();
+                    }
+                    break;
+
                 case MASTER:
-                    LogEntry entry = new LogEntry();
-                    // append log
-                    this.requstLogger.log(entry);
-                    // execute operation
-                    ret = super.onRPC(request);
-                    // replicate request
-                    ReplicateResponse resp = this.requestReplicator.replicate(new ReplicateRequest());
+                    if (request.getMethodType() == READ) {
+                        return invokeMethod(request);
+                    } else if (request.getMethodType() == WRITE) {
+                        logRequest(request);
+                        return invokeMethod(request);
+                    }
+                    break;
             }
-            // return result
-            return ret;
+
+            throw new AssertionError("should never reach here");
         }
 
         @Override
         protected void finalize() throws Throwable {
-            scheduler.shutdown();
+            replicationExecutor.shutdown();
+            mInvocationExecutor.shutdown();
+            sTransitionExecutor.shutdown();
             super.finalize();
+        }
+
+        /**
+         * Invokes method on dedicated {@link #mInvocationExecutor} thread
+         *
+         * @param request
+         * @return {@link MethodInvocationResponse}
+         */
+        private MethodInvocationResponse invokeMethod(final MethodInvocationRequest request) {
+            final AppObject targetObj = appObject;
+            Future<Object> f = mInvocationExecutor.submit(new Callable<Object>() {
+                @Override
+                public Object call() throws Exception {
+                    return targetObj.invoke(request.getMethodName(), request.getParams());
+                }
+            });
+
+            MethodInvocationResponse resp;
+            try {
+                Object ret = f.get();
+                resp = new MethodInvocationResponse.Builder(SUCCESS, ret).build();
+            } catch (ExecutionException e) {
+                logger.log(Level.FINE, "failed to process request {0}: {1}", new Object[]{request, e});
+                resp = new MethodInvocationResponse.Builder(FAIL, e).build();
+            } catch (InterruptedException e) {
+                // TODO (Terry): what should we do here?
+                logger.log(Level.FINE, "failed to process request {0}: {1}", new Object[]{request, e});
+                resp = new MethodInvocationResponse.Builder(FAIL, e).build();
+            }
+
+            return resp;
+        }
+
+        private void logRequest(MethodInvocationRequest request) {
+            LogEntry entry = new LogEntry();
+            this.requstLogger.log(entry);
         }
     }
 
+    /**
+     * Group policy
+     */
     public static class GroupPolicy extends DefaultGroupPolicy {
-        public ServerPolicy getMasterServer() {
-            return null;
+
+        public ArrayList<SapphireServerPolicy> getMaster() {
+            return new ArrayList(Collections.<SapphireServerPolicy>emptyList());
         }
+
+        public ArrayList<SapphireServerPolicy> getSlaves() {
+            return new ArrayList(Collections.<SapphireServerPolicy>emptyList());
+        }
+
     }
 }

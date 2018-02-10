@@ -50,8 +50,16 @@ import sapphire.runtime.MethodInvocationRequest;
  *
  * <p>
  * <em>Failure Recovery:</em>
- * Failed replica always comes back in {@code RECOVING} state. Replica in {@code RECOVING} state
+ * Failed replica always comes back in {@code RECOVING} stateMgr. Replica in {@code RECOVING} stateMgr
  * does not serve read or write requests, but it is able handle replication requests.
+ *
+ * <p>
+ * <em>Thread Model:</em>
+ * <ol>
+ *      <li>State Transition Thread:</li> 
+ *      <li>Object Method Invocation Thread:</li>
+ *      <li>Replication Thread:</li>
+ * </ol>
  *
  * <p>
  * <em>Limitations:</em>
@@ -97,21 +105,20 @@ public class LoadBalancedMasterSlavePolicy extends DefaultSapphirePolicy {
         private final ScheduledExecutorService scheduler =
                 Executors.newScheduledThreadPool(1);
 
-        private final ServerState state;
+        private final StateManager stateMgr;
         private final ILogger requstLogger;
         private final IReplicator requestReplicator;
 
         public ServerPolicy() {
-            this.state = new ServerState();
-            this.requstLogger = new FileLogger();
+            this.stateMgr = new StateManager(String.valueOf(System.identityHashCode(this)));
+            this.requstLogger = new MemoryLogger();
             this.requestReplicator = new AsyncReplicator();
         }
 
         @Override
         public Object onRPC(MethodInvocationRequest request) throws Exception {
             Object ret = null;
-            switch (this.state.getCurrentState()) {
-                case INIT:
+            switch (this.stateMgr.getCurrentStateName()) {
                 case CANDIDATE:
                 case SLAVE:
                     throw new Exception("");

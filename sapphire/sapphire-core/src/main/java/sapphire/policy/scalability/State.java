@@ -1,5 +1,12 @@
 package sapphire.policy.scalability;
 
+import java.util.Random;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  * @author terryz
  */
@@ -8,7 +15,7 @@ public interface State {
      * Valid state names
      */
     enum StateName {
-        CANDIDATE, SLAVE, MASTER
+        SLAVE, MASTER
     }
 
     //
@@ -31,6 +38,7 @@ public interface State {
 
     /**
      * Returns the name of the state
+     *
      * @return state name
      */
     StateName getName();
@@ -40,15 +48,23 @@ public interface State {
     //
 
     abstract class AbstractState implements State {
-        private final StateName name;
+        private final Random random = new Random(System.currentTimeMillis());
 
-        AbstractState(StateName name) {
+        private final StateName name;
+        private final StateManager stateManager;
+
+        AbstractState(StateName name, StateManager stateManager) {
             this.name = name;
+            this.stateManager = stateManager;
         }
 
         @Override
         public final StateName getName() {
             return name;
+        }
+
+        protected StateManager getStateManager() {
+            return this.stateManager;
         }
 
         @Override
@@ -71,52 +87,98 @@ public interface State {
         }
     }
 
-    final class Candidate extends AbstractState {
-        public Candidate() {
-            super(StateName.CANDIDATE);
-        }
-
-        @Override
-        public void enter() {
-
-        }
-
-        @Override
-        public void leave() {
-
-        }
-    }
-
+    /**
+     * <ul>
+     *      <li>initialize <code>nextIndex</code> for each slave</li>
+     *      <li>accept commands from clients and append new entries into log</li>
+     *      <li>replicate log entries to slaves</li>
+     *      <li>mark log entry committed if it is stored on a majority of servers</li>
+     *      <li>renew lock periodically</li>
+     *      <ul>
+     *          <li>renew succeeded: stay as master</li>
+     *          <li>renew failed: step down as slave if fails to renew lock</li>
+     *      </ul>
+     * </ul>
+     */
     final class Master extends AbstractState {
-        public Master() {
-            super(StateName.MASTER);
+        private static final Logger logger = Logger.getLogger(Master.class.getName());
+        private final Random random = new Random(System.currentTimeMillis());
+        private final int INIT_DELAY_IN_MILLIS = random.nextInt(500);
+        private final long PERIOD_IN_MILLIS = 500;
+
+        private ScheduledExecutorService replicationExecutor;
+
+        public Master(StateManager stateManager) {
+            super(StateName.MASTER, stateManager);
         }
 
         @Override
         public void enter() {
-
+            startReplicationThread();
         }
 
         @Override
         public void leave() {
-
+            shutdownReplicationThread();
         }
 
+        private void startReplicationThread() {
+            if (replicationExecutor == null || replicationExecutor.isShutdown()) {
+                replicationExecutor = Executors.newSingleThreadScheduledExecutor();
+            }
+
+            replicationExecutor.scheduleAtFixedRate(
+                    // wrap runnable with try-catch block
+                    Util.RunnerWrapper(new Runnable() {
+                        @Override
+                        public void run() {
+                            // TODO (Terry): doing replication
+                            try {
+                                Thread.sleep(100);
+                            } catch(Exception ex) {
+
+                            }
+                        }
+                    }), INIT_DELAY_IN_MILLIS, PERIOD_IN_MILLIS, TimeUnit.MILLISECONDS);
+        }
+
+        private void shutdownReplicationThread() {
+            try {
+                if (replicationExecutor != null) {
+                    replicationExecutor.shutdown();
+                    replicationExecutor.awaitTermination(PERIOD_IN_MILLIS, TimeUnit.MILLISECONDS);
+                }
+            } catch (InterruptedException e) {
+                logger.log(Level.WARNING, "replication thread interrupted during await termination: {0}", e);
+            }
+        }
     }
 
+    /**
+     * <ul>
+     *      <li>serves read requests</li>
+     *      <li>respond to <code>AppendEntries</code> RPC from master</li>
+     *      <li>maintains <code>lastAppliedIndex</code> and <code>lastCommittedIndex</code></li>
+     *      <li>whenever <code>lastCommittedIndex > lastAppliedIndex</code>,
+     *      increments <code>lastAppliedIndex</code> and applies log[lastAppliedIndex]</li>
+     *      <li>obtains lock from group periodically</li>
+     *      <ul>
+     *          <li>lock obtained: becomes master</li>
+     *          <li>lock not obtained: stay as slave</li>
+     *      </ul>
+     * </ul>
+     */
     final class Slave extends AbstractState {
-        public Slave() {
-            super(StateName.SLAVE);
+        public Slave(StateManager stateManager) {
+            super(StateName.SLAVE, stateManager);
         }
 
         @Override
         public void enter() {
-
         }
 
         @Override
         public void leave() {
-
         }
     }
 }

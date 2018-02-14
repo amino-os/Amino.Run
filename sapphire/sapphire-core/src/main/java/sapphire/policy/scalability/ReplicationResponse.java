@@ -3,5 +3,5 @@ package sapphire.policy.scalability;
 /**
  * @author terryz
  */
-public class ReplicateResponse {
+public class ReplicationResponse {
 }

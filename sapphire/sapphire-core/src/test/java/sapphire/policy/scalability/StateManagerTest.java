@@ -4,78 +4,90 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static org.junit.Assert.*;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 /**
  * @author terryz
  */
 public class StateManagerTest {
+    private final long Master_Lease_Timeout_InMillis = 50;
+    private final long Master_Lease_Renew_Interval_InMillis = 10;
+    private final long Init_Delay_Limit_InMillis = 1;
+
+    private final long Thread_Wait_Time = Master_Lease_Timeout_InMillis * 10;
+
+    private Configuration config;
+
+    @Before
+    public void setup() {
+        this.config = Configuration.newBuilder()
+                .masterLeaseRenewIntervalInMillis(Master_Lease_Renew_Interval_InMillis)
+                .masterLeaseTimeoutInMIllis(Master_Lease_Timeout_InMillis)
+                .initDelayLimitInMillis(Init_Delay_Limit_InMillis).build();
+    }
 
     @Test
     public void verifyToString() throws Exception {
-        StateManager stateMgr = new StateManager("test");
-        Assert.assertTrue("String value of State Manager should starts with StateManager_test", stateMgr.toString().startsWith("StateManager_test_"));
+        StateManager stateMgr = new StateManager("client", null, config);
+        Assert.assertTrue("String value of State Manager should starts with StateManager_client", stateMgr.toString().startsWith("StateManager_client_"));
     }
 
     @Test
     public void verifyInitialState() throws Exception {
-        StateManager stateMgr = new StateManager("test");
-        Assert.assertEquals("Initial state should be " + State.StateName.CANDIDATE, State.StateName.CANDIDATE, stateMgr.getCurrentStateName());
+        StateManager stateMgr = new StateManager("client", null, config);
+        Assert.assertEquals("Initial state should be " + State.StateName.SLAVE, State.StateName.SLAVE, stateMgr.getCurrentStateName());
     }
 
     @Test
-    public void verifyStateTransition() throws Exception {
-        List<Object[]> specs = new ArrayList<Object[]>() {{
-            add(new Object[]{new State.Candidate(), StateManager.Event.OBTAIN_LOCK_FAILED, new State.Slave()});
-            add(new Object[]{new State.Candidate(), StateManager.Event.OBTAIN_LOCK_SUCCEEDED, new State.Master()});
-            add(new Object[]{new State.Slave(), StateManager.Event.OBTAIN_LOCK_FAILED, new State.Slave()});
-            add(new Object[]{new State.Slave(), StateManager.Event.OBTAIN_LOCK_SUCCEEDED, new State.Master()});
-            add(new Object[]{new State.Master(), StateManager.Event.RENEW_LOCK_FAILED, new State.Slave()});
-            add(new Object[]{new State.Master(), StateManager.Event.RENEW_LOCK_SUCCEEDED, new State.Master()});
-        }};
+    public void verifySlaveObtainLockFailed() throws Exception {
+        LoadBalancedMasterSlavePolicy.GroupPolicy group = spy(LoadBalancedMasterSlavePolicy.GroupPolicy.class);
+        when(group.obtainLock(anyString(), anyString())).thenReturn(false); // stay as slave
 
-        StateManager stateMgr = new StateManager("test");
-        for (Object[] spec : specs) {
-            State srcState = (State)spec[0];
-            StateManager.Event event = (StateManager.Event)spec[1];
-            State dstState = (State)spec[2];
+        final StateManager stateMgr = new StateManager("client", group, config);
 
-            setCurrentState(stateMgr, srcState);
-            stateMgr.stateTransition(event);
-            Assert.assertEquals(dstState.getName(), stateMgr.getCurrentStateName());
-        }
+        // Let state machine run for one second
+        Thread.sleep(Thread_Wait_Time);
 
-        specs = new ArrayList<Object[]>() {{
-            add(new Object[]{new State.Candidate(), StateManager.Event.RENEW_LOCK_FAILED});
-            add(new Object[]{new State.Candidate(), StateManager.Event.RENEW_LOCK_SUCCEEDED});
-            add(new Object[]{new State.Slave(), StateManager.Event.RENEW_LOCK_FAILED});
-            add(new Object[]{new State.Slave(), StateManager.Event.RENEW_LOCK_SUCCEEDED});
-            add(new Object[]{new State.Master(), StateManager.Event.OBTAIN_LOCK_FAILED});
-            add(new Object[]{new State.Master(), StateManager.Event.OBTAIN_LOCK_SUCCEEDED});
-        }};
-
-        for (Object[] spec : specs) {
-            State srcState = (State)spec[0];
-            StateManager.Event event = (StateManager.Event)spec[1];
-
-            setCurrentState(stateMgr, srcState);
-            try {
-                stateMgr.stateTransition(event);
-            } catch (Throwable e) {
-                Assert.assertTrue("Should get assert error", e instanceof AssertionError);
-            }
-        }
+        // Verify that the end state is still slave because we failed to get the lock
+        Assert.assertEquals(new State.Slave(stateMgr).getName(), stateMgr.getCurrentStateName());
     }
 
-    private void setCurrentState(StateManager stateMgr, State state) throws Exception {
-        Field f = stateMgr.getClass().getDeclaredField("currentState");
-        f.setAccessible(true);
-        f.set(stateMgr, state);
+    @Test
+    public void verifyStateObtainLockSucceeded() throws Exception {
+        LoadBalancedMasterSlavePolicy.GroupPolicy group = spy(LoadBalancedMasterSlavePolicy.GroupPolicy.class);
+        when(group.obtainLock(anyString(), anyString())).thenReturn(true); // promoted to master
+        when(group.renewLock(anyString())).thenReturn(true);               // stay as master
+
+        final StateManager stateMgr = new StateManager("client", group, config);
+
+        // Let state machine run for one second
+        Thread.sleep(Thread_Wait_Time);
+
+        // Verify that the end state is master because obtain lock and renew lock succeeded
+        Assert.assertEquals(new State.Master(stateMgr).getName(), stateMgr.getCurrentStateName());
+    }
+
+    @Test
+    public void verifyStateObtainLockSucceededRenewLockFailed() throws Exception {
+        LoadBalancedMasterSlavePolicy.GroupPolicy group = spy(LoadBalancedMasterSlavePolicy.GroupPolicy.class);
+
+        when(group.obtainLock(anyString(), anyString()))
+                // first obtain lock succeeds which will promote the server to master
+                .thenReturn(true)
+                // future obtain lock fails which will let the server stay in slave
+                .thenReturn(false);
+
+        // renew lock fails
+        when(group.renewLock(anyString())).thenReturn(false);              // demoted to slave
+
+        final StateManager stateMgr = new StateManager("client", group, config);
+
+        // Let state machine run for one second
+        Thread.sleep(Thread_Wait_Time);
+
+        // Verify that the end state is slave because renew lock succeeded
+        Assert.assertEquals(new State.Slave(stateMgr).getName(), stateMgr.getCurrentStateName());
     }
 }

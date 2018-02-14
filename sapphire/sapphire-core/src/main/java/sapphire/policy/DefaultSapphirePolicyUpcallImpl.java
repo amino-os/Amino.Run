@@ -5,6 +5,7 @@ import java.util.ArrayList;
 
 import sapphire.policy.SapphirePolicy.SapphireServerPolicy;
 import sapphire.runtime.MethodInvocationRequest;
+import sapphire.runtime.MethodInvocationResponse;
 
 public abstract class DefaultSapphirePolicyUpcallImpl extends SapphirePolicyLibrary {
 
@@ -23,9 +24,20 @@ public abstract class DefaultSapphirePolicyUpcallImpl extends SapphirePolicyLibr
 	}
 	
 	public abstract static class DefaultSapphireServerPolicyUpcallImpl extends SapphireServerPolicyLibrary {
+		@Override
 		public Object onRPC(String method, ArrayList<Object> params) throws Exception {
 			/* The default behavior is to just invoke the method on the Sapphire Object this Server Policy Object manages */
 			return appObject.invoke(method, params);
+		}
+
+		@Override
+		public MethodInvocationResponse onRPC(MethodInvocationRequest request) {
+			try {
+				Object ret = appObject.invoke(request.getMethodName(), request.getParams());
+				return new MethodInvocationResponse.Builder(MethodInvocationResponse.ReturnCode.SUCCESS, ret).build();
+			} catch (Exception e) {
+				return new MethodInvocationResponse.Builder(MethodInvocationResponse.ReturnCode.FAIL, e).build();
+			}
 		}
 	}
 	

@@ -24,8 +24,7 @@ public class MethodInvocationResponse {
 
         /**
          * Indicating that the request should be redirected to
-         * other servers in which case {@link MethodInvocationResponse#result}
-         * stores a list of valid servers
+         * other servers
          */
         REDIRECT
     }

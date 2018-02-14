@@ -1,8 +1,10 @@
 package sapphire.policy.scalability;
 
+import java.util.List;
+
 /**
  * @author terryz
  */
 public interface IReplicator {
-    ReplicateResponse replicate(ReplicateRequest request);
+    ReplicationResponse replicate(List<LogEntry> entries);
 }

@@ -1,7 +1,9 @@
 package sapphire.policy.scalability;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -40,8 +42,8 @@ import static sapphire.runtime.MethodInvocationResponse.ReturnCode.SUCCESS;
  *     access to a highly available strongly consistent storage (e.g. a storage service provided by
  *     RAFT based consensus DMs), and uses this storage to facilitate leader election.
  *     </li>
- *     <li>Log entry application: In RAFT, log entries will be committed to underlying state machine
- *     only if the entries have been replicated to majority servers. In this DM, log entries are
+ *     <li>Log entry application: In RAFT, append entries will be committed to underlying state machine
+ *     only if the entries have been replicated to majority servers. In this DM, append entries are
  *     always committed to underlying state machine regardless the replication succeeds or not.
  *     </li>
  * </ul>
@@ -60,9 +62,9 @@ import static sapphire.runtime.MethodInvocationResponse.ReturnCode.SUCCESS;
  * <ol>
  *     <li>Client sends write request to master replica. Each request is identified by
  *     <{@code clientId}, {@code requestId}></li>
- *     <li>Master appends the write request to local log file</li>
+ *     <li>Master appends the write request to local append file</li>
  *     <li>Master executes the write request</li>
- *     <li>Master replicates write request to slave. Requests will be put in pending log on slave
+ *     <li>Master replicates write request to slave. Requests will be put in pending append on slave
  *     then be executed asynchronously.</li>
  *     <li>Master return result to client</li>
  * </ol>
@@ -132,14 +134,14 @@ public class LoadBalancedMasterSlavePolicy extends DefaultSapphirePolicy {
                 SapphireServerPolicy targetServer = group.getMaster();
 
                 if (isReadMethod(method, params)) {
-                    targetServer = group.getRandomServer(group.getServers());
+                    targetServer = group.getRandomServer(group.getServerPolicies());
                 }
 
                 if (targetServer == null) {
                     throw new Exception(String.format("unable to find target server from server list: %s", group.getServers()));
                 }
 
-                MethodInvocationRequest request = new MethodInvocationRequest.Builder(method).params(params).build();
+                MethodInvocationRequest request = MethodInvocationRequest.newBuilder().methodName(method).params(params).build();
                 MethodInvocationResponse response = targetServer.onRPC(request);
                 switch (response.getReturnCode()) {
                     case SUCCESS:
@@ -165,14 +167,16 @@ public class LoadBalancedMasterSlavePolicy extends DefaultSapphirePolicy {
         private final long Master_Lease_Timeout_InMillis = 500;
         private final long Master_Lease_Renew_Interval_InMillis = 100;
         private final long Init_Delay_Limit_InMillis = 100;
+        private final Long TERM = 0L;
 
         private final Logger logger = Logger.getLogger(LoadBalancedMasterSlavePolicy.ServerPolicy.class.getName());
         private final ExecutorService invocationExecutor = Executors.newSingleThreadExecutor();
+        private final SequenceGenerator indexGenerator;
 
         private final Configuration config;
         private final StateManager stateMgr;
         private final ILogger requstLogger;
-        private final IReplicator requestReplicator;
+        private final IReplicator syncReplicator;
 
         public ServerPolicy() {
             this.config = Configuration.newBuilder()
@@ -180,12 +184,40 @@ public class LoadBalancedMasterSlavePolicy extends DefaultSapphirePolicy {
                     .masterLeaseTimeoutInMIllis(Master_Lease_Timeout_InMillis)
                     .initDelayLimitInMillis(Init_Delay_Limit_InMillis).build();
 
-
             // TODO (Terry): we should not do the cast here
             LoadBalancedMasterSlavePolicy.GroupPolicy group = (LoadBalancedMasterSlavePolicy.GroupPolicy)getGroup();
             this.stateMgr = new StateManager(getClientId(), group, this.config);
-            this.requstLogger = new FileLogger();
-            this.requestReplicator = new AsyncReplicator();
+            this.indexGenerator = SequenceGenerator.newBuilder().name("index_sequence").startingAt(0).step(1).build();
+
+            try {
+                this.requstLogger = new FileLogger(config.getLogFilePath());
+            } catch (Exception e) {
+                throw new AssertionError("failed to construct entry logger: {0}", e);
+            }
+
+            List<ServerPolicy> slaves = group.getSlaves();
+            this.syncReplicator = new SyncReplicator(slaves);
+        }
+
+        public ReplicationResponse handleSyncReplication(List<LogEntry> entries) {
+            ReplicationResponse response = new ReplicationResponse();
+            if (entries == null || entries.size() == 0) {
+                return response;
+            }
+
+            // TODO (Terry): how to get the current latest index?
+            long largestIndex = 0L;
+            for (LogEntry entry : entries) {
+                if (entry.getIndex() > largestIndex) {
+                    this.requstLogger.append(entry);
+                    largestIndex = entry.getIndex();
+                } else {
+                    // we have seen this entry before. do nothing
+                }
+            }
+
+            // TODO (Terry): populate response
+            return response;
         }
 
         /**
@@ -208,9 +240,28 @@ public class LoadBalancedMasterSlavePolicy extends DefaultSapphirePolicy {
                         return invokeMethod(request);
                     }
 
-                    logRequest(request);
-                    replicateRequest(request);
-                    return invokeMethod(request);
+                    // We do appending log, replicating log, and invoking method synchronously.
+                    // If we do not persist log entry, we may loose data when master crashes.
+                    // If we do not replicate log entry, slave node may not have up-to-date
+                    // data and therefore may not be able to become master when the current master
+                    // crashes.
+                    // Finally, we have to invoke the method before returning to the client.
+                    LogEntry entry = LogEntry.newBuilder().term(TERM).index(indexGenerator.getNextSequence()).request(request).build();
+                    long index = this.requstLogger.append(entry);
+                    if (index < 0) {
+                        // TODO (Terry): handle error
+                        return null;
+                    }
+
+                    ReplicationResponse replicationResponse = replicateLogEntry(entry);
+                    if (replicationResponse == null) {
+                        // TODO (Terry): handle error
+                        return null;
+                    }
+
+                    MethodInvocationResponse resp = invokeMethod(request);
+                    this.requstLogger.setIndexOfCommittedEntry(index);
+                    return resp;
             }
 
             throw new AssertionError("should never reach here");
@@ -247,23 +298,22 @@ public class LoadBalancedMasterSlavePolicy extends DefaultSapphirePolicy {
                 // The problem is: the other replica may not run into this exception. This exception
                 // may cause two replicas out of sync.
                 AppExecutionException ex = new AppExecutionException("Method invocation on appobject was interrupted", e);
-                logger.log(Level.WARNING, "the process of request {0} on {1} was interrupted: {2}", new Object[]{request, appObject, ex});
+                logger.log(Level.SEVERE, "the process of request {0} on {1} was interrupted: {2}", new Object[]{request, appObject, ex});
                 resp = new MethodInvocationResponse.Builder(FAIL, ex).build();
             }
 
             return resp;
         }
 
-        private void logRequest(MethodInvocationRequest request) {
+        private ReplicationResponse replicateLogEntry(LogEntry entry) {
             try {
-                this.requstLogger.log(request);
+                return this.syncReplicator.replicate(Arrays.asList(entry));
             } catch (Exception e) {
-                throw new AssertionError(String.format("failed to log request %s: %s", request, e));
+                logger.log(Level.SEVERE, "failed to replicate log entry {0} into log file: {1}", new Object[]{entry, e});
             }
-        }
 
-        private void replicateRequest(MethodInvocationRequest request) {
-            this.requestReplicator.replicate(null);
+            // TODO (Terry): should return error
+            return null;
         }
 
         private String getClientId() {
@@ -285,10 +335,19 @@ public class LoadBalancedMasterSlavePolicy extends DefaultSapphirePolicy {
         private Lock masterLock;
         private Configuration config;
 
+        public List<ServerPolicy> getServerPolicies() {
+            ArrayList<SapphireServerPolicy> servers = super.getServers();
+            List<ServerPolicy> result = new ArrayList<ServerPolicy>();
+            for (SapphireServerPolicy s: servers) {
+                result.add((ServerPolicy)s);
+            }
+            return result;
+        }
+
         /**
          * @return master server, or <code>null</code> if no master available
          */
-        public SapphireServerPolicy getMaster() {
+        public ServerPolicy getMaster() {
             // TODO (Terry): to be implemented
             return null;
         }
@@ -296,7 +355,7 @@ public class LoadBalancedMasterSlavePolicy extends DefaultSapphirePolicy {
         /**
          * @return slave servers
          */
-        public ArrayList<SapphireServerPolicy> getSlaves() {
+        public List<ServerPolicy> getSlaves() {
             // TODO (Terry): to be implemented
             return new ArrayList(Collections.<SapphireServerPolicy>emptyList());
         }
@@ -304,7 +363,7 @@ public class LoadBalancedMasterSlavePolicy extends DefaultSapphirePolicy {
         /**
          * @return a random server from the group or <code>null</code> if no server exists
          */
-        public SapphireServerPolicy getRandomServer(ArrayList<SapphireServerPolicy> servers) {
+        public ServerPolicy getRandomServer(List<ServerPolicy> servers) {
             if (servers == null || servers.size() <= 0) {
                 return null;
             }
@@ -316,7 +375,7 @@ public class LoadBalancedMasterSlavePolicy extends DefaultSapphirePolicy {
          * Renew lock
          *
          * @param clientId Id of the client
-         * @param clientIndex largest log index observed on client
+         * @param clientIndex largest append index observed on client
          * @return <code>true</code> if lock renew succeeds; <code>false</code> otherwise
          */
         public boolean renewLock(String clientId, long clientIndex) {
@@ -335,7 +394,7 @@ public class LoadBalancedMasterSlavePolicy extends DefaultSapphirePolicy {
          * Obtain lock
          *
          * @param clientId the Id of the client
-         * @param clientIndex the largest log entry logIndex observed on client
+         * @param clientIndex the largest append entry logIndex observed on client
          * @return <code>true</code> if lock is granted; <code>false</code> otherwise
          */
         public boolean obtainLock(String clientId, long clientIndex) {

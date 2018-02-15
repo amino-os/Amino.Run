@@ -3,21 +3,22 @@ package sapphire.policy.scalability;
 import java.util.List;
 
 /**
- * @author terryz
+ * Created by terryz on 2/15/18.
  */
-public class AsyncReplicator implements IReplicator {
+
+public class AsyncReplicator implements IReplicator<LogEntry> {
     /**
-     * Index of highest log entry that has been successfully replicated to all slaves
+     * Index of highest append entry that has been successfully replicated to all slaves
      */
     private long replicatedIndex;
 
     /**
-     * For each server, index of the highest log entry that has been replicated to the server
+     * For each server, index of the highest append entry that has been replicated to the server
      */
     private long[] matchIndex;
 
     /**
-     * Index of highest log entry that has been applied to
+     * Index of highest append entry that has been applied to
      * {@link sapphire.policy.SapphirePolicy.SapphireServerPolicy#appObject}
      */
     private long lastAppliedIndex;
@@ -25,5 +26,6 @@ public class AsyncReplicator implements IReplicator {
     @Override
     public ReplicationResponse replicate(List<LogEntry> entries) {
         return null;
+
     }
 }

@@ -22,15 +22,19 @@ public final class MethodInvocationRequest implements Serializable {
         this.params = builder.params;
     }
 
-    public ArrayList<Object> getParams() {
+    public final static Builder newBuilder() {
+        return new Builder();
+    }
+
+    public final ArrayList<Object> getParams() {
         return params;
     }
 
-    public String getMethodName() {
+    public final String getMethodName() {
         return methodName;
     }
 
-    public MethodType getMethodType() {
+    public final MethodType getMethodType() {
         return methodType;
     }
 
@@ -48,8 +52,9 @@ public final class MethodInvocationRequest implements Serializable {
         private ArrayList<Object> params;
         private MethodType methodType;
 
-        public Builder(String methodName) {
+        public Builder methodName(String methodName) {
             this.methodName = methodName;
+            return this;
         }
 
         public Builder params(ArrayList<Object> params) {

@@ -1,10 +1,9 @@
 package sapphire.policy.scalability;
 
-import sapphire.runtime.MethodInvocationRequest;
-
 /**
  * @author terryz
  */
-public interface ILogger {
-    void log(MethodInvocationRequest request) throws Exception;
+public interface ILogger<T> {
+    long append(T entry);
+    void setIndexOfCommittedEntry(long indexOfCommittedEntry);
 }

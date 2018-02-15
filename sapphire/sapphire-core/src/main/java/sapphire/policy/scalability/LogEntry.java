@@ -1,6 +1,7 @@
 package sapphire.policy.scalability;
 
 import java.io.Serializable;
+import java.util.concurrent.atomic.AtomicLong;
 
 import sapphire.runtime.MethodInvocationRequest;
 
@@ -20,19 +21,23 @@ public class LogEntry implements Serializable {
         this.appObjectSnapshot = builder.appObjectSnapshot;
     }
 
-    public long getTerm() {
+    public static Builder newBuilder() {
+        return new Builder();
+    }
+
+    public final long getTerm() {
         return this.term;
     }
 
-    public long getIndex() {
+    public final long getIndex() {
         return this.index;
     }
 
-    public MethodInvocationRequest getRequest() {
+    public final MethodInvocationRequest getRequest() {
         return this.request;
     }
 
-    public Object getAppObjectSnapshot() {
+    public final Object getAppObjectSnapshot() {
         return this.appObjectSnapshot;
     }
 
@@ -42,8 +47,9 @@ public class LogEntry implements Serializable {
         private MethodInvocationRequest request;
         private Object appObjectSnapshot;
 
-        public Builder(long term) {
+        public Builder term(long term) {
             this.term = term;
+            return this;
         }
 
         public Builder index(long index) {
@@ -62,6 +68,18 @@ public class LogEntry implements Serializable {
         }
 
         public LogEntry build() {
+            if (term < 0) {
+                throw new IllegalArgumentException(String.format("invalid negative term(%s)", term));
+            }
+
+            if (index < 0) {
+                throw new IllegalArgumentException(String.format("invalid index term(%s)", index));
+            }
+
+            if (request == null) {
+                throw new NullPointerException("request is null");
+            }
+
             return new LogEntry(this);
         }
     }

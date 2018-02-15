@@ -25,7 +25,15 @@ public class Configuration {
      */
     private final long shutdownGracePeriodInMillis;
 
+    /**
+     *
+     */
     private final long initDelayLimitInMillis;
+
+    /**
+     *
+     */
+    private final String logFilePath;
 
     private Configuration(Builder builder) {
         this.random = new Random(System.currentTimeMillis());
@@ -33,6 +41,7 @@ public class Configuration {
         this.masterLeaseTimeoutInMillis = builder.masterLeaseTimeoutInMillis;
         this.shutdownGracePeriodInMillis = builder.shutdownGracePeriodInMillis;
         this.initDelayLimitInMillis = builder.initDelayLimitInMillis;
+        this.logFilePath = builder.logFilePath;
     }
 
     public static final Builder newBuilder() {
@@ -55,11 +64,15 @@ public class Configuration {
         return random.nextLong()%initDelayLimitInMillis;
     }
 
+    public String getLogFilePath() {return this.logFilePath;}
+
     public static final class Builder {
         private long masterLeaseTimeoutInMillis = 500;
         private long masterLeaseRenewIntervalInMillis = 100;
         private long shutdownGracePeriodInMillis = 1000;
         private long initDelayLimitInMillis = 500;
+        // TODO (Terry) Fix log file path
+        private String logFilePath = "/tmp/logfile";
 
         public Builder masterLeaseTimeoutInMIllis(long masterLeaseRenewIntervalInMillis) {
             this.masterLeaseRenewIntervalInMillis = masterLeaseRenewIntervalInMillis;
@@ -78,6 +91,11 @@ public class Configuration {
 
         public Builder initDelayLimitInMillis(long initDelayLimitInMillis) {
             this.initDelayLimitInMillis = initDelayLimitInMillis;
+            return this;
+        }
+
+        public Builder logFilePath(String logFilePath) {
+            this.logFilePath = logFilePath;
             return this;
         }
 

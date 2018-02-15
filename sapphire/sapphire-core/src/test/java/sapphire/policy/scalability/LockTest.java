@@ -36,7 +36,7 @@ public class LockTest {
         Lock lock = new Lock(clientId, logIndex, lockTimeoutInMillis);
         Assert.assertFalse("renew should fail because client id not match", lock.renew("invalidclient", logIndex));
         Assert.assertEquals("lock client id should not change", clientId, lock.getClientId());
-        Assert.assertEquals("lock log index should not change", logIndex, lock.getLogIndex());
+        Assert.assertEquals("lock append index should not change", logIndex, lock.getLogIndex());
 
     }
 
@@ -45,7 +45,7 @@ public class LockTest {
         Lock lock = new Lock(clientId, logIndex, lockTimeoutInMillis);
         Assert.assertFalse("renew should fail because client id not match", lock.renew(clientId, logIndex-1));
         Assert.assertEquals("lock client id should not change", clientId, lock.getClientId());
-        Assert.assertEquals("lock log index should not change", logIndex, lock.getLogIndex());
+        Assert.assertEquals("lock append index should not change", logIndex, lock.getLogIndex());
     }
 
     @Test
@@ -56,7 +56,7 @@ public class LockTest {
         Thread.sleep(50);
         Assert.assertFalse("renew should fail because lock has expired", lock.renew(clientId, logIndex));
         Assert.assertEquals("lock client id should not change", clientId, lock.getClientId());
-        Assert.assertEquals("lock log index should not change", logIndex, lock.getLogIndex());
+        Assert.assertEquals("lock append index should not change", logIndex, lock.getLogIndex());
     }
 
     @Test
@@ -68,7 +68,7 @@ public class LockTest {
         Thread.sleep(50);
         Assert.assertTrue("obtain lock should succeed", lock.obtain(newClientId, logIndex+1));
         Assert.assertEquals("lock client id should match", newClientId, lock.getClientId());
-        Assert.assertEquals("lock log index should match", logIndex+1, lock.getLogIndex());
+        Assert.assertEquals("lock append index should match", logIndex+1, lock.getLogIndex());
     }
 
     @Test
@@ -78,9 +78,9 @@ public class LockTest {
         Lock lock = new Lock(clientId, logIndex, lockTimeoutInMillis);
         // sleep for 50 milliseconds to let lock expire
         Thread.sleep(50);
-        Assert.assertFalse("obtain lock should fail because log entry is too old", lock.obtain(newClientId, logIndex-1));
+        Assert.assertFalse("obtain lock should fail because append entry is too old", lock.obtain(newClientId, logIndex-1));
         Assert.assertEquals("lock client id should not changed", clientId, lock.getClientId());
-        Assert.assertEquals("lock log index should not changed", logIndex, lock.getLogIndex());
+        Assert.assertEquals("lock append index should not changed", logIndex, lock.getLogIndex());
     }
 
     @Test
@@ -92,7 +92,7 @@ public class LockTest {
         Thread.sleep(10);
         Assert.assertFalse("obtain lock should fail because lock is not expired", lock.obtain(newClientId, logIndex));
         Assert.assertEquals("lock client id should not changed", clientId, lock.getClientId());
-        Assert.assertEquals("lock log index should not changed", logIndex, lock.getLogIndex());
+        Assert.assertEquals("lock append index should not changed", logIndex, lock.getLogIndex());
     }
 
 }

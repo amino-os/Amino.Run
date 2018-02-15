@@ -6,7 +6,7 @@ import java.sql.Timestamp;
  * A lease lock that will expire after {@link #lockTimeoutInMillis} milliseconds.
  *
  * Lock is a tuple of (clientId, logIndex, lastUpdatedTimestamp) in which clientId the Id of
- * the client who owns the lock, logIndex is the largest log logIndex reported by the client,
+ * the client who owns the lock, logIndex is the largest append logIndex reported by the client,
  * and lastUpdatedTimestamp is the timestamp when the lock was updated.
  *
  * {@link #logIndex logIndex} and {@link #lastUpdatedTimestamp lastUpdatedTimestamp} will never
@@ -26,7 +26,7 @@ public class Lock {
         }
 
         if (logIndex < 0) {
-            throw new IllegalArgumentException(String.format("invalid negative log log index(%s)", logIndex));
+            throw new IllegalArgumentException(String.format("invalid negative append append index(%s)", logIndex));
         }
 
         if (lockTimeoutInMillis <= 0) {
@@ -64,11 +64,11 @@ public class Lock {
 
     public Lock setLogIndex(long logIndex) {
         if (logIndex < 0) {
-            throw new IllegalArgumentException(String.format("invalid negative log index(%s)", logIndex));
+            throw new IllegalArgumentException(String.format("invalid negative append index(%s)", logIndex));
         }
 
         if (logIndex < this.logIndex) {
-            throw new IllegalArgumentException(String.format("invalid log index(%s) because it is less than the current log index(%s)", logIndex, this.logIndex));
+            throw new IllegalArgumentException(String.format("invalid append index(%s) because it is less than the current append index(%s)", logIndex, this.logIndex));
         }
 
         this.logIndex = logIndex;
@@ -101,11 +101,11 @@ public class Lock {
 
     /**
      * Lock will be renewed iff 1) the clientId equals the clientId in the lock, 2) client
-     * index is greater or equal to the log index in the lock, and 3) the current lock has
+     * index is greater or equal to the append index in the lock, and 3) the current lock has
      * not expired.
      *
      * @param clientId Id of the client
-     * @param logIndex largest log index observed on client
+     * @param logIndex largest append index observed on client
      * @return <code>true</code> if lock renew succeeds; <code>false</code> otherwise
      */
     public boolean renew(String clientId, long logIndex) {

@@ -7,8 +7,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import sapphire.policy.SapphirePolicy;
-
 import static sapphire.policy.scalability.StateManager.Event.OBTAIN_LOCK_FAILED;
 import static sapphire.policy.scalability.StateManager.Event.OBTAIN_LOCK_SUCCEEDED;
 import static sapphire.policy.scalability.StateManager.Event.RENEW_LOCK_FAILED;
@@ -88,8 +86,8 @@ public final class StateManager {
         this.config = config;
         this.group = group;
 
-        this.SLAVE_STATE = new State.Slave(this);
-        this.MASTER_STATE = new State.Master(this);
+        this.SLAVE_STATE = new State.Slave();
+        this.MASTER_STATE = new State.Master();
         this.currentState = SLAVE_STATE;
 
         startLockingExecutor();

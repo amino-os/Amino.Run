@@ -51,20 +51,14 @@ public interface State {
         private final Random random = new Random(System.currentTimeMillis());
 
         private final StateName name;
-        private final StateManager stateManager;
 
-        AbstractState(StateName name, StateManager stateManager) {
+        AbstractState(StateName name) {
             this.name = name;
-            this.stateManager = stateManager;
         }
 
         @Override
         public final StateName getName() {
             return name;
-        }
-
-        protected StateManager getStateManager() {
-            return this.stateManager;
         }
 
         @Override
@@ -90,9 +84,9 @@ public interface State {
     /**
      * <ul>
      *      <li>initialize <code>nextIndex</code> for each slave</li>
-     *      <li>accept commands from clients and append new entries into log</li>
-     *      <li>replicate log entries to slaves</li>
-     *      <li>mark log entry committed if it is stored on a majority of servers</li>
+     *      <li>accept commands from clients and append new entries into append</li>
+     *      <li>replicate append entries to slaves</li>
+     *      <li>mark append entry committed if it is stored on a majority of servers</li>
      *      <li>renew lock periodically</li>
      *      <ul>
      *          <li>renew succeeded: stay as master</li>
@@ -108,8 +102,8 @@ public interface State {
 
         private ScheduledExecutorService replicationExecutor;
 
-        public Master(StateManager stateManager) {
-            super(StateName.MASTER, stateManager);
+        public Master() {
+            super(StateName.MASTER);
         }
 
         @Override
@@ -152,6 +146,12 @@ public interface State {
                 logger.log(Level.WARNING, "replication thread interrupted during await termination: {0}", e);
             }
         }
+
+        @Override
+        protected void finalize() throws Throwable {
+            shutdownReplicationThread();
+            super.finalize();
+        }
     }
 
     /**
@@ -160,7 +160,7 @@ public interface State {
      *      <li>respond to <code>AppendEntries</code> RPC from master</li>
      *      <li>maintains <code>lastAppliedIndex</code> and <code>lastCommittedIndex</code></li>
      *      <li>whenever <code>lastCommittedIndex > lastAppliedIndex</code>,
-     *      increments <code>lastAppliedIndex</code> and applies log[lastAppliedIndex]</li>
+     *      increments <code>lastAppliedIndex</code> and applies append[lastAppliedIndex]</li>
      *      <li>obtains lock from group periodically</li>
      *      <ul>
      *          <li>lock obtained: becomes master</li>
@@ -169,8 +169,8 @@ public interface State {
      * </ul>
      */
     final class Slave extends AbstractState {
-        public Slave(StateManager stateManager) {
-            super(StateName.SLAVE, stateManager);
+        public Slave() {
+            super(StateName.SLAVE);
         }
 
         @Override

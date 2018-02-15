@@ -4,14 +4,11 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
-
 /**
  * @author terryz
  */
 public class StateManagerTest {
+    private final String clientId = "client";
     private final long Master_Lease_Timeout_InMillis = 50;
     private final long Master_Lease_Renew_Interval_InMillis = 10;
     private final long Init_Delay_Limit_InMillis = 1;
@@ -42,25 +39,42 @@ public class StateManagerTest {
 
     @Test
     public void verifySlaveObtainLockFailed() throws Exception {
-        LoadBalancedMasterSlavePolicy.GroupPolicy group = spy(LoadBalancedMasterSlavePolicy.GroupPolicy.class);
-        when(group.obtainLock(anyString(), anyString())).thenReturn(false); // stay as slave
+        LoadBalancedMasterSlavePolicy.GroupPolicy group = new LoadBalancedMasterSlavePolicy.GroupPolicy() {
+            @Override
+            public boolean obtainLock(String clientId, long logIndex) {
+                return false;
+            }
+            @Override
+            public boolean renewLock(String client, long logIndex) {
+                return false;
+            }
+        };
 
-        final StateManager stateMgr = new StateManager("client", group, config);
+        group.setConfig(config);
+        final StateManager stateMgr = new StateManager(clientId, group, config);
 
         // Let state machine run for one second
         Thread.sleep(Thread_Wait_Time);
 
-        // Verify that the end state is still slave because we failed to get the lock
+        // Verify that the end state is still slave because we failed to obtain the lock
         Assert.assertEquals(new State.Slave(stateMgr).getName(), stateMgr.getCurrentStateName());
     }
 
     @Test
-    public void verifyStateObtainLockSucceeded() throws Exception {
-        LoadBalancedMasterSlavePolicy.GroupPolicy group = spy(LoadBalancedMasterSlavePolicy.GroupPolicy.class);
-        when(group.obtainLock(anyString(), anyString())).thenReturn(true); // promoted to master
-        when(group.renewLock(anyString())).thenReturn(true);               // stay as master
+    public void verifyObtainLockSucceededRenewLockSucceeded() throws Exception {
+        LoadBalancedMasterSlavePolicy.GroupPolicy group = new LoadBalancedMasterSlavePolicy.GroupPolicy() {
+            @Override
+            public boolean obtainLock(String clientId, long logIndex) {
+                return true;
+            }
+            @Override
+            public boolean renewLock(String client, long logIndex) {
+                return true;
+            }
+        };
 
-        final StateManager stateMgr = new StateManager("client", group, config);
+        group.setConfig(config);
+        final StateManager stateMgr = new StateManager(clientId, group, config);
 
         // Let state machine run for one second
         Thread.sleep(Thread_Wait_Time);
@@ -70,24 +84,28 @@ public class StateManagerTest {
     }
 
     @Test
-    public void verifyStateObtainLockSucceededRenewLockFailed() throws Exception {
-        LoadBalancedMasterSlavePolicy.GroupPolicy group = spy(LoadBalancedMasterSlavePolicy.GroupPolicy.class);
+    public void verifyObtainLockSucceededRenewLockFailed() throws Exception {
+        LoadBalancedMasterSlavePolicy.GroupPolicy group = new LoadBalancedMasterSlavePolicy.GroupPolicy() {
+            int obtainLockCnt = 0;
+            @Override
+            public boolean obtainLock(String clientId, long logIndex) {
+                // return true for the first invocation, and false for the rest invocatiions
+                return (obtainLockCnt++ == 0);
+            }
 
-        when(group.obtainLock(anyString(), anyString()))
-                // first obtain lock succeeds which will promote the server to master
-                .thenReturn(true)
-                // future obtain lock fails which will let the server stay in slave
-                .thenReturn(false);
+            @Override
+            public boolean renewLock(String client, long logIndex) {
+                return false;
+            }
+        };
 
-        // renew lock fails
-        when(group.renewLock(anyString())).thenReturn(false);              // demoted to slave
-
+        group.setConfig(config);
         final StateManager stateMgr = new StateManager("client", group, config);
 
         // Let state machine run for one second
         Thread.sleep(Thread_Wait_Time);
 
-        // Verify that the end state is slave because renew lock succeeded
+        // Verify that the end state is slave because renew lock failed
         Assert.assertEquals(new State.Slave(stateMgr).getName(), stateMgr.getCurrentStateName());
     }
 }

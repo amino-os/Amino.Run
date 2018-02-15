@@ -109,6 +109,7 @@ import static sapphire.runtime.MethodInvocationResponse.ReturnCode.SUCCESS;
 
 public class LoadBalancedMasterSlavePolicy extends DefaultSapphirePolicy {
     private final static Random random = new Random(System.currentTimeMillis());
+
     /**
      * Client side policy
      */
@@ -281,6 +282,9 @@ public class LoadBalancedMasterSlavePolicy extends DefaultSapphirePolicy {
      * Group policy
      */
     public static class GroupPolicy extends DefaultGroupPolicy {
+        private Lock masterLock;
+        private Configuration config;
+
         /**
          * @return master server, or <code>null</code> if no master available
          */
@@ -309,39 +313,46 @@ public class LoadBalancedMasterSlavePolicy extends DefaultSapphirePolicy {
         }
 
         /**
-         * Lock is a tuple of (clientId, logIndex, lastUpdatedTimestamp) in which clientId the Id of
-         * the client who owns the lock, logIndex is the largest log index reported by the client,
-         * and lastUpdatedTimestamp is the timestamp when the lock was updated.
-         *
-         * Lock will be renewed iff 1) the clientId equals the clientId in the lock, and 2) the
-         * current lock has not expired which means the lastUpdatedTimestamp of the lock is still
-         * within the threshold
+         * Renew lock
          *
          * @param clientId Id of the client
+         * @param clientIndex largest log index observed on client
          * @return <code>true</code> if lock renew succeeds; <code>false</code> otherwise
          */
-        public boolean renewLock(String clientId) {
-            // TODO (Terry): to be implemented
-            return false;
+        public boolean renewLock(String clientId, long clientIndex) {
+            if (clientId == null || clientId.isEmpty()) {
+                throw new IllegalArgumentException("clientId not specified");
+            }
+
+            if (masterLock == null) {
+                return false;
+            }
+
+            return masterLock.renew(clientId, clientIndex);
         }
 
         /**
-         * Lock is a tuple of (clientId, logIndex, lastUpdatedTimestamp) in which clientId the Id of
-         * the client who owns the lock, logIndex is the largest log index reported by the client,
-         * and lastUpdatedTimestamp is the timestamp when the lock was updated.
-         *
-         * The lock will be granted iff 1) the lock has expired which means the
-         * <code>lastUpdatedTimestamp</code> of the current lock has passed the threshold, and 2)
-         * the <code>clientIndex</code>clientIndex is greater or equal to the <code>logIndex</code>
-         * in the lock.
+         * Obtain lock
          *
          * @param clientId the Id of the client
-         * @param clientIndex the largest log entry index observed on client
+         * @param clientIndex the largest log entry logIndex observed on client
          * @return <code>true</code> if lock is granted; <code>false</code> otherwise
          */
-        public boolean obtainLock(String clientId, String clientIndex) {
-            // TODO (Terry): to be implemented
-            return false;
+        public boolean obtainLock(String clientId, long clientIndex) {
+            if (masterLock == null) {
+                masterLock = new Lock(clientId, clientIndex, config.getMasterLeaseTimeoutInMillis());
+                return true;
+            }
+
+            return masterLock.obtain(clientId, clientIndex);
+        }
+
+        public void setConfig(Configuration config) {
+            if (config == null) {
+                throw new IllegalArgumentException("config is not specified");
+            }
+
+            this.config = config;
         }
     }
 }

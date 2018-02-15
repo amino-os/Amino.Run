@@ -209,10 +209,10 @@ public final class StateManager {
         boolean lockObtained = false;
         try {
             if (mode == RENEW_LOCK) {
-                lockObtained = group.renewLock(clientId);
+                lockObtained = group.renewLock(clientId, Long.valueOf(0));
             } else if (mode == OBTAIN_LOCK) {
                 // TODO (Terry): Fix clientIndex
-                lockObtained = group.obtainLock(clientId, "");
+                lockObtained = group.obtainLock(clientId, Long.valueOf(0));
             } else {
                 throw new AssertionError("invalid lock mode " + mode);
             }

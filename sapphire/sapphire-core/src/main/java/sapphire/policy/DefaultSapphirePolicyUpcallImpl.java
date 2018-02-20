@@ -34,9 +34,15 @@ public abstract class DefaultSapphirePolicyUpcallImpl extends SapphirePolicyLibr
 		public MethodInvocationResponse onRPC(MethodInvocationRequest request) {
 			try {
 				Object ret = appObject.invoke(request.getMethodName(), request.getParams());
-				return new MethodInvocationResponse.Builder(MethodInvocationResponse.ReturnCode.SUCCESS, ret).build();
+				return MethodInvocationResponse.newBuilder()
+						.returnCode(MethodInvocationResponse.ReturnCode.SUCCESS)
+						.result(ret)
+						.build();
 			} catch (Exception e) {
-				return new MethodInvocationResponse.Builder(MethodInvocationResponse.ReturnCode.FAIL, e).build();
+				return MethodInvocationResponse.newBuilder()
+						.returnCode(MethodInvocationResponse.ReturnCode.FAILURE)
+						.result(e)
+						.build();
 			}
 		}
 	}

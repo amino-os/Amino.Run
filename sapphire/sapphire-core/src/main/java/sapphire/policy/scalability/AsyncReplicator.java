@@ -6,7 +6,7 @@ import java.util.List;
  * Created by terryz on 2/15/18.
  */
 
-public class AsyncReplicator implements IReplicator<LogEntry> {
+public class AsyncReplicator implements IReplicator {
     /**
      * Index of highest append entry that has been successfully replicated to all slaves
      */
@@ -24,7 +24,7 @@ public class AsyncReplicator implements IReplicator<LogEntry> {
     private long lastAppliedIndex;
 
     @Override
-    public ReplicationResponse replicate(List<LogEntry> entries) {
+    public ReplicationResponse replicate(ReplicationRequest request) {
         return null;
 
     }

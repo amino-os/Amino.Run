@@ -122,7 +122,6 @@ public interface State {
             }
 
             replicationExecutor.scheduleAtFixedRate(
-                    // wrap runnable with try-catch block
                     Util.RunnerWrapper(new Runnable() {
                         @Override
                         public void run() {

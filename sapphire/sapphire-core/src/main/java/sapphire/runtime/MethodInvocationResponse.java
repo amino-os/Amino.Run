@@ -20,7 +20,7 @@ public class MethodInvocationResponse {
          * {@link MethodInvocationResponse#result} stores the
          * {@link Throwable} that caused the failure
          */
-        FAIL,
+        FAILURE,
 
         /**
          * Indicating that the request should be redirected to
@@ -39,10 +39,6 @@ public class MethodInvocationResponse {
      */
     private Object result;
 
-    /**
-     * Private Constructor
-     * @param builder
-     */
     private MethodInvocationResponse(Builder builder) {
         this.returnCode = builder.returnCode;
         this.result = builder.result;
@@ -54,6 +50,10 @@ public class MethodInvocationResponse {
 
     public Object getResult() {
         return result;
+    }
+
+    public static Builder newBuilder() {
+        return new Builder();
     }
 
     @Override
@@ -71,16 +71,21 @@ public class MethodInvocationResponse {
         private ReturnCode returnCode;
         private Object result;
 
-        public Builder(ReturnCode returnCode, Object result) {
+        public Builder returnCode(ReturnCode returnCode) {
+            this.returnCode = returnCode;
+            return this;
+        }
+
+        public Builder result(Object result) {
+            this.result = result;
+            return this;
+        }
+
+        public MethodInvocationResponse build() {
             if (returnCode == null) {
                 throw new NullPointerException("returnCode is null");
             }
 
-            this.returnCode = returnCode;
-            this.result = result;
-        }
-
-        public MethodInvocationResponse build() {
             return new MethodInvocationResponse(this);
         }
     }

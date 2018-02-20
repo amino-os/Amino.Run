@@ -1,5 +1,7 @@
 package sapphire.policy.scalability;
 
+import com.sun.org.apache.regexp.internal.RE;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -21,7 +23,7 @@ import sapphire.runtime.exception.AppExecutionException;
 
 import static java.lang.System.*;
 import static sapphire.runtime.MethodInvocationRequest.MethodType.READ;
-import static sapphire.runtime.MethodInvocationResponse.ReturnCode.FAIL;
+import static sapphire.runtime.MethodInvocationResponse.ReturnCode.FAILURE;
 import static sapphire.runtime.MethodInvocationResponse.ReturnCode.REDIRECT;
 import static sapphire.runtime.MethodInvocationResponse.ReturnCode.SUCCESS;
 
@@ -146,7 +148,7 @@ public class LoadBalancedMasterSlavePolicy extends DefaultSapphirePolicy {
                 switch (response.getReturnCode()) {
                     case SUCCESS:
                         return response.getResult();
-                    case FAIL:
+                    case FAILURE:
                         // This is application error. No need to retry.
                         logger.log(Level.INFO, "failed to execute request {0}: {1}", new Object[]{request, response});
                         throw (AppExecutionException) response.getResult();
@@ -167,7 +169,6 @@ public class LoadBalancedMasterSlavePolicy extends DefaultSapphirePolicy {
         private final long Master_Lease_Timeout_InMillis = 500;
         private final long Master_Lease_Renew_Interval_InMillis = 100;
         private final long Init_Delay_Limit_InMillis = 100;
-        private final Long TERM = 0L;
 
         private final Logger logger = Logger.getLogger(LoadBalancedMasterSlavePolicy.ServerPolicy.class.getName());
         private final ExecutorService invocationExecutor = Executors.newSingleThreadExecutor();
@@ -190,7 +191,7 @@ public class LoadBalancedMasterSlavePolicy extends DefaultSapphirePolicy {
             this.indexGenerator = SequenceGenerator.newBuilder().name("index_sequence").startingAt(0).step(1).build();
 
             try {
-                this.requstLogger = new FileLogger(config.getLogFilePath());
+                this.requstLogger = new FileLogger(config.getLogFilePath(), config.getSnapshotFilePath());
             } catch (Exception e) {
                 throw new AssertionError("failed to construct entry logger: {0}", e);
             }
@@ -199,25 +200,58 @@ public class LoadBalancedMasterSlavePolicy extends DefaultSapphirePolicy {
             this.syncReplicator = new SyncReplicator(slaves);
         }
 
-        public ReplicationResponse handleSyncReplication(List<LogEntry> entries) {
-            ReplicationResponse response = new ReplicationResponse();
-            if (entries == null || entries.size() == 0) {
-                return response;
+        /**
+         * Appends log entries in {@link ReplicationRequest} into log file.
+         *
+         * 1. Handle duplicated entries properly. Do nothing if log entry already exists.
+         * 2. Log entries must be appended in order (according to index)
+         * 3. No missing entries. Previous entry must exist before appending the current entry
+         *
+         * @param request replication request
+         * @return replication response
+         */
+        public ReplicationResponse handleReplication(ReplicationRequest request) {
+
+            if (request == null || request.getEntries() == null || request.getEntries().size() == 0) {
+                return ReplicationResponse.newBuilder().returnCode(ReplicationResponse.ReturnCode.SUCCESS).build();
             }
 
-            // TODO (Terry): how to get the current latest index?
-            long largestIndex = 0L;
-            for (LogEntry entry : entries) {
-                if (entry.getIndex() > largestIndex) {
-                    this.requstLogger.append(entry);
-                    largestIndex = entry.getIndex();
+            long previousIndex = request.getIndexOfPreviousSyncedEntry();
+            if (! this.requstLogger.indexExists(previousIndex)) {
+                return ReplicationResponse.newBuilder()
+                        .returnCode(ReplicationResponse.ReturnCode.TRACEBACK)
+                        // TODO (Terry): This part needs to be scrutinized
+                        .result(Long.valueOf(this.requstLogger.getIndexOfLargestReplicatedEntry()))
+                        .build();
+            }
+
+            for (Entry entry : request.getEntries()) {
+                if (entry.getIndex() > previousIndex) {
+                    if (this.requstLogger.indexExists(entry.getIndex())) {
+                        continue;
+                    }
+
+                    try {
+                        this.requstLogger.append(entry);
+                    } catch (Exception e) {
+                        logger.log(Level.SEVERE, "failed to append log entry {0}: {1}", new Object[]{entry, e});
+                        return ReplicationResponse.newBuilder()
+                                .returnCode(ReplicationResponse.ReturnCode.FAILURE)
+                                .result(e)
+                                .build();
+                    }
+                    previousIndex = entry.getIndex();
                 } else {
-                    // we have seen this entry before. do nothing
+                    return ReplicationResponse.newBuilder()
+                            .returnCode(ReplicationResponse.ReturnCode.FAILURE)
+                            .result(new Exception("log entries out of order"))
+                            .build();
                 }
             }
 
-            // TODO (Terry): populate response
-            return response;
+            return ReplicationResponse.newBuilder()
+                    .returnCode(ReplicationResponse.ReturnCode.SUCCESS)
+                    .build();
         }
 
         /**
@@ -233,34 +267,31 @@ public class LoadBalancedMasterSlavePolicy extends DefaultSapphirePolicy {
                         return invokeMethod(request);
                     }
                     // redirect non-read operations to master
-                    return new MethodInvocationResponse.Builder(REDIRECT, null).build();
+                    return MethodInvocationResponse.newBuilder().returnCode(REDIRECT).result(null).build();
 
                 case MASTER:
                     if (request.getMethodType() != null && request.getMethodType() == READ) {
                         return invokeMethod(request);
                     }
 
-                    // We do appending log, replicating log, and invoking method synchronously.
-                    // If we do not persist log entry, we may loose data when master crashes.
-                    // If we do not replicate log entry, slave node may not have up-to-date
-                    // data and therefore may not be able to become master when the current master
-                    // crashes.
-                    // Finally, we have to invoke the method before returning to the client.
-                    LogEntry entry = LogEntry.newBuilder().term(TERM).index(indexGenerator.getNextSequence()).request(request).build();
-                    long index = this.requstLogger.append(entry);
-                    if (index < 0) {
-                        // TODO (Terry): handle error
-                        return null;
+                    // Log entry replication will be executed asynchronously because
+                    // we need to return the client regardless whether or not replication
+                    // succeeds.
+                    Entry entry = LogEntry.newBuilder().request(request).build();
+                    try {
+                        this.requstLogger.append(entry);
+                    } catch (Exception e) {
+                        logger.log(Level.SEVERE, "Invocation of request {0} failed: {1}", new Object[]{request, e});
+                        return MethodInvocationResponse.newBuilder()
+                                .returnCode(MethodInvocationResponse.ReturnCode.FAILURE)
+                                .result(e)
+                                .build();
                     }
 
-                    ReplicationResponse replicationResponse = replicateLogEntry(entry);
-                    if (replicationResponse == null) {
-                        // TODO (Terry): handle error
-                        return null;
-                    }
+                    // TODO (Terry): replace synchronous replciation with async replication
+                    replicateLogEntry(entry);
 
                     MethodInvocationResponse resp = invokeMethod(request);
-                    this.requstLogger.setIndexOfCommittedEntry(index);
                     return resp;
             }
 
@@ -285,13 +316,13 @@ public class LoadBalancedMasterSlavePolicy extends DefaultSapphirePolicy {
             MethodInvocationResponse resp;
             try {
                 Object ret = f.get();
-                resp = new MethodInvocationResponse.Builder(SUCCESS, ret).build();
+                resp = MethodInvocationResponse.newBuilder().returnCode(SUCCESS).result(ret).build();
             } catch (ExecutionException e) {
                 // Method invocation on application object failed.
                 // This is caused by application errors, not Sapphire errors
                 AppExecutionException ex = new AppExecutionException("method invocation on app object failed", e);
                 logger.log(Level.FINE, "failed to process request {0} on {1}: {2}", new Object[]{request, appObject, ex});
-                resp = new MethodInvocationResponse.Builder(FAIL, ex).build();
+                resp = MethodInvocationResponse.newBuilder().returnCode(FAILURE).result(ex).build();
             } catch (InterruptedException e) {
                 // TODO (Terry): what should we do here?
                 // This is likely caused by Sapphire errors.
@@ -299,21 +330,23 @@ public class LoadBalancedMasterSlavePolicy extends DefaultSapphirePolicy {
                 // may cause two replicas out of sync.
                 AppExecutionException ex = new AppExecutionException("Method invocation on appobject was interrupted", e);
                 logger.log(Level.SEVERE, "the process of request {0} on {1} was interrupted: {2}", new Object[]{request, appObject, ex});
-                resp = new MethodInvocationResponse.Builder(FAIL, ex).build();
+                resp = MethodInvocationResponse.newBuilder().returnCode(FAILURE).result(ex).build();
             }
 
             return resp;
         }
 
-        private ReplicationResponse replicateLogEntry(LogEntry entry) {
+        private void replicateLogEntry(Entry entry) {
             try {
-                return this.syncReplicator.replicate(Arrays.asList(entry));
+                // TODO (Terry): Replace 0L with real previous index
+                ReplicationRequest request = ReplicationRequest.newBuilder()
+                        .entries(Arrays.asList(entry))
+                        .indexOfPreviousSyncedEntry(0L)
+                        .build();
+                this.syncReplicator.replicate(request);
             } catch (Exception e) {
                 logger.log(Level.SEVERE, "failed to replicate log entry {0} into log file: {1}", new Object[]{entry, e});
             }
-
-            // TODO (Terry): should return error
-            return null;
         }
 
         private String getClientId() {

@@ -5,6 +5,6 @@ import java.util.List;
 /**
  * @author terryz
  */
-public interface IReplicator<T> {
-    ReplicationResponse replicate(List<T> entries);
+public interface IReplicator {
+    ReplicationResponse replicate(ReplicationRequest request);
 }

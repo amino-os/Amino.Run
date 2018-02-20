@@ -10,7 +10,7 @@ import java.util.logging.Logger;
  *
  * @author terryz
  */
-public class SyncReplicator implements IReplicator<LogEntry> {
+public class SyncReplicator implements IReplicator {
     private final Logger logger = Logger.getLogger(SyncReplicator.class.getName());
     private List<LoadBalancedMasterSlavePolicy.ServerPolicy> slaves;
 
@@ -23,17 +23,20 @@ public class SyncReplicator implements IReplicator<LogEntry> {
     }
 
     @Override
-    public ReplicationResponse replicate(List<LogEntry> entries) {
-        // TODO (Terry): Figure out what to store in ReplicationResponse
-        ReplicationResponse response = new ReplicationResponse();
+    public ReplicationResponse replicate(ReplicationRequest request) {
+        // TODO (Terry): handle multiple slaves
+        LoadBalancedMasterSlavePolicy.ServerPolicy slave = slaves.get(0);
+        ReplicationResponse response = slave.handleReplication(request);
 
-        for (LoadBalancedMasterSlavePolicy.ServerPolicy s : slaves) {
-            try {
-                s.handleSyncReplication(entries);
-            } catch (Exception e) {
-                logger.log(Level.SEVERE, "failed to replicate log entry {0}: {1}", new Object[]{entries, e});
-            }
+        if (response.getReturnCode() == ReplicationResponse.ReturnCode.TRACEBACK) {
+            return handleTraceBack(request);
         }
+
         return response;
+    }
+
+    // TODO (Terry): Implement handleTraceback
+    private ReplicationResponse handleTraceBack(ReplicationRequest request) {
+        return null;
     }
 }

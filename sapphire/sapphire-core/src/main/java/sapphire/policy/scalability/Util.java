@@ -1,5 +1,9 @@
 package sapphire.policy.scalability;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -29,5 +33,39 @@ public class Util {
                 }
             }
         };
+    }
+
+    /**
+     * Serialize object into bytes.
+     *
+     * @param object the object to be serialized. The object must implement {@link java.io.Serializable}.
+     * @return a byte array
+     * @throws Exception
+     */
+    public static final byte[] toBytes(Object object) throws Exception {
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ObjectOutput out = null;
+        try {
+            out = new ObjectOutputStream(bos);
+            out.writeObject(object);
+            out.flush();
+            return bos.toByteArray();
+        } finally {
+            try {
+                if (bos != null) {
+                    bos.close();
+                }
+            } catch (IOException e) {
+                // ignore close exception
+            }
+
+            try {
+                if (out != null) {
+                    out.close();
+                }
+            } catch (IOException e) {
+                // ignore close exception
+            }
+        }
     }
 }

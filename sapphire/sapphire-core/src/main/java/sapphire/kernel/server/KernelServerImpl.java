@@ -1,5 +1,7 @@
 package sapphire.kernel.server;
 
+import static sapphire.runtime.Sapphire.*;
+
 import sapphire.app.AppEntryPoint;
 import sapphire.common.AppObjectStub;
 import sapphire.kernel.client.KernelClient;
@@ -91,7 +93,23 @@ public class KernelServerImpl implements KernelServer{
 		objectManager.addObject(oid, object);
 		object.uncoalesce();
 	}
-	
+
+    /**
+     * Create a replica of sapphire object in this kernel server.
+     * @author Venugopal Reddy K 00900280 on 19/02/18
+     * @param serverPolicyName server policy stub class name
+     * @param groupPolicyName group policy stub class name
+     * @param groupOid kernel Oid of group policy
+     * @param appObjectStub app object stub to be replicated
+     * @throws RemoteException
+     * @throws ClassNotFoundException
+     * @throws KernelObjectNotCreatedException
+     * @throws KernelObjectNotFoundException
+     */
+    public void createSapphireObjectReplica(String serverPolicyName, String groupPolicyName, KernelOID groupOid, AppObjectStub appObjectStub) throws RemoteException, ClassNotFoundException, KernelObjectNotCreatedException, KernelObjectNotFoundException {
+        createSappObjReplica(serverPolicyName, groupPolicyName, groupOid, appObjectStub);
+    }
+
 	/** LOCAL INTERFACES **/
 	/** 
 	 * Create a new kernel object locally on this server.

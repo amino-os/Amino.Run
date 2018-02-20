@@ -3,12 +3,14 @@ package sapphire.runtime;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.logging.Logger;
 
 import org.apache.harmony.rmi.common.RMIUtil;
 
 import sapphire.app.SapphireObject;
+import sapphire.common.AppObject;
 import sapphire.common.AppObjectStub;
 import sapphire.compiler.GlobalStubConstants;
 import sapphire.kernel.common.GlobalKernelReferences;
@@ -35,6 +37,44 @@ import sapphire.policy.SapphirePolicy.SapphireServerPolicy;
  */
 public class Sapphire {
 	static Logger logger = Logger.getLogger(Sapphire.class.getName());
+
+	/**
+	 * Create a replica of sapphire object.
+	 * @author Venugopal Reddy K 00900280 on 18/02/18
+	 * @param serverPolicyName server policy stub class name
+	 * @param groupPolicyName group policy stub class name
+	 * @param groupOid kernel Oid of group policy
+	 * @param appObjectStub app object stub to be replicated
+	 * @throws RemoteException
+	 * @throws ClassNotFoundException
+	 * @throws KernelObjectNotCreatedException
+	 * @throws KernelObjectNotFoundException
+	 */
+	public static void createSappObjReplica(String serverPolicyName, String groupPolicyName, KernelOID groupOid, AppObjectStub appObjectStub) throws RemoteException, ClassNotFoundException, KernelObjectNotCreatedException, KernelObjectNotFoundException {
+
+		/* Create the Kernel Object for the Server Policy and get the Server Policy Stub */
+		String policyStubClassName = GlobalStubConstants.getPolicyPackageName() + "." + serverPolicyName;
+		SapphireServerPolicy serverPolicyStub =  (SapphireServerPolicy)KernelObjectFactory.create(policyStubClassName);
+
+		/* Get the Group Policy Stub */
+		policyStubClassName = GlobalStubConstants.getPolicyPackageName() + "." + groupPolicyName;
+		SapphireGroupPolicy groupPolicyStub = (SapphireGroupPolicy)KernelObjectFactory.createStubWithOid(policyStubClassName, groupOid);
+
+		/* Initialize the server policy and get reference */
+		SapphireServerPolicy serverPolicy = initializeServerPolicy(serverPolicyStub);
+
+		/* Create the App Object and return the App Stub */
+		appObjectStub.$__initialize(true);
+
+		/* Initialize the server policy with app object */
+		serverPolicy.$__initialize(new AppObject(appObjectStub));
+
+		/* Inject group policy stub to server policy */
+		serverPolicy.onCreate(groupPolicyStub);
+
+		/* Add the newly created server policy to group policy */
+		groupPolicyStub.addServer(serverPolicyStub);
+	}
 
 	/**
 	 * Creates a Sapphire Object:
@@ -109,8 +149,8 @@ public class Sapphire {
 			client.onCreate(groupPolicyStub);
 			appStub.$__initialize(client);
 			serverPolicy.onCreate(groupPolicyStub);
+			serverPolicyStub.$__initialize(serverPolicy.sapphire_getAppObject());
 			groupPolicy.onCreate(serverPolicyStub);
-
 			logger.info("Sapphire Object created: " + appObjectClass.getName());
 			return appStub;
 		}

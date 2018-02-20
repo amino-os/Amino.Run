@@ -118,6 +118,17 @@ public class OMSServerImpl implements OMSServer{
        public InetSocketAddress getServerInRegion(String region) throws RemoteException {
     	   return serverManager.getServerInRegion(region);
        }
+
+       /**
+        * Gets the server reference in the specified region
+        * @param region
+        * @return kernel server
+        * @throws RemoteException
+        */
+       @Override
+       public KernelServer getServerRefInRegion(String region) throws RemoteException {
+           return serverManager.getServer(serverManager.getServerInRegion(region));
+       }
        
        /** APP METHODS **/
        

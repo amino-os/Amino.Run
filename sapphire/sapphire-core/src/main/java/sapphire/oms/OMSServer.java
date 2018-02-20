@@ -6,6 +6,7 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 
+import sapphire.kernel.server.KernelServer;
 import sapphire.policy.SapphirePolicy.SapphireGroupPolicy;
 import sapphire.policy.SapphirePolicy.SapphireServerPolicy;
 import sapphire.runtime.EventHandler;
@@ -24,6 +25,7 @@ public interface OMSServer extends Remote {
        ArrayList<InetSocketAddress> getServers() throws NumberFormatException, RemoteException, NotBoundException;
        ArrayList<String> getRegions() throws RemoteException;
        InetSocketAddress getServerInRegion(String region) throws RemoteException;
+       KernelServer getServerRefInRegion(String region) throws RemoteException;
        
        void registerKernelServer(InetSocketAddress host) throws RemoteException, NotBoundException;
        

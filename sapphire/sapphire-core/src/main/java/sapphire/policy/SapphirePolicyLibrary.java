@@ -18,6 +18,7 @@ import sapphire.kernel.common.KernelObjectFactory;
 import sapphire.kernel.common.KernelObjectNotCreatedException;
 import sapphire.kernel.common.KernelObjectNotFoundException;
 import sapphire.kernel.common.KernelObjectStub;
+import sapphire.kernel.server.KernelServer;
 import sapphire.kernel.server.KernelServerImpl;
 import sapphire.oms.OMSServer;
 import sapphire.policy.SapphirePolicy.SapphireServerPolicy;
@@ -158,8 +159,33 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 			return oms().getRegions();
 		}
 
+        /**
+         * Gets the inet sock address of the server in the specified region
+         *
+         * @param region
+         * @return inet socket address of the server
+         * @throws RemoteException
+         */
+		public InetSocketAddress sapphire_getServerInRegion(String region) throws RemoteException {
+			return oms().getServerInRegion(region);
+		}
+
+        /**
+         * Gets the reference to the server in the specified region
+         * @param region
+         * @return reference to server
+         * @throws RemoteException
+         */
+		public KernelServer sapphire_getServerRefInRegion(String region) throws RemoteException {
+			return oms().getServerRefInRegion(region);
+		}
+
 		public void $__setKernelOID(KernelOID oid) {
 			this.oid = oid;
+		}
+
+		public KernelOID $__getKernelOID() {
+			return this.oid;
 		}
 	}
 }

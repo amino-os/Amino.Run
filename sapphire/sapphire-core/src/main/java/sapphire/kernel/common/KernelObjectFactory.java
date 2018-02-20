@@ -24,4 +24,30 @@ public class KernelObjectFactory {
 			throw new KernelObjectNotCreatedException();
 		}
 	}
+
+	/**
+	 * Create a policy stub with the specified oid
+	 * @author Venugopal Reddy K 00900280 on 19/02/18
+	 * @param stubClassName policy stub class name
+	 * @param oid policy kernel oid
+	 * @return policy stub
+	 * @throws ClassNotFoundException
+	 * @throws KernelObjectNotCreatedException
+	 */
+	public static KernelObjectStub createStubWithOid(String stubClassName, KernelOID oid) throws ClassNotFoundException, KernelObjectNotCreatedException {
+		Logger logger = Logger.getLogger("sapphire.kernel.common.KernelObjectFactory");
+		Class<?> stubClass = Class.forName(stubClassName);
+
+		try {
+			Constructor<?> cons = stubClass.getConstructor(Class.forName("sapphire.kernel.common.KernelOID"));
+			KernelObjectStub stub = (KernelObjectStub) cons.newInstance(oid);
+			logger.fine("Created Kernel Object Stub: " + stub);
+			stub.$__updateHostname(GlobalKernelReferences.nodeServer.oms.lookupKernelObject(oid));
+			return stub;
+		}
+		catch (Exception e) {
+			logger.severe("Could not instantiate stub: " + e.getMessage());
+			throw new KernelObjectNotCreatedException();
+		}
+	}
 }

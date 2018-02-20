@@ -87,9 +87,17 @@ public class KernelServerImpl implements KernelServer{
 	 * @param oid the kernel object id
 	 * @param object the kernel object to be stored on this server
 	 */
-	public void copyKernelObject(KernelOID oid, KernelObject object) throws RemoteException, KernelObjectNotFoundException {
-		objectManager.addObject(oid, object);
-		object.uncoalesce();
+	public void copyKernelObject(KernelOID oid, KernelObject object, String initializeMethod) throws RemoteException, KernelObjectNotFoundException {
+        objectManager.addObject(oid, object);
+        object.uncoalesce();
+		if (null != initializeMethod) {
+            try {
+                object.invoke(initializeMethod, new ArrayList<Object>());
+            } catch (Exception e) {
+                //TODO: Change the exception later
+                throw new KernelObjectNotFoundException(e);
+            }
+        }
 	}
 	
 	/** LOCAL INTERFACES **/
@@ -121,7 +129,7 @@ public class KernelServerImpl implements KernelServer{
 	 * @throws RemoteException
 	 * @throws KernelObjectNotFoundException
 	 */
-	public void moveKernelObjectToServer(InetSocketAddress host, KernelOID oid) throws RemoteException, KernelObjectNotFoundException {
+	public void moveKernelObjectToServer(InetSocketAddress host, KernelOID oid, String initializeMethod) throws RemoteException, KernelObjectNotFoundException {
 		if (host.equals(this.host)) {
 			return;
 		}
@@ -132,7 +140,7 @@ public class KernelServerImpl implements KernelServer{
 		logger.fine("Moving object " + oid.toString() + " to " + host.toString());
 		
 		try {
-			client.copyObjectToServer(host, oid, object);
+			client.copyObjectToServer(host, oid, object, initializeMethod);
 		} catch (RemoteException e) {
 			e.printStackTrace();
 			throw new RemoteException("Could not contact destination server.");

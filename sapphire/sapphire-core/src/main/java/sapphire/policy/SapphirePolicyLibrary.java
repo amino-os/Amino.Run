@@ -80,7 +80,7 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 			return appObject;
 		}
 
-		public void sapphire_pin(String region) throws RemoteException {
+		public void sapphire_pin(String region, String initializeMethod) throws RemoteException {
 			logger.info("Pinning Sapphire object " + oid.toString() + " to " + region);
 			InetSocketAddress server = null;
 			try {
@@ -90,7 +90,7 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 			}
 
 			try {
-				kernel().moveKernelObjectToServer(server, oid);
+				kernel().moveKernelObjectToServer(server, oid, initializeMethod);
 			} catch (KernelObjectNotFoundException e) {
 				e.printStackTrace();
 				throw new Error("Could not find myself on this server!");
@@ -156,6 +156,10 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 
 		public ArrayList<String> sapphire_getRegions() throws RemoteException {
 			return oms().getRegions();
+		}
+
+		public InetSocketAddress sapphire_getServerInRegion(String region) throws RemoteException {
+			return oms().getServerInRegion(region);
 		}
 
 		public void $__setKernelOID(KernelOID oid) {

@@ -79,7 +79,7 @@ public class ShiftPolicy extends SapphirePolicy {
 					logger.info("[ShiftPolicy] There are no targets to migrate Sapphire object to." );
 				} else {
 					logger.info("[ShiftPolicy] Shifting Sapphire object " + this.oid + " to " + shiftWinner);
-					localKernel.moveKernelObjectToServer(shiftWinner, this.oid);
+					localKernel.moveKernelObjectToServer(shiftWinner, this.oid, null);
 				}
 			}
 

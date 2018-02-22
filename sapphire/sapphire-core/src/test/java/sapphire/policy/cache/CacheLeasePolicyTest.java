@@ -95,7 +95,7 @@ public class CacheLeasePolicyTest {
      * Else assign a new lease if someone else's lease has expired.
      * When trying to release an already expired lease, throw error.
      */
-    @Test(expected = LeaseExpiredException.class)
+    @Test
     public void testRenewLeaseAndReleaseExpired() throws Exception{
         long time = 100;
         this.client.getNewLease(time);
@@ -107,26 +107,25 @@ public class CacheLeasePolicyTest {
         verify(this.server).getLease(lease, time);
 
         // Expire lease for client
-        Thread.sleep(1100); // Accounting for LEASE-BUFFER
+        Thread.sleep(time + CacheLeasePolicy.LEASE_BUFFER); // Accounting for LEASE-BUFFER
 
         this.clientOne.getNewLease(time);
 
         // Someone else has a valid lease, so client cannot have it
-        try{
-            this.client.getNewLease(time);
-        }catch (Exception e){
-            System.out.println(e);
-        }
+        thrown.expectMessage(equalTo("Could not get lease."));
+        this.client.getNewLease(time);
 
         // Expire lease for clientOne
-        Thread.sleep(1100);
+        Thread.sleep(time + CacheLeasePolicy.LEASE_BUFFER);
 
         // Someone else's lease expired, so client can now have a new lease
         this.client.getNewLease(time);
+
         // Verifying lease expired for clientOne
         assertFalse(this.clientOne.leaseStillValid());
 
         // Throws error because trying to release expired lease
+        thrown.expect(LeaseExpiredException.class);
         this.clientOne.releaseCurrentLease();
     }
 }

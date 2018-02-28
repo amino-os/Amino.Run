@@ -20,6 +20,7 @@ import sapphire.kernel.common.KernelObjectNotFoundException;
 import sapphire.kernel.common.KernelObjectStub;
 import sapphire.kernel.server.KernelServer;
 import sapphire.kernel.server.KernelServerImpl;
+import sapphire.oms.KernelServerInfo;
 import sapphire.oms.OMSServer;
 import sapphire.policy.SapphirePolicy.SapphireServerPolicy;
 import sapphire.runtime.Sapphire;
@@ -73,6 +74,10 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 			} catch (KernelObjectNotFoundException e) {
 				e.printStackTrace();
 				throw new Error("Could not find object to replicate!");
+			} catch (Exception e) {
+				e.printStackTrace();
+				//TODO: Clean up required ??
+				throw new Error("Could not create a replica");
 			}
 			return (SapphireServerPolicy) serverPolicyStub;
 		}
@@ -129,6 +134,19 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 			return actualAppObject;
 		}
 
+		public KernelServer sapphire_getKernelServer(InetSocketAddress host) {
+			try {
+				return oms().getKernelServer(host);
+			} catch (RemoteException e) {
+				e.printStackTrace();
+			}
+
+			return null;
+		}
+
+		public String sapphire_getRegion() {
+			return kernel().getRegion();
+		}
 		public void $__initialize(AppObject appObject) {
 			this.appObject = appObject;
 		}
@@ -159,25 +177,25 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 			return oms().getRegions();
 		}
 
-        /**
-         * Gets the inet sock address of the server in the specified region
-         *
-         * @param region
-         * @return inet socket address of the server
-         * @throws RemoteException
-         */
-		public InetSocketAddress sapphire_getServerInRegion(String region) throws RemoteException {
-			return oms().getServerInRegion(region);
+		/**
+		 * Gets the list of inet sock address of the servers in the specified region
+		 *
+		 * @param region
+		 * @return inet socket address of the server
+		 * @throws RemoteException
+		 */
+		public ArrayList<InetSocketAddress> sapphire_getServersInRegion(String region) throws RemoteException {
+			return oms().getServersInRegion(region);
 		}
 
-        /**
-         * Gets the reference to the server in the specified region
-         * @param region
-         * @return reference to server
-         * @throws RemoteException
-         */
-		public KernelServer sapphire_getServerRefInRegion(String region) throws RemoteException {
-			return oms().getServerRefInRegion(region);
+		/**
+		 * Gets the array of the kernel servers info in the specified region
+		 * @param region
+		 * @return reference to server
+		 * @throws RemoteException
+		 */
+		public ArrayList<KernelServerInfo> sapphire_getKernelServersInRegion(String region) throws RemoteException {
+			return oms().getKernelServersInRegion(region);
 		}
 
 		public void $__setKernelOID(KernelOID oid) {

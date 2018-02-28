@@ -50,7 +50,7 @@ public class Sapphire {
 	 * @throws KernelObjectNotCreatedException
 	 * @throws KernelObjectNotFoundException
 	 */
-	public static void createSappObjReplica(String serverPolicyName, String groupPolicyName, KernelOID groupOid, AppObjectStub appObjectStub) throws RemoteException, ClassNotFoundException, KernelObjectNotCreatedException, KernelObjectNotFoundException {
+	public static void replicateSapphireObject(String serverPolicyName, String groupPolicyName, KernelOID groupOid, AppObjectStub appObjectStub) throws RemoteException, ClassNotFoundException, KernelObjectNotCreatedException, KernelObjectNotFoundException {
 
 		/* Create the Kernel Object for the Server Policy and get the Server Policy Stub */
 		String policyStubClassName = GlobalStubConstants.getPolicyPackageName() + "." + serverPolicyName;
@@ -58,7 +58,7 @@ public class Sapphire {
 
 		/* Get the Group Policy Stub */
 		policyStubClassName = GlobalStubConstants.getPolicyPackageName() + "." + groupPolicyName;
-		SapphireGroupPolicy groupPolicyStub = (SapphireGroupPolicy)KernelObjectFactory.createStubWithOid(policyStubClassName, groupOid);
+		SapphireGroupPolicy groupPolicyStub = (SapphireGroupPolicy)KernelObjectFactory.createStubWithOid(policyStubClassName, groupOid, null);
 
 		/* Initialize the server policy and get reference */
 		SapphireServerPolicy serverPolicy = initializeServerPolicy(serverPolicyStub);
@@ -72,8 +72,13 @@ public class Sapphire {
 		/* Inject group policy stub to server policy */
 		serverPolicy.onCreate(groupPolicyStub);
 
-		/* Add the newly created server policy to group policy */
-		groupPolicyStub.addServer(serverPolicyStub);
+		try {
+			/* Add the newly created server policy to group policy */
+			groupPolicyStub.addServer(serverPolicyStub);
+		} catch(Exception e) {
+			e.printStackTrace();
+			/* TODO: cleanup */
+		}
 	}
 
 	/**
@@ -151,11 +156,13 @@ public class Sapphire {
 			serverPolicy.onCreate(groupPolicyStub);
 			serverPolicyStub.$__initialize(serverPolicy.sapphire_getAppObject());
 			groupPolicy.onCreate(serverPolicyStub);
+			serverPolicyStub.$__initialize(null);
 			logger.info("Sapphire Object created: " + appObjectClass.getName());
 			return appStub;
 		}
 		catch (Exception e) {
 			e.printStackTrace();
+			// TODO: Need to do cleanup
 			return null;
 			//throw new AppObjectNotCreatedException();
 		}

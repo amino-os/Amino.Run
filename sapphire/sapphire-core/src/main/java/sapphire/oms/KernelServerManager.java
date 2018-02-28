@@ -41,6 +41,25 @@ public class KernelServerManager {
 		regions.put(address.toString(), region);
 	}
 	
+    /**
+     * Registers the kernel server to the specified region
+     * @param region
+     * @param address
+     * @throws RemoteException
+     * @throws NotBoundException
+     */
+    public void registerKernelServerWithRegion(String region, InetSocketAddress address) throws RemoteException, NotBoundException {
+        logger.info("New kernel server: " + address.toString() + " in region " + region);
+
+        ArrayList<InetSocketAddress> serverList = regions.get(region);
+        if (null == serverList) {
+            serverList = new ArrayList<InetSocketAddress>();
+        }
+
+        serverList.add(address);
+        regions.put(region, serverList);
+    }
+
 	/**
      */
     public ArrayList<InetSocketAddress> getServers() {
@@ -77,5 +96,14 @@ public class KernelServerManager {
     
     public InetSocketAddress getServerInRegion(String region) {
     	return regions.get(region).get(0);
+    }
+
+    /**
+     * Gets all the servers in the region
+     * @param region
+     * @return list of kernel server host address in the given region
+     */
+    public ArrayList<InetSocketAddress> getServersInRegion(String region) {
+        return regions.get(region);
     }
 }

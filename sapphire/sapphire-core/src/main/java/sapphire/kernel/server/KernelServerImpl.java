@@ -38,6 +38,7 @@ import java.util.logging.Logger;
 public class KernelServerImpl implements KernelServer{
 	private static Logger logger = Logger.getLogger("sapphire.kernel.server.KernelServerImpl");
 	private InetSocketAddress host;
+	private String region;
 	/** manager for kernel objects that live on this server */
 	private KernelObjectManager objectManager;
 	/** stub for the OMS */
@@ -60,6 +61,14 @@ public class KernelServerImpl implements KernelServer{
 		GlobalKernelReferences.nodeServer = this;
 	}
 	
+	public void setRegion(String region) {
+		this.region = region;
+	}
+
+	public String getRegion() {
+		return this.region;
+	}
+
 	/** RPC INTERFACES **/
 	
 	/**
@@ -93,22 +102,22 @@ public class KernelServerImpl implements KernelServer{
 		objectManager.addObject(oid, object);
 		object.uncoalesce();
 	}
-
-    /**
-     * Create a replica of sapphire object in this kernel server.
-     * @author Venugopal Reddy K 00900280 on 19/02/18
-     * @param serverPolicyName server policy stub class name
-     * @param groupPolicyName group policy stub class name
-     * @param groupOid kernel Oid of group policy
-     * @param appObjectStub app object stub to be replicated
-     * @throws RemoteException
-     * @throws ClassNotFoundException
-     * @throws KernelObjectNotCreatedException
-     * @throws KernelObjectNotFoundException
-     */
-    public void createSapphireObjectReplica(String serverPolicyName, String groupPolicyName, KernelOID groupOid, AppObjectStub appObjectStub) throws RemoteException, ClassNotFoundException, KernelObjectNotCreatedException, KernelObjectNotFoundException {
-        createSappObjReplica(serverPolicyName, groupPolicyName, groupOid, appObjectStub);
-    }
+	
+	/**
+	 * Create a replica of sapphire object in this kernel server.
+	 * @author Venugopal Reddy K 00900280 on 28/02/18
+	 * @param serverPolicyName server policy stub class name
+	 * @param groupPolicyName group policy stub class name
+	 * @param groupOid kernel Oid of group policy
+	 * @param appObjectStub app object stub to be replicated
+	 * @throws RemoteException
+	 * @throws ClassNotFoundException
+	 * @throws KernelObjectNotCreatedException
+	 * @throws KernelObjectNotFoundException
+	 */
+	public void createSapphireObjectReplica(String serverPolicyName, String groupPolicyName, KernelOID groupOid, AppObjectStub appObjectStub) throws RemoteException, ClassNotFoundException, KernelObjectNotCreatedException, KernelObjectNotFoundException {
+		replicateSapphireObject(serverPolicyName, groupPolicyName, groupOid, appObjectStub);
+	}
 
 	/** LOCAL INTERFACES **/
 	/** 
@@ -227,9 +236,10 @@ public class KernelServerImpl implements KernelServer{
 	 */
 	public static void main(String args[]) {
 
-		if (args.length != 4) {
+		if (args.length < 4) {
 			System.out.println("Incorrect arguments to the kernel server");
-			System.out.println("[host ip] [host port] [oms ip] [oms port]");
+			/* Time Being for backward compatibility Region is optional in the configuration */
+			System.out.println("[host ip] [host port] [oms ip] [oms port] [region]");
 			return;
 		}
 		
@@ -251,8 +261,17 @@ public class KernelServerImpl implements KernelServer{
 			KernelServer stub = (KernelServer) UnicastRemoteObject.exportObject(server, 0);
 			Registry registry = LocateRegistry.createRegistry(Integer.parseInt(args[1]));
 			registry.rebind("SapphireKernelServer", stub);
-			
-			oms.registerKernelServer(host);
+
+			if (args.length > 4) {
+				/* extract region from args */
+				server.setRegion(args[4]);
+				oms.registerKernelServerWithRegion(server.getRegion(), host);
+			} else {
+				server.setRegion("Default"); //Default region
+				// TODO: When region is not configured, each host is considered as separate region for backward compatibility
+				// but to work with this DM region is mandatory once if this approach okay then we can change region as mandatory param.
+				oms.registerKernelServer(host);
+			}
 			
 			logger.info("Server ready!");
 			System.out.println("Server ready!");

@@ -1,18 +1,16 @@
 package sapphire.policy.scalability;
 
-
 import java.util.ArrayList;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.Semaphore;
+import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import org.apache.harmony.rmi.common.RMIUtil;
 
 import sapphire.compiler.GlobalStubConstants;
 import sapphire.common.AppObjectStub;
-import sapphire.kernel.server.KernelServer;
+import sapphire.kernel.common.KernelObjectStub;
 import sapphire.policy.DefaultSapphirePolicy;
+import sapphire.oms.KernelServerInfo;
 
 
 /**
@@ -22,171 +20,143 @@ import sapphire.policy.DefaultSapphirePolicy;
 
 public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
 
-    /**
-     * LoadBalancedFrontend client policy. The client will LoadBalance among the Sapphire Server replica objects.
-     * client side DM instance should randomise the order in which it performs round robin against replicas
-     * @author SrinivasChilveri
-     *
-     */
-    public static class SimpleRateLimiter {
-        private Semaphore semaphore;
-        private int maxPermits;
-        private TimeUnit timeUnit;
-        private int period;
-        private ScheduledExecutorService scheduler;
+	/**
+	 * LoadBalancedFrontend client policy. The client will LoadBalance among the Sapphire Server replica objects.
+	 * client side DM instance should randomise the order in which it performs round robin against replicas
+	 * @author SrinivasChilveri
+	 *
+	 */
+	public static class ClientPolicy extends DefaultSapphirePolicy.DefaultClientPolicy {
+		private static int     index;
+		ArrayList<SapphireServerPolicy> replicaList = new ArrayList<SapphireServerPolicy>();
 
-        public static SimpleRateLimiter create(int permits, int period, TimeUnit timeUnit) {
-            SimpleRateLimiter limiter = new SimpleRateLimiter(permits, period, timeUnit);
-            limiter.schedulePermitReplenishment();
-            return limiter;
-        }
+		@Override
+		public Object onRPC(String method, ArrayList<Object> params) throws Exception {
 
-        private SimpleRateLimiter(int permits, int period, TimeUnit timeUnit) {
-            this.semaphore = new Semaphore(permits,true);
-            this.maxPermits = permits;
-            this.timeUnit = timeUnit;
-            this.period = period;
-        }
+			if(replicaList.isEmpty()){
+				replicaList = getGroup().getServers();
+				// get all the servers which has replicated Objects only once dynamically added replicas
+				// are considered later
+				index = (int)(Math.random()*replicaList.size());
+			}
+			else {
+				if (++index >= replicaList.size()){
+					index = 0;
+				}
+			}
 
-        public boolean tryAcquire() {
-            return semaphore.tryAcquire();
-        }
+			return ((ServerPolicy)(replicaList.get(index))).onRPC(method,params);
+		}
+	}
 
-        public void stop() {
-            scheduler.shutdownNow();
-        }
+	/**
+	 * LoadBalancedFrontend server policy. throws .
+	 * a configurable value for the number of concurrent requests supported per replica per should be provided
+	 * If the number of concurrent requests against a given replica exceeds that number, requests to that server
+	 * replica should fail (in the server DM) with an appropriate exception (indicating server overload).
+	 * @author SrinivasChilveri
+	 *
+	 */
+	public static class ServerPolicy extends DefaultSapphirePolicy.DefaultServerPolicy {
+		private static Logger logger = Logger.getLogger(GroupPolicy.class.getName());
+		private static int STATIC_RPS = 2000 ; //currently its hard coded we can read from config or annotations
+		private static int PERIOD = 1;
+		transient protected RateLimiter limiter;
 
-        public void schedulePermitReplenishment() {
-            scheduler = Executors.newScheduledThreadPool(1);
-            scheduler.scheduleAtFixedRate(new Runnable() {
-                public void run() { semaphore.release(maxPermits - semaphore.availablePermits());}
-            }, 1, period, timeUnit);
+		@Override
+		public void onCreate(SapphireGroupPolicy group) {
+			super.onCreate(group);
+			limiter = new SimpleRateLimiter(STATIC_RPS);
+			limiter.start();
+		}
 
-        }
-    }
+		@Override
+		public Object onRPC(String method, ArrayList<Object> params) throws Exception {
+			if (limiter.tryAcquire()) { //rps is not reached
+				return super.onRPC(method, params);
+			} else {
+				throw new ServerOverLoadException("The Replica of the SappahireObject on this Kernel Server Over Loaded");
+			}
+		}
+	}
 
-    public static class ClientPolicy extends DefaultSapphirePolicy.DefaultClientPolicy {
-        private static int     index;
-        private static boolean flag = true;
-        ArrayList<SapphireServerPolicy> replicaList = null;
+	/**
+	 * Group policy. creates the configured num of replicas.
+	 * @author SrinivasChilveri
+	 *
+	 */
+	public static class GroupPolicy extends DefaultSapphirePolicy.DefaultGroupPolicy {
+		private ArrayList<SapphireServerPolicy> nodes;
+		private static int STATIC_REPLICAS = 2 ; //currently its hard coded we can read from config or annotations
+		private static Logger logger = Logger.getLogger(GroupPolicy.class.getName());
 
-        @Override
-        public Object onRPC(String method, ArrayList<Object> params) throws Exception {
-            Object ret = null;
+		@Override
+		synchronized public void addServer(SapphireServerPolicy server) throws Exception {
+			nodes.add(server);
+		}
 
-            if(flag){
-                replicaList = getGroup().getServers();
-                // get all the servers which has replicated Objects only once dynamically added replicas
-                // are considered later
-                index = (int)(Math.random()*replicaList.size());
-                flag = false;
-            }
-            else {
-                if (++index >= replicaList.size()){
-                    index = 0;
-                }
-            }
+		@Override
+		public void onFailure(SapphireServerPolicy server) {
+			// TODO
+		}
 
-            ret = ((ServerPolicy)(replicaList.get(index))).onRPC(method,params);
-            return ret;
-        }
-    }
+		@Override
+		public SapphireServerPolicy onRefRequest() {
+			return nodes.get(0);
+		}
 
-    /**
-     * LoadBalancedFrontend server policy. throws .
-     * a configurable value for the number of concurrent requests supported per replica per should be provided
-     * If the number of concurrent requests against a given replica exceeds that number, requests to that server
-     * replica should fail (in the server DM) with an appropriate exception (indicating server overload).
-     * @author SrinivasChilveri
-     *
-     */
-    public static class ServerPolicy extends DefaultSapphirePolicy.DefaultServerPolicy {
-        private static Logger logger = Logger.getLogger(GroupPolicy.class.getName());
-        private static int STATIC_RPS = 2000 ; //currently its hard coded we can read from config or annotations
-        private static int PERIOD = 1;
-        transient SimpleRateLimiter limiter ;
+		@Override
+		public ArrayList<SapphireServerPolicy> getServers() {
+			return nodes;
+		}
 
-        @Override
-        public void onCreate(SapphireGroupPolicy group) {
-            super.onCreate(group);
-            this.limiter = SimpleRateLimiter.create(STATIC_RPS, PERIOD, TimeUnit.SECONDS);
-        }
+		@Override
+		public void onCreate(SapphireServerPolicy server) {
+			nodes = new ArrayList<SapphireServerPolicy>();
+			int count = 1; /* count is started with 1 excluding the present server */
 
-        @Override
-        public Object onRPC(String method, ArrayList<Object> params) throws Exception {
-            if (limiter.tryAcquire()) { //rps is not reached
-                return super.onRPC(method, params);
-            } else {
-                throw new ServerOverLoadException("The Replica of the SappahireObject on this Kernel Server Over Loaded");
-            }
-        }
-    }
+			/* Creation of group happens when the first instance of sapphire object is
+			being created. Loop through all the kernel servers and replicate the
+			sapphire objects on them based on the static replica count */
+			try {
 
-    /**
-     * Group policy. creates the configured num of replicas.
-     * @author SrinivasChilveri
-     *
-     */
-    public static class GroupPolicy extends DefaultSapphirePolicy.DefaultGroupPolicy {
-        private ArrayList<SapphireServerPolicy> nodes;
-        private static int STATIC_REPLICAS = 2 ; //currently its hard coded we can read from config or annotations
-        private static Logger logger = Logger.getLogger(GroupPolicy.class.getName());
+				/* Find the current region and the kernel server on which this first instance of
+				sapphire object is being created. And try to replicate the
+				sapphire objects in the same region(excluding this kernel server) */
+				String region = server.sapphire_getRegion();
 
-        @Override
-        public void addServer(SapphireServerPolicy server) {
-            nodes.add(server);
-        }
+				ArrayList<KernelServerInfo> kernelServers = sapphire_getKernelServersInRegion(region);
 
-        @Override
-        public void onFailure(SapphireServerPolicy server) {
-            // TODO
-        }
+				/* Create the replicas */
+				for (int  i = 0; i < kernelServers.size() && count < STATIC_REPLICAS; i++) {
 
-        @Override
-        public SapphireServerPolicy onRefRequest() {
-            return nodes.get(0);
-        }
+					if ((kernelServers.get(i)).getHost().equals(((KernelObjectStub)server).$__getHostname())) {
+						continue;
+					}
 
-        @Override
-        public ArrayList<SapphireServerPolicy> getServers() {
-            return nodes;
-        }
+					kernelServers.get(i).getKernelServer().createSapphireObjectReplica(
+							RMIUtil.getShortName(server.getClass()),
+							RMIUtil.getShortName(getClass()) + GlobalStubConstants.STUB_SUFFIX,
+							$__getKernelOID(), (AppObjectStub) server.sapphire_getAppObject().getObject());
 
-        @Override
-        public void onCreate(SapphireServerPolicy server) {
-            nodes = new ArrayList<SapphireServerPolicy>();
-            int count = 1 ;
+					count++;
+				}
 
-            try {
-                ArrayList<String> regions = sapphire_getRegions();
+				addServer(server);
 
-                for (int i = 1; i < regions.size(); i++) {
+				/* If the replicas created are less than the number of replicas configured,
+				log a warning message */
+				if (count != STATIC_REPLICAS)  {
+					logger.warning("Configured replicas count: " + STATIC_REPLICAS + ", created replica count : " + count);
+					throw new Error("Configured replicas count: " + STATIC_REPLICAS + ", created replica count : " + count);
+				}
 
-                    if (count == STATIC_REPLICAS) {
-                        break; //break on reaching the configured replica creation
-                    }
-
-                    KernelServer kernelServer = sapphire_getServerRefInRegion(regions.get(i));
-
-                    kernelServer.createSapphireObjectReplica(RMIUtil.getShortName(server.getClass()),
-                            RMIUtil.getShortName(getClass()) + GlobalStubConstants.STUB_SUFFIX,
-                            $__getKernelOID(), (AppObjectStub) server.sapphire_getAppObject().getObject());
-
-                    count++;
-                }
-
-                addServer(server);
-
-                if (count != STATIC_REPLICAS)  {
-                    logger.warning("Configured Static replicas are not created may be num of regions are less");
-                    logger.warning("The Num of regions are "+ regions.size());
-                }
-
-            } catch (Exception e) {
-                e.printStackTrace();
-                throw new Error("Could not create new group policy");
-            }
-        }
-    }
+			} catch (Exception e) {
+				e.printStackTrace();
+				// TODO: Need Cleanup
+				throw new Error("Could not create new group policy" + e);
+			}
+		}
+	}
 
 }

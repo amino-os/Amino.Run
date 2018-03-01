@@ -38,48 +38,7 @@ import sapphire.policy.SapphirePolicy.SapphireServerPolicy;
 public class Sapphire {
 	static Logger logger = Logger.getLogger(Sapphire.class.getName());
 
-	/**
-	 * Create a replica of sapphire object.
-	 * @author Venugopal Reddy K 00900280 on 18/02/18
-	 * @param serverPolicyName server policy stub class name
-	 * @param groupPolicyName group policy stub class name
-	 * @param groupOid kernel Oid of group policy
-	 * @param appObjectStub app object stub to be replicated
-	 * @throws RemoteException
-	 * @throws ClassNotFoundException
-	 * @throws KernelObjectNotCreatedException
-	 * @throws KernelObjectNotFoundException
-	 */
-	public static void replicateSapphireObject(String serverPolicyName, String groupPolicyName, KernelOID groupOid, AppObjectStub appObjectStub) throws RemoteException, ClassNotFoundException, KernelObjectNotCreatedException, KernelObjectNotFoundException {
 
-		/* Create the Kernel Object for the Server Policy and get the Server Policy Stub */
-		String policyStubClassName = GlobalStubConstants.getPolicyPackageName() + "." + serverPolicyName;
-		SapphireServerPolicy serverPolicyStub =  (SapphireServerPolicy)KernelObjectFactory.create(policyStubClassName);
-
-		/* Get the Group Policy Stub */
-		policyStubClassName = GlobalStubConstants.getPolicyPackageName() + "." + groupPolicyName;
-		SapphireGroupPolicy groupPolicyStub = (SapphireGroupPolicy)KernelObjectFactory.createStubWithOid(policyStubClassName, groupOid, null);
-
-		/* Initialize the server policy and get reference */
-		SapphireServerPolicy serverPolicy = initializeServerPolicy(serverPolicyStub);
-
-		/* Create the App Object and return the App Stub */
-		appObjectStub.$__initialize(true);
-
-		/* Initialize the server policy with app object */
-		serverPolicy.$__initialize(new AppObject(appObjectStub));
-
-		/* Inject group policy stub to server policy */
-		serverPolicy.onCreate(groupPolicyStub);
-
-		try {
-			/* Add the newly created server policy to group policy */
-			groupPolicyStub.addServer(serverPolicyStub);
-		} catch(Exception e) {
-			e.printStackTrace();
-			/* TODO: cleanup */
-		}
-	}
 
 	/**
 	 * Creates a Sapphire Object:
@@ -215,7 +174,7 @@ public class Sapphire {
 		return groupPolicy;
 	}
 
-	private static SapphireServerPolicy initializeServerPolicy(SapphireServerPolicy serverPolicyStub)
+	public static SapphireServerPolicy initializeServerPolicy(SapphireServerPolicy serverPolicyStub)
 			throws KernelObjectNotFoundException {
 		KernelOID serverOID = ((KernelObjectStub)serverPolicyStub).$__getKernelOID();
 		SapphireServerPolicy serverPolicy = (SapphireServerPolicy) GlobalKernelReferences.nodeServer.getObject(serverOID);

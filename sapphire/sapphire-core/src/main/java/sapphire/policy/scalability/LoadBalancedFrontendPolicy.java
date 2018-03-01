@@ -5,7 +5,8 @@ import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import org.apache.harmony.rmi.common.RMIUtil;
-
+import sapphire.common.RateLimiter;
+import sapphire.common.SimpleRateLimiter;
 import sapphire.compiler.GlobalStubConstants;
 import sapphire.common.AppObjectStub;
 import sapphire.kernel.common.KernelObjectStub;
@@ -14,7 +15,7 @@ import sapphire.oms.KernelServerInfo;
 
 
 /**
- * Created by SrinivasChilveri on 19/2/18.
+ * Created by SrinivasChilveri on 2/19/18.
  * Simple load balancing w/ static number of replicas and no consistency
  */
 
@@ -27,7 +28,7 @@ public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
 	 *
 	 */
 	public static class ClientPolicy extends DefaultSapphirePolicy.DefaultClientPolicy {
-		private static int     index;
+		private static int index;
 		ArrayList<SapphireServerPolicy> replicaList = new ArrayList<SapphireServerPolicy>();
 
 		@Override
@@ -38,8 +39,7 @@ public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
 				// get all the servers which has replicated Objects only once dynamically added replicas
 				// are considered later
 				index = (int)(Math.random()*replicaList.size());
-			}
-			else {
+			} else {
 				if (++index >= replicaList.size()){
 					index = 0;
 				}
@@ -50,8 +50,8 @@ public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
 	}
 
 	/**
-	 * LoadBalancedFrontend server policy. throws .
-	 * a configurable value for the number of concurrent requests supported per replica per should be provided
+	 * LoadBalancedFrontend server policy.
+	 * a configurable value for the number of concurrent requests supported per replica should be provided
 	 * If the number of concurrent requests against a given replica exceeds that number, requests to that server
 	 * replica should fail (in the server DM) with an appropriate exception (indicating server overload).
 	 * @author SrinivasChilveri

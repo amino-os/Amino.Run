@@ -1,7 +1,7 @@
-package sapphire.policy.scalability;
+package sapphire.common;
 
 /**
- * Created by SrinivasChilveri on 27/2/18.
+ * Created by SrinivasChilveri on 2/27/18.
  * Generic interface for rate limiter
  */
 

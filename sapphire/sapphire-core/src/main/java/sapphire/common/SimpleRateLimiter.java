@@ -1,4 +1,4 @@
-package sapphire.policy.scalability;
+package sapphire.common;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -6,7 +6,7 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Created by SrinivasChilveri on 21/2/18.
+ * Created by SrinivasChilveri on 2/21/18.
  * Simple rate limiter implementation. It uses semaphores with configurable permits, time unit,
  * time period. Mechanism used to rate limit is as follows:
  * User need to tryAcquire a permit in semaphore each time resource is accessed. At the end of time

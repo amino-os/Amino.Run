@@ -7,14 +7,14 @@ import java.util.List;
  */
 public class ReplicationRequest {
     private final long indexOfPreviousSyncedEntry;
-    private final List<Entry> entries;
+    private final List<LogEntry> entries;
 
     private ReplicationRequest(Builder builder) {
         this.indexOfPreviousSyncedEntry = builder.indexOfPreviousSyncedEntry;
         this.entries = builder.entries;
     }
 
-    public List<Entry> getEntries() {
+    public List<LogEntry> getEntries() {
         return entries;
     }
 
@@ -36,14 +36,14 @@ public class ReplicationRequest {
 
     public static class Builder {
         private long indexOfPreviousSyncedEntry;
-        private List<Entry> entries;
+        private List<LogEntry> entries;
 
         public Builder indexOfPreviousSyncedEntry(long indexOfPreviousSyncedEntry) {
             this.indexOfPreviousSyncedEntry = indexOfPreviousSyncedEntry;
             return this;
         }
 
-        public Builder entries(List<Entry> entries) {
+        public Builder entries(List<LogEntry> entries) {
             this.entries = entries;
             return this;
         }

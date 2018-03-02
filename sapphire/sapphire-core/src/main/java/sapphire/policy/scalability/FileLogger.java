@@ -1,12 +1,17 @@
 package sapphire.policy.scalability;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Stack;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -104,19 +109,39 @@ import java.util.logging.Logger;
  *
  * @author terryz
  */
-public class FileLogger implements ILogger<Entry> {
+public class FileLogger implements ILogger<LogEntry> {
     private final long TERM = 0;
     private Logger logger = Logger.getLogger(FileLogger.class.getName());
 
     /**
      * Log Entry File Path
      */
-    private String logFilePath;
+    private File entryLog;
 
     /**
      * Snapshot File Path
      */
-    private String snapshotFilePath;
+    private File snapshotLog;
+
+    /**
+     * Entry log output channel
+     */
+    private FileChannel entryLogOutChannel;
+
+    /**
+     * Entry log input channel
+     */
+    private FileChannel entryLogInChannel;
+
+    /**
+     * Snapshot log output channel
+     */
+    private FileChannel snapshotLogOutChannel;
+
+    /**
+     * Snapshot log in channel
+     */
+    private FileChannel snapshotLogInChannel;
 
     /**
      * Index of the largest committed log entry. A log entry is
@@ -134,7 +159,7 @@ public class FileLogger implements ILogger<Entry> {
     /**
      * Index of the largest entry.
      */
-    private long indexOfLargestEntry;
+    private AtomicLong indexOfLargestEntry;
 
     /**
      * Map that tracks the mapping from log index to its offset in the file
@@ -145,19 +170,15 @@ public class FileLogger implements ILogger<Entry> {
     // A normal log entry with 5 Date objects as params takes about 800 bytes.
     // Suppose we serve 1000 operations per second, and we checkpoint every 15 minutes,
     // we expect the size of the List is around 1GB.
-    private List<Entry> logEntries;
+    private List<LogEntry> logEntries;
 
     /**
-     * File for storing log entries
-     * TODO (Terry): We need to define disk pages
+     * Constructor
+     *
+     * @param logFilePath
+     * @param snapshotFilePath
+     * @throws Exception
      */
-    private FileChannel logChannel;
-
-    /**
-     * File for storing snapshots
-     */
-    private FileChannel snapshotChannel;
-
     public FileLogger(String logFilePath, String snapshotFilePath) throws Exception {
         if (logFilePath == null || logFilePath.isEmpty()) {
             throw new IllegalArgumentException("log file path not specified");
@@ -167,38 +188,71 @@ public class FileLogger implements ILogger<Entry> {
             throw new IllegalArgumentException("snapshot file path not specified");
         }
 
-        this.logFilePath = logFilePath;
-        this.snapshotFilePath = snapshotFilePath;
-        this.indexOfLargestEntry = 0L;
-        this.logEntries = new ArrayList<Entry>();
+        this.entryLog = new File(logFilePath);
+        this.snapshotLog = new File(snapshotFilePath);
+        this.indexOfLargestCommittedEntry = 0L;
+        this.indexOfLargestReplicatedEntry = 0L;
+        this.indexOfLargestEntry = new AtomicLong();
+
+        this.snapshotLogOutChannel = new FileOutputStream(snapshotLog).getChannel();
+        this.snapshotLogInChannel = new FileInputStream(snapshotLog).getChannel();
+
+        this.entryLogOutChannel = new FileOutputStream(entryLog).getChannel();
+        this.entryLogInChannel = new FileInputStream(entryLog).getChannel();
+
+        this.logEntries = new ArrayList<LogEntry>();
         this.indexOffsetMap = new HashMap<Long, Long>();
 
-        FileOutputStream logOS = new FileOutputStream(logFilePath);
-        this.logChannel = logOS.getChannel();
+        // TODO (Terry): Fix errors and clean up codes
+        if (snapshotLog.exists()) {
+            SnapshotEntry snapshotEntry = getLatestSnapshotEntry(snapshotLogOutChannel);
+            if (snapshotEntry != null) {
+                this.indexOfLargestReplicatedEntry = snapshotEntry.getIndexOfLargestReplicatedEntry();
+                this.indexOfLargestCommittedEntry = snapshotEntry.getIndexOfLargestCommittedEntry();
+                long offset = snapshotEntry.getLowestOffsetInLogFile();
+                entryLogInChannel.position(offset);
 
-        FileOutputStream snapOS = new FileOutputStream(snapshotFilePath);
-        this.snapshotChannel = snapOS.getChannel();
+                int bytesRead = readInt(entryLogInChannel);
+                while (bytesRead > 0) {
+                    long position = entryLogInChannel.position();
+                    byte[] bytes = readBytes(entryLogInChannel, bytesRead);
+
+                    LogEntry entry = (LogEntry)Util.toObject(bytes);
+                    indexOffsetMap.put(entry.getIndex(), position);
+                    logEntries.add(entry);
+                    indexOfLargestEntry.set(Math.max(indexOfLargestEntry.get(), entry.getIndex()));
+
+                    bytesRead = readInt(entryLogInChannel);
+                }
+            }
+        }
     }
 
     @Override
-    public long append(Entry entry) throws Exception {
+    public synchronized long append(LogEntry entry) throws Exception {
         entry.setTerm(TERM).setIndex(getNextIndex());
 
-        long entryOffset = 0L;
         try {
-            entryOffset = write(this.logChannel, Util.toBytes(entry));
+            long entryOffset = writeLog(Util.toBytes(entry));
+            indexOffsetMap.put(entry.getIndex(), entryOffset);
+            logEntries.add(entry);
+            return entryOffset;
         } catch (Exception e) {
-            logger.log(Level.SEVERE, "failed to write log entry {0} into file: {1}", new Object[]{entry, e});
+            logger.log(Level.SEVERE, "failed to writeLog log entry {0} into file: {1}", new Object[]{entry, e});
             throw e;
         }
-
-        indexOffsetMap.put(entry.getIndex(), entryOffset);
-        logEntries.add(entry);
-        return entryOffset;
     }
 
     @Override
-    public void markReplicated(Entry logEntry) {
+    public synchronized LogEntry read(long offset) throws Exception {
+        entryLogInChannel.position(offset);
+        int len = readInt(entryLogInChannel);
+        byte[] bytes = readBytes(entryLogInChannel, len);
+        return (LogEntry)Util.toObject(bytes);
+    }
+
+    @Override
+    public synchronized void markReplicated(LogEntry logEntry) {
         if (! indexOffsetMap.containsKey(logEntry.getIndex())) {
             throw new IllegalStateException(String.format("cannot find log entry %s in indexOffsetMap", logEntry));
         }
@@ -212,7 +266,17 @@ public class FileLogger implements ILogger<Entry> {
     }
 
     @Override
-    public void markApplied(Entry logEntry) {
+    public synchronized void markReplicated(long largestReplicatedIndex) {
+        if (largestReplicatedIndex <= indexOfLargestReplicatedEntry) {
+            throw new IllegalStateException(String.format("largestReplicatedIndex %s is less than indexOfLargestReplicatedEntry %s", largestReplicatedIndex, indexOfLargestReplicatedEntry));
+        }
+
+        this.indexOfLargestReplicatedEntry = largestReplicatedIndex;
+    }
+
+
+    @Override
+    public synchronized void markCommitted(LogEntry logEntry) {
         if (! indexOffsetMap.containsKey(logEntry.getIndex())) {
             throw new IllegalStateException(String.format("cannot find log entry %s in indexOffsetMap", logEntry));
         }
@@ -225,78 +289,101 @@ public class FileLogger implements ILogger<Entry> {
         this.indexOfLargestCommittedEntry = index;
     }
 
+    // TODO (Terry): caller should lock down AppObject during snapshot
     @Override
-    public long takeSnapshot(Object appObject) throws Exception {
+    public synchronized long takeSnapshot(Object appObject) throws Exception {
         final long lowestOffset = Math.min(indexOffsetMap.get(indexOfLargestCommittedEntry), indexOffsetMap.get(indexOfLargestReplicatedEntry));
         SnapshotEntry entry = SnapshotEntry.newBuilder().term(TERM).index(getNextIndex())
-                .logFilePath(this.logFilePath)
-                .snapshotFilePath(this.snapshotFilePath)
+                .logFilePath(this.entryLog.getAbsolutePath())
+                .snapshotFilePath(this.snapshotLog.getAbsolutePath())
                 .appObject(appObject)
                 .lowestOffsetInLogFile(lowestOffset)
                 .indexOfLargestCommittedEntry(this.indexOfLargestCommittedEntry)
                 .indexOfLargestReplicatedEntry(this.indexOfLargestReplicatedEntry)
                 .build();
 
-        long snapshotOffset = 0L;
         try {
-            snapshotOffset = write(this.snapshotChannel, Util.toBytes(entry));
+            return writeSnaphot(Util.toBytes(entry));
         } catch (Exception e) {
-            logger.log(Level.SEVERE, "failed to write snapshot entry {0} into file: {1}", new Object[]{entry, e});
+            logger.log(Level.SEVERE, "failed to writeLog snapshot entry {0} into file: {1}", new Object[]{entry, e});
             throw e;
         }
-
-        indexOffsetMap.put(entry.getIndex(), snapshotOffset);
-        return snapshotOffset;
     }
 
-    public static FileLogger restoreFromSnapshot() throws Exception {
-        // TODO (Terry): retrieve latest snapshot entry from file
-        SnapshotEntry entry = null;
-        FileLogger fileLogger = new FileLogger(entry.getLogFilePath(), entry.getSnapshotFilePath());
-        fileLogger.indexOfLargestCommittedEntry = entry.getIndexOfLargestCommittedEntry();
-        fileLogger.indexOfLargestReplicatedEntry = entry.getIndexOfLargestReplicatedEntry();
-        long lowestOffset = entry.getLowestOffsetInLogFile();
-
-        FileChannel logChannel = fileLogger.logChannel;
-        logChannel.position(lowestOffset);
-
-        return fileLogger;
-    }
-
-    public long getIndexOfLargestReplicatedEntry() {
-        return this.indexOfLargestReplicatedEntry;
-    }
-
-    // TODO (Terry): Replace logEntries with Map
     @Override
     public boolean indexExists(long index) {
         return this.indexOffsetMap.containsKey(index);
     }
 
+    private SnapshotEntry getLatestSnapshotEntry(FileChannel snapshotChannel) {
+        // TODO (Terry): implement getLatestSnapshotEntry
+        return null;
+    }
+
+    @Override
+    public synchronized long getIndexOfLargestReplicatedEntry() {
+        return this.indexOfLargestReplicatedEntry;
+    }
+
+    public synchronized List<LogEntry> getUnreplicatedEntries() {
+        long indexOfLargestReplicatedEntry = getIndexOfLargestReplicatedEntry();
+
+        Stack<LogEntry> stack = new Stack<LogEntry>();
+        for (int i=logEntries.size()-1; i>=0; i--) {
+            if (logEntries.get(i).getIndex() > indexOfLargestReplicatedEntry) {
+                stack.push(logEntries.get(i));
+            }
+        }
+
+        List<LogEntry> result = new ArrayList<LogEntry>();
+        while (!stack.empty()) {
+            result.add(stack.pop());
+        }
+
+        return result;
+    }
+
     private long getNextIndex() {
-        return ++indexOfLargestEntry;
+        return indexOfLargestEntry.getAndIncrement();
     }
 
     /**
      * Writes byte array into the given file channel.
      * Each record is in the format of <record_length> followed by <record_content>.
      *
-     * @param dest destination file channel
      * @param bytes
      * @return the offset of the record
      * @throws Exception
      */
-    private long write(FileChannel dest, byte[] bytes) throws Exception {
-        final long offset = dest.position();
+    private long writeLog(byte[] bytes) throws Exception {
+        final long offset = entryLogOutChannel.position();
 
         ByteBuffer bytebuffer = ByteBuffer.allocate(Integer.SIZE / Byte.SIZE + bytes.length);
         // size of content
         bytebuffer.putInt(bytes.length);
         // actual content
         bytebuffer.put(bytes);
+        bytebuffer.flip();
 
-        dest.write(bytebuffer);
-        dest.force(false);
+        entryLogOutChannel.write(bytebuffer);
+        entryLogOutChannel.force(false);
+
+        return offset;
+    }
+
+    // TODO (Terry): format <record><record_length><record_offset>
+    private long writeSnaphot(byte[] bytes) throws Exception {
+        final long offset = snapshotLogOutChannel.position();
+
+        ByteBuffer bytebuffer = ByteBuffer.allocate(Integer.SIZE / Byte.SIZE + bytes.length);
+        // size of content
+        bytebuffer.putInt(bytes.length);
+        // actual content
+        bytebuffer.put(bytes);
+        bytebuffer.flip();
+
+        snapshotLogOutChannel.write(bytebuffer);
+        snapshotLogOutChannel.force(false);
 
         return offset;
     }
@@ -304,34 +391,45 @@ public class FileLogger implements ILogger<Entry> {
     private int readInt(FileChannel src) throws Exception {
         ByteBuffer byteBuffer = ByteBuffer.allocate(Integer.SIZE / Byte.SIZE);
         src.read(byteBuffer);
+        byteBuffer.flip();
         return byteBuffer.getInt();
     }
 
-    private byte[] readBytes(FileChannel src, long length) throws Exception {
-        ByteBuffer byteBuffer = ByteBuffer.allocate(Integer.SIZE / Byte.SIZE);
+    private byte[] readBytes(FileChannel src, int length) throws Exception {
+        ByteBuffer byteBuffer = ByteBuffer.allocate(length);
         src.read(byteBuffer);
+        byteBuffer.flip();
         return byteBuffer.array();
     }
 
-    /**
-     * @returns a copy of {@link #indexOffsetMap}
-     */
-    public Map<Long, Long> getIndexOffsetMap() {
-        return new HashMap<Long, Long>(indexOffsetMap);
-    }
-
     public void finalize() {
-        if (logChannel != null) {
+        if (entryLogOutChannel != null) {
             try {
-                logChannel.close();
+                entryLogOutChannel.close();
             } catch (Exception e) {
                 logger.log(Level.FINE, "failed to close log file: {0}", e);
             }
         }
 
-        if (snapshotChannel != null) {
+        if (entryLogInChannel != null) {
             try {
-                snapshotChannel.close();
+                entryLogInChannel.close();
+            } catch (Exception e) {
+                logger.log(Level.FINE, "failed to close log file: {0}", e);
+            }
+        }
+
+        if (snapshotLogOutChannel != null) {
+            try {
+                snapshotLogOutChannel.close();
+            } catch (Exception e) {
+                logger.log(Level.FINE, "failed to close snapshot file: {0}", e);
+            }
+        }
+
+        if (snapshotLogInChannel != null) {
+            try {
+                snapshotLogInChannel.close();
             } catch (Exception e) {
                 logger.log(Level.FINE, "failed to close snapshot file: {0}", e);
             }

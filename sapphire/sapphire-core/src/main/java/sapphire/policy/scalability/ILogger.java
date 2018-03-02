@@ -1,5 +1,7 @@
 package sapphire.policy.scalability;
 
+import java.util.List;
+
 /**
  * @author terryz
  */
@@ -14,23 +16,35 @@ public interface ILogger<T> {
     long append(T entry) throws Exception;
 
     /**
+     * @param offset
+     * @return the {@link LogEntry} at the specified offset
+     * @throws Exception
+     */
+    LogEntry read(long offset) throws Exception;
+    /**
      * Marks the given log entry as replicated.
      * <p>
-     * <b>This method will only be caused on slave.</b>
-     *
+     * On master, an entry is replicated means the entry has been replicated
+     * to slave. On slave, an entry is replicated means the entry is received
+     * on slave.
      * @param entry
      */
     void markReplicated(T entry);
 
-    /**
-     * Marks the given log entry as applied. A log entry is applied iff
-     * its request has been invoked on slave.
-     * <p>
-     * <b>This method will only be caused on slave.</b>
-     *
-     * @param entry
-     */
-    void markApplied(T entry);
+    void markReplicated(long largestReplicatedIndex);
+
+        /**
+         * Marks the given log entry as applied. A log entry is applied iff
+         * its request has been invoked on slave.
+         * <p>
+         *
+         * On mater, an entry is committed means the request in the entry has
+         * been invoked but the entry may not be replicated to slave. On slave,
+         * an entry is committed means the request has been invoked on slave.
+         *
+         * @param entry
+         */
+    void markCommitted(T entry);
 
     /**
      * Takes snapshot
@@ -45,6 +59,11 @@ public interface ILogger<T> {
      * @return index of the largest replicated entry
      */
     long getIndexOfLargestReplicatedEntry();
+
+    /**
+     * @return a list of unreplicated log entries
+     */
+    List<LogEntry> getUnreplicatedEntries();
 
     /**
      *

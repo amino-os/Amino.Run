@@ -39,6 +39,31 @@ public final class MethodInvocationRequest implements Serializable {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof MethodInvocationRequest)) return false;
+
+        MethodInvocationRequest that = (MethodInvocationRequest) o;
+
+        if (!getMethodName().equals(that.getMethodName())) return false;
+
+        if (getParams() == null ) {
+            return that.getParams() != null;
+        } else {
+            if (!getParams().equals(that.getParams())) return false;
+        }
+        return getMethodType() == that.getMethodType();
+    }
+
+    @Override
+    public int hashCode() {
+        int result = getMethodName().hashCode();
+        result = 31 * result + getParams().hashCode();
+        result = 31 * result + getMethodType().hashCode();
+        return result;
+    }
+
+    @Override
     public String toString() {
         return "MethodInvocationRequest{" +
                 "methodName='" + methodName + '\'' +

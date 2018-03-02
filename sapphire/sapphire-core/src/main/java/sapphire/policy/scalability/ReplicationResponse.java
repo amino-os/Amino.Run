@@ -10,7 +10,10 @@ public class ReplicationResponse {
      */
     public enum ReturnCode {
         /**
-         * Replication succeeded
+         * Replication succeeded. It may be a partial success.
+         * The result is a <code>Long</code> that refers to
+         * the largest successfully replicated log entry index
+         * on the slave.
          */
         SUCCESS,
 

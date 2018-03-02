@@ -1,11 +1,16 @@
 package sapphire.policy.scalability;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import sapphire.kernel.common.KernelRPC;
 
 /**
  * @author terryz
@@ -65,6 +70,50 @@ public class Util {
                 }
             } catch (IOException e) {
                 // ignore close exception
+            }
+        }
+    }
+
+    public static final byte[] toBytes(KernelRPC object) throws Exception {
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ObjectOutput out = null;
+        try {
+            out = new ObjectOutputStream(bos);
+            out.writeObject(object);
+            out.flush();
+            return bos.toByteArray();
+        } finally {
+            try {
+                if (bos != null) {
+                    bos.close();
+                }
+            } catch (IOException e) {
+                // ignore close exception
+            }
+
+            try {
+                if (out != null) {
+                    out.close();
+                }
+            } catch (IOException e) {
+                // ignore close exception
+            }
+        }
+    }
+
+    public static Object toObject(byte[] bytes) throws Exception {
+        ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
+        ObjectInput in = null;
+        try {
+            in = new ObjectInputStream(bis);
+            Object object = in.readObject();
+            return object;
+        } finally {
+            if (bis != null) {
+                bis.close();;
+            }
+            if (in != null) {
+                in.close();
             }
         }
     }

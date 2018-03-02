@@ -1,9 +1,6 @@
 package sapphire.policy.scalability;
 
-import com.sun.org.apache.regexp.internal.RE;
-
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
@@ -176,8 +173,8 @@ public class LoadBalancedMasterSlavePolicy extends DefaultSapphirePolicy {
 
         private final Configuration config;
         private final StateManager stateMgr;
-        private final ILogger requstLogger;
-        private final IReplicator syncReplicator;
+        private final ILogger requestLogger;
+        private final IReplicator asyncReplicator;
 
         public ServerPolicy() {
             this.config = Configuration.newBuilder()
@@ -191,13 +188,13 @@ public class LoadBalancedMasterSlavePolicy extends DefaultSapphirePolicy {
             this.indexGenerator = SequenceGenerator.newBuilder().name("index_sequence").startingAt(0).step(1).build();
 
             try {
-                this.requstLogger = new FileLogger(config.getLogFilePath(), config.getSnapshotFilePath());
+                this.requestLogger = new FileLogger(config.getLogFilePath(), config.getSnapshotFilePath());
             } catch (Exception e) {
                 throw new AssertionError("failed to construct entry logger: {0}", e);
             }
 
             List<ServerPolicy> slaves = group.getSlaves();
-            this.syncReplicator = new SyncReplicator(slaves);
+            this.asyncReplicator = new AsyncReplicator(slaves.get(0), requestLogger);
         }
 
         /**
@@ -205,7 +202,7 @@ public class LoadBalancedMasterSlavePolicy extends DefaultSapphirePolicy {
          *
          * 1. Handle duplicated entries properly. Do nothing if log entry already exists.
          * 2. Log entries must be appended in order (according to index)
-         * 3. No missing entries. Previous entry must exist before appending the current entry
+         * 3. Previous entry must exist before appending the current entry
          *
          * @param request replication request
          * @return replication response
@@ -217,22 +214,22 @@ public class LoadBalancedMasterSlavePolicy extends DefaultSapphirePolicy {
             }
 
             long previousIndex = request.getIndexOfPreviousSyncedEntry();
-            if (! this.requstLogger.indexExists(previousIndex)) {
+            if (! this.requestLogger.indexExists(previousIndex)) {
                 return ReplicationResponse.newBuilder()
                         .returnCode(ReplicationResponse.ReturnCode.TRACEBACK)
-                        // TODO (Terry): This part needs to be scrutinized
-                        .result(Long.valueOf(this.requstLogger.getIndexOfLargestReplicatedEntry()))
+                        .result(Long.valueOf(this.requestLogger.getIndexOfLargestReplicatedEntry()))
                         .build();
             }
 
             for (Entry entry : request.getEntries()) {
                 if (entry.getIndex() > previousIndex) {
-                    if (this.requstLogger.indexExists(entry.getIndex())) {
+                    if (this.requestLogger.indexExists(entry.getIndex())) {
                         continue;
                     }
 
                     try {
-                        this.requstLogger.append(entry);
+                        this.requestLogger.append(entry);
+                        this.requestLogger.markReplicated(entry);
                     } catch (Exception e) {
                         logger.log(Level.SEVERE, "failed to append log entry {0}: {1}", new Object[]{entry, e});
                         return ReplicationResponse.newBuilder()
@@ -244,7 +241,7 @@ public class LoadBalancedMasterSlavePolicy extends DefaultSapphirePolicy {
                 } else {
                     return ReplicationResponse.newBuilder()
                             .returnCode(ReplicationResponse.ReturnCode.FAILURE)
-                            .result(new Exception("log entries out of order"))
+                            .result(new Exception(String.format("log entries out of order in request %s", request)))
                             .build();
                 }
             }
@@ -279,7 +276,7 @@ public class LoadBalancedMasterSlavePolicy extends DefaultSapphirePolicy {
                     // succeeds.
                     Entry entry = LogEntry.newBuilder().request(request).build();
                     try {
-                        this.requstLogger.append(entry);
+                        this.requestLogger.append(entry);
                     } catch (Exception e) {
                         logger.log(Level.SEVERE, "Invocation of request {0} failed: {1}", new Object[]{request, e});
                         return MethodInvocationResponse.newBuilder()
@@ -288,10 +285,9 @@ public class LoadBalancedMasterSlavePolicy extends DefaultSapphirePolicy {
                                 .build();
                     }
 
-                    // TODO (Terry): replace synchronous replciation with async replication
-                    replicateLogEntry(entry);
-
                     MethodInvocationResponse resp = invokeMethod(request);
+                    requestLogger.markCommitted(entry);
+
                     return resp;
             }
 
@@ -336,19 +332,6 @@ public class LoadBalancedMasterSlavePolicy extends DefaultSapphirePolicy {
             return resp;
         }
 
-        private void replicateLogEntry(Entry entry) {
-            try {
-                // TODO (Terry): Replace 0L with real previous index
-                ReplicationRequest request = ReplicationRequest.newBuilder()
-                        .entries(Arrays.asList(entry))
-                        .indexOfPreviousSyncedEntry(0L)
-                        .build();
-                this.syncReplicator.replicate(request);
-            } catch (Exception e) {
-                logger.log(Level.SEVERE, "failed to replicate log entry {0} into log file: {1}", new Object[]{entry, e});
-            }
-        }
-
         private String getClientId() {
             return String.valueOf(identityHashCode(this));
         }
@@ -356,6 +339,9 @@ public class LoadBalancedMasterSlavePolicy extends DefaultSapphirePolicy {
         @Override
         protected void finalize() throws Throwable {
             invocationExecutor.shutdown();
+            if (asyncReplicator != null) {
+                asyncReplicator.close();
+            }
 
             super.finalize();
         }

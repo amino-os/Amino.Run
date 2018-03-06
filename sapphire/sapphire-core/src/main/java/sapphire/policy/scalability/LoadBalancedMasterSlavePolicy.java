@@ -107,7 +107,6 @@ import static sapphire.runtime.MethodInvocationResponse.ReturnCode.SUCCESS;
  *
  * @author terryz
  */
-
 public class LoadBalancedMasterSlavePolicy extends DefaultSapphirePolicy {
     private final static Random random = new Random(System.currentTimeMillis());
 
@@ -146,7 +145,7 @@ public class LoadBalancedMasterSlavePolicy extends DefaultSapphirePolicy {
                     case SUCCESS:
                         return response.getResult();
                     case FAILURE:
-                        // This is application error. No need to retry.
+                        // No need to retry application errors
                         logger.log(Level.INFO, "failed to execute request {0}: {1}", new Object[]{request, response});
                         throw (AppExecutionException) response.getResult();
                     case REDIRECT:
@@ -169,7 +168,6 @@ public class LoadBalancedMasterSlavePolicy extends DefaultSapphirePolicy {
 
         private final Logger logger = Logger.getLogger(LoadBalancedMasterSlavePolicy.ServerPolicy.class.getName());
         private final ExecutorService invocationExecutor = Executors.newSingleThreadExecutor();
-        private final SequenceGenerator indexGenerator;
 
         private final Configuration config;
         private final StateManager stateMgr;
@@ -180,25 +178,27 @@ public class LoadBalancedMasterSlavePolicy extends DefaultSapphirePolicy {
             this.config = Configuration.newBuilder()
                     .masterLeaseRenewIntervalInMillis(Master_Lease_Renew_Interval_InMillis)
                     .masterLeaseTimeoutInMIllis(Master_Lease_Timeout_InMillis)
-                    .initDelayLimitInMillis(Init_Delay_Limit_InMillis).build();
+                    .initDelayLimitInMillis(Init_Delay_Limit_InMillis)
+                    .build();
 
-            // TODO (Terry): we should not do the cast here
+            // TODO (Terry): we should try to avoid doing cast here
             LoadBalancedMasterSlavePolicy.GroupPolicy group = (LoadBalancedMasterSlavePolicy.GroupPolicy)getGroup();
             this.stateMgr = new StateManager(getClientId(), group, this.config);
-            this.indexGenerator = SequenceGenerator.newBuilder().name("index_sequence").startingAt(0).step(1).build();
 
             try {
-                this.requestLogger = new FileLogger(config.getLogFilePath(), config.getSnapshotFilePath());
+                this.requestLogger = new FileLogger(config.getLogFilePath(), config.getSnapshotFilePath(), true);
             } catch (Exception e) {
                 throw new AssertionError("failed to construct entry logger: {0}", e);
             }
 
             List<ServerPolicy> slaves = group.getSlaves();
             this.asyncReplicator = new AsyncReplicator(slaves.get(0), requestLogger);
+
+            logger.log(Level.INFO, "LoadBalancedMasterSlavePolicy$ServerPolicy starts successfully");
         }
 
         /**
-         * Appends log entries in {@link ReplicationRequest} into log file.
+         * Handles replication requests from master. This method will only be invoked on slaves.
          *
          * 1. Handle duplicated entries properly. Do nothing if log entry already exists.
          * 2. Log entries must be appended in order (according to index)
@@ -210,33 +210,35 @@ public class LoadBalancedMasterSlavePolicy extends DefaultSapphirePolicy {
         public ReplicationResponse handleReplication(ReplicationRequest request) {
 
             if (request == null || request.getEntries() == null || request.getEntries().size() == 0) {
-                return ReplicationResponse.newBuilder().returnCode(ReplicationResponse.ReturnCode.SUCCESS).build();
+                return ReplicationResponse.newBuilder()
+                        .returnCode(ReplicationResponse.ReturnCode.SUCCESS)
+                        .result(this.requestLogger.getIndexOfLargestReceivedEntry())
+                        .build();
             }
 
             long previousIndex = request.getIndexOfPreviousSyncedEntry();
             if (! this.requestLogger.indexExists(previousIndex)) {
                 return ReplicationResponse.newBuilder()
                         .returnCode(ReplicationResponse.ReturnCode.TRACEBACK)
-                        .result(Long.valueOf(this.requestLogger.getIndexOfLargestReplicatedEntry()))
+                        .result(this.requestLogger.getIndexOfLargestReceivedEntry())
                         .build();
             }
 
             for (Entry entry : request.getEntries()) {
                 if (entry.getIndex() > previousIndex) {
-                    if (this.requestLogger.indexExists(entry.getIndex())) {
-                        continue;
+                    if (! this.requestLogger.indexExists(entry.getIndex())) {
+                        try {
+                            this.requestLogger.append(entry);
+                            // TODO (Terry): add job into invocationExecutor
+                        } catch (Exception e) {
+                            logger.log(Level.SEVERE, "failed to append log entry {0}: {1}", new Object[]{entry, e});
+                            return ReplicationResponse.newBuilder()
+                                    .returnCode(ReplicationResponse.ReturnCode.FAILURE)
+                                    .result(e)
+                                    .build();
+                        }
                     }
 
-                    try {
-                        this.requestLogger.append(entry);
-                        this.requestLogger.markReplicated(entry);
-                    } catch (Exception e) {
-                        logger.log(Level.SEVERE, "failed to append log entry {0}: {1}", new Object[]{entry, e});
-                        return ReplicationResponse.newBuilder()
-                                .returnCode(ReplicationResponse.ReturnCode.FAILURE)
-                                .result(e)
-                                .build();
-                    }
                     previousIndex = entry.getIndex();
                 } else {
                     return ReplicationResponse.newBuilder()
@@ -264,7 +266,10 @@ public class LoadBalancedMasterSlavePolicy extends DefaultSapphirePolicy {
                         return invokeMethod(request);
                     }
                     // redirect non-read operations to master
-                    return MethodInvocationResponse.newBuilder().returnCode(REDIRECT).result(null).build();
+                    return MethodInvocationResponse.newBuilder()
+                            .returnCode(REDIRECT)
+                            .result(null)
+                            .build();
 
                 case MASTER:
                     if (request.getMethodType() != null && request.getMethodType() == READ) {
@@ -371,6 +376,8 @@ public class LoadBalancedMasterSlavePolicy extends DefaultSapphirePolicy {
             return null;
         }
 
+        // TODO (Terry): Group should broadcast membership change events
+        // Master state should listen to slave-change events
         /**
          * @return slave servers
          */

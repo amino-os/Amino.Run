@@ -88,8 +88,8 @@ public final class StateManager {
 
         this.SLAVE_STATE = new State.Slave();
         this.MASTER_STATE = new State.Master();
-        this.currentState = SLAVE_STATE;
 
+        this.currentState = SLAVE_STATE;
         startLockingExecutor();
     }
 

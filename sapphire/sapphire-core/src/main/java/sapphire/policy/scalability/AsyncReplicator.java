@@ -3,11 +3,9 @@ package sapphire.policy.scalability;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.List;
+import java.util.Queue;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -27,7 +25,7 @@ public class AsyncReplicator implements IReplicator, Closeable {
 
         this.replicationExecutor = Executors.newSingleThreadScheduledExecutor();
         this.replicationExecutor.schedule(new DoReplication(slave, entryLogger),
-                1000, TimeUnit.SECONDS);
+                100, TimeUnit.MILLISECONDS);
     }
 
     @Override

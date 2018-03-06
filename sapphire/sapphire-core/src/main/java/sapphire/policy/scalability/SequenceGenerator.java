@@ -34,9 +34,9 @@ public class SequenceGenerator {
     }
 
     public static class Builder {
-        private String name;
-        private long startingNumber;
-        private long step;
+        private String name = "seq";
+        private long startingNumber = 0L;
+        private long step = 1L;
 
         public Builder name(String name) {
             this.name = name;

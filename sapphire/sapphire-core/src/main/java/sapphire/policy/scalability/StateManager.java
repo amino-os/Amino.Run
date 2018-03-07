@@ -76,7 +76,7 @@ public final class StateManager {
         this.group = context.getGroup();
         this.entryLogger = context.getEntryLogger();
 
-        this.SLAVE_STATE = new State.Slave();
+        this.SLAVE_STATE = State.Slave.getInstance(context);
         this.MASTER_STATE = State.Master.getInstance(context);
 
         this.currentState = SLAVE_STATE;

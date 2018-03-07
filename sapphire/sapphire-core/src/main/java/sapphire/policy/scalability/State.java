@@ -1,5 +1,6 @@
 package sapphire.policy.scalability;
 
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -113,6 +114,7 @@ public interface State {
 
         @Override
         public void enter() {
+            logger.log(Level.FINE, "enter master state");
             if (commitExecutor != null) {
                 commitExecutor.open();
             }
@@ -121,6 +123,7 @@ public interface State {
 
         @Override
         public void leave() {
+            logger.log(Level.FINE, "leave master state");
             closeCommitExecutor();
             shutdownReplicator();
         }
@@ -160,16 +163,43 @@ public interface State {
      * </ul>
      */
     final class Slave extends AbstractState {
-        public Slave() {
+        private final CommitExecutor commitExecutor;
+        private static Slave instance;
+
+        public Slave(Context context) {
             super(StateName.SLAVE);
+            this.commitExecutor = context.getCommitExecutor();
+        }
+
+        public static synchronized Slave getInstance(Context context) {
+            if (instance == null) {
+                instance = new Slave(context);
+            }
+            return instance;
         }
 
         @Override
         public void enter() {
+            if (commitExecutor != null) {
+                commitExecutor.open();
+            }
         }
 
         @Override
         public void leave() {
+            closeCommitExecutor();
+        }
+
+        @Override
+        protected void finalize() throws Throwable {
+            closeCommitExecutor();
+            super.finalize();
+        }
+
+        private void closeCommitExecutor() {
+            if (commitExecutor != null) {
+                commitExecutor.close();
+            }
         }
     }
 }

@@ -98,7 +98,7 @@ public class StateManagerTest {
         Thread.sleep(Thread_Wait_Time);
 
         // Verify that the end state is still slave because we failed to obtain the lock
-        Assert.assertEquals(new State.Slave().getName(), stateMgr.getCurrentStateName());
+        Assert.assertEquals(State.Slave.getInstance(context).getName(), stateMgr.getCurrentStateName());
     }
 
     @Test
@@ -159,6 +159,6 @@ public class StateManagerTest {
         Thread.sleep(Thread_Wait_Time);
 
         // Verify that the end state is slave because renew lock failed
-        Assert.assertEquals(new State.Slave().getName(), stateMgr.getCurrentStateName());
+        Assert.assertEquals(State.Slave.getInstance(context).getName(), stateMgr.getCurrentStateName());
     }
 }

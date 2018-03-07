@@ -226,8 +226,6 @@ public class LoadBalancedMasterSlavePolicy extends DefaultSapphirePolicy {
                     if (! this.requestLogger.indexExists(entry.getIndex())) {
                         try {
                             this.requestLogger.append(entry);
-
-                            // TODO (Terry): add job into invocationExecutor
                             commitExecutor.applyWriteAsync(entry.getRequest(), entry.getIndex());
                         } catch (Exception e) {
                             logger.log(Level.SEVERE, "failed to append log entry {0}: {1}", new Object[]{entry, e});

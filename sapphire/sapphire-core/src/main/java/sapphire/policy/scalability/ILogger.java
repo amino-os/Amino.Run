@@ -46,27 +46,13 @@ public interface ILogger<T> extends Closeable {
 
     void markReplicated(long largestReplicatedIndex);
 
-        /**
-         * Marks the given log entry as applied. A log entry is applied iff
-         * its request has been invoked on slave.
-         * <p>
-         *
-         * On mater, an entry is committed means the request in the entry has
-         * been invoked but the entry may not be replicated to slave. On slave,
-         * an entry is committed means the request has been invoked on slave.
-         *
-         * @param entry
-         */
-    void markCommitted(T entry);
-
     /**
      * Takes snapshot
      *
-     * @param appObject snapshot of appObject
      * @return snapshot entry
      * @throws Exception
      */
-    SnapshotEntry takeSnapshot(Object appObject) throws Exception;
+    SnapshotEntry takeSnapshot() throws Exception;
 
     /**
      * Returns index of the largest replicated entry. A log entry is replicated

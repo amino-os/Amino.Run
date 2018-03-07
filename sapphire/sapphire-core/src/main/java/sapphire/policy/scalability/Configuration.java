@@ -33,6 +33,11 @@ public class Configuration {
     /**
      *
      */
+    private final long replicationIntervalInMillis;
+
+    /**
+     *
+     */
     private final String logFilePath;
 
     /**
@@ -46,6 +51,7 @@ public class Configuration {
         this.masterLeaseTimeoutInMillis = builder.masterLeaseTimeoutInMillis;
         this.shutdownGracePeriodInMillis = builder.shutdownGracePeriodInMillis;
         this.initDelayLimitInMillis = builder.initDelayLimitInMillis;
+        this.replicationIntervalInMillis = builder.replicationIntervalInMillis;
         this.logFilePath = builder.logFilePath;
         this.snapshotFilePath = builder.snapshotFilePath;
     }
@@ -70,6 +76,8 @@ public class Configuration {
         return random.nextLong()%initDelayLimitInMillis;
     }
 
+    public long getReplicationIntervalInMillis() { return this.replicationIntervalInMillis; }
+
     public String getLogFilePath() {return this.logFilePath;}
 
     public String getSnapshotFilePath() {return this.snapshotFilePath;}
@@ -79,6 +87,8 @@ public class Configuration {
         private long masterLeaseRenewIntervalInMillis = 100;
         private long shutdownGracePeriodInMillis = 1000;
         private long initDelayLimitInMillis = 500;
+        private long replicationIntervalInMillis = 500;
+
         // TODO (Terry) Fix log file path
         private String logFilePath = "/tmp/logFile";
         private String snapshotFilePath = "/tmp/snapshotFile";
@@ -100,6 +110,11 @@ public class Configuration {
 
         public Builder initDelayLimitInMillis(long initDelayLimitInMillis) {
             this.initDelayLimitInMillis = initDelayLimitInMillis;
+            return this;
+        }
+
+        public Builder replicationIntervalInMillis(long replicationIntervalInMillis) {
+            this.replicationIntervalInMillis = replicationIntervalInMillis;
             return this;
         }
 
@@ -126,6 +141,10 @@ public class Configuration {
                 throw new IllegalArgumentException(String.format("invalid initDelayLimitInMillis(%s)", initDelayLimitInMillis));
             }
 
+            if (replicationIntervalInMillis <= 0) {
+                throw new IllegalArgumentException(String.format("invalid replicationIntervalInMillis(%s)", replicationIntervalInMillis));
+            }
+
             if (masterLeaseTimeoutInMillis <= masterLeaseRenewIntervalInMillis) {
                 throw new IllegalArgumentException(String.format("invalid masterLeaseTimeoutInMillis (%s). masterLeaseTimeoutInMillis must be greater than masterLeaseRenewIntervalInMillis (%s).", masterLeaseTimeoutInMillis, masterLeaseRenewIntervalInMillis));
             }
@@ -133,6 +152,7 @@ public class Configuration {
             if (shutdownGracePeriodInMillis <= masterLeaseRenewIntervalInMillis) {
                 throw new IllegalArgumentException(String.format("invalid shutdownGracePeriodInMillis (%s). shutdownGracePeriodInMillis must be greater than masterLeaseRenewIntervalInMillis (%s).", shutdownGracePeriodInMillis, masterLeaseRenewIntervalInMillis));
             }
+
 
             return new Configuration(this);
         }

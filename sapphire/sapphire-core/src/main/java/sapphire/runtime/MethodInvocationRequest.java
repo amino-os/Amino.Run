@@ -3,6 +3,9 @@ package sapphire.runtime;
 import java.io.Serializable;
 import java.util.ArrayList;
 
+import static sapphire.runtime.MethodInvocationRequest.MethodType.READ;
+import static sapphire.runtime.MethodInvocationRequest.MethodType.WRITE;
+
 /**
  * @author terryz
  */
@@ -36,6 +39,14 @@ public final class MethodInvocationRequest implements Serializable {
 
     public final MethodType getMethodType() {
         return methodType;
+    }
+
+    public final boolean isRead() {
+        return getMethodType() != null && getMethodType() == READ;
+    }
+
+    public final boolean isWrite() {
+        return getMethodType() != null && getMethodType() == WRITE;
     }
 
     @Override

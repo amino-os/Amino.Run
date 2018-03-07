@@ -1,6 +1,7 @@
 package sapphire.policy.scalability;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
@@ -14,18 +15,27 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import sapphire.common.AppObject;
 import sapphire.runtime.MethodInvocationRequest;
 
 /**
  * @author terryz
  */
 public class FileLoggerTest {
+    private File entryLogFile;
+    private File snapshotLogFile;
+    private CommitExecutor commitExecutor = new CommitExecutor(new AppObject("object"));
+
+    @Before
+    public void setup() throws Exception {
+        entryLogFile = File.createTempFile("file", "");
+        snapshotLogFile = File.createTempFile("snapshot", "");
+    }
+
     @Test
     public void testEntryLogReadWrite() throws Exception {
-        File entryLogFile = File.createTempFile("filelog", "");
-        File snapshotLogFile = File.createTempFile("snapshot", "");
+        FileLogger entryLogger =  new FileLogger(entryLogFile.getPath(), snapshotLogFile.getPath(), commitExecutor, false);
 
-        FileLogger entryLogger = new FileLogger(entryLogFile.getPath(), snapshotLogFile.getPath(), false);
         // write message to entry log
         String message = "hello world";
         invokePrivateMethod(entryLogger, "writeLog", new Object[]{Util.toBytes(message)});
@@ -35,16 +45,11 @@ public class FileLoggerTest {
         int length = (Integer)invokePrivateMethod(entryLogger, "readInt", new Object[]{fc});
         byte[] content = (byte[])invokePrivateMethod(entryLogger, "readBytes", new Object[]{fc, length});
         Assert.assertEquals(message, Util.toObject(content));
-
-        entryLogFile.delete();
-        snapshotLogFile.delete();
     }
 
     @Test
     public void testSingleAppendAndRead() throws Exception {
-        File entryLogFile = File.createTempFile("filelog", "");
-        File snapshotLogFile = File.createTempFile("snapshot", "");
-        FileLogger entryLogger = new FileLogger(entryLogFile.getPath(), snapshotLogFile.getPath(), false);
+        FileLogger entryLogger =  new FileLogger(entryLogFile.getPath(), snapshotLogFile.getPath(), commitExecutor, false);
 
         LogEntry expected = createLogEntry(0, "m1");
         long offset = entryLogger.append(expected);
@@ -54,9 +59,7 @@ public class FileLoggerTest {
 
     @Test
     public void testMultipleAppendAndRead() throws Exception {
-        File entryLogFile = File.createTempFile("file", "");
-        File snapshotLogFile = File.createTempFile("snapshot", "");
-        FileLogger entryLogger = new FileLogger(entryLogFile.getPath(), snapshotLogFile.getPath(), false);
+        FileLogger entryLogger =  new FileLogger(entryLogFile.getPath(), snapshotLogFile.getPath(), commitExecutor, false);
 
         Map<Long, LogEntry> map = new HashMap<Long, LogEntry>();
         for (int i=0; i<10; i++) {
@@ -76,7 +79,7 @@ public class FileLoggerTest {
     public void testLoad() throws Exception {
         File entryLogFile = File.createTempFile("file", "");
         File snapshotLogFile = File.createTempFile("snapshot", "");
-        FileLogger logger1 = new FileLogger(entryLogFile.getPath(), snapshotLogFile.getPath(), false);
+        FileLogger logger1 = new FileLogger(entryLogFile.getPath(), snapshotLogFile.getPath(), commitExecutor, false);
 
         Map<Long, LogEntry> map = new HashMap<Long, LogEntry>();
         for (int i=0; i<10; i++) {
@@ -86,7 +89,7 @@ public class FileLoggerTest {
         }
         logger1.close();
 
-        FileLogger logger2 = new FileLogger(entryLogFile.getPath(), snapshotLogFile.getPath(), false);
+        FileLogger logger2 = new FileLogger(entryLogFile.getPath(), snapshotLogFile.getPath(), commitExecutor, false);
         logger2.load(0L);
         List<LogEntry> logEntries = (List<LogEntry >)getField(logger2, "logEntries");
         Map<Long, Long> indexOffsetMap = (Map<Long, Long>)getField(logger2, "indexOffsetMap");
@@ -95,26 +98,25 @@ public class FileLoggerTest {
 
     @Test
     public void testWriteReadSnapshot() throws Exception {
-        File entryLogFile = File.createTempFile("file", "");
-        File snapshotLogFile = File.createTempFile("snapshot", "");
-        FileLogger logger1 = new FileLogger(entryLogFile.getPath(), snapshotLogFile.getPath(), false);
+        FileLogger entryLogger =  new FileLogger(entryLogFile.getPath(), snapshotLogFile.getPath(), commitExecutor, false);
 
         Map<Long, LogEntry> map = new HashMap<Long, LogEntry>();
         for (int i=0; i<5; i++) {
             LogEntry entry = createLogEntry(i, "m"+i);
-            long offset = logger1.append(entry);
+            long offset = entryLogger.append(entry);
             map.put(offset, entry);
         }
 
-        SnapshotEntry expected = logger1.takeSnapshot("Content");
-        SnapshotEntry actual = logger1.readSnapshot();
+        SnapshotEntry expected = entryLogger.takeSnapshot();
+        SnapshotEntry actual = entryLogger.readSnapshot();
         Assert.assertEquals(expected, actual);
     }
 
     @Test
     public void testFilterEntriesByIndex() throws Exception {
+        FileLogger entryLogger =  new FileLogger(entryLogFile.getPath(), snapshotLogFile.getPath(), commitExecutor, false);
         final int indexOfLargestCommittedEntry = 5;
-        FileLogger entryLogger = createFileLogger();
+
         List<LogEntry> entries = createLogEntries(10);
         List<LogEntry> actual = (List<LogEntry>)invokePrivateMethod(entryLogger,
                 "filterEntriesByIndex",
@@ -127,10 +129,8 @@ public class FileLoggerTest {
         }
     }
 
-    private FileLogger createFileLogger() throws Exception {
-        File entryLogFile = File.createTempFile("file", "");
-        File snapshotLogFile = File.createTempFile("snapshot", "");
-        return new FileLogger(entryLogFile.getPath(), snapshotLogFile.getPath(), false);
+    private FileLogger createFileLogger(File entryLogFile, File snapshotLogFile) throws Exception {
+        return new FileLogger(entryLogFile.getPath(), snapshotLogFile.getPath(), commitExecutor, false);
     }
 
     private List<LogEntry> createLogEntries(int entryCnt) {

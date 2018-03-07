@@ -3,7 +3,6 @@ package sapphire.policy.scalability;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.List;
-import java.util.Queue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -18,29 +17,29 @@ public class AsyncReplicator implements IReplicator, Closeable {
     private final static Logger logger = Logger.getLogger(AsyncReplicator.class.getName());
     private final ScheduledExecutorService replicationExecutor;
 
-    public AsyncReplicator(LoadBalancedMasterSlavePolicy.ServerPolicy slave, ILogger<LogEntry> entryLogger) {
-        if (slave == null) {
-            throw new IllegalArgumentException("no slave server available");
+    public AsyncReplicator(LoadBalancedMasterSlavePolicy.GroupPolicy group, ILogger<LogEntry> entryLogger, Configuration config) {
+        if (group == null) {
+            throw new IllegalArgumentException("group policy not specified");
         }
 
         this.replicationExecutor = Executors.newSingleThreadScheduledExecutor();
-        this.replicationExecutor.schedule(new DoReplication(slave, entryLogger),
-                100, TimeUnit.MILLISECONDS);
+        this.replicationExecutor.schedule(new DoReplication(group, entryLogger),
+                config.getReplicationIntervalInMillis(), TimeUnit.MILLISECONDS);
     }
 
     @Override
-    public void close() throws IOException {
+    public void close() {
         if (replicationExecutor != null) {
             replicationExecutor.shutdown();
         }
     }
 
     private static class DoReplication implements Callable<ReplicationResponse> {
-        final LoadBalancedMasterSlavePolicy.ServerPolicy slave;
+        final LoadBalancedMasterSlavePolicy.GroupPolicy group;
         final ILogger<LogEntry> entryLogger;
 
-        public DoReplication(LoadBalancedMasterSlavePolicy.ServerPolicy slave, ILogger<LogEntry> entryLogger) {
-            this.slave = slave;
+        public DoReplication(LoadBalancedMasterSlavePolicy.GroupPolicy group, ILogger<LogEntry> entryLogger) {
+            this.group = group;
             this.entryLogger = entryLogger;
         }
 
@@ -54,6 +53,7 @@ public class AsyncReplicator implements IReplicator, Closeable {
                     .entries(unreplicatedEntries)
                     .build();
 
+            LoadBalancedMasterSlavePolicy.ServerPolicy slave = group.getSlave();
             ReplicationResponse response = slave.handleReplication(request);
             switch (response.getReturnCode()) {
                 case SUCCESS:

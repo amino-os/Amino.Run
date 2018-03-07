@@ -8,17 +8,18 @@ import org.junit.Test;
  * @author terryz
  */
 public class StateManagerTest {
-    private final String clientId = "client";
-    private final long Master_Lease_Timeout_InMillis = 50;
-    private final long Master_Lease_Renew_Interval_InMillis = 10;
-    private final long Init_Delay_Limit_InMillis = 1;
-
-    private final long Thread_Wait_Time = Master_Lease_Timeout_InMillis * 10;
-
+    private String clientId;
     private Configuration config;
+    private long Thread_Wait_Time;
 
     @Before
     public void setup() {
+        long Master_Lease_Timeout_InMillis = 50;
+        long Master_Lease_Renew_Interval_InMillis = 10;
+        long Init_Delay_Limit_InMillis = 1;
+
+        this.clientId = "client";
+        this.Thread_Wait_Time = Master_Lease_Timeout_InMillis * 10;
         this.config = Configuration.newBuilder()
                 .masterLeaseRenewIntervalInMillis(Master_Lease_Renew_Interval_InMillis)
                 .masterLeaseTimeoutInMIllis(Master_Lease_Timeout_InMillis)
@@ -27,13 +28,13 @@ public class StateManagerTest {
 
     @Test
     public void verifyToString() throws Exception {
-        StateManager stateMgr = new StateManager("client", null, config);
+        StateManager stateMgr = new StateManager(clientId, null, null, config);
         Assert.assertTrue("String value of State Manager should starts with StateManager_client", stateMgr.toString().startsWith("StateManager_client_"));
     }
 
     @Test
     public void verifyInitialState() throws Exception {
-        StateManager stateMgr = new StateManager("client", null, config);
+        StateManager stateMgr = new StateManager(clientId, null, null, config);
         Assert.assertEquals("Initial state should be " + State.StateName.SLAVE, State.StateName.SLAVE, stateMgr.getCurrentStateName());
     }
 
@@ -51,7 +52,7 @@ public class StateManagerTest {
         };
 
         group.setConfig(config);
-        final StateManager stateMgr = new StateManager(clientId, group, config);
+        final StateManager stateMgr = new StateManager(clientId, group, null, config);
 
         // Let state machine run for one second
         Thread.sleep(Thread_Wait_Time);
@@ -74,13 +75,13 @@ public class StateManagerTest {
         };
 
         group.setConfig(config);
-        final StateManager stateMgr = new StateManager(clientId, group, config);
+        final StateManager stateMgr = new StateManager(clientId, group, null, config);
 
         // Let state machine run for one second
         Thread.sleep(Thread_Wait_Time);
 
         // Verify that the end state is master because obtain lock and renew lock succeeded
-        Assert.assertEquals(new State.Master().getName(), stateMgr.getCurrentStateName());
+        Assert.assertEquals(new State.Master(group, null, config).getName(), stateMgr.getCurrentStateName());
     }
 
     @Test
@@ -100,7 +101,7 @@ public class StateManagerTest {
         };
 
         group.setConfig(config);
-        final StateManager stateMgr = new StateManager("client", group, config);
+        final StateManager stateMgr = new StateManager("client", group, null, config);
 
         // Let state machine run for one second
         Thread.sleep(Thread_Wait_Time);

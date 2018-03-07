@@ -144,11 +144,7 @@ public class FileLogger implements ILogger<LogEntry> {
      */
     private FileChannel snapshotLogInChannel;
 
-    /**
-     * Index of the largest committed log entry. A log entry is
-     * committed iff its request has been invoked on <b>master</b>.
-     */
-    private long indexOfLargestCommittedEntry;
+    private CommitExecutor commitExecutor;
 
     /**
      * Index of the largest replicated entry. A log entry is replicated
@@ -176,6 +172,7 @@ public class FileLogger implements ILogger<LogEntry> {
     private List<LogEntry> logEntries;
 
     private SequenceGenerator sequenceGenerator;
+
     /**
      * Constructor
      *
@@ -184,7 +181,7 @@ public class FileLogger implements ILogger<LogEntry> {
      * @param loadSnapshot whether or not to load existing snapshot file
      * @throws Exception
      */
-    public FileLogger(String logFilePath, String snapshotFilePath, boolean loadSnapshot) throws Exception {
+    public FileLogger(String logFilePath, String snapshotFilePath, CommitExecutor commitExecutor, boolean loadSnapshot) throws Exception {
         if (logFilePath == null || logFilePath.isEmpty()) {
             throw new IllegalArgumentException("log file path not specified");
         }
@@ -195,7 +192,8 @@ public class FileLogger implements ILogger<LogEntry> {
 
         this.entryLog = new File(logFilePath);
         this.snapshotLog = new File(snapshotFilePath);
-        this.indexOfLargestCommittedEntry = 0L;
+        this.commitExecutor = commitExecutor;
+
         this.indexOfLargestReplicatedEntry = 0L;
         this.indexOfLargestEntry = new AtomicLong(-1);
         this.sequenceGenerator = SequenceGenerator.newBuilder().build();
@@ -213,7 +211,7 @@ public class FileLogger implements ILogger<LogEntry> {
             SnapshotEntry snapshotEntry = getLatestSnapshotEntry(snapshotLogOutChannel);
             if (snapshotEntry != null) {
                 this.indexOfLargestReplicatedEntry = snapshotEntry.getIndexOfLargestReplicatedEntry();
-                this.indexOfLargestCommittedEntry = snapshotEntry.getIndexOfLargestCommittedEntry();
+                this.commitExecutor.setIndexOfLargestCommittedEntry(snapshotEntry.getIndexOfLargestCommittedEntry());
                 long offset = snapshotEntry.getLowestOffsetInLogFile();
 
                 load(offset);
@@ -290,35 +288,20 @@ public class FileLogger implements ILogger<LogEntry> {
         this.indexOfLargestReplicatedEntry = largestReplicatedIndex;
     }
 
+    // TODO (Terry): take snapshot periodically
     @Override
-    public synchronized void markCommitted(LogEntry logEntry) {
-        if (! indexOffsetMap.containsKey(logEntry.getIndex())) {
-            throw new IllegalStateException(String.format("cannot find log entry %s in indexOffsetMap", logEntry));
-        }
+    public synchronized SnapshotEntry takeSnapshot() throws Exception {
+        long lowestOffset = Math.min(indexOffsetMap.get(getIndexOfLargestCommittedEntry()),
+                    indexOffsetMap.get(indexOfLargestReplicatedEntry));
 
-        final long index = logEntry.getIndex();
-        if (index <= indexOfLargestCommittedEntry) {
-            throw new IllegalStateException(String.format("index of log entry %s is %s which is less than indexOfLargestCommittedEntry %s", logEntry, index, indexOfLargestCommittedEntry));
-        }
-
-        this.indexOfLargestCommittedEntry = index;
-    }
-
-    // TODO (Terry): caller should lock down AppObject during snapshot
-    @Override
-    public synchronized SnapshotEntry takeSnapshot(Object appObject) throws Exception {
-        final long lowestOffset = Math.min(indexOffsetMap.get(indexOfLargestCommittedEntry),
-                indexOffsetMap.get(indexOfLargestReplicatedEntry));
-
-        SnapshotEntry entry = SnapshotEntry.newBuilder()
-                .term(TERM).index(getNextIndex())
-                .logFilePath(this.entryLog.getAbsolutePath())
-                .snapshotFilePath(this.snapshotLog.getAbsolutePath())
-                .appObject(appObject)
-                .lowestOffsetInLogFile(lowestOffset)
-                .indexOfLargestCommittedEntry(this.indexOfLargestCommittedEntry)
-                .indexOfLargestReplicatedEntry(this.indexOfLargestReplicatedEntry)
-                .build();
+        SnapshotEntry entry = commitExecutor.updateSnapshot(
+                SnapshotEntry.newBuilder()
+                    .term(TERM).index(getNextIndex())
+                    .logFilePath(this.entryLog.getAbsolutePath())
+                    .snapshotFilePath(this.snapshotLog.getAbsolutePath())
+                    .lowestOffsetInLogFile(lowestOffset)
+                    .indexOfLargestReplicatedEntry(this.indexOfLargestReplicatedEntry)
+                    .build());
 
         try {
             writeSnaphot(Util.toBytes(entry));
@@ -347,7 +330,7 @@ public class FileLogger implements ILogger<LogEntry> {
 
     @Override
     public synchronized long getIndexOfLargestCommittedEntry() {
-        return this.indexOfLargestCommittedEntry;
+        return this.commitExecutor.getIndexOfLargestCommittedEntry();
     }
 
     /**

@@ -4,25 +4,18 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import sapphire.common.AppObject;
 import sapphire.policy.DefaultSapphirePolicy;
 import sapphire.runtime.MethodInvocationRequest;
 import sapphire.runtime.MethodInvocationResponse;
 import sapphire.runtime.exception.AppExecutionException;
 
-import static java.lang.System.*;
-import static sapphire.runtime.MethodInvocationRequest.MethodType.READ;
-import static sapphire.runtime.MethodInvocationResponse.ReturnCode.FAILURE;
+import static java.lang.System.identityHashCode;
 import static sapphire.runtime.MethodInvocationResponse.ReturnCode.REDIRECT;
-import static sapphire.runtime.MethodInvocationResponse.ReturnCode.SUCCESS;
 
 /**
  * {@code LoadBalancedMasterSlavePolicy} directs write requests to <em>master</em> replica and
@@ -172,7 +165,7 @@ public class LoadBalancedMasterSlavePolicy extends DefaultSapphirePolicy {
         private final Configuration config;
         private final StateManager stateMgr;
         private final ILogger requestLogger;
-        private final IReplicator asyncReplicator;
+        private final CommitExecutor commitExecutor;
 
         public ServerPolicy() {
             this.config = Configuration.newBuilder()
@@ -183,16 +176,15 @@ public class LoadBalancedMasterSlavePolicy extends DefaultSapphirePolicy {
 
             // TODO (Terry): we should try to avoid doing cast here
             LoadBalancedMasterSlavePolicy.GroupPolicy group = (LoadBalancedMasterSlavePolicy.GroupPolicy)getGroup();
-            this.stateMgr = new StateManager(getClientId(), group, this.config);
+            this.commitExecutor = new CommitExecutor(appObject);
 
             try {
-                this.requestLogger = new FileLogger(config.getLogFilePath(), config.getSnapshotFilePath(), true);
+                this.requestLogger = new FileLogger(config.getLogFilePath(), config.getSnapshotFilePath(), commitExecutor, true);
             } catch (Exception e) {
                 throw new AssertionError("failed to construct entry logger: {0}", e);
             }
 
-            List<ServerPolicy> slaves = group.getSlaves();
-            this.asyncReplicator = new AsyncReplicator(slaves.get(0), requestLogger);
+            this.stateMgr = new StateManager(getClientId(), group, requestLogger, config);
 
             logger.log(Level.INFO, "LoadBalancedMasterSlavePolicy$ServerPolicy starts successfully");
         }
@@ -262,8 +254,8 @@ public class LoadBalancedMasterSlavePolicy extends DefaultSapphirePolicy {
         public MethodInvocationResponse onRPC(MethodInvocationRequest request) {
             switch (this.stateMgr.getCurrentStateName()) {
                 case SLAVE:
-                    if (request.getMethodType() != null && request.getMethodType() == READ) {
-                        return invokeMethod(request);
+                    if (request.isRead()) {
+                        return commitExecutor.applyRead(request);
                     }
                     // redirect non-read operations to master
                     return MethodInvocationResponse.newBuilder()
@@ -272,14 +264,14 @@ public class LoadBalancedMasterSlavePolicy extends DefaultSapphirePolicy {
                             .build();
 
                 case MASTER:
-                    if (request.getMethodType() != null && request.getMethodType() == READ) {
-                        return invokeMethod(request);
+                    if (request.isRead()) {
+                        return commitExecutor.applyRead(request);
                     }
 
                     // Log entry replication will be executed asynchronously because
                     // we need to return the client regardless whether or not replication
                     // succeeds.
-                    Entry entry = LogEntry.newBuilder().request(request).build();
+                    LogEntry entry = LogEntry.newBuilder().request(request).build();
                     try {
                         this.requestLogger.append(entry);
                     } catch (Exception e) {
@@ -290,51 +282,10 @@ public class LoadBalancedMasterSlavePolicy extends DefaultSapphirePolicy {
                                 .build();
                     }
 
-                    MethodInvocationResponse resp = invokeMethod(request);
-                    requestLogger.markCommitted(entry);
-
-                    return resp;
+                    return commitExecutor.applyWriteSync(request, entry.getIndex());
             }
 
             throw new AssertionError("should never reach here");
-        }
-
-        /**
-         * Invokes method on dedicated {@link #invocationExecutor} thread
-         *
-         * @param request
-         * @return {@link MethodInvocationResponse}
-         */
-        private MethodInvocationResponse invokeMethod(final MethodInvocationRequest request) {
-            final AppObject targetObj = appObject;
-            Future<Object> f = invocationExecutor.submit(new Callable<Object>() {
-                @Override
-                public Object call() throws Exception {
-                    return targetObj.invoke(request.getMethodName(), request.getParams());
-                }
-            });
-
-            MethodInvocationResponse resp;
-            try {
-                Object ret = f.get();
-                resp = MethodInvocationResponse.newBuilder().returnCode(SUCCESS).result(ret).build();
-            } catch (ExecutionException e) {
-                // Method invocation on application object failed.
-                // This is caused by application errors, not Sapphire errors
-                AppExecutionException ex = new AppExecutionException("method invocation on app object failed", e);
-                logger.log(Level.FINE, "failed to process request {0} on {1}: {2}", new Object[]{request, appObject, ex});
-                resp = MethodInvocationResponse.newBuilder().returnCode(FAILURE).result(ex).build();
-            } catch (InterruptedException e) {
-                // TODO (Terry): what should we do here?
-                // This is likely caused by Sapphire errors.
-                // The problem is: the other replica may not run into this exception. This exception
-                // may cause two replicas out of sync.
-                AppExecutionException ex = new AppExecutionException("Method invocation on appobject was interrupted", e);
-                logger.log(Level.SEVERE, "the process of request {0} on {1} was interrupted: {2}", new Object[]{request, appObject, ex});
-                resp = MethodInvocationResponse.newBuilder().returnCode(FAILURE).result(ex).build();
-            }
-
-            return resp;
         }
 
         private String getClientId() {
@@ -344,10 +295,6 @@ public class LoadBalancedMasterSlavePolicy extends DefaultSapphirePolicy {
         @Override
         protected void finalize() throws Throwable {
             invocationExecutor.shutdown();
-            if (asyncReplicator != null) {
-                asyncReplicator.close();
-            }
-
             super.finalize();
         }
     }
@@ -384,6 +331,11 @@ public class LoadBalancedMasterSlavePolicy extends DefaultSapphirePolicy {
         public List<ServerPolicy> getSlaves() {
             // TODO (Terry): to be implemented
             return new ArrayList(Collections.<SapphireServerPolicy>emptyList());
+        }
+
+        public ServerPolicy getSlave() {
+            // TODO (Terry): implement getSlave
+            return null;
         }
 
         /**

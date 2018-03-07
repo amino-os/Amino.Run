@@ -140,20 +140,12 @@ public class SnapshotEntry extends Entry {
         }
 
         public SnapshotEntry build() {
-            if (indexOfLargestCommittedEntry > index) {
-                throw new IllegalStateException(String.format("indexOfLargestCommittedEntry(%s) should not greater than snapshot index(%s)", indexOfLargestCommittedEntry, index));
-            }
-
             if (indexOfLargestReplicatedEntry > index) {
                 throw new IllegalStateException(String.format("indexOfLargestReplicatedEntry(%s) should not greater than snapshot index(%s)", indexOfLargestReplicatedEntry, index));
             }
 
             if (lowestOffsetInLogFile < 0) {
                 throw new IllegalArgumentException(String.format("invalid negative offset %s", lowestOffsetInLogFile));
-            }
-
-            if (appObject == null) {
-                throw new IllegalStateException("appObject in snapshot is null");
             }
 
             if (logFilePath == null || logFilePath.isEmpty()) {

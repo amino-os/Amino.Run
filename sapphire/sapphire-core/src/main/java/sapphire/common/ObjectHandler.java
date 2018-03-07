@@ -96,4 +96,23 @@ public class ObjectHandler implements Serializable {
 	public void read(ObjectInputStream in) throws IOException, ClassNotFoundException {
 		this.readObject(in);
 	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (!(o instanceof ObjectHandler)) return false;
+
+		ObjectHandler that = (ObjectHandler) o;
+
+		if (getObject() != null ? !getObject().equals(that.getObject()) : that.getObject() != null)
+			return false;
+		return methods != null ? methods.equals(that.methods) : that.methods == null;
+	}
+
+	@Override
+	public int hashCode() {
+		int result = getObject() != null ? getObject().hashCode() : 0;
+		result = 31 * result + (methods != null ? methods.hashCode() : 0);
+		return result;
+	}
 }

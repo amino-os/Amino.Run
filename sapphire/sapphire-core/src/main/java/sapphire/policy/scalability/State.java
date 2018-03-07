@@ -48,8 +48,6 @@ public interface State {
     //
 
     abstract class AbstractState implements State {
-        private final Random random = new Random(System.currentTimeMillis());
-
         private final StateName name;
 
         AbstractState(StateName name) {
@@ -96,60 +94,38 @@ public interface State {
      */
     final class Master extends AbstractState {
         private static final Logger logger = Logger.getLogger(Master.class.getName());
-        private final Random random = new Random(System.currentTimeMillis());
-        private final int INIT_DELAY_IN_MILLIS = random.nextInt(500);
-        private final long PERIOD_IN_MILLIS = 500;
+        private final LoadBalancedMasterSlavePolicy.GroupPolicy group;
+        private final ILogger<LogEntry> entryLogger;
+        private final Configuration config;
+        private AsyncReplicator replicator;
 
-        private ScheduledExecutorService replicationExecutor;
-
-        public Master() {
+        public Master(LoadBalancedMasterSlavePolicy.GroupPolicy group, ILogger<LogEntry> entryLogger, Configuration config) {
             super(StateName.MASTER);
+            this.group = group;
+            this.entryLogger = entryLogger;
+            this.config = config;
         }
 
         @Override
         public void enter() {
-            startReplicationThread();
+            replicator = new AsyncReplicator(group, entryLogger, config);
         }
 
         @Override
         public void leave() {
-            shutdownReplicationThread();
-        }
-
-        private void startReplicationThread() {
-            if (replicationExecutor == null || replicationExecutor.isShutdown()) {
-                replicationExecutor = Executors.newSingleThreadScheduledExecutor();
-            }
-
-            replicationExecutor.scheduleAtFixedRate(
-                    Util.RunnerWrapper(new Runnable() {
-                        @Override
-                        public void run() {
-                            // TODO (Terry): doing replication
-                            try {
-                                Thread.sleep(100);
-                            } catch(Exception ex) {
-
-                            }
-                        }
-                    }), INIT_DELAY_IN_MILLIS, PERIOD_IN_MILLIS, TimeUnit.MILLISECONDS);
-        }
-
-        private void shutdownReplicationThread() {
-            try {
-                if (replicationExecutor != null) {
-                    replicationExecutor.shutdown();
-                    replicationExecutor.awaitTermination(PERIOD_IN_MILLIS, TimeUnit.MILLISECONDS);
-                }
-            } catch (InterruptedException e) {
-                logger.log(Level.WARNING, "replication thread interrupted during await termination: {0}", e);
-            }
+            shutdownReplicator();
         }
 
         @Override
         protected void finalize() throws Throwable {
-            shutdownReplicationThread();
+            shutdownReplicator();
             super.finalize();
+        }
+
+        private void shutdownReplicator() {
+            if (replicator != null) {
+                replicator.close();
+            }
         }
     }
 

@@ -44,7 +44,6 @@ public class CacheLeasePolicy extends SapphirePolicy {
 			this.lease = lease;
 			this.leaseTimeout = leaseTimeout;
 			this.cachedObject = cachedObject;
-			assert(cachedObject != null);
 		}
 		
 		public UUID getLease() {
@@ -131,7 +130,7 @@ public class CacheLeasePolicy extends SapphirePolicy {
 				}
 
 				if (cachelease == null) {
-					throw new SapphireObjectNotAvailableException("Could not get lease.");
+					throw new LeaseNotAvailableException("Could not get lease.");
 				}
 
 				// If we have a new lease, then the object might have changed

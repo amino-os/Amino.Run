@@ -1,7 +1,6 @@
 package sapphire.policy.scalability;
 
 import java.io.Closeable;
-import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
@@ -15,22 +14,31 @@ import java.util.logging.Logger;
  */
 public class AsyncReplicator implements IReplicator, Closeable {
     private final static Logger logger = Logger.getLogger(AsyncReplicator.class.getName());
-    private final ScheduledExecutorService replicationExecutor;
+    private final ScheduledExecutorService replicator;
+    private final Configuration config;
 
     public AsyncReplicator(LoadBalancedMasterSlavePolicy.GroupPolicy group, ILogger<LogEntry> entryLogger, Configuration config) {
         if (group == null) {
             throw new IllegalArgumentException("group policy not specified");
         }
 
-        this.replicationExecutor = Executors.newSingleThreadScheduledExecutor();
-        this.replicationExecutor.schedule(new DoReplication(group, entryLogger),
+        this.config = config;
+        this.replicator = Executors.newSingleThreadScheduledExecutor();
+        this.replicator.schedule(new DoReplication(group, entryLogger),
                 config.getReplicationIntervalInMillis(), TimeUnit.MILLISECONDS);
     }
 
     @Override
     public void close() {
-        if (replicationExecutor != null) {
-            replicationExecutor.shutdown();
+        if (replicator != null) {
+            replicator.shutdown();
+            try {
+                if (! replicator.awaitTermination(config.getShutdownGracePeriodInMillis(), TimeUnit.MILLISECONDS)) {
+                    logger.log(Level.SEVERE, "replicator shut down time out after {0} milliseconds", config.getShutdownGracePeriodInMillis());
+                }
+            } catch (Exception e) {
+                logger.log(Level.SEVERE, "got exception during replicator shut down {0}", e);
+            }
         }
     }
 

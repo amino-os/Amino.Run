@@ -63,35 +63,21 @@ public final class StateManager {
      */
     private State currentState;
 
-    /**
-     *
-     */
     private final LoadBalancedMasterSlavePolicy.GroupPolicy group;
 
     private final ILogger<LogEntry> entryLogger;
 
-    /**
-     *
-     */
     private final Configuration config;
 
-    /**
-     * Constructor
-     *
-     * @param clientId the clientId of the state manager
-     * @param group the group policy
-     * @param entryLogger
-     * @param config configuration
-     */
-    public StateManager(String clientId, LoadBalancedMasterSlavePolicy.GroupPolicy group, ILogger<LogEntry> entryLogger, Configuration config) {
+    public StateManager(String clientId, Context context) {
         this.clientId = clientId;
         this.name = String.format("StateManager_%s_%s", clientId, random.nextInt(Integer.MAX_VALUE));
-        this.config = config;
-        this.group = group;
-        this.entryLogger = entryLogger;
+        this.config = context.getConfig();
+        this.group = context.getGroup();
+        this.entryLogger = context.getEntryLogger();
 
         this.SLAVE_STATE = new State.Slave();
-        this.MASTER_STATE = new State.Master(group, entryLogger, config);
+        this.MASTER_STATE = State.Master.getInstance(context);
 
         this.currentState = SLAVE_STATE;
         startLockingExecutor();

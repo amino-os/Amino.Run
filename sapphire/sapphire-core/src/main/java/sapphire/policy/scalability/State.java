@@ -1,10 +1,5 @@
 package sapphire.policy.scalability;
 
-import java.util.Random;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -97,27 +92,42 @@ public interface State {
         private final LoadBalancedMasterSlavePolicy.GroupPolicy group;
         private final ILogger<LogEntry> entryLogger;
         private final Configuration config;
+        private final CommitExecutor commitExecutor;
         private AsyncReplicator replicator;
+        private static Master instance;
 
-        public Master(LoadBalancedMasterSlavePolicy.GroupPolicy group, ILogger<LogEntry> entryLogger, Configuration config) {
+        private Master(Context context) {
             super(StateName.MASTER);
-            this.group = group;
-            this.entryLogger = entryLogger;
-            this.config = config;
+            this.group = context.getGroup();
+            this.entryLogger = context.getEntryLogger();
+            this.config = context.getConfig();
+            this.commitExecutor = context.getCommitExecutor();
+        }
+
+        public static synchronized Master getInstance(Context context) {
+            if (instance == null) {
+                instance = new Master(context);
+            }
+            return instance;
         }
 
         @Override
         public void enter() {
+            if (commitExecutor != null) {
+                commitExecutor.open();
+            }
             replicator = new AsyncReplicator(group, entryLogger, config);
         }
 
         @Override
         public void leave() {
+            closeCommitExecutor();
             shutdownReplicator();
         }
 
         @Override
         protected void finalize() throws Throwable {
+            closeCommitExecutor();
             shutdownReplicator();
             super.finalize();
         }
@@ -125,6 +135,12 @@ public interface State {
         private void shutdownReplicator() {
             if (replicator != null) {
                 replicator.close();
+            }
+        }
+
+        private void closeCommitExecutor() {
+            if (commitExecutor != null) {
+                commitExecutor.close();
             }
         }
     }

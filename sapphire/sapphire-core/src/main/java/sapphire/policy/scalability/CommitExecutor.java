@@ -7,6 +7,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -24,24 +25,54 @@ import static sapphire.runtime.MethodInvocationResponse.ReturnCode.SUCCESS;
  * @author terryz
  */
 public class CommitExecutor implements Closeable {
+    private final Logger logger = Logger.getLogger(CommitExecutor.class.getName());
+
     /**
      * Index of the largest committed log entry. A log entry is
      * committed iff its request has been invoked on appObject.
      */
     private final AtomicLong indexOfLargestCommittedEntry;
-
-    private final Logger logger = Logger.getLogger(CommitExecutor.class.getName());
-    private final ExecutorService executor;
     private final AppObject appObject;
+    private final Configuration config;
+    private ExecutorService executor;
+    private static CommitExecutor instance;
 
-    public CommitExecutor(AppObject appObject) {
-        this(appObject, 0L);
+    private CommitExecutor(AppObject appObject, Configuration config) {
+        this(appObject, 0L, config);
     }
 
-    public CommitExecutor(AppObject appObject, long indexOfLargestCommittedEntry) {
+    private CommitExecutor(AppObject appObject, long indexOfLargestCommittedEntry, Configuration config) {
         this.appObject = appObject;
         this.indexOfLargestCommittedEntry = new AtomicLong(indexOfLargestCommittedEntry);
         this.executor =  Executors.newSingleThreadExecutor();
+        this.config = config;
+    }
+
+    public static final synchronized CommitExecutor getInstance(AppObject appObject, long indexOfLargestCommittedEntry, Configuration config) {
+        if (instance == null) {
+            instance = new CommitExecutor(appObject, indexOfLargestCommittedEntry, config);
+        }
+        instance.open();
+        return instance;
+    }
+
+    public void open() {
+        this.executor = Executors.newSingleThreadExecutor();
+    }
+
+    @Override
+    public void close() {
+        if (executor != null) {
+            executor.shutdown();
+            try {
+                if (! executor.awaitTermination(config.getShutdownGracePeriodInMillis(), TimeUnit.MILLISECONDS)) {
+                    // shutdown time out
+                    logger.log(Level.SEVERE, "CommitExecutor shut down time out after {0} minillseconds", config.getShutdownGracePeriodInMillis());
+                }
+            } catch (Exception e) {
+                logger.log(Level.SEVERE, "got exception during CommitExecutor shut down: {0}", e);
+            }
+        }
     }
 
     /**
@@ -171,10 +202,4 @@ public class CommitExecutor implements Closeable {
         return resp;
     }
 
-    @Override
-    public void close() throws IOException {
-        if (executor != null) {
-            executor.shutdown();
-        }
-    }
 }

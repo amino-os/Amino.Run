@@ -19,7 +19,7 @@ public class StateManagerTest {
         long Init_Delay_Limit_InMillis = 1;
 
         this.clientId = "client";
-        this.Thread_Wait_Time = Master_Lease_Timeout_InMillis * 10;
+        this.Thread_Wait_Time = Master_Lease_Timeout_InMillis * 12;
         this.config = Configuration.newBuilder()
                 .masterLeaseRenewIntervalInMillis(Master_Lease_Renew_Interval_InMillis)
                 .masterLeaseTimeoutInMIllis(Master_Lease_Timeout_InMillis)
@@ -28,13 +28,47 @@ public class StateManagerTest {
 
     @Test
     public void verifyToString() throws Exception {
-        StateManager stateMgr = new StateManager(clientId, null, null, config);
+        LoadBalancedMasterSlavePolicy.GroupPolicy group = new LoadBalancedMasterSlavePolicy.GroupPolicy() {
+            @Override
+            public boolean obtainLock(String clientId, long logIndex) {
+                return false;
+            }
+            @Override
+            public boolean renewLock(String client, long logIndex) {
+                return false;
+            }
+        };
+
+        Context context = Context.newBuilder()
+                .config(config)
+                .entryLogger(null)
+                .group(group)
+                .build();
+
+        StateManager stateMgr = new StateManager(clientId, context);
         Assert.assertTrue("String value of State Manager should starts with StateManager_client", stateMgr.toString().startsWith("StateManager_client_"));
     }
 
     @Test
     public void verifyInitialState() throws Exception {
-        StateManager stateMgr = new StateManager(clientId, null, null, config);
+        LoadBalancedMasterSlavePolicy.GroupPolicy group = new LoadBalancedMasterSlavePolicy.GroupPolicy() {
+            @Override
+            public boolean obtainLock(String clientId, long logIndex) {
+                return false;
+            }
+            @Override
+            public boolean renewLock(String client, long logIndex) {
+                return false;
+            }
+        };
+
+        Context context = Context.newBuilder()
+                .config(config)
+                .entryLogger(null)
+                .group(group)
+                .build();
+
+        StateManager stateMgr = new StateManager(clientId, context);
         Assert.assertEquals("Initial state should be " + State.StateName.SLAVE, State.StateName.SLAVE, stateMgr.getCurrentStateName());
     }
 
@@ -50,9 +84,15 @@ public class StateManagerTest {
                 return false;
             }
         };
-
         group.setConfig(config);
-        final StateManager stateMgr = new StateManager(clientId, group, null, config);
+
+        Context context = Context.newBuilder()
+                .config(config)
+                .entryLogger(null)
+                .group(group)
+                .build();
+
+        final StateManager stateMgr = new StateManager(clientId, context);
 
         // Let state machine run for one second
         Thread.sleep(Thread_Wait_Time);
@@ -73,15 +113,21 @@ public class StateManagerTest {
                 return true;
             }
         };
-
         group.setConfig(config);
-        final StateManager stateMgr = new StateManager(clientId, group, null, config);
+
+        Context context = Context.newBuilder()
+                .config(config)
+                .entryLogger(null)
+                .group(group)
+                .build();
+
+        final StateManager stateMgr = new StateManager(clientId, context);
 
         // Let state machine run for one second
         Thread.sleep(Thread_Wait_Time);
 
         // Verify that the end state is master because obtain lock and renew lock succeeded
-        Assert.assertEquals(new State.Master(group, null, config).getName(), stateMgr.getCurrentStateName());
+        Assert.assertEquals(State.Master.getInstance(context).getName(), stateMgr.getCurrentStateName());
     }
 
     @Test
@@ -90,7 +136,7 @@ public class StateManagerTest {
             int obtainLockCnt = 0;
             @Override
             public boolean obtainLock(String clientId, long logIndex) {
-                // return true for the first invocation, and false for the rest invocatiions
+                // return true for the first invocation, and false for the rest invocations
                 return (obtainLockCnt++ == 0);
             }
 
@@ -99,9 +145,15 @@ public class StateManagerTest {
                 return false;
             }
         };
-
         group.setConfig(config);
-        final StateManager stateMgr = new StateManager("client", group, null, config);
+
+        Context context = Context.newBuilder()
+                .config(config)
+                .entryLogger(null)
+                .group(group)
+                .build();
+
+        final StateManager stateMgr = new StateManager("client", context);
 
         // Let state machine run for one second
         Thread.sleep(Thread_Wait_Time);

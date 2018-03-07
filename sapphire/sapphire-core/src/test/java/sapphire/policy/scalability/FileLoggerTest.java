@@ -24,7 +24,8 @@ import sapphire.runtime.MethodInvocationRequest;
 public class FileLoggerTest {
     private File entryLogFile;
     private File snapshotLogFile;
-    private CommitExecutor commitExecutor = new CommitExecutor(new AppObject("object"));
+    private Configuration config;
+    private CommitExecutor commitExecutor = CommitExecutor.getInstance(new AppObject("object"), 0L, config);
 
     @Before
     public void setup() throws Exception {

@@ -164,7 +164,7 @@ public class LoadBalancedMasterSlavePolicy extends DefaultSapphirePolicy {
 
         private final Configuration config;
         private final StateManager stateMgr;
-        private final ILogger requestLogger;
+        private final FileLogger requestLogger;
         private final CommitExecutor commitExecutor;
 
         public ServerPolicy() {
@@ -176,7 +176,7 @@ public class LoadBalancedMasterSlavePolicy extends DefaultSapphirePolicy {
 
             // TODO (Terry): we should try to avoid doing cast here
             LoadBalancedMasterSlavePolicy.GroupPolicy group = (LoadBalancedMasterSlavePolicy.GroupPolicy)getGroup();
-            this.commitExecutor = new CommitExecutor(appObject);
+            this.commitExecutor = CommitExecutor.getInstance(appObject, 0L, config);
 
             try {
                 this.requestLogger = new FileLogger(config.getLogFilePath(), config.getSnapshotFilePath(), commitExecutor, true);
@@ -184,8 +184,13 @@ public class LoadBalancedMasterSlavePolicy extends DefaultSapphirePolicy {
                 throw new AssertionError("failed to construct entry logger: {0}", e);
             }
 
-            this.stateMgr = new StateManager(getClientId(), group, requestLogger, config);
+            Context context = Context.newBuilder()
+                    .group(group)
+                    .entryLogger(requestLogger)
+                    .config(config)
+                    .build();
 
+            this.stateMgr = new StateManager(getClientId(), context);
             logger.log(Level.INFO, "LoadBalancedMasterSlavePolicy$ServerPolicy starts successfully");
         }
 
@@ -216,12 +221,14 @@ public class LoadBalancedMasterSlavePolicy extends DefaultSapphirePolicy {
                         .build();
             }
 
-            for (Entry entry : request.getEntries()) {
+            for (LogEntry entry : request.getEntries()) {
                 if (entry.getIndex() > previousIndex) {
                     if (! this.requestLogger.indexExists(entry.getIndex())) {
                         try {
                             this.requestLogger.append(entry);
+
                             // TODO (Terry): add job into invocationExecutor
+                            commitExecutor.applyWriteAsync(entry.getRequest(), entry.getIndex());
                         } catch (Exception e) {
                             logger.log(Level.SEVERE, "failed to append log entry {0}: {1}", new Object[]{entry, e});
                             return ReplicationResponse.newBuilder()

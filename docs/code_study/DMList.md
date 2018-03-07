@@ -120,7 +120,7 @@ Status: Implemented by @DonghuiZhuo https://github.com/Huawei-PaaS/DCAP-Sapphire
 
 State changes on remote object caused by one client will not automatically invalidate to cached objects on other clients. Therefore *WriteThroughCache* may contain staled object.
 
-The value of this DM is rated as LOW because 
+Terry: The value of this DM is rated as LOW because 
 
 * Many mutual cache libraries out there. 
 * It is not difficult for developers to write their customized client side write through cache. It is not a big deal for them even if we don't provide this DM. 
@@ -137,15 +137,15 @@ Status: Not yet implemented (as of 2018-01-30).
 
 *ConsistentCaching* caches Sapphire object instance on local machine. *Read* operations will be invoked on local cached object. *Write* operations will be directed to remote Sapphire object. If the Sapphire object has multiple *replicas*, *write* operations will be invoked on all replicas.
 
-Terry: * Should updates be propagated to all *replicas*, or be propagated to all *cached objects*? My interpretation is that the updates will be propagated to all replicas. The cached object, therefore, may contain stale data.
+Terry: Should updates be propagated to all *replicas*, or be propagated to all *cached objects*? My interpretation is that the updates will be propagated to all replicas. The cached object, therefore, may contain stale data.
 
 Quinton: My understanding is that the replicas are the cached objects.  So reads go to any replica, and writes go to all replicas.  We can confirm with Irene.  This is in practise quite difficult to do reliably (e.g. what happens if writes to some replicas fail, and the rollbacks to the successfully updated replicas fail to roll back etc).
 
-* What if the update propagation failed on some replica? 
+Terry: What if the update propagation failed on some replica? 
 
 Quinton: Aah yes, see above.
 
-* Should update propagation occur synchronously or asynchronously?
+Terry: Should update propagation occur synchronously or asynchronously?
 
 Quinton: Synchronously, otherwise replicas are only eventually consistent, not strictly consistent, as per the definition.
 
@@ -169,9 +169,8 @@ Status: Implemented by @quinton-hoole https://github.com/Huawei-PaaS/DCAP-Sapphi
 
 *LockingTransactions* uses lock to enforce the serial execution of transactions each of which consists of one or many RPC calls.
 
-* How do users specify transaction boundary? Say, I would like to put operation A and B into one transaction, how do I specify it in DM?
-* Are serialization enforced across all Sapphire object replicas, or just against one Sapphire object replica?
-* Should this DM take care of state rollback from failed transactions?
+Terry: 
+* Are serialization enforced across all Sapphire object replicas, or just against one Sapphire object replica? 
 * Can users call methods on multiple Sapphire objects in one transaction, e.g. SO1.A() and SO2.B()?
 
 ### OptimisticTransactions 92 LoC
@@ -190,14 +189,6 @@ Status: Implemented by @quinton-hoole https://github.com/Huawei-PaaS/DCAP-Sapphi
 
 *ExplicitCheckpoint* allows users to manually checkpoint Sapphire object state via `SO.checkpoint()` API. Sapphire object state will be saved on local host. Users can manually revert Sapphire object to the last checkpoint by calling `SO.revert()` API.
 
-* Description says *revert last checkpoint on failure*. Is this *revert* done by system, or by users manually?
-
-Quinton: It explicitly says above "users can manually revert".
-
-Terry: * If *revert* is performed by system automatically, then *on which failures* should the system revert Sapphire object to last checkpoint?
-
-Quinton: See above.
-
 ### PeriodicCheckpoint 65 LoC
 
 > Checkpoint to disk every N RPCs, revert to last checkpoint on failure
@@ -205,14 +196,6 @@ Quinton: See above.
 Status: Implemented by @quinton-hoole https://github.com/Huawei-PaaS/DCAP-Sapphire/pull/37
 
 *PeriodicCheckpoint* periodically, e.g. every N RPCs, saves Sapphire object state on local host. This DM saves Sapphire object before invokes any method on the Sapphire object. If RPC invocation succeeds, result will be returned to client. If RPC invocation fails, Sapphire object will be reverted to last checkpoint, and an error will be thrown to client.
-
-Terry: * What is the use case of this DM?
-
-Quinton: I think that's pretty clear from the description above. It enables atomic transactions via RPC invocations.  So the state of the object cannot end up in a partially consistent state (e.g. if an exception gets throuwn part-way through a method).
-
-Terry: * What if a Sapphire object dies? Will we loose checkpoint data?
-
-Quinton: No, I think we can probably avoid that, by persisting the state to the local disk (indexed by object-id or whatever).  If the local disk/server fails, then the checkpoint will of course disappear.  To cover that we can also support checkpointing to remote, redundant, distributed storage (e.g. Diamond or Tapir).
 
 ### DurableSerializableRPC 29 LoC
 
@@ -234,6 +217,7 @@ Status: Not yet implemented.  Very similar to ExplicitTransactions plus DurableS
 
 *DurableTransactions* will 1) save Sapphire object state on local host, 2) grab a lock for the transaction, and 3) invoke multiple *update* operations specified in the transaction boundry on the Sapphire object. If any *update* operation fail, the Sapphire object state will be restored, and an error will be thrown back to the client.  
 
+Terry:
 * Can one transaction involve multiple Sapphire object?
 * If the Sapphire object has multiple replicas, should the updates be propagated to other replicas?
 

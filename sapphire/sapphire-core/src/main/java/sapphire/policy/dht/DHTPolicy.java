@@ -180,7 +180,7 @@ public class DHTPolicy extends SapphirePolicy {
 		}
 		
 		public void dhtPin(String region) throws RemoteException {
-			sapphire_pin(region);
+			sapphire_pin(region, null);
 		}
 	}
 

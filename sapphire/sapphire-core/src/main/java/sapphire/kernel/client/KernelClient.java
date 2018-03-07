@@ -123,7 +123,7 @@ public class KernelClient {
 		}
 	}
 		
-	public void copyObjectToServer(InetSocketAddress host, KernelOID oid, KernelObject object) throws RemoteException, KernelObjectNotFoundException {
-		getServer(host).copyKernelObject(oid, object);
+	public void copyObjectToServer(InetSocketAddress host, KernelOID oid, KernelObject object, String initializeMethod) throws RemoteException, KernelObjectNotFoundException {
+		getServer(host).copyKernelObject(oid, object, initializeMethod);
 	}
 }

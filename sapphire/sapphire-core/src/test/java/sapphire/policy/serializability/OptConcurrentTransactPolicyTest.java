@@ -2,11 +2,9 @@ package sapphire.policy.serializability;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Matchers;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.UUID;
 
 import sapphire.common.AppObject;
 import sapphire.common.Utils;
@@ -20,7 +18,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
-
+import static org.mockito.Mockito.when;
 
 
 /**
@@ -32,20 +30,35 @@ public class OptConcurrentTransactPolicyTest {
     OptConcurrentTransactPolicy.ClientPolicy client2;
     OptConcurrentTransactPolicy.ServerPolicy server;
 
-    private OptConcurrentTransactionTest so;
+    private OptConcurrentTransactionTest_Stub so;
     private AppObject appObject;
     private ArrayList<Object> noParams, oneParam, twoParam, threeParam;
-    String startMethodName = "public void sapphire.policy.serializability.OptConcurrentTransactionImpl.startTransaction() throws java.lang.Exception",
-            commitMethodName = "public void sapphire.policy.serializability.OptConcurrentTransactionImpl.commitTransaction() throws java.lang.Exception",
-            rollbackMethodName = "public void sapphire.policy.serializability.OptConcurrentTransactionImpl.rollbackTransaction() throws java.lang.Exception",
-            setMethodName = "public void sapphire.policy.serializability.OptConcurrentTransactionTest.setI(int)",
-            getMethodName = "public int sapphire.policy.serializability.OptConcurrentTransactionTest.getI()";
+    String startMethodName = "public void sapphire.policy.serializability.OptConcurrentTransactPolicyTest$OptConcurrentTransactionTest.startTransaction() throws java.lang.Exception",
+            commitMethodName = "public void sapphire.policy.serializability.OptConcurrentTransactPolicyTest$OptConcurrentTransactionTest.commitTransaction() throws java.lang.Exception",
+            rollbackMethodName = "public void sapphire.policy.serializability.OptConcurrentTransactPolicyTest$OptConcurrentTransactionTest.rollbackTransaction() throws java.lang.Exception",
+            setMethodName = "public void sapphire.policy.serializability.OptConcurrentTransactPolicyTest$OptConcurrentTransactionTest.setI(int)",
+            getMethodName = "public int sapphire.policy.serializability.OptConcurrentTransactPolicyTest$OptConcurrentTransactionTest.getI()";
+
+    /* APP SO class */
+    public static class OptConcurrentTransactionTest extends TransactionImpl {
+        int i = 0;
+        public void setI(int i) {
+            this.i = i;
+        }
+        public int getI() {
+            return i;
+        }
+    }
+
+    /* APP SO Stub class */
+    public static class OptConcurrentTransactionTest_Stub extends OptConcurrentTransactPolicyTest.OptConcurrentTransactionTest {
+    }
 
     @Before
     public void setUp() throws Exception {
         this.client1 = spy(OptConcurrentTransactPolicy.ClientPolicy.class);
         this.client2 = spy(OptConcurrentTransactPolicy.ClientPolicy.class);
-        so = new OptConcurrentTransactPolicyTestStub();
+        so = new OptConcurrentTransactionTest_Stub();
         appObject = new AppObject(so);
         this.server = spy(OptConcurrentTransactPolicy.ServerPolicy.class);
         this.server.$__initialize(appObject);
@@ -66,7 +79,7 @@ public class OptConcurrentTransactPolicyTest {
         this.client1.onRPC(methodName, noParams);
         verify(this.server).onRPC(methodName, noParams);
         // Check that DM methods were not called
-        verify(this.server, never()).getTransaction();
+        verify(this.server, never()).sapphire_getAppObject();
     }
 
     @Test
@@ -77,23 +90,61 @@ public class OptConcurrentTransactPolicyTest {
         verify(this.server).onRPC(setMethodName, oneParam);
         assertEquals(so.getI(), 1);
 
+        // In UT env, client and server are referring to the same app object(rather on different object).
+        // We need to mock the get app object method to avoid that.
+        // Client operates on the cloned copy of appObject. And server operates on appObject
+        AppObject clonedAppObject = (AppObject)Utils.ObjectCloner.deepCopy(appObject);
+        doReturn(clonedAppObject).when(this.server).sapphire_getAppObject();
+
+        OptConcurrentTransactionTest clonedSo = (OptConcurrentTransactionTest)clonedAppObject.getObject();
+
         // Start a transaction with first client
         this.client1.onRPC(startMethodName, noParams);
 
         // Update the object to 2 from the first client
         this.client1.onRPC(setMethodName, twoParam);
-        assertEquals(so.getI(), 2);
+        assertEquals(clonedSo.getI(), 2);
+
         // Check that it was not executed against the server.
         verify(this.server, never()).onRPC(setMethodName, twoParam);
+
+        // Server need to get the actual appObject(not the clone). Set back to real method call.
+        when(this.server.sapphire_getAppObject()).thenCallRealMethod();
+
         // Commit the transaction for first client
         this.client1.onRPC(commitMethodName, noParams);
+
         // Check that it got sync'd to the server.
-        verify(this.server).syncObject((UUID) any(), (Serializable)any());
+        verify(this.server).syncObject((byte[]) any(), (Serializable)any());
 
         // Verify that the object has been updated
         this.client1.onRPC(getMethodName, noParams);
         verify(this.server).onRPC(getMethodName, noParams);
         assertEquals(((OptConcurrentTransactionTest)appObject.getObject()).getI(), 2);
+    }
+
+    @Test
+    public void startAndCommitTransactionWithOutModifyingObject() throws Exception {
+        // Update the object to 1 from first client
+        this.client1.onRPC(setMethodName, oneParam);
+        verify(this.server).onRPC(setMethodName, oneParam);
+        assertEquals(so.getI(), 1);
+
+        // In UT env, client and server are referring to the same app object(rather on different object).
+        // We need to mock the get app object method to avoid that.
+        // Client operates on the cloned copy of appObject. And server operates on appObject
+        AppObject clonedAppObject = (AppObject)Utils.ObjectCloner.deepCopy(appObject);
+        doReturn(clonedAppObject).when(this.server).sapphire_getAppObject();
+
+        OptConcurrentTransactionTest clonedSo = (OptConcurrentTransactionTest)clonedAppObject.getObject();
+
+        // Start a transaction with first client
+        this.client1.onRPC(startMethodName, noParams);
+
+        // Commit the transaction for first client without changing the object state
+        this.client1.onRPC(commitMethodName, noParams);
+        // Check that object is not sync'd to the server.
+        verify(this.server, never()).syncObject((byte[]) any(), (Serializable)any());
     }
 
    @Rule
@@ -112,40 +163,72 @@ public class OptConcurrentTransactPolicyTest {
         verify(this.server).onRPC(setMethodName, threeParam);
         assertEquals(so.getI(), 3);
 
+        // In UT env, client and server are referring to the same app object(rather on different object).
+        // We need to mock the get app object method to avoid that.
+        // Client operates on the cloned copy of appObject. And server operates on appObject
+        AppObject clonedAppObject1 = (AppObject)Utils.ObjectCloner.deepCopy(appObject);
+        doReturn(clonedAppObject1).when(this.server).sapphire_getAppObject();
+
+        OptConcurrentTransactionTest clonedSo1 = (OptConcurrentTransactionTest)clonedAppObject1.getObject();
         // Start transaction with first client
         this.client1.onRPC(startMethodName, noParams);
+
+        // In UT env, client and server are referring to the same app object(rather on different object).
+        // We need to mock the get app object method to avoid that.
+        // Client operates on the cloned copy of appObject. And server operates on appObject
+        AppObject clonedAppObject2 = (AppObject)Utils.ObjectCloner.deepCopy(appObject);
+        doReturn(clonedAppObject2).when(this.server).sapphire_getAppObject();
+
+        OptConcurrentTransactionTest clonedSo2 = (OptConcurrentTransactionTest)clonedAppObject2.getObject();
 
         // Start transaction with second client
         this.client2.onRPC(startMethodName, noParams);
 
         // Update the object to 2 from first client
         this.client1.onRPC(setMethodName, twoParam);
-        assertEquals(so.getI(), 2);
+        assertEquals(clonedSo1.getI(), 2);
 
         // Check that it was not executed against the server.
         verify(this.server, never()).onRPC(setMethodName, twoParam);
+
+        // Server need to get the actual appObject(not the clone). Set back to real method call.
+        when(this.server.sapphire_getAppObject()).thenCallRealMethod();
 
         // Commit the transaction of first client
         this.client1.onRPC(commitMethodName, noParams);
+
         // Check that it got sync'd to the server.
-        verify(this.server).syncObject((UUID) any(), (Serializable)any());
+        verify(this.server).syncObject((byte[]) any(), (Serializable)any());
 
         // Check that it was not executed against the server.
         verify(this.server, never()).onRPC(setMethodName, twoParam);
 
-        // Verify that the object has been updated
+        // Verify that the actual object has been updated(non transactional rpc to server)
         this.client1.onRPC(getMethodName, noParams);
         verify(this.server).onRPC(getMethodName, noParams);
-        assertEquals(so.getI(), 2);
+        assertEquals(((OptConcurrentTransactionTest)(appObject.getObject())).getI(), 2);
 
-        // Commit the transaction of second client
-        thrown.expect(Exception.class);
+        // Update the object to 1 from second client
+        this.client2.onRPC(setMethodName, oneParam);
+        assertEquals(clonedSo2.getI(), 1);
+
+        /* Commit the transaction of second client. It should fail as the first client has
+        already committed the transaction */
+        thrown.expect(TransactionException.class);
         thrown.expectMessage(containsString(" is invalid"));
         this.client2.onRPC(commitMethodName, noParams);
     }
 
     @Test
     public void startOneTransactionAndDoNonTransactionRpcMultipleClients() throws Exception {
+
+        // In UT env, client and server are referring to the same app object(rather on different object).
+        // We need to mock the get app object method to avoid that.
+        // Client operates on the cloned copy of appObject. And server operates on appObject
+        AppObject clonedAppObject = (AppObject)Utils.ObjectCloner.deepCopy(appObject);
+        doReturn(clonedAppObject).when(this.server).sapphire_getAppObject();
+
+        OptConcurrentTransactionTest clonedSo = (OptConcurrentTransactionTest)clonedAppObject.getObject();
 
         // Start transaction with first client
         this.client1.onRPC(startMethodName, noParams);
@@ -157,14 +240,12 @@ public class OptConcurrentTransactPolicyTest {
 
         // Update the object to 2 from first client
         this.client1.onRPC(setMethodName, twoParam);
-        assertEquals(so.getI(), 2);
+        assertEquals(clonedSo.getI(), 2);
 
         // Commit the transaction of first client
-        //thrown.expect(Exception.class);
-        //thrown.expectMessage(containsString(" failed"));
+        thrown.expect(TransactionException.class);
+        thrown.expectMessage(containsString(" is invalid"));
         this.client1.onRPC(commitMethodName, noParams);
-        assertEquals(so.getI(), 2);
-
     }
 
     @Test
@@ -176,21 +257,26 @@ public class OptConcurrentTransactPolicyTest {
         assertEquals(1, so.getI());
 
         // Start a transaction
-        AppObject clone = (AppObject)Utils.ObjectCloner.deepCopy(appObject);
+        AppObject clonedAppObject = (AppObject)Utils.ObjectCloner.deepCopy(appObject);
+
         // We need to mock the implementation in this case, because in this fake unit test environment,
         // RMI does not occur, so client and server DM's end up referring to the same object (rather than
         // different objects, due to RMI serialization.
-        doReturn(clone).when(this.server).sapphire_getAppObject();
+        doReturn(clonedAppObject).when(this.server).sapphire_getAppObject();
+
         this.client1.onRPC(startMethodName, noParams);
+
         // Update the object again, this time to 2
         this.client1.onRPC(setMethodName, twoParam);
         verify(this.server, never()).onRPC(setMethodName, twoParam);
+
         // Check that the client has the new value.
         assertEquals(2, this.client1.onRPC(getMethodName, noParams));
         verify(this.server, never()).onRPC(getMethodName, noParams);
 
         // Check that the server has the old value.
         assertEquals(1, so.getI());
+
         // Rollback the transaction
         this.client1.onRPC(rollbackMethodName, noParams);
 
@@ -198,8 +284,38 @@ public class OptConcurrentTransactPolicyTest {
         assertEquals(1, this.client1.onRPC(getMethodName, noParams));
         verify(this.server).onRPC(getMethodName, noParams);
     }
+
+    @Test
+    public void startTransactWhenTransactIsInProgress() throws Exception {
+
+        // Start a transaction
+        AppObject clonedAppObject = (AppObject)Utils.ObjectCloner.deepCopy(appObject);
+
+        // We need to mock the implementation in this case, because in this fake unit test environment,
+        // RMI does not occur, so client and server DM's end up referring to the same object (rather than
+        // different objects, due to RMI serialization.
+        doReturn(clonedAppObject).when(this.server).sapphire_getAppObject();
+
+        this.client1.onRPC(startMethodName, noParams);
+
+        thrown.expect(TransactionAlreadyStartedException.class);
+        thrown.expectMessage(containsString("Transaction already started on Sapphire object."));
+        this.client1.onRPC(startMethodName, noParams);
+    }
+
+    @Test
+    public void commitTransactWhenTransactNotStarted() throws Exception {
+
+        thrown.expect(NoTransactionStartedException.class);
+        thrown.expectMessage(containsString("No transaction to commit."));
+        this.client1.onRPC(commitMethodName, noParams);
+    }
+
+    @Test
+    public void rollbackTransactWhenTransactNotStarted() throws Exception {
+
+        thrown.expect(NoTransactionStartedException.class);
+        thrown.expectMessage(containsString("No transaction to roll back."));
+        this.client1.onRPC(rollbackMethodName, noParams);
+    }
 }
-
-// Stub because AppObject expects a stub/subclass of the original class.
-class OptConcurrentTransactPolicyTestStub extends OptConcurrentTransactionTest implements Serializable {}
-

@@ -19,6 +19,6 @@ import sapphire.kernel.common.KernelRPCException;
 public interface KernelServer extends Remote {
 	Object makeKernelRPC(KernelRPC rpc) throws RemoteException, KernelObjectNotFoundException, KernelObjectMigratingException, KernelRPCException;
 	void copyKernelObject(KernelOID oid, KernelObject object) throws RemoteException, KernelObjectNotFoundException;
-
+	void copyKernelObjectWithInitFunc(KernelOID oid, KernelObject object,String initFunc) throws RemoteException, KernelObjectNotFoundException;
 	AppObjectStub startApp(String className) throws RemoteException;
 }

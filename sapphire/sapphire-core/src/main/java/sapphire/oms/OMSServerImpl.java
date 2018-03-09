@@ -83,6 +83,17 @@ public class OMSServerImpl implements OMSServer{
     	   serverManager.registerKernelServer(host);   		
        }
 
+	   /**
+		* Registers the kernel server to the specified region
+		* @param region
+		* @param host
+		* @throws RemoteException
+		* @throws NotBoundException
+		*/
+	   @Override
+	   public void registerKernelServerWithRegion(String region, InetSocketAddress host) throws RemoteException, NotBoundException {
+		   serverManager.registerKernelServerWithRegion(region, host);
+	   }
        
 	   /**
 	    * Gets the list servers in the system
@@ -119,6 +130,16 @@ public class OMSServerImpl implements OMSServer{
     	   return serverManager.getServerInRegion(region);
        }
        
+	   /**
+		* Gets all servers in the specified region
+		* @param region
+		* @return
+		* @throws RemoteException
+		*/
+	   @Override
+	   public ArrayList<InetSocketAddress> getServersInRegion(String region) throws RemoteException {
+		   return serverManager.getServersInRegion(region);
+	   }
        /** APP METHODS **/
        
        /**

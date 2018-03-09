@@ -97,6 +97,18 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 			}
 		}
 
+        // This function is same as sapphire_pin but pining to the server instead of region
+        // and its taking a InitFunction
+		public void sapphire_pin_to_server(InetSocketAddress server, String initFunc) throws RemoteException {
+			logger.info("Pinning Sapphire object " + oid.toString() + " to " + server);
+			try {
+				kernel().moveKernelObjectToServerWithInitFUnc(server, oid,initFunc);
+			} catch (KernelObjectNotFoundException e) {
+				e.printStackTrace();
+				throw new Error("Could not find myself on this server!");
+			}
+		}
+
 		/*
 		 * INTERNAL FUNCTIONS
 		 */
@@ -128,6 +140,9 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 			return actualAppObject;
 		}
 
+		public String sapphire_getRegion() {
+			return kernel().getRegion();
+		}
 		public void $__initialize(AppObject appObject) {
 			this.appObject = appObject;
 		}
@@ -158,8 +173,21 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 			return oms().getRegions();
 		}
 
+		/**
+		 * Gets the list of inet sock address of the servers in the specified region
+		 *
+		 * @param region
+		 * @return inet socket address of the server
+		 * @throws RemoteException
+		 */
+		public ArrayList<InetSocketAddress> sapphire_getServersInRegion(String region) throws RemoteException {
+			return oms().getServersInRegion(region);
+		}
 		public void $__setKernelOID(KernelOID oid) {
 			this.oid = oid;
+		}
+		public KernelOID $__getKernelOID() {
+			return this.oid;
 		}
 	}
 }

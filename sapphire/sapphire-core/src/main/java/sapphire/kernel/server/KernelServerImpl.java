@@ -36,6 +36,7 @@ import java.util.logging.Logger;
 public class KernelServerImpl implements KernelServer{
 	private static Logger logger = Logger.getLogger("sapphire.kernel.server.KernelServerImpl");
 	private InetSocketAddress host;
+	private String region;
 	/** manager for kernel objects that live on this server */
 	private KernelObjectManager objectManager;
 	/** stub for the OMS */
@@ -58,6 +59,14 @@ public class KernelServerImpl implements KernelServer{
 		GlobalKernelReferences.nodeServer = this;
 	}
 	
+	public void setRegion(String region) {
+		this.region = region;
+	}
+
+	public String getRegion() {
+		return this.region;
+	}
+
 	/** RPC INTERFACES **/
 	
 	/**
@@ -91,7 +100,31 @@ public class KernelServerImpl implements KernelServer{
 		objectManager.addObject(oid, object);
 		object.uncoalesce();
 	}
-	
+
+    // This copyKernelObjectWithInitFunc function is similar to copyKernelObject
+    // just added new parameter initFunc which is useful to initialize the transient parameters at the
+    // moved kernel server
+
+    /**
+     * Move a kernel object to this server.
+     *
+     * @param oid the kernel object id
+     * @param object the kernel object to be stored on this server
+     * @param  initFunc
+     */
+	public void copyKernelObjectWithInitFunc(KernelOID oid, KernelObject object, String initFunc) throws RemoteException, KernelObjectNotFoundException {
+		objectManager.addObject(oid, object);
+		object.uncoalesce();
+		if (null != initFunc) {
+		    try {
+		        object.invoke(initFunc, new ArrayList<Object>());
+		    } catch (Exception e) {
+		        //TODO: Change the exception later
+                logger.warning("Exception in copyKernelObjectWithInitFunc" +e);
+                throw new RemoteException("object.invoke throw an exception",e);
+		    }
+		}
+	}
 	/** LOCAL INTERFACES **/
 	/** 
 	 * Create a new kernel object locally on this server.
@@ -146,6 +179,44 @@ public class KernelServerImpl implements KernelServer{
 		
 		objectManager.removeObject(oid);
 	}
+
+	// This moveKernelObjectToServerWithInitFUnc function is similar to moveKernelObjectToServer
+    // just added new parameter initFunc which is useful to initialize the transient parameters at the
+    // moved kernel server
+
+    /**
+     * Move object from this server to host.
+     * @param host
+     * @param oid
+     * @param  initFunc
+     * @throws RemoteException
+     * @throws KernelObjectNotFoundException
+     */
+    public void moveKernelObjectToServerWithInitFUnc(InetSocketAddress host, KernelOID oid, String initFunc) throws RemoteException, KernelObjectNotFoundException {
+        if (host.equals(this.host)) {
+            return;
+        }
+
+        KernelObject object = objectManager.lookupObject(oid);
+        object.coalesce();
+
+        logger.fine("Moving object " + oid.toString() + " to " + host.toString());
+
+        try {
+            client.copyObjectToServerWithInitFunc(host, oid, object,initFunc);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+            throw new RemoteException("Could not contact destination server.");
+        }
+
+        try {
+            oms.registerKernelObject(oid, host);
+        } catch (RemoteException e) {
+            throw new RemoteException("Could not contact oms to update kernel object host.");
+        }
+
+        objectManager.removeObject(oid);
+    }
 	
 	public Serializable getObject(KernelOID oid) throws KernelObjectNotFoundException {
 		KernelObject object = objectManager.lookupObject(oid);
@@ -209,9 +280,9 @@ public class KernelServerImpl implements KernelServer{
 	 */
 	public static void main(String args[]) {
 
-		if (args.length != 4) {
+		if (args.length != 5) {
 			System.out.println("Incorrect arguments to the kernel server");
-			System.out.println("[host ip] [host port] [oms ip] [oms port]");
+			System.out.println("[host ip] [host port] [oms ip] [oms port] [region]");
 			return;
 		}
 		
@@ -234,8 +305,8 @@ public class KernelServerImpl implements KernelServer{
 			Registry registry = LocateRegistry.createRegistry(Integer.parseInt(args[1]));
 			registry.rebind("SapphireKernelServer", stub);
 			
-			oms.registerKernelServer(host);
-			
+			server.setRegion(args[4]);
+			oms.registerKernelServerWithRegion(server.getRegion(), host);
 			logger.info("Server ready!");
 			System.out.println("Server ready!");
 			

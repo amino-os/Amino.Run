@@ -59,7 +59,7 @@ public class DefaultSapphirePolicy extends SapphirePolicy {
 
 		@Override
 		public void addServer(SapphireServerPolicy server) {
-			// TODO (Terry): the equals method in SapphireServerPolicy should be sc
+			// TODO (Terry): Verifies equals method is implemented properly in SapphireServerPolicy
 			servers.add(server);
 		}
 

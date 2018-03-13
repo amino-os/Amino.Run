@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 import sapphire.common.AppObject;
+import sapphire.common.Utils;
 import sapphire.runtime.MethodInvocationRequest;
 
 /**
@@ -24,13 +25,15 @@ import sapphire.runtime.MethodInvocationRequest;
 public class FileLoggerTest {
     private File entryLogFile;
     private File snapshotLogFile;
-    private Configuration config;
+    private String clientId;
+    private Configuration config = Configuration.newBuilder().build();
     private CommitExecutor commitExecutor = CommitExecutor.getInstance(new AppObject("object"), 0L, config);
 
     @Before
     public void setup() throws Exception {
         entryLogFile = File.createTempFile("file", "");
         snapshotLogFile = File.createTempFile("snapshot", "");
+        clientId = "clientId";
     }
 
     @Test
@@ -39,13 +42,13 @@ public class FileLoggerTest {
 
         // write message to entry log
         String message = "hello world";
-        invokePrivateMethod(entryLogger, "writeLog", new Object[]{Util.toBytes(message)});
+        invokePrivateMethod(entryLogger, "writeLog", new Object[]{Utils.toBytes(message)});
 
         // read message out of entry log
         FileChannel fc = (FileChannel)getField(entryLogger, "entryLogInChannel");
         int length = (Integer)invokePrivateMethod(entryLogger, "readInt", new Object[]{fc});
         byte[] content = (byte[])invokePrivateMethod(entryLogger, "readBytes", new Object[]{fc, length});
-        Assert.assertEquals(message, Util.toObject(content));
+        Assert.assertEquals(message, Utils.toObject(content));
     }
 
     @Test
@@ -130,10 +133,6 @@ public class FileLoggerTest {
         }
     }
 
-    private FileLogger createFileLogger(File entryLogFile, File snapshotLogFile) throws Exception {
-        return new FileLogger(entryLogFile.getPath(), snapshotLogFile.getPath(), commitExecutor, false);
-    }
-
     private List<LogEntry> createLogEntries(int entryCnt) {
         List<LogEntry> entries = new ArrayList<LogEntry>();
         for (int i=0; i<entryCnt; i++) {
@@ -147,6 +146,8 @@ public class FileLoggerTest {
         params.add(new Date(System.currentTimeMillis()));
 
         MethodInvocationRequest request = MethodInvocationRequest.newBuilder()
+                .clientId(clientId)
+                .requestId(0L)
                 .methodType(MethodInvocationRequest.MethodType.WRITE)
                 .methodName(methodName)
                 .params(params)

@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -108,10 +106,17 @@ public class LoadBalancedMasterSlavePolicy extends DefaultSapphirePolicy {
      */
     public static class ClientPolicy extends DefaultClientPolicy {
         private static Logger logger = Logger.getLogger(LoadBalancedMasterSlavePolicy.ClientPolicy.class.getName());
+        private final SequenceGenerator SeqGenerator = SequenceGenerator.newBuilder().startingAt(0).step(1).build();
+        private final String CLIENT_ID;
 
         private boolean isReadMethod(String methodName, ArrayList<Object> params) {
             // TODO (Terry): 1) to be implemented, 2) move to a Util class
             return false;
+        }
+
+        public ClientPolicy() {
+            super();
+            CLIENT_ID = "Client_" + System.currentTimeMillis();
         }
 
         @Override
@@ -132,7 +137,13 @@ public class LoadBalancedMasterSlavePolicy extends DefaultSapphirePolicy {
                     throw new Exception(String.format("unable to find target server from server list: %s", group.getServers()));
                 }
 
-                MethodInvocationRequest request = MethodInvocationRequest.newBuilder().methodName(method).params(params).build();
+                // TODO (Terry): persist request ID so that it will not be reused after restart
+                MethodInvocationRequest request = MethodInvocationRequest.newBuilder()
+                        .clientId(CLIENT_ID)
+                        .requestId(SeqGenerator.getNextSequence())
+                        .methodName(method)
+                        .params(params)
+                        .build();
                 MethodInvocationResponse response = targetServer.onRPC(request);
                 switch (response.getReturnCode()) {
                     case SUCCESS:
@@ -155,24 +166,18 @@ public class LoadBalancedMasterSlavePolicy extends DefaultSapphirePolicy {
      * Server side policy
      */
     public static class ServerPolicy extends DefaultServerPolicy {
-        private final long Master_Lease_Timeout_InMillis = 500;
-        private final long Master_Lease_Renew_Interval_InMillis = 100;
-        private final long Init_Delay_Limit_InMillis = 100;
-
         private final Logger logger = Logger.getLogger(LoadBalancedMasterSlavePolicy.ServerPolicy.class.getName());
-        private final ExecutorService invocationExecutor = Executors.newSingleThreadExecutor();
 
+        private final String SERVER_ID;
         private final Configuration config;
         private final StateManager stateMgr;
         private final FileLogger requestLogger;
         private final CommitExecutor commitExecutor;
 
+
         public ServerPolicy() {
-            this.config = Configuration.newBuilder()
-                    .masterLeaseRenewIntervalInMillis(Master_Lease_Renew_Interval_InMillis)
-                    .masterLeaseTimeoutInMIllis(Master_Lease_Timeout_InMillis)
-                    .initDelayLimitInMillis(Init_Delay_Limit_InMillis)
-                    .build();
+            SERVER_ID = "Server_" + System.currentTimeMillis();
+            config = Configuration.newBuilder().build();
 
             // TODO (Terry): we should try to avoid doing cast here
             LoadBalancedMasterSlavePolicy.GroupPolicy group = (LoadBalancedMasterSlavePolicy.GroupPolicy)getGroup();
@@ -190,7 +195,8 @@ public class LoadBalancedMasterSlavePolicy extends DefaultSapphirePolicy {
                     .config(config)
                     .build();
 
-            this.stateMgr = new StateManager(getClientId(), context);
+            this.stateMgr = new StateManager(SERVER_ID, context);
+
             logger.log(Level.INFO, "LoadBalancedMasterSlavePolicy$ServerPolicy starts successfully");
         }
 
@@ -205,7 +211,6 @@ public class LoadBalancedMasterSlavePolicy extends DefaultSapphirePolicy {
          * @return replication response
          */
         public ReplicationResponse handleReplication(ReplicationRequest request) {
-
             if (request == null || request.getEntries() == null || request.getEntries().size() == 0) {
                 return ReplicationResponse.newBuilder()
                         .returnCode(ReplicationResponse.ReturnCode.SUCCESS)
@@ -226,6 +231,7 @@ public class LoadBalancedMasterSlavePolicy extends DefaultSapphirePolicy {
                     if (! this.requestLogger.indexExists(entry.getIndex())) {
                         try {
                             this.requestLogger.append(entry);
+                            this.requestLogger.markReplicated(entry.getIndex());
                             commitExecutor.applyWriteAsync(entry.getRequest(), entry.getIndex());
                         } catch (Exception e) {
                             logger.log(Level.SEVERE, "failed to append log entry {0}: {1}", new Object[]{entry, e});
@@ -273,9 +279,6 @@ public class LoadBalancedMasterSlavePolicy extends DefaultSapphirePolicy {
                         return commitExecutor.applyRead(request);
                     }
 
-                    // Log entry replication will be executed asynchronously because
-                    // we need to return the client regardless whether or not replication
-                    // succeeds.
                     LogEntry entry = LogEntry.newBuilder().request(request).build();
                     try {
                         this.requestLogger.append(entry);
@@ -293,19 +296,25 @@ public class LoadBalancedMasterSlavePolicy extends DefaultSapphirePolicy {
             throw new AssertionError("should never reach here");
         }
 
-        private String getClientId() {
-            return String.valueOf(identityHashCode(this));
-        }
-
         @Override
         protected void finalize() throws Throwable {
-            invocationExecutor.shutdown();
+            if (requestLogger != null) {
+                requestLogger.close();
+            }
+
+            if (commitExecutor != null) {
+                commitExecutor.close();
+            }
             super.finalize();
         }
     }
 
     /**
      * Group policy
+     *
+     * TODO (Terry): Make Group Policy highly available.
+     * At present group policy has only one instance which
+     * does not satisfy the high available requirement.
      */
     public static class GroupPolicy extends DefaultGroupPolicy {
         private Lock masterLock;
@@ -357,36 +366,34 @@ public class LoadBalancedMasterSlavePolicy extends DefaultSapphirePolicy {
         /**
          * Renew lock
          *
-         * @param clientId Id of the client
-         * @param clientIndex largest append index observed on client
+         * @param serverId Id of the server
          * @return <code>true</code> if lock renew succeeds; <code>false</code> otherwise
          */
-        public boolean renewLock(String clientId, long clientIndex) {
-            if (clientId == null || clientId.isEmpty()) {
-                throw new IllegalArgumentException("clientId not specified");
+        public boolean renewLock(String serverId) {
+            if (serverId == null || serverId.isEmpty()) {
+                throw new IllegalArgumentException("server ID not specified");
             }
 
             if (masterLock == null) {
                 return false;
             }
 
-            return masterLock.renew(clientId, clientIndex);
+            return masterLock.renew(serverId);
         }
 
         /**
          * Obtain lock
          *
-         * @param clientId the Id of the client
-         * @param clientIndex the largest append entry logIndex observed on client
+         * @param serverId the Id of the server
          * @return <code>true</code> if lock is granted; <code>false</code> otherwise
          */
-        public boolean obtainLock(String clientId, long clientIndex) {
+        public boolean obtainLock(String serverId) {
             if (masterLock == null) {
-                masterLock = new Lock(clientId, clientIndex, config.getMasterLeaseTimeoutInMillis());
+                masterLock = new Lock(serverId, config.getMasterLeaseTimeoutInMillis());
                 return true;
             }
 
-            return masterLock.obtain(clientId, clientIndex);
+            return masterLock.obtain(serverId);
         }
 
         public void setConfig(Configuration config) {

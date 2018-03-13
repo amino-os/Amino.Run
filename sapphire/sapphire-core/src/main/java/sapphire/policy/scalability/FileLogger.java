@@ -16,6 +16,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import sapphire.common.Utils;
 
 /**
  *         R : Committed and Replicated Log Entries (on master)
@@ -112,39 +113,42 @@ import java.util.logging.Logger;
  */
 public class FileLogger implements ILogger<LogEntry> {
     private final long TERM = 0;
-    private Logger logger = Logger.getLogger(FileLogger.class.getName());
+    private final Logger logger = Logger.getLogger(FileLogger.class.getName());
 
     /**
      * Log Entry File Path
      */
-    private File entryLog;
+    private final File entryLog;
 
     /**
      * Snapshot File Path
      */
-    private File snapshotLog;
+    private final File snapshotLog;
 
     /**
      * Entry log output channel
      */
-    private FileChannel entryLogOutChannel;
+    private final FileChannel entryLogOutChannel;
 
     /**
      * Entry log input channel
      */
-    private FileChannel entryLogInChannel;
+    private final FileChannel entryLogInChannel;
 
     /**
      * Snapshot log output channel
      */
-    private FileChannel snapshotLogOutChannel;
+    private final FileChannel snapshotLogOutChannel;
 
     /**
      * Snapshot log in channel
      */
-    private FileChannel snapshotLogInChannel;
+    private final FileChannel snapshotLogInChannel;
 
-    private CommitExecutor commitExecutor;
+    /**
+     * A thread used to apply commits
+     */
+    private final CommitExecutor commitExecutor;
 
     /**
      * Index of the largest replicated entry. A log entry is replicated
@@ -152,26 +156,27 @@ public class FileLogger implements ILogger<LogEntry> {
      * entry has been replicated to slave.
      *
      * This field is only used on master. It is meaningless on slaves.
+     * TODO (Terry): Update this field on slaves
      */
     private long indexOfLargestReplicatedEntry;
 
     /**
      * Index of the largest entry.
      */
-    private AtomicLong indexOfLargestEntry;
+    private final AtomicLong indexOfLargestEntry;
 
     /**
      * Map that tracks the mapping from log index to its offset in the file
      */
-    private Map<Long, Long> indexOffsetMap;
+    private final Map<Long, Long> indexOffsetMap;
 
     // TODO (Terry): truncate the list and the log file periodically
     // A normal log entry with 5 Date objects as params takes about 800 bytes.
     // Suppose we serve 1000 operations per second, and we checkpoint every 15 minutes,
     // we expect the size of the List is around 1GB.
-    private List<LogEntry> logEntries;
+    private final List<LogEntry> logEntries;
 
-    private SequenceGenerator sequenceGenerator;
+    private final SequenceGenerator sequenceGenerator;
 
     /**
      * Constructor
@@ -216,6 +221,8 @@ public class FileLogger implements ILogger<LogEntry> {
 
                 load(offset);
             }
+        } else {
+            takeSnapshot();
         }
     }
 
@@ -226,8 +233,9 @@ public class FileLogger implements ILogger<LogEntry> {
             return indexOffsetMap.get(entry.getIndex());
         }
 
+        // TODO (Terry): Check if request already been handled
         try {
-            long entryOffset = writeLog(Util.toBytes(entry));
+            long entryOffset = writeLog(Utils.toBytes(entry));
             updateInMemoryStructures(entry, entryOffset);
 
             logger.log(Level.FINE, "successfully appended entry {0} in log file", entry);
@@ -247,7 +255,7 @@ public class FileLogger implements ILogger<LogEntry> {
         }
 
         byte[] bytes = readBytes(entryLogInChannel, len);
-        return (LogEntry)Util.toObject(bytes);
+        return (LogEntry)Utils.toObject(bytes);
     }
 
     @Override
@@ -258,25 +266,11 @@ public class FileLogger implements ILogger<LogEntry> {
             long position = entryLogInChannel.position();
             byte[] bytes = readBytes(entryLogInChannel, bytesToRead);
 
-            LogEntry entry = (LogEntry)Util.toObject(bytes);
+            LogEntry entry = (LogEntry)Utils.toObject(bytes);
             updateInMemoryStructures(entry, position);
 
             bytesToRead = readInt(entryLogInChannel);
         }
-    }
-
-    @Override
-    public synchronized void markReplicated(LogEntry logEntry) {
-        if (! indexOffsetMap.containsKey(logEntry.getIndex())) {
-            throw new IllegalStateException(String.format("cannot find log entry %s in indexOffsetMap", logEntry));
-        }
-
-        final long index = logEntry.getIndex();
-        if (index <= indexOfLargestReplicatedEntry) {
-            throw new IllegalStateException(String.format("index of log entry %s is %s which is less than indexOfLargestReplicatedEntry %s", logEntry, index, indexOfLargestReplicatedEntry));
-        }
-
-        this.indexOfLargestReplicatedEntry = index;
     }
 
     @Override
@@ -291,8 +285,9 @@ public class FileLogger implements ILogger<LogEntry> {
     // TODO (Terry): take snapshot periodically
     @Override
     public synchronized SnapshotEntry takeSnapshot() throws Exception {
-        long lowestOffset = Math.min(indexOffsetMap.get(getIndexOfLargestCommittedEntry()),
-                    indexOffsetMap.get(indexOfLargestReplicatedEntry));
+        long lowestOffset = Math.min(
+                indexOffsetMap.get(getIndexOfLargestCommittedEntry()) != null ? indexOffsetMap.get(getIndexOfLargestCommittedEntry()) : 0,
+                indexOffsetMap.get(indexOfLargestReplicatedEntry) != null ? indexOffsetMap.get(indexOfLargestReplicatedEntry) : 0);
 
         SnapshotEntry entry = commitExecutor.updateSnapshot(
                 SnapshotEntry.newBuilder()
@@ -304,7 +299,7 @@ public class FileLogger implements ILogger<LogEntry> {
                     .build());
 
         try {
-            writeSnaphot(Util.toBytes(entry));
+            writeSnaphot(Utils.toBytes(entry));
         } catch (Exception e) {
             logger.log(Level.SEVERE, "failed to writeLog snapshot entry {0} into file: {1}", new Object[]{entry, e});
             throw e;
@@ -455,7 +450,7 @@ public class FileLogger implements ILogger<LogEntry> {
         long offset = readInt(snapshotLogInChannel);
         snapshotLogInChannel.position(offset);
         byte[] bytes = readBytes(snapshotLogInChannel, recordSize);
-        return (SnapshotEntry) Util.toObject(bytes);
+        return (SnapshotEntry) Utils.toObject(bytes);
     }
 
     /**

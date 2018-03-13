@@ -30,11 +30,11 @@ public class StateManagerTest {
     public void verifyToString() throws Exception {
         LoadBalancedMasterSlavePolicy.GroupPolicy group = new LoadBalancedMasterSlavePolicy.GroupPolicy() {
             @Override
-            public boolean obtainLock(String clientId, long logIndex) {
+            public boolean obtainLock(String serverId) {
                 return false;
             }
             @Override
-            public boolean renewLock(String client, long logIndex) {
+            public boolean renewLock(String serverId) {
                 return false;
             }
         };
@@ -53,11 +53,11 @@ public class StateManagerTest {
     public void verifyInitialState() throws Exception {
         LoadBalancedMasterSlavePolicy.GroupPolicy group = new LoadBalancedMasterSlavePolicy.GroupPolicy() {
             @Override
-            public boolean obtainLock(String clientId, long logIndex) {
+            public boolean obtainLock(String serverId) {
                 return false;
             }
             @Override
-            public boolean renewLock(String client, long logIndex) {
+            public boolean renewLock(String serverId) {
                 return false;
             }
         };
@@ -76,11 +76,11 @@ public class StateManagerTest {
     public void verifySlaveObtainLockFailed() throws Exception {
         LoadBalancedMasterSlavePolicy.GroupPolicy group = new LoadBalancedMasterSlavePolicy.GroupPolicy() {
             @Override
-            public boolean obtainLock(String clientId, long logIndex) {
+            public boolean obtainLock(String serverId) {
                 return false;
             }
             @Override
-            public boolean renewLock(String client, long logIndex) {
+            public boolean renewLock(String serverId) {
                 return false;
             }
         };
@@ -105,11 +105,11 @@ public class StateManagerTest {
     public void verifyObtainLockSucceededRenewLockSucceeded() throws Exception {
         LoadBalancedMasterSlavePolicy.GroupPolicy group = new LoadBalancedMasterSlavePolicy.GroupPolicy() {
             @Override
-            public boolean obtainLock(String clientId, long logIndex) {
+            public boolean obtainLock(String serverId) {
                 return true;
             }
             @Override
-            public boolean renewLock(String client, long logIndex) {
+            public boolean renewLock(String serverId) {
                 return true;
             }
         };
@@ -135,13 +135,13 @@ public class StateManagerTest {
         LoadBalancedMasterSlavePolicy.GroupPolicy group = new LoadBalancedMasterSlavePolicy.GroupPolicy() {
             int obtainLockCnt = 0;
             @Override
-            public boolean obtainLock(String clientId, long logIndex) {
+            public boolean obtainLock(String serverId) {
                 // return true for the first invocation, and false for the rest invocations
                 return (obtainLockCnt++ == 0);
             }
 
             @Override
-            public boolean renewLock(String client, long logIndex) {
+            public boolean renewLock(String serverId) {
                 return false;
             }
         };

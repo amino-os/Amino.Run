@@ -2,6 +2,7 @@ package sapphire.runtime;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Objects;
 
 import static sapphire.runtime.MethodInvocationRequest.MethodType.READ;
 import static sapphire.runtime.MethodInvocationRequest.MethodType.WRITE;
@@ -15,11 +16,15 @@ public final class MethodInvocationRequest implements Serializable {
      */
     public enum MethodType {READ, WRITE};
 
+    private final String clientId;
+    private final Long requestId;
     private final String methodName;
     private final ArrayList<Object> params;
     private final MethodType methodType;
 
     private MethodInvocationRequest(Builder builder) {
+        this.clientId = builder.clientId;
+        this.requestId = builder.requestId;
         this.methodName = builder.methodName;
         this.methodType = builder.methodType;
         this.params = builder.params;
@@ -28,6 +33,10 @@ public final class MethodInvocationRequest implements Serializable {
     public final static Builder newBuilder() {
         return new Builder();
     }
+
+    public final String getClientId() { return clientId; }
+
+    public final long getRequestId() { return requestId; }
 
     public final ArrayList<Object> getParams() {
         return params;
@@ -50,43 +59,50 @@ public final class MethodInvocationRequest implements Serializable {
     }
 
     @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("MethodInvocationRequest{");
+        sb.append("clientId='").append(clientId).append('\'');
+        sb.append(", requestId=").append(requestId);
+        sb.append(", methodName='").append(methodName).append('\'');
+        sb.append(", params=").append(params);
+        sb.append(", methodType=").append(methodType);
+        sb.append('}');
+        return sb.toString();
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof MethodInvocationRequest)) return false;
-
         MethodInvocationRequest that = (MethodInvocationRequest) o;
-
-        if (!getMethodName().equals(that.getMethodName())) return false;
-
-        if (getParams() == null ) {
-            return that.getParams() != null;
-        } else {
-            if (!getParams().equals(that.getParams())) return false;
-        }
-        return getMethodType() == that.getMethodType();
+        return Objects.equals(getClientId(), that.getClientId()) &&
+                Objects.equals(getRequestId(), that.getRequestId()) &&
+                Objects.equals(getMethodName(), that.getMethodName()) &&
+                Objects.equals(getParams(), that.getParams()) &&
+                getMethodType() == that.getMethodType();
     }
 
     @Override
     public int hashCode() {
-        int result = getMethodName().hashCode();
-        result = 31 * result + getParams().hashCode();
-        result = 31 * result + getMethodType().hashCode();
-        return result;
-    }
-
-    @Override
-    public String toString() {
-        return "MethodInvocationRequest{" +
-                "methodName='" + methodName + '\'' +
-                ", params=" + params +
-                ", methodType=" + methodType +
-                '}';
+        return Objects.hash(getClientId(), getRequestId(), getMethodName(), getParams(), getMethodType());
     }
 
     public static class Builder {
+        private String clientId;
+        private long requestId;
         private String methodName;
         private ArrayList<Object> params;
         private MethodType methodType;
+
+        public Builder clientId(String clientId) {
+            this.clientId = clientId;
+            return this;
+        }
+
+        public Builder requestId(long requestId) {
+            this.requestId = requestId;
+            return this;
+        }
 
         public Builder methodName(String methodName) {
             this.methodName = methodName;
@@ -104,7 +120,11 @@ public final class MethodInvocationRequest implements Serializable {
         }
 
         public MethodInvocationRequest build() {
-            if (null == methodName || methodName.trim().isEmpty()) {
+            if (clientId == null) {
+                throw new NullPointerException("client ID not specified");
+            }
+
+            if (methodName == null || methodName.trim().isEmpty()) {
                 throw new IllegalArgumentException("method name is not specified");
             }
             return new MethodInvocationRequest(this);

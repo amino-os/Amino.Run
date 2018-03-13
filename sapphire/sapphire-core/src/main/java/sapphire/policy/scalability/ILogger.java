@@ -40,10 +40,8 @@ public interface ILogger<T> extends Closeable {
      * On master, an entry is replicated means the entry has been replicated
      * to slave. On slave, an entry is replicated means the entry is received
      * on slave.
-     * @param entry
+     * @param largestReplicatedIndex
      */
-    void markReplicated(T entry);
-
     void markReplicated(long largestReplicatedIndex);
 
     /**

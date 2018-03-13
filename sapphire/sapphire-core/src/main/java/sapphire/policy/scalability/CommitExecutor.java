@@ -57,6 +57,7 @@ public class CommitExecutor implements Closeable {
     }
 
     public void open() {
+        close();
         this.executor = Executors.newSingleThreadExecutor();
     }
 

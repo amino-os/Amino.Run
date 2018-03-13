@@ -7,6 +7,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import sapphire.common.Utils;
+
 import static sapphire.policy.scalability.StateManager.Event.OBTAIN_LOCK_FAILED;
 import static sapphire.policy.scalability.StateManager.Event.OBTAIN_LOCK_SUCCEEDED;
 import static sapphire.policy.scalability.StateManager.Event.RENEW_LOCK_FAILED;
@@ -65,8 +67,6 @@ public final class StateManager {
 
     private final LoadBalancedMasterSlavePolicy.GroupPolicy group;
 
-    private final ILogger<LogEntry> entryLogger;
-
     private final Configuration config;
 
     public StateManager(String clientId, Context context) {
@@ -74,7 +74,6 @@ public final class StateManager {
         this.name = String.format("StateManager_%s_%s", clientId, random.nextInt(Integer.MAX_VALUE));
         this.config = context.getConfig();
         this.group = context.getGroup();
-        this.entryLogger = context.getEntryLogger();
 
         this.SLAVE_STATE = State.Slave.getInstance(context);
         this.MASTER_STATE = State.Master.getInstance(context);
@@ -155,13 +154,17 @@ public final class StateManager {
         }
     }
 
+    public final synchronized State getCurrentState() {
+        return currentState;
+    }
+
     private void startLockingExecutor() {
         if (lockingExecutor == null || lockingExecutor.isShutdown()) {
             lockingExecutor = Executors.newSingleThreadScheduledExecutor();
         }
 
         lockingExecutor.scheduleWithFixedDelay(
-                Util.RunnerWrapper(new Runnable() {
+                Utils.RunnerWrapper(new Runnable() {
                     @Override
                     public void run() {
                         try {
@@ -197,10 +200,9 @@ public final class StateManager {
         boolean lockObtained = false;
         try {
             if (mode == RENEW_LOCK) {
-                lockObtained = group.renewLock(clientId, Long.valueOf(0));
+                lockObtained = group.renewLock(clientId);
             } else if (mode == OBTAIN_LOCK) {
-                // TODO (Terry): Fix clientIndex
-                lockObtained = group.obtainLock(clientId, Long.valueOf(0));
+                lockObtained = group.obtainLock(clientId);
             } else {
                 throw new AssertionError("invalid lock mode " + mode);
             }
@@ -216,11 +218,7 @@ public final class StateManager {
      * @return the name of the current state
      */
     public final State.StateName getCurrentStateName() {
-        return currentState.getName();
-    }
-
-    public final State getCurrentState() {
-        return currentState;
+        return getCurrentState().getName();
     }
 
     @Override

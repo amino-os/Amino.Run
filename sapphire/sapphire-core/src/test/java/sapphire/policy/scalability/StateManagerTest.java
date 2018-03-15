@@ -22,7 +22,7 @@ public class StateManagerTest {
         this.Thread_Wait_Time = Master_Lease_Timeout_InMillis * 12;
         this.config = Configuration.newBuilder()
                 .masterLeaseRenewIntervalInMillis(Master_Lease_Renew_Interval_InMillis)
-                .masterLeaseTimeoutInMIllis(Master_Lease_Timeout_InMillis)
+                .masterLeaseTimeoutInMillis(Master_Lease_Timeout_InMillis)
                 .initDelayLimitInMillis(Init_Delay_Limit_InMillis).build();
     }
 
@@ -30,7 +30,7 @@ public class StateManagerTest {
     public void verifyToString() throws Exception {
         LoadBalancedMasterSlavePolicy.GroupPolicy group = new LoadBalancedMasterSlavePolicy.GroupPolicy() {
             @Override
-            public boolean obtainLock(String serverId) {
+            public boolean obtainLock(String serverId, long timeoutInMillis) {
                 return false;
             }
             @Override
@@ -53,7 +53,7 @@ public class StateManagerTest {
     public void verifyInitialState() throws Exception {
         LoadBalancedMasterSlavePolicy.GroupPolicy group = new LoadBalancedMasterSlavePolicy.GroupPolicy() {
             @Override
-            public boolean obtainLock(String serverId) {
+            public boolean obtainLock(String serverId, long timeoutInMillis) {
                 return false;
             }
             @Override
@@ -76,7 +76,7 @@ public class StateManagerTest {
     public void verifySlaveObtainLockFailed() throws Exception {
         LoadBalancedMasterSlavePolicy.GroupPolicy group = new LoadBalancedMasterSlavePolicy.GroupPolicy() {
             @Override
-            public boolean obtainLock(String serverId) {
+            public boolean obtainLock(String serverId, long timeoutInMillis) {
                 return false;
             }
             @Override
@@ -84,7 +84,6 @@ public class StateManagerTest {
                 return false;
             }
         };
-        group.setConfig(config);
 
         Context context = Context.newBuilder()
                 .config(config)
@@ -105,7 +104,7 @@ public class StateManagerTest {
     public void verifyObtainLockSucceededRenewLockSucceeded() throws Exception {
         LoadBalancedMasterSlavePolicy.GroupPolicy group = new LoadBalancedMasterSlavePolicy.GroupPolicy() {
             @Override
-            public boolean obtainLock(String serverId) {
+            public boolean obtainLock(String serverId, long timeoutInMillis) {
                 return true;
             }
             @Override
@@ -113,7 +112,6 @@ public class StateManagerTest {
                 return true;
             }
         };
-        group.setConfig(config);
 
         Context context = Context.newBuilder()
                 .config(config)
@@ -135,7 +133,7 @@ public class StateManagerTest {
         LoadBalancedMasterSlavePolicy.GroupPolicy group = new LoadBalancedMasterSlavePolicy.GroupPolicy() {
             int obtainLockCnt = 0;
             @Override
-            public boolean obtainLock(String serverId) {
+            public boolean obtainLock(String serverId, long timeoutInMillis) {
                 // return true for the first invocation, and false for the rest invocations
                 return (obtainLockCnt++ == 0);
             }
@@ -145,7 +143,6 @@ public class StateManagerTest {
                 return false;
             }
         };
-        group.setConfig(config);
 
         Context context = Context.newBuilder()
                 .config(config)

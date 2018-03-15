@@ -1,5 +1,7 @@
 package sapphire.policy.scalability;
 
+import java.util.Objects;
+
 /**
  * @author terryz
  */
@@ -53,40 +55,33 @@ public class SnapshotEntry extends Entry {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof SnapshotEntry)) return false;
-
         SnapshotEntry that = (SnapshotEntry) o;
-
-        if (getIndexOfLargestCommittedEntry() != that.getIndexOfLargestCommittedEntry())
-            return false;
-        if (getIndexOfLargestReplicatedEntry() != that.getIndexOfLargestReplicatedEntry())
-            return false;
-        if (getLowestOffsetInLogFile() != that.getLowestOffsetInLogFile()) return false;
-        if (!getLogFilePath().equals(that.getLogFilePath())) return false;
-        if (!getSnapshotFilePath().equals(that.getSnapshotFilePath())) return false;
-        return getAppObject().equals(that.getAppObject());
+        return getIndexOfLargestCommittedEntry() == that.getIndexOfLargestCommittedEntry() &&
+                getIndexOfLargestReplicatedEntry() == that.getIndexOfLargestReplicatedEntry() &&
+                getLowestOffsetInLogFile() == that.getLowestOffsetInLogFile() &&
+                Objects.equals(getLogFilePath(), that.getLogFilePath()) &&
+                Objects.equals(getSnapshotFilePath(), that.getSnapshotFilePath()) &&
+                Objects.equals(getAppObject(), that.getAppObject());
     }
 
     @Override
     public int hashCode() {
-        int result = getLogFilePath().hashCode();
-        result = 31 * result + getSnapshotFilePath().hashCode();
-        result = 31 * result + (int) (getIndexOfLargestCommittedEntry() ^ (getIndexOfLargestCommittedEntry() >>> 32));
-        result = 31 * result + (int) (getIndexOfLargestReplicatedEntry() ^ (getIndexOfLargestReplicatedEntry() >>> 32));
-        result = 31 * result + getAppObject().hashCode();
-        result = 31 * result + (int) (getLowestOffsetInLogFile() ^ (getLowestOffsetInLogFile() >>> 32));
-        return result;
+        return Objects.hash(getLogFilePath(), getSnapshotFilePath(),
+                getIndexOfLargestCommittedEntry(), getIndexOfLargestReplicatedEntry(),
+                getAppObject(), getLowestOffsetInLogFile());
     }
 
     @Override
     public String toString() {
-        return "SnapshotEntry{" +
-                "logFilePath='" + logFilePath + '\'' +
-                ", snapshotFilePath='" + snapshotFilePath + '\'' +
-                ", indexOfLargestCommittedEntry=" + indexOfLargestCommittedEntry +
-                ", indexOfLargestReplicatedEntry=" + indexOfLargestReplicatedEntry +
-                ", appObject=" + appObject +
-                ", lowestOffsetInLogFile=" + lowestOffsetInLogFile +
-                '}';
+        final StringBuilder sb = new StringBuilder("SnapshotEntry{");
+        sb.append("logFilePath='").append(logFilePath).append('\'');
+        sb.append(", snapshotFilePath='").append(snapshotFilePath).append('\'');
+        sb.append(", indexOfLargestCommittedEntry=").append(indexOfLargestCommittedEntry);
+        sb.append(", indexOfLargestReplicatedEntry=").append(indexOfLargestReplicatedEntry);
+        sb.append(", appObject=").append(appObject);
+        sb.append(", lowestOffsetInLogFile=").append(lowestOffsetInLogFile);
+        sb.append('}');
+        return sb.toString();
     }
 
     public final static class Builder {

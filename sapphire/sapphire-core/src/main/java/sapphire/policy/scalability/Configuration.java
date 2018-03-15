@@ -38,6 +38,11 @@ public class Configuration {
     /**
      *
      */
+    private final long snapshotIntervalinMillis;
+
+    /**
+     *
+     */
     private final String logFilePath;
 
     /**
@@ -52,6 +57,7 @@ public class Configuration {
         this.shutdownGracePeriodInMillis = builder.shutdownGracePeriodInMillis;
         this.initDelayLimitInMillis = builder.initDelayLimitInMillis;
         this.replicationIntervalInMillis = builder.replicationIntervalInMillis;
+        this.snapshotIntervalinMillis = builder.snapshotIntervalInMillis;
         this.logFilePath = builder.logFilePath;
         this.snapshotFilePath = builder.snapshotFilePath;
     }
@@ -78,6 +84,8 @@ public class Configuration {
 
     public long getReplicationIntervalInMillis() { return this.replicationIntervalInMillis; }
 
+    public long getSnapshotIntervalInMillis() { return this.snapshotIntervalinMillis; }
+
     public String getLogFilePath() {return this.logFilePath;}
 
     public String getSnapshotFilePath() {return this.snapshotFilePath;}
@@ -88,12 +96,11 @@ public class Configuration {
         private long shutdownGracePeriodInMillis = 1000;
         private long initDelayLimitInMillis = 500;
         private long replicationIntervalInMillis = 500;
-
-        // TODO (Terry) Fix log file path
+        private long snapshotIntervalInMillis = 5000;
         private String logFilePath = "/tmp/logFile";
         private String snapshotFilePath = "/tmp/snapshotFile";
 
-        public Builder masterLeaseTimeoutInMIllis(long masterLeaseRenewIntervalInMillis) {
+        public Builder masterLeaseTimeoutInMillis(long masterLeaseRenewIntervalInMillis) {
             this.masterLeaseRenewIntervalInMillis = masterLeaseRenewIntervalInMillis;
             return this;
         }
@@ -115,6 +122,11 @@ public class Configuration {
 
         public Builder replicationIntervalInMillis(long replicationIntervalInMillis) {
             this.replicationIntervalInMillis = replicationIntervalInMillis;
+            return this;
+        }
+
+        public Builder snapshotIntervalInMillis(long snapshotIntervalinMillis) {
+            this.snapshotIntervalInMillis = snapshotIntervalinMillis;
             return this;
         }
 

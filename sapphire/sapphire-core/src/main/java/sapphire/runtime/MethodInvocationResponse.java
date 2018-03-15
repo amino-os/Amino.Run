@@ -1,5 +1,7 @@
 package sapphire.runtime;
 
+import java.util.Objects;
+
 /**
  * @author terryz
  */
@@ -57,11 +59,26 @@ public class MethodInvocationResponse {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof MethodInvocationResponse)) return false;
+        MethodInvocationResponse that = (MethodInvocationResponse) o;
+        return getReturnCode() == that.getReturnCode() &&
+                Objects.equals(getResult(), that.getResult());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getReturnCode(), getResult());
+    }
+
+    @Override
     public String toString() {
-        return "MethodInvocationResponse{" +
-                "returnCode=" + returnCode +
-                ", result=" + result +
-                '}';
+        final StringBuilder sb = new StringBuilder("MethodInvocationResponse{");
+        sb.append("returnCode=").append(returnCode);
+        sb.append(", result=").append(result);
+        sb.append('}');
+        return sb.toString();
     }
 
     //

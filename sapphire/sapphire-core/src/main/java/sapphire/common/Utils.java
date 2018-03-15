@@ -8,10 +8,14 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import sapphire.kernel.common.KernelRPC;
+import sapphire.runtime.annotations.Immutable;
+import sapphire.runtime.annotations.Runtime;
 
 /**
  * Created by quinton on 1/23/18.
@@ -138,7 +142,7 @@ public class Utils {
         }
     }
 
-    public static Object toObject(byte[] bytes) throws Exception {
+    public static Object toObject(byte[] bytes) throws IOException, ClassNotFoundException {
         ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
         ObjectInput in = null;
         try {
@@ -153,5 +157,45 @@ public class Utils {
                 in.close();
             }
         }
+    }
+
+    /**
+     * Determines if the given method is annotated as immutable.
+     *
+     * @param clazz
+     * @param methodName
+     * @param params
+     * @return <code>true</code> if the method is annotated as immutable; <code>false</code> otherwise.
+     */
+    public static boolean isImmutableMethod(Class<?> clazz, String methodName, ArrayList<Object> params) {
+        if (clazz == null) {
+            throw new NullPointerException("Class not specified");
+        }
+
+        if (methodName == null || methodName.trim().isEmpty()) {
+            throw new IllegalArgumentException("method name not specified");
+        }
+
+        Class[] paramTypes = new Class[params.size()];
+        for (int i=0; i<params.size(); i++) {
+            paramTypes[i] = params.get(i).getClass();
+        }
+
+        try {
+            Method method = clazz.getDeclaredMethod(methodName, paramTypes);
+            return method.getDeclaredAnnotation(Immutable.class) != null;
+        } catch (NoSuchMethodException e) {
+            throw new IllegalStateException(String.format("unable to find method %s in class %s with params %s", methodName, clazz, params), e);
+        }
+    }
+
+    /**
+     * Returns the {@link Runtime} spec specified on the given class.
+     *
+     * @param clazz
+     * @return
+     */
+    public static Runtime getRuntimeSpec(Class<?> clazz) {
+        return clazz.getAnnotation(Runtime.class);
     }
 }

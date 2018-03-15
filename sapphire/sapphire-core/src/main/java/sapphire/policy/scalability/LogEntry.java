@@ -1,6 +1,7 @@
 package sapphire.policy.scalability;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 import sapphire.runtime.MethodInvocationRequest;
 
@@ -27,15 +28,14 @@ public class LogEntry extends Entry implements Serializable {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof LogEntry)) return false;
-
+        if (!super.equals(o)) return false;
         LogEntry logEntry = (LogEntry) o;
-
-        return getRequest().equals(logEntry.getRequest());
+        return Objects.equals(getRequest(), logEntry.getRequest());
     }
 
     @Override
     public int hashCode() {
-        return getRequest().hashCode();
+        return Objects.hash(super.hashCode(), getRequest());
     }
 
     public final static class Builder {

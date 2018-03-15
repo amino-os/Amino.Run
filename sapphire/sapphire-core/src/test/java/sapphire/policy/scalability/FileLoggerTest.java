@@ -1,5 +1,6 @@
 package sapphire.policy.scalability;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,19 +27,32 @@ public class FileLoggerTest {
     private File entryLogFile;
     private File snapshotLogFile;
     private String clientId;
-    private Configuration config = Configuration.newBuilder().build();
-    private CommitExecutor commitExecutor = CommitExecutor.getInstance(new AppObject("object"), 0L, config);
+    private Configuration config;
+    private CommitExecutor commitExecutor;
 
     @Before
     public void setup() throws Exception {
         entryLogFile = File.createTempFile("file", "");
+        entryLogFile.deleteOnExit();
         snapshotLogFile = File.createTempFile("snapshot", "");
+        snapshotLogFile.deleteOnExit();
+        config = Configuration.newBuilder()
+                .logFilePath(entryLogFile.getPath())
+                .snapshotFilePath(snapshotLogFile.getPath())
+                .build();
         clientId = "clientId";
+        commitExecutor = CommitExecutor.getInstance(new AppObject("object"), 0L, config);
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        entryLogFile.delete();
+        snapshotLogFile.delete();
     }
 
     @Test
     public void testEntryLogReadWrite() throws Exception {
-        FileLogger entryLogger =  new FileLogger(entryLogFile.getPath(), snapshotLogFile.getPath(), commitExecutor, false);
+        FileLogger entryLogger =  new FileLogger(config, commitExecutor, false);
 
         // write message to entry log
         String message = "hello world";
@@ -53,7 +67,7 @@ public class FileLoggerTest {
 
     @Test
     public void testSingleAppendAndRead() throws Exception {
-        FileLogger entryLogger =  new FileLogger(entryLogFile.getPath(), snapshotLogFile.getPath(), commitExecutor, false);
+        FileLogger entryLogger =  new FileLogger(config, commitExecutor, false);
 
         LogEntry expected = createLogEntry(0, "m1");
         long offset = entryLogger.append(expected);
@@ -63,7 +77,7 @@ public class FileLoggerTest {
 
     @Test
     public void testMultipleAppendAndRead() throws Exception {
-        FileLogger entryLogger =  new FileLogger(entryLogFile.getPath(), snapshotLogFile.getPath(), commitExecutor, false);
+        FileLogger entryLogger =  new FileLogger(config, commitExecutor, false);
 
         Map<Long, LogEntry> map = new HashMap<Long, LogEntry>();
         for (int i=0; i<10; i++) {
@@ -75,15 +89,14 @@ public class FileLoggerTest {
         for (Map.Entry<Long, LogEntry> en : map.entrySet()) {
             long offset = en.getKey();
             LogEntry expected = en.getValue();
-            Assert.assertEquals(expected, entryLogger.read(offset));
+            LogEntry actual = entryLogger.read(offset);
+            Assert.assertEquals(expected, actual);
         }
     }
 
     @Test
     public void testLoad() throws Exception {
-        File entryLogFile = File.createTempFile("file", "");
-        File snapshotLogFile = File.createTempFile("snapshot", "");
-        FileLogger logger1 = new FileLogger(entryLogFile.getPath(), snapshotLogFile.getPath(), commitExecutor, false);
+        FileLogger logger1 = new FileLogger(config, commitExecutor, false);
 
         Map<Long, LogEntry> map = new HashMap<Long, LogEntry>();
         for (int i=0; i<10; i++) {
@@ -93,7 +106,7 @@ public class FileLoggerTest {
         }
         logger1.close();
 
-        FileLogger logger2 = new FileLogger(entryLogFile.getPath(), snapshotLogFile.getPath(), commitExecutor, false);
+        FileLogger logger2 = new FileLogger(config, commitExecutor, false);
         logger2.load(0L);
         List<LogEntry> logEntries = (List<LogEntry >)getField(logger2, "logEntries");
         Map<Long, Long> indexOffsetMap = (Map<Long, Long>)getField(logger2, "indexOffsetMap");
@@ -102,7 +115,7 @@ public class FileLoggerTest {
 
     @Test
     public void testWriteReadSnapshot() throws Exception {
-        FileLogger entryLogger =  new FileLogger(entryLogFile.getPath(), snapshotLogFile.getPath(), commitExecutor, false);
+        FileLogger entryLogger =  new FileLogger(config, commitExecutor, false);
 
         Map<Long, LogEntry> map = new HashMap<Long, LogEntry>();
         for (int i=0; i<5; i++) {
@@ -118,7 +131,7 @@ public class FileLoggerTest {
 
     @Test
     public void testFilterEntriesByIndex() throws Exception {
-        FileLogger entryLogger =  new FileLogger(entryLogFile.getPath(), snapshotLogFile.getPath(), commitExecutor, false);
+        FileLogger entryLogger =  new FileLogger(config, commitExecutor, false);
         final int indexOfLargestCommittedEntry = 5;
 
         List<LogEntry> entries = createLogEntries(10);
@@ -131,6 +144,35 @@ public class FileLoggerTest {
         for (int i=actual.size()-1, j=entries.size()-1; i>=0; i--, j--) {
             Assert.assertEquals(entries.get(j), actual.get(i));
         }
+    }
+
+    @Test
+    public void testIsRequestHandled() throws Exception {
+        FileLogger entryLogger =  new FileLogger(config, commitExecutor, false);
+        List<LogEntry> entries = createLogEntries(5);
+
+        LogEntry actual = (LogEntry)invokePrivateMethod(entryLogger, "isRequestHandled", new Object[]{entries.get(0).getRequest(), entries});
+        Assert.assertEquals(entries.get(0), actual);
+        for (int i=1; i<entries.size(); i++) {
+            Assert.assertNotEquals(entries.get(1), actual);
+        }
+    }
+
+    @Test
+    public void testRequestNotHandled() throws Exception {
+        FileLogger entryLogger =  new FileLogger(config, commitExecutor, false);
+        List<LogEntry> entries = createLogEntries(5);
+
+        MethodInvocationRequest requestNotExists = MethodInvocationRequest.newBuilder()
+                .clientId("client_not_exist")
+                .requestId(100L)
+                .methodType(MethodInvocationRequest.MethodType.MUTABLE)
+                .methodName("methodName")
+                .params(null)
+                .build();
+
+        LogEntry actual = (LogEntry)invokePrivateMethod(entryLogger, "isRequestHandled", new Object[]{requestNotExists, entries});
+        Assert.assertNull(actual);
     }
 
     private List<LogEntry> createLogEntries(int entryCnt) {
@@ -147,8 +189,8 @@ public class FileLoggerTest {
 
         MethodInvocationRequest request = MethodInvocationRequest.newBuilder()
                 .clientId(clientId)
-                .requestId(0L)
-                .methodType(MethodInvocationRequest.MethodType.WRITE)
+                .requestId(index)
+                .methodType(MethodInvocationRequest.MethodType.MUTABLE)
                 .methodName(methodName)
                 .params(params)
                 .build();

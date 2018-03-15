@@ -30,7 +30,7 @@ public class Lock {
         this.lockTimeoutInMillis = lockTimeoutInMillis;
     }
 
-    public String getClientId() {
+    public synchronized String getClientId() {
         return clientId;
     }
 

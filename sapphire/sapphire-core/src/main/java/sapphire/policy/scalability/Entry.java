@@ -1,6 +1,7 @@
 package sapphire.policy.scalability;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 /**
  * @author terryz
@@ -47,5 +48,19 @@ public abstract class Entry implements Serializable {
 
         this.index = index;
         return this;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Entry)) return false;
+        Entry entry = (Entry) o;
+        return getTerm() == entry.getTerm() &&
+                getIndex() == entry.getIndex();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getTerm(), getIndex());
     }
 }

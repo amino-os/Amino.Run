@@ -145,13 +145,14 @@ public final class StateManager {
             return;
         }
 
-        currentState = nextState;
         try {
-            currentState.enter();
+            nextState.enter();
         } catch (Exception e) {
             logger.log(Level.SEVERE, "failed to enter state {0}: {1}", new Object[]{currentState, e});
             currentState = previousState;
         }
+
+        currentState = nextState;
     }
 
     public final synchronized State getCurrentState() {
@@ -202,7 +203,7 @@ public final class StateManager {
             if (mode == RENEW_LOCK) {
                 lockObtained = group.renewLock(clientId);
             } else if (mode == OBTAIN_LOCK) {
-                lockObtained = group.obtainLock(clientId);
+                lockObtained = group.obtainLock(clientId, config.getMasterLeaseTimeoutInMillis());
             } else {
                 throw new AssertionError("invalid lock mode " + mode);
             }

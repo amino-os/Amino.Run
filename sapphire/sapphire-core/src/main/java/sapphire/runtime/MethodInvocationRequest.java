@@ -4,8 +4,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Objects;
 
-import static sapphire.runtime.MethodInvocationRequest.MethodType.READ;
-import static sapphire.runtime.MethodInvocationRequest.MethodType.WRITE;
+import static sapphire.runtime.MethodInvocationRequest.MethodType.IMMUTABLE;
 
 /**
  * @author terryz
@@ -14,7 +13,9 @@ public final class MethodInvocationRequest implements Serializable {
     /**
      * Method types
      */
-    public enum MethodType {READ, WRITE};
+    public enum MethodType {
+        IMMUTABLE, MUTABLE
+    };
 
     private final String clientId;
     private final Long requestId;
@@ -50,12 +51,12 @@ public final class MethodInvocationRequest implements Serializable {
         return methodType;
     }
 
-    public final boolean isRead() {
-        return getMethodType() != null && getMethodType() == READ;
+    public final boolean isImmutable() {
+        return getMethodType() != null && getMethodType() == IMMUTABLE;
     }
 
-    public final boolean isWrite() {
-        return getMethodType() != null && getMethodType() == WRITE;
+    public final boolean isMutable() {
+        return !isImmutable();
     }
 
     @Override
@@ -76,15 +77,12 @@ public final class MethodInvocationRequest implements Serializable {
         if (!(o instanceof MethodInvocationRequest)) return false;
         MethodInvocationRequest that = (MethodInvocationRequest) o;
         return Objects.equals(getClientId(), that.getClientId()) &&
-                Objects.equals(getRequestId(), that.getRequestId()) &&
-                Objects.equals(getMethodName(), that.getMethodName()) &&
-                Objects.equals(getParams(), that.getParams()) &&
-                getMethodType() == that.getMethodType();
+                Objects.equals(getRequestId(), that.getRequestId());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getClientId(), getRequestId(), getMethodName(), getParams(), getMethodType());
+        return Objects.hash(getClientId(), getRequestId());
     }
 
     public static class Builder {
@@ -92,7 +90,7 @@ public final class MethodInvocationRequest implements Serializable {
         private long requestId;
         private String methodName;
         private ArrayList<Object> params;
-        private MethodType methodType;
+        private MethodType methodType = MethodType.MUTABLE;
 
         public Builder clientId(String clientId) {
             this.clientId = clientId;

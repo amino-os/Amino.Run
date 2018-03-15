@@ -1,7 +1,6 @@
 package sapphire.policy.scalability;
 
 import java.io.Closeable;
-import java.io.IOException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -36,10 +35,6 @@ public class CommitExecutor implements Closeable {
     private final Configuration config;
     private ExecutorService executor;
     private static CommitExecutor instance;
-
-    private CommitExecutor(AppObject appObject, Configuration config) {
-        this(appObject, 0L, config);
-    }
 
     private CommitExecutor(AppObject appObject, long indexOfLargestCommittedEntry, Configuration config) {
         this.appObject = appObject;
@@ -188,15 +183,14 @@ public class CommitExecutor implements Closeable {
             // Method invocation on application object failed.
             // This is caused by application errors, not Sapphire errors
             AppExecutionException ex = new AppExecutionException("method invocation on app object failed", e);
-            logger.log(Level.FINE, "failed to process request {0} on {1}: {2}", new Object[]{request, appObject, ex});
+            logger.log(Level.FINE, String.format("failed to process request %s on %s: %s", request, appObject, ex), ex);
             resp = MethodInvocationResponse.newBuilder().returnCode(FAILURE).result(ex).build();
         } catch (InterruptedException e) {
-            // TODO (Terry): what should we do here?
             // This is likely caused by Sapphire errors.
             // The problem is: the other replica may not run into this exception. This exception
             // may cause two replicas out of sync.
             AppExecutionException ex = new AppExecutionException("Method invocation on appobject was interrupted", e);
-            logger.log(Level.SEVERE, "the process of request {0} on {1} was interrupted: {2}", new Object[]{request, appObject, ex});
+            logger.log(Level.SEVERE, String.format("the process of request %s on %s was interrupted: %s", request, appObject, ex), e);
             resp = MethodInvocationResponse.newBuilder().returnCode(FAILURE).result(ex).build();
         }
 

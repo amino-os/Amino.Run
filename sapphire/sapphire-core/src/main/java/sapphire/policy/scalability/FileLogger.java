@@ -7,16 +7,23 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import sapphire.common.Utils;
+import sapphire.runtime.MethodInvocationRequest;
+import sun.rmi.runtime.Log;
 
 /**
  *         R : Committed and Replicated Log Entries (on master)
@@ -151,12 +158,10 @@ public class FileLogger implements ILogger<LogEntry> {
     private final CommitExecutor commitExecutor;
 
     /**
-     * Index of the largest replicated entry. A log entry is replicated
-     * iff its request has been invoked on <b>master</b> and the log
-     * entry has been replicated to slave.
-     *
-     * This field is only used on master. It is meaningless on slaves.
-     * TODO (Terry): Update this field on slaves
+     * Index of the largest replicated entry. On master, a log entry is
+     * replicated iff its request has been replicated to slave.
+     * On slave, a log entry is replicated iff the request has been
+     * received and added into log file.
      */
     private long indexOfLargestReplicatedEntry;
 
@@ -170,7 +175,6 @@ public class FileLogger implements ILogger<LogEntry> {
      */
     private final Map<Long, Long> indexOffsetMap;
 
-    // TODO (Terry): truncate the list and the log file periodically
     // A normal log entry with 5 Date objects as params takes about 800 bytes.
     // Suppose we serve 1000 operations per second, and we checkpoint every 15 minutes,
     // we expect the size of the List is around 1GB.
@@ -178,15 +182,19 @@ public class FileLogger implements ILogger<LogEntry> {
 
     private final SequenceGenerator sequenceGenerator;
 
+    private final ScheduledExecutorService cleanExecutor;
+
     /**
      * Constructor
      *
-     * @param logFilePath path entry log
-     * @param snapshotFilePath path to snapshot log
+     * @param config
      * @param loadSnapshot whether or not to load existing snapshot file
      * @throws Exception
      */
-    public FileLogger(String logFilePath, String snapshotFilePath, CommitExecutor commitExecutor, boolean loadSnapshot) throws Exception {
+    public FileLogger(Configuration config, CommitExecutor commitExecutor, boolean loadSnapshot) throws Exception {
+        String logFilePath = config.getLogFilePath();
+        String snapshotFilePath = config.getSnapshotFilePath();
+
         if (logFilePath == null || logFilePath.isEmpty()) {
             throw new IllegalArgumentException("log file path not specified");
         }
@@ -203,9 +211,6 @@ public class FileLogger implements ILogger<LogEntry> {
         this.indexOfLargestEntry = new AtomicLong(-1);
         this.sequenceGenerator = SequenceGenerator.newBuilder().build();
 
-        this.snapshotLogOutChannel = new FileOutputStream(snapshotLog, true).getChannel();
-        this.snapshotLogInChannel = new FileInputStream(snapshotLog).getChannel();
-
         this.entryLogOutChannel = new FileOutputStream(entryLog, true).getChannel();
         this.entryLogInChannel = new FileInputStream(entryLog).getChannel();
 
@@ -213,7 +218,10 @@ public class FileLogger implements ILogger<LogEntry> {
         this.indexOffsetMap = new ConcurrentHashMap<Long, Long>();
 
         if (loadSnapshot && snapshotLog.exists()) {
-            SnapshotEntry snapshotEntry = getLatestSnapshotEntry(snapshotLogOutChannel);
+            this.snapshotLogOutChannel = new FileOutputStream(snapshotLog, true).getChannel();
+            this.snapshotLogInChannel = new FileInputStream(snapshotLog).getChannel();
+
+            SnapshotEntry snapshotEntry = readSnapshot();
             if (snapshotEntry != null) {
                 this.indexOfLargestReplicatedEntry = snapshotEntry.getIndexOfLargestReplicatedEntry();
                 this.commitExecutor.setIndexOfLargestCommittedEntry(snapshotEntry.getIndexOfLargestCommittedEntry());
@@ -222,18 +230,25 @@ public class FileLogger implements ILogger<LogEntry> {
                 load(offset);
             }
         } else {
+            this.snapshotLogOutChannel = new FileOutputStream(snapshotLog, true).getChannel();
+            this.snapshotLogInChannel = new FileInputStream(snapshotLog).getChannel();
+
             takeSnapshot();
         }
+
+        this.cleanExecutor = Executors.newSingleThreadScheduledExecutor();
+        cleanExecutor.schedule(clean(), config.getSnapshotIntervalInMillis(), TimeUnit.MILLISECONDS);
     }
 
     @Override
     public synchronized long append(LogEntry entry) throws Exception {
-        entry.setTerm(TERM).setIndex(getNextIndex());
-        if (indexOffsetMap.containsKey(entry.getIndex())) {
-            return indexOffsetMap.get(entry.getIndex());
+        LogEntry seenEntry = isRequestHandled(entry.getRequest(), this.logEntries);
+        if (seenEntry != null) {
+            return indexOffsetMap.get(seenEntry.getIndex());
         }
 
-        // TODO (Terry): Check if request already been handled
+        entry.setTerm(TERM).setIndex(getNextIndex());
+
         try {
             long entryOffset = writeLog(Utils.toBytes(entry));
             updateInMemoryStructures(entry, entryOffset);
@@ -241,7 +256,7 @@ public class FileLogger implements ILogger<LogEntry> {
             logger.log(Level.FINE, "successfully appended entry {0} in log file", entry);
             return entryOffset;
         } catch (Exception e) {
-            logger.log(Level.SEVERE, "failed to append entry {0} in log file: {1}", new Object[]{entry, e});
+            logger.log(Level.SEVERE, String.format("failed to append entry %s in log file: %s",entry, e), e);
             throw e;
         }
     }
@@ -276,46 +291,44 @@ public class FileLogger implements ILogger<LogEntry> {
     @Override
     public synchronized void markReplicated(long largestReplicatedIndex) {
         if (largestReplicatedIndex <= indexOfLargestReplicatedEntry) {
-            throw new IllegalStateException(String.format("largestReplicatedIndex %s is less than indexOfLargestReplicatedEntry %s", largestReplicatedIndex, indexOfLargestReplicatedEntry));
+            throw new IllegalStateException(String.format("largestReplicatedIndex %s is less than indexOfLargestReplicatedEntry %s",
+                    largestReplicatedIndex, indexOfLargestReplicatedEntry));
         }
 
         this.indexOfLargestReplicatedEntry = largestReplicatedIndex;
     }
 
-    // TODO (Terry): take snapshot periodically
     @Override
-    public synchronized SnapshotEntry takeSnapshot() throws Exception {
+    public synchronized SnapshotEntry takeSnapshot() {
+        // find the lowest offset between largest committed entry and largest replicated entry
+        long indexOfLargestCommittedEntry = getIndexOfLargestCommittedEntry();
         long lowestOffset = Math.min(
-                indexOffsetMap.get(getIndexOfLargestCommittedEntry()) != null ? indexOffsetMap.get(getIndexOfLargestCommittedEntry()) : 0,
+                indexOffsetMap.get(indexOfLargestCommittedEntry)  != null ? indexOffsetMap.get(indexOfLargestCommittedEntry)  : 0,
                 indexOffsetMap.get(indexOfLargestReplicatedEntry) != null ? indexOffsetMap.get(indexOfLargestReplicatedEntry) : 0);
 
-        SnapshotEntry entry = commitExecutor.updateSnapshot(
+        try {
+            SnapshotEntry entry = commitExecutor.updateSnapshot(
                 SnapshotEntry.newBuilder()
                     .term(TERM).index(getNextIndex())
                     .logFilePath(this.entryLog.getAbsolutePath())
                     .snapshotFilePath(this.snapshotLog.getAbsolutePath())
                     .lowestOffsetInLogFile(lowestOffset)
                     .indexOfLargestReplicatedEntry(this.indexOfLargestReplicatedEntry)
+                    .indexOfLargestCommittedEntry(indexOfLargestCommittedEntry)
                     .build());
 
-        try {
             writeSnaphot(Utils.toBytes(entry));
-        } catch (Exception e) {
-            logger.log(Level.SEVERE, "failed to writeLog snapshot entry {0} into file: {1}", new Object[]{entry, e});
-            throw e;
-        }
 
-        return entry;
+            return entry;
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, String.format("failed to write snapshot entry into log file: %s", e), e);
+            throw new IllegalStateException(e);
+        }
     }
 
     @Override
     public boolean indexExists(long index) {
         return this.indexOffsetMap.containsKey(index);
-    }
-
-    private SnapshotEntry getLatestSnapshotEntry(FileChannel snapshotChannel) {
-        // TODO (Terry): implement getLatestSnapshotEntry
-        return null;
     }
 
     @Override
@@ -350,6 +363,41 @@ public class FileLogger implements ILogger<LogEntry> {
         return filterEntriesByIndex(logEntries, getIndexOfLargestCommittedEntry());
     }
 
+    // TODO (Terry): need to make check faster
+    /**
+     * Checks if the request exists in the given {@code logEntries}.
+     * @param request
+     * @param logEntries
+     * return {@link LogEntry} if the request exists in the given {@code logEntries};
+     * {@code false} otherwise.
+     */
+    private LogEntry isRequestHandled(MethodInvocationRequest request, List<LogEntry> logEntries) {
+        for (LogEntry en : logEntries) {
+            if (en.getRequest().equals(request)) {
+                return en;
+            }
+        }
+        return null;
+    }
+
+    private Runnable clean() {
+        return new Runnable() {
+            @Override
+            public void run() {
+                SnapshotEntry entry = takeSnapshot();
+                long indexOfLowerEntry = Math.min(entry.getIndexOfLargestCommittedEntry(),
+                                                  entry.getIndexOfLargestReplicatedEntry());
+
+                for (Iterator<LogEntry> iter = logEntries.listIterator(); iter.hasNext(); ) {
+                    LogEntry en = iter.next();
+                    if (en.getIndex() < indexOfLowerEntry) {
+                        iter.remove();
+                        indexOffsetMap.remove(en.getIndex());
+                    }
+                }
+            }
+        };
+    }
     /**
      * Returns log entries whose indices are greater than the specified index
      * @param logEntries a list of log entries
@@ -406,9 +454,7 @@ public class FileLogger implements ILogger<LogEntry> {
         final long offset = entryLogOutChannel.position();
 
         ByteBuffer bytebuffer = ByteBuffer.allocate(Integer.SIZE / Byte.SIZE + bytes.length);
-        // size of content
         bytebuffer.putInt(bytes.length);
-        // actual content
         bytebuffer.put(bytes);
         bytebuffer.flip();
 
@@ -429,11 +475,8 @@ public class FileLogger implements ILogger<LogEntry> {
         final long offset = snapshotLogOutChannel.position();
 
         ByteBuffer bytebuffer = ByteBuffer.allocate(Integer.SIZE / Byte.SIZE + Long.SIZE/Byte.SIZE + bytes.length);
-        // record
         bytebuffer.put(bytes);
-        // size of record
         bytebuffer.putInt(bytes.length);
-        // offset of record
         bytebuffer.putLong(offset);
         bytebuffer.flip();
 
@@ -443,7 +486,7 @@ public class FileLogger implements ILogger<LogEntry> {
         return offset;
     }
 
-    public SnapshotEntry readSnapshot() throws Exception {
+    public SnapshotEntry readSnapshot() throws IOException, ClassNotFoundException {
         long fileSize = snapshotLogInChannel.size();
         snapshotLogInChannel.position(fileSize - Integer.SIZE/Byte.SIZE - Long.SIZE/Byte.SIZE);
         int recordSize = readInt(snapshotLogInChannel);
@@ -461,7 +504,7 @@ public class FileLogger implements ILogger<LogEntry> {
      * @return the integer or -1 if the channel has reached end-of-stream
      * @throws Exception
      */
-    private int readInt(FileChannel src) throws Exception {
+    private int readInt(FileChannel src) throws IOException {
         ByteBuffer byteBuffer = ByteBuffer.allocate(Integer.SIZE / Byte.SIZE);
         int byteCnt = src.read(byteBuffer);
         if (byteCnt == -1) {
@@ -472,7 +515,7 @@ public class FileLogger implements ILogger<LogEntry> {
         return byteBuffer.getInt();
     }
 
-    private long readLong(FileChannel src) throws Exception {
+    private long readLong(FileChannel src) throws IOException {
         ByteBuffer byteBuffer = ByteBuffer.allocate(Long.SIZE / Byte.SIZE);
         int byteCnt = src.read(byteBuffer);
         if (byteCnt == -1) {
@@ -490,7 +533,7 @@ public class FileLogger implements ILogger<LogEntry> {
      * @return a byte array or <code>null</code> if the channel has reached end-of-stream
      * @throws Exception
      */
-    private byte[] readBytes(FileChannel src, int length) throws Exception {
+    private byte[] readBytes(FileChannel src, int length) throws IOException {
         ByteBuffer byteBuffer = ByteBuffer.allocate(length);
         int byteCnt = src.read(byteBuffer);
         if (byteCnt == -1) {

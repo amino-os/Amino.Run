@@ -1,18 +1,19 @@
 package sapphire.policy.scalability;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import sapphire.common.Utils;
 import sapphire.policy.DefaultSapphirePolicy;
 import sapphire.runtime.MethodInvocationRequest;
 import sapphire.runtime.MethodInvocationResponse;
+import sapphire.runtime.annotations.Runtime;
 import sapphire.runtime.exception.AppExecutionException;
 
-import static java.lang.System.identityHashCode;
 import static sapphire.runtime.MethodInvocationResponse.ReturnCode.REDIRECT;
 
 /**
@@ -73,8 +74,8 @@ import static sapphire.runtime.MethodInvocationResponse.ReturnCode.REDIRECT;
  *
  * <p>
  * <em>Failure Recovery:</em>
- * Failed replica always comes back in {@code RECOVING} stateMgr. Replica in {@code RECOVING} stateMgr
- * does not serve read or write requests, but it is able handle replication requests.
+ * Failed replica always comes back in {@code RECOVERING} stateMgr. Replica in {@code RECOVERING}
+ * stateMgr does not serve read or write requests, but it is able handle replication requests.
  *
  * <p>
  * <em>Thread Model:</em>
@@ -109,9 +110,9 @@ public class LoadBalancedMasterSlavePolicy extends DefaultSapphirePolicy {
         private final SequenceGenerator SeqGenerator = SequenceGenerator.newBuilder().startingAt(0).step(1).build();
         private final String CLIENT_ID;
 
-        private boolean isReadMethod(String methodName, ArrayList<Object> params) {
-            // TODO (Terry): 1) to be implemented, 2) move to a Util class
-            return false;
+        private boolean isImmutableMethod(String methodName, ArrayList<Object> params) {
+            Class<?> clazz = getServer().sapphire_getAppObject().getObject().getClass();
+            return Utils.isImmutableMethod(clazz, methodName, params);
         }
 
         public ClientPolicy() {
@@ -129,15 +130,14 @@ public class LoadBalancedMasterSlavePolicy extends DefaultSapphirePolicy {
             do {
                 SapphireServerPolicy targetServer = group.getMaster();
 
-                if (isReadMethod(method, params)) {
-                    targetServer = group.getRandomServer(group.getServerPolicies());
+                if (isImmutableMethod(method, params)) {
+                    targetServer = group.getSlave();
                 }
 
                 if (targetServer == null) {
                     throw new Exception(String.format("unable to find target server from server list: %s", group.getServers()));
                 }
 
-                // TODO (Terry): persist request ID so that it will not be reused after restart
                 MethodInvocationRequest request = MethodInvocationRequest.newBuilder()
                         .clientId(CLIENT_ID)
                         .requestId(SeqGenerator.getNextSequence())
@@ -165,39 +165,46 @@ public class LoadBalancedMasterSlavePolicy extends DefaultSapphirePolicy {
     /**
      * Server side policy
      */
+    @Runtime(replicas=3)
     public static class ServerPolicy extends DefaultServerPolicy {
         private final Logger logger = Logger.getLogger(LoadBalancedMasterSlavePolicy.ServerPolicy.class.getName());
 
         private final String SERVER_ID;
-        private final Configuration config;
-        private final StateManager stateMgr;
-        private final FileLogger requestLogger;
-        private final CommitExecutor commitExecutor;
-
+        private Configuration config;
+        private FileLogger requestLogger;
+        private CommitExecutor commitExecutor;
+        private StateManager stateMgr;
 
         public ServerPolicy() {
             SERVER_ID = "Server_" + System.currentTimeMillis();
+        }
+
+        @Override
+        public void onCreate(SapphireGroupPolicy group) {
+            super.onCreate(group);
+            GroupPolicy groupPolicy = (GroupPolicy)getGroup();
+
             config = Configuration.newBuilder().build();
-
-            // TODO (Terry): we should try to avoid doing cast here
-            LoadBalancedMasterSlavePolicy.GroupPolicy group = (LoadBalancedMasterSlavePolicy.GroupPolicy)getGroup();
-            this.commitExecutor = CommitExecutor.getInstance(appObject, 0L, config);
-
-            try {
-                this.requestLogger = new FileLogger(config.getLogFilePath(), config.getSnapshotFilePath(), commitExecutor, true);
-            } catch (Exception e) {
-                throw new AssertionError("failed to construct entry logger: {0}", e);
-            }
-
             Context context = Context.newBuilder()
-                    .group(group)
+                    .group(groupPolicy)
                     .entryLogger(requestLogger)
                     .config(config)
                     .build();
 
             this.stateMgr = new StateManager(SERVER_ID, context);
 
-            logger.log(Level.INFO, "LoadBalancedMasterSlavePolicy$ServerPolicy starts successfully");
+            // serverPolicy.$__initialize sets the appObject.
+            // It must be called before onCreate.
+            // Otherwise, NPE will be thrown from CommitExecutor.getInstance.
+            commitExecutor = CommitExecutor.getInstance(appObject, 0L, config);
+
+            try {
+                this.requestLogger = new FileLogger(config, commitExecutor, true);
+            } catch (Exception e) {
+                throw new AssertionError("failed to construct entry logger: {0}", e);
+            }
+
+            logger.log(Level.INFO, "LoadBalancedMasterSlavePolicy$ServerPolicy created");
         }
 
         /**
@@ -265,7 +272,7 @@ public class LoadBalancedMasterSlavePolicy extends DefaultSapphirePolicy {
         public MethodInvocationResponse onRPC(MethodInvocationRequest request) {
             switch (this.stateMgr.getCurrentStateName()) {
                 case SLAVE:
-                    if (request.isRead()) {
+                    if (request.isImmutable()) {
                         return commitExecutor.applyRead(request);
                     }
                     // redirect non-read operations to master
@@ -275,7 +282,7 @@ public class LoadBalancedMasterSlavePolicy extends DefaultSapphirePolicy {
                             .build();
 
                 case MASTER:
-                    if (request.isRead()) {
+                    if (request.isImmutable()) {
                         return commitExecutor.applyRead(request);
                     }
 
@@ -307,6 +314,23 @@ public class LoadBalancedMasterSlavePolicy extends DefaultSapphirePolicy {
             }
             super.finalize();
         }
+
+        public String getServerId() {
+            return SERVER_ID;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof ServerPolicy)) return false;
+            ServerPolicy that = (ServerPolicy) o;
+            return Objects.equals(SERVER_ID, that.SERVER_ID);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(SERVER_ID);
+        }
     }
 
     /**
@@ -318,49 +342,35 @@ public class LoadBalancedMasterSlavePolicy extends DefaultSapphirePolicy {
      */
     public static class GroupPolicy extends DefaultGroupPolicy {
         private Lock masterLock;
-        private Configuration config;
-
-        public List<ServerPolicy> getServerPolicies() {
-            ArrayList<SapphireServerPolicy> servers = super.getServers();
-            List<ServerPolicy> result = new ArrayList<ServerPolicy>();
-            for (SapphireServerPolicy s: servers) {
-                result.add((ServerPolicy)s);
-            }
-            return result;
-        }
 
         /**
          * @return master server, or <code>null</code> if no master available
          */
         public ServerPolicy getMaster() {
-            // TODO (Terry): to be implemented
+            List<ServerPolicy> servers = getServerPolicies();
+            if (servers.size() != 2) {
+                throw new IllegalStateException("");
+            }
+
+            for (ServerPolicy s : servers) {
+                if (s.getServerId() == masterLock.getClientId()) {
+                    return s;
+                }
+            }
             return null;
         }
 
         // TODO (Terry): Group should broadcast membership change events
         // Master state should listen to slave-change events
-        /**
-         * @return slave servers
-         */
-        public List<ServerPolicy> getSlaves() {
-            // TODO (Terry): to be implemented
-            return new ArrayList(Collections.<SapphireServerPolicy>emptyList());
-        }
-
         public ServerPolicy getSlave() {
-            // TODO (Terry): implement getSlave
-            return null;
-        }
-
-        /**
-         * @return a random server from the group or <code>null</code> if no server exists
-         */
-        public ServerPolicy getRandomServer(List<ServerPolicy> servers) {
-            if (servers == null || servers.size() <= 0) {
-                return null;
+            ServerPolicy master = getMaster();
+            List<ServerPolicy> servers = getServerPolicies();
+            for (ServerPolicy s : servers) {
+                if (! s.equals(master)) {
+                    return s;
+                }
             }
-
-            return servers.get(random.nextInt(Integer.MAX_VALUE) % servers.size());
+            return null;
         }
 
         /**
@@ -385,23 +395,25 @@ public class LoadBalancedMasterSlavePolicy extends DefaultSapphirePolicy {
          * Obtain lock
          *
          * @param serverId the Id of the server
+         * @param masterLeaseTimeoutInMillis
          * @return <code>true</code> if lock is granted; <code>false</code> otherwise
          */
-        public boolean obtainLock(String serverId) {
+        public boolean obtainLock(String serverId, long masterLeaseTimeoutInMillis) {
             if (masterLock == null) {
-                masterLock = new Lock(serverId, config.getMasterLeaseTimeoutInMillis());
+                masterLock = new Lock(serverId, masterLeaseTimeoutInMillis);
                 return true;
             }
 
             return masterLock.obtain(serverId);
         }
 
-        public void setConfig(Configuration config) {
-            if (config == null) {
-                throw new IllegalArgumentException("config is not specified");
+        private List<ServerPolicy> getServerPolicies() {
+            ArrayList<SapphireServerPolicy> servers = super.getServers();
+            List<ServerPolicy> result = new ArrayList<ServerPolicy>();
+            for (SapphireServerPolicy s: servers) {
+                result.add((ServerPolicy)s);
             }
-
-            this.config = config;
+            return result;
         }
     }
 }

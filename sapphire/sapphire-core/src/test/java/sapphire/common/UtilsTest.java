@@ -10,6 +10,8 @@ import sapphire.kernel.common.KernelOID;
 import sapphire.kernel.common.KernelRPC;
 import sapphire.policy.scalability.LogEntry;
 import sapphire.runtime.MethodInvocationRequest;
+import sapphire.runtime.annotations.Immutable;
+import sapphire.runtime.annotations.Runtime;
 
 import static org.junit.Assert.*;
 
@@ -47,7 +49,7 @@ public class UtilsTest {
         MethodInvocationRequest request = MethodInvocationRequest.newBuilder()
                 .clientId("clientId")
                 .requestId(0L)
-                .methodType(MethodInvocationRequest.MethodType.WRITE)
+                .methodType(MethodInvocationRequest.MethodType.MUTABLE)
                 .methodName("invoke")
                 .params(params)
                 .build();
@@ -70,7 +72,7 @@ public class UtilsTest {
         MethodInvocationRequest request = MethodInvocationRequest.newBuilder()
                 .clientId("clientId")
                 .requestId(0L)
-                .methodType(MethodInvocationRequest.MethodType.WRITE)
+                .methodType(MethodInvocationRequest.MethodType.MUTABLE)
                 .methodName("invoke")
                 .params(params)
                 .build();
@@ -91,5 +93,39 @@ public class UtilsTest {
         byte[] bytes = Utils.toBytes(expected);
         KernelRPC actual = (KernelRPC)Utils.toObject(bytes);
         Assert.assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testIsImmutable() throws Exception {
+        ArrayList<Object> params = new ArrayList<Object>();
+        params.add("hello");
+
+        Clazz clazz = new Clazz();
+        Assert.assertTrue(Utils.isImmutableMethod(clazz.getClass(), "immutable", params));
+    }
+
+    @Test
+    public void testIsMutable() throws Exception {
+        ArrayList<Object> params = new ArrayList<Object>();
+        params.add(5);
+
+        Clazz clazz = new Clazz();
+        Assert.assertFalse(Utils.isImmutableMethod(clazz.getClass(), "mutable", params));
+    }
+
+    @Test
+    public void testGetRuntimeSpec() throws Exception {
+        Clazz clazz = new Clazz();
+        Assert.assertEquals(3, Utils.getRuntimeSpec(clazz.getClass()).replicas());
+    }
+
+    @Runtime(replicas = 3)
+    private static class Clazz {
+        @Immutable
+        public void immutable(String arg) {
+        }
+
+        public void mutable(Integer arg) {
+        }
     }
 }

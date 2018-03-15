@@ -10,7 +10,7 @@ import sapphire.policy.DefaultSapphirePolicy;
  * remote object before confirming write completion. Read operations will be invoked on cached
  * object directly.
  * <p>
- * State changes on remote object caused by one client will not automatically invalidate to
+ * StateName changes on remote object caused by one client will not automatically invalidate to
  * cached objects on other clients. Therefore <code>WriteThroughCache</code> may contain staled
  * object.
  *

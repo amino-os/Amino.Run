@@ -4,12 +4,16 @@ import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.harmony.rmi.common.RMIUtil;
 
 import sapphire.app.SapphireObject;
 import sapphire.common.AppObjectStub;
+import sapphire.common.Utils;
 import sapphire.compiler.GlobalStubConstants;
 import sapphire.kernel.common.GlobalKernelReferences;
 import sapphire.kernel.common.KernelOID;
@@ -24,6 +28,7 @@ import sapphire.policy.DefaultSapphirePolicy.DefaultServerPolicy;
 import sapphire.policy.SapphirePolicy.SapphireClientPolicy;
 import sapphire.policy.SapphirePolicy.SapphireGroupPolicy;
 import sapphire.policy.SapphirePolicy.SapphireServerPolicy;
+import sapphire.runtime.annotations.Runtime;
 
 /**
  * Used by the developer to create a Sapphire Object given
@@ -42,8 +47,6 @@ public class Sapphire {
 	 * 
 	 * @param appObjectClass
 	 * @param args
-	 * @param sapphirePolicyClass
-	 * @param policyArgs
 	 * @return The App Object Stub
 	 * @throws ClassNotFoundException
 	 * @throws InstantiationException
@@ -111,14 +114,37 @@ public class Sapphire {
 			serverPolicy.onCreate(groupPolicyStub);
 			groupPolicy.onCreate(serverPolicyStub);
 
+			/* Create server replicas based on runtime spec */
+			List<SapphireServerPolicy> replicas = createReplicas(serverPolicy);
+			for (SapphireServerPolicy r : replicas) {
+				groupPolicy.addServer(r);
+			}
+
 			logger.info("Sapphire Object created: " + appObjectClass.getName());
 			return appStub;
 		}
 		catch (Exception e) {
-			e.printStackTrace();
+			logger.log(Level.SEVERE, e.getMessage(), e);
 			return null;
 			//throw new AppObjectNotCreatedException();
 		}
+	}
+
+	private static List<SapphireServerPolicy> createReplicas(SapphireServerPolicy server) throws Exception {
+		Runtime runtimeSpec = Utils.getRuntimeSpec(server.getClass());
+		if (runtimeSpec == null || runtimeSpec.replicas() <= 1) {
+			return Collections.emptyList();
+		}
+
+		List<SapphireServerPolicy> replicas = new ArrayList<SapphireServerPolicy>();
+		ArrayList<String> regions = server.getGroup().sapphire_getRegions();
+		for (int i=0; i<runtimeSpec.replicas()-1; i++) {
+			SapphireServerPolicy replica = server.sapphire_replicate();
+			// TODO: select host based on host label
+			replica.sapphire_pin(regions.get(i%regions.size()));
+		}
+
+		return replicas;
 	}
 
 	/* Returns a pointer to the given Sapphire Object */

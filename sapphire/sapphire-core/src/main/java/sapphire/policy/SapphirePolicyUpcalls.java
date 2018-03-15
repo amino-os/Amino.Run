@@ -5,6 +5,8 @@ import java.util.ArrayList;
 
 import sapphire.policy.SapphirePolicy.SapphireGroupPolicy;
 import sapphire.policy.SapphirePolicy.SapphireServerPolicy;
+import sapphire.runtime.MethodInvocationRequest;
+import sapphire.runtime.MethodInvocationResponse;
 
 public interface SapphirePolicyUpcalls {
 	public interface  SapphireClientPolicyUpcalls extends Serializable {
@@ -19,6 +21,7 @@ public interface SapphirePolicyUpcalls {
 		public void onCreate(SapphireGroupPolicy group);
 		public SapphireGroupPolicy getGroup();
 		public Object onRPC(String method, ArrayList<Object> params) throws Exception;
+		public MethodInvocationResponse onRPC(MethodInvocationRequest request);
 		public void onMembershipChange();
 	}
 	

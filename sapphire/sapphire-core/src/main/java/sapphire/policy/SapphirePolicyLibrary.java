@@ -103,7 +103,7 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 		/**
 		 * Internal function used to initialize the App Object
 		 * 
-		 * @param appObjectClassName
+		 * @param appObjectStubClass
 		 * @param params
 		 */
 		//TODO: not final (stub overrides it)

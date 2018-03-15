@@ -3,12 +3,9 @@ package sapphire.policy;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 
-import sapphire.common.AppObject;
-import sapphire.kernel.common.KernelOID;
 import sapphire.policy.SapphirePolicy.SapphireServerPolicy;
-import sapphire.policy.SapphirePolicyLibrary.SapphireGroupPolicyLibrary;
-import sapphire.policy.SapphirePolicyLibrary.SapphireServerPolicyLibrary;
-import sapphire.runtime.Sapphire;
+import sapphire.runtime.MethodInvocationRequest;
+import sapphire.runtime.MethodInvocationResponse;
 
 public abstract class DefaultSapphirePolicyUpcallImpl extends SapphirePolicyLibrary {
 
@@ -27,9 +24,26 @@ public abstract class DefaultSapphirePolicyUpcallImpl extends SapphirePolicyLibr
 	}
 	
 	public abstract static class DefaultSapphireServerPolicyUpcallImpl extends SapphireServerPolicyLibrary {
+		@Override
 		public Object onRPC(String method, ArrayList<Object> params) throws Exception {
 			/* The default behavior is to just invoke the method on the Sapphire Object this Server Policy Object manages */
 			return appObject.invoke(method, params);
+		}
+
+		@Override
+		public MethodInvocationResponse onRPC(MethodInvocationRequest request) {
+			try {
+				Object ret = appObject.invoke(request.getMethodName(), request.getParams());
+				return MethodInvocationResponse.newBuilder()
+						.returnCode(MethodInvocationResponse.ReturnCode.SUCCESS)
+						.result(ret)
+						.build();
+			} catch (Exception e) {
+				return MethodInvocationResponse.newBuilder()
+						.returnCode(MethodInvocationResponse.ReturnCode.FAILURE)
+						.result(e)
+						.build();
+			}
 		}
 	}
 	

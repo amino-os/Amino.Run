@@ -48,4 +48,25 @@ public class KernelRPC implements Serializable {
 		}
 		return ret;
 	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (!(o instanceof KernelRPC)) return false;
+
+		KernelRPC kernelRPC = (KernelRPC) o;
+
+		if (oid != null ? !oid.equals(kernelRPC.oid) : kernelRPC.oid != null) return false;
+		if (getMethod() != null ? !getMethod().equals(kernelRPC.getMethod()) : kernelRPC.getMethod() != null)
+			return false;
+		return getParams() != null ? getParams().equals(kernelRPC.getParams()) : kernelRPC.getParams() == null;
+	}
+
+	@Override
+	public int hashCode() {
+		int result = oid != null ? oid.hashCode() : 0;
+		result = 31 * result + (getMethod() != null ? getMethod().hashCode() : 0);
+		result = 31 * result + (getParams() != null ? getParams().hashCode() : 0);
+		return result;
+	}
 }

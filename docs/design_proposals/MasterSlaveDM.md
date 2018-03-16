@@ -28,6 +28,8 @@ A few things worth mentioning:
 
 # Implementations
 
+Below are some key classes used in implementation:
+
 * **StateManager**: Keeps track of replica state changes, e.g. between master to slave or vice versa.
 * **FileLogger**: Keeps track of log entries and takes snapshot periodically.
 * **AsyncReplicator**: Replicates requests from master to slave asynchronously. Only runs in master mode.

@@ -1,0 +1,1 @@
+![MasterSlaveDM](../images/MasterSlaveDiagram.png)

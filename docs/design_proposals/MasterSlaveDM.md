@@ -20,7 +20,7 @@ Above diagram shows the normal process sequence:
 
 A few things worth mentioning:
 
-* Log file maintains two pointers: *LargestReplicatedIndex* and *LargestCommittedIndex*. Because master applies every request to its Sapphire object, the LargestCommittedIndex is also the LargestReceivedIndex on the log file. Because master replicates requests to slave asnychronously, LargestReplicatedIndex may sometimes fall bahind LargestCommittedIndex. Because every request received by slave is also a successfully replicated request, the LargestReplicatedIndex on slave is also the LargestReceivedIndex. Because slave applies requests on Sapphire asynchronously, LargestCommittedIndex may sometimes fall behind LargestReplicatedIndex. 
+* Log file maintains two pointers: *LargestReplicatedIndex* and *LargestCommittedIndex*. Because master applies every request to its Sapphire object, on master, the LargestCommittedIndex is also the LargestReceivedIndex on the log file. Because master replicates requests to slave asnychronously, LargestReplicatedIndex may sometimes fall bahind LargestCommittedIndex on master. Because every request received by slave is also a successfully replicated request, on slave, the LargestReplicatedIndex on slave is also the LargestReceivedIndex. Because slave applies requests on Sapphire asynchronously, LargestCommittedIndex may sometimes fall behind LargestReplicatedIndex on slave. 
 
 * Server periodically snapshot its log file for failure recovery purpose. Snapshots are stored in a snapshot log file.
 

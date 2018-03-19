@@ -1,5 +1,40 @@
+This document describes two master slave DM designs, one with synchronous replication and one with asynchronous replication.
+
 # Master/Slave with Sync Replication
 ![MasterSlaveSyncDM](../images/MasterSlaveSynchronousDiagram.png)
+
+## Normal Process
+1. Client sends request to master server. Client figures out which replica is master by querying group.
+2. Master server replicates the request to slave *synchronously*.
+  2.1 If replication fails due to network issues or timeout, master will ignore the error and returns result to client. In this case, the state of master and slave starts to diverge.
+  2.2 If replication fails because slave is not up-to-date, master server will sync its current state to slave, and then retry request replication.
+3. Slave receives request and invoke request on Sapphire object synchronously.
+4. Slave returns result to Master
+5. Master returns result to client
+
+## Failure Cases
+### Network between Master and Slave break temporarily
+* Master and slave both alive but the network between them breaks temporarily
+* In this case, master will get timeout or network errors when it tries to replicate requests to slave
+* Master keeps serving the client. But requests are not replicated to slave. So master and slave will be out of sync during this period.
+* When network communication recovers, the master will no longer get timeout or network error when it tries to replicate requests to slave. Instead, the master will get *slave not up to date* error. 
+* Upon receiving *slave not up to date* error, master will sync its current state to slave, and retry the replication.
+* If succeeds, then master and slave are in sync again.
+* If fails, then master will move on and return result to client. In this case, master and slave are still out of sync.
+
+### Slave down temporarily 
+* This case is similar to the privous network break case
+* If slave is down, master will get timeout or network errors when it tries to replicate requests to slave
+* Master keeps serving client. But the state of master and slave starts to diverge
+* When slave comes back online, the master will get *slave not up to date* error when it tries to replicate requests to slave.
+* Upon receiving *slave not up to date* error, master will sync its current state to slave, and retry the replication.
+* If succeeds, then master and slave are in sync again.
+
+### Master down temporarily
+* If master is down, the slave will be promoted to be the new master.
+* If the state of the slave is up to date before being promoted to master, then there will be no data loss.
+* Client will get errors when it sends requests to old master. Client will query group for the new master, and then starts to send requests to the new master.
+
 
 # Master/Slave with Async Replication
 

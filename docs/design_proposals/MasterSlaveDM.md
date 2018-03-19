@@ -12,8 +12,28 @@ This document describes two master slave DM designs, one with synchronous replic
 4. Slave returns result to Master
 5. Master returns result to client
 
+When master replicates requests to slave, it will send the ID of the last succeeded request together with the new request. The slave will check if it has successfully received the last succeeded request. If not, it will throw *slave-not-up-to-date* exception to notify master that their states are out of sync. 
+
 ## Failure Cases
-### Network between Master and Slave break temporarily
+
+![MasterSlaveFailureCases](../images/MasterSlaveFailureCases.png)
+
+Above diagram illustrated five primary failure cases.
+1. Master is unable to reach Group temporarily. 
+2. Slave is unable to reach Group temporarily. 
+3. Master cannot reach slave. Replication will fail. Master will keep serving clients. The state between master and slave starts to diverge. Once the network issue is recoverred, 
+4. Master is down. In this case, slave will be promoted to be the master.
+5. Slave is down. 
+
+### 1. Master unable to reach Group
+1. Since master is unable to reach group, it cannot renew its lock timely, and therefore it will step down as a slave and refuse client requests.
+2. After the lock expires, slave will be able to grab the lock, and therefore become the new master.
+3. Client's requests to the old master are rejected. The client will query the group to get the new master and start to send requests to the new master.
+
+### 2. Slave unable to reach Group
+Nothing happens.
+
+### 3. Master cannot reach slave
 * Master and slave both alive but the network between them breaks temporarily
 * In this case, master will get timeout or network errors when it tries to replicate requests to slave
 * Master keeps serving the client. But requests are not replicated to slave. So master and slave will be out of sync during this period.
@@ -22,19 +42,18 @@ This document describes two master slave DM designs, one with synchronous replic
 * If succeeds, then master and slave are in sync again.
 * If fails, then master will move on and return result to client. In this case, master and slave are still out of sync.
 
-### Slave down temporarily 
+### 4. Master down temporarily
+* If master is down, the slave will be promoted to be the new master.
+* If the state of the slave is up to date before being promoted to master, then there will be no data loss.
+* Client will get errors when it sends requests to old master. Client will query group for the new master, and then starts to send requests to the new master.
+
+### 5. Slave down temporarily 
 * This case is similar to the privous network break case
 * If slave is down, master will get timeout or network errors when it tries to replicate requests to slave
 * Master keeps serving client. But the state of master and slave starts to diverge
 * When slave comes back online, the master will get *slave not up to date* error when it tries to replicate requests to slave.
 * Upon receiving *slave not up to date* error, master will sync its current state to slave, and retry the replication.
 * If succeeds, then master and slave are in sync again.
-
-### Master down temporarily
-* If master is down, the slave will be promoted to be the new master.
-* If the state of the slave is up to date before being promoted to master, then there will be no data loss.
-* Client will get errors when it sends requests to old master. Client will query group for the new master, and then starts to send requests to the new master.
-
 
 # Master/Slave with Async Replication
 

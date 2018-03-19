@@ -97,9 +97,6 @@ If they do not exist, build the project first to create them.
 
 ![StubFileGeneration](images/StubFileGeneration.PNG)
 
-If you change or create a new deployment manager(policy), you will need to generate stub files again.
-java -cp sapphire-core.jar;java.rmi.jar;apache.harmony.jar sapphire.compiler.StubGenerator DCAP-Sapphire/sapphire/sapphire-core/src/main/java/sapphire/policy sapphire.policy.stubs DCAP-Sapphire/sapphire/sapphire-core/src/main/java/sapphire/policy/stubs
-
 ## Troubleshooting
 Android Studio can be unstable sometimes. Close all Android Studio projects and restart when you observe unexpected behavior.
 Do not try to change Android Emulator as it can cause RMI incompatibility issue if not done properly.

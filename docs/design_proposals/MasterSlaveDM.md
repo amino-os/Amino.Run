@@ -1,4 +1,9 @@
-# Components
+# Master/Slave with Sync Replication
+![MasterSlaveSyncDM](../images/MasterSlaveSynchronousDiagram.png)
+
+# Master/Slave with Async Replication
+
+## Components
 Like most DMs, *LoadBalancedMasterSlaveDM* has three components:
 
 * **ClientPolicy**: A Sapphire object with *LoadBalancedMasterSlaveDM* has two replicas: master and slave. Client policy queries *group policy* to figure out master and slave. It sents *muttable* operations to master, and *immutable* operations to one of the replicas in round robin manner.
@@ -7,7 +12,7 @@ Like most DMs, *LoadBalancedMasterSlaveDM* has three components:
 
 * **GroupPolicy**: *Group policy* provides a lock service. It keeps track of the status of master and slave.
 
-# Normal Process
+## Normal Process
 ![MasterSlaveDM](../images/MasterSlaveDiagram.png)
 
 Above diagram shows the normal process sequence:
@@ -26,7 +31,7 @@ A few things worth mentioning:
 
 * According to the definition of LoadBalancedMasterSlave DM, the replication from master to slave is asynchronous. Due to asynchronous replication, users may experience data loss during fail over. We should probably change it to synchronous replication.
 
-# Implementations
+## Implementations
 
 Below are some key classes used in implementation:
 

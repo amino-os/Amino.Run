@@ -1,8 +1,9 @@
+
+This document describes two master slave DM designs, one with synchronous replication and one with asynchronous replication.
+
 # Table of Content
 1. [Master/Slave with Synchronous Replication](#master-slave-with-sync-replication)
 2. [Master/Slave with Asynchronous Replication](#master-slave-with-async-replication)
-
-This document describes two master slave DM designs, one with synchronous replication and one with asynchronous replication.
 
 # Master Slave with Sync Replication
 ![MasterSlaveSyncDM](../images/MasterSlaveSynchronousDiagram.png)

@@ -26,12 +26,12 @@ Above diagram illustrated five primary failure cases.
 5. Slave is down. 
 
 ### 1. Master unable to reach Group
-1. Since master is unable to reach group, it cannot renew its lock timely, and therefore it will step down as a slave and refuse client requests.
-2. After the lock expires, slave will be able to grab the lock, and therefore become the new master.
-3. Client's requests to the old master are rejected. The client will query the group to get the new master and start to send requests to the new master.
+* Since master is unable to reach group, it cannot renew its lock timely, and therefore it will step down as a slave and refuse client requests.
+* After the lock expires, slave will be able to grab the lock, and therefore become the new master.
+* Client's requests to the old master are rejected. The client will query the group to get the new master and start to send requests to the new master.
 
 ### 2. Slave unable to reach Group
-Nothing happens.
+* Nothing to do
 
 ### 3. Master cannot reach slave
 * Master and slave both alive but the network between them breaks temporarily

@@ -1,6 +1,10 @@
+# Table of Content
+1. [Master/Slave with Synchronous Replication](#master-slave-with-sync-replication)
+2. [Master/Slave with Asynchronous Replication](#master-slave-with-async-replication)
+
 This document describes two master slave DM designs, one with synchronous replication and one with asynchronous replication.
 
-# Master/Slave with Sync Replication
+# Master Slave with Sync Replication
 ![MasterSlaveSyncDM](../images/MasterSlaveSynchronousDiagram.png)
 
 ## Normal Process
@@ -55,7 +59,7 @@ Above diagram illustrated five primary failure cases.
 * Upon receiving *slave not up to date* error, master will sync its current state to slave, and retry the replication.
 * If succeeds, then master and slave are in sync again.
 
-# Master/Slave with Async Replication
+# Master Slave with Async Replication
 
 ## Components
 Like most DMs, *LoadBalancedMasterSlaveDM* has three components:

@@ -69,7 +69,13 @@ public class ShiftPolicy extends SapphirePolicy {
 			if (this.shiftRPCLoad > 0 && this.shiftRPCLoad % this.LOAD == 0) {
 				logger.info("[ShiftPolicy] Limit reached at " + this.LOAD + ". Shift policy triggered.");
 				OMSServer oms = GlobalKernelReferences.nodeServer.oms;
-				ArrayList<InetSocketAddress> servers = oms.getServers();
+
+				ArrayList<String> regions = oms.getRegions();
+				ArrayList<InetSocketAddress> servers = new ArrayList<InetSocketAddress>();
+
+				for (String region : regions) {
+					servers.add(oms.getServerInRegion(region));
+				}
 
 				KernelServerImpl localKernel = GlobalKernelReferences.nodeServer;
 				InetSocketAddress localAddress = localKernel.getLocalHost();

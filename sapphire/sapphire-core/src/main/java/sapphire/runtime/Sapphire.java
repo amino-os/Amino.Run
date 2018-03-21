@@ -3,12 +3,14 @@ package sapphire.runtime;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.logging.Logger;
 
 import org.apache.harmony.rmi.common.RMIUtil;
 
 import sapphire.app.SapphireObject;
+import sapphire.common.AppObject;
 import sapphire.common.AppObjectStub;
 import sapphire.compiler.GlobalStubConstants;
 import sapphire.kernel.common.GlobalKernelReferences;
@@ -35,6 +37,8 @@ import sapphire.policy.SapphirePolicy.SapphireServerPolicy;
  */
 public class Sapphire {
 	static Logger logger = Logger.getLogger(Sapphire.class.getName());
+
+
 
 	/**
 	 * Creates a Sapphire Object:
@@ -109,13 +113,15 @@ public class Sapphire {
 			client.onCreate(groupPolicyStub);
 			appStub.$__initialize(client);
 			serverPolicy.onCreate(groupPolicyStub);
+			serverPolicyStub.$__initialize(serverPolicy.sapphire_getAppObject());
 			groupPolicy.onCreate(serverPolicyStub);
-
+			serverPolicyStub.$__initialize(null);
 			logger.info("Sapphire Object created: " + appObjectClass.getName());
 			return appStub;
 		}
 		catch (Exception e) {
 			e.printStackTrace();
+			// TODO: Need to do cleanup
 			return null;
 			//throw new AppObjectNotCreatedException();
 		}
@@ -168,7 +174,7 @@ public class Sapphire {
 		return groupPolicy;
 	}
 
-	private static SapphireServerPolicy initializeServerPolicy(SapphireServerPolicy serverPolicyStub)
+	public static SapphireServerPolicy initializeServerPolicy(SapphireServerPolicy serverPolicyStub)
 			throws KernelObjectNotFoundException {
 		KernelOID serverOID = ((KernelObjectStub)serverPolicyStub).$__getKernelOID();
 		SapphireServerPolicy serverPolicy = (SapphireServerPolicy) GlobalKernelReferences.nodeServer.getObject(serverOID);

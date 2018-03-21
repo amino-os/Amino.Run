@@ -51,7 +51,7 @@ public class DefaultSapphirePolicy extends SapphirePolicy {
 	public static class DefaultGroupPolicy extends SapphireGroupPolicy {
 
 		@Override
-		public void addServer(SapphireServerPolicy server) {}
+		public void addServer(SapphireServerPolicy server) throws Exception {}
 
 		@Override
 		public void onFailure(SapphireServerPolicy server) {}

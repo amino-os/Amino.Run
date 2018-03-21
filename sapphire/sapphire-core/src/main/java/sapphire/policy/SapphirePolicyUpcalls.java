@@ -24,7 +24,7 @@ public interface SapphirePolicyUpcalls {
 	
 	public interface SapphireGroupPolicyUpcalls extends Serializable {
 		public void onCreate(SapphireServerPolicy server);
-		public void addServer(SapphireServerPolicy server);
+		public void addServer(SapphireServerPolicy server) throws Exception;
 		public ArrayList<SapphireServerPolicy> getServers();
 		public void onFailure(SapphireServerPolicy server);
 		public SapphireServerPolicy onRefRequest();

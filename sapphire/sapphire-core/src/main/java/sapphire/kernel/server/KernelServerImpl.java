@@ -1,10 +1,15 @@
 package sapphire.kernel.server;
 
+import static sapphire.runtime.Sapphire.*;
+
 import sapphire.app.AppEntryPoint;
+import sapphire.common.AppObject;
 import sapphire.common.AppObjectStub;
+import sapphire.compiler.GlobalStubConstants;
 import sapphire.kernel.client.KernelClient;
 import sapphire.kernel.common.GlobalKernelReferences;
 import sapphire.kernel.common.KernelOID;
+import sapphire.kernel.common.KernelObjectFactory;
 import sapphire.kernel.common.KernelObjectMigratingException;
 import sapphire.kernel.common.KernelObjectNotCreatedException;
 import sapphire.kernel.common.KernelObjectNotFoundException;
@@ -12,6 +17,7 @@ import sapphire.kernel.common.KernelRPCException;
 
 import sapphire.kernel.common.KernelRPC;
 import sapphire.oms.OMSServer;
+import sapphire.policy.SapphirePolicy;
 
 import java.io.Serializable;
 import java.net.InetSocketAddress;
@@ -36,6 +42,7 @@ import java.util.logging.Logger;
 public class KernelServerImpl implements KernelServer{
 	private static Logger logger = Logger.getLogger("sapphire.kernel.server.KernelServerImpl");
 	private InetSocketAddress host;
+	private String region;
 	/** manager for kernel objects that live on this server */
 	private KernelObjectManager objectManager;
 	/** stub for the OMS */
@@ -58,6 +65,14 @@ public class KernelServerImpl implements KernelServer{
 		GlobalKernelReferences.nodeServer = this;
 	}
 	
+	public void setRegion(String region) {
+		this.region = region;
+	}
+
+	public String getRegion() {
+		return this.region;
+	}
+
 	/** RPC INTERFACES **/
 	
 	/**
@@ -92,7 +107,65 @@ public class KernelServerImpl implements KernelServer{
 		object.uncoalesce();
 	}
 	
+	/**
+	 * Create a replica of sapphire object in this kernel server.
+	 * @author Venugopal Reddy K 00900280 on 28/02/18
+	 * @param serverPolicyName server policy stub class name
+	 * @param groupPolicyName group policy stub class name
+	 * @param groupOid kernel Oid of group policy
+	 * @param appObjectStub app object stub to be replicated
+	 * @throws RemoteException
+	 * @throws ClassNotFoundException
+	 * @throws KernelObjectNotCreatedException
+	 * @throws KernelObjectNotFoundException
+	 */
+	public void createSapphireObjectReplica(String serverPolicyName, String groupPolicyName, KernelOID groupOid, AppObjectStub appObjectStub) throws RemoteException, ClassNotFoundException, KernelObjectNotCreatedException, KernelObjectNotFoundException {
+		replicateSapphireObject(serverPolicyName, groupPolicyName, groupOid, appObjectStub);
+	}
+
 	/** LOCAL INTERFACES **/
+    /**
+     * Create a replica of sapphire object.
+     * @author Venugopal Reddy K 00900280 on 18/02/18
+     * @param serverPolicyName server policy stub class name
+     * @param groupPolicyName group policy stub class name
+     * @param groupOid kernel Oid of group policy
+     * @param appObjectStub app object stub to be replicated
+     * @throws RemoteException
+     * @throws ClassNotFoundException
+     * @throws KernelObjectNotCreatedException
+     * @throws KernelObjectNotFoundException
+     */
+    public static void replicateSapphireObject(String serverPolicyName, String groupPolicyName, KernelOID groupOid, AppObjectStub appObjectStub) throws RemoteException, ClassNotFoundException, KernelObjectNotCreatedException, KernelObjectNotFoundException {
+
+		/* Create the Kernel Object for the Server Policy and get the Server Policy Stub */
+        String policyStubClassName = GlobalStubConstants.getPolicyPackageName() + "." + serverPolicyName;
+        SapphirePolicy.SapphireServerPolicy serverPolicyStub =  (SapphirePolicy.SapphireServerPolicy) KernelObjectFactory.create(policyStubClassName);
+
+		/* Get the Group Policy Stub */
+        policyStubClassName = GlobalStubConstants.getPolicyPackageName() + "." + groupPolicyName;
+        SapphirePolicy.SapphireGroupPolicy groupPolicyStub = (SapphirePolicy.SapphireGroupPolicy)KernelObjectFactory.createStubWithOid(policyStubClassName, groupOid, null);
+
+		/* Initialize the server policy and get reference */
+        SapphirePolicy.SapphireServerPolicy serverPolicy = initializeServerPolicy(serverPolicyStub);
+
+		/* Create the App Object and return the App Stub */
+        appObjectStub.$__initialize(true);
+
+		/* Initialize the server policy with app object */
+        serverPolicy.$__initialize(new AppObject(appObjectStub));
+
+		/* Inject group policy stub to server policy */
+        serverPolicy.onCreate(groupPolicyStub);
+
+        try {
+			/* Add the newly created server policy to group policy */
+            groupPolicyStub.addServer(serverPolicyStub);
+        } catch(Exception e) {
+            e.printStackTrace();
+			/* TODO: cleanup */
+        }
+    }
 	/** 
 	 * Create a new kernel object locally on this server.
 	 * 
@@ -209,9 +282,10 @@ public class KernelServerImpl implements KernelServer{
 	 */
 	public static void main(String args[]) {
 
-		if (args.length != 4) {
+		if (args.length < 4) {
 			System.out.println("Incorrect arguments to the kernel server");
-			System.out.println("[host ip] [host port] [oms ip] [oms port]");
+			/* Time Being for backward compatability Region is optional in the configuration */
+			System.out.println("[host ip] [host port] [oms ip] [oms port] [region]");
 			return;
 		}
 		
@@ -233,8 +307,17 @@ public class KernelServerImpl implements KernelServer{
 			KernelServer stub = (KernelServer) UnicastRemoteObject.exportObject(server, 0);
 			Registry registry = LocateRegistry.createRegistry(Integer.parseInt(args[1]));
 			registry.rebind("SapphireKernelServer", stub);
-			
-			oms.registerKernelServer(host);
+
+			if (args.length > 4) {
+				/* extract region from args */
+				server.setRegion(args[4]);
+				oms.registerKernelServerWithRegion(server.getRegion(), host);
+			} else {
+				server.setRegion("Default"); //Default region
+				// TODO: When region is not configured, each host is considered as separate region for backward compatibility
+				// but to work with this DM region is mandatory once if this approach okay then we can change region as mandatory param.
+				oms.registerKernelServer(host);
+			}
 			
 			logger.info("Server ready!");
 			System.out.println("Server ready!");

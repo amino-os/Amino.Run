@@ -5,13 +5,11 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.UUID;
 
 import sapphire.common.AppObject;
 
-import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -27,7 +25,6 @@ public class CacheLeasePolicyTest {
     CacheLeasePolicy.CacheLeaseClientPolicy clientOne;
     CacheLeasePolicy.CacheLeaseServerPolicy server;
 
-    private CacheLeasePolicyTest so;
     private AppObject appObject;
     private UUID lease;
     public long time = CacheLeasePolicy.DEFAULT_LEASE_PERIOD;
@@ -35,7 +32,6 @@ public class CacheLeasePolicyTest {
     @Before
     public void setUp() throws Exception{
         this.client = spy(CacheLeasePolicy.CacheLeaseClientPolicy.class);
-        so = new CacheLeasePolicyTestStub();
         appObject = mock(AppObject.class);
         this.server = spy(CacheLeasePolicy.CacheLeaseServerPolicy.class);
         this.server.$__initialize(appObject);
@@ -84,7 +80,7 @@ public class CacheLeasePolicyTest {
         this.client.getNewLease(time);
 
         // Cannot assign lease to clientOne because currently client holds it
-        thrown.expectMessage(equalTo("Could not get lease."));
+        thrown.expect(LeaseNotAvailableException.class);
         this.clientOne.getNewLease(time);
     }
 
@@ -92,11 +88,9 @@ public class CacheLeasePolicyTest {
      * If a client needs lease for extended period, renew his lease.
      * If the client lease is still valid, renew using the same lease ID.
      * In case current lease expires, throw error if someone else holds the lease.
-     * Else assign a new lease if someone else's lease has expired.
-     * When trying to release an already expired lease, throw error.
      */
     @Test
-    public void testRenewLeaseAndReleaseExpired() throws Exception{
+    public void testRenewLeaseWithCurrentLeaseId() throws Exception{
         long time = 100;
         this.client.getNewLease(time);
         lease = this.client.lease;
@@ -112,13 +106,28 @@ public class CacheLeasePolicyTest {
         this.clientOne.getNewLease(time);
 
         // Someone else has a valid lease, so client cannot have it
-        thrown.expectMessage(equalTo("Could not get lease."));
+        thrown.expect(LeaseNotAvailableException.class);
         this.client.getNewLease(time);
+    }
 
+    /**
+     * Renewing client lease with a new lease ID if someone else's lease has expired.
+     * When trying to release an already expired lease, throw error.
+     */
+    @Test
+    public void testRenewLeaseAndReleaseExpired() throws Exception{
+        long time = 100;
+        this.client.getNewLease(time);
+        verify(this.server).getLease(time);
+
+        // Expire lease for client
+        Thread.sleep(time + CacheLeasePolicy.LEASE_BUFFER); // Accounting for LEASE-BUFFER
+
+        this.clientOne.getNewLease(time);
         // Expire lease for clientOne
         Thread.sleep(time + CacheLeasePolicy.LEASE_BUFFER);
 
-        // Someone else's lease expired, so client can now have a new lease
+        // Someone else's lease expired, so renew lease with new lease ID
         this.client.getNewLease(time);
 
         // Verifying lease expired for clientOne
@@ -129,6 +138,3 @@ public class CacheLeasePolicyTest {
         this.clientOne.releaseCurrentLease();
     }
 }
-
-// Stub because AppObject expects a stub/subclass of the original class.
-class CacheLeasePolicyTestStub extends CacheLeasePolicyTest implements Serializable {}

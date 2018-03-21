@@ -88,8 +88,14 @@ Sapphire Kernel:
 java -Djava.security.manager -Djava.rmi.server.useCodebaseOnly=false -Djava.security.policy=./client.policy -cp sapphire-core.jar;java.rmi.jar;minnietwitter.jar;apache.harmony.jar sapphire.kernel.server.KernelServerImpl 192.168.10.231 31111 192.168.10.231 22346
 ```
 ## Stub File Generation
-If you change or create a new deployment manager(policy), you will need to generate stub files again.
-java -cp sapphire-core.jar;java.rmi.jar;apache.harmony.jar sapphire.compiler.StubGenerator DCAP-Sapphire/sapphire/sapphire-core/src/main/java/sapphire/policy sapphire.policy.stubs DCAP-Sapphire/sapphire/sapphire-core/src/main/java/sapphire/policy/stubs
+
+In order to create stubs for a DM (DMs)
+1. First make sure the .class files already exist under `sapphire-core\build\classes\java\main\sapphire\policy`
+If they do not exist, build the project first to create them.
+
+2. Create an Application with the configuration in the following picture to run the main() method in class `sapphire.compiler.StubGenerator`. Running this Application will create the DM stubs for you.
+
+![StubFileGeneration](images/StubFileGeneration.PNG)
 
 ## Troubleshooting
 Android Studio can be unstable sometimes. Close all Android Studio projects and restart when you observe unexpected behavior.

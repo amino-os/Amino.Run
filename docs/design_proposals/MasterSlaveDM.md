@@ -62,6 +62,9 @@ Above diagram illustrated five primary failure cases.
 
 # Master Slave with Async Replication
 
+## Disclamation
+The design of master slave with *asynchronous* replication by design cannot guarantee no data loss.
+
 ## Components
 Like most DMs, *LoadBalancedMasterSlaveDM* has three components:
 

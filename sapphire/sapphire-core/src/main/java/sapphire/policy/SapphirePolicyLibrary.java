@@ -88,21 +88,14 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 			} catch (RemoteException e) {
 				throw new RemoteException("Could not contact oms.");
 			}
-
-			try {
-				kernel().moveKernelObjectToServer(server, oid);
-			} catch (KernelObjectNotFoundException e) {
-				e.printStackTrace();
-				throw new Error("Could not find myself on this server!");
-			}
+			sapphire_pin_to_server(server);
 		}
 
         // This function is same as sapphire_pin but pining to the server instead of region
-        // and its taking a InitFunction
-		public void sapphire_pin_to_server(InetSocketAddress server, String initFunc) throws RemoteException {
+		public void sapphire_pin_to_server(InetSocketAddress server) throws RemoteException {
 			logger.info("Pinning Sapphire object " + oid.toString() + " to " + server);
 			try {
-				kernel().moveKernelObjectToServerWithInitFUnc(server, oid,initFunc);
+				kernel().moveKernelObjectToServer(server, oid);
 			} catch (KernelObjectNotFoundException e) {
 				e.printStackTrace();
 				throw new Error("Could not find myself on this server!");

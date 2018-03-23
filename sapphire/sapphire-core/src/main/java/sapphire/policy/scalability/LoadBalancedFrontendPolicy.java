@@ -3,14 +3,10 @@ package sapphire.policy.scalability;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import sapphire.common.RateLimiter;
-import sapphire.common.SimpleRateLimiter;
 import sapphire.kernel.common.KernelObjectNotFoundException;
 import sapphire.kernel.common.KernelObjectStub;
 import sapphire.policy.DefaultSapphirePolicy;
@@ -31,24 +27,32 @@ public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
 	 */
 	public static class ClientPolicy extends DefaultSapphirePolicy.DefaultClientPolicy {
 		private static int index;
-		protected ArrayList<SapphireServerPolicy> replicaList;
-		private static Logger logger = Logger.getLogger(GroupPolicy.class.getName());
+		private ArrayList<SapphireServerPolicy> replicaList;
+		private static Logger logger = Logger.getLogger(ClientPolicy.class.getName());
+
+
 		@Override
 		public Object onRPC(String method, ArrayList<Object> params) throws Exception {
+			ServerPolicy server = getCurrentServer();
+			return server.onRPC(method, params);
+		}
+
+		private synchronized  ServerPolicy getCurrentServer() {
 
 			if(null == replicaList || replicaList.isEmpty()){
+				// get all the servers which has replicated Objects only once
+				// dynamically added replicas are considered later
 				replicaList = getGroup().getServers();
-				// get all the servers which has replicated Objects only once dynamically added replicas
-				// are considered later
 				index = (int)(Math.random()*replicaList.size());
-			} else {
-				if (++index >= replicaList.size()){
-					index = 0;
-				}
-			}
 
-			return ((ServerPolicy)(replicaList.get(index))).onRPC(method,params);
+			} else {
+						if (++index >= replicaList.size()){
+							index = 0;
+						}
+			}
+			return (ServerPolicy)replicaList.get(index);
 		}
+
 	}
 
 	/**
@@ -60,16 +64,11 @@ public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
 	 *
 	 */
 	public static class ServerPolicy extends DefaultSapphirePolicy.DefaultServerPolicy {
-		private static Logger logger = Logger.getLogger(GroupPolicy.class.getName());
-		private static int STATIC_RPS = 2000 ; //currently its hard coded we can read from config or annotations
-		private static int PERIOD = 1;
-		transient protected RateLimiter limiter;
+		private static Logger logger = Logger.getLogger(ServerPolicy.class.getName());
+		private static int STATIC_RPS = 2 ; //currently its hard coded we can read from config or annotations
+		private Semaphore limiter = new Semaphore(STATIC_RPS,true);
 
-        public void dynamicInit()
-        {
-            this.limiter =  new SimpleRateLimiter(STATIC_RPS, PERIOD, TimeUnit.SECONDS);
-            limiter.start();
-        }
+
 		@Override
 		public void onCreate(SapphireGroupPolicy group) {
 			super.onCreate(group);
@@ -78,18 +77,24 @@ public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
 
 		@Override
 		public Object onRPC(String method, ArrayList<Object> params) throws Exception {
-			if (limiter.tryAcquire()) { //rps is not reached
-				return super.onRPC(method, params);
-			} else {
-                logger.warning("Trowing Exception on server overload");
-				throw new ServerOverLoadException("The Replica of the SappahireObject on this Kernel Server Over Loaded");
+
+			try {
+				if (limiter.tryAcquire()) { //concurrent requests count not reached
+					return super.onRPC(method, params);
+				} else {
+					logger.warning("Trowing Exception on server overload");
+					throw new ServerOverLoadException("The Replica of the SappahireObject on this Kernel Server Over Loaded");
+				}
+			}
+			finally {
+				limiter.release();
 			}
 		}
         public ServerPolicy onSapphireObjectReplicate() {
             return (ServerPolicy) this.sapphire_replicate();
         }
         public void onSapphirePin(InetSocketAddress server) throws RemoteException {
-			sapphire_pin_to_server(server, "public void sapphire.policy.scalability.LoadBalancedFrontendPolicy$ServerPolicy.dynamicInit()");
+			sapphire_pin_to_server(server);
 		}
     }
 
@@ -120,7 +125,6 @@ public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
 			int count = 1; /* count is started with 1 excluding the present server */
 
 			//Initialize and consider this server
-			((ServerPolicy)server).dynamicInit();
 			addServer(server);
 
 
@@ -136,25 +140,27 @@ public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
 
 				ArrayList<InetSocketAddress> kernelServers = sapphire_getServersInRegion(region);
 
-				/* Create the replicas */
-				for (int  i = 0; i < kernelServers.size() && count < STATIC_REPLICAS; i++) {
+				/* Create the replicas on different kernelServers belongs to same region*/
+				if (kernelServers != null ) {
+					for (int i = 0; i < kernelServers.size() && count < STATIC_REPLICAS; i++) {
 
-					if ((kernelServers.get(i)).equals(((KernelObjectStub)server).$__getHostname())) {
-						continue;
+						if ((kernelServers.get(i)).equals(((KernelObjectStub) server).$__getHostname())) {
+							continue;
+						}
+
+						ServerPolicy replica = ((ServerPolicy) server).onSapphireObjectReplicate();
+						replica.onSapphirePin(kernelServers.get(i));
+
+						((KernelObjectStub) replica).$__updateHostname(kernelServers.get(i));
+
+						count++;
 					}
-
-                    ServerPolicy replica = ((ServerPolicy)server).onSapphireObjectReplicate();
-                    replica.onSapphirePin(kernelServers.get(i));
-
-                    ((KernelObjectStub)replica).$__updateHostname(kernelServers.get(i));
-
-                    count++;
-                }
+				}
 
 				/* If the replicas created are less than the number of replicas configured,
 				log a warning message */
 				if (count != STATIC_REPLICAS)  {
-					logger.warning("Configured replicas count: " + STATIC_REPLICAS + ", created replica count : " + count);
+					logger.log(Level.SEVERE,"Configured replicas count: " + STATIC_REPLICAS + ", created replica count : " + count);
 					throw new Error("Configured replicas count: " + STATIC_REPLICAS + ", created replica count : " + count);
 				}
 

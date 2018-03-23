@@ -101,7 +101,7 @@ public class KernelServerManager {
     /**
      * Gets all the servers in the region
      * @param region
-     * @return list of kernel server host address in the given region
+     * @return list of kernel server host addresses in the given region otherwise null
      */
     public ArrayList<InetSocketAddress> getServersInRegion(String region) {
         return regions.get(region);

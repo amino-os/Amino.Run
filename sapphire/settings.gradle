@@ -1,5 +1,5 @@
 // Sapphire
-include ':sapphire-core'
+include ':sapphire-core', ':androidkernelserver'
 
 // Sapphire's Dependencies
 include ':dependencies:java.rmi'

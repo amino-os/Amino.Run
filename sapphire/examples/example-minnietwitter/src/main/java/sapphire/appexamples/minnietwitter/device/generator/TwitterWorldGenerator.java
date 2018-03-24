@@ -79,10 +79,10 @@ public class TwitterWorldGenerator {
 		Registry registry;
 
 		try {
-			registry = LocateRegistry.getRegistry(args[2], Integer.parseInt(args[3]));
+			registry = LocateRegistry.getRegistry(args[0], Integer.parseInt(args[1]));
 			OMSServer server = (OMSServer) registry.lookup("SapphireOMS");
 
-			KernelServer nodeServer = new KernelServerImpl(new InetSocketAddress(args[0], Integer.parseInt(args[1])), new InetSocketAddress(args[2], Integer.parseInt(args[3])));
+			KernelServer nodeServer = new KernelServerImpl(new InetSocketAddress(args[2], Integer.parseInt(args[3])), new InetSocketAddress(args[0], Integer.parseInt(args[1])));
 
             /* Get Twitter and User Manager */
 			TwitterManager tm = (TwitterManager) server.getAppEntryPoint();
@@ -193,19 +193,7 @@ public class TwitterWorldGenerator {
 			e.printStackTrace();
 		}
 	}
-	private static void StartKernelServer(String[] args) {
-
-		try {
-			String skArgs [] = {args[0], args[1], args[2], args[3]};
-			KernelServerImpl.main(skArgs);
-			System.out.println("Done!");
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
 	public static void main(String[] args) {
-
-		StartKernelServer(args);
-		//ExecuteSingleUserDemo(args);
+		ExecuteSingleUserDemo(args);
 	}
 }

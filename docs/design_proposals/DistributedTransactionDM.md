@@ -16,3 +16,18 @@ public class PetStore {
     }
 }
 ```
+
+Transactional code is written as below:
+```
+PetStore petStore;
+Pet p;
+User u;
+...
+try{
+  ...
+  boolean bool = petStore.adopt(p, u);
+  ...
+} catch (TransactionException te) {
+  ...
+}
+```

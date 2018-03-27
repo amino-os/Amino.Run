@@ -24,6 +24,32 @@ Reliable Collections can be thought of as the natural evolution of the System.Co
 * Asynchronous: APIs are *asynchronous* to ensure that threads are not blocked when incurring IO.
 * Transactional: APIs utilize the abstraction of *transactions* so you can manage multiple Reliable Collections within a service easily.
 
+## Implementation
+```
+---------------------------------------------------------------------------------------
+Language                             files          blank        comment           code
+---------------------------------------------------------------------------------------
+C++                                   3595         213705          73663        1039755
+C/C++ Header                          4542         104234          52473         365869
+JSON                                   120            507              0          26452
+CMake                                  212           1260            154           9345
+XML                                    107             65            128           5215
+XSD                                      1              9             12           3383
+Bourne Shell                            60            610            444           3244
+C                                       18           1138            193           1260
+Windows Module Definition               15             10              6            429
+Bourne Again Shell                      10             69             34            339
+Python                                   2            125             82            288
+Markdown                                 5            104              0            234
+HTML                                     1             41              4            193
+Dockerfile                               3             12              4             65
+Perl                                     2             14              4             54
+awk                                      1              2              0             16
+YAML                                     1              2              1             16
+---------------------------------------------------------------------------------------
+SUM:                                  8695         321907         127202        1456157
+---------------------------------------------------------------------------------------
+```
 ## References
 * [Service Fabric Git Repo](https://github.com/Microsoft/service-fabric)
 * [Service Fabric Doc](https://docs.microsoft.com/en-us/azure/service-fabric)

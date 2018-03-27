@@ -1,7 +1,7 @@
 ## Background
 One of the key [objectives](https://github.com/Huawei-PaaS/DCAP-Sapphire/wiki#objectives) of DCAP is *easy-to-use*. Easy for application developers to use DMs and easy for DM developers to create new DMs. However, after working on Sapphire for a while, I observe a few places which are not easy, sometimes even awkward, to use. 
 
-Modernizing Sapphire core is [a task](https://github.com/Huawei-PaaS/DCAP-Sapphire/wiki/DCAP-Planning#tasks) we plan to undertake. Hopefully these issues can help us drive the redesign of Sapphire core. Feel free to put share your thoughts and observations with the team. 
+Modernizing Sapphire core is [a task](https://github.com/Huawei-PaaS/DCAP-Sapphire/wiki/DCAP-Planning#tasks) we plan to undertake. Hopefully these issues can help us drive the redesign of Sapphire core. Feel free to share your thoughts and observations with the team. 
 
 ## Issues
 

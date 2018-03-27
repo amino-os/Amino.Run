@@ -42,7 +42,7 @@ public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
 			if(null == replicaList || replicaList.isEmpty()){
 				// get all the servers which has replicated Objects only once
 				// dynamically added replicas are considered later
-				replicaList = getGroup().getServers();
+				replicaList = ((GroupPolicy)getGroup()).getServers();
 				index = (int)(Math.random()*replicaList.size());
 
 			} else {
@@ -65,8 +65,8 @@ public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
 	 */
 	public static class ServerPolicy extends DefaultSapphirePolicy.DefaultServerPolicy {
 		private static Logger logger = Logger.getLogger(ServerPolicy.class.getName());
-		private static int STATIC_RPS = 2 ; //currently its hard coded we can read from config or annotations
-		private Semaphore limiter = new Semaphore(STATIC_RPS,true);
+		private static int MAX_CONCURRENT_REQUESTS = 2000 ; //currently its hard coded we can read from config or annotations
+		private Semaphore limiter = new Semaphore(MAX_CONCURRENT_REQUESTS,true);
 
 
 		@Override
@@ -82,8 +82,8 @@ public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
 				if (limiter.tryAcquire()) { //concurrent requests count not reached
 					return super.onRPC(method, params);
 				} else {
-					logger.warning("Trowing Exception on server overload");
-					throw new ServerOverLoadException("The Replica of the SappahireObject on this Kernel Server Over Loaded");
+					logger.warning("Throwing Exception on server overload on reaching the concurrent requests count"+ MAX_CONCURRENT_REQUESTS);
+					throw new ServerOverLoadException("The Replica of the SappahireObject on this Kernel Server Over Loaded on reaching the concurrent requests count " + MAX_CONCURRENT_REQUESTS);
 				}
 			}
 			finally {
@@ -123,6 +123,7 @@ public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
 		public void onCreate(SapphireServerPolicy server) {
 			nodes = new ArrayList<SapphireServerPolicy>();
 			int count = 1; /* count is started with 1 excluding the present server */
+			int numnodes = 0 ; // num of nodes/servers in the selected region
 
 			//Initialize and consider this server
 			addServer(server);
@@ -137,22 +138,22 @@ public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
 				sapphire object is being created. And try to replicate the
 				sapphire objects in the same region(excluding this kernel server) */
 				String region = server.sapphire_getRegion();
+				InetSocketAddress addr = server.sapphireLookupKernelObject(server.$__getKernelOID());
 
 				ArrayList<InetSocketAddress> kernelServers = sapphire_getServersInRegion(region);
 
 				/* Create the replicas on different kernelServers belongs to same region*/
 				if (kernelServers != null ) {
-					for (int i = 0; i < kernelServers.size() && count < STATIC_REPLICAS; i++) {
-
-						if ((kernelServers.get(i)).equals(((KernelObjectStub) server).$__getHostname())) {
+					numnodes = kernelServers.size();
+					for (int i = 0; i < numnodes && count < STATIC_REPLICAS; i++) {
+						// if the server addresses same as local one skip to create replica
+						if ((kernelServers.get(i)).equals(addr)) {
 							continue;
 						}
 
 						ServerPolicy replica = ((ServerPolicy) server).onSapphireObjectReplicate();
 						replica.onSapphirePin(kernelServers.get(i));
-
 						((KernelObjectStub) replica).$__updateHostname(kernelServers.get(i));
-
 						count++;
 					}
 				}
@@ -160,13 +161,14 @@ public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
 				/* If the replicas created are less than the number of replicas configured,
 				log a warning message */
 				if (count != STATIC_REPLICAS)  {
-					logger.log(Level.SEVERE,"Configured replicas count: " + STATIC_REPLICAS + ", created replica count : " + count);
+					logger.severe("Configured replicas count: " + STATIC_REPLICAS + ", created replica count : " + count+
+							"insufficient servers in region "+ numnodes + "to create required replicas");
 					throw new Error("Configured replicas count: " + STATIC_REPLICAS + ", created replica count : " + count);
 				}
 
             } catch (RemoteException e) {
                 e.printStackTrace();
-                throw new Error("Could not create new group policy because the oms is not available.");
+                throw new Error("Could not create new group policy because the oms is not available."+ e);
             }
         }
 

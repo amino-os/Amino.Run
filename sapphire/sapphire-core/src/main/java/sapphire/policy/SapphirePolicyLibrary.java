@@ -147,6 +147,20 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 		public KernelOID $__getKernelOID() {
 			return oid;
 		}
+
+		public InetSocketAddress sapphireLookupKernelObject(KernelOID oid) throws RemoteException {
+			InetSocketAddress addr;
+			try {
+				 addr = oms().lookupKernelObject(oid);
+			} catch (RemoteException e) {
+				throw new RemoteException("Could not contact oms.");
+			}
+			catch (KernelObjectNotFoundException e) {
+				e.printStackTrace();
+				throw new Error("Could not find myself on this server!");
+			}
+			return addr;
+		}
 	}
 
 	public static abstract class SapphireGroupPolicyLibrary implements SapphireGroupPolicyUpcalls {

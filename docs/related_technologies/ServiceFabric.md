@@ -1,5 +1,5 @@
 ## Architect
-![Service Fabric Architect][../images/ServiceFabricArch.png]
+![Service Fabric Architect](../images/ServiceFabricArch.png)
 
 ## Features
 

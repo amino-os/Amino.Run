@@ -1,5 +1,7 @@
 ## Background
-One of the key objectives of DCAP is *easy-to-use*. Easy for application developers to use DMs and easy for DM developers to create new DMs. However, after working on Sapphire for a while, I observe a few places which are not easy, sometimes even awkward, to use. I listed my observations here. Hopefully these issues can help us drive the redesign of Sapphire core. Feel free to put share your thoughts and observations with the team. 
+One of the key [objectives](https://github.com/Huawei-PaaS/DCAP-Sapphire/wiki#objectives) of DCAP is *easy-to-use*. Easy for application developers to use DMs and easy for DM developers to create new DMs. However, after working on Sapphire for a while, I observe a few places which are not easy, sometimes even awkward, to use. 
+
+Modernizing Sapphire core is [a task](https://github.com/Huawei-PaaS/DCAP-Sapphire/wiki/DCAP-Planning#tasks) we plan to undertake. Hopefully these issues can help us drive the redesign of Sapphire core. Feel free to put share your thoughts and observations with the team. 
 
 ## Issues
 
@@ -25,7 +27,7 @@ public class DurableSerializableRPCPolicy extends PeriodicCheckpointPolicy {
 
 #### Impossible to cherry pick
 
-Every DM has three components: *Client*, *Server*, and *Group*. 
+Every DM has three components: *Client*, *Server*, and *Group*. As a DM user, when I apply a DM to my Sapphire object, I have to carry all three components (i.e. client, server, group) at the same time. It will be great if the system allows users to cherry pick components, e.g. use *retry* DM on client side together with *locking* DM on server side.
 
 ```java
 public class DurableSerializableRPCPolicy extends PeriodicCheckpointPolicy {

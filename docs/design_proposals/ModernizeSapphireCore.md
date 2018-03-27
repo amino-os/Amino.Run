@@ -25,7 +25,7 @@ public class DurableSerializableRPCPolicy extends PeriodicCheckpointPolicy {
 }
 ```
 
-#### Impossible to cherry pick
+#### Impossible to cherry pick DM component
 
 Every DM has three components: *Client*, *Server*, and *Group*. As a DM user, when I apply a DM to my Sapphire object, I have to carry all three components (i.e. client, server, group) at the same time. It will be great if the system allows users to cherry pick components, e.g. use *retry* DM on client side together with *locking* DM on server side.
 

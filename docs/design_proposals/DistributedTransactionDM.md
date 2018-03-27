@@ -39,7 +39,7 @@ try{
 ## Phase 1 User Experience
 Code to define transaction
 ```
-class FinanceTxn implements SapphireObject<DCAPTranaction> {
+class FinanceTxn implements Sapphire<DCAPTranaction> {
     Ledger book;
     ...
     public boolean transferMoney(BankAccountFoo account1, AccountBar account2, unsigned int amount) {
@@ -48,7 +48,6 @@ class FinanceTxn implements SapphireObject<DCAPTranaction> {
        this.book.log(String.Format("transferred from %s to %s amount %d", account1.name(), account2.name(), amount)); 
        return true;
     }
-    
 }
 ```
 Code to invoke transaction

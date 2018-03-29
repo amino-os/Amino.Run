@@ -93,7 +93,7 @@ public class DHTPolicy extends SapphirePolicy {
 		
 		@Override
 		public Object onRPC(String method, ArrayList<Object> params) throws Exception {
-			/* We assume that the first param is the index */	
+			/* We assume that the first param is the index */
 			DHTServerPolicy responsibleNode = group.dhtGetResponsibleNode(new DHTKey((String)params.get(0)));
 			return responsibleNode.forwardedRPC(method, params);
 		}

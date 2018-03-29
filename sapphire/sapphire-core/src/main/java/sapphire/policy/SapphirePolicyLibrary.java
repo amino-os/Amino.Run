@@ -50,7 +50,7 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 		/**
 		 * Creates a replica of this server and registers it with the group
 		 */
-		// TODO: Also replicate teh policy ??
+		// TODO: Also replicate the policy ??
 		public SapphireServerPolicy sapphire_replicate() {
 			KernelObjectStub serverPolicyStub = null;
 			String policyStubClassName = GlobalStubConstants.getPolicyPackageName() + "." + RMIUtil.getShortName(this.getClass()) + GlobalStubConstants.STUB_SUFFIX;

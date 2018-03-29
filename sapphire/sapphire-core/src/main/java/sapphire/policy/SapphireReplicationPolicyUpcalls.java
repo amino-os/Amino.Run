@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import sapphire.policy.SapphirePolicy.SapphireGroupPolicy;
 import sapphire.policy.SapphirePolicy.SapphireServerPolicy;
 
+// TODO: Quinton: This seems to be a strict subset (cut 'n paste) of SapphirePolicyUpcalls.  It smells like we need to refactor.
 public interface SapphireReplicationPolicyUpcalls extends Serializable {
 	public interface SapphireReplicationServerUpcalls extends Serializable {
 		public void onCreate(SapphireGroupPolicy group);

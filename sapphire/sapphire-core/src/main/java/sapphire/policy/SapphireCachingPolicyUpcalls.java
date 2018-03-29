@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import sapphire.policy.SapphirePolicy.SapphireGroupPolicy;
 import sapphire.policy.SapphirePolicy.SapphireServerPolicy;
 
+// TODO: Quinton: This is not referenced anywhere and shoulds be deleted/refactored.  It's cut 'n paste from elsewhere in the code and smells bad.
 public interface SapphireCachingPolicyUpcalls extends Serializable {
 	
 	public interface  SapphireCachingClientUpcalls extends Serializable {

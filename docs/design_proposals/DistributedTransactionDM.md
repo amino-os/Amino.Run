@@ -63,13 +63,13 @@ try {
 ```
 #### Alternative options
 * Explict specification of participants of the tranaction.
-<br/> explicitly specifying the scope of Sapphire objects involved in the transaction helps to reduce the overhead of transaction and make transaction less likely fail due to false negative conflicting. The con is the decision burdon shifted to application developer.
+<br/> explicitly specifying the scope of Sapphire objects involved in the transaction helps to reduce the overhead of transaction and make transaction less likely fail due to false negative conflicting. The con is the decision task shifted to application developer, which is error prone when referals to other Sapphire objects exist.
 ### DM Design
 #### DCAPTransaction
 * client policy: not much
 * server policy
 <br/>acting as distributed transaction coordinator, enforcing 2PC protocol (1st phase)
-<br/> TODO: flowchart of transaction 
+<br/> ![](../images/tx-state-chart.png)
 * group policy: not much
 * TranactionException spec
 <br/>name: "DCAP_transaction_failure"

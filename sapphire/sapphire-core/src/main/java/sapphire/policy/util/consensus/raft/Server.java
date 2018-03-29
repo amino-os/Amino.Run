@@ -377,6 +377,8 @@ public class Server { // This outer class contains everything common to leaders,
          */
         ThreadPoolExecutor appendEntriesThreadPool;
 
+        Leader() {
+        }
         /**
          * Start being a leader.
          */
@@ -388,7 +390,9 @@ public class Server { // This outer class contains everything common to leaders,
              **/
             logger.info(myServerID + ": Start being a leader.");
             state = Server.State.LEADER;
-            appendEntriesThreadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool(otherServers.size() * 2);
+            if(appendEntriesThreadPool == null ) {
+                appendEntriesThreadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool(otherServers.size() * 2);
+            }
             leaderHeartbeatSendTimer = new ResettableTimer(new TimerTask() {
                 public void run() {
                     sendHeartbeats();
@@ -424,8 +428,8 @@ public class Server { // This outer class contains everything common to leaders,
         void stop() {
             logger.info(myServerID + ": Stop being a leader.");
             leaderHeartbeatSendTimer.cancel(); // Stop sending heartbeats.
-            appendEntriesThreadPool.shutdownNow();
-            appendEntriesThreadPool = null;
+            // appendEntriesThreadPool.shutdownNow();
+            // appendEntriesThreadPool = null;
         }
 
         /**
@@ -447,7 +451,7 @@ public class Server { // This outer class contains everything common to leaders,
                     else {
                         prevLogTerm = INVALID_INDEX;
                     }
-                    ArrayList<LogEntry> entries = log.size() > 0 ? (ArrayList<LogEntry>)log.subList(nextIndex, lastLogIndex() + 1) : NO_LOG_ENTRIES;
+                    List<LogEntry> entries = log.size() > 0 ? (List<LogEntry>)log.subList(nextIndex, lastLogIndex() + 1) : NO_LOG_ENTRIES;
                     int remoteTerm = getServer(otherServerID).appendEntries(currentTerm, myServerID,
                             nextIndex - 1, prevLogTerm, entries, commitIndex);
                     success = true;
@@ -466,7 +470,6 @@ public class Server { // This outer class contains everything common to leaders,
             if (state == State.LEADER) {
                 leader.nextIndex.put(otherServerID, lastLogIndex() + 1);
                 leader.matchIndex.put(otherServerID, lastLogIndex());
-                // replicationCounter.release();
             }
         }
 
@@ -569,7 +572,7 @@ public class Server { // This outer class contains everything common to leaders,
              *  If command received from client: append entry to local log, respond after entry applied to state machine (§5.3)
              */
             logger.info(String.format("%s: applyToStateMachine(%s)", myServerID, operation));
-            int logIndex;
+            final int logIndex;
             synchronized (log) {
                 log.add(new LogEntry(operation, currentTerm));
                 logIndex = lastLogIndex();
@@ -579,39 +582,17 @@ public class Server { // This outer class contains everything common to leaders,
             while (i.hasNext()) {
                 final UUID otherServerID = i.next();
                 final Integer otherServerNextIndex = leader.nextIndex.get(otherServerID);
-                if (otherServerNextIndex == null || logIndex >= otherServerNextIndex) { // This is always true, but we put it here to be consistent with the formal algorithm.
-                    appendEntriesThreadPool.execute(new Runnable() {
-                        @Override
-                        public void run() {
-                            boolean success = false;
-                            while (!success && state == State.LEADER) {
-                                try {
-                                    int nextIndex = otherServerNextIndex == null ? 0 : otherServerNextIndex;
-                                    int remoteTerm = getServer(otherServerID).appendEntries(currentTerm, myServerID,
-                                            otherServerNextIndex - 1, otherServerNextIndex > 0 ? log.get(otherServerNextIndex - 1).term : INVALID_INDEX, log.subList(nextIndex, lastLogIndex() + 1), commitIndex);
-                                    success = true;
-                                    respondToRemoteTerm(remoteTerm); // Might lose leadership.
-                                } catch (InvalidTermException e) {
-                                    logger.warning(e.toString());
-                                    respondToRemoteTerm(e.currentTerm);
-                                } catch (PrevLogTermMismatch e) {
-                                    logger.warning(e.toString());
-                                    leader.nextIndex.put(otherServerID, otherServerNextIndex - 1); // Decrement and try again.
-                                } catch (InvalidLogIndex e) { // The remote server doesn't have that log entry at all.
-                                    logger.severe(e.toString());
-                                    // TODO: throw e; // Why does this not compile???
-                                }
-                            }
-                            if (state == State.LEADER) {
-                                leader.nextIndex.put(otherServerID, lastLogIndex() + 1);
-                                leader.matchIndex.put(otherServerID, lastLogIndex());
-                                replicationCounter.release();
-                            }
+                appendEntriesThreadPool.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (otherServerNextIndex == null || logIndex >= otherServerNextIndex) { // This is always true, but we put it here to be consistent with the formal algorithm.
+                            sendAppendEntries(otherServerID);
+                        } else {
+                            logger.warning(String.format("%s: Whooah! logIndex %d is not greater than otherServerNextIndex %s", myServerID, logIndex, otherServerNextIndex));
                         }
-                    });
-                } else {
-                    logger.warning(String.format("%s: Whooah! logIndex %d is not greater than otherServerNextIndex %s", myServerID, logIndex, otherServerNextIndex));
-                }
+                        replicationCounter.release();
+                    }
+                });
             }
             logger.info(String.format("%s: Waiting for logindex %d to be committed to %d majority quorum.", myServerID, logIndex, majorityQuorumSize()));
             boolean quorumAchieved = false;

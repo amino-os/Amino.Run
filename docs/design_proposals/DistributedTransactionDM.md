@@ -79,3 +79,5 @@ try {
 * tx_vote
 * tx_commit
 * tx_abort
+#### participant state transition in 2PC transaction
+<br/>![participant transaction state diagram](../images/tx-participant-svrdm.png)

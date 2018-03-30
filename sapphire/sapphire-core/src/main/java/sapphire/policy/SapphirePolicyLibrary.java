@@ -148,7 +148,7 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 			return oid;
 		}
 
-		public InetSocketAddress sapphireLookupKernelObject(KernelOID oid) throws RemoteException {
+		public InetSocketAddress sapphire_locate_kernel_object(KernelOID oid) throws RemoteException {
 			InetSocketAddress addr;
 			try {
 				 addr = oms().lookupKernelObject(oid);

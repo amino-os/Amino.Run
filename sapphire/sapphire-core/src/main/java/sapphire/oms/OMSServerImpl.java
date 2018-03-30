@@ -21,6 +21,7 @@ import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireReplicaID;
 import sapphire.kernel.common.KernelOID;
 import sapphire.kernel.common.KernelObjectNotFoundException;
+import sapphire.kernel.common.ServerInfo;
 import sapphire.kernel.server.KernelServer;
 import sapphire.policy.SapphirePolicy.SapphireGroupPolicy;
 import sapphire.policy.SapphirePolicy.SapphireServerPolicy;
@@ -79,21 +80,9 @@ public class OMSServerImpl implements OMSServer{
        }
 
        @Override
-       public void registerKernelServer(InetSocketAddress host) throws RemoteException, NotBoundException {
-    	   serverManager.registerKernelServer(host);   		
+       public void registerKernelServer(ServerInfo info) throws RemoteException, NotBoundException {
+		   serverManager.registerKernelServer(info);
        }
-
-	   /**
-		* Registers the kernel server to the specified region
-		* @param region
-		* @param host
-		* @throws RemoteException
-		* @throws NotBoundException
-		*/
-	   @Override
-	   public void registerKernelServerWithRegion(String region, InetSocketAddress host) throws RemoteException, NotBoundException {
-		   serverManager.registerKernelServerWithRegion(region, host);
-	   }
        
 	   /**
 	    * Gets the list servers in the system

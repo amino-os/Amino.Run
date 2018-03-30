@@ -14,6 +14,7 @@ import java.util.logging.Logger;
 
 import org.json.JSONException;
 
+import sapphire.kernel.common.ServerInfo;
 import sapphire.kernel.server.KernelServer;
 
 /**
@@ -32,33 +33,20 @@ public class KernelServerManager {
 		regions = new ConcurrentHashMap<String, ArrayList<InetSocketAddress>>();
 	}
 	
-	public void registerKernelServer(InetSocketAddress address) throws RemoteException, NotBoundException {
-		//this.servers.putIfAbsent(address, null);
-		logger.info("New kernel server: " + address.toString());
-		// TODO For now, let each server be a region
-		ArrayList<InetSocketAddress> region = new ArrayList<InetSocketAddress>();
-		region.add(address);
-		regions.put(address.toString(), region);
+	public void registerKernelServer(ServerInfo info) throws RemoteException, NotBoundException {
+		logger.info("New kernel server: " + info.getHost().toString() + " in region " + info.getRegion());
+
+		ArrayList<InetSocketAddress> serverList = regions.get(info.getRegion());
+
+		if (null == serverList) {
+			serverList = new ArrayList<InetSocketAddress>();
+		}
+
+		serverList.add(info.getHost());
+		regions.put(info.getRegion(), serverList);
 	}
 	
-    /**
-     * Registers the kernel server to the specified region
-     * @param region
-     * @param address
-     * @throws RemoteException
-     * @throws NotBoundException
-     */
-    public void registerKernelServerWithRegion(String region, InetSocketAddress address) throws RemoteException, NotBoundException {
-        logger.info("New kernel server: " + address.toString() + " in region " + region);
 
-        ArrayList<InetSocketAddress> serverList = regions.get(region);
-        if (null == serverList) {
-            serverList = new ArrayList<InetSocketAddress>();
-        }
-
-        serverList.add(address);
-        regions.put(region, serverList);
-    }
 
 	/**
      */

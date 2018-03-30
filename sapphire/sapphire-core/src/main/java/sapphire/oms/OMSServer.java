@@ -6,6 +6,7 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 
+import sapphire.kernel.common.ServerInfo;
 import sapphire.policy.SapphirePolicy.SapphireGroupPolicy;
 import sapphire.policy.SapphirePolicy.SapphireServerPolicy;
 import sapphire.runtime.EventHandler;
@@ -25,8 +26,8 @@ public interface OMSServer extends Remote {
        ArrayList<String> getRegions() throws RemoteException;
        InetSocketAddress getServerInRegion(String region) throws RemoteException;
        ArrayList<InetSocketAddress> getServersInRegion(String region) throws RemoteException;
-       void registerKernelServer(InetSocketAddress host) throws RemoteException, NotBoundException;
-       void registerKernelServerWithRegion(String region, InetSocketAddress host) throws RemoteException, NotBoundException;
+       void registerKernelServer(ServerInfo info) throws RemoteException, NotBoundException;
+
        SapphireObjectID registerSapphireObject(EventHandler dispatcher) throws RemoteException;
        SapphireReplicaID registerSapphireReplica(SapphireObjectID oid, EventHandler dispatcher) throws RemoteException, SapphireObjectNotFoundException;
        EventHandler getSapphireObjectDispatcher(SapphireObjectID oid) throws RemoteException, SapphireObjectNotFoundException;

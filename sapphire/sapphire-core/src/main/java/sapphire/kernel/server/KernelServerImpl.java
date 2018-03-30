@@ -24,7 +24,7 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
+import sapphire.kernel.common.ServerInfo;
 
 /** 
  * Sapphire Kernel Server. Runs on every Sapphire node, knows how to talk to the OMS, handles RPCs and has a client for making RPCs.
@@ -217,8 +217,8 @@ public class KernelServerImpl implements KernelServer{
 	 * @param args
 	 */
 	public static void main(String args[]) {
-
-		if (args.length != 5) {
+		//Time Being for backward compatibility Region is optional in the configuration
+		if (args.length < 4) {
 			System.out.println("Incorrect arguments to the kernel server");
 			System.out.println("[host ip] [host port] [oms ip] [oms port] [region]");
 			return;
@@ -242,9 +242,15 @@ public class KernelServerImpl implements KernelServer{
 			KernelServer stub = (KernelServer) UnicastRemoteObject.exportObject(server, 0);
 			Registry registry = LocateRegistry.createRegistry(Integer.parseInt(args[1]));
 			registry.rebind("SapphireKernelServer", stub);
-			
-			server.setRegion(args[4]);
-			oms.registerKernelServerWithRegion(server.getRegion(), host);
+
+			if (args.length > 4) {
+				server.setRegion(args[4]);
+			}else {
+				//server.setRegion("default");
+				// TODO once we are sure we can comment below line & uncomment above line
+				server.setRegion(host.toString());
+			}
+			oms.registerKernelServer(new ServerInfo(host,server.getRegion()));
 			logger.info("Server ready!");
 			System.out.println("Server ready!");
 			

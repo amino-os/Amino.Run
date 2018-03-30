@@ -43,13 +43,10 @@ public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
 				// get all the servers which has replicated Objects only once
 				// dynamically added replicas are considered later
 				replicaList = ((GroupPolicy)getGroup()).getServers();
-				index = (int)(Math.random()*replicaList.size());
+				index = (int)(Math.random()* 100);
 
-			} else {
-						if (++index >= replicaList.size()){
-							index = 0;
-						}
 			}
+			index = ++index % replicaList.size();
 			return (ServerPolicy)replicaList.get(index);
 		}
 
@@ -104,29 +101,31 @@ public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
 	 *
 	 */
 	public static class GroupPolicy extends DefaultSapphirePolicy.DefaultGroupPolicy {
-		private ArrayList<SapphireServerPolicy> nodes;
+		private ArrayList<SapphireServerPolicy> servers;
 		private static int STATIC_REPLICAS = 2 ; //currently its hard coded we can read from config or annotations
 		private static Logger logger = Logger.getLogger(GroupPolicy.class.getName());
-
-		@Override
-		synchronized public void addServer(SapphireServerPolicy server) {
-			nodes.add(server);
-		}
 
 
 		@Override
 		public ArrayList<SapphireServerPolicy> getServers() {
-			return nodes;
+			// In case our parent has servers too, add ours to theirs and return the union.
+			ArrayList<SapphireServerPolicy> servers = super.getServers();
+			if (servers == null) {
+				servers = new ArrayList<SapphireServerPolicy>();
+			}
+			servers.addAll(this.servers);
+			System.out.println("getServers servers.size()"+ servers.size());
+			return servers;
 		}
 
 		@Override
 		public void onCreate(SapphireServerPolicy server) {
-			nodes = new ArrayList<SapphireServerPolicy>();
-			int count = 1; /* count is started with 1 excluding the present server */
+			servers = new ArrayList<SapphireServerPolicy>();
+			int count = 0;     // count is compared below < STATIC_REPLICAS-1 excluding the present server
 			int numnodes = 0 ; // num of nodes/servers in the selected region
 
 			//Initialize and consider this server
-			addServer(server);
+			servers.add(server);
 
 
 			/* Creation of group happens when the first instance of sapphire object is
@@ -138,37 +137,36 @@ public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
 				sapphire object is being created. And try to replicate the
 				sapphire objects in the same region(excluding this kernel server) */
 				String region = server.sapphire_getRegion();
-				InetSocketAddress addr = server.sapphireLookupKernelObject(server.$__getKernelOID());
+				InetSocketAddress addr = server.sapphire_locate_kernel_object(server.$__getKernelOID());
 
 				ArrayList<InetSocketAddress> kernelServers = sapphire_getServersInRegion(region);
 
 				/* Create the replicas on different kernelServers belongs to same region*/
 				if (kernelServers != null ) {
-					numnodes = kernelServers.size();
-					for (int i = 0; i < numnodes && count < STATIC_REPLICAS; i++) {
-						// if the server addresses same as local one skip to create replica
-						if ((kernelServers.get(i)).equals(addr)) {
-							continue;
-						}
 
+					kernelServers.remove(addr);
+					numnodes = kernelServers.size();
+
+					for (count = 0; count < numnodes && count < STATIC_REPLICAS-1; count++) {
 						ServerPolicy replica = ((ServerPolicy) server).onSapphireObjectReplicate();
-						replica.onSapphirePin(kernelServers.get(i));
-						((KernelObjectStub) replica).$__updateHostname(kernelServers.get(i));
-						count++;
+						replica.onSapphirePin(kernelServers.get(count));
+						((KernelObjectStub) replica).$__updateHostname(kernelServers.get(count));
+						servers.add(replica);
+
 					}
 				}
 
 				/* If the replicas created are less than the number of replicas configured,
 				log a warning message */
-				if (count != STATIC_REPLICAS)  {
+				if (count != STATIC_REPLICAS-1)  {
 					logger.severe("Configured replicas count: " + STATIC_REPLICAS + ", created replica count : " + count+
 							"insufficient servers in region "+ numnodes + "to create required replicas");
 					throw new Error("Configured replicas count: " + STATIC_REPLICAS + ", created replica count : " + count);
 				}
 
             } catch (RemoteException e) {
-                e.printStackTrace();
-                throw new Error("Could not create new group policy because the oms is not available."+ e);
+                logger.severe("Received RemoteException may be oms is down ");
+                throw new Error("Could not create new group policy because the oms is not available.", e);
             }
         }
 

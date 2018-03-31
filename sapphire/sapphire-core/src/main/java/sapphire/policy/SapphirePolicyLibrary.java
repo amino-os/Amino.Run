@@ -88,7 +88,12 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 			} catch (RemoteException e) {
 				throw new RemoteException("Could not contact oms.");
 			}
+			sapphire_pin_to_server(server);
+		}
 
+        // This function is same as sapphire_pin but pining to the server instead of region
+		public void sapphire_pin_to_server(InetSocketAddress server) throws RemoteException {
+			logger.info("Pinning Sapphire object " + oid.toString() + " to " + server);
 			try {
 				kernel().moveKernelObjectToServer(server, oid);
 			} catch (KernelObjectNotFoundException e) {
@@ -128,6 +133,9 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 			return actualAppObject;
 		}
 
+		public String sapphire_getRegion() {
+			return kernel().getRegion();
+		}
 		public void $__initialize(AppObject appObject) {
 			this.appObject = appObject;
 		}
@@ -138,6 +146,20 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 
 		public KernelOID $__getKernelOID() {
 			return oid;
+		}
+
+		public InetSocketAddress sapphire_locate_kernel_object(KernelOID oid) throws RemoteException {
+			InetSocketAddress addr;
+			try {
+				 addr = oms().lookupKernelObject(oid);
+			} catch (RemoteException e) {
+				throw new RemoteException("Could not contact oms.");
+			}
+			catch (KernelObjectNotFoundException e) {
+				e.printStackTrace();
+				throw new Error("Could not find myself on this server!");
+			}
+			return addr;
 		}
 	}
 
@@ -158,8 +180,21 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 			return oms().getRegions();
 		}
 
+		/**
+		 * Gets the list of inet sock address of the servers in the specified region
+		 *
+		 * @param region
+		 * @return inet socket address of the server
+		 * @throws RemoteException
+		 */
+		public ArrayList<InetSocketAddress> sapphire_getServersInRegion(String region) throws RemoteException {
+			return oms().getServersInRegion(region);
+		}
 		public void $__setKernelOID(KernelOID oid) {
 			this.oid = oid;
+		}
+		public KernelOID $__getKernelOID() {
+			return this.oid;
 		}
 	}
 }

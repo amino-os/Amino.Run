@@ -46,6 +46,10 @@ public class DurableSerializableRPCPolicy extends PeriodicCheckpointPolicy {
 ## Proposals
 
 #### Proposal I
+Comparing to the current Sapphire DM structure (left diagram), the new DM structure (right diagram) proposes two changes:
+* Client DM is replaced with a chain of client side DMs. Similarly, server DM is replaced with a chain of server side DMs too. In the current Sapphire core, DMs are assembled by code generator at compilation phase. The proposed structure allows Saaphire  to assemble DMs at runtime.
+* The method invocations between App object and DM are replaced with inter-process communications. DMs only need to be implemented once. DMs can be implemented in any languages. 
+
 ![SapphireDMStructure](../images/SapphireDMStructure.png)
 
 ## Thoughts

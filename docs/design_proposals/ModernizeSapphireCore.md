@@ -43,6 +43,11 @@ public class DurableSerializableRPCPolicy extends PeriodicCheckpointPolicy {
 }
 ```
 
+## Proposals
+
+#### Proposal I
+![SapphireDMStructure](../images/SapphireDMStructure.png)
+
 ## Thoughts
 
 #### Framework vs Code Generation

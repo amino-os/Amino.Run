@@ -23,7 +23,7 @@ task delstubs(type: Delete) {
 // Details can be found at https://blog.gradle.org/introducing-incremental-build-support
 task genstubs(type: Exec) {
   dependsOn 'delstubs', 'build'
-  executable "sh"
+  executable "bash"
   args "-c", "pushd ../../generators && python generate_policy_stubs_on_host.py && popd"
 }
 

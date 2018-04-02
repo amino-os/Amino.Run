@@ -6,6 +6,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import static org.junit.Assert.*;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -16,8 +17,6 @@ import java.util.ArrayList;
 
 import sapphire.common.AppObject;
 import sapphire.kernel.common.KernelObjectMigratingException;
-import sapphire.kernel.server.KernelServerImpl;
-import sapphire.oms.OMSServerImpl;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
@@ -27,8 +26,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import sapphire.policy.mobility.explicitmigration.ExplicitMigrationPolicyTestConstants;
-
 /**
  * Created by Malepati Bala Siva Sai Akhil on 23/1/18.
  */
@@ -36,11 +33,11 @@ import sapphire.policy.mobility.explicitmigration.ExplicitMigrationPolicyTestCon
 @RunWith(MockitoJUnitRunner.class)
 public class ExplicitMigrationPolicyTest {
 
-    public static class ExplicitMigrationTest extends ExplicitMigrationImpl {}
+    public static class ExplicitMigratorTest extends ExplicitMigratorImpl {}
 
     ExplicitMigrationPolicy.ClientPolicy client;
     ExplicitMigrationPolicy.ServerPolicy server;
-    private ExplicitMigrationTest so;
+    private ExplicitMigratorTest so;
     private AppObject appObject;
     private ArrayList<Object> noParams, oneParam;
 
@@ -52,7 +49,7 @@ public class ExplicitMigrationPolicyTest {
     public void setUp() throws Exception {
         this.client = spy(ExplicitMigrationPolicy.ClientPolicy.class);
         this.server = spy(ExplicitMigrationPolicy.ServerPolicy.class);
-        so = new ExplicitMigrationTestStub();
+        so = new ExplicitMigratorTestStub();
         appObject = new AppObject(so);
         server.$__initialize(appObject);
         this.client.setServer(this.server);
@@ -68,17 +65,60 @@ public class ExplicitMigrationPolicyTest {
         verify(this.server).onRPC(methodName, noParams);
 
         // Check that DM methods were not called
-        verify(this.server, never()).migrateObject(ExplicitMigrationPolicyTestConstants.regularRPC_testDestAddr);
+        verify(this.server, never()).migrateObject(ExplicitMigrationPolicyTestConstants.kernelServerAddr1);
     }
 
     @Test
-    public void retryRegularRPCFromClient() throws Exception {
+    public void retryRegularRPCFromClientTimeoutCaseVerifyException() throws Exception {
         String methodName = "public java.lang.String java.lang.Object.toString()";
 
         // Mocking the Server Policy such that, would always throw KernelObjectMigratingException onRPC()
-        // In order to test the scenario the exponential backoff retry in this case
+        // In order to test the scenario of the exponential backoff retry in this case
         ExplicitMigrationPolicy.ServerPolicy mockServerPolicy = mock(ExplicitMigrationPolicy.ServerPolicy.class);
         when(mockServerPolicy.onRPC(methodName, noParams)).thenThrow(new KernelObjectMigratingException());
+
+        this.client.setServer(mockServerPolicy);
+
+        thrown.expect(KernelObjectMigratingException.class);
+
+        this.client.onRPC(methodName, noParams);
+    }
+
+    @Test
+    public void retryRegularRPCFromClientTimeoutCaseVerifyRPCCalls() throws Exception {
+        String methodName = "public java.lang.String java.lang.Object.toString()";
+
+        // Mocking the Server Policy such that, would always throw KernelObjectMigratingException onRPC()
+        // In order to test the scenario of the exponential backoff retry in this case
+        ExplicitMigrationPolicy.ServerPolicy mockServerPolicy = mock(ExplicitMigrationPolicy.ServerPolicy.class);
+        when(mockServerPolicy.onRPC(methodName, noParams)).thenThrow(new KernelObjectMigratingException());
+
+        this.client.setServer(mockServerPolicy);
+
+        try {
+            this.client.onRPC(methodName, noParams);
+        } catch (Exception e) {
+            // Caught the KernelObjectMigratingException as a user
+        }
+
+        // Check that onRPC() of server is called 7 times, as per the current values which
+        // decide the number of exponential backoffs
+        verify(mockServerPolicy, times(7)).onRPC(methodName, noParams);
+
+        // Check that DM method i.e migrateObject(...) was not called
+        verify(mockServerPolicy, never()).migrateObject((InetSocketAddress)any());
+    }
+
+    @Test
+    public void retryRegularRPCFromClientSuccessBeforeTimeoutCase() throws Exception {
+        String methodName = "public java.lang.String java.lang.Object.toString()";
+
+        // Mocking the Server Policy such that, would throw KernelObjectMigratingException onRPC() first 2 times,
+        // then it would handle the onRPC() properly
+        // In order to test the scenario where a success happens after a couple of exponential backoff retries
+        ExplicitMigrationPolicy.ServerPolicy mockServerPolicy = mock(ExplicitMigrationPolicy.ServerPolicy.class);
+
+        when(mockServerPolicy.onRPC(methodName, noParams)).thenThrow(new KernelObjectMigratingException()).thenThrow(new KernelObjectMigratingException()).thenCallRealMethod();
 
         this.client.setServer(mockServerPolicy);
         try {
@@ -87,9 +127,9 @@ public class ExplicitMigrationPolicyTest {
             // Caught the KernelObjectMigratingException as a user
         }
 
-        // Check that onRPC() of server is called 4 times, as per the current values which
+        // Check that onRPC() of server is called 3 times, as per the current values which
         // decide the number of exponential backoffs
-        verify(mockServerPolicy, times(4)).onRPC(methodName, noParams);
+        verify(mockServerPolicy, times(3)).onRPC(methodName, noParams);
 
         // Check that DM method i.e migrateObject(...) was not called
         verify(mockServerPolicy, never()).migrateObject((InetSocketAddress)any());
@@ -102,65 +142,119 @@ public class ExplicitMigrationPolicyTest {
 
     @Test @Ignore
     public void basicExplicitMigration() throws Exception {
-        String explicitMigrateObject = "public void sapphire.policy.mobility.explicitmigration.ExplicitMigrationImpl.migrateObject() throws java.lang.Exception";
+        String explicitMigrateObject = "public void sapphire.policy.mobility.explicitmigration.ExplicitMigratorImpl.migrateObject() throws java.lang.Exception";
 
         // After mocking following should be the server list returned from getServers() of OMSServerImpl
         ArrayList<InetSocketAddress> mockedServerList = new ArrayList<InetSocketAddress>();
-        mockedServerList.add(ExplicitMigrationPolicyTestConstants.basicExplicitMigration_kernelServerAddr1);
-        mockedServerList.add(ExplicitMigrationPolicyTestConstants.basicExplicitMigration_kernelServerAddr2);
+        mockedServerList.add(ExplicitMigrationPolicyTestConstants.kernelServerAddr1);
+        mockedServerList.add(ExplicitMigrationPolicyTestConstants.kernelServerAddr2);
 
-        // After mocking ExplicitMigrationPolicyTestConstants.basicExplicitMigration_localServerAddr should be localServerAddress
+        // After mocking ExplicitMigrationPolicyTestConstants.localServerAddr should be localServerAddress
 
-        ArrayList<Object> testDestAddrList = new ArrayList<Object>();
-        testDestAddrList.add(ExplicitMigrationPolicyTestConstants.basicExplicitMigration_testDestAddr);
+        oneParam.add(ExplicitMigrationPolicyTestConstants.kernelServerAddr2);
 
-        this.client.onRPC(explicitMigrateObject, testDestAddrList);
-        verify(this.server).onRPC(explicitMigrateObject, testDestAddrList);
+        this.client.onRPC(explicitMigrateObject, oneParam);
+        verify(this.server).onRPC(explicitMigrateObject, oneParam);
 
         // Check that DM methods were called only once
-        verify(this.server, times(1)).migrateObject(ExplicitMigrationPolicyTestConstants.basicExplicitMigration_testDestAddr);
+        verify(this.server, times(1)).migrateObject(ExplicitMigrationPolicyTestConstants.kernelServerAddr2);
     }
 
     @Test @Ignore
-    public void destinationNotFoundExplicitMigration() throws Exception {
-        String explicitMigrateObject = "public void sapphire.policy.mobility.explicitmigration.ExplicitMigrationImpl.migrateObject() throws java.lang.Exception";
+    public void destinationNotFoundExplicitMigrationVerifyException() throws Exception {
+        String explicitMigrateObject = "public void sapphire.policy.mobility.explicitmigration.ExplicitMigratorImpl.migrateObject() throws java.lang.Exception";
 
         // After mocking following should be the server list returned from getServers() of OMSServerImpl
         ArrayList<InetSocketAddress> mockedServerList = new ArrayList<InetSocketAddress>();
-        mockedServerList.add(ExplicitMigrationPolicyTestConstants.destinationNotFoundExplicitMigration_kernelServerAddr1);
-        mockedServerList.add(ExplicitMigrationPolicyTestConstants.destinationNotFoundExplicitMigration_kernelServerAddr2);
-        mockedServerList.add(ExplicitMigrationPolicyTestConstants.destinationNotFoundExplicitMigration_kernelServerAddr3);
+        mockedServerList.add(ExplicitMigrationPolicyTestConstants.kernelServerAddr1);
+        mockedServerList.add(ExplicitMigrationPolicyTestConstants.kernelServerAddr2);
+        mockedServerList.add(ExplicitMigrationPolicyTestConstants.kernelServerAddr3);
 
-        // After mocking ExplicitMigrationPolicyTestConstants.destinationNotFoundExplicitMigration_localServerAddr should be localServerAddress
+        // After mocking ExplicitMigrationPolicyTestConstants.localServerAddr should be localServerAddress
 
-        ArrayList<Object> testDestAddrList = new ArrayList<Object>();
-        testDestAddrList.add(ExplicitMigrationPolicyTestConstants.destinationNotFoundExplicitMigration_testDestAddr);
-
-        this.client.onRPC(explicitMigrateObject, testDestAddrList);
-        verify(this.server).onRPC(explicitMigrateObject, testDestAddrList);
-
-        // Check that DM methods were called only once
-        verify(this.server, times(1)).migrateObject(ExplicitMigrationPolicyTestConstants.destinationNotFoundExplicitMigration_testDestAddr);
+        oneParam.add(ExplicitMigrationPolicyTestConstants.kernelServerAddr4);
 
         thrown.expect(NotFoundDestinationKernelServerException.class);
         thrown.expectMessage("The destinations address passed is not present as one of the Kernel Servers");
+
+        this.client.onRPC(explicitMigrateObject, oneParam);
     }
 
     @Test @Ignore
-    public void retryMigrateObjectRPCFromClient() throws Exception {
-        String explicitMigrateObject = "public void sapphire.policy.mobility.explicitmigration.ExplicitMigrationImpl.migrateObject() throws java.lang.Exception";
-        oneParam.add(ExplicitMigrationPolicyTestConstants.retryMigrateObjectRPCFromClient_testDestAddr);
+    public void destinationNotFoundExplicitMigrationVerifyExceptionField() throws Exception {
+        String explicitMigrateObject = "public void sapphire.policy.mobility.explicitmigration.ExplicitMigratorImpl.migrateObject() throws java.lang.Exception";
 
         // After mocking following should be the server list returned from getServers() of OMSServerImpl
         ArrayList<InetSocketAddress> mockedServerList = new ArrayList<InetSocketAddress>();
-        mockedServerList.add(ExplicitMigrationPolicyTestConstants.retryMigrateObjectRPCFromClient_kernelServerAddr1);
-        mockedServerList.add(ExplicitMigrationPolicyTestConstants.retryMigrateObjectRPCFromClient_kernelServerAddr2);
-        mockedServerList.add(ExplicitMigrationPolicyTestConstants.retryMigrateObjectRPCFromClient_kernelServerAddr2);
+        mockedServerList.add(ExplicitMigrationPolicyTestConstants.kernelServerAddr1);
+        mockedServerList.add(ExplicitMigrationPolicyTestConstants.kernelServerAddr2);
+        mockedServerList.add(ExplicitMigrationPolicyTestConstants.kernelServerAddr3);
 
-        // After mocking ExplicitMigrationPolicyTestConstants.destinationNotFoundExplicitMigration_localServerAddr should be localServerAddress
+        // After mocking ExplicitMigrationPolicyTestConstants.localServerAddr should be localServerAddress
 
-        ArrayList<Object> testDestAddrList = new ArrayList<Object>();
-        testDestAddrList.add(ExplicitMigrationPolicyTestConstants.destinationNotFoundExplicitMigration_testDestAddr);
+        oneParam.add(ExplicitMigrationPolicyTestConstants.kernelServerAddr4);
+
+        try {
+            this.client.onRPC(explicitMigrateObject, oneParam);
+        } catch (NotFoundDestinationKernelServerException notFoundDestinationKernelServerException) {
+            assertEquals(notFoundDestinationKernelServerException.getNotFoundDestinationAddress(), ExplicitMigrationPolicyTestConstants.kernelServerAddr4);
+        }
+
+    }
+
+    @Test @Ignore
+    public void destinationNotFoundExplicitMigrationVerifyRPCCalls() throws Exception {
+        String explicitMigrateObject = "public void sapphire.policy.mobility.explicitmigration.ExplicitMigratorImpl.migrateObject() throws java.lang.Exception";
+
+        // After mocking following should be the server list returned from getServers() of OMSServerImpl
+        ArrayList<InetSocketAddress> mockedServerList = new ArrayList<InetSocketAddress>();
+        mockedServerList.add(ExplicitMigrationPolicyTestConstants.kernelServerAddr1);
+        mockedServerList.add(ExplicitMigrationPolicyTestConstants.kernelServerAddr2);
+        mockedServerList.add(ExplicitMigrationPolicyTestConstants.kernelServerAddr3);
+
+        // After mocking ExplicitMigrationPolicyTestConstants.localServerAddr should be localServerAddress
+
+        oneParam.add(ExplicitMigrationPolicyTestConstants.kernelServerAddr4);
+
+        this.client.onRPC(explicitMigrateObject, oneParam);
+        verify(this.server).onRPC(explicitMigrateObject, oneParam);
+
+        // Check that DM methods were called only once
+        verify(this.server, times(1)).migrateObject(ExplicitMigrationPolicyTestConstants.kernelServerAddr4);
+    }
+
+    @Test @Ignore
+    public void retryMigrateObjectRPCFromClientTimeoutCaseVerifyException() throws Exception {
+        String explicitMigrateObject = "public void sapphire.policy.mobility.explicitmigration.ExplicitMigratorImpl.migrateObject() throws java.lang.Exception";
+
+        // After mocking following should be the server list returned from getServers() of OMSServerImpl
+        ArrayList<InetSocketAddress> mockedServerList = new ArrayList<InetSocketAddress>();
+        mockedServerList.add(ExplicitMigrationPolicyTestConstants.kernelServerAddr1);
+        mockedServerList.add(ExplicitMigrationPolicyTestConstants.kernelServerAddr2);
+        mockedServerList.add(ExplicitMigrationPolicyTestConstants.kernelServerAddr3);
+
+        // After mocking ExplicitMigrationPolicyTestConstants.localServerAddr should be localServerAddress
+
+        oneParam.add(ExplicitMigrationPolicyTestConstants.kernelServerAddr3);
+
+        thrown.expect(KernelObjectMigratingException.class);
+
+        this.client.onRPC(explicitMigrateObject, oneParam);
+    }
+
+    @Test @Ignore
+    public void retryMigrateObjectRPCFromClientTimeoutCaseVerifyRPCCalls() throws Exception {
+        String explicitMigrateObject = "public void sapphire.policy.mobility.explicitmigration.ExplicitMigratorImpl.migrateObject() throws java.lang.Exception";
+
+        // After mocking following should be the server list returned from getServers() of OMSServerImpl
+        ArrayList<InetSocketAddress> mockedServerList = new ArrayList<InetSocketAddress>();
+        mockedServerList.add(ExplicitMigrationPolicyTestConstants.kernelServerAddr1);
+        mockedServerList.add(ExplicitMigrationPolicyTestConstants.kernelServerAddr2);
+        mockedServerList.add(ExplicitMigrationPolicyTestConstants.kernelServerAddr3);
+
+        // After mocking ExplicitMigrationPolicyTestConstants.localServerAddr should be localServerAddress
+
+        oneParam.add(ExplicitMigrationPolicyTestConstants.kernelServerAddr3);
 
         try {
             this.client.onRPC(explicitMigrateObject, oneParam);
@@ -168,15 +262,43 @@ public class ExplicitMigrationPolicyTest {
             // Caught the KernelObjectMigratingException as a user
         }
 
-        // Check that onRPC() of server is called 4 times, as per the current values which
+        // Check that onRPC() of server is called 7 times, as per the current values which
         // decide the number of exponential backoffs
-        verify(this.server, times(4)).onRPC(explicitMigrateObject, oneParam);
+        verify(this.server, times(7)).onRPC(explicitMigrateObject, oneParam);
 
-        // Check that DM method migrateObject(...) was called all the 4 times, the onRPC() was called
-        verify(this.server, times(4)).migrateObject(ExplicitMigrationPolicyTestConstants.retryMigrateObjectRPCFromClient_testDestAddr);
+        // Check that DM method migrateObject(...) was called all the 7 times, the onRPC() was called
+        verify(this.server, times(7)).migrateObject(ExplicitMigrationPolicyTestConstants.kernelServerAddr3);
+    }
+
+    @Test @Ignore
+    public void retryMigrateObjectRPCFromClientSuccessBeforeTimeoutCase() throws Exception {
+        String explicitMigrateObject = "public void sapphire.policy.mobility.explicitmigration.ExplicitMigratorImpl.migrateObject() throws java.lang.Exception";
+
+        // After mocking following should be the server list returned from getServers() of OMSServerImpl
+        ArrayList<InetSocketAddress> mockedServerList = new ArrayList<InetSocketAddress>();
+        mockedServerList.add(ExplicitMigrationPolicyTestConstants.kernelServerAddr1);
+        mockedServerList.add(ExplicitMigrationPolicyTestConstants.kernelServerAddr2);
+        mockedServerList.add(ExplicitMigrationPolicyTestConstants.kernelServerAddr3);
+
+        // After mocking ExplicitMigrationPolicyTestConstants.localServerAddr should be localServerAddress
+
+        oneParam.add(ExplicitMigrationPolicyTestConstants.kernelServerAddr3);
+
+        try {
+            this.client.onRPC(explicitMigrateObject, oneParam);
+        } catch (Exception e) {
+            // Caught the KernelObjectMigratingException as a user
+        }
+
+        // Check that onRPC() of server is called 7 times, as per the current values which
+        // decide the number of exponential backoffs
+        verify(this.server, times(7)).onRPC(explicitMigrateObject, oneParam);
+
+        // Check that DM method migrateObject(...) was called all the 7 times, the onRPC() was called
+        verify(this.server, times(7)).migrateObject(ExplicitMigrationPolicyTestConstants.kernelServerAddr3);
     }
 }
 
 // Stub because AppObject expects a stub/subclass of the original class
-class ExplicitMigrationTestStub extends ExplicitMigrationPolicyTest.ExplicitMigrationTest implements Serializable {}
+class ExplicitMigratorTestStub extends ExplicitMigrationPolicyTest.ExplicitMigratorTest implements Serializable {}
 

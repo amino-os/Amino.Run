@@ -6,7 +6,7 @@ import java.net.InetSocketAddress;
  * Created by Malepati Bala Siva Sai Akhil on 1/22/18.
  */
 
-public class ExplicitMigrationImpl implements ExplicitMigration {
+public class ExplicitMigratorImpl implements ExplicitMigrator {
     @Override
-    public void migrateObject(InetSocketAddress destinationAddr) throws Exception {}
+    public void migrateObject(InetSocketAddress destinationAddr) throws MigrationException {}
 }

@@ -15,8 +15,8 @@ import sapphire.kernel.common.KernelObjectMigratingException;
  * Created by Malepati Bala Siva Sai Akhil on 1/22/18.
  *
  * Migrate an object to another Kernel Server explicitly
- * The SO Must implement migrateObject() method by implementing the ExplicitMigration interface
- * (or by simply extending the ExplicitMigrationImpl class).
+ * The SO Must implement migrateObject() method by implementing the ExplicitMigrator interface
+ * (or by simply extending the ExplicitMigratorImpl class).
  * TODO: improve this by using annotations instead
  **/
 
@@ -24,42 +24,30 @@ public class ExplicitMigrationPolicy extends DefaultSapphirePolicy {
     public static class ClientPolicy extends DefaultClientPolicy {
         private static Logger logger = Logger.getLogger(ExplicitMigrationPolicy.ClientPolicy.class.getName());
 
-        // Maximum time interval for wait before retrying (in seconds)
-        private static final long MAX_WAIT_INTERVAL = 10;
-        // Minimum time interval for wait before retrying (in seconds)
-        private static final long MIN_WAIT_INTERVAL = 1;
+        // Maximum time interval for wait before retrying (in milliseconds)
+        private static final long RETRY_TIMEOUT = 15000;
+        // Minimum time interval for wait before retrying (in milliseconds)
+        private static final long MIN_WAIT_INTERVAL = 100;
 
         @Override
         public Object onRPC(String method, ArrayList<Object> params) throws Exception {
-            int retryCount = 0;
-            long delay;
+            long startTime = System.currentTimeMillis();
+            long currentTime = System.currentTimeMillis();
             // While migrating if an RPC comes to the Server Side, KernelObjectMigratingException is
             // thrown from server side and exception would go to user, in order to avoid throwing exception
             // to user, catching the exception here in the client policy and retrying. If even after retryTimes,
             // we get the same KernelObjectMigratingException, then we throw the same to the user
-            while (true) {
+            for (long delay = MIN_WAIT_INTERVAL; currentTime < (startTime + RETRY_TIMEOUT - delay); delay *= 2, currentTime = System.currentTimeMillis()) {
                 try {
                     return super.onRPC(method, params);
-                } catch (KernelObjectMigratingException e) {
-                    logger.info("Caught KernelObjectMigratingException at client policy of ExplicitMigration Policy: " + e + " retrying migration for count " + retryCount++);
-                    delay = getWaitTimeExp(retryCount);
-                    if (delay < MAX_WAIT_INTERVAL) {
-                        Thread.sleep(TimeUnit.SECONDS.toMillis(delay));
-                        // as delay is within MAX_WAIT_INTERVAL, trying again to perform the RPC before throwing the exception to the user
-                        continue;
-                    } else {
-                        logger.info("Retry times has exceeded, so throwing the KernelObjectMigratingException to user");
-                        throw new KernelObjectMigratingException();
-                    }
+                }
+                catch (KernelObjectMigratingException e) {
+                    logger.info("Caught KernelObjectMigratingException at client policy of ExplicitMigrator Policy: " + e + " retrying migration again");
+                    Thread.sleep(delay);
                 }
             }
-        }
-
-        // getWaitTimeExp(...) returns the next wait interval, in seconds, using
-        // an exponential backoff algorithm
-        public long getWaitTimeExp(int retryCount) {
-            long waitTime = ((long) Math.pow(2, retryCount) * MIN_WAIT_INTERVAL);
-            return waitTime;
+            logger.info("Retry times has exceeded, so throwing the KernelObjectMigratingException to user");
+            throw new KernelObjectMigratingException();
         }
     }
 
@@ -90,15 +78,17 @@ public class ExplicitMigrationPolicy extends DefaultSapphirePolicy {
             KernelServerImpl localKernel = GlobalKernelReferences.nodeServer;
             InetSocketAddress localAddress = localKernel.getLocalHost();
 
-            if (localAddress.equals(destinationAddr)) {
-                logger.info("Explicit Migration of the object successfully done");
-                return;
-            } else if (!(servers.contains(destinationAddr))) {
-                throw new NotFoundDestinationKernelServerException("The destinations address passed is not present as one of the Kernel Servers");
+            logger.info("Performing Explicit Migration of object from " + localAddress + " to " + destinationAddr);
+
+            if (!(servers.contains(destinationAddr))) {
+                throw new NotFoundDestinationKernelServerException(destinationAddr, "The destinations address passed is not present as one of the Kernel Servers");
             }
 
-            logger.info("Explicitly Migrating object " + this.oid + " to " + destinationAddr);
-            localKernel.moveKernelObjectToServer(destinationAddr, this.oid);
+            if (!localAddress.equals(destinationAddr)) {
+                localKernel.moveKernelObjectToServer(destinationAddr, this.oid);
+            }
+
+            logger.info("Successfully performed Explicit Migration of object from " + localAddress + " to " + destinationAddr);
         }
 
         Boolean isMigrateObject(String method) {

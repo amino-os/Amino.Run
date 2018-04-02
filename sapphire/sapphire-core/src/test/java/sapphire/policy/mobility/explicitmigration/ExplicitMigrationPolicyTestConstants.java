@@ -12,25 +12,14 @@ public final class ExplicitMigrationPolicyTestConstants {
     // hiding the constructor
     private ExplicitMigrationPolicyTestConstants() {}
 
-    // regularRPC() test case related constants
-    public static final InetSocketAddress regularRPC_testDestAddr = new InetSocketAddress("192.168.42.146", 22342);
+    // unique InetSocketAddresses for use in different tests
+    public static final InetSocketAddress localServerAddr = new InetSocketAddress("192.168.42.146", 22342);
 
-    // basicExplicitMigration() test case related constants
-    public static final InetSocketAddress basicExplicitMigration_localServerAddr = new InetSocketAddress("192.168.42.145", 22342);
-    public static final InetSocketAddress basicExplicitMigration_kernelServerAddr1 = new InetSocketAddress("192.168.42.145", 22342);
-    public static final InetSocketAddress basicExplicitMigration_kernelServerAddr2 = new InetSocketAddress("192.168.42.146", 22342);
-    public static final InetSocketAddress basicExplicitMigration_testDestAddr = new InetSocketAddress("192.168.42.146", 22342);
+    public static final InetSocketAddress kernelServerAddr1 = new InetSocketAddress("192.168.42.147", 22342);
 
-    // destinationNotFoundExplicitMigration() test case related constants
-    public static final InetSocketAddress destinationNotFoundExplicitMigration_localServerAddr = new InetSocketAddress("192.168.42.146", 22342);
-    public static final InetSocketAddress destinationNotFoundExplicitMigration_kernelServerAddr1 = new InetSocketAddress("192.168.42.146", 22342);
-    public static final InetSocketAddress destinationNotFoundExplicitMigration_kernelServerAddr2 = new InetSocketAddress("192.168.42.147", 22342);
-    public static final InetSocketAddress destinationNotFoundExplicitMigration_kernelServerAddr3 = new InetSocketAddress("192.168.42.148", 22342);
-    public static final InetSocketAddress destinationNotFoundExplicitMigration_testDestAddr = new InetSocketAddress("192.168.42.145", 22342);
+    public static final InetSocketAddress kernelServerAddr2 = new InetSocketAddress("192.168.42.148", 22342);
 
-    // retryMigrateObjectRPCFromClient() test case related constants
-    public static final InetSocketAddress retryMigrateObjectRPCFromClient_localServerAddr = new InetSocketAddress("192.168.42.145", 22342);
-    public static final InetSocketAddress retryMigrateObjectRPCFromClient_kernelServerAddr1 = new InetSocketAddress("192.168.42.145", 22342);
-    public static final InetSocketAddress retryMigrateObjectRPCFromClient_kernelServerAddr2 = new InetSocketAddress("192.168.42.146", 22342);
-    public static final InetSocketAddress retryMigrateObjectRPCFromClient_testDestAddr = new InetSocketAddress("192.168.42.146", 22342);
+    public static final InetSocketAddress kernelServerAddr3 = new InetSocketAddress("192.168.42.149", 22342);
+
+    public static final InetSocketAddress kernelServerAddr4 = new InetSocketAddress("192.168.42.150", 22342);
 }

@@ -36,7 +36,10 @@ try{
 * We may constraint (transaction-annotated) Transactional method declared as static to express the scope of resources involved in the transaction for the first phase, for the sake of simpilicty.
 * We may consider other forms of failure notification than the exception.   
 
-## Phase 1 
+## Phase 1 - Collaborative 2PC Distributed Transaction
+### Assumptions of Phase 1
+<br/>All participants of the transaction have to have 2PC-compiliant transaction DM.
+<br/>Concuurent control policy is lock-based perssimitive. 
 ### User Experience
 Code to define transaction
 ```

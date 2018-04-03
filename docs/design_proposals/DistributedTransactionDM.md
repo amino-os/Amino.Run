@@ -78,10 +78,13 @@ try {
 * TranactionException spec
 <br/>name: "DCAP_transaction_failure"
 <br/>inner exception: present if available from runtime
-#### Required enhancements from participanting DMs
-* tx_join
-* tx_vote
-* tx_commit
-* tx_abort
-#### participant state transition in 2PC transaction
+#### 2PC-Compliant Participanting DM
+* client policy
+  <br/> register the target to transaction scope
+* server policy
+<br/> tx_join
+<br/> tx_vote
+<br/> tx_commit
+<br/> tx_abort
+#### Participant state transition in 2PC transaction
 <br/>![participant transaction state diagram](../images/tx-participant-svrdm.png)

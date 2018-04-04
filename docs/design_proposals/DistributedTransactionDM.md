@@ -88,3 +88,13 @@ try {
 <br/> tx_abort
 #### Participant state transition in 2PC transaction
 <br/>![participant transaction state diagram](../images/tx-participant-svrdm.png)
+## External Databases
+External databases, if the adequate interface of 2PC participants is present, should be able to take part in the distributed transaction while the ACID property being well maintained. The wrapper of Sapphire object encapsulating the database access should expose the desired callback methods for the transaction coordinator to manage the transaction as a whole.
+```
+interface I2PCParticipant {
+  void onJoin(UUID txnId);
+  VoteStatus onVoteRequested(UUID txnId);
+  void onCommit(UUID txnId);
+  void onAbort(UUID txnId);
+}
+```

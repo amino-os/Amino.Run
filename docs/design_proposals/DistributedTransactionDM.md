@@ -37,6 +37,9 @@ try{
 * We may consider other forms of failure notification than the exception.   
 
 ## Phase 1 - Collaborative 2PC Distributed Transaction
+* P1: Default distributed transaction (SO/DM not comoplicated)
+* P1: External database (type: TO-BE-DECIDED)
+* P2: support participant of SO that has consensus DM
 ### Assumptions of Phase 1
 <br/>All participants of the transaction have to have 2PC-compiliant transaction DM.
 <br/>Concuurent control policy is lock-based perssimitive. 
@@ -100,3 +103,16 @@ interface I2PCParticipant {
 ```
 ### Design Alternatives
 The heavey lifting of ensuring transactional external entities can also be done at DM (e.g. server policy). This seems to make the business code (Sapphire Object, SO in short) detached from external dependencies. However, DM requires very concrete details of the external database info for SO in order to conduct proper 2PC mandatory actions, which is already kept and handled by business code. But, if the database type and number is very limited, this option makes sense.
+## SO having Consensus DM
+XAPConsensusPolicy will be specilized for the SO that has consensus DM.
+In order for this DM to preserve ACID and consensus propertis, it may require special treatments when server proxy receives certian messages:
+
+message | DM action | leader DM action
+---|---|---
+join_tx | forward to leader | prepare tx context (like creating snapshot etc if applicable)
+vote_req | forward to leader | check integrarity and respond
+commit | forward to leader | duplicate data and propogate to other nodes
+abort | forward to leader | drop intermediate change
+
+#### Design alternatives
+sandbox of full consensus nodes is created and whatever operations will be processed against the sandbox. This design duplicates the complex plumbings of consensus protocol, and incurrs quite complixity. For phase 1, we choose the simpler way to work on leader node only.

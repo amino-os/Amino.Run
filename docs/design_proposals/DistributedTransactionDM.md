@@ -98,3 +98,5 @@ interface I2PCParticipant {
   void onAbort(UUID txnId);
 }
 ```
+### Design Alternatives
+The heavey lifting of ensuring transactional external entities can also be done at DM (e.g. server policy). This seems to make the business code (Sapphire Object, SO in short) detached from external dependencies. However, DM requires very concrete details of the external database info for SO in order to conduct proper 2PC mandatory actions, which is already kept and handled by business code. But, if the database type and number is very limited, this option makes sense.

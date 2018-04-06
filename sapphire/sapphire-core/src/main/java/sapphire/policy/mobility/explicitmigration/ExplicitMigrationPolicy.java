@@ -24,7 +24,8 @@ public class ExplicitMigrationPolicy extends DefaultSapphirePolicy {
     public static class ClientPolicy extends DefaultClientPolicy {
         private static Logger logger = Logger.getLogger(ExplicitMigrationPolicy.ClientPolicy.class.getName());
 
-        // Maximum time interval for wait before retrying (in milliseconds)
+        // ToDo: Provide an option to take or change value of RETRY_TIMEOUT from user
+        // Maximum time interval for wait before timing out (in milliseconds)
         private static final long RETRY_TIMEOUT = 15000;
         // Minimum time interval for wait before retrying (in milliseconds)
         private static final long MIN_WAIT_INTERVAL = 100;
@@ -40,8 +41,7 @@ public class ExplicitMigrationPolicy extends DefaultSapphirePolicy {
             for (long delay = MIN_WAIT_INTERVAL; currentTime < (startTime + RETRY_TIMEOUT - delay); delay *= 2, currentTime = System.currentTimeMillis()) {
                 try {
                     return super.onRPC(method, params);
-                }
-                catch (KernelObjectMigratingException e) {
+                } catch (KernelObjectMigratingException e) {
                     logger.info("Caught KernelObjectMigratingException at client policy of ExplicitMigrator Policy: " + e + " retrying migration again");
                     Thread.sleep(delay);
                 }

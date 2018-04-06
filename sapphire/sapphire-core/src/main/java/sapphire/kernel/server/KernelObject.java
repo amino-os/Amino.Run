@@ -33,8 +33,15 @@ public class KernelObject extends ObjectHandler {
 		}
 		
 		rpcCounter.acquire();
-		ret = super.invoke(method, params);
-		rpcCounter.release();
+
+		// Added try finally so that, when the super.invoke(...) throws exceptions,
+		// then we safely release the rpcCounter
+		try {
+			ret = super.invoke(method, params);
+		}
+		finally {
+			rpcCounter.release();
+		}
 		
 		return ret;
 	}

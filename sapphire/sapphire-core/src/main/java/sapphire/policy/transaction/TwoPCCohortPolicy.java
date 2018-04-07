@@ -8,7 +8,7 @@ import java.util.UUID;
 /**
  * DCAP distributed transaction default DM set
  */
-public class DCAP2PCCohortPolicy extends DefaultSapphirePolicy {
+public class TwoPCCohortPolicy extends DefaultSapphirePolicy {
     /**
      * DCAP distributed transaction default client policy
      */
@@ -19,7 +19,7 @@ public class DCAP2PCCohortPolicy extends DefaultSapphirePolicy {
 
         private I2PCParticipants participantManager;
 
-        private IParticipantManagerProvider participantManagerProvider = () -> {return DCAPTransactionContext.getParticipants();};
+        private IParticipantManagerProvider participantManagerProvider = () -> {return TransactionContext.getParticipants();};
 
         @Override
         public Object onRPC(String method, ArrayList<Object> params) throws Exception {
@@ -29,8 +29,8 @@ public class DCAP2PCCohortPolicy extends DefaultSapphirePolicy {
                 this.registerInTansaction();
 
                 UUID txnId = this.getCurrentTransaction();
-                DCAPTransactionWrapper txWrapper = new DCAPTransactionWrapper(txnId, method, params);
-                return super.onRPC(DCAPTransactionWrapper.txWrapperTag, txWrapper.getRpcParams());
+                TransactionWrapper txWrapper = new TransactionWrapper(txnId, method, params);
+                return super.onRPC(TransactionWrapper.txWrapperTag, txWrapper.getRpcParams());
             }
 
             return super.onRPC(method, params);

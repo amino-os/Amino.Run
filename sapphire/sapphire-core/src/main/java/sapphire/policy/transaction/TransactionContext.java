@@ -2,7 +2,7 @@ package sapphire.policy.transaction;
 
 import java.util.UUID;
 
-public class DCAPTransactionContext {
+public class TransactionContext {
     private static final ThreadLocal<UUID> transactionID = new ThreadLocal<UUID>();
     private static final ThreadLocal<I2PCParticipants> paricipants = new ThreadLocal<I2PCParticipants>();
 

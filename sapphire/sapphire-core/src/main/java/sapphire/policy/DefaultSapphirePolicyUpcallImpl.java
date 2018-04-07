@@ -1,7 +1,7 @@
 package sapphire.policy;
 
 import sapphire.policy.SapphirePolicy.SapphireServerPolicy;
-import sapphire.policy.transaction.DCAPTransactionContext;
+import sapphire.policy.transaction.TransactionContext;
 import sapphire.policy.transaction.I2PCClient;
 import sapphire.policy.transaction.IllegalComponentException;
 
@@ -31,7 +31,7 @@ public abstract class DefaultSapphirePolicyUpcallImpl extends SapphirePolicyLibr
 		}
 
 		protected UUID getCurrentTransaction() {
-			return DCAPTransactionContext.getCurrentTransaction();
+			return TransactionContext.getCurrentTransaction();
 		}
 
 

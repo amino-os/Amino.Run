@@ -7,7 +7,7 @@ import java.util.UUID;
 /**
  * wrapper to encapsulate a regular RPC data within a transaction
  */
-public class DCAPTransactionWrapper {
+public class TransactionWrapper {
     // outer RPC method which embeds the RPC call data inside the payload
     public final static String txWrapperTag = "tx_rpc";
 
@@ -15,7 +15,7 @@ public class DCAPTransactionWrapper {
     private String rpcMethod;
     private ArrayList<Object> rpcParams;
 
-    public DCAPTransactionWrapper(String method, ArrayList<Object> params) {
+    public TransactionWrapper(String method, ArrayList<Object> params) {
         if (method.equals(txWrapperTag)){
             this.transactionId = (UUID)params.get(0);
             ArrayList<Object> rpcPayload = (ArrayList<Object>)params.get(1);
@@ -28,7 +28,7 @@ public class DCAPTransactionWrapper {
         }
     }
 
-    public DCAPTransactionWrapper(UUID txnId, String method, ArrayList<Object> params) {
+    public TransactionWrapper(UUID txnId, String method, ArrayList<Object> params) {
         this.transactionId = txnId;
         this.rpcMethod = method;
         this.rpcParams = params;

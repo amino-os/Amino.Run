@@ -10,14 +10,14 @@ import java.util.UUID;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
-import static sapphire.policy.transaction.DCAP2PCCohortPolicy.*;
+import static sapphire.policy.transaction.TwoPCCohortPolicy.*;
 
 import static org.junit.Assert.assertEquals;
 
-public class DCAP2PCCohortClientPolicyTest {
+public class TwoPCCohortClientPolicyTest {
     @After
     public void cleanContext(){
-        DCAPTransactionContext.leave();
+        TransactionContext.leave();
     }
 
     @Test
@@ -45,7 +45,7 @@ public class DCAP2PCCohortClientPolicyTest {
         clientPolicy.setParticipantManagerProvider(()->{return participants;});
 
         UUID txnId = UUID.randomUUID();
-        DCAPTransactionContext.enter(txnId);
+        TransactionContext.enter(txnId);
 
         clientPolicy.onRPC("foo", null);
 
@@ -53,7 +53,7 @@ public class DCAP2PCCohortClientPolicyTest {
         ArgumentCaptor<ArrayList<Object>> argCaptor = new ArgumentCaptor<ArrayList<Object>>();
         verify(serverPolicy, times(1)).onRPC(eq("tx_rpc"), argCaptor.capture());
         ArrayList<Object> args = argCaptor.getValue();
-        DCAPTransactionWrapper rpcTransaction = new DCAPTransactionWrapper("tx_rpc", args);
+        TransactionWrapper rpcTransaction = new TransactionWrapper("tx_rpc", args);
         assertEquals(rpcTransaction.getTransaction(), txnId);
         assertEquals(rpcTransaction.getInnerRPCMethod(), "foo");
     }
@@ -64,7 +64,7 @@ public class DCAP2PCCohortClientPolicyTest {
         DefaultClientPolicy other = new DefaultClientPolicy();
         other.setServer(server);
         UUID txnId = UUID.randomUUID();
-        DCAPTransactionContext.enter(txnId);
+        TransactionContext.enter(txnId);
 
         other.onRPC("foo", null);
     }

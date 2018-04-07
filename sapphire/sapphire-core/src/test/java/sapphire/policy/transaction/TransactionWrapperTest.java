@@ -9,13 +9,13 @@ import java.util.UUID;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 
-public class DCAPTransactionWrapperTest {
+public class TransactionWrapperTest {
     @Test
     public void test_wrap_rpc_in_tx(){
         String method = "foo";
         ArrayList<Object> params = new ArrayList<>();
         UUID transactionId = UUID.randomUUID();
-        DCAPTransactionWrapper wrapper = new DCAPTransactionWrapper(transactionId, method, params);
+        TransactionWrapper wrapper = new TransactionWrapper(transactionId, method, params);
 
         ArrayList<Object> wrappedMessage = wrapper.getRpcParams();
         assertEquals(wrappedMessage.get(0), transactionId);
@@ -34,7 +34,7 @@ public class DCAPTransactionWrapperTest {
                 new ArrayList<Object>(Arrays.asList("bar", params))
         ));
 
-        DCAPTransactionWrapper parser = new DCAPTransactionWrapper("tx_rpc", wrapped);
+        TransactionWrapper parser = new TransactionWrapper("tx_rpc", wrapped);
 
         assertEquals(parser.getTransaction(), id);
         assertEquals(parser.getInnerRPCMethod(), "bar");

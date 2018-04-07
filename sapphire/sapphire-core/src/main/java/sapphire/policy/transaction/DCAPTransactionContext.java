@@ -12,8 +12,8 @@ public class DCAPTransactionContext {
         return paricipants.get();
     }
 
-    public static void enter(UUID txdId) {
-        transactionID.set(txdId);
+    public static void enter(UUID transactionId) {
+        transactionID.set(transactionId);
     }
 
     public static void leave() {

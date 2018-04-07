@@ -53,8 +53,9 @@ public class DCAP2PCCohortClientPolicyTest {
         ArgumentCaptor<ArrayList<Object>> argCaptor = new ArgumentCaptor<ArrayList<Object>>();
         verify(serverPolicy, times(1)).onRPC(eq("tx_rpc"), argCaptor.capture());
         ArrayList<Object> args = argCaptor.getValue();
-        assertEquals(args.get(0), txnId);
-        assertEquals(((ArrayList<Object>)args.get(1)).get(0), "foo");
+        DCAPTransactionWrapper rpcTransaction = new DCAPTransactionWrapper("tx_rpc", args);
+        assertEquals(rpcTransaction.getTransaction(), txnId);
+        assertEquals(rpcTransaction.getInnerRPCMethod(), "foo");
     }
 
     @Test(expected = IllegalComponentException.class)

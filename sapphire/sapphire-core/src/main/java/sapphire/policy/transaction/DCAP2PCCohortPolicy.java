@@ -3,22 +3,12 @@ package sapphire.policy.transaction;
 import sapphire.policy.DefaultSapphirePolicy;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.UUID;
 
 /**
  * DCAP distributed transaction default DM set
  */
 public class DCAP2PCCohortPolicy extends DefaultSapphirePolicy {
-    // outer RPC method which embeds the RPC call data inside the payload
-    private final static String txWrapperTag = "tx_rpc";
-
-    private static ArrayList<Object> genTXPayload(String method, ArrayList<Object> params, UUID txnId) {
-        ArrayList<Object> rpcOriginal = new ArrayList<Object>(Arrays.asList(method, params));
-        ArrayList<Object> txnPayload = new ArrayList<Object>(Arrays.asList(txnId, rpcOriginal));
-        return txnPayload;
-    }
-
     /**
      * DCAP distributed transaction default client policy
      */
@@ -39,7 +29,8 @@ public class DCAP2PCCohortPolicy extends DefaultSapphirePolicy {
                 this.registerInTansaction();
 
                 UUID txnId = this.getCurrentTransaction();
-                return super.onRPC(txWrapperTag, genTXPayload(method, params, txnId));
+                DCAPTransactionWrapper txWrapper = new DCAPTransactionWrapper(txnId, method, params);
+                return super.onRPC(DCAPTransactionWrapper.txWrapperTag, txWrapper.getRpcParams());
             }
 
             return super.onRPC(method, params);

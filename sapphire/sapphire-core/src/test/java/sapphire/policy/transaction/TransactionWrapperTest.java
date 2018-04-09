@@ -13,11 +13,11 @@ public class TransactionWrapperTest {
     @Test
     public void test_wrap_rpc_in_tx(){
         String method = "foo";
-        ArrayList<Object> params = new ArrayList<>();
+        ArrayList<Object> params = new ArrayList<Object>();
         UUID transactionId = UUID.randomUUID();
         TransactionWrapper wrapper = new TransactionWrapper(transactionId, method, params);
 
-        ArrayList<Object> wrappedMessage = wrapper.getRpcParams();
+        ArrayList<Object> wrappedMessage = wrapper.getRPCParams();
         assertEquals(wrappedMessage.get(0), transactionId);
         ArrayList<Object> innerRPCMessage = (ArrayList<Object>)wrappedMessage.get(1);
         assertEquals(innerRPCMessage.get(0), method);
@@ -27,9 +27,9 @@ public class TransactionWrapperTest {
     @Test
     public void test_extract_rpc_wrapper() {
         UUID id = UUID.randomUUID();
-        ArrayList<Object> params = new ArrayList<>();
+        ArrayList<Object> params = new ArrayList<Object>();
 
-        ArrayList<Object> wrapped = new ArrayList<>(Arrays.asList(
+        ArrayList<Object> wrapped = new ArrayList<Object>(Arrays.asList(
                 id,
                 new ArrayList<Object>(Arrays.asList("bar", params))
         ));

@@ -12,37 +12,39 @@ public class TwoPCCohortPolicy extends DefaultSapphirePolicy {
     /**
      * DCAP distributed transaction default client policy
      */
-    public static class TwoPCCohortClientPolicy extends DefaultClientPolicy implements I2PCClient {
-        public interface IParticipantManagerProvider {
-            I2PCParticipants Get();
+    public static class TwoPCCohortClientPolicy extends DefaultClientPolicy implements TwoPCClient {
+        public interface ParticipantManagerProvider {
+            TwoPCParticipants Get();
         }
 
-        private I2PCParticipants participantManager;
+        private TwoPCParticipants participantManager;
 
-        private IParticipantManagerProvider participantManagerProvider = () -> {return TransactionContext.getParticipants();};
+        // the default participants provider
+        private ParticipantManagerProvider participantManagerProvider = new ParticipantManagerProvider() {
+            @Override
+            public TwoPCParticipants Get() {
+                return TransactionContext.getParticipants();
+            }
+        };
 
         @Override
         public Object onRPC(String method, ArrayList<Object> params) throws Exception {
             if (super.hasTransaction()) {
                 this.participantManager = this.participantManagerProvider.Get();
 
-                this.registerInTansaction();
+                this.participantManager.register(this);
 
                 UUID txnId = this.getCurrentTransaction();
                 TransactionWrapper txWrapper = new TransactionWrapper(txnId, method, params);
-                return super.onRPC(TransactionWrapper.txWrapperTag, txWrapper.getRpcParams());
+                return super.onRPC(TransactionWrapper.txWrapperTag, txWrapper.getRPCParams());
             }
 
             return super.onRPC(method, params);
         }
 
         // setter for test purpose
-        void setParticipantManagerProvider(IParticipantManagerProvider provider) {
+        void setParticipantManagerProvider(ParticipantManagerProvider provider) {
             this.participantManagerProvider = provider;
-        }
-
-        private void registerInTansaction() {
-            this.participantManager.register(this);
         }
     }
 

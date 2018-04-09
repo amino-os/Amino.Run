@@ -17,17 +17,22 @@ import static org.junit.Assert.assertEquals;
 public class TwoPCCohortClientPolicyTest {
     @After
     public void cleanContext(){
-        TransactionContext.leave();
+        TransactionContext.leaveTransaction();
     }
 
     @Test
     public void test_no_participant_if_no_txn() throws Exception {
-        I2PCParticipants participants = mock(I2PCParticipants.class);
+        final TwoPCParticipants participants = mock(TwoPCParticipants.class);
         TwoPCCohortServerPolicy serverPolicy = mock(TwoPCCohortServerPolicy.class);
 
         TwoPCCohortClientPolicy clientPolicy = new TwoPCCohortClientPolicy();
         clientPolicy.setServer(serverPolicy);
-        clientPolicy.setParticipantManagerProvider(() -> { return participants; });
+        clientPolicy.setParticipantManagerProvider( new TwoPCCohortClientPolicy.ParticipantManagerProvider() {
+            @Override
+            public TwoPCParticipants Get() {
+                return participants;
+            }
+        });
 
         clientPolicy.onRPC("foo", null);
 
@@ -37,15 +42,20 @@ public class TwoPCCohortClientPolicyTest {
 
     @Test
     public void test_register_if_in_tx() throws Exception {
-        I2PCParticipants participants = mock(I2PCParticipants.class);
+        final TwoPCParticipants participants = mock(TwoPCParticipants.class);
         TwoPCCohortServerPolicy serverPolicy = mock(TwoPCCohortServerPolicy.class);
 
         TwoPCCohortClientPolicy clientPolicy = new TwoPCCohortClientPolicy();
         clientPolicy.setServer(serverPolicy);
-        clientPolicy.setParticipantManagerProvider(()->{return participants;});
+        clientPolicy.setParticipantManagerProvider(new TwoPCCohortClientPolicy.ParticipantManagerProvider() {
+            @Override
+            public TwoPCParticipants Get() {
+                return participants;
+            }
+        });
 
         UUID txnId = UUID.randomUUID();
-        TransactionContext.enter(txnId);
+        TransactionContext.enterTransaction(txnId);
 
         clientPolicy.onRPC("foo", null);
 
@@ -64,7 +74,7 @@ public class TwoPCCohortClientPolicyTest {
         DefaultClientPolicy other = new DefaultClientPolicy();
         other.setServer(server);
         UUID txnId = UUID.randomUUID();
-        TransactionContext.enter(txnId);
+        TransactionContext.enterTransaction(txnId);
 
         other.onRPC("foo", null);
     }

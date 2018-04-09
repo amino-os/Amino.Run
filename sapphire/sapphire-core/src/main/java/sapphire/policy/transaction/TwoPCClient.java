@@ -3,4 +3,4 @@ package sapphire.policy.transaction;
 /**
  * marker interface for transactional object's client proxy
  */
-public interface I2PCClient {}
+public interface TwoPCClient {}

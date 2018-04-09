@@ -2,7 +2,7 @@ package sapphire.policy;
 
 import sapphire.policy.SapphirePolicy.SapphireServerPolicy;
 import sapphire.policy.transaction.TransactionContext;
-import sapphire.policy.transaction.I2PCClient;
+import sapphire.policy.transaction.TwoPCClient;
 import sapphire.policy.transaction.IllegalComponentException;
 
 import java.rmi.RemoteException;
@@ -14,8 +14,8 @@ public abstract class DefaultSapphirePolicyUpcallImpl extends SapphirePolicyLibr
 	public abstract static class DefaultSapphireClientPolicyUpcallImpl extends SapphireClientPolicyLibrary {
 		public Object onRPC(String method, ArrayList<Object> params) throws Exception {
 			// only transaction-capable SO is allowed in DCAP transaction -- change of the original behavior
-			if (!(this instanceof I2PCClient) &&  this.hasTransaction()) {
-				throw new IllegalComponentException();
+			if (!(this instanceof TwoPCClient) &&  this.hasTransaction()) {
+				throw new IllegalComponentException(method);
 			}
 
 			/* The default behavior is to just perform the RPC to the Policy Server */

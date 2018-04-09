@@ -15,26 +15,33 @@ public class TransactionWrapper {
     private String rpcMethod;
     private ArrayList<Object> rpcParams;
 
+    /**
+     * constructs after parsing the inputs
+     * @param method the rpc method name which indicates the call wrapped inside a transaxtion or not
+     * @param params the rpc call parameters which may include the real rpc info inside of a transaction
+     */
     public TransactionWrapper(String method, ArrayList<Object> params) {
-        if (method.equals(txWrapperTag)){
-            this.transactionId = (UUID)params.get(0);
-            ArrayList<Object> rpcPayload = (ArrayList<Object>)params.get(1);
-            this.rpcMethod = (String)rpcPayload.get(0);
-            this.rpcParams = (ArrayList<Object>)rpcPayload.get(1);
+        if (!method.equals(txWrapperTag)){
+            this.set(null, method, params);
         } else {
-            this.rpcMethod = method;
-            this.rpcParams = params;
-            this.transactionId = null;
+            UUID transactionId = (UUID)params.get(0);
+            ArrayList<Object> rpcPayload = (ArrayList<Object>)params.get(1);
+            String rpcMethod = (String)rpcPayload.get(0);
+            ArrayList<Object> rpcParams = (ArrayList<Object>)rpcPayload.get(1);
+
+            this.set(transactionId, rpcMethod, rpcParams);
         }
     }
 
     public TransactionWrapper(UUID txnId, String method, ArrayList<Object> params) {
-        this.transactionId = txnId;
-        this.rpcMethod = method;
-        this.rpcParams = params;
+        this.set(txnId, method, params);
     }
 
-    public ArrayList<Object> getRpcParams() {
+    /**
+     * gets the transaction-wrapped RPC call argument payload
+     * @return the payload that goes with txWrappperTag as rpc method
+     */
+    public ArrayList<Object> getRPCParams() {
         ArrayList<Object> rpcOriginal = new ArrayList<Object>(Arrays.asList(this.rpcMethod, this.rpcParams));
         ArrayList<Object> txnPayload = new ArrayList<Object>(Arrays.asList(this.transactionId, rpcOriginal));
         return txnPayload;
@@ -50,5 +57,11 @@ public class TransactionWrapper {
 
     public ArrayList<Object> getInnerRPCParams() {
         return this.rpcParams;
+    }
+
+    private void set(UUID txnId, String method, ArrayList<Object> params) {
+        this.transactionId = txnId;
+        this.rpcMethod = method;
+        this.rpcParams = params;
     }
 }

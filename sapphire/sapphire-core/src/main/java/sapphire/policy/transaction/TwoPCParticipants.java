@@ -1,25 +1,22 @@
 package sapphire.policy.transaction;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import static sapphire.policy.SapphirePolicy.SapphireClientPolicy;
 
 /**
- * DCAP transaction context based on thread local storage
+ * abstraction of collection of 2PC participants
  */
-public class TwoPCParticipants implements I2PCParticipants {
-    private Set participants = new ConcurrentHashMap<SapphireClientPolicy, Object>().keySet();
+public interface TwoPCParticipants {
+    /**
+     * registers as participant of the transaction
+     * @param cohort the client proxy of the Sapphire object that involves in transaction
+     */
+    public void register(SapphireClientPolicy cohort);
 
-    @Override
-    public void register(SapphireClientPolicy cohort) {
-        this.participants.add(cohort);
-    }
-
-    @Override
-    public Collection<SapphireClientPolicy> getParticipants() {
-        return new ArrayList<SapphireClientPolicy>(this.participants);
-    }
+    /**
+     * gets all participants of the transaction registered
+     * @return the collection of participating client proxies
+     */
+    public Collection<SapphireClientPolicy> getRegistered();
 }

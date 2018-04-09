@@ -12,7 +12,7 @@ public class TwoPCCohortPolicy extends DefaultSapphirePolicy {
     /**
      * DCAP distributed transaction default client policy
      */
-    public static class DCAP2PCCohortClientPolicy extends DefaultClientPolicy implements I2PCClient {
+    public static class TwoPCCohortClientPolicy extends DefaultClientPolicy implements I2PCClient {
         public interface IParticipantManagerProvider {
             I2PCParticipants Get();
         }
@@ -37,7 +37,7 @@ public class TwoPCCohortPolicy extends DefaultSapphirePolicy {
         }
 
         // setter for test purpose
-        public void setParticipantManagerProvider(IParticipantManagerProvider provider) {
+        void setParticipantManagerProvider(IParticipantManagerProvider provider) {
             this.participantManagerProvider = provider;
         }
 
@@ -49,12 +49,12 @@ public class TwoPCCohortPolicy extends DefaultSapphirePolicy {
     /**
      * DCAP distributed transaction default server policy
      */
-    public static class DCAP2PCCohortServerPolicy extends DefaultServerPolicy {
+    public static class TwoPCCohortServerPolicy extends DefaultServerPolicy {
     }
 
     /**
      * DCAP distributed transaction default group policy
      */
-    public static class DCAP2PCCohortGroupPolicy extends DefaultGroupPolicy {
+    public static class TwoPCCohortGroupPolicy extends DefaultGroupPolicy {
     }
 }

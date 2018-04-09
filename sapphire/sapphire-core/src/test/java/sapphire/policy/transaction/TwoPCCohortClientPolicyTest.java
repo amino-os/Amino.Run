@@ -23,9 +23,9 @@ public class TwoPCCohortClientPolicyTest {
     @Test
     public void test_no_participant_if_no_txn() throws Exception {
         I2PCParticipants participants = mock(I2PCParticipants.class);
-        DCAP2PCCohortServerPolicy serverPolicy = mock(DCAP2PCCohortServerPolicy.class);
+        TwoPCCohortServerPolicy serverPolicy = mock(TwoPCCohortServerPolicy.class);
 
-        DCAP2PCCohortClientPolicy clientPolicy = new DCAP2PCCohortClientPolicy();
+        TwoPCCohortClientPolicy clientPolicy = new TwoPCCohortClientPolicy();
         clientPolicy.setServer(serverPolicy);
         clientPolicy.setParticipantManagerProvider(() -> { return participants; });
 
@@ -38,9 +38,9 @@ public class TwoPCCohortClientPolicyTest {
     @Test
     public void test_register_if_in_tx() throws Exception {
         I2PCParticipants participants = mock(I2PCParticipants.class);
-        DCAP2PCCohortServerPolicy serverPolicy = mock(DCAP2PCCohortServerPolicy.class);
+        TwoPCCohortServerPolicy serverPolicy = mock(TwoPCCohortServerPolicy.class);
 
-        DCAP2PCCohortClientPolicy clientPolicy = new DCAP2PCCohortClientPolicy();
+        TwoPCCohortClientPolicy clientPolicy = new TwoPCCohortClientPolicy();
         clientPolicy.setServer(serverPolicy);
         clientPolicy.setParticipantManagerProvider(()->{return participants;});
 

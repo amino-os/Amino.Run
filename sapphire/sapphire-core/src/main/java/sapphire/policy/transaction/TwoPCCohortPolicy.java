@@ -20,12 +20,7 @@ public class TwoPCCohortPolicy extends DefaultSapphirePolicy {
         private TwoPCParticipants participantManager;
 
         // the default participants provider
-        private ParticipantManagerProvider participantManagerProvider = new ParticipantManagerProvider() {
-            @Override
-            public TwoPCParticipants Get() {
-                return TransactionContext.getParticipants();
-            }
-        };
+        private ParticipantManagerProvider participantManagerProvider = TransactionContext::getParticipants;
 
         @Override
         public Object onRPC(String method, ArrayList<Object> params) throws Exception {

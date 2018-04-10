@@ -1,19 +1,23 @@
 package sapphire.policy;
 
+import sapphire.policy.SapphirePolicy.SapphireServerPolicy;
+import sapphire.policy.transaction.TransactionContext;
+import sapphire.policy.transaction.TwoPCClient;
+import sapphire.policy.transaction.IllegalComponentException;
+
 import java.rmi.RemoteException;
 import java.util.ArrayList;
-
-import sapphire.common.AppObject;
-import sapphire.kernel.common.KernelOID;
-import sapphire.policy.SapphirePolicy.SapphireServerPolicy;
-import sapphire.policy.SapphirePolicyLibrary.SapphireGroupPolicyLibrary;
-import sapphire.policy.SapphirePolicyLibrary.SapphireServerPolicyLibrary;
-import sapphire.runtime.Sapphire;
+import java.util.UUID;
 
 public abstract class DefaultSapphirePolicyUpcallImpl extends SapphirePolicyLibrary {
 
 	public abstract static class DefaultSapphireClientPolicyUpcallImpl extends SapphireClientPolicyLibrary {
 		public Object onRPC(String method, ArrayList<Object> params) throws Exception {
+			// only transaction-capable SO is allowed in DCAP transaction -- change of the original behavior
+			if (!(this instanceof TwoPCClient) &&  this.hasTransaction()) {
+				throw new IllegalComponentException(method);
+			}
+
 			/* The default behavior is to just perform the RPC to the Policy Server */
 			Object ret = null;
 			
@@ -24,6 +28,15 @@ public abstract class DefaultSapphirePolicyUpcallImpl extends SapphirePolicyLibr
 				setServer(getGroup().onRefRequest());
 			}
 			return ret;
+		}
+
+		protected UUID getCurrentTransaction() {
+			return TransactionContext.getCurrentTransaction();
+		}
+
+
+		protected boolean hasTransaction() {
+			return this.getCurrentTransaction() != null;
 		}
 	}
 	

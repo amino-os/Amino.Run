@@ -47,6 +47,54 @@ public class TwoPCCohortPolicy extends DefaultSapphirePolicy {
      * DCAP distributed transaction default server policy
      */
     public static class TwoPCCohortServerPolicy extends DefaultServerPolicy {
+        private SandboxProvider sandboxProvider;
+        private TransactionManager transactionManager;
+
+        //test hook
+        void setSandboxProvider(SandboxProvider sandboxProvider) {
+            this.sandboxProvider = sandboxProvider;
+        }
+
+        // test hook
+        void setTransactionManager(TransactionManager transactionManager) {
+            this.transactionManager = transactionManager;
+        }
+
+        @Override
+        public Object onRPC(String method, ArrayList<Object> params) throws Exception {
+            TransactionWrapper tx = new TransactionWrapper(method, params);
+            UUID transactionId = tx.getTransaction();
+
+            if (transactionId == null) {
+                return super.onRPC(tx.getInnerRPCMethod(), tx.getInnerRPCParams());
+            } else {
+                return onTransactionRPC(tx);
+            }
+        }
+
+        private Object onTransactionRPC(TransactionWrapper tx) throws Exception {
+            UUID transactionId = tx.getTransaction();
+            String rpcMethod = tx.getInnerRPCMethod();
+            ArrayList<Object> rpcParams = tx.getInnerRPCParams();
+
+            if (TwoPCPrimitive.isVoteRequest(rpcMethod)) {
+                return this.transactionManager.vote(transactionId);
+            }
+            if (TwoPCPrimitive.isCommit(rpcMethod)) {
+                this.transactionManager.commit(transactionId);
+                return null;
+            }
+            if (TwoPCPrimitive.isAbort(rpcMethod)) {
+                this.transactionManager.abort(transactionId);
+                return null;
+            } else {
+                this.transactionManager.join(transactionId);
+                SapphireServerPolicyUpcalls sandbox = this.sandboxProvider.getSandbox(this, transactionId);
+                Object result = sandbox.onRPC(rpcMethod, tx.getInnerRPCParams());
+                this.transactionManager.leave(transactionId);
+                return result;
+            }
+        }
     }
 
     /**

@@ -11,7 +11,7 @@ public class TwoPCLocalStatus {
         UNCERTAIN, GOOD, BAD, YESVOTED, NOVOTED, COMMITTED, ABORTED,
     }
 
-    ConcurrentHashMap<UUID, LocalStatus> localStatusManager = new ConcurrentHashMap<>();
+    ConcurrentHashMap<UUID, LocalStatus> localStatusManager = new ConcurrentHashMap<UUID, LocalStatus>();
 
     /**
      * set local status of the component in the specified transaction

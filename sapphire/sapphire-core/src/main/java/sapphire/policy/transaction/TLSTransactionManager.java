@@ -1,5 +1,7 @@
 package sapphire.policy.transaction;
 
+import sapphire.policy.SapphirePolicy;
+
 import java.util.ArrayList;
 import java.util.UUID;
 
@@ -92,13 +94,14 @@ public class TLSTransactionManager implements TransactionManager {
         TransactionContext.enterTransaction(transactionId);
 
         // todo: consider in parallel requests
-        this.localParticipantsManager.getParticipants(transactionId).stream().forEach(p -> {
+        for (SapphirePolicy.SapphireClientPolicy p: this.localParticipantsManager.getParticipants(transactionId))
+        {
             try {
                 p.onRPC(TransactionWrapper.txWrapperTag, paramsTX);
             } catch (Exception e) {
                 throw new RuntimeException("DCAP 2PC transaction exception: " + primitiveMethod, e);
             }
-        });
+        }
 
         TransactionContext.leaveTransaction();
     }
@@ -108,16 +111,21 @@ public class TLSTransactionManager implements TransactionManager {
         TransactionContext.enterTransaction(transactionId);
 
         // todo: consider in parallel requests
-        boolean allYes = this.localParticipantsManager.getParticipants(transactionId).stream().map(p -> {
+        boolean isAllYes = true;
+        for (SapphirePolicy.SapphireClientPolicy p: this.localParticipantsManager.getParticipants(transactionId)){
             try {
-                return p.onRPC(TransactionWrapper.txWrapperTag, paramsVoteReq);
+                Object vote = p.onRPC(TransactionWrapper.txWrapperTag, paramsVoteReq);
+                if (!vote.equals(Vote.YES)) {
+                    isAllYes = false;
+                    break;
+                }
             } catch (Exception e) {
                 throw new RuntimeException("DCAP 2PC transaction exception: vote_req", e);
             }
-        }).allMatch(v -> v.equals(Vote.YES));
+        }
 
         TransactionContext.leaveTransaction();
-        return allYes;
+        return isAllYes;
     }
 
     private ArrayList<Object> genTwoPCPrimitiveParams(UUID transactionId, String primitive) {

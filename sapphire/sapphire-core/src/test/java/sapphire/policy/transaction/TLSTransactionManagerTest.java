@@ -2,8 +2,10 @@ package sapphire.policy.transaction;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import sapphire.policy.SapphirePolicy.SapphireClientPolicy;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.UUID;
 
@@ -33,14 +35,18 @@ public class TLSTransactionManagerTest {
     public void test_commit_fanout() throws Exception {
         txManager.commit(txId);
 
-        verify(part1).onRPC(eq("tx_rpc"), any());
-        verify(part2).onRPC(eq("tx_rpc"), any());
+        verify(part1).onRPC(eq("tx_rpc"), any(ArrayList.class));
+        ArgumentCaptor<ArrayList> argumentCaptor = ArgumentCaptor.forClass(ArrayList.class);
+        verify(part2).onRPC(eq("tx_rpc"), argumentCaptor.capture());
+        ArrayList<Object> params = argumentCaptor.getValue();
+        TransactionWrapper tx = new TransactionWrapper("tx_rpc", params);
+        assertEquals("tx_commit", tx.getInnerRPCMethod());
     }
 
     @Test
     public void test_vote_yes_on_all_good() throws Exception {
-        when(part1.onRPC(eq("tx_rpc"), any())).thenReturn(TransactionManager.Vote.YES);
-        when(part2.onRPC(eq("tx_rpc"), any())).thenReturn(TransactionManager.Vote.YES);
+        when(part1.onRPC(eq("tx_rpc"), any(ArrayList.class))).thenReturn(TransactionManager.Vote.YES);
+        when(part2.onRPC(eq("tx_rpc"), any(ArrayList.class))).thenReturn(TransactionManager.Vote.YES);
 
         TwoPCLocalStatus statusManager = mock(TwoPCLocalStatus.class);
         when(statusManager.getStatus(txId)).thenReturn(TwoPCLocalStatus.LocalStatus.GOOD);
@@ -54,8 +60,8 @@ public class TLSTransactionManagerTest {
 
     @Test
     public void test_vote_no_on_any_nogood() throws Exception {
-        when(part1.onRPC(eq("tx_rpc"), any())).thenReturn(TransactionManager.Vote.YES);
-        when(part2.onRPC(eq("tx_rpc"), any())).thenReturn(TransactionManager.Vote.UNCERTIAN);
+        when(part1.onRPC(eq("tx_rpc"), any(ArrayList.class))).thenReturn(TransactionManager.Vote.YES);
+        when(part2.onRPC(eq("tx_rpc"), any(ArrayList.class))).thenReturn(TransactionManager.Vote.UNCERTIAN);
 
         TwoPCLocalStatus statusManager = mock(TwoPCLocalStatus.class);
         when(statusManager.getStatus(txId)).thenReturn(TwoPCLocalStatus.LocalStatus.GOOD);

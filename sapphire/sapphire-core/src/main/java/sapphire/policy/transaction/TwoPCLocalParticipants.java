@@ -13,7 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * type to keep track of participants of transactions
  */
 public class TwoPCLocalParticipants {
-    private final ConcurrentHashMap<UUID, TwoPCParticipants> localParticipants = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<UUID, TwoPCParticipants> localParticipants = new ConcurrentHashMap<UUID, TwoPCParticipants>();
 
     public Collection<SapphireClientPolicy> getParticipants(UUID transactionId) {
         return this.localParticipants.get(transactionId).getRegistered();
@@ -25,7 +25,9 @@ public class TwoPCLocalParticipants {
         }
 
         TwoPCParticipants participantManager = this.localParticipants.get(transactionId);
-        participants.forEach(participantManager::register);
+        for (SapphireClientPolicy participant: participants) {
+            participantManager.register(participant);
+        }
     }
 
     public void cleanup(UUID transactionId) {

@@ -59,16 +59,6 @@ public class ServerTest {
     }
 
     @Test
-    public void removeCurrentLeader() throws Exception {
-        raftServer[0].removeCurrentLeader();
-    }
-
-    @Test
-    public void setCurrentLeader() throws Exception {
-        raftServer[0].setCurrentLeader(raftServer[1].getMyServerID());
-    }
-
-    @Test
     public void majorityQuorumSize() throws Exception {
         raftServer[0].majorityQuorumSize();
     }
@@ -96,11 +86,11 @@ public class ServerTest {
     @Test
     public void become() throws Exception {
         raftServer[0].start();
-        raftServer[0].become(Server.State.FOLLOWER);
+        raftServer[0].become(Server.State.FOLLOWER, Server.State.FOLLOWER);
         assert(raftServer[0].getState() == Server.State.FOLLOWER);
-        raftServer[0].become(Server.State.CANDIDATE);
+        raftServer[0].become(Server.State.CANDIDATE, Server.State.FOLLOWER);
         assert(raftServer[0].getState() == Server.State.CANDIDATE);
-        raftServer[0].become(Server.State.LEADER);
+        raftServer[0].become(Server.State.LEADER, Server.State.CANDIDATE);
         assert(raftServer[0].getState() == Server.State.LEADER);
     }
 
@@ -109,7 +99,7 @@ public class ServerTest {
         for(Server s: raftServer) {
             s.start();
         }
-        raftServer[0].become(Server.State.CANDIDATE); // Immediately tell the first one to start an election, just to speed things up in this unit test.
+        raftServer[0].become(Server.State.CANDIDATE, Server.State.FOLLOWER); // Immediately tell the first one to start an election, just to speed things up in this unit test.
 
         int leaderCount = 0;
         UUID initialLeader = null, finalLeader=null;

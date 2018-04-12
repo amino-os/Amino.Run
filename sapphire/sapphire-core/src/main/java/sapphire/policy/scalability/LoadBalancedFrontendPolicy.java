@@ -47,8 +47,8 @@ public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
 	 *
 	 */
 	public static class ClientPolicy extends DefaultSapphirePolicy.DefaultClientPolicy {
-		private static int index;
-		private ArrayList<SapphireServerPolicy> replicaList;
+		private int index;
+		protected ArrayList<SapphireServerPolicy> replicaList;
 		private static Logger logger = Logger.getLogger(ClientPolicy.class.getName());
 
 

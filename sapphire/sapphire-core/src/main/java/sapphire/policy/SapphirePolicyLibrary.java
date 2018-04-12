@@ -141,6 +141,11 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 		public String sapphire_getRegion() {
 			return kernel().getRegion();
 		}
+
+		public void sapphire_deleteKernelObject() throws RemoteException, KernelObjectNotFoundException {
+			kernel().deleteKernelObject(this.$__getKernelOID());
+		}
+
 		public void $__initialize(AppObject appObject) {
 			this.appObject = appObject;
 		}

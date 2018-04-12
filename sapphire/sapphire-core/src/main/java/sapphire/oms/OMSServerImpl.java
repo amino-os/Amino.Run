@@ -71,6 +71,18 @@ public class OMSServerImpl implements OMSServer{
     	   kernelObjectManager.register(oid, host);
        }
        
+	   /**
+		* UnRegister specified kernel object from the host
+		* @param oid
+		* @param host
+		* @throws RemoteException
+		* @throws KernelObjectNotFoundException
+		*/
+	   public void unRegisterKernelObject(KernelOID oid, InetSocketAddress host) throws RemoteException, KernelObjectNotFoundException {
+		   logger.info("UnRegistering " + oid.toString() + " on host " + host.toString());
+		   kernelObjectManager.unRegister(oid, host);
+	   }
+
        /**
         * Find the host for a kernel object
         * @return the host IP address

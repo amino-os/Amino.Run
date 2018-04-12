@@ -18,21 +18,21 @@ import static sapphire.policy.util.consensus.raft.PersistentState.NO_LEADER;
  */
 class VolatileState {
     /**
-     * All the other servers.
+     * All the other servers.  Just make it public to avoid having to re-implement the whole Map interface.
+     * ConcurrentMap is already thread-safe, so can be accessed directly.
      */
     public ConcurrentMap<UUID, Server> otherServers = new ConcurrentHashMap<UUID, Server>();
-    int commitIndex = INVALID_INDEX;
-    int lastApplied = INVALID_INDEX;
+    Integer commitIndex = INVALID_INDEX;
+    Integer lastApplied = INVALID_INDEX;
     /**
      * Who is the current leader?
      */
     UUID currentLeader = PersistentState.NO_LEADER;  // Initially no leader.
     private volatile Server.State state = Server.State.NONE;
 
-    private Object syncObj = new Object(); // Private object to synchronize primitives on, so that clients can synchronize on this, and avoid deadlock.
     int getCommitIndex() {
-        synchronized(syncObj) {
-            return this.commitIndex;
+        synchronized(commitIndex) {
+            return commitIndex;
         }
     }
 
@@ -44,17 +44,17 @@ class VolatileState {
      * determine whether the update was performed, and retry as necessary.
      */
      int setCommitIndex(int value, int preconditionValue) {
-        synchronized(syncObj) { // Can't synchronize on primitive ints in Java
-            if (this.commitIndex == preconditionValue) {
-                this.commitIndex = value;
+        synchronized(commitIndex) { // Can't synchronize on primitive ints in Java
+            if (commitIndex == preconditionValue) {
+                commitIndex = value;
             }
-            return this.commitIndex;
+            return commitIndex;
         }
     }
 
     int getLastApplied() {
-        synchronized (syncObj) {
-            return this.lastApplied;
+        synchronized (lastApplied) {
+            return lastApplied;
         }
     }
 
@@ -66,21 +66,21 @@ class VolatileState {
      * determine whether the update was performed, and retry as necessary.
      */
     int setLastApplied(int value, int preconditionValue) {
-        synchronized (syncObj) {
-            if (this.commitIndex == preconditionValue) {
-                this.commitIndex = value;
+        synchronized (lastApplied) {
+            if (lastApplied == preconditionValue) {
+                lastApplied = value;
             }
-            return this.commitIndex;
+            return lastApplied;
         }
     }
 
     int incrementLastApplied(int preconditionValue) {
-        synchronized(syncObj) {
-            if (this.lastApplied == preconditionValue) {
-                ++this.lastApplied;
+        synchronized(lastApplied) {
+            if (lastApplied == preconditionValue) {
+                ++lastApplied;
             }
         }
-        return this.lastApplied;
+        return lastApplied;
     }
 
     Server.State getState() {
@@ -91,10 +91,10 @@ class VolatileState {
 
     Server.State setState(Server.State value, Server.State preconditionValue) {
         synchronized (state) {
-            if (this.state == preconditionValue) {
-                this.state = value;
+            if (state == preconditionValue) {
+                state = value;
             }
-            return this.state;
+            return state;
         }
     }
 
@@ -114,10 +114,10 @@ class VolatileState {
         }
     }
 
-    synchronized void setCurrentLeader(UUID leader) {
+    void setCurrentLeader(UUID leader) {
         synchronized(currentLeader) {
-            if (!this.currentLeader.equals(leader)) {
-                this.currentLeader = leader; // We learned about a new leader.
+            if (!currentLeader.equals(leader)) {
+                currentLeader = leader; // We learned about a new leader.
             }
         }
     }

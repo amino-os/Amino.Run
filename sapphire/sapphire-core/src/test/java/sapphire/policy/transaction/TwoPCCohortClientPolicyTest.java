@@ -27,7 +27,12 @@ public class TwoPCCohortClientPolicyTest {
 
         TwoPCCohortClientPolicy clientPolicy = new TwoPCCohortClientPolicy();
         clientPolicy.setServer(serverPolicy);
-        clientPolicy.setParticipantManagerProvider( () -> participants );
+        clientPolicy.setParticipantManagerProvider( new TwoPCCohortClientPolicy.ParticipantManagerProvider() {
+            @Override
+            public TwoPCParticipants Get() {
+                return participants;
+            }
+        });
 
         clientPolicy.onRPC("foo", null);
 
@@ -42,7 +47,12 @@ public class TwoPCCohortClientPolicyTest {
 
         TwoPCCohortClientPolicy clientPolicy = new TwoPCCohortClientPolicy();
         clientPolicy.setServer(serverPolicy);
-        clientPolicy.setParticipantManagerProvider( () -> participants );
+        clientPolicy.setParticipantManagerProvider(new TwoPCCohortClientPolicy.ParticipantManagerProvider() {
+            @Override
+            public TwoPCParticipants Get() {
+                return participants;
+            }
+        });
 
         UUID txnId = UUID.randomUUID();
         TransactionContext.enterTransaction(txnId);

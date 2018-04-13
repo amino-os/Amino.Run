@@ -3,6 +3,7 @@ package sapphire.policy.transaction;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
+import sapphire.common.ReflectionTestUtil;
 import sapphire.policy.SapphirePolicy.SapphireClientPolicy;
 
 import java.util.ArrayList;
@@ -21,14 +22,14 @@ public class TLSTransactionManagerTest {
     TLSTransactionManager txManager = new TLSTransactionManager();
 
     @Before
-    public void setup() {
+    public void setup() throws NoSuchFieldException, IllegalAccessException {
         this.txId = UUID.randomUUID();
         this.part1 = mock(TwoPCCohortPolicy.TwoPCCohortClientPolicy.class);
         this.part2 = mock(TwoPCCohortPolicy.TwoPCCohortClientPolicy.class);
         this.participantsManager = mock(TwoPCLocalParticipants.class);
         when(participantsManager.getParticipants(this.txId)).thenReturn(Arrays.asList(this.part1, this.part2));
 
-        this.txManager.setLocalParticipantsManager(participantsManager);
+        ReflectionTestUtil.setField(this.txManager, "localParticipantsManager", participantsManager);
     }
 
     @Test
@@ -50,8 +51,7 @@ public class TLSTransactionManagerTest {
 
         TwoPCLocalStatus statusManager = mock(TwoPCLocalStatus.class);
         when(statusManager.getStatus(txId)).thenReturn(TwoPCLocalStatus.LocalStatus.GOOD);
-
-        this.txManager.setLocalStatusManager(statusManager);
+        ReflectionTestUtil.setField(this.txManager, "localStatusManager", statusManager);
 
         TransactionManager.Vote result = txManager.vote(txId);
 
@@ -65,8 +65,7 @@ public class TLSTransactionManagerTest {
 
         TwoPCLocalStatus statusManager = mock(TwoPCLocalStatus.class);
         when(statusManager.getStatus(txId)).thenReturn(TwoPCLocalStatus.LocalStatus.GOOD);
-
-        this.txManager.setLocalStatusManager(statusManager);
+        ReflectionTestUtil.setField(this.txManager, "localStatusManager", statusManager);
 
         TransactionManager.Vote result = txManager.vote(txId);
 

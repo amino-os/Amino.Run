@@ -42,7 +42,8 @@ try{
 * P2: support participant of SO that has consensus DM
 ### Assumptions of Phase 1
 <br/>All participants of the transaction have to have 2PC-compiliant transaction DM.
-<br/>Concuurent control policy is lock-based perssimitive. 
+<br/>Sapphire objects MUST not be involved in multiple threading executions inside of transaction (thiis one limitation of phase 1. We may allow SO to work multi-threading when threads are started under the control of DM in the future.)   
+<br/>Concurrent control policy is lock-based perssimitive. 
 ### User Experience
 Code to define transaction
 ```

@@ -30,7 +30,7 @@ public interface TransactionManager {
      * @param transactionId id of the effective transaction
      * @return
      */
-    Vote vote(UUID transactionId);
+    Vote vote(UUID transactionId) throws TransactionExecutionException;
 
     /**
      * commits the transaction

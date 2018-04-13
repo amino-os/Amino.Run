@@ -15,7 +15,9 @@ public class TwoPCParticipantManager implements TwoPCParticipants {
 
     @Override
     public void register(SapphireClientPolicy cohort) {
-        this.participants.add(cohort);
+        if (!this.participants.contains(cohort)) {
+            this.participants.add(cohort);
+        }
     }
 
     @Override

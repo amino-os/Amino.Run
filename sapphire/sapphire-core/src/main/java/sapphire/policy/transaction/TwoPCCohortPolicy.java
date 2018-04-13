@@ -53,7 +53,7 @@ public class TwoPCCohortPolicy extends DefaultSapphirePolicy {
      */
     public static class TwoPCCohortServerPolicy extends DefaultServerPolicy {
         private SandboxProvider sandboxProvider;
-        private TransactionManager transactionManager;
+        private TransactionManager transactionManager = new TLSTransactionManager();
 
         //test hook
         void setSandboxProvider(SandboxProvider sandboxProvider) {
@@ -87,10 +87,14 @@ public class TwoPCCohortPolicy extends DefaultSapphirePolicy {
             }
             if (TwoPCPrimitive.isCommit(rpcMethod)) {
                 this.transactionManager.commit(transactionId);
+                SapphireServerPolicyUpcalls sandbox = this.sandboxProvider.getSandbox(this, transactionId);
+                this.makeUpdateDurable(sandbox);
+                this.sandboxProvider.removeSandbox(this, transactionId);
                 return null;
             }
             if (TwoPCPrimitive.isAbort(rpcMethod)) {
                 this.transactionManager.abort(transactionId);
+                this.sandboxProvider.removeSandbox(this, transactionId);
                 return null;
             } else {
                 this.transactionManager.join(transactionId);
@@ -99,6 +103,14 @@ public class TwoPCCohortPolicy extends DefaultSapphirePolicy {
                 this.transactionManager.leave(transactionId);
                 return result;
             }
+        }
+
+        /**
+         * replaces appObject etc with that of the sandbox to observe durability
+         * @param sandbox the isolated object that holds the updated content
+         */
+        private void makeUpdateDurable(SapphireServerPolicyUpcalls sandbox) {
+            // todo: to be implemented
         }
     }
 

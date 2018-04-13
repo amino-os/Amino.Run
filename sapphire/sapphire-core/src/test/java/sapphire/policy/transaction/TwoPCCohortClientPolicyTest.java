@@ -7,12 +7,9 @@ import org.mockito.ArgumentCaptor;
 import java.util.ArrayList;
 import java.util.UUID;
 
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
-import static sapphire.policy.transaction.TwoPCCohortPolicy.*;
-
 import static org.junit.Assert.assertEquals;
+import static sapphire.policy.transaction.TwoPCCohortPolicy.*;
 
 public class TwoPCCohortClientPolicyTest {
     @After

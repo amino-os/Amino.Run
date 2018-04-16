@@ -20,7 +20,7 @@ public class TwoPCCohortPolicy extends DefaultSapphirePolicy {
         private TwoPCParticipants participantManager;
 
         // the default participants provider
-        private ParticipantManagerProvider participantManagerProvider = new ParticipantManagerProvider() {
+        private final ParticipantManagerProvider participantManagerProvider = new ParticipantManagerProvider() {
             @Override
             public TwoPCParticipants Get() {
                 return TransactionContext.getParticipants();
@@ -41,11 +41,6 @@ public class TwoPCCohortPolicy extends DefaultSapphirePolicy {
 
             return super.onRPC(method, params);
         }
-
-        // setter for test purpose
-        void setParticipantManagerProvider(ParticipantManagerProvider provider) {
-            this.participantManagerProvider = provider;
-        }
     }
 
     /**
@@ -53,17 +48,7 @@ public class TwoPCCohortPolicy extends DefaultSapphirePolicy {
      */
     public static class TwoPCCohortServerPolicy extends DefaultServerPolicy {
         private SandboxProvider sandboxProvider;
-        private TransactionManager transactionManager = new TLSTransactionManager();
-
-        //test hook
-        void setSandboxProvider(SandboxProvider sandboxProvider) {
-            this.sandboxProvider = sandboxProvider;
-        }
-
-        // test hook
-        void setTransactionManager(TransactionManager transactionManager) {
-            this.transactionManager = transactionManager;
-        }
+        private final TransactionManager transactionManager = new TLSTransactionManager();
 
         @Override
         public Object onRPC(String method, ArrayList<Object> params) throws Exception {

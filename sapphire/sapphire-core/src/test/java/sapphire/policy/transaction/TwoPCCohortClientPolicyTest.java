@@ -3,6 +3,7 @@ package sapphire.policy.transaction;
 import org.junit.After;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
+import sapphire.common.ReflectionTestUtil;
 
 import java.util.ArrayList;
 import java.util.UUID;
@@ -13,7 +14,7 @@ import static sapphire.policy.transaction.TwoPCCohortPolicy.*;
 
 public class TwoPCCohortClientPolicyTest {
     @After
-    public void cleanContext(){
+    public void cleanContext() {
         TransactionContext.leaveTransaction();
     }
 
@@ -24,12 +25,16 @@ public class TwoPCCohortClientPolicyTest {
 
         TwoPCCohortClientPolicy clientPolicy = new TwoPCCohortClientPolicy();
         clientPolicy.setServer(serverPolicy);
-        clientPolicy.setParticipantManagerProvider( new TwoPCCohortClientPolicy.ParticipantManagerProvider() {
-            @Override
-            public TwoPCParticipants Get() {
-                return participants;
-            }
-        });
+
+        ReflectionTestUtil.setField(clientPolicy,
+                "participantManagerProvider",
+                new TwoPCCohortClientPolicy.ParticipantManagerProvider() {
+                    @Override
+                    public TwoPCParticipants Get() {
+                        return participants;
+                    }
+                }
+        );
 
         clientPolicy.onRPC("foo", null);
 
@@ -44,12 +49,14 @@ public class TwoPCCohortClientPolicyTest {
 
         TwoPCCohortClientPolicy clientPolicy = new TwoPCCohortClientPolicy();
         clientPolicy.setServer(serverPolicy);
-        clientPolicy.setParticipantManagerProvider(new TwoPCCohortClientPolicy.ParticipantManagerProvider() {
-            @Override
-            public TwoPCParticipants Get() {
-                return participants;
-            }
-        });
+        ReflectionTestUtil.setField(clientPolicy,
+                "participantManagerProvider",
+                new TwoPCCohortClientPolicy.ParticipantManagerProvider() {
+                    @Override
+                    public TwoPCParticipants Get() {
+                        return participants;
+                    }
+                });
 
         UUID txnId = UUID.randomUUID();
         TransactionContext.enterTransaction(txnId);

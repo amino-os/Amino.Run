@@ -4,6 +4,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import sapphire.common.AppObject;
+import sapphire.common.ReflectionTestUtil;
 
 import java.util.UUID;
 
@@ -18,9 +19,9 @@ public class TwoPCCohortServerPolicyTest {
     private TwoPCCohortServerPolicy serverPolicy = new TwoPCCohortServerPolicy();
 
     @Before
-    public void Setup() {
-        this.serverPolicy.setSandboxProvider(sandboxProvider);
-        this.serverPolicy.setTransactionManager(transactionManager);
+    public void Setup() throws NoSuchFieldException, IllegalAccessException {
+        ReflectionTestUtil.setField(this.serverPolicy, "sandboxProvider", sandboxProvider);
+        ReflectionTestUtil.setField(this.serverPolicy, "transactionManager", transactionManager);
     }
 
     @After

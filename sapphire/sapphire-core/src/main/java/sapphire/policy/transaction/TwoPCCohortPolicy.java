@@ -47,7 +47,7 @@ public class TwoPCCohortPolicy extends DefaultSapphirePolicy {
      * DCAP distributed transaction default server policy
      */
     public static class TwoPCCohortServerPolicy extends DefaultServerPolicy {
-        private SandboxProvider sandboxProvider;
+        private final SandboxProvider sandboxProvider = new AppObjectSandboxProvider();
         private final TransactionManager transactionManager = new TLSTransactionManager();
 
         @Override

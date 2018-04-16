@@ -15,7 +15,7 @@ public interface SandboxProvider {
      * @param transactionId id of the transaction
      * @return sandbox associated with the transaction
      */
-    SapphireServerPolicyUpcalls getSandbox(TwoPCCohortServerPolicy origin, UUID transactionId);
+    SapphireServerPolicyUpcalls getSandbox(TwoPCCohortServerPolicy origin, UUID transactionId) throws Exception;
 
     /**
      * removes the sandbox of the origin thing associated with the specified transaction

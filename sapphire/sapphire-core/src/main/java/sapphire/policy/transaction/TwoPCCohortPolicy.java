@@ -51,7 +51,7 @@ public class TwoPCCohortPolicy extends DefaultSapphirePolicy {
         private final TransactionManager transactionManager;
 
         public TwoPCCohortServerPolicy() {
-            TransactionValidator validator = new NonconcurrentTransactionValidator(this, this.sandboxProvider);
+            TransactionValidator validator = new NonconcurrentTransactionValidator(this.sapphire_getAppObject(), this.sandboxProvider);
             TLSTransactionManager transactionManager = new TLSTransactionManager();
             transactionManager.setValidator(validator);
             this.transactionManager = transactionManager;

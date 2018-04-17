@@ -1,6 +1,7 @@
 package sapphire.policy.dht;
 
 import java.io.Serializable;
+import java.lang.annotation.Annotation;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -73,7 +74,7 @@ public class DHTPolicy extends SapphirePolicy {
 		}
 		
 		@Override
-		public void onCreate(SapphireGroupPolicy group) {
+		public void onCreate(SapphireGroupPolicy group, Annotation[] annotations) {
 			this.group = (DHTGroupPolicy) group;
 			try {
 				dhtData = castMap((Map<DHTKey, ?>)((DHTInterface)appObject.getObject()).dhtGetData(), DHTKey.class, Object.class);
@@ -216,7 +217,7 @@ public class DHTPolicy extends SapphirePolicy {
 		}
 		
 		@Override
-		public void onCreate(SapphireServerPolicy server) {
+		public void onCreate(SapphireServerPolicy server, Annotation[] annotations) {
 			nodes = new TreeSet<DHTNode>();
 			dhtNodeIdGenerator = new Random();
 			
@@ -240,7 +241,6 @@ public class DHTPolicy extends SapphirePolicy {
 				throw new Error("Could not create new group policy because the oms is not available.");
 			}
 		}
-		
 		/**
 		 * Returns the predecessor of the given node.
 		 * 

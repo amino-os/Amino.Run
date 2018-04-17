@@ -1,5 +1,6 @@
 package sapphire.policy.scalability;
 
+import java.lang.annotation.Annotation;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -8,7 +9,10 @@ import java.util.logging.Logger;
 
 import sapphire.kernel.common.KernelObjectStub;
 import sapphire.policy.DefaultSapphirePolicy;
-
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  * Created by SrinivasChilveri on 2/19/18.
@@ -16,6 +20,25 @@ import sapphire.policy.DefaultSapphirePolicy;
  */
 
 public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
+
+	final static int STATIC_REPLICA_COUNT = 2;
+	final static int MAX_CONCURRENT_REQUESTS = 2000;
+
+	@Retention(RetentionPolicy.RUNTIME)
+	@Target({ElementType.TYPE})
+	public @interface LoadBalancedFrontendPolicyConfigAnnotation {
+		int maxconcurrentReq() default MAX_CONCURRENT_REQUESTS;
+		int replicacount()     default STATIC_REPLICA_COUNT;
+	}
+
+	private static LoadBalancedFrontendPolicyConfigAnnotation getAnnotation(Annotation[] annotations){
+		for (Annotation annotation : annotations) {
+			if (annotation instanceof LoadBalancedFrontendPolicyConfigAnnotation) {
+				return (LoadBalancedFrontendPolicyConfigAnnotation) annotation;
+			}
+		}
+		return null;
+	}
 
 	/**
 	 * LoadBalancedFrontend client policy. The client will LoadBalance among the Sapphire Server replica objects.
@@ -60,29 +83,36 @@ public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
 	 */
 	public static class ServerPolicy extends DefaultSapphirePolicy.DefaultServerPolicy {
 		private static Logger logger = Logger.getLogger(ServerPolicy.class.getName());
-		private static int MAX_CONCURRENT_REQUESTS = 2000 ; //currently its hard coded we can read from config or annotations
-		private Semaphore limiter = new Semaphore(MAX_CONCURRENT_REQUESTS,true);
-
+		private int maxConcurrentReq; //we can read from default config or annotations
+		private Semaphore limiter;
 
 		@Override
-		public void onCreate(SapphireGroupPolicy group) {
-			super.onCreate(group);
-		
+		public void onCreate(SapphireGroupPolicy group, Annotation[] annotations) {
+			super.onCreate(group,annotations);
+			this.maxConcurrentReq = MAX_CONCURRENT_REQUESTS;
+			LoadBalancedFrontendPolicyConfigAnnotation annotation = getAnnotation(annotations);
+			if (annotation != null){
+				this.maxConcurrentReq = annotation.maxconcurrentReq();
+			}
+			if (this.limiter == null){
+				this.limiter = new Semaphore(this.maxConcurrentReq, true);
+			}
 		}
 
 		@Override
 		public Object onRPC(String method, ArrayList<Object> params) throws Exception {
-
-			try {
-				if (limiter.tryAcquire()) { //concurrent requests count not reached
+			boolean acquired = false;
+			acquired = limiter.tryAcquire();
+			if (acquired) { //concurrent requests count not reached
+				try {
 					return super.onRPC(method, params);
-				} else {
-					logger.warning("Throwing Exception on server overload on reaching the concurrent requests count"+ MAX_CONCURRENT_REQUESTS);
-					throw new ServerOverLoadException("The Replica of the SappahireObject on this Kernel Server Over Loaded on reaching the concurrent requests count " + MAX_CONCURRENT_REQUESTS);
 				}
-			}
-			finally {
-				limiter.release();
+				finally {
+					limiter.release();
+				}
+			} else {
+				logger.warning("Throwing Exception on server overload on reaching the concurrent requests count" + maxConcurrentReq);
+				throw new ServerOverLoadException("The Replica of the SappahireObject on this Kernel Server Over Loaded on reaching the concurrent requests count " + maxConcurrentReq);
 			}
 		}
     }
@@ -95,9 +125,16 @@ public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
 	public static class GroupPolicy extends DefaultSapphirePolicy.DefaultGroupPolicy {
 		private static int STATIC_REPLICAS = 2 ; //currently its hard coded we can read from config or annotations
 		private static Logger logger = Logger.getLogger(GroupPolicy.class.getName());
-
+		private static int replicaCount;// we can read from config or annotations
 		@Override
-		public void onCreate(SapphireServerPolicy server) {
+		public void onCreate(SapphireServerPolicy server, Annotation[] annotations) {
+
+			this.replicaCount = STATIC_REPLICA_COUNT;
+			LoadBalancedFrontendPolicyConfigAnnotation annotation = getAnnotation(annotations);
+
+			if (annotation != null){
+				this.replicaCount = annotation.replicacount();
+			}
 			int count = 0;     // count is compared below < STATIC_REPLICAS-1 excluding the present server
 			int numnodes = 0 ; // num of nodes/servers in the selected region
 
@@ -123,7 +160,7 @@ public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
 					kernelServers.remove(addr);
 					numnodes = kernelServers.size();
 
-					for (count = 0; count < numnodes && count < STATIC_REPLICAS-1; count++) {
+					for (count = 0; count < numnodes && count < replicaCount-1; count++) {
 						ServerPolicy replica = (ServerPolicy) server.sapphire_replicate();
 						replica.sapphire_pin_to_server(kernelServers.get(count));
 						((KernelObjectStub) replica).$__updateHostname(kernelServers.get(count));
@@ -132,10 +169,10 @@ public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
 
 				/* If the replicas created are less than the number of replicas configured,
 				log a warning message */
-				if (count != STATIC_REPLICAS-1)  {
-					logger.severe("Configured replicas count: " + STATIC_REPLICAS + ", created replica count : " + count+
+				if (count != replicaCount -1)  {
+					logger.severe("Configured replicas count: " + replicaCount + ", created replica count : " + count+
 							"insufficient servers in region "+ numnodes + "to create required replicas");
-					throw new Error("Configured replicas count: " + STATIC_REPLICAS + ", created replica count : " + count);
+					throw new Error("Configured replicas count: " + replicaCount + ", created replica count : " + count);
 				}
 
             } catch (RemoteException e) {
@@ -143,7 +180,5 @@ public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
                 throw new Error("Could not create new group policy because the oms is not available.", e);
             }
         }
-
     }
-
 }

@@ -1,5 +1,6 @@
 package sapphire.policy;
 
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Set;
@@ -19,7 +20,7 @@ public class DefaultSapphirePolicy extends SapphirePolicy {
 		public void onMembershipChange() {}
 
 		@Override
-		public void onCreate(SapphireGroupPolicy group) {
+		public void onCreate(SapphireGroupPolicy group, Annotation[] annotations) {
 			// TODO Auto-generated method stub
 			this.group = (DefaultGroupPolicy) group;
 		}
@@ -79,7 +80,7 @@ public class DefaultSapphirePolicy extends SapphirePolicy {
 		}
 
 		@Override
-		public void onCreate(SapphireServerPolicy server) {
+		public void onCreate(SapphireServerPolicy server, Annotation[] annotations) {
 			// TODO Auto-generated method stub
 		}
 	}

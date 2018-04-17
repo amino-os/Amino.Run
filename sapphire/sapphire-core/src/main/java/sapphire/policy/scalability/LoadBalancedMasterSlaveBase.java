@@ -1,6 +1,7 @@
 package sapphire.policy.scalability;
 
 import java.io.Serializable;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
 import java.rmi.NotBoundException;
@@ -164,7 +165,7 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultSapphirePolicy 
         private Lock masterLock;
 
         @Override
-        public void onCreate(SapphireServerPolicy server) {
+        public void onCreate(SapphireServerPolicy server, Annotation[] annotations) {
             logger = Logger.getLogger(this.getClass().getName());
             this.addServer(server);
 

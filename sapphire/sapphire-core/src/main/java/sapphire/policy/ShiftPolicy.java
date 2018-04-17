@@ -1,5 +1,6 @@
 package sapphire.policy;
 
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.logging.Logger;
 import java.net.InetSocketAddress;
@@ -49,7 +50,7 @@ public class ShiftPolicy extends SapphirePolicy {
 		private SapphireGroupPolicy group = null;
 
 		@Override
-		public void onCreate(SapphireGroupPolicy group) {
+		public void onCreate(SapphireGroupPolicy group, Annotation[] annotations) {
 			this.group = group;
 		}
 

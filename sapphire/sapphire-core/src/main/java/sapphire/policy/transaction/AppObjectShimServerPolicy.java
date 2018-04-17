@@ -13,6 +13,7 @@ import java.util.ArrayList;
  */
 public class AppObjectShimServerPolicy implements SapphireServerPolicyUpcalls{
     private AppObject appObject;
+    private AppObject originMaster;
 
     @Override
     public void onCreate(SapphirePolicy.SapphireGroupPolicy group) {
@@ -42,8 +43,17 @@ public class AppObjectShimServerPolicy implements SapphireServerPolicyUpcalls{
         return this.appObject;
     }
 
-    private AppObjectShimServerPolicy(AppObject appObject) {
-        this.appObject = appObject;
+    /**
+     * gets the origin app object
+     * @return the origin app object
+     */
+    public AppObject getOriginMaster() {
+        return originMaster;
+    }
+
+    private AppObjectShimServerPolicy(AppObject origin, AppObject sandbox) {
+        this.originMaster = origin;
+        this.appObject = sandbox;
     }
 
     /**
@@ -52,6 +62,6 @@ public class AppObjectShimServerPolicy implements SapphireServerPolicyUpcalls{
      */
     public static AppObjectShimServerPolicy cloneInShimServerPolicy(AppObject appObject) throws Exception {
         AppObject deepCloneAppObject = (AppObject)Utils.ObjectCloner.deepCopy(appObject);
-        return new AppObjectShimServerPolicy(deepCloneAppObject);
+        return new AppObjectShimServerPolicy(appObject, deepCloneAppObject);
     }
 }

@@ -14,6 +14,15 @@ import static sapphire.policy.transaction.TwoPCLocalStatus.LocalStatus;
 public class TLSTransactionManager implements TransactionManager {
     private final TwoPCLocalStatus localStatusManager = new TwoPCLocalStatus();
     private final TwoPCLocalParticipants localParticipantsManager = new TwoPCLocalParticipants();
+    private TransactionValidator validator;
+
+    /**
+     * sets the transaction validator object
+     * @param validator
+     */
+    public void setValidator(TransactionValidator validator) {
+        this.validator = validator;
+    }
 
     /**
      * ensures the effective transaction
@@ -55,8 +64,7 @@ public class TLSTransactionManager implements TransactionManager {
                 return Vote.NO;
             case GOOD:
                 if (this.allParticipantsVotedYes(transactionId)) {
-                    this.localStatusManager.setStatus(transactionId, LocalStatus.YESVOTED);
-                    return Vote.YES;
+                    return this.getVoteOnLocalValidation(transactionId);
                 } else {
                     this.localStatusManager.setStatus(transactionId, LocalStatus.NOVOTED);
                     return Vote.NO;
@@ -66,9 +74,25 @@ public class TLSTransactionManager implements TransactionManager {
         }
     }
 
+    private Vote getVoteOnLocalValidation(UUID transactionId) {
+        try {
+            if (this.validator.promises(transactionId)) {
+                this.localStatusManager.setStatus(transactionId, LocalStatus.YESVOTED);
+                return Vote.YES;
+            } else {
+                this.localStatusManager.setStatus(transactionId, LocalStatus.NOVOTED);
+                return Vote.NO;
+            }
+        } catch (Exception e) {
+            this.localStatusManager.setStatus(transactionId, LocalStatus.NOVOTED);
+            return Vote.NO;
+        }
+    }
+
     @Override
     public void commit(UUID transactionId) {
         this.localStatusManager.setStatus(transactionId, LocalStatus.COMMITTED);
+        this.validator.onCommit(transactionId);
         try {
             this.fanOutTransactionPrimitive(transactionId, TwoPCPrimitive.Commit);
         } catch (TransactionExecutionException e) {
@@ -80,6 +104,7 @@ public class TLSTransactionManager implements TransactionManager {
     @Override
     public void abort(UUID transactionId) {
         this.localStatusManager.setStatus(transactionId, LocalStatus.ABORTED);
+        this.validator.onAbort(transactionId);
         try {
             this.fanOutTransactionPrimitive(transactionId, TwoPCPrimitive.Abort);
         } catch (TransactionExecutionException e) {

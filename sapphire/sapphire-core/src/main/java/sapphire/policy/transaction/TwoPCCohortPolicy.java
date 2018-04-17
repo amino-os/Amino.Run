@@ -48,7 +48,13 @@ public class TwoPCCohortPolicy extends DefaultSapphirePolicy {
      */
     public static class TwoPCCohortServerPolicy extends DefaultServerPolicy {
         private final SandboxProvider sandboxProvider = new AppObjectSandboxProvider();
-        private final TransactionManager transactionManager = new TLSTransactionManager();
+        private final TransactionManager transactionManager;
+
+        public TwoPCCohortServerPolicy() {
+            TransactionValidator validator = new NonconcurrentTransactionValidator(this.sapphire_getAppObject(), this.sandboxProvider);
+            this.transactionManager = new TLSTransactionManager();
+            ((TLSTransactionManager)this.transactionManager).setValidator(validator);
+        }
 
         @Override
         public Object onRPC(String method, ArrayList<Object> params) throws Exception {
@@ -95,7 +101,8 @@ public class TwoPCCohortPolicy extends DefaultSapphirePolicy {
          * @param sandbox the isolated object that holds the updated content
          */
         private void makeUpdateDurable(SapphireServerPolicyUpcalls sandbox) {
-            // todo: to be implemented
+            AppObjectShimServerPolicy shimServerPolicy = (AppObjectShimServerPolicy)sandbox;
+            this.appObject = shimServerPolicy.getAppObject();
         }
     }
 

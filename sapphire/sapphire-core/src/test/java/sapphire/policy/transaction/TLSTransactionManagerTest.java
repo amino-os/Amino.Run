@@ -20,6 +20,7 @@ public class TLSTransactionManagerTest {
     SapphireClientPolicy part1, part2;
     TwoPCLocalParticipants participantsManager;
     TLSTransactionManager txManager = new TLSTransactionManager();
+    TransactionValidator txPromiser = mock(TransactionValidator.class);
 
     @Before
     public void setup() throws NoSuchFieldException, IllegalAccessException {
@@ -30,6 +31,7 @@ public class TLSTransactionManagerTest {
         when(participantsManager.getParticipants(this.txId)).thenReturn(Arrays.asList(this.part1, this.part2));
 
         ReflectionTestUtil.setField(this.txManager, "localParticipantsManager", participantsManager);
+        this.txManager.setValidator(txPromiser);
     }
 
     @Test
@@ -48,6 +50,7 @@ public class TLSTransactionManagerTest {
     public void test_vote_yes_on_all_good() throws Exception {
         when(part1.onRPC(eq("tx_rpc"), any(ArrayList.class))).thenReturn(TransactionManager.Vote.YES);
         when(part2.onRPC(eq("tx_rpc"), any(ArrayList.class))).thenReturn(TransactionManager.Vote.YES);
+        when(this.txPromiser.promises(any(UUID.class))).thenReturn(true);
 
         TwoPCLocalStatus statusManager = mock(TwoPCLocalStatus.class);
         when(statusManager.getStatus(txId)).thenReturn(TwoPCLocalStatus.LocalStatus.GOOD);

@@ -52,8 +52,8 @@ public class AppObjectShimServerPolicy implements SapphireServerPolicyUpcalls{
     }
 
     private AppObjectShimServerPolicy(AppObject origin, AppObject sandbox) {
-        this.appObject = sandbox;
         this.originMaster = origin;
+        this.appObject = sandbox;
     }
 
     /**

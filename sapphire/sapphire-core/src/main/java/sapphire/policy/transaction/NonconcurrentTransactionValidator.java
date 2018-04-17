@@ -26,6 +26,7 @@ public class NonconcurrentTransactionValidator implements TransactionValidator{
         AppObjectShimServerPolicy sandbox = (AppObjectShimServerPolicy) this.sandboxProvider.getSandbox(null, transactionId);
 
         synchronized (this) {
+            // checking for identity of sandbox's origin and this master ensures sandbox is not stale
             if (sandbox.getOriginMaster() != this.master) {
                 return false;
             }
@@ -34,6 +35,7 @@ public class NonconcurrentTransactionValidator implements TransactionValidator{
                 return false;
             }
 
+            // only one fresh sandbox can be promised
             this.promised.add(transactionId);
             return true;
         }

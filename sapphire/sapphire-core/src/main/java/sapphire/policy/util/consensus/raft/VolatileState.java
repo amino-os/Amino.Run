@@ -4,6 +4,7 @@ package sapphire.policy.util.consensus.raft;
  * Created by quinton on 3/30/18.
  */
 
+import java.io.Serializable;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -16,7 +17,7 @@ import static sapphire.policy.util.consensus.raft.PersistentState.NO_LEADER;
  * Volatile state on all servers.  Stored in RAM, and lost on restarts.
  * All methods are thread-safe, and use optimistic concurrency for updates.
  */
-class VolatileState {
+class VolatileState implements Serializable {
     /**
      * All the other servers.  Just make it public to avoid having to re-implement the whole Map interface.
      * ConcurrentMap is already thread-safe, so can be accessed directly.

@@ -62,6 +62,9 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
          * @param raftServers
          */
         public void initializeRaft(ConcurrentMap<UUID, ServerPolicy> raftServers){
+            UUID myUUID = raftServer.getMyServerID();
+            raftServer = new sapphire.policy.util.consensus.raft.Server(this);
+            raftServer.setMyServerID(myUUID);
             for(UUID id: raftServers.keySet()) {
                 this.raftServer.addServer(id, raftServers.get(id).getRaftServer());
             }
@@ -83,6 +86,13 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
         public Object onRPC(String method, ArrayList<Object> params) throws Exception {
             return raftServer.applyToStateMachine(new RPC(method, params)); // first commit it to the logs of a consensus of replicas.
         }
+
+        public ConsensusRSMPolicy.ServerPolicy onSapphireObjectReplicate() {
+            return (ConsensusRSMPolicy.ServerPolicy) this.sapphire_replicate();
+        }
+        public void onSapphirePin(String region) throws RemoteException {
+            sapphire_pin(region);
+        }
     }
 
     public static class GroupPolicy extends DefaultSapphirePolicy.DefaultGroupPolicy {
@@ -90,17 +100,18 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
         private ArrayList<ServerPolicy> servers;
         public void onCreate(SapphireServerPolicy server) {
             try {
+                servers = new ArrayList<ServerPolicy>();
                 ArrayList<String> regions = sapphire_getRegions();
                 // Register the first replica, which has already been created.
                 ServerPolicy consensusServer = (ServerPolicy) server;
                 servers.add(consensusServer);
                 // Create additional replicas, one per region. TODO:  Create N-1 replicas on different servers in the same zone.
                 for (int i = 1; i < regions.size(); i++) {
-                    ServerPolicy replica = (ServerPolicy)consensusServer.sapphire_replicate();
-                    replica.sapphire_pin(regions.get(i));
+                    ServerPolicy replica = (ServerPolicy)consensusServer.onSapphireObjectReplicate();
+                    replica.onSapphirePin(regions.get(i));
                     servers.add(replica);
                 }
-                consensusServer.sapphire_pin(regions.get(0));
+                consensusServer.onSapphirePin(regions.get(0));
                 // Tell all the servers about one another
                 ConcurrentHashMap<UUID, ServerPolicy> allServers = new ConcurrentHashMap<UUID, ServerPolicy>();
                 // First get the self-assigned ID from each server

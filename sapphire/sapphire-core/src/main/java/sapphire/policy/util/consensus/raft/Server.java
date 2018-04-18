@@ -1,5 +1,6 @@
 package sapphire.policy.util.consensus.raft;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -33,7 +34,7 @@ import static sapphire.policy.util.consensus.raft.PersistentState.NO_LEADER;
  * so decided to just try to implement Server as per the paper.  May be replaced in future by alternative
  * RAFT implementation.
  */
-public class Server { // This outer class contains everything common to leaders, followers and candidates.
+public class Server implements Serializable { // This outer class contains everything common to leaders, followers and candidates.
 
     /**
      * How long we wait for a heartbeat from the leader before starting a new leader election.
@@ -44,7 +45,7 @@ public class Server { // This outer class contains everything common to leaders,
     /**
      * If we don't receive a heartbeat from the leader, start an election.
      */
-    ResettableTimer leaderHeartbeatReceiveTimer;
+    transient ResettableTimer leaderHeartbeatReceiveTimer;
 
     enum State { NONE, LEADER, FOLLOWER, CANDIDATE };
 
@@ -81,6 +82,10 @@ public class Server { // This outer class contains everything common to leaders,
 
     public UUID getMyServerID() {
         return pState.myServerID;
+    }
+
+    public void setMyServerID(UUID myUuid) {
+        pState.myServerID = myUuid;
     }
 
     public void start() {
@@ -339,7 +344,7 @@ public class Server { // This outer class contains everything common to leaders,
         return vState.getState();
     }
 
-    class Leader {
+    class Leader implements  Serializable {
         // Volatile state on leaders (reinitialized after election)
         /**
          * Next index for each server.
@@ -358,12 +363,12 @@ public class Server { // This outer class contains everything common to leaders,
         /**
          * Periodically send heartbeats when we're the leader.
          */
-        ResettableTimer leaderHeartbeatSendTimer;
+        transient ResettableTimer leaderHeartbeatSendTimer;
 
         /**
          * Thread pool used for sending appendEntries (incl heartbeats) to followers.
          */
-        ThreadPoolExecutor appendEntriesThreadPool;
+        transient ThreadPoolExecutor appendEntriesThreadPool;
 
         Leader() {
         }
@@ -642,7 +647,7 @@ public class Server { // This outer class contains everything common to leaders,
         return getServer(vState.getCurrentLeader());
     }
 
-    class Follower {
+    class Follower implements Serializable {
         Follower() {
             leaderHeartbeatReceiveTimer = new ResettableTimer(new TimerTask() {
                 public void run() {
@@ -676,7 +681,7 @@ public class Server { // This outer class contains everything common to leaders,
         }
     }
 
-    class Candidate {
+    class Candidate implements Serializable {
         /**
          * How long we wait after starting election, before giving up and starting again if no leader has been elected yet.
          * Note that a random variation between servers is introduced to reduce split votes.
@@ -686,7 +691,7 @@ public class Server { // This outer class contains everything common to leaders,
         /**
          * If no leader is elected within the timeout, start another election.
          */
-        ResettableTimer leaderElectionTimer = new ResettableTimer(new TimerTask() {
+        transient ResettableTimer leaderElectionTimer = new ResettableTimer(new TimerTask() {
             public void run() {
                 become(State.CANDIDATE, vState.getState());
             }
@@ -695,7 +700,7 @@ public class Server { // This outer class contains everything common to leaders,
         /**
          * Thread pool used for sending out vote requests in parallel.
          */
-        ThreadPoolExecutor voteRequestThreadPool;
+        transient ThreadPoolExecutor voteRequestThreadPool;
 
         /**
          * Start being a candidate.
@@ -752,7 +757,7 @@ public class Server { // This outer class contains everything common to leaders,
             Server server = getServer(serverID);
             boolean voteGranted = true;
             try {
-                logger.info("Sending vote request to server " + pState.myServerID);
+                logger.info("Sending vote request to server " + serverID);
                 server.requestVote(pState.getCurrentTerm(), pState.myServerID, lastLogIndex(), lastLogTerm());
             }
             catch (Server.VotingException e) {

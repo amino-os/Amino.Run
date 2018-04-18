@@ -1,7 +1,7 @@
 package sapphire.policy.transaction;
 
+import sapphire.policy.SapphirePolicyLibrary.SapphireServerPolicyLibrary;
 import sapphire.policy.SapphirePolicyUpcalls.SapphireServerPolicyUpcalls;
-import static sapphire.policy.transaction.TwoPCCohortPolicy.TwoPCCohortServerPolicy;
 
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -13,7 +13,7 @@ public class AppObjectSandboxProvider implements SandboxProvider {
     private ConcurrentHashMap<UUID, AppObjectShimServerPolicy> sandboxes = new ConcurrentHashMap<UUID, AppObjectShimServerPolicy>();
 
     @Override
-    public SapphireServerPolicyUpcalls getSandbox(TwoPCCohortServerPolicy origin, UUID transactionId) throws Exception {
+    public SapphireServerPolicyUpcalls getSandbox(SapphireServerPolicyLibrary origin, UUID transactionId) throws Exception {
         if (!this.sandboxes.containsKey(transactionId)) {
             AppObjectShimServerPolicy sandbox = AppObjectShimServerPolicy.cloneInShimServerPolicy(origin.sapphire_getAppObject());
             this.sandboxes.put(transactionId, sandbox);
@@ -23,7 +23,7 @@ public class AppObjectSandboxProvider implements SandboxProvider {
     }
 
     @Override
-    public void removeSandbox(TwoPCCohortServerPolicy origin, UUID transactionId) {
+    public void removeSandbox(SapphireServerPolicyLibrary origin, UUID transactionId) {
         this.sandboxes.remove(transactionId);
     }
 }

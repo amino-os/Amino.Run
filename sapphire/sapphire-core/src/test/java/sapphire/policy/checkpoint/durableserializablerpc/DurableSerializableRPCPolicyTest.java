@@ -1,8 +1,11 @@
 package sapphire.policy.checkpoint.durableserializablerpc;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.File;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 
 import sapphire.common.AppObject;
@@ -29,7 +32,7 @@ public class DurableSerializableRPCPolicyTest extends SerializableRPCPolicyTest 
     private PeriodicCheckpointerTest so;
     private AppObject checkpointAppObject;
     private ArrayList<Object> noParams, oneParam, twoParam;
-
+    private File snapshot;
 
     @Before
     public void setUp() throws Exception {
@@ -45,6 +48,16 @@ public class DurableSerializableRPCPolicyTest extends SerializableRPCPolicyTest 
         oneParam.add(new Integer(1));
         twoParam = new ArrayList<Object>();
         twoParam.add(new Integer(2));
+        snapshot = File.createTempFile("ExplicitCheckpointPolicyTest","tmp");
+        snapshot.deleteOnExit();
+        setSnapshotFilePath(checkpointServer, snapshot.getAbsolutePath());
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        if (snapshot != null) {
+            snapshot.delete();
+        }
     }
 
     @Test
@@ -90,6 +103,12 @@ public class DurableSerializableRPCPolicyTest extends SerializableRPCPolicyTest 
         // Verify that the object has been restored
         this.checkpointClient.onRPC(getMethodName, noParams);
         assertEquals(((PeriodicCheckpointerTest)checkpointAppObject.getObject()).getI(), 1);
+    }
+
+    private void setSnapshotFilePath(DurableSerializableRPCPolicy.ServerPolicy server, String filePath) throws Exception {
+        Field f = server.getClass().getSuperclass().getSuperclass().getSuperclass().getDeclaredField("checkPointFileName");
+        f.setAccessible(true);
+        f.set(server, filePath);
     }
 }
 

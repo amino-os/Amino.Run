@@ -303,6 +303,13 @@ public class Server { // This outer class contains everything common to leaders,
             return leader.applyToStateMachine(operation);
         }
         else {
+            // TODO (Consensus): Replace Raft Server with Server Policy Stub
+            // The Server returned by getCurrentLeader() is a Raft server.
+            // But Raft server is not able to handle RMI calls.
+            // So this request forward will not work.
+
+            // The second point is: getCurrentLeader() may return null
+            // We need to handle null properly.
             return getCurrentLeader().applyToStateMachine(operation); // Forward to the leader.
         }
     }
@@ -438,6 +445,8 @@ public class Server { // This outer class contains everything common to leaders,
                             pState.myServerID, otherServerID, otherServerNextIndex, pState.log().size()));
                     int nextIndex = otherServerNextIndex == null ? 0 : otherServerNextIndex;
                     int prevLogTerm;
+                    // TODO: If nextIndex == 0 and log.size() > 0, prevLogTerm should be set to log.get(0).term
+                    // But it is currently set to INVALID_INDEX (-1)
                     if (nextIndex > 0 && pState.log().size() > 0) {
                         prevLogTerm = pState.log().get(otherServerNextIndex - 1).term;
                     }
@@ -509,6 +518,7 @@ public class Server { // This outer class contains everything common to leaders,
             for (UUID otherServerID : vState.otherServers.keySet()) {
                 int match = leader.matchIndex.get(otherServerID);
                 if (match >= logIndex) {
+                    // TODO: It should be ++matches
                     if (matches++ >= majorityQuorumSize() - 1) { // -1 because the leader implicitly matches
                         return true;
                     }
@@ -539,6 +549,12 @@ public class Server { // This outer class contains everything common to leaders,
          * @throws Exception either an exception thrown by the method invocation when applied locally,
          *                   or a RAFTException indicating why the operation could not be applied.
          */
+        // TODO: This method should be thread safe
+        // Currently this thread is not thread safe. Suppose we have multiple threads executing this
+        // method in different speed. We further assume that the lastLogIndex observed by thread A is
+        // 20, thread A sends append entry requests to other servers to replicate entries up to 20.
+        // After thread A receives quorum replies, it will update the committed index to the latest
+        // index. In this case the latest index may have been increased to 25 by other threads.
         public Object applyToStateMachine(Object operation) throws java.lang.Exception {
             /**
              *  If command received from client: append entry to local log, respond after entry applied to state machine (§5.3)
@@ -554,6 +570,12 @@ public class Server { // This outer class contains everything common to leaders,
             while (i.hasNext()) {
                 final UUID otherServerID = i.next();
                 final Integer otherServerNextIndex = leader.nextIndex.get(otherServerID);
+
+                // TODO: We should allocate one replication thread for each follower.
+                // Blindly putting replication request into a thread pool has a few drawbacks:
+                // 1) A dead follower will take all available threads and make the system hang
+                // 2) We have to deal with race conditions between multiple threads which try
+                // to update the status of the same follower
                 appendEntriesThreadPool.execute(new Runnable() {
                     @Override
                     public void run() {
@@ -844,7 +866,7 @@ public class Server { // This outer class contains everything common to leaders,
     /**
      * If log doesn’t contain an entry at specified logIndex on appendEntries RPC
      */
-    public static class InvalidLogIndex extends sapphire.policy.util.consensus.raft.Exception {
+    public static class InvalidLogIndex extends sapphire.policy.util.consensus.raft.RaftRuntimeException {
         int invalidIndex;
         public InvalidLogIndex(String s, int invalidIndex) {
             super(s);

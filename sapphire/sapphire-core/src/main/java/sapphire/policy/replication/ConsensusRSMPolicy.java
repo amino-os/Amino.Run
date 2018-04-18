@@ -3,8 +3,6 @@ package sapphire.policy.replication;
 
 import java.rmi.RemoteException;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -30,6 +28,7 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
 
     public static class ClientPolicy extends DefaultSapphirePolicy.DefaultClientPolicy {}
 
+    // TODO: ServerPolicy needs to be Serializable
     public static class ServerPolicy extends DefaultSapphirePolicy.DefaultServerPolicy  implements StateMachineApplier {
         static Logger logger = Logger.getLogger(ServerPolicy.class.getCanonicalName());
         // There are so many servers and clients in this code,
@@ -63,10 +62,17 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
          */
         public void initializeRaft(ConcurrentMap<UUID, ServerPolicy> raftServers){
             for(UUID id: raftServers.keySet()) {
+                // TODO: We should add ServerPolicy, rather than Raft server,
+                // because ServerPolicy has RMI capabilities.
                 this.raftServer.addServer(id, raftServers.get(id).getRaftServer());
             }
             this.raftServer.start();
         }
+
+        // TODO: This method should be thread safe
+        // We should not have multiple threads calling apply concurrently
+        // If we implement log compaction in the future, we also need to
+        // ensure snapshot operation and apply operation are synchronized.
         public Object apply(Object operation) throws Exception {
             RPC rpc = (RPC)operation;
             logger.info(String.format("Applying %s(%s)", rpc.method, rpc.params));
@@ -85,6 +91,7 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
         }
     }
 
+    // TODO: Group policy needs to be Serializable
     public static class GroupPolicy extends DefaultSapphirePolicy.DefaultGroupPolicy {
         private static Logger logger = Logger.getLogger(GroupPolicy.class.getName());
         private ArrayList<ServerPolicy> servers;

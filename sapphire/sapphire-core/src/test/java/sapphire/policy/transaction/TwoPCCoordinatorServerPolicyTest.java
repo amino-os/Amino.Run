@@ -23,7 +23,7 @@ public class TwoPCCoordinatorServerPolicyTest {
     private TwoPCCoordinatorServerPolicy coordinatorServerPolicy = new TwoPCCoordinatorServerPolicy();
     private TwoPCCoordinator coordinator = mock(TwoPCCoordinator.class);
     private SandboxProvider sandboxProvider = mock(SandboxProvider.class);
-    private SapphireServerPolicyUpcalls sandbox = mock(SapphireServerPolicyUpcalls.class);
+    private AppObjectShimServerPolicy sandbox = mock(AppObjectShimServerPolicy.class);
 
     @Before
     public void Setup() throws Exception{
@@ -79,7 +79,8 @@ public class TwoPCCoordinatorServerPolicyTest {
     public void test_noupdate_on_tx_aborted() throws Exception{
         when(coordinator.vote(any(UUID.class))).thenReturn(TransactionManager.Vote.NO);
 
-        Object originalAppObject = this.coordinatorServerPolicy.sapphire_getAppObject();
+        AppObject originalAppObject = new AppObject("bar");
+        this.coordinatorServerPolicy.$__initialize(originalAppObject);
 
         try {
             coordinatorServerPolicy.onRPC("foo", null);
@@ -93,11 +94,11 @@ public class TwoPCCoordinatorServerPolicyTest {
     }
 
     @Test
-    @Ignore("not ready yet - needs proper makeUpdateDurable in place")
     public void test_content_changed_on_tx_commit() throws Exception {
         when(coordinator.vote(any(UUID.class))).thenReturn(TransactionManager.Vote.YES);
 
-        Object originalAppObject = this.coordinatorServerPolicy.sapphire_getAppObject();
+        AppObject originalAppObject = new AppObject("bar");
+        this.coordinatorServerPolicy.$__initialize(originalAppObject);
 
         coordinatorServerPolicy.onRPC("foo", null);
 

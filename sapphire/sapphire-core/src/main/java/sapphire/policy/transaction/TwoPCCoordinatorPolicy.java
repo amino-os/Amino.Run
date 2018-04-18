@@ -19,7 +19,7 @@ public class TwoPCCoordinatorPolicy extends DefaultSapphirePolicy {
      */
     public static class TwoPCCoordinatorServerPolicy extends DefaultServerPolicy {
         private TwoPCCoordinator coordinator;
-        private SandboxProvider sandboxProvider;
+        private final SandboxProvider sandboxProvider = new AppObjectSandboxProvider();
 
         @Override
         public Object onRPC(String method, ArrayList<Object> params) throws Exception {
@@ -50,7 +50,8 @@ public class TwoPCCoordinatorPolicy extends DefaultSapphirePolicy {
         }
 
         private void makeUpdateDurable(SapphireServerPolicyUpcalls sandbox) {
-            // todo: replace appobject etc w/ that of sandbox
+            AppObjectShimServerPolicy shimServerPolicy = (AppObjectShimServerPolicy)sandbox;
+            this.appObject = shimServerPolicy.getAppObject();
         }
     }
 

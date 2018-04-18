@@ -285,6 +285,10 @@ public class DHTPolicy extends SapphirePolicy {
 		}
 
 		@Override
+		public void removeServer(SapphireServerPolicy server) {
+		}
+
+		@Override
 		public void onFailure(SapphireServerPolicy server) {
 			// TODO
 		}

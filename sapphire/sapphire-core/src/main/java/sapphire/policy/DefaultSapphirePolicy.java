@@ -1,6 +1,8 @@
 package sapphire.policy;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 public class DefaultSapphirePolicy extends SapphirePolicy {
 	
@@ -49,9 +51,17 @@ public class DefaultSapphirePolicy extends SapphirePolicy {
 	}
 	
 	public static class DefaultGroupPolicy extends SapphireGroupPolicy {
+		private Set<SapphireServerPolicy> servers = new HashSet<SapphireServerPolicy>();
 
 		@Override
-		public void addServer(SapphireServerPolicy server) {}
+		public void addServer(SapphireServerPolicy server) {
+			servers.add(server);
+		}
+
+		@Override
+		public void removeServer(SapphireServerPolicy server) {
+			servers.remove(server);
+		}
 
 		@Override
 		public void onFailure(SapphireServerPolicy server) {}
@@ -63,14 +73,12 @@ public class DefaultSapphirePolicy extends SapphirePolicy {
 
 		@Override
 		public ArrayList<SapphireServerPolicy> getServers() {
-			return null;
+			return new ArrayList<SapphireServerPolicy>(servers);
 		}
 
 		@Override
 		public void onCreate(SapphireServerPolicy server) {
 			// TODO Auto-generated method stub
-			
 		}
-		
 	}
 }

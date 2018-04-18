@@ -291,6 +291,10 @@ public class CacheLeasePolicy extends SapphirePolicy {
 		}
 
 		@Override
+		public void removeServer(SapphireServerPolicy server) {
+		}
+
+		@Override
 		public SapphireServerPolicy onRefRequest() {
 			return server;
 		}

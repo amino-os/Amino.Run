@@ -1,8 +1,9 @@
 package sapphire.policy;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class DefaultSapphirePolicy extends SapphirePolicy {
 	
@@ -51,7 +52,8 @@ public class DefaultSapphirePolicy extends SapphirePolicy {
 	}
 	
 	public static class DefaultGroupPolicy extends SapphireGroupPolicy {
-		private Set<SapphireServerPolicy> servers = new HashSet<SapphireServerPolicy>();
+		private Set<SapphireServerPolicy> servers = Collections.newSetFromMap(
+                new ConcurrentHashMap<SapphireServerPolicy, Boolean>());
 
 		@Override
 		public void addServer(SapphireServerPolicy server) {

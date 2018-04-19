@@ -63,7 +63,7 @@ public class TLSTransactionManager implements TransactionManager {
                 this.localStatusManager.setStatus(transactionId, LocalStatus.NOVOTED);
                 return Vote.NO;
             case GOOD:
-                if (this.allParticipantsVotedYes(transactionId)) {
+                if (this.localParticipantsManager.allParticipantsVotedYes(transactionId)) {
                     return this.getVoteOnLocalValidation(transactionId);
                 } else {
                     this.localStatusManager.setStatus(transactionId, LocalStatus.NOVOTED);
@@ -94,7 +94,7 @@ public class TLSTransactionManager implements TransactionManager {
         this.localStatusManager.setStatus(transactionId, LocalStatus.COMMITTED);
         this.validator.onCommit(transactionId);
         try {
-            this.fanOutTransactionPrimitive(transactionId, TwoPCPrimitive.Commit);
+            this.localParticipantsManager.fanOutTransactionPrimitive(transactionId, TwoPCPrimitive.Commit);
         } catch (TransactionExecutionException e) {
             // todo: proper error handling - commit itself should always succeed
         }
@@ -106,51 +106,10 @@ public class TLSTransactionManager implements TransactionManager {
         this.localStatusManager.setStatus(transactionId, LocalStatus.ABORTED);
         this.validator.onAbort(transactionId);
         try {
-            this.fanOutTransactionPrimitive(transactionId, TwoPCPrimitive.Abort);
+            this.localParticipantsManager.fanOutTransactionPrimitive(transactionId, TwoPCPrimitive.Abort);
         } catch (TransactionExecutionException e) {
             // todo: proper error handling - abort itself should always succeed
         }
         this.localParticipantsManager.cleanup(transactionId);
-    }
-
-    private void fanOutTransactionPrimitive(UUID transactionId, String primitiveMethod) throws TransactionExecutionException {
-        ArrayList<Object> paramsTX = TransactionWrapper.getTransactionRPCParams(transactionId, primitiveMethod, null);
-        TransactionContext.enterTransaction(transactionId);
-
-        // todo: consider in parallel requests
-        // todo: make sure the transaction context would be properly propagated in such case
-        for (SapphirePolicy.SapphireClientPolicy p: this.localParticipantsManager.getParticipants(transactionId))
-        {
-            try {
-                p.onRPC(TransactionWrapper.txWrapperTag, paramsTX);
-            } catch (Exception e) {
-                throw new TransactionExecutionException("DCAP 2PC transaction exception: " + primitiveMethod, e);
-            }
-        }
-
-        TransactionContext.leaveTransaction();
-    }
-
-    private boolean allParticipantsVotedYes(UUID transactionId) throws TransactionExecutionException {
-        ArrayList<Object> paramsVoteReq =  TransactionWrapper.getTransactionRPCParams(transactionId, TwoPCPrimitive.VoteReq, null);
-        TransactionContext.enterTransaction(transactionId);
-
-        // todo: consider in parallel requests
-        // todo: make sure the transaction context would be properly propagated in such case
-        boolean isAllYes = true;
-        for (SapphirePolicy.SapphireClientPolicy p: this.localParticipantsManager.getParticipants(transactionId)){
-            try {
-                Object vote = p.onRPC(TransactionWrapper.txWrapperTag, paramsVoteReq);
-                if (!vote.equals(Vote.YES)) {
-                    isAllYes = false;
-                    break;
-                }
-            } catch (Exception e) {
-                throw new TransactionExecutionException("DCAP 2PC transaction exception: vote_req", e);
-            }
-        }
-
-        TransactionContext.leaveTransaction();
-        return isAllYes;
     }
 }

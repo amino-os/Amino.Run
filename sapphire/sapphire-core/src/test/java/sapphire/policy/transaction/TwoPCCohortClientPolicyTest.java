@@ -1,6 +1,7 @@
 package sapphire.policy.transaction;
 
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import sapphire.common.ReflectionTestUtil;
@@ -13,6 +14,7 @@ import static org.junit.Assert.assertEquals;
 import static sapphire.policy.transaction.TwoPCCohortPolicy.*;
 
 public class TwoPCCohortClientPolicyTest {
+    @Before
     @After
     public void cleanContext() {
         TransactionContext.leaveTransaction();

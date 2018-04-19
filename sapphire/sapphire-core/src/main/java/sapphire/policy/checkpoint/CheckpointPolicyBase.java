@@ -1,11 +1,10 @@
 package sapphire.policy.checkpoint;
 
-
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.util.ArrayList;
+import java.io.File;
 
 import sapphire.policy.DefaultSapphirePolicy;
 
@@ -68,6 +67,13 @@ public abstract class CheckpointPolicyBase extends DefaultSapphirePolicy{
                     ois.close();
                 }
             }
+        }
+        /**
+         * Delete a checkpoint of the object from disk
+         * @return true if and only if the file or directory is successfully deleted; false otherwise
+         */
+        synchronized public boolean deleteCheckpoint() {
+            return new File(this.checkPointFileName).delete();
         }
     }
 

@@ -1,5 +1,6 @@
 package sapphire.policy.util.consensus.raft;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -11,7 +12,7 @@ import java.util.UUID;
  * All methods are thread-safe, and use optimistic concurrency for updates.
  */
 
-class PersistentState {
+class PersistentState implements Serializable {
     PersistentState() {
         this.currentTerm = 0;
         this.votedFor = NO_LEADER;
@@ -26,7 +27,7 @@ class PersistentState {
     private volatile Integer currentTerm = -1;
     private volatile UUID votedFor = NO_LEADER;
     private volatile List<LogEntry> log; // TODO: Garbage collection - log growth currently unbounded.
-    public final UUID myServerID;
+    public UUID myServerID;
 
     /**
      * Get the current term. Is thread-safe.

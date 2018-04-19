@@ -1,5 +1,6 @@
 package sapphire.policy.checkpoint.explicitcheckpoint;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -51,6 +52,11 @@ public class ExplicitCheckpointPolicyTest {
         oneParam.add(new Integer(1));
         twoParam = new ArrayList<Object>();
         twoParam.add(new Integer(2));
+    }
+
+    @After
+    public void tearDown() {
+        this.server.deleteCheckpoint();
     }
 
     @Test

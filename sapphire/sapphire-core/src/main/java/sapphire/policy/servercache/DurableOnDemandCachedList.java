@@ -90,9 +90,14 @@ public class DurableOnDemandCachedList extends SapphirePolicy {
 		}
 
 		@Override
+		public void removeServer(SapphireServerPolicy server) {
+		}
+
+		@Override
 		public void onFailure(SapphireServerPolicy server) {
 
 		}
+
 
 		@Override
 		public SapphireServerPolicy onRefRequest() {

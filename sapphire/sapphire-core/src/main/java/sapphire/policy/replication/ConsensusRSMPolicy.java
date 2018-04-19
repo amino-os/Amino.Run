@@ -3,6 +3,7 @@ package sapphire.policy.replication;
 
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -94,24 +95,25 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
     // TODO: Group policy needs to be Serializable
     public static class GroupPolicy extends DefaultSapphirePolicy.DefaultGroupPolicy {
         private static Logger logger = Logger.getLogger(GroupPolicy.class.getName());
-        private ArrayList<ServerPolicy> servers;
         public void onCreate(SapphireServerPolicy server) {
             try {
                 ArrayList<String> regions = sapphire_getRegions();
                 // Register the first replica, which has already been created.
                 ServerPolicy consensusServer = (ServerPolicy) server;
-                servers.add(consensusServer);
+                addServer(consensusServer);
                 // Create additional replicas, one per region. TODO:  Create N-1 replicas on different servers in the same zone.
                 for (int i = 1; i < regions.size(); i++) {
                     ServerPolicy replica = (ServerPolicy)consensusServer.sapphire_replicate();
                     replica.sapphire_pin(regions.get(i));
-                    servers.add(replica);
+                    addServer(replica);
                 }
                 consensusServer.sapphire_pin(regions.get(0));
                 // Tell all the servers about one another
                 ConcurrentHashMap<UUID, ServerPolicy> allServers = new ConcurrentHashMap<UUID, ServerPolicy>();
                 // First get the self-assigned ID from each server
-                for(ServerPolicy s: servers) {
+                List<SapphireServerPolicy> servers = getServers();
+                for(SapphireServerPolicy i: servers) {
+                    ServerPolicy s = (ServerPolicy)i;
                     allServers.put(s.getRaftServer().getMyServerID(), s);
                 }
                 // Now tell each server about the location and ID of all the servers, and start the RAFT protocol on each server.
@@ -123,17 +125,6 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
                 // TODO: Sapphire Group Policy Interface does not allow throwing exceptions, so in the mean time convert to an Error.
                 throw new Error("Could not create new group policy because the oms is not available.", e);
             }
-        }
-
-        @Override
-        public ArrayList<SapphireServerPolicy> getServers() {
-            // In case our parent has servers too, add ours to theirs and return the union.
-            ArrayList<SapphireServerPolicy> servers = super.getServers();
-            if (servers==null) {
-                servers = new ArrayList<SapphireServerPolicy>();
-            }
-            servers.addAll(this.servers);
-            return servers;
         }
     }
 }

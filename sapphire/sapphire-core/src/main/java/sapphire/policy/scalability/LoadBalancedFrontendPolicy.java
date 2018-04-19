@@ -4,10 +4,8 @@ import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.concurrent.Semaphore;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import sapphire.kernel.common.KernelObjectNotFoundException;
 import sapphire.kernel.common.KernelObjectStub;
 import sapphire.policy.DefaultSapphirePolicy;
 
@@ -101,32 +99,16 @@ public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
 	 *
 	 */
 	public static class GroupPolicy extends DefaultSapphirePolicy.DefaultGroupPolicy {
-		private ArrayList<SapphireServerPolicy> servers;
 		private static int STATIC_REPLICAS = 2 ; //currently its hard coded we can read from config or annotations
 		private static Logger logger = Logger.getLogger(GroupPolicy.class.getName());
 
-
-		@Override
-		public ArrayList<SapphireServerPolicy> getServers() {
-			// In case our parent has servers too, add ours to theirs and return the union.
-			ArrayList<SapphireServerPolicy> servers = super.getServers();
-			if (servers == null) {
-				servers = new ArrayList<SapphireServerPolicy>();
-			}
-			servers.addAll(this.servers);
-			System.out.println("getServers servers.size()"+ servers.size());
-			return servers;
-		}
-
 		@Override
 		public void onCreate(SapphireServerPolicy server) {
-			servers = new ArrayList<SapphireServerPolicy>();
 			int count = 0;     // count is compared below < STATIC_REPLICAS-1 excluding the present server
 			int numnodes = 0 ; // num of nodes/servers in the selected region
 
 			//Initialize and consider this server
-			servers.add(server);
-
+			addServer(server);
 
 			/* Creation of group happens when the first instance of sapphire object is
 			being created. Loop through all the kernel servers and replicate the
@@ -151,8 +133,7 @@ public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
 						ServerPolicy replica = ((ServerPolicy) server).onSapphireObjectReplicate();
 						replica.onSapphirePin(kernelServers.get(count));
 						((KernelObjectStub) replica).$__updateHostname(kernelServers.get(count));
-						servers.add(replica);
-
+						addServer(replica);
 					}
 				}
 

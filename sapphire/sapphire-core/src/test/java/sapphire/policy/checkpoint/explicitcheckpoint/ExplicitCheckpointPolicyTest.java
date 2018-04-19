@@ -4,40 +4,32 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.File;
 import java.io.Serializable;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import sapphire.common.AppObject;
-import sapphire.policy.checkpoint.explicitcheckpoint.ExplicitCheckpointer;
-import sapphire.policy.checkpoint.explicitcheckpoint.ExplicitCheckpointPolicy;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
-
-import static org.mockito.Mockito.withSettings;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static sapphire.policy.checkpoint.explicitcheckpoint.ExplicitCheckpointPolicy.ClientPolicy;
+import static sapphire.policy.checkpoint.explicitcheckpoint.ExplicitCheckpointPolicy.ServerPolicy;
 
 /**
  * Created by quinton on 1/16/18.
  */
 
 public class ExplicitCheckpointPolicyTest {
-    ExplicitCheckpointPolicy.ClientPolicy client;
-    ExplicitCheckpointPolicy.ServerPolicy server;
+    ClientPolicy client;
+    ServerPolicy server;
     private ExplicitCheckpointerTest so;
     private AppObject appObject;
     private ArrayList<Object> noParams, oneParam, twoParam;
-
+    private File snapshot;
 
     @Before
     public void setUp() throws Exception {
@@ -52,6 +44,16 @@ public class ExplicitCheckpointPolicyTest {
         oneParam.add(new Integer(1));
         twoParam = new ArrayList<Object>();
         twoParam.add(new Integer(2));
+        snapshot = File.createTempFile("ExplicitCheckpointPolicyTest","tmp");
+        snapshot.deleteOnExit();
+        setSnapshotFilePath(server, snapshot.getAbsolutePath());
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        if (snapshot != null) {
+            snapshot.delete();
+        }
     }
 
     @After
@@ -110,6 +112,12 @@ public class ExplicitCheckpointPolicyTest {
         this.client.onRPC(getMethodName, noParams);
         verify(this.server).onRPC(getMethodName, noParams);
         assertEquals(((ExplicitCheckpointerTest)appObject.getObject()).getI(), 1);
+    }
+
+    private void setSnapshotFilePath(ServerPolicy server, String filePath) throws Exception {
+        Field f = server.getClass().getSuperclass().getSuperclass().getDeclaredField("checkPointFileName");
+        f.setAccessible(true);
+        f.set(server, filePath);
     }
 }
 

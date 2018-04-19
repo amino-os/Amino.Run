@@ -4,7 +4,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.File;
 import java.io.Serializable;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 
 import sapphire.common.AppObject;
@@ -15,6 +17,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static sapphire.policy.checkpoint.periodiccheckpoint.PeriodicCheckpointPolicy.ServerPolicy;
 
 /**
  * Created by quinton on 1/16/18.
@@ -26,7 +29,7 @@ public class PeriodicCheckpointPolicyTest {
     private PeriodicCheckpointerTest so;
     private AppObject appObject;
     private ArrayList<Object> noParams, oneParam, twoParam;
-
+    private File snapshot;
 
     @Before
     public void setUp() throws Exception {
@@ -41,6 +44,16 @@ public class PeriodicCheckpointPolicyTest {
         oneParam.add(new Integer(1));
         twoParam = new ArrayList<Object>();
         twoParam.add(new Integer(2));
+        snapshot = File.createTempFile("ExplicitCheckpointPolicyTest","tmp");
+        snapshot.deleteOnExit();
+        setSnapshotFilePath(server, snapshot.getAbsolutePath());
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        if (snapshot != null) {
+            snapshot.delete();
+        }
     }
 
     @After
@@ -113,6 +126,13 @@ public class PeriodicCheckpointPolicyTest {
             throw new Exception("Set i to " + i + " and then threw an exception");
         }
     }
+
+    private void setSnapshotFilePath(ServerPolicy server, String filePath) throws Exception {
+        Field f = server.getClass().getSuperclass().getSuperclass().getDeclaredField("checkPointFileName");
+        f.setAccessible(true);
+        f.set(server, filePath);
+    }
+
     // Stub because AppObject expects a stub/subclass of the original class.
     public static class PeriodicCheckpointerTestStub extends PeriodicCheckpointPolicyTest.PeriodicCheckpointerTest implements Serializable {}
 }

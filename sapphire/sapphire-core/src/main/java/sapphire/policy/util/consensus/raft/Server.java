@@ -774,7 +774,7 @@ public class Server { // This outer class contains everything common to leaders,
             Server server = getServer(serverID);
             boolean voteGranted = true;
             try {
-                logger.info("Sending vote request to server " + pState.myServerID);
+                logger.info("Sending vote request to server " + serverID);
                 server.requestVote(pState.getCurrentTerm(), pState.myServerID, lastLogIndex(), lastLogTerm());
             }
             catch (Server.VotingException e) {

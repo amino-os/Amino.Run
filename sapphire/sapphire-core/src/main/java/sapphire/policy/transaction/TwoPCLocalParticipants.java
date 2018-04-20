@@ -3,10 +3,7 @@ package sapphire.policy.transaction;
 import sapphire.policy.SapphirePolicy;
 import sapphire.policy.SapphirePolicy.SapphireClientPolicy;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -32,5 +29,58 @@ public class TwoPCLocalParticipants {
 
     public void cleanup(UUID transactionId) {
         this.localParticipants.remove(transactionId);
+    }
+
+    /**
+     * sends out 2PC protocol primitives to all registered participants; no responses collected
+     * @param transactionId the transaction all the participants are in
+     * @param primitiveMethod the name of promitive
+     * @throws TransactionExecutionException exception of RPC execution
+     */
+    public void fanOutTransactionPrimitive(UUID transactionId, String primitiveMethod) throws TransactionExecutionException {
+        ArrayList<Object> paramsTX = TransactionWrapper.getTransactionRPCParams(transactionId, primitiveMethod, null);
+        TransactionContext.enterTransaction(transactionId);
+
+        // todo: consider in parallel requests
+        // todo: make sure the transaction context would be properly propagated in such case
+        for (SapphirePolicy.SapphireClientPolicy p: this.getParticipants(transactionId))
+        {
+            try {
+                p.onRPC(TransactionWrapper.txWrapperTag, paramsTX);
+            } catch (Exception e) {
+                throw new TransactionExecutionException("DCAP 2PC transaction exception: " + primitiveMethod, e);
+            }
+        }
+
+        TransactionContext.leaveTransaction();
+    }
+
+    /**
+     * collects votes from all the registered 2PC participants of a specific transaction
+     * @param transactionId id of the transaction
+     * @return true if all participants voted yes; otherwise false
+     * @throws TransactionExecutionException error happened while getting the votes
+     */
+    public Boolean allParticipantsVotedYes(UUID transactionId) throws TransactionExecutionException {
+        ArrayList<Object> paramsVoteReq =  TransactionWrapper.getTransactionRPCParams(transactionId, TwoPCPrimitive.VoteReq, null);
+        TransactionContext.enterTransaction(transactionId);
+
+        // todo: consider in parallel requests
+        // todo: make sure the transaction context would be properly propagated in such case
+        boolean isAllYes = true;
+        for (SapphirePolicy.SapphireClientPolicy p: this.getParticipants(transactionId)){
+            try {
+                Object vote = p.onRPC(TransactionWrapper.txWrapperTag, paramsVoteReq);
+                if (!TransactionManager.Vote.YES.equals(vote)) {
+                    isAllYes = false;
+                    break;
+                }
+            } catch (Exception e) {
+                throw new TransactionExecutionException("DCAP 2PC transaction exception: vote_req", e);
+            }
+        }
+
+        TransactionContext.leaveTransaction();
+        return isAllYes;
     }
 }

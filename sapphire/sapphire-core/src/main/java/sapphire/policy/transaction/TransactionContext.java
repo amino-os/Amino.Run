@@ -7,7 +7,7 @@ import java.util.UUID;
  */
 public class TransactionContext {
     private static final ThreadLocal<UUID> transactionID = new ThreadLocal<UUID>();
-    private static final ThreadLocal<TwoPCParticipants> paricipants = new ThreadLocal<TwoPCParticipants>();
+    private static final ThreadLocal<TwoPCParticipants> participants = new ThreadLocal<TwoPCParticipants>();
 
     /**
      * gets the transaction ID of the active transaction if present
@@ -20,7 +20,7 @@ public class TransactionContext {
      * @return TwoPCParticipants object if transaction is present, null otherwise
      */
     public static TwoPCParticipants getParticipants() {
-        return paricipants.get();
+        return participants.get();
     }
 
     /**
@@ -36,6 +36,6 @@ public class TransactionContext {
      */
     public static void leaveTransaction() {
         transactionID.remove();
-        paricipants.remove();
+        participants.remove();
     }
 }

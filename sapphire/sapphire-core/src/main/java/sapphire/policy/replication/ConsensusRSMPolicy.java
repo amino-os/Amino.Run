@@ -34,7 +34,7 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
         static Logger logger = Logger.getLogger(ServerPolicy.class.getCanonicalName());
         // There are so many servers and clients in this code,
         // include full package name to make it clear to the reader.
-        sapphire.policy.util.consensus.raft.Server raftServer;
+        transient sapphire.policy.util.consensus.raft.Server raftServer;
 
         public sapphire.policy.util.consensus.raft.Server getRaftServer() {
             return raftServer;

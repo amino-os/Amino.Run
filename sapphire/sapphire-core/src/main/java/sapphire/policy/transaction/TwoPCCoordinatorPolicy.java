@@ -18,8 +18,13 @@ public class TwoPCCoordinatorPolicy extends DefaultSapphirePolicy {
      * DCAP distributed transaction coordinator server policy
      */
     public static class TwoPCCoordinatorServerPolicy extends DefaultServerPolicy {
-        private TwoPCCoordinator coordinator;
+        private final TwoPCCoordinator coordinator;
         private final SandboxProvider sandboxProvider = new AppObjectSandboxProvider();
+
+        public TwoPCCoordinatorServerPolicy() {
+            NonconcurrentTransactionValidator validator = new NonconcurrentTransactionValidator(this.sapphire_getAppObject(), this.sandboxProvider);
+            this.coordinator = new TLS2PCCoordinator(validator);
+        }
 
         @Override
         public Object onRPC(String method, ArrayList<Object> params) throws Exception {

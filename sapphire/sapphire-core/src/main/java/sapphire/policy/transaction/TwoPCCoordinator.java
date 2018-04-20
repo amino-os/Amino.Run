@@ -1,5 +1,7 @@
 package sapphire.policy.transaction;
 
+import sapphire.policy.serializability.TransactionAlreadyStartedException;
+
 import java.util.UUID;
 
 /**
@@ -9,7 +11,7 @@ public interface TwoPCCoordinator extends TransactionManager {
     /**
      * sets up when a transaction is about to start
      */
-    public void beginTransaction();
+    public void beginTransaction() throws TransactionAlreadyStartedException;
 
     /**
      * gets id of the active transaction

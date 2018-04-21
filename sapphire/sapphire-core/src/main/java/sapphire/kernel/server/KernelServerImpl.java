@@ -45,20 +45,28 @@ public class KernelServerImpl implements KernelServer{
 	private KernelClient client;
 	
 	public KernelServerImpl(InetSocketAddress host, InetSocketAddress omsHost) {
-		objectManager = new KernelObjectManager();
-	    Registry registry;
+		OMSServer oms = null;
 		try {
-			registry = LocateRegistry.getRegistry(omsHost.getHostName(), omsHost.getPort());
+			Registry registry = LocateRegistry.getRegistry(omsHost.getHostName(), omsHost.getPort());
 			oms = (OMSServer) registry.lookup("SapphireOMS");
 		} catch (Exception e) {
 			logger.severe("Could not find OMS: " + e.toString());
 		}
+		init(host, oms);
+	}
 
+	public KernelServerImpl(InetSocketAddress host, OMSServer oms) {
+		init(host, oms);
+	}
+
+	private void init(InetSocketAddress host, OMSServer oms) {
+		this.oms = oms;
 		this.host = host;
+		objectManager = new KernelObjectManager();
 		client = new KernelClient(oms);
 		GlobalKernelReferences.nodeServer = this;
 	}
-	
+
 	public void setRegion(String region) {
 		this.region = region;
 	}
@@ -80,7 +88,7 @@ public class KernelServerImpl implements KernelServer{
 		KernelObject object = null;
 		object = objectManager.lookupObject(rpc.getOID());
 		
-		logger.info("Invoking RPC on Kernel Object with OID: " + rpc.getOID() + "with rpc:" + rpc.getMethod() + " params: " + rpc.getParams().toString());
+		logger.log(Level.FINE, "Invoking RPC on Kernel Object with OID: " + rpc.getOID() + "with rpc:" + rpc.getMethod() + " params: " + rpc.getParams().toString());
 		Object ret = null;
 		try {
 			ret = object.invoke(rpc.getMethod(), rpc.getParams());

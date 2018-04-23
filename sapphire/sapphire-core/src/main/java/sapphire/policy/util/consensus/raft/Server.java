@@ -666,11 +666,6 @@ public class Server { // This outer class contains everything common to leaders,
 
     class Follower {
         Follower() {
-            leaderHeartbeatReceiveTimer = new ResettableTimer(new TimerTask() {
-                public void run() {
-                    become(State.CANDIDATE, State.FOLLOWER);
-                }
-            }, (long)LEADER_HEARTBEAT_TIMEOUT);
         }
 
         /**
@@ -686,6 +681,15 @@ public class Server { // This outer class contains everything common to leaders,
              */
             logger.info(pState.myServerID + ": Start being a follower.");
             vState.setState(State.FOLLOWER, vState.getState()); // Doesn't matter what we were before.
+            if (null == leaderHeartbeatReceiveTimer) {
+                // Just do it for the first start. Later on can use the same
+                leaderHeartbeatReceiveTimer = new ResettableTimer(new TimerTask() {
+                    public void run() {
+                        become(State.CANDIDATE, State.FOLLOWER);
+                    }
+                }, (long) LEADER_HEARTBEAT_TIMEOUT);
+            }
+
             leaderHeartbeatReceiveTimer.start(); // Expect to receive heartbeats from the leader.
         }
 
@@ -708,11 +712,7 @@ public class Server { // This outer class contains everything common to leaders,
         /**
          * If no leader is elected within the timeout, start another election.
          */
-        ResettableTimer leaderElectionTimer = new ResettableTimer(new TimerTask() {
-            public void run() {
-                become(State.CANDIDATE, vState.getState());
-            }
-        }, (long)LEADER_ELECTION_TIMEOUT);
+        ResettableTimer leaderElectionTimer;
 
         /**
          * Thread pool used for sending out vote requests in parallel.
@@ -752,6 +752,16 @@ public class Server { // This outer class contains everything common to leaders,
                 return;
             }
             voteRequestThreadPool = (ThreadPoolExecutor)Executors.newFixedThreadPool(vState.otherServers.size() + 1);
+
+            if (null == leaderElectionTimer) {
+                // Just do it for the first start. Later on can use the same
+                leaderElectionTimer = new ResettableTimer(new TimerTask() {
+                    public void run() {
+                        become(State.CANDIDATE, vState.getState());
+                    }
+                }, (long) LEADER_ELECTION_TIMEOUT);
+            }
+
             this.leaderElectionTimer.start();
             sendVoteRequests();
         }

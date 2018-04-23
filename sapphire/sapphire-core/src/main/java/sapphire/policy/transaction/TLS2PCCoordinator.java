@@ -32,8 +32,10 @@ public class TLS2PCCoordinator implements TwoPCCoordinator{
 
     @Override
     public void join(UUID transactionId) throws TransactionAlreadyStartedException {
-        if (!(transactionId.equals(TransactionContext.getCurrentTransaction()))) {
-            throw new TransactionAlreadyStartedException("already in transaction; illegal to join another.");
+        UUID currentTransactionId = TransactionContext.getCurrentTransaction();
+        if (!(transactionId.equals(currentTransactionId))) {
+            String message = String.format("already in transaction %s; illegal to join %s.", currentTransactionId.toString(), transactionId.toString());
+            throw new TransactionAlreadyStartedException(message);
         }
     }
 
@@ -45,18 +47,19 @@ public class TLS2PCCoordinator implements TwoPCCoordinator{
 
     @Override
     public Vote vote(UUID transactionId) throws TransactionExecutionException {
-        if (this.localParticipantsManager.allParticipantsVotedYes(transactionId)) {
-            try {
-                if (this.validator.promises(transactionId)){
-                    return Vote.YES;
-                } else {
-                    return Vote.NO;
-                }
-            } catch (Exception e) {
-                // todo: expose the error detail
+        try {
+            if (!this.validator.promises(transactionId)) {
                 return Vote.NO;
             }
+        } catch (Exception e) {
+            // todo: expose the error detail
+            return Vote.NO;
+        }
+
+        if (this.localParticipantsManager.allParticipantsVotedYes(transactionId)) {
+            return Vote.YES;
         } else {
+            // todo: consider breaking the local promise right now
             return Vote.NO;
         }
     }

@@ -1,6 +1,7 @@
 package sapphire.policy.replication;
 
 
+import java.io.Serializable;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
@@ -10,6 +11,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Logger;
 
 import sapphire.policy.DefaultSapphirePolicy;
+import sapphire.policy.util.consensus.raft.Server;
 import sapphire.policy.util.consensus.raft.StateMachineApplier;
 
 /**
@@ -17,13 +19,68 @@ import sapphire.policy.util.consensus.raft.StateMachineApplier;
  * Single cluster replicated SO w/ atomic RPCs across at least f + 1 replicas, using RAFT algorithm.
  * **/
 
-public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
-    public static class RPC {
+public class ConsensusRSMPolicy extends DefaultSapphirePolicy  {
+    public static class RPC implements Serializable {
         String method;
         ArrayList<Object> params;
         public RPC(String method, ArrayList<Object> params) {
             this.method = method;
             this.params = params;
+        }
+    }
+
+    /* Class to make raft rpc calls to remote servers */
+    public static class RemoteRaftServerInvocation implements sapphire.policy.util.consensus.raft.RemoteRaftServerInvoker {
+        @Override
+        public int requestVote(Object remoteServer, int term, UUID candidate, int lastLogIndex, int lastLogTerm) throws Server.InvalidTermException, Server.AlreadyVotedException, Server.CandidateBehindException, java.lang.Exception {
+            Integer retVal;
+            ArrayList<Object> args = new ArrayList<Object>();
+            args.add(new Integer(term));
+            args.add(candidate);
+            args.add(new Integer(lastLogIndex));
+            args.add(new Integer(lastLogTerm));
+
+            if (!(remoteServer instanceof ServerPolicy)) {
+                return 0;
+            }
+
+            retVal = (Integer)((ServerPolicy)remoteServer).requestVote(args);
+            if (null == retVal) {
+                return 0;
+            }
+
+            return retVal.intValue();
+        }
+
+        @Override
+        public Object applyToStateMachine(Object remoteServer, Object operation) throws java.lang.Exception {
+            if (!(remoteServer instanceof ServerPolicy)) {
+                return null;
+            }
+
+            return ((ServerPolicy)remoteServer).applyToStateMachine(operation);
+        }
+
+        @Override
+        public int appendEntries(Object remoteServer, int term, UUID leader, int prevLogIndex, int prevLogTerm, List<Object> entries, int leaderCommit) throws java.lang.Exception {
+            Integer retVal;
+            ArrayList<Object> args = new ArrayList<Object>();
+            args.add(new Integer(term));
+            args.add(leader);
+            args.add(new Integer(prevLogIndex));
+            args.add(new Integer(prevLogTerm));
+            args.add(new Integer(leaderCommit));
+            args.addAll(entries);
+            if (!(remoteServer instanceof ServerPolicy)) {
+                return 0;
+            }
+
+            retVal = (Integer)((ServerPolicy)remoteServer).appendEntries(args);
+            if (null == retVal) {
+                return 0;
+            }
+
+            return retVal.intValue();
         }
     }
 
@@ -34,7 +91,8 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
         static Logger logger = Logger.getLogger(ServerPolicy.class.getCanonicalName());
         // There are so many servers and clients in this code,
         // include full package name to make it clear to the reader.
-        transient sapphire.policy.util.consensus.raft.Server raftServer;
+        transient private RemoteRaftServerInvocation remoteRaftServerInvocation;
+        transient private sapphire.policy.util.consensus.raft.Server raftServer;
 
         public sapphire.policy.util.consensus.raft.Server getRaftServer() {
             return raftServer;
@@ -43,7 +101,6 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
         @Override
         public void onCreate(SapphireGroupPolicy group) {
             super.onCreate(group);
-            raftServer = new sapphire.policy.util.consensus.raft.Server(this);
         }
 
         /** TODO: Handle added and failed servers - i.e. quorum membership changes
@@ -58,14 +115,20 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
          */
 
         /**
+         * Initialize the local RAFT Server instance.
+         */
+        public void initializeRaftServer() {
+            remoteRaftServerInvocation = new RemoteRaftServerInvocation();
+            raftServer = new sapphire.policy.util.consensus.raft.Server(this, remoteRaftServerInvocation);
+        }
+
+        /**
          * Initialize the RAFT protocol with the specified set of servers.
          * @param raftServers
          */
         public void initializeRaft(ConcurrentMap<UUID, ServerPolicy> raftServers){
             for(UUID id: raftServers.keySet()) {
-                // TODO: We should add ServerPolicy, rather than Raft server,
-                // because ServerPolicy has RMI capabilities.
-                this.raftServer.addServer(id, raftServers.get(id).getRaftServer());
+                this.raftServer.addServer(id, raftServers.get(id));
             }
             this.raftServer.start();
         }
@@ -84,6 +147,31 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
             // Presumably because stub's have not yet been generated.
             // : return super.onRPC(rpc.method, rpc.params);
             return null;
+        }
+
+        // Invoked by remote candidate server to gather vote from this server
+        public Object requestVote(ArrayList<Object> params) throws java.lang.Exception {
+            int term = ((Integer)params.get(0)).intValue();
+            UUID candidate = (UUID)params.get(1);
+            int lastLogIndex = ((Integer)params.get(2)).intValue();
+            int lastLogTerm = ((Integer)params.get(3)).intValue();
+            return raftServer.requestVote(term, candidate, lastLogIndex, lastLogTerm);
+        }
+
+        // Invoked by followers to redirect the client's operation invoked them to get applied on leader
+        public Object applyToStateMachine(Object operation) throws java.lang.Exception {
+           return raftServer.applyToStateMachine(operation);
+        }
+
+        // Invoked by leader server to replicate log entries to this server
+        public Object appendEntries(ArrayList<Object> params) throws java.lang.Exception {
+            int term = ((Integer)params.get(0)).intValue();
+            UUID leader = (UUID)params.get(1);
+            int prevLogIndex = ((Integer)params.get(2)).intValue();
+            int prevLogTerm = ((Integer)params.get(3)).intValue();
+            int leaderCommit = ((Integer)params.get(4)).intValue();
+            List<Object> entries = params.subList(5, params.size());
+            return raftServer.appendEntries(term, leader, prevLogIndex, prevLogTerm, entries, leaderCommit);
         }
 
         @Override

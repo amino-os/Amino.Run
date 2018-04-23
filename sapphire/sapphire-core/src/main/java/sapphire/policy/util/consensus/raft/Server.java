@@ -1,24 +1,18 @@
 package sapphire.policy.util.consensus.raft;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
-import java.util.Set;
 import java.util.TimerTask;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
-import sapphire.policy.replication.ConsensusRSMPolicy;
 import sapphire.policy.util.ResettableTimer;
 
 import static sapphire.policy.util.consensus.raft.PersistentState.INVALID_INDEX;
@@ -60,6 +54,7 @@ public class Server { // This outer class contains everything common to leaders,
     Candidate candidate; // Delegate for candidate operations.
 
     StateMachineApplier applier; // Delegate to apply state changes.
+    RemoteRaftServerInvoker remoteServerInvoker; // Delegate remote server invocations
 
     /**
      * Constructor
@@ -67,11 +62,12 @@ public class Server { // This outer class contains everything common to leaders,
      * Note that the constructor does not start the RAFT algorithm.
      * To do that, call addServer() for each server, and then call start()
      */
-    public Server(StateMachineApplier applier) {
+    public Server(StateMachineApplier applier, RemoteRaftServerInvoker remoteServerInvoker) {
         /**
          * Delegate applier, leader, follower and candidate behaviour.
          */
         this.applier = applier;
+        this.remoteServerInvoker = remoteServerInvoker;
         this.pState = new PersistentState();
         this.vState = new VolatileState();
         this.leader = new Leader();
@@ -137,7 +133,7 @@ public class Server { // This outer class contains everything common to leaders,
      * @param leaderCommit leader’s commitIndex
      * @return currentTerm, for leader to update itself
      */
-    int appendEntries(int term, UUID leader, int prevLogIndex, int prevLogTerm, List<LogEntry> entries, int leaderCommit) throws InvalidTermException, PrevLogTermMismatch, InvalidLogIndex {
+    public int appendEntries(int term, UUID leader, int prevLogIndex, int prevLogTerm, List<Object> entries, int leaderCommit) throws InvalidTermException, PrevLogTermMismatch, InvalidLogIndex {
         vState.setCurrentLeader(leader);
         logger.info(String.format(
                 "%s: received AppendEntries request from leader %s, term %d, prevLogIndex=%d, leaderCommit=%d, entries=%d",
@@ -177,7 +173,7 @@ public class Server { // This outer class contains everything common to leaders,
              *     follow it (§5.3)
              **/
             int logIndex = prevLogIndex;
-            for (Iterator<LogEntry> i = entries.iterator(); i.hasNext(); ) {
+            for (Iterator<LogEntry> i = ((ArrayList)entries).iterator(); i.hasNext(); ) {
                 LogEntry newEntry = (LogEntry) i.next();
                 if (pState.log().size() - 1 >= ++logIndex) { // We already have a log entry with that index
                     if (pState.log().get(logIndex).term != term) { // conflicts
@@ -211,7 +207,7 @@ public class Server { // This outer class contains everything common to leaders,
      * @throws AlreadyVotedException
      * @throws CandidateBehindException
      */
-    int requestVote(int term, UUID candidate, int lastLogIndex, int lastLogTerm) throws InvalidTermException, AlreadyVotedException, CandidateBehindException {
+    public int requestVote(int term, UUID candidate, int lastLogIndex, int lastLogTerm) throws InvalidTermException, AlreadyVotedException, CandidateBehindException {
         logger.info(String.format("%s received vote request from %s (term=%d, lastLogIndex=%d, lastLogTerm=%d)", pState.myServerID, candidate, term, lastLogIndex, lastLogTerm));
         if (!candidate.equals(pState.myServerID)) { // We sometimes vote for ourselves, to that's not considered a request from a remote server.
             /**
@@ -310,7 +306,7 @@ public class Server { // This outer class contains everything common to leaders,
 
             // The second point is: getCurrentLeader() may return null
             // We need to handle null properly.
-            return getCurrentLeader().applyToStateMachine(operation); // Forward to the leader.
+            return remoteServerInvoker.applyToStateMachine(getCurrentLeader(), operation); // Forward to the leader.
         }
     }
 
@@ -454,8 +450,8 @@ public class Server { // This outer class contains everything common to leaders,
                         prevLogTerm = INVALID_INDEX;
                     }
                     List<LogEntry> entries = pState.log().size() > 0 ? (List<LogEntry>)pState.log().subList(nextIndex, lastLogIndex() + 1) : NO_LOG_ENTRIES;
-                    int remoteTerm = getServer(otherServerID).appendEntries(pState.getCurrentTerm(), pState.myServerID,
-                            nextIndex - 1, prevLogTerm, entries, vState.getCommitIndex());
+                    int remoteTerm = remoteServerInvoker.appendEntries(getServer(otherServerID), pState.getCurrentTerm(), pState.myServerID,
+                            nextIndex - 1, prevLogTerm, (ArrayList)entries, vState.getCommitIndex());
                     success = true;
                     respondToRemoteTerm(remoteTerm); // Might lose leadership.
                 } catch (Server.InvalidTermException e) {
@@ -467,6 +463,9 @@ public class Server { // This outer class contains everything common to leaders,
                 } catch (InvalidLogIndex e) { // The remote server doesn't have that log entry at all.
                     logger.severe(e.toString());
                     this.nextIndex.put(otherServerID, otherServerNextIndex - 1); // Decrement and try again.
+                } catch (java.lang.Exception e) {
+                    //TODO: Need to handle this exception case
+                    logger.warning(e.toString());
                 }
             }
             if (vState.getState() == State.LEADER) {
@@ -652,15 +651,15 @@ public class Server { // This outer class contains everything common to leaders,
         return vState.otherServers.size()+1; // NOTE: This only makes sense if otherServers contains all the other servers at this time.
     }
 
-    Server getServer(UUID serverId) {
+    Object getServer(UUID serverId) {
         return vState.otherServers.get(serverId); // TODO: Handle not found - which would indicate a code bug.
     }
 
-    public void addServer(UUID id, Server server) {
+    public void addServer(UUID id, Object server) {
         vState.otherServers.put(id, server);
     }
 
-    Server getCurrentLeader() {
+    Object getCurrentLeader() {
         return getServer(vState.getCurrentLeader());
     }
 
@@ -767,23 +766,29 @@ public class Server { // This outer class contains everything common to leaders,
                 voteRequestThreadPool = null;
             }
         }
+
         /**
          *  Invoke requestVote() on server, and process result, including incrementing the Semaphore on success.
          */
         void sendVoteRequest(UUID serverID, Semaphore voteCounter) {
-            Server server = getServer(serverID);
+
             boolean voteGranted = true;
             try {
                 logger.info("Sending vote request to server " + serverID);
-                server.requestVote(pState.getCurrentTerm(), pState.myServerID, lastLogIndex(), lastLogTerm());
+                remoteServerInvoker.requestVote(getServer(serverID), pState.getCurrentTerm(), pState.myServerID, lastLogIndex(), lastLogTerm());
             }
             catch (Server.VotingException e) {
                 voteGranted = false;
                 logger.info("Leader election vote request denied by server: " + e.toString());
                 respondToRemoteTerm(e.currentTerm);
+            } catch (java.lang.Exception e) {
+                //TODO: Need to check this exception handling
+                voteGranted = false;
+                logger.warning(e.toString());
+
             }
             if (voteGranted) {
-                logger.info("Vote received from server " + pState.myServerID);
+                logger.info("Vote received from server " + serverID);
                 voteCounter.release(1); // Yay!  We got one vote.
             }
         }

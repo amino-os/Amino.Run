@@ -43,7 +43,6 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
         @Override
         public void onCreate(SapphireGroupPolicy group) {
             super.onCreate(group);
-            raftServer = new sapphire.policy.util.consensus.raft.Server(this);
         }
 
         /** TODO: Handle added and failed servers - i.e. quorum membership changes
@@ -56,6 +55,13 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
             }
         }
          */
+
+        /**
+         * Initialize the local RAFT Server instance.
+         */
+        public void initializeRaftServer() {
+            raftServer = new sapphire.policy.util.consensus.raft.Server(this);
+        }
 
         /**
          * Initialize the RAFT protocol with the specified set of servers.
@@ -105,9 +111,11 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
                 for (int i = 1; i < regions.size(); i++) {
                     ServerPolicy replica = (ServerPolicy)consensusServer.sapphire_replicate();
                     replica.sapphire_pin(regions.get(i));
+                    replica.initializeRaftServer();
                     addServer(replica);
                 }
                 consensusServer.sapphire_pin(regions.get(0));
+                consensusServer.initializeRaftServer();
                 // Tell all the servers about one another
                 ConcurrentHashMap<UUID, ServerPolicy> allServers = new ConcurrentHashMap<UUID, ServerPolicy>();
                 // First get the self-assigned ID from each server

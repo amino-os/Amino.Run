@@ -681,10 +681,16 @@ public class Server { // This outer class contains everything common to leaders,
              */
             logger.info(pState.myServerID + ": Start being a follower.");
             vState.setState(State.FOLLOWER, vState.getState()); // Doesn't matter what we were before.
+
             if (null == leaderHeartbeatReceiveTimer) {
-                // Just do it for the first start. Later on can use the same
+                /* Create a leader heartbeat timer instance for the very first time follower.start
+                method is called. Further call to follower.start due to FSM, doesn't create another
+                instance. Just restart the existing leader heartbeat timer instance */
                 leaderHeartbeatReceiveTimer = new ResettableTimer(new TimerTask() {
                     public void run() {
+                        /**
+                         * If we don't receive a heartbeat from the leader, start an election.
+                         */
                         become(State.CANDIDATE, State.FOLLOWER);
                     }
                 }, (long) LEADER_HEARTBEAT_TIMEOUT);
@@ -737,6 +743,21 @@ public class Server { // This outer class contains everything common to leaders,
              */
             logger.info(pState.myServerID + ": Start being a candidate.");
             vState.setState(State.CANDIDATE, vState.getState()); // Doesn't matter what we were before.
+
+            if (null == leaderElectionTimer) {
+                /* Create a leader election timer instance for the very first time candidate.start
+                method is called. Further call to candidate.start due to FSM, doesn't create another
+                instance. Just restart the existing leader election timer instance */
+                leaderElectionTimer = new ResettableTimer(new TimerTask() {
+                    public void run() {
+                        /**
+                         * If no leader is elected within the timeout, start another election.
+                         */
+                        become(State.CANDIDATE, vState.getState());
+                    }
+                }, (long) LEADER_ELECTION_TIMEOUT);
+            }
+
             pState.incrementCurrentTerm(pState.getCurrentTerm());
             try { // Vote for self
                 requestVote(pState.getCurrentTerm(), pState.myServerID, lastLogIndex(), lastLogTerm());
@@ -751,16 +772,8 @@ public class Server { // This outer class contains everything common to leaders,
                 become(State.FOLLOWER, State.CANDIDATE);
                 return;
             }
-            voteRequestThreadPool = (ThreadPoolExecutor)Executors.newFixedThreadPool(vState.otherServers.size() + 1);
 
-            if (null == leaderElectionTimer) {
-                // Just do it for the first start. Later on can use the same
-                leaderElectionTimer = new ResettableTimer(new TimerTask() {
-                    public void run() {
-                        become(State.CANDIDATE, vState.getState());
-                    }
-                }, (long) LEADER_ELECTION_TIMEOUT);
-            }
+            voteRequestThreadPool = (ThreadPoolExecutor)Executors.newFixedThreadPool(vState.otherServers.size() + 1);
 
             this.leaderElectionTimer.start();
             sendVoteRequests();

@@ -21,8 +21,9 @@ public class TLS2PCCoordinator implements TwoPCCoordinator{
             throw new TransactionAlreadyStartedException("nested transaction is unsupported.");
         }
 
-        // todo: ensure participants of this transaction is properly newed (in separate PR soon)
-        TransactionContext.enterTransaction(UUID.randomUUID());
+        UUID transactionId = UUID.randomUUID();
+        TwoPCParticipants participants = this.localParticipantsManager.getParticipantManager(transactionId);
+        TransactionContext.enterTransaction(transactionId, participants);
     }
 
     @Override

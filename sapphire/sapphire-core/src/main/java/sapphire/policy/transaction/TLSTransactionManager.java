@@ -1,9 +1,5 @@
 package sapphire.policy.transaction;
 
-import sapphire.policy.SapphirePolicy;
-
-import javax.transaction.TransactionRolledbackException;
-import java.util.ArrayList;
 import java.util.UUID;
 
 import static sapphire.policy.transaction.TwoPCLocalStatus.LocalStatus;
@@ -30,7 +26,8 @@ public class TLSTransactionManager implements TransactionManager {
      */
     @Override
     public void join(UUID transactionId) {
-        TransactionContext.enterTransaction(transactionId);
+        TwoPCParticipants participants = this.localParticipantsManager.getParticipantManager(transactionId);
+        TransactionContext.enterTransaction(transactionId, participants);
     }
 
     /**
@@ -63,9 +60,11 @@ public class TLSTransactionManager implements TransactionManager {
                 this.localStatusManager.setStatus(transactionId, LocalStatus.NOVOTED);
                 return Vote.NO;
             case GOOD:
-                if (this.localParticipantsManager.allParticipantsVotedYes(transactionId)) {
-                    return this.getVoteOnLocalValidation(transactionId);
+                if (this.isLocalPromised(transactionId) && this.localParticipantsManager.allParticipantsVotedYes(transactionId)){
+                    this.localStatusManager.setStatus(transactionId, LocalStatus.YESVOTED);
+                    return Vote.YES;
                 } else {
+                    // todo: consider breaking the promise if made before right now
                     this.localStatusManager.setStatus(transactionId, LocalStatus.NOVOTED);
                     return Vote.NO;
                 }
@@ -74,18 +73,12 @@ public class TLSTransactionManager implements TransactionManager {
         }
     }
 
-    private Vote getVoteOnLocalValidation(UUID transactionId) {
+    private Boolean isLocalPromised(UUID transactionId) {
         try {
-            if (this.validator.promises(transactionId)) {
-                this.localStatusManager.setStatus(transactionId, LocalStatus.YESVOTED);
-                return Vote.YES;
-            } else {
-                this.localStatusManager.setStatus(transactionId, LocalStatus.NOVOTED);
-                return Vote.NO;
-            }
-        } catch (Exception e) {
-            this.localStatusManager.setStatus(transactionId, LocalStatus.NOVOTED);
-            return Vote.NO;
+            return this.validator.promises(transactionId);
+        }catch (Exception e) {
+            // todo: pass the exception detail to client
+            return false;
         }
     }
 

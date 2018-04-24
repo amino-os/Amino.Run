@@ -26,9 +26,11 @@ public class TransactionContext {
     /**
      * enters the transaction
      * @param transactionId ID of the transaction this context is about to enter
+     * @param participantManager the participants manager object that manages transaction participants
      */
-    public static void enterTransaction(UUID transactionId) {
+    public static void enterTransaction(UUID transactionId, TwoPCParticipants participantManager) {
         transactionID.set(transactionId);
+        participants.set(participantManager);
     }
 
     /**

@@ -15,6 +15,7 @@ public class TLS2PCCoordinatorTest {
     private TransactionValidator validator = mock(TransactionValidator.class);
     private TLS2PCCoordinator coordinator = new TLS2PCCoordinator(validator);
     private TwoPCLocalParticipants participants = mock(TwoPCLocalParticipants.class);
+    private TwoPCParticipants participantManager = mock(TwoPCParticipants.class);
     private UUID transactionId = UUID.randomUUID();
 
     @Before
@@ -26,7 +27,7 @@ public class TLS2PCCoordinatorTest {
 
     @Test(expected = TransactionAlreadyStartedException.class)
     public void test_coordinator_throws_on_reentrant() throws TransactionAlreadyStartedException {
-        TransactionContext.enterTransaction(UUID.randomUUID());
+        TransactionContext.enterTransaction(UUID.randomUUID(), participantManager);
 
         coordinator.beginTransaction();
     }

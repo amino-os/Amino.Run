@@ -1,10 +1,8 @@
 package sapphire.policy.transaction;
 
-import sapphire.policy.SapphirePolicy;
-
-import javax.transaction.TransactionRolledbackException;
-import java.util.ArrayList;
 import java.util.UUID;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static sapphire.policy.transaction.TwoPCLocalStatus.LocalStatus;
 
@@ -12,6 +10,8 @@ import static sapphire.policy.transaction.TwoPCLocalStatus.LocalStatus;
  * Transaction Manager based on thread local storage context
  */
 public class TLSTransactionManager implements TransactionManager {
+    private static Logger logger = Logger.getLogger("sapphire.policy.transaction.TLSTransactionManager");
+
     private final TwoPCLocalStatus localStatusManager = new TwoPCLocalStatus();
     private final TwoPCLocalParticipants localParticipantsManager = new TwoPCLocalParticipants();
     private TransactionValidator validator;
@@ -30,7 +30,8 @@ public class TLSTransactionManager implements TransactionManager {
      */
     @Override
     public void join(UUID transactionId) {
-        TransactionContext.enterTransaction(transactionId);
+        TwoPCParticipants participants = this.localParticipantsManager.getParticipantManager(transactionId);
+        TransactionContext.enterTransaction(transactionId, participants);
     }
 
     /**
@@ -63,9 +64,11 @@ public class TLSTransactionManager implements TransactionManager {
                 this.localStatusManager.setStatus(transactionId, LocalStatus.NOVOTED);
                 return Vote.NO;
             case GOOD:
-                if (this.localParticipantsManager.allParticipantsVotedYes(transactionId)) {
-                    return this.getVoteOnLocalValidation(transactionId);
+                if (this.isLocalPromised(transactionId) && this.localParticipantsManager.allParticipantsVotedYes(transactionId)){
+                    this.localStatusManager.setStatus(transactionId, LocalStatus.YESVOTED);
+                    return Vote.YES;
                 } else {
+                    // todo: consider breaking the promise if made before right now
                     this.localStatusManager.setStatus(transactionId, LocalStatus.NOVOTED);
                     return Vote.NO;
                 }
@@ -74,18 +77,13 @@ public class TLSTransactionManager implements TransactionManager {
         }
     }
 
-    private Vote getVoteOnLocalValidation(UUID transactionId) {
+    private Boolean isLocalPromised(UUID transactionId) {
         try {
-            if (this.validator.promises(transactionId)) {
-                this.localStatusManager.setStatus(transactionId, LocalStatus.YESVOTED);
-                return Vote.YES;
-            } else {
-                this.localStatusManager.setStatus(transactionId, LocalStatus.NOVOTED);
-                return Vote.NO;
-            }
-        } catch (Exception e) {
-            this.localStatusManager.setStatus(transactionId, LocalStatus.NOVOTED);
-            return Vote.NO;
+            return this.validator.promises(transactionId);
+        }catch (Exception e) {
+            // todo: pass the exception detail to client
+            logger.log(Level.SEVERE, "local 2PC preparation failed", e);
+            return false;
         }
     }
 

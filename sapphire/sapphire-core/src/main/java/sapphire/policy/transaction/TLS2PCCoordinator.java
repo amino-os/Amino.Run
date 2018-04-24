@@ -3,11 +3,15 @@ package sapphire.policy.transaction;
 import sapphire.policy.serializability.TransactionAlreadyStartedException;
 
 import java.util.UUID;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * 2PC Coordinator based on thread local storage
  */
 public class TLS2PCCoordinator implements TwoPCCoordinator{
+    private static Logger logger = Logger.getLogger("sapphire.policy.transaction.TLS2PCCoordinator");
+
     private final TransactionValidator validator;
     private final TwoPCLocalParticipants localParticipantsManager = new TwoPCLocalParticipants();
 
@@ -21,8 +25,9 @@ public class TLS2PCCoordinator implements TwoPCCoordinator{
             throw new TransactionAlreadyStartedException("nested transaction is unsupported.");
         }
 
-        // todo: ensure participants of this transaction is properly newed (in separate PR soon)
-        TransactionContext.enterTransaction(UUID.randomUUID());
+        UUID transactionId = UUID.randomUUID();
+        TwoPCParticipants participants = this.localParticipantsManager.getParticipantManager(transactionId);
+        TransactionContext.enterTransaction(transactionId, participants);
     }
 
     @Override
@@ -53,6 +58,7 @@ public class TLS2PCCoordinator implements TwoPCCoordinator{
             }
         } catch (Exception e) {
             // todo: expose the error detail
+            logger.log(Level.SEVERE, "coordinator 2PC preparation failed", e);
             return Vote.NO;
         }
 

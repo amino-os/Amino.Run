@@ -12,16 +12,20 @@ import java.util.concurrent.ConcurrentHashMap;
 public class TwoPCLocalParticipants {
     private final ConcurrentHashMap<UUID, TwoPCParticipants> localParticipants = new ConcurrentHashMap<UUID, TwoPCParticipants>();
 
-    public Collection<SapphireClientPolicy> getParticipants(UUID transactionId) {
-        return this.localParticipants.get(transactionId).getRegistered();
-    }
-
-    public void addParticipants(UUID transactionId, Collection<SapphireClientPolicy> participants) {
+    public TwoPCParticipants getParticipantManager(UUID transactionId) {
         if (!this.localParticipants.containsKey(transactionId)) {
             this.localParticipants.put(transactionId, new TwoPCParticipantManager());
         }
 
-        TwoPCParticipants participantManager = this.localParticipants.get(transactionId);
+        return this.localParticipants.get(transactionId);
+    }
+
+    public Collection<SapphireClientPolicy> getParticipants(UUID transactionId) {
+        return this.getParticipantManager(transactionId).getRegistered();
+    }
+
+    public void addParticipants(UUID transactionId, Collection<SapphireClientPolicy> participants) {
+        TwoPCParticipants participantManager = this.getParticipantManager(transactionId);
         for (SapphireClientPolicy participant: participants) {
             participantManager.register(participant);
         }
@@ -39,7 +43,7 @@ public class TwoPCLocalParticipants {
      */
     public void fanOutTransactionPrimitive(UUID transactionId, String primitiveMethod) throws TransactionExecutionException {
         ArrayList<Object> paramsTX = TransactionWrapper.getTransactionRPCParams(transactionId, primitiveMethod, null);
-        TransactionContext.enterTransaction(transactionId);
+        TransactionContext.enterTransaction(transactionId, this.getParticipantManager(transactionId));
 
         // todo: consider in parallel requests
         // todo: make sure the transaction context would be properly propagated in such case
@@ -63,7 +67,7 @@ public class TwoPCLocalParticipants {
      */
     public Boolean allParticipantsVotedYes(UUID transactionId) throws TransactionExecutionException {
         ArrayList<Object> paramsVoteReq =  TransactionWrapper.getTransactionRPCParams(transactionId, TwoPCPrimitive.VoteReq, null);
-        TransactionContext.enterTransaction(transactionId);
+        TransactionContext.enterTransaction(transactionId, this.getParticipantManager(transactionId));
 
         // todo: consider in parallel requests
         // todo: make sure the transaction context would be properly propagated in such case

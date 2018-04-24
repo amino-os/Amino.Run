@@ -61,7 +61,7 @@ public class TwoPCCohortClientPolicyTest {
                 });
 
         UUID txnId = UUID.randomUUID();
-        TransactionContext.enterTransaction(txnId);
+        TransactionContext.enterTransaction(txnId, participants);
 
         clientPolicy.onRPC("foo", null);
 
@@ -76,11 +76,12 @@ public class TwoPCCohortClientPolicyTest {
 
     @Test(expected = IllegalComponentException.class)
     public void test_disallow_uncapable_SO_in_txn() throws Exception {
+        final TwoPCParticipants participants = mock(TwoPCParticipants.class);
         DefaultServerPolicy server = mock(DefaultServerPolicy.class);
         DefaultClientPolicy other = new DefaultClientPolicy();
         other.setServer(server);
         UUID txnId = UUID.randomUUID();
-        TransactionContext.enterTransaction(txnId);
+        TransactionContext.enterTransaction(txnId, participants);
 
         other.onRPC("foo", null);
     }

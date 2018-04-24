@@ -71,7 +71,9 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
             for(UUID id: raftServers.keySet()) {
                 // TODO: We should add ServerPolicy, rather than Raft server,
                 // because ServerPolicy has RMI capabilities.
-                this.raftServer.addServer(id, raftServers.get(id).getRaftServer());
+                if (!id.equals(raftServer.getMyServerID())) {
+                    this.raftServer.addServer(id, raftServers.get(id).getRaftServer());
+                }
             }
             this.raftServer.start();
         }

@@ -1,5 +1,7 @@
 package sapphire.policy.transaction;
 
+import sapphire.policy.serializability.TransactionAlreadyStartedException;
+
 import java.util.UUID;
 
 /**
@@ -17,7 +19,7 @@ public interface TransactionManager {
      * joins the transaction
       * @param transactionId id of the effective transaction
      */
-    void join(UUID transactionId);
+    void join(UUID transactionId) throws TransactionAlreadyStartedException;
 
     /**
      * leaves the transaction while the transaction is still active/effective

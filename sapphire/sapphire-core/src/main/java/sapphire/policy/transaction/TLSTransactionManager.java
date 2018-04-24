@@ -1,6 +1,8 @@
 package sapphire.policy.transaction;
 
 import java.util.UUID;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static sapphire.policy.transaction.TwoPCLocalStatus.LocalStatus;
 
@@ -8,6 +10,8 @@ import static sapphire.policy.transaction.TwoPCLocalStatus.LocalStatus;
  * Transaction Manager based on thread local storage context
  */
 public class TLSTransactionManager implements TransactionManager {
+    private static Logger logger = Logger.getLogger("sapphire.policy.transaction.TLSTransactionManager");
+
     private final TwoPCLocalStatus localStatusManager = new TwoPCLocalStatus();
     private final TwoPCLocalParticipants localParticipantsManager = new TwoPCLocalParticipants();
     private TransactionValidator validator;
@@ -78,6 +82,7 @@ public class TLSTransactionManager implements TransactionManager {
             return this.validator.promises(transactionId);
         }catch (Exception e) {
             // todo: pass the exception detail to client
+            logger.log(Level.SEVERE, "local 2PC preparation failed", e);
             return false;
         }
     }

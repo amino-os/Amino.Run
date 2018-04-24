@@ -1,0 +1,30 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: kernelserver-minnietwitter-deploy
+  namespace: default
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: kernelserver-minnietwitter
+  template:
+    metadata:
+      labels:
+        app: kernelserver-minnietwitter
+    spec:
+      serviceAccountName: kernelserver-minnietwitter-sa
+      containers:
+      - name: kernelserver-minnietwitter
+        image: huawei_paas/dcap-sapphire:v0.1.0
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 22345
+        command: ["/dcap/start-kernelserver.sh"]
+        args: ["oms-minnietwitter-svc", "22346"]
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kernelserver-minnietwitter-sa
+  namespace: default

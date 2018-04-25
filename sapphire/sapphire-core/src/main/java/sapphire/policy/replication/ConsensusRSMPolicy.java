@@ -114,7 +114,6 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
                     ServerPolicy replica = (ServerPolicy)consensusServer.sapphire_replicate();
                     replica.sapphire_pin(regions.get(i));
                     replica.initializeRaftServer();
-                    addServer(replica);
                 }
                 consensusServer.sapphire_pin(regions.get(0));
                 consensusServer.initializeRaftServer();

@@ -133,7 +133,6 @@ public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
 						ServerPolicy replica = ((ServerPolicy) server).onSapphireObjectReplicate();
 						replica.onSapphirePin(kernelServers.get(count));
 						((KernelObjectStub) replica).$__updateHostname(kernelServers.get(count));
-						addServer(replica);
 					}
 				}
 

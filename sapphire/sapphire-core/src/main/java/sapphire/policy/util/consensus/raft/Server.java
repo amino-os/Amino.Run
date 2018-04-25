@@ -682,6 +682,13 @@ public class Server { // This outer class contains everything common to leaders,
             logger.info(pState.myServerID + ": Start being a follower.");
             vState.setState(State.FOLLOWER, vState.getState()); // Doesn't matter what we were before.
 
+            /* On state transition to follower, should reset the votedFor. Consider the case, when
+            requestVote is received from remote server with higher term(compared to our current term).
+            It triggers state transition to follower inside respondToRemoteTerm. And continue further
+            processing to decide whether to vote for that remote server. So if we don't reset votedFor
+            here, requestVote would fail taking old votedFor into consideration. */
+            pState.setVotedFor(NO_LEADER, pState.getVotedFor());
+
             if (null == leaderHeartbeatReceiveTimer) {
                 /* Create a leader heartbeat timer instance for the very first time follower.start
                 method is called. Further call to follower.start due to FSM, doesn't create another
@@ -744,6 +751,12 @@ public class Server { // This outer class contains everything common to leaders,
             logger.info(pState.myServerID + ": Start being a candidate.");
             vState.setState(State.CANDIDATE, vState.getState()); // Doesn't matter what we were before.
 
+            /* Need to reset the votedFor before requesting vote. Because, it could have happened
+            that we had received a vote request from remote server and voted for it before the state
+            transition happen from follower to candidate upon leaderHeartbeatReceiveTimer expiry. It
+            avoids AlreadyVotedException while voting for self */
+            pState.setVotedFor(NO_LEADER, pState.getVotedFor());
+
             if (null == leaderElectionTimer) {
                 /* Create a leader election timer instance for the very first time candidate.start
                 method is called. Further call to candidate.start due to FSM, doesn't create another
@@ -763,6 +776,7 @@ public class Server { // This outer class contains everything common to leaders,
                 requestVote(pState.getCurrentTerm(), pState.myServerID, lastLogIndex(), lastLogTerm());
             }
             catch (Server.AlreadyVotedException e) {
+                //TODO: Control doesn't reach here now
                 logger.info("Failed to vote for self.  Already voted: " + e.toString());
                 become(State.FOLLOWER, State.CANDIDATE);
                 return;

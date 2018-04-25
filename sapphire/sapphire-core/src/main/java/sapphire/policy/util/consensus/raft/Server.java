@@ -790,15 +790,28 @@ public class Server { // This outer class contains everything common to leaders,
                 voteRequestThreadPool = null;
             }
         }
+
         /**
          *  Invoke requestVote() on server, and process result, including incrementing the Semaphore on success.
          */
         void sendVoteRequest(UUID serverID, Semaphore voteCounter) {
             Server server = getServer(serverID);
+            final Integer currentTerm = pState.getCurrentTerm();
             boolean voteGranted = true;
             try {
                 logger.info("Sending vote request to server " + serverID);
                 server.requestVote(pState.getCurrentTerm(), pState.myServerID, lastLogIndex(), lastLogTerm());
+
+                /* Condition to check if this grant is still valid/useful */
+                /* If the state is follower OR if it is candidate or leader with term changed,
+                then this grant is not valid anymore. Also, once majority quorum grant votes,
+                state transition happens from candidate to leader and can safely consider
+                the pending awaited vote grants as not useful. It can happen due to blocking call */
+                if ((vState.getState() != State.CANDIDATE) || (!currentTerm.equals(pState.getCurrentTerm()))) {
+                    //Not a valid/useful grant
+                    voteGranted = false;
+                    logger.info(String.format("%s While waiting in blocking call, state transitioned from CANDIDATE to %s, old term : %d and current term : %d", pState.myServerID, vState.getState(), currentTerm, pState.getCurrentTerm()));
+                }
             }
             catch (Server.VotingException e) {
                 voteGranted = false;
@@ -806,7 +819,7 @@ public class Server { // This outer class contains everything common to leaders,
                 respondToRemoteTerm(e.currentTerm);
             }
             if (voteGranted) {
-                logger.info("Vote received from server " + pState.myServerID);
+                logger.info("Vote received from server " + serverID);
                 voteCounter.release(1); // Yay!  We got one vote.
             }
         }
@@ -821,6 +834,7 @@ public class Server { // This outer class contains everything common to leaders,
             final Semaphore voteCounter = new Semaphore(0); // Initially we have zero votes.
             // Send vote requests in parallel
             final Iterator<UUID> i = vState.otherServers.keySet().iterator();
+            final Integer currentTerm = pState.getCurrentTerm();
             while(i.hasNext()) {
                 final UUID server = i.next();
                 voteRequestThreadPool.execute(new Runnable() {
@@ -841,13 +855,23 @@ public class Server { // This outer class contains everything common to leaders,
                     } catch (InterruptedException e) {
                         logger.info(pState.myServerID + "Interrupted while waiting to receive a majority of votes in leader election.");
                     }
-                    if (votedInAsLeader && vState.getState() == State.CANDIDATE) {
-                        become(State.LEADER, State.CANDIDATE);
-                    } else if (vState.getState() == State.CANDIDATE) {
-                        become(State.CANDIDATE, State.CANDIDATE);
-                    } else {
-                        become(State.FOLLOWER, vState.getState()); // It doesn't matter what we were before.
+
+                    /* If the state is not candidate or term has changed during election process,
+                    then this election is not valid anymore. Just return. It can happen due to
+                    blocking call */
+                    if ((vState.getState() != State.CANDIDATE) || (!currentTerm.equals(pState.getCurrentTerm()))) {
+                        logger.info(String.format("%s While waiting in blocking call, state transitioned from CANDIDATE to %s, old term : %d and current term : %d", pState.myServerID, vState.getState(), currentTerm, pState.getCurrentTerm()));
+                        return;
                     }
+
+                    /* Control reaches here only when current state is CANDIDATE */
+                    if (votedInAsLeader) {
+                        become(State.LEADER, State.CANDIDATE);
+                    } else {
+                        become(State.CANDIDATE, State.CANDIDATE);
+                    } /* else {
+                        become(State.FOLLOWER, vState.getState()); // It doesn't matter what we were before.
+                    } */
                 }
             });
         }

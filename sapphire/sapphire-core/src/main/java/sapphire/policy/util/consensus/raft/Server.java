@@ -33,7 +33,7 @@ import static sapphire.policy.util.consensus.raft.PersistentState.NO_LEADER;
  * so decided to just try to implement Server as per the paper.  May be replaced in future by alternative
  * RAFT implementation.
  */
-public class Server { // This outer class contains everything common to leaders, followers and candidates.
+public class Server implements RemoteRaftServer { // This outer class contains everything common to leaders, followers and candidates.
 
     /**
      * How long we wait for a heartbeat from the leader before starting a new leader election.
@@ -137,7 +137,7 @@ public class Server { // This outer class contains everything common to leaders,
      * @param leaderCommit leader’s commitIndex
      * @return currentTerm, for leader to update itself
      */
-    int appendEntries(int term, UUID leader, int prevLogIndex, int prevLogTerm, List<LogEntry> entries, int leaderCommit) throws InvalidTermException, PrevLogTermMismatch, InvalidLogIndex {
+    public int appendEntries(int term, UUID leader, int prevLogIndex, int prevLogTerm, List<LogEntry> entries, int leaderCommit) throws InvalidTermException, PrevLogTermMismatch, InvalidLogIndex {
         logger.info(String.format(
                 "%s: received AppendEntries request from leader %s, term %d, prevLogIndex=%d, prevLogTerm=%d, leaderCommit=%d, entries=%d",
                 pState.myServerID, leader, term, prevLogIndex, prevLogTerm, leaderCommit, entries.size()));
@@ -219,7 +219,7 @@ public class Server { // This outer class contains everything common to leaders,
      * @throws AlreadyVotedException
      * @throws CandidateBehindException
      */
-    int requestVote(int term, UUID candidate, int lastLogIndex, int lastLogTerm) throws InvalidTermException, AlreadyVotedException, CandidateBehindException {
+    public int requestVote(int term, UUID candidate, int lastLogIndex, int lastLogTerm) throws InvalidTermException, AlreadyVotedException, CandidateBehindException {
         logger.info(String.format("%s received vote request from %s (term=%d, lastLogIndex=%d, lastLogTerm=%d)", pState.myServerID, candidate, term, lastLogIndex, lastLogTerm));
         if (!candidate.equals(pState.myServerID)) { // We sometimes vote for ourselves, to that's not considered a request from a remote server.
             /**
@@ -310,13 +310,7 @@ public class Server { // This outer class contains everything common to leaders,
             return leader.applyToStateMachine(operation);
         }
         else {
-            // TODO (Consensus): Replace Raft Server with Server Policy Stub
-            // The Server returned by getCurrentLeader() is a Raft server.
-            // But Raft server is not able to handle RMI calls.
-            // So this request forward will not work.
-
-            // The second point is: getCurrentLeader() may return null
-            // We need to handle null properly.
+            // TODO (Consensus): getCurrentLeader() may return null, handle correctly
             return getCurrentLeader().applyToStateMachine(operation); // Forward to the leader.
         }
     }
@@ -660,15 +654,15 @@ public class Server { // This outer class contains everything common to leaders,
         return vState.otherServers.size()+1; // NOTE: This only makes sense if otherServers contains all the other servers at this time.
     }
 
-    Server getServer(UUID serverId) {
+    RemoteRaftServer getServer(UUID serverId) {
         return vState.otherServers.get(serverId); // TODO: Handle not found - which would indicate a code bug.
     }
 
-    public void addServer(UUID id, Server server) {
+    public void addServer(UUID id, RemoteRaftServer server) {
         vState.otherServers.put(id, server);
     }
 
-    Server getCurrentLeader() {
+    RemoteRaftServer getCurrentLeader() {
         return getServer(vState.getCurrentLeader());
     }
 
@@ -814,8 +808,8 @@ public class Server { // This outer class contains everything common to leaders,
          *  Invoke requestVote() on server, and process result, including incrementing the Semaphore on success.
          */
         void sendVoteRequest(UUID serverID, Semaphore voteCounter) {
-            Server server = getServer(serverID);
             final Integer currentTerm = pState.getCurrentTerm();
+            RemoteRaftServer server = getServer(serverID);
             boolean voteGranted = true;
             try {
                 logger.info("Sending vote request to server " + serverID);

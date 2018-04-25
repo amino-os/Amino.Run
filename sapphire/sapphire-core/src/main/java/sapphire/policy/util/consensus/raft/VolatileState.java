@@ -21,7 +21,7 @@ class VolatileState {
      * All the other servers.  Just make it public to avoid having to re-implement the whole Map interface.
      * ConcurrentMap is already thread-safe, so can be accessed directly.
      */
-    public ConcurrentMap<UUID, Server> otherServers = new ConcurrentHashMap<UUID, Server>();
+    public ConcurrentMap<UUID, RemoteRaftServer> otherServers = new ConcurrentHashMap<UUID, RemoteRaftServer>();
     Integer commitIndex = INVALID_INDEX;
     Integer lastApplied = INVALID_INDEX;
     /**

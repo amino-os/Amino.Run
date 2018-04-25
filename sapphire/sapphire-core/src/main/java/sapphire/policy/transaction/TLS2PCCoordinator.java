@@ -2,6 +2,7 @@ package sapphire.policy.transaction;
 
 import sapphire.policy.serializability.TransactionAlreadyStartedException;
 
+import java.io.Serializable;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -9,7 +10,7 @@ import java.util.logging.Logger;
 /**
  * 2PC Coordinator based on thread local storage
  */
-public class TLS2PCCoordinator implements TwoPCCoordinator{
+public class TLS2PCCoordinator implements TwoPCCoordinator, Serializable{
     private static Logger logger = Logger.getLogger("sapphire.policy.transaction.TLS2PCCoordinator");
 
     private final TransactionValidator validator;

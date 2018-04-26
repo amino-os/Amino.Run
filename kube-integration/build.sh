@@ -41,7 +41,7 @@ copy_jars
 docker rmi -f $DOCKER_IMG
 rm -f $docker_dir/$DOCKER_IMG_FILE
 pushd docker
-docker build --force-rm --squash -t $DOCKER_IMG -f Dockerfile.MinnieTwitter .
+docker build --force-rm -t $DOCKER_IMG -f Dockerfile.MinnieTwitter .
 docker save -o $docker_dir/$DOCKER_IMG_FILE $DOCKER_IMG
 popd
 

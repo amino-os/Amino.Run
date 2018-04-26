@@ -85,12 +85,6 @@ public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
 				limiter.release();
 			}
 		}
-        public ServerPolicy onSapphireObjectReplicate() {
-            return (ServerPolicy) this.sapphire_replicate();
-        }
-        public void onSapphirePin(InetSocketAddress server) throws RemoteException {
-			sapphire_pin_to_server(server);
-		}
     }
 
 	/**
@@ -130,8 +124,8 @@ public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
 					numnodes = kernelServers.size();
 
 					for (count = 0; count < numnodes && count < STATIC_REPLICAS-1; count++) {
-						ServerPolicy replica = ((ServerPolicy) server).onSapphireObjectReplicate();
-						replica.onSapphirePin(kernelServers.get(count));
+						ServerPolicy replica = (ServerPolicy) server.sapphire_replicate();
+						replica.sapphire_pin_to_server(kernelServers.get(count));
 						((KernelObjectStub) replica).$__updateHostname(kernelServers.get(count));
 						addServer(replica);
 					}

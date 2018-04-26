@@ -869,9 +869,7 @@ public class Server { // This outer class contains everything common to leaders,
                         become(State.LEADER, State.CANDIDATE);
                     } else {
                         become(State.CANDIDATE, State.CANDIDATE);
-                    } /* else {
-                        become(State.FOLLOWER, vState.getState()); // It doesn't matter what we were before.
-                    } */
+                    }
                 }
             });
         }

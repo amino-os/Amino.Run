@@ -40,6 +40,7 @@ try{
 * P1: Default distributed transaction (SO/DM not comoplicated)
 * P1: External database (type: TO-BE-DECIDED)
 * P2: support participant of SO that has consensus DM
+* P2: participant crash-recovery repair support
 ### Assumptions of Phase 1
 <br/>All participants of the transaction have to have 2PC-compiliant transaction DM.
 <br/>Sapphire objects MUST not be involved in multiple threading executions inside of transaction (thiis one limitation of phase 1. We may allow SO to work multi-threading when threads are started under the control of DM in the future.)   
@@ -117,3 +118,12 @@ abort | forward to leader | drop intermediate change
 
 #### Design alternatives
 sandbox of full consensus nodes is created and whatever operations will be processed against the sandbox. This design duplicates the complex plumbings of consensus protocol, and incurrs quite complixity. For phase 1, we choose the simpler way to work on leader node only.
+
+## Participant crash-recovery support
+Particiapnt may crash after it voted YES and before it got commit/abort final decision. The failed participant needs go through a proper repair process to bring the missing part up to date. 
+It is to be decided yet how such a process be taken place.
+
+## State of finished transactions
+In general, transaction's decision of commit/abort should be kept (until all participants had all got such decision and conducted accordingly) and accible to the participants in case of repair.
+Transaction coordinator DM, is a natural choice for the place keepinsuch information. However, it assumes that all participnts always able to locate the right coordinator object. 
+Another option is placing such information to a central housekeeping SO-object. It works with multiple transaction coordinators, at the cost of one more component system has to maintain.

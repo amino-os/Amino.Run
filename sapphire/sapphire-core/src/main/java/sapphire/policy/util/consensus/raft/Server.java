@@ -772,14 +772,9 @@ public class Server { // This outer class contains everything common to leaders,
             }
 
             pState.incrementCurrentTerm(pState.getCurrentTerm());
+
             try { // Vote for self
                 requestVote(pState.getCurrentTerm(), pState.myServerID, lastLogIndex(), lastLogTerm());
-            }
-            catch (Server.AlreadyVotedException e) {
-                //TODO: Control doesn't reach here now
-                logger.info("Failed to vote for self.  Already voted: " + e.toString());
-                become(State.FOLLOWER, State.CANDIDATE);
-                return;
             }
             catch (Server.VotingException e) {
                 logger.warning("Unexpected error voting for self: " + e.toString());

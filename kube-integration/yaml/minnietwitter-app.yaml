@@ -1,0 +1,31 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: minnietwitter-app-deploy
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: minnietwitter-app
+  template:
+    metadata:
+      labels:
+        app: minnietwitter-app
+    spec:
+      serviceAccountName: minnietwitter-app-sa
+      containers:
+      - name: minnietwitter-app
+        image: huawei_paas/dcap-sapphire:v0.1.0
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 22345
+        command: ["/dcap/start-app.sh"]
+        args: ["sapphire.appexamples.minnietwitter.device.generator.TwitterWorldGenerator", "oms-minnietwitter-svc", "22346"]
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: minnietwitter-app-sa
+  namespace: default
+

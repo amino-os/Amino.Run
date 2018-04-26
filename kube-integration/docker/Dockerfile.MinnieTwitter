@@ -9,6 +9,7 @@ COPY [ "client.policy", \
        "common.inc", \
        "start-oms.sh", \
        "start-kernelserver.sh", \
+       "start-app.sh", \
        "/dcap/" ]
 
 ENTRYPOINT tail -f /dev/null

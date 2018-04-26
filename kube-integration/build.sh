@@ -9,6 +9,7 @@ jar_dir=$docker_dir/jars
 required_jars=( sapphire/sapphire-core/build/libs/sapphire-core.jar
                 sapphire/dependencies/apache.harmony/build/libs/apache.harmony.jar
                 sapphire/dependencies/java.rmi/build/libs/java.rmi.jar
+                sapphire/examples/example-minnietwitter/build/intermediates/packaged-classes/debug/classes.jar
               )
 
 

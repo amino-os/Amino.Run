@@ -18,8 +18,8 @@ public class TwoPCCoordinatorPolicy extends DefaultSapphirePolicy {
      * DCAP distributed transaction coordinator server policy
      */
     public static class TwoPCCoordinatorServerPolicy extends DefaultServerPolicy {
-        private final TwoPCCoordinator coordinator;
-        private final SandboxProvider sandboxProvider = new AppObjectSandboxProvider();
+        private transient final TwoPCCoordinator coordinator;
+        private transient final SandboxProvider sandboxProvider = new AppObjectSandboxProvider();
 
         public TwoPCCoordinatorServerPolicy() {
             NonconcurrentTransactionValidator validator = new NonconcurrentTransactionValidator(this.sapphire_getAppObject(), this.sandboxProvider);

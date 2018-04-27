@@ -1,5 +1,6 @@
 package sapphire.kernel.client;
 
+import java.lang.reflect.InvocationTargetException;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -68,7 +69,17 @@ public class KernelClient {
         try {
             ret = server.makeKernelRPC(rpc);
         } catch (KernelRPCException e) {
-            throw e.getException();
+            if (!(e.getException() instanceof InvocationTargetException)) {
+                /* Not an invocation exception */
+                throw e.getException();
+            }
+
+            /* Invocation target exception wraps exception thrown by an invoked method or constructor */
+            /* If invocation exception is with any exception,including runtime, app exceptions, unwrap it
+            and throw. Else it is invocation exception with error. Throw the invocation exception as is */
+            Throwable cause = e.getException().getCause();
+            throw (cause instanceof Exception) ? ((Exception) cause) : e.getException();
+
         } catch (KernelObjectMigratingException e) {
             Thread.sleep(100);
             throw new KernelObjectNotFoundException(

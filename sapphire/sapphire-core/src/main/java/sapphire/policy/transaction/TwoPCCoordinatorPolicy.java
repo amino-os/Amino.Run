@@ -18,8 +18,8 @@ public class TwoPCCoordinatorPolicy extends DefaultSapphirePolicy {
      * DCAP distributed transaction coordinator server policy
      */
     public static class TwoPCCoordinatorServerPolicy extends DefaultServerPolicy {
-        private final TwoPCCoordinator coordinator;
-        private final SandboxProvider sandboxProvider = new AppObjectSandboxProvider();
+        private transient final TwoPCCoordinator coordinator;
+        private transient final SandboxProvider sandboxProvider = new AppObjectSandboxProvider();
 
         public TwoPCCoordinatorServerPolicy() {
             NonconcurrentTransactionValidator validator = new NonconcurrentTransactionValidator(this.sapphire_getAppObject(), this.sandboxProvider);
@@ -38,6 +38,7 @@ public class TwoPCCoordinatorPolicy extends DefaultSapphirePolicy {
                 rpcResult = sandbox.onRPC(method, params);
             }catch (Exception e) {
                 this.coordinator.abort(transactionId);
+                this.sandboxProvider.removeSandbox(transactionId);
                 throw new TransactionAbortException("execution had error.", e);
             }
 
@@ -46,9 +47,11 @@ public class TwoPCCoordinatorPolicy extends DefaultSapphirePolicy {
             if (TransactionManager.Vote.YES.equals(vote)) {
                 this.coordinator.commit(transactionId);
                 this.makeUpdateDurable(sandbox);
+                this.sandboxProvider.removeSandbox(transactionId);
                 return rpcResult;
             } else {
                 this.coordinator.abort(transactionId);
+                this.sandboxProvider.removeSandbox(transactionId);
                 // todo: to gather the detail of invalidation
                 throw new TransactionAbortException("transaction was in invalid state.", null);
             }

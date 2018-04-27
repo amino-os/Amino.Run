@@ -1,5 +1,6 @@
 package sapphire.policy.transaction;
 
+import java.io.Serializable;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -8,7 +9,7 @@ import static sapphire.policy.SapphirePolicy.SapphireClientPolicy;
 /**
  * DCAP transaction participant manager
  */
-public class TwoPCParticipantManager implements TwoPCParticipants {
+public class TwoPCParticipantManager implements TwoPCParticipants, Serializable {
     private Set participants = Collections.newSetFromMap(new ConcurrentHashMap<SapphireClientPolicy, Boolean>());
 
     @Override

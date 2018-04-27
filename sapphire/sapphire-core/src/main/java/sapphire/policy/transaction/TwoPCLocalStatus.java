@@ -1,12 +1,13 @@
 package sapphire.policy.transaction;
 
+import java.io.Serializable;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * type to keep track of transaction's local status
  */
-public class TwoPCLocalStatus {
+public class TwoPCLocalStatus implements Serializable{
     public enum LocalStatus {
         UNCERTAIN, GOOD, BAD, YESVOTED, NOVOTED, COMMITTED, ABORTED,
     }

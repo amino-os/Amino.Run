@@ -3,13 +3,14 @@ package sapphire.policy.transaction;
 import sapphire.policy.SapphirePolicy;
 import sapphire.policy.SapphirePolicy.SapphireClientPolicy;
 
+import java.io.Serializable;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * type to keep track of participants of transactions
  */
-public class TwoPCLocalParticipants {
+public class TwoPCLocalParticipants implements Serializable{
     private final ConcurrentHashMap<UUID, TwoPCParticipants> localParticipants = new ConcurrentHashMap<UUID, TwoPCParticipants>();
 
     public TwoPCParticipants getParticipantManager(UUID transactionId) {

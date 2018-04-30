@@ -2,6 +2,7 @@
 
 # TODO: getopt
 # $1 = oms-service-name
+# $2 = oms-port
 
 source /dcap/common.inc
 

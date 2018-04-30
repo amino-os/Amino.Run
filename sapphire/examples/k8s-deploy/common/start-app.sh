@@ -29,6 +29,6 @@ if [ -z $OMS_IP ]; then
   exit 1
 fi
 
-echo "Starting app on $APP_IP:$APP_PORT, connecting to $OMS_SERVICE at $OMS_IP:$OMS_PORT .."
+echo "Starting app $APP_ENTRY on $APP_IP:$APP_PORT, connecting to $OMS_SERVICE at $OMS_IP:$OMS_PORT .."
 java -cp "/dcap/jars/*" -Djava.rmi.server.useCodebaseOnly=false -Djava.security.policy=/dcap/client.policy $APP_ENTRY $OMS_IP $OMS_PORT $APP_IP $APP_PORT
 

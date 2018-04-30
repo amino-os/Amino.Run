@@ -16,7 +16,7 @@ spec:
       serviceAccountName: oms-minnietwitter-sa
       containers:
       - name: oms-minnietwitter
-        image: huawei_paas/dcap-sapphire:v0.1.0
+        image: huawei_paas/dcap-sapphire-minnietwitter:v0.1.0
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 22346

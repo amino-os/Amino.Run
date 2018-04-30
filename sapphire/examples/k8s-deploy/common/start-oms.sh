@@ -1,5 +1,8 @@
 #!/bin/sh -x
 
+#TODO getopt
+# $1 = oms-app-entry-point
+
 source /dcap/common.inc
 
 check_java
@@ -15,6 +18,5 @@ if [ -z $OMS_IP ]; then
   exit 1
 fi
 
-echo "Starting OMS, listening on $OMS_IP:$OMS_PORT .."
-#java -cp "/dcap/jars/*" sapphire.oms.OMSServerImpl $OMS_IP $OMS_PORT sapphire.appexamples.minnietwitter.cloud.MinnieTwitterStart
+echo "Starting OMS for app $OMS_APP_MAIN_CLASS, listening on $OMS_IP:$OMS_PORT .."
 java -cp "/dcap/jars/*" sapphire.oms.OMSServerImpl $OMS_IP $OMS_PORT $OMS_APP_MAIN_CLASS

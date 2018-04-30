@@ -1,13 +1,4 @@
 
-check_java() {
-  local _java=`which java`
-
-  if [ ! -f $_java ]; then
-    echo "ERROR: java is not installed."
-    exit 1
-  fi
-}
-
 get_container_ip() {
   local _hostname=$(hostname -f)
   container_ip="$(cat /etc/hosts | grep $_hostname | grep -Eo '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')"

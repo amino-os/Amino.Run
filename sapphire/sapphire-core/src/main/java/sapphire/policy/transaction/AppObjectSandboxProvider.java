@@ -24,6 +24,11 @@ public class AppObjectSandboxProvider implements SandboxProvider, Serializable {
     }
 
     @Override
+    public SapphireServerPolicyUpcalls getSandbox(UUID transactionId) {
+        return this.sandboxes.get(transactionId);
+    }
+
+    @Override
     public void removeSandbox(UUID transactionId) {
         this.sandboxes.remove(transactionId);
     }

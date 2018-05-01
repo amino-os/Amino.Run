@@ -15,7 +15,7 @@ import java.util.logging.Logger;
 public class ExtResourceTransactionManager implements TransactionManager {
     private SandboxProvider sandboxProvider;
     private TransactionManager internalTransactionManager;
-    private static Logger logger = Logger.getLogger("sapphire.policy.transaction.ExtResourceTransactionManager");
+    private static Logger logger = Logger.getLogger(ExtResourceTransactionManager.class.getName());
 
     public ExtResourceTransactionManager(SandboxProvider sandboxProvider, TransactionManager internalTransactionManager) {
         this.sandboxProvider = sandboxProvider;

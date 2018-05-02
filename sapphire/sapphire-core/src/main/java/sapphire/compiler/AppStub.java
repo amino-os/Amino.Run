@@ -147,47 +147,62 @@ public final class AppStub extends Stub {
         cListParams.append(")");
 
         buffer.append(indenter.indent() + "java.lang.Object $__result = null;" + EOLN);
+
+        int tabWidth;
         if (!m.exceptions.contains(Exception.class)) {
             /* If method do not throw generic exception. Catch all the exceptions in the stub and rethrow
             them based on exceptions method is allowed to throw. And for the rest of the exceptions,
              just print stack trace */
+            /* tab width used for alignment in this case */
+            tabWidth = 2;
 
-            // Check if direct invocation
+            /* Append try catch block for this case */
             buffer.append(indenter.indent() + "try {" + EOLN);
-            buffer.append(indenter.tIncrease() + "if ($__directInvocation)" + EOLN);
-            if (!m.retType.getSimpleName().equals("void"))
-                buffer.append(
-                        indenter.tIncrease(2)
-                                + "$__result = super."
-                                + m.name
-                                + cListParams.toString()
-                                + ";"
-                                + EOLN);
-            else
-                buffer.append(
-                        indenter.tIncrease(2)
-                                + "super."
-                                + m.name
-                                + cListParams.toString()
-                                + ";"
-                                + EOLN);
-            buffer.append(indenter.tIncrease() + "else {" + EOLN);
+        } else {
+            /* Method throws generic exception. Let app handle all the exceptions. Do not append
+            try catch block in this case */
+            /* tab width used for alignment in this case */
+            tabWidth = 1;
+        }
+
+        // Check if direct invocation
+        buffer.append(indenter.tIncrease(tabWidth - 1) + "if ($__directInvocation)" + EOLN);
+        if (!m.retType.getSimpleName().equals("void"))
             buffer.append(
-                    indenter.tIncrease(2)
-                            + "java.util.ArrayList<Object> $__params = new java.util.ArrayList<Object>();"
-                            + EOLN); //$NON-NLS-1$
-            buffer.append(
-                    indenter.tIncrease(2)
-                            + "String $__method = \""
-                            + m.genericName
-                            + "\";"
-                            + EOLN); //$NON-NLS-1$
-            buffer.append(listParams.toString()); // $NON-NLS-1$
-            buffer.append(
-                    indenter.tIncrease(2)
-                            + "$__result = $__client.onRPC($__method, $__params);"
+                    indenter.tIncrease(tabWidth)
+                            + "$__result = super."
+                            + m.name
+                            + cListParams.toString()
+                            + ";"
                             + EOLN);
-            buffer.append(indenter.tIncrease() + "}" + EOLN);
+        else
+            buffer.append(
+                    indenter.tIncrease(tabWidth)
+                            + "super."
+                            + m.name
+                            + cListParams.toString()
+                            + ";"
+                            + EOLN);
+        buffer.append(indenter.tIncrease(tabWidth - 1) + "else {" + EOLN);
+        buffer.append(
+                indenter.tIncrease(tabWidth)
+                        + "java.util.ArrayList<Object> $__params = new java.util.ArrayList<Object>();"
+                        + EOLN); //$NON-NLS-1$
+        buffer.append(
+                indenter.tIncrease(tabWidth)
+                        + "String $__method = \""
+                        + m.genericName
+                        + "\";"
+                        + EOLN); //$NON-NLS-1$
+        buffer.append(listParams.toString()); // $NON-NLS-1$
+        buffer.append(
+                indenter.tIncrease(tabWidth)
+                        + "$__result = $__client.onRPC($__method, $__params);"
+                        + EOLN);
+        buffer.append(indenter.tIncrease(tabWidth - 1) + "}" + EOLN);
+
+        if (!m.exceptions.contains(Exception.class)) {
+            /* Append catch block to buffer */
             buffer.append(
                     indenter.indent()
                             + "} catch (Exception e) {"
@@ -214,19 +229,14 @@ public final class AppStub extends Stub {
                                         + EOLN);
                     }
 
-                    buffer.append(indenter.tIncrease(2) + "throw (" + e.getName() + ") e;" + EOLN);
+                    buffer.append(
+                            indenter.tIncrease(tabWidth) + "throw (" + e.getName() + ") e;" + EOLN);
                     buffer.append(indenter.tIncrease() + "}" + EOLN); // $NON-NLS-1$
                 }
             }
 
             buffer.append(indenter.tIncrease() + "e.printStackTrace();" + EOLN); // $NON-NLS-1$
             buffer.append(indenter.indent() + "}" + EOLN); // $NON-NLS-1$
-        } else {
-            /* Method throws generic exception. Let app handle all the exceptions */
-            buffer.append(
-                    indenter.indent()
-                            + "$__result = $__client.onRPC($__method, $__params);"
-                            + EOLN);
         }
 
         if (!m.retType.getSimpleName().equals("void")) {

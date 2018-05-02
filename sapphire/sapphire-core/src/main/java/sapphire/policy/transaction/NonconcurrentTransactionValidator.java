@@ -24,7 +24,7 @@ public class NonconcurrentTransactionValidator implements TransactionValidator, 
 
     @Override
     public boolean promises(UUID transactionId) throws Exception {
-        AppObjectShimServerPolicy sandbox = (AppObjectShimServerPolicy) this.sandboxProvider.getSandbox(null, transactionId);
+        AppObjectShimServerPolicy sandbox = (AppObjectShimServerPolicy) this.sandboxProvider.getSandbox(transactionId);
 
         synchronized (this) {
             // checking for identity of sandbox's origin and this master ensures sandbox is not stale
@@ -46,7 +46,7 @@ public class NonconcurrentTransactionValidator implements TransactionValidator, 
     public void onCommit(UUID transactionId) {
         AppObjectShimServerPolicy sandbox = null;
         try {
-            sandbox = (AppObjectShimServerPolicy) this.sandboxProvider.getSandbox(null, transactionId);
+            sandbox = (AppObjectShimServerPolicy) this.sandboxProvider.getSandbox(transactionId);
         } catch (Exception e) {
             // todo: handle exception properly
             // note: getSandbox should not fail at this moment - todo: refactor in order to provide such guarantee

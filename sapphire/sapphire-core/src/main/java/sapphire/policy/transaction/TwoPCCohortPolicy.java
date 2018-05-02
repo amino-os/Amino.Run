@@ -69,7 +69,7 @@ public class TwoPCCohortPolicy extends DefaultSapphirePolicy {
             }
             if (TwoPCPrimitive.isCommit(rpcMethod)) {
                 this.transactionManager.commit(transactionId);
-                SapphireServerPolicyUpcalls sandbox = this.sandboxProvider.getSandbox(this, transactionId);
+                SapphireServerPolicyUpcalls sandbox = this.sandboxProvider.getSandbox(transactionId);
                 this.makeUpdateDurable(sandbox);
                 this.sandboxProvider.removeSandbox(transactionId);
                 return null;
@@ -79,8 +79,8 @@ public class TwoPCCohortPolicy extends DefaultSapphirePolicy {
                 this.sandboxProvider.removeSandbox(transactionId);
                 return null;
             } else {
-                this.transactionManager.join(transactionId);
                 SapphireServerPolicyUpcalls sandbox = this.sandboxProvider.getSandbox(this, transactionId);
+                this.transactionManager.join(transactionId);
                 Object result = sandbox.onRPC(rpcMethod, tx.getInnerRPCParams());
                 this.transactionManager.leave(transactionId);
                 return result;

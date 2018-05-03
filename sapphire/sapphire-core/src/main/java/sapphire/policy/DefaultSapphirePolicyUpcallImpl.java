@@ -45,13 +45,15 @@ public abstract class DefaultSapphirePolicyUpcallImpl extends SapphirePolicyLibr
 			/* The default behavior is to just invoke the method on the Sapphire Object this Server Policy Object manages */
 			return appObject.invoke(method, params);
 		}
+		/* This function is added here just to generate the stub for this function in all DMs server policy */
 		public SapphireServerPolicy sapphire_replicate() {
 			return super.sapphire_replicate();
 		}
-
+		/* This function is added here just to generate the stub for this function in all DMs server policy */
 		public void sapphire_pin(String region) throws RemoteException {
 			super.sapphire_pin(region);
 		}
+		/* This function is added here just to generate the stub for this function in all DMs server policy */
 		public void sapphire_pin_to_server(InetSocketAddress server) throws RemoteException {
 			super.sapphire_pin_to_server(server);
 		}

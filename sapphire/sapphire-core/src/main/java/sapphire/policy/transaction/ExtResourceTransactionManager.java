@@ -3,6 +3,7 @@ package sapphire.policy.transaction;
 import sapphire.policy.SapphirePolicyUpcalls.SapphireServerPolicyUpcalls;
 import sapphire.policy.serializability.TransactionAlreadyStartedException;
 
+import java.io.Serializable;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -12,7 +13,7 @@ import java.util.logging.Logger;
  * It uses an internal transaction manager to book-keep the in-memory SO transaction status,
  * also consult the business object through its well-defined interface for the external resource transaction condition.
  */
-public class ExtResourceTransactionManager implements TransactionManager {
+public class ExtResourceTransactionManager implements TransactionManager, Serializable {
     private SandboxProvider sandboxProvider;
     private TransactionManager internalTransactionManager;
     private static Logger logger = Logger.getLogger(ExtResourceTransactionManager.class.getName());

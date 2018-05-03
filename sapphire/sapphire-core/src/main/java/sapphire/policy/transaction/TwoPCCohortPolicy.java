@@ -38,8 +38,16 @@ public class TwoPCCohortPolicy extends DefaultSapphirePolicy {
      * DCAP distributed transaction default server policy
      */
     public static class TwoPCCohortServerPolicy extends DefaultServerPolicy {
-        private final SandboxProvider sandboxProvider = new AppObjectSandboxProvider();
-        private final TransactionManager transactionManager;
+        protected final SandboxProvider sandboxProvider = new AppObjectSandboxProvider();
+        private TransactionManager transactionManager;
+
+        protected TwoPCCohortServerPolicy(TransactionManager transactionManager) {
+            this.transactionManager = transactionManager;
+        }
+
+        protected void setTransactionManager(TransactionManager transactionManager) {
+            this.transactionManager = transactionManager;
+        }
 
         public TwoPCCohortServerPolicy() {
             TransactionValidator validator = new NonconcurrentTransactionValidator(this.sapphire_getAppObject(), this.sandboxProvider);

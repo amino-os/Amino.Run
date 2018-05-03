@@ -6,8 +6,10 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.ExportException;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.Hashtable;
 
 import sapphire.kernel.client.KernelClient;
+import sapphire.kernel.common.GlobalKernelReferences;
 import sapphire.kernel.common.ServerInfo;
 import sapphire.kernel.server.KernelServer;
 import sapphire.kernel.server.KernelServerImpl;
@@ -72,5 +74,10 @@ public class SapphireUtils {
         ServerInfo info = new ServerInfo(spiedKs.getLocalHost(), spiedKs.getRegion());
         spiedOms.registerKernelServer(info);
         return spiedKs;
+    }
+
+    public static void addHost(KernelServer ks) throws Exception {
+        Hashtable<InetSocketAddress,KernelServer> servers = (Hashtable<InetSocketAddress,KernelServer>) extractFieldValueOnInstance(GlobalKernelReferences.nodeServer.getKernelClient(), "servers");
+        servers.put(((KernelServerImpl)ks).getLocalHost(), ks);
     }
 }

@@ -13,7 +13,6 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import java.io.Serializable;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -29,7 +28,6 @@ import sapphire.kernel.common.KernelObjectFactory;
 import sapphire.kernel.common.KernelObjectStub;
 import sapphire.kernel.server.KernelObject;
 import sapphire.kernel.server.KernelObjectManager;
-import sapphire.kernel.server.KernelServer;
 import sapphire.kernel.server.KernelServerImpl;
 import sapphire.oms.OMSServerImpl;
 import sapphire.policy.SapphirePolicy;
@@ -41,6 +39,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
+import static sapphire.common.SapphireUtils.addHost;
 import static sapphire.common.SapphireUtils.startSpiedKernelServer;
 import static sapphire.common.SapphireUtils.startSpiedOms;
 import static sapphire.common.UtilsTest.extractFieldValueOnInstance;
@@ -72,13 +71,16 @@ public class LoadBalancedFrontendPolicyTest implements Serializable {
         return "LoadBalancedFrontendPolicyTest";
     }
 
-    private void addHost(KernelServer ks) throws Exception {
-        Hashtable<InetSocketAddress,KernelServer> servers = (Hashtable<InetSocketAddress,KernelServer>) extractFieldValueOnInstance(GlobalKernelReferences.nodeServer.getKernelClient(), "servers");
-        servers.put(((KernelServerImpl)ks).getLocalHost(), ks);
-    }
-    
-    public void waiting(long timeout) throws InterruptedException {
-	    Thread.sleep(timeout);
+    public static class Server_Stub extends LoadBalancedFrontendPolicy.ServerPolicy implements KernelObjectStub  {
+        KernelOID $__oid = null;
+        InetSocketAddress $__hostname = null;
+        public Server_Stub(KernelOID oid) {
+            this.oid = oid;
+            this.$__oid = oid;
+        }
+        public KernelOID $__getKernelOID() {return $__oid;}
+        public InetSocketAddress $__getHostname() {return $__hostname;}
+        public void $__updateHostname(InetSocketAddress hostname) {this.$__hostname = hostname;}
     }
 
     @Rule
@@ -223,10 +225,8 @@ public class LoadBalancedFrontendPolicyTest implements Serializable {
         thrown.expectMessage("Configured replicas count: 5, created replica count : 1");
         setFieldValue(LoadBalancedFrontendPolicy.GroupPolicy.class, "STATIC_REPLICAS", 5);
         group1.onCreate(this.server);
-        setFieldValue(LoadBalancedFrontendPolicy.GroupPolicy.class,"STATIC_REPLICAS", 2);
         sequential.unlock();
     }
-
 
     @After
     public void tearDown() throws Exception {

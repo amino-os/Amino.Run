@@ -23,7 +23,7 @@ Today *inheritance* is the only way to reuse codes in other DMs. In the followin
 
 Java does not support multiple inheritance which means that we can only reuse the codes from one DM at a time. Even in languages that support multiple inheritance, e.g. Python, Go, C++, we still face difficulties. Usually important logic of a DM lies in the `onRPC` method. Suppose we have two DMs with different `onRPC` implementations, we cannot reuse their codes by simply inheriting from them. I agree that we can restructure the codes in a way to make it work - but it is awkward and not intuitive.
 
-As a DM developer, I would like build the *Master-Slave* DM on top of an existing *Leader-Election* DM, or build the *Distributed-Transaction* DM on top of existing *Consensus* DM. But this is difficult to do with the current Sapphire core.
+As a DM developer, I would like build the *Consensus* DM on top of an existing *Leader-Election* DM, or build the *Distributed-Transaction* DM on top of existing *Consensus* DM. But this is difficult to do with the current Sapphire core.
 
 ```java
 public class DurableSerializableRPCPolicy extends PeriodicCheckpointPolicy {

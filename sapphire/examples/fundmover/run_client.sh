@@ -1,0 +1,1 @@
+java -cp ./build/libs/fundmover.jar:/home/howell/work5/DCAP-Sapphire/sapphire/sapphire-core/build/libs/sapphire-core.jar:/home/howell/work5/DCAP-Sapphire/sapphire/dependencies/java.rmi/build/libs/java.rmi.jar:/home/howell/work5/DCAP-Sapphire/sapphire/dependencies/apache.harmony/build/libs/apache.harmony.jar hw.demo.accountant

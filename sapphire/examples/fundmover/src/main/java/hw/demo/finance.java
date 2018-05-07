@@ -1,6 +1,8 @@
 package hw.demo;
 
-public class finance {
+import sapphire.app.SapphireObject;
+
+public class finance implements SapphireObject {
     private wallet wallet;
     private bankaccount bankaccount;
 

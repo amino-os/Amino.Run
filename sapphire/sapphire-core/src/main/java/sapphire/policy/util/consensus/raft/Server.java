@@ -138,7 +138,6 @@ public class Server { // This outer class contains everything common to leaders,
      * @return currentTerm, for leader to update itself
      */
     int appendEntries(int term, UUID leader, int prevLogIndex, int prevLogTerm, List<LogEntry> entries, int leaderCommit) throws InvalidTermException, PrevLogTermMismatch, InvalidLogIndex {
-        vState.setCurrentLeader(leader);
         logger.info(String.format(
                 "%s: received AppendEntries request from leader %s, term %d, prevLogIndex=%d, leaderCommit=%d, entries=%d",
                 pState.myServerID, leader, term, prevLogTerm, leaderCommit, entries.size()));
@@ -154,6 +153,8 @@ public class Server { // This outer class contains everything common to leaders,
         if (term < pState.getCurrentTerm()) {
             throw new InvalidTermException("Server: Attempt to append entries from prior leader term " + term + ", current term " + term, pState.getCurrentTerm());
         }
+
+        vState.setCurrentLeader(leader);
 
         /**
          *  2. Reply false if log doesn’t contain an entry at prevLogIndex
@@ -681,6 +682,9 @@ public class Server { // This outer class contains everything common to leaders,
              */
             logger.info(pState.myServerID + ": Start being a follower.");
             vState.setState(State.FOLLOWER, vState.getState()); // Doesn't matter what we were before.
+
+
+            vState.removeCurrentLeader();
 
             if (null == leaderHeartbeatReceiveTimer) {
                 /* Create a leader heartbeat timer instance for the very first time follower.start

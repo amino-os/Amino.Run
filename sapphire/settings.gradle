@@ -10,3 +10,5 @@ include ':dependencies:apache.harmony'
 // Example Apps
 include ':examples:hanksTodo'
 include ':examples:example-minnietwitter'
+include ':examples:fundmover'
+

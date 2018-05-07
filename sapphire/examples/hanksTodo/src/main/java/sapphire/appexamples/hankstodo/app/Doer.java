@@ -4,7 +4,6 @@ import sapphire.app.SapphireObject;
 import sapphire.policy.serializability.TransactionAlreadyStartedException;
 import sapphire.policy.transaction.TransactionExecutionException;
 import sapphire.policy.transaction.TransactionManager;
-import sapphire.policy.transaction.TwoPCCohortPolicy;
 import sapphire.policy.transaction.TwoPCExtResourceCohortPolicy;
 
 import java.io.Serializable;

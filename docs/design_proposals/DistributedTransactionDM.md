@@ -1,3 +1,8 @@
+# Limitations
+* All transaction participants (recursively) must be Sapphire objects with `TwoPCCoordinatorPolicy` DM
+* If the transaction modifies the state of non-Sapphrie objects, then the semantics of the transaction is not guaranteed. In other words, we cannot handle side effects out side of transaction participants.
+* 
+
 # Use Case
 ## Ideal User Experience
 The `transferMoney` method in the following class is annotated with `@Trasaction` which means that operations within the method

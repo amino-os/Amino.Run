@@ -1,6 +1,8 @@
 package hw.demo;
 
-public class wallet {
+import java.io.Serializable;
+
+public class wallet implements Serializable{
     private int balance;
 
     public void credit(int amount) {

@@ -25,7 +25,6 @@ public class accountant {
         System.out.println("trnasfering fund between 2 entities...");
         finance.transferFromWallet(5);
 
-
-        System.out.printf("wallet : %d, bank : %d \r\n", wallet.getBalance(), bankaccount.getBalance());
+        System.out.printf("finance details: %s\r\n", finance.getDetails());
     }
 }

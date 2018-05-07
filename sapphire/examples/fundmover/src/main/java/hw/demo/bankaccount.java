@@ -1,6 +1,8 @@
 package hw.demo;
 
-public class bankaccount {
+import java.io.Serializable;
+
+public class bankaccount implements Serializable{
     private int balance;
 
     public void credit(int amount) {

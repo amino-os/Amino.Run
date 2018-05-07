@@ -9,7 +9,10 @@ public class wallet implements Serializable{
         this.balance += amount;
     }
 
-    public void debit(int amount) {
+    public void debit(int amount) throws Exception {
+        if (this.balance < amount) {
+            throw new Exception("insufficient fund");
+        }
         this.balance -= amount;
     }
 

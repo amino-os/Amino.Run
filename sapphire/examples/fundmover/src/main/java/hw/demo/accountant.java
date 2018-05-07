@@ -17,13 +17,18 @@ public class accountant {
         KernelServerImpl kernelServer = new KernelServerImpl(host, oms);
 
         wallet wallet = new wallet();
+        //wallet.credit(100);
         bankaccount bankaccount = new bankaccount();
 
         System.out.println("creating the fainance object...");
         finance finance = (finance) new_(hw.demo.finance.class,wallet, bankaccount);
 
         System.out.println("trnasfering fund between 2 entities...");
-        finance.transferFromWallet(5);
+        try {
+            finance.transferFromWallet(5);
+        }catch (Exception e) {
+            System.err.println(e.toString());
+        }
 
         System.out.printf("finance details: %s\r\n", finance.getDetails());
     }

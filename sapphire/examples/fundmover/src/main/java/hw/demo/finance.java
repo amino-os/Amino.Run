@@ -12,9 +12,9 @@ public class finance implements SapphireObject<TwoPCCoordinatorPolicy> {
         this.bankaccount = bankaccount;
     }
 
-    public void transferFromWallet(int amount) {
-        this.wallet.debit(amount);
+    public void transferFromWallet(int amount) throws Exception {
         this.bankaccount.credit(amount);
+        this.wallet.debit(amount);
     }
 
     public String getDetails() {

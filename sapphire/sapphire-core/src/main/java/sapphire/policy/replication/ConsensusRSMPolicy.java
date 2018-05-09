@@ -27,7 +27,40 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
         }
     }
 
-    public static class ClientPolicy extends DefaultSapphirePolicy.DefaultClientPolicy {}
+    public static class ClientPolicy extends DefaultSapphirePolicy.DefaultClientPolicy {
+        public Object onRPC(String method, ArrayList<Object> params) throws Exception {
+            Object ret = null;
+
+            try {
+                ret = getServer().onRPC(method, params);
+            } catch (RemoteException e1) {
+                /* Get servers from the group and find a responding server */
+                ArrayList<SapphireServerPolicy> servers = getGroup().getServers();
+                int i;
+                for (i = 0; i < servers.size(); i++) {
+                    /* Excluding the server failed to respond in the above try block */
+                    if (getServer().$__getKernelOID().equals(servers.get(i).$__getKernelOID())) {
+                        continue;
+                    }
+
+                    try {
+                        ret = servers.get(i).onRPC(method, params);
+                    } catch (RemoteException e2) {
+                        continue;
+                    }
+
+                    break;
+                }
+
+                /* Responding server found */
+                if (i != servers.size()) {
+                    setServer(servers.get(i));
+                }
+            }
+
+            return ret;
+        }
+    }
 
     // TODO: ServerPolicy needs to be Serializable
     public static class ServerPolicy extends DefaultSapphirePolicy.DefaultServerPolicy  implements StateMachineApplier {

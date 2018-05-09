@@ -5,6 +5,8 @@ import sapphire.policy.DefaultSapphirePolicy;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.UUID;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * DCAP distributed transaction default DM set
@@ -40,6 +42,8 @@ public class TwoPCCohortPolicy extends DefaultSapphirePolicy {
     public static class TwoPCCohortServerPolicy extends DefaultServerPolicy {
         protected final SandboxProvider sandboxProvider = new AppObjectSandboxProvider();
         private TransactionManager transactionManager;
+
+        private static Logger logger = Logger.getLogger(TwoPCCohortServerPolicy.class.getName());
 
         protected TwoPCCohortServerPolicy(TransactionManager transactionManager) {
             this.transactionManager = transactionManager;
@@ -89,9 +93,15 @@ public class TwoPCCohortPolicy extends DefaultSapphirePolicy {
             } else {
                 SapphireServerPolicyUpcalls sandbox = this.sandboxProvider.getSandbox(this, transactionId);
                 this.transactionManager.join(transactionId);
-                Object result = sandbox.onRPC(rpcMethod, tx.getInnerRPCParams());
-                this.transactionManager.leave(transactionId);
-                return result;
+                try{
+                    return sandbox.onRPC(rpcMethod, tx.getInnerRPCParams());
+                }catch(Exception e) {
+                    logger.log(Level.WARNING, "onRPC failed: ", e);
+                    this.transactionManager.abort(transactionId);
+                    return null;
+                } finally {
+                    this.transactionManager.leave(transactionId);
+                }
             }
         }
 

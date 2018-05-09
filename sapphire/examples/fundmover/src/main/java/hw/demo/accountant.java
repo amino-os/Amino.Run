@@ -35,7 +35,7 @@ public class accountant {
 
         System.out.println("trnasfering fund between 2 entities...");
         try {
-            finance.transferFromWallet(5);
+            finance.transferFromWallet(51);
         }catch (Exception e) {
             System.out.println("---------- error accurred -----");
             System.out.println(e.toString());

@@ -48,7 +48,7 @@ public class ExtResourceTransactionManager implements TransactionManager, Serial
         if (vote.equals(Vote.YES)) {
             Vote voteExtResource = this.getBusinessObject(transactionId).vote(transactionId);
 
-            if (!voteExtResource.equals(Vote.YES)) {
+            if (!Vote.YES.equals(voteExtResource)) {
                 logger.log(Level.WARNING, "inconsistent resource state; transaction aborted.");
                 this.internalTransactionManager.abort(transactionId);
                 vote = Vote.NO;

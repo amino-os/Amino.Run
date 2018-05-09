@@ -1,8 +1,11 @@
 package hw.demo;
 
+import sapphire.app.SapphireObject;
+import sapphire.policy.transaction.TwoPCCohortPolicy;
+
 import java.io.Serializable;
 
-public class wallet implements Serializable{
+public class wallet implements SapphireObject<TwoPCCohortPolicy> {
     private int balance;
 
     public void credit(int amount) {

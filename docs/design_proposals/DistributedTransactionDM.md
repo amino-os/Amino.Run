@@ -132,3 +132,11 @@ It is to be decided yet how such a process be taken place.
 In general, transaction's decision of commit/abort should be kept (until all participants had all got such decision and conducted accordingly) and accible to the participants in case of repair.
 Transaction coordinator DM, is a natural choice for the place keepinsuch information. However, it assumes that all participnts always able to locate the right coordinator object. 
 Another option is placing such information to a central housekeeping SO-object. It works with multiple transaction coordinators, at the cost of one more component system has to maintain.
+
+# TODOs
+## participant crash-recovery
+phase 1 did not implement this functionality. 
+Typically it requires external storage of logs to help the reconstruction as the original SO object had gone, and querying for the status of the uncertain tranaction.
+## transaction correctness when the called SO object is localhost
+as issue 134 indicates, the current Sapphire generated application stub silently swallows all exceptions. When calling the SO object that is on the localhost, the server policy is bypassed, and exception thrown by appllication code is swallowed, hence the caller would mistake the transaction as been fine. 
+Before the issue is addressed and fixed, as a workaround, we could tweak the generated application stub code (no swallowing exception) to let the caller object to cope with the transaction failure status.

@@ -2,6 +2,7 @@ package sapphire.policy.transaction;
 
 import sapphire.policy.serializability.TransactionAlreadyStartedException;
 
+import java.io.Serializable;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;

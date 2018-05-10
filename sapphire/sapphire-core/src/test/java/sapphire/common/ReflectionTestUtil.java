@@ -15,8 +15,19 @@ public class ReflectionTestUtil {
      * @throws NoSuchFieldException
      */
     public static void setField(Object object, String fieldName, Object value) throws IllegalAccessException, NoSuchFieldException {
-        Field field = object.getClass().getDeclaredField(fieldName);
-        field.setAccessible(true);
-        field.set(object, value);
+        Field field;
+        Class<?> classInScope = object.getClass();
+        while(classInScope != Object.class) {
+            try {
+                field = classInScope.getDeclaredField(fieldName);
+                field.setAccessible(true);
+                field.set(object, value);
+                return;
+            } catch (NoSuchFieldException e) {
+                classInScope = classInScope.getSuperclass();
+            }
+        }
+
+        throw new NoSuchFieldError("field not found: " + fieldName);
     }
 }

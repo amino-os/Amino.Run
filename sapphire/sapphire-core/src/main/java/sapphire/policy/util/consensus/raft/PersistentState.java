@@ -84,7 +84,7 @@ class PersistentState {
      * @return value of votedFor (after possible update)
      */
     UUID setVotedFor(UUID votedFor, UUID preconditionVotedFor) {
-        synchronized(votedFor) {
+        synchronized(this.votedFor) {
             if (this.votedFor.equals(preconditionVotedFor)) {
                 this.votedFor = votedFor;
                 return votedFor;

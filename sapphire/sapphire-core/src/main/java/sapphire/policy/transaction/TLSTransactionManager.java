@@ -1,5 +1,6 @@
 package sapphire.policy.transaction;
 
+import java.io.Serializable;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -9,7 +10,7 @@ import static sapphire.policy.transaction.TwoPCLocalStatus.LocalStatus;
 /**
  * Transaction Manager based on thread local storage context
  */
-public class TLSTransactionManager implements TransactionManager {
+public class TLSTransactionManager implements TransactionManager, Serializable{
     private static Logger logger = Logger.getLogger("sapphire.policy.transaction.TLSTransactionManager");
 
     private final TwoPCLocalStatus localStatusManager = new TwoPCLocalStatus();
@@ -32,6 +33,9 @@ public class TLSTransactionManager implements TransactionManager {
     public void join(UUID transactionId) {
         TwoPCParticipants participants = this.localParticipantsManager.getParticipantManager(transactionId);
         TransactionContext.enterTransaction(transactionId, participants);
+        // todo: set the default status UNCERTAIN instead - we may need a way
+        // to signal proc finished without issue or not
+        this.localStatusManager.setStatus(transactionId, LocalStatus.GOOD);
     }
 
     /**

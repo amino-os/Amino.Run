@@ -3,13 +3,14 @@ package sapphire.policy.transaction;
 import sapphire.policy.SapphirePolicyLibrary.SapphireServerPolicyLibrary;
 import sapphire.policy.SapphirePolicyUpcalls.SapphireServerPolicyUpcalls;
 
+import java.io.Serializable;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * sandbox provider that manages sandbox containing the enclosed app object only
  */
-public class AppObjectSandboxProvider implements SandboxProvider {
+public class AppObjectSandboxProvider implements SandboxProvider, Serializable {
     private ConcurrentHashMap<UUID, AppObjectShimServerPolicy> sandboxes = new ConcurrentHashMap<UUID, AppObjectShimServerPolicy>();
 
     @Override
@@ -23,7 +24,12 @@ public class AppObjectSandboxProvider implements SandboxProvider {
     }
 
     @Override
-    public void removeSandbox(SapphireServerPolicyLibrary origin, UUID transactionId) {
+    public SapphireServerPolicyUpcalls getSandbox(UUID transactionId) {
+        return this.sandboxes.get(transactionId);
+    }
+
+    @Override
+    public void removeSandbox(UUID transactionId) {
         this.sandboxes.remove(transactionId);
     }
 }

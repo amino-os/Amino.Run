@@ -160,44 +160,45 @@ public class Server { // This outer class contains everything common to leaders,
          *  2. Reply false if log doesn’t contain an entry at prevLogIndex
          *     whose term matches prevLogTerm (§5.3)
          **/
-        if (entries.size() > 0) { // Not for empty heartbeats
-            LogEntry prevLogEntry;
-            if (prevLogIndex >= 0) {
-                try {
-                    prevLogEntry = pState.log().get(prevLogIndex);
-                } catch (IndexOutOfBoundsException e) {
-                    throw new InvalidLogIndex("Attempt to append entry with invalid previous log index: " + prevLogIndex, prevLogIndex);
-                }
-                if (prevLogEntry.term != term) {
-                    throw new PrevLogTermMismatch("Attempt to append entry with invalid previous log term.  Requested term " + prevLogTerm + ", actual term: " + prevLogEntry.term, prevLogIndex, prevLogEntry.term, prevLogTerm);
-                }
+        LogEntry prevLogEntry;
+        if (prevLogIndex >= 0) {
+            try {
+                prevLogEntry = pState.log().get(prevLogIndex);
+            } catch (IndexOutOfBoundsException e) {
+                throw new InvalidLogIndex("Attempt to append entry with invalid previous log index: " + prevLogIndex, prevLogIndex);
             }
-            /**
-             *  3. If an existing entry conflicts with a new one (same index
-             *     but different terms), delete the existing entry and all that
-             *     follow it (§5.3)
-             **/
-            int logIndex = prevLogIndex;
-            for (Iterator<LogEntry> i = entries.iterator(); i.hasNext(); ) {
-                LogEntry newEntry = (LogEntry) i.next();
-                if (pState.log().size() - 1 >= ++logIndex) { // We already have a log entry with that index
-                    if (pState.log().get(logIndex).term != term) { // conflicts
-                        logger.info(String.format("%s: Removing conflicting log entries, replcing log with server's log from index %d to %d", pState.myServerID, 0, logIndex));
-                        pState.setLog((ArrayList) pState.log().subList(0, logIndex)); // delete the existing entry and all that follow.
-                    }
-                } else {
-                    pState.log().add(newEntry); // Append any new entries not already in the log
-                }
+
+            /* Need to check for the prev log term */
+            if (prevLogEntry.term != prevLogTerm) {
+                throw new PrevLogTermMismatch("Attempt to append entry with invalid previous log term.  Requested term " + prevLogTerm + ", actual term: " + prevLogEntry.term, prevLogIndex, prevLogEntry.term, prevLogTerm);
             }
-            /**
-             *  4. If leaderCommit > commitIndex, set commitIndex =
-             *     min(leaderCommit, index of last new entry)
-             **/
-            if (leaderCommit > vState.getCommitIndex()) {
-                vState.setCommitIndex(Math.min(leaderCommit, pState.log().size() - 1), vState.getCommitIndex());
-            }
-            applyCommitted();
         }
+
+        /**
+         *  3. If an existing entry conflicts with a new one (same index
+         *     but different terms), delete the existing entry and all that
+         *     follow it (§5.3)
+         **/
+        int logIndex = prevLogIndex;
+
+        /* Delete the existing conflicting entries and append the new entries */
+        if (pState.log().size() - 1 >= ++logIndex) {
+            logger.info(String.format("%s: Removing conflicting log entries. Current log size=%d, Current commit index=%d. Replacing logs starting from index=%d", pState.myServerID, pState.log().size(), this.vState.getCommitIndex(), logIndex));
+            pState.setLog(pState.log().subList(0, logIndex));
+        }
+
+        //entries is non null. Could be empty or with some entries in it
+        pState.log().addAll(entries);
+
+        /**
+         *  4. If leaderCommit > commitIndex, set commitIndex =
+         *     min(leaderCommit, index of last new entry)
+         **/
+        if (leaderCommit > vState.getCommitIndex()) {
+            vState.setCommitIndex(Math.min(leaderCommit, pState.log().size() - 1), vState.getCommitIndex());
+        }
+        applyCommitted();
+
         return pState.getCurrentTerm();
     }
 
@@ -397,9 +398,8 @@ public class Server { // This outer class contains everything common to leaders,
                 matchIndex.put(i, 0);
             }
 
-            if(appendEntriesThreadPool == null ) {
-                appendEntriesThreadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool(vState.otherServers.size() * 2);
-            }
+            appendEntriesThreadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool(vState.otherServers.size() * 2 + 1);
+
             leaderHeartbeatSendTimer = new ResettableTimer(new TimerTask() {
                 public void run() {
                     sendHeartbeats();
@@ -515,12 +515,16 @@ public class Server { // This outer class contains everything common to leaders,
                     return false;
                 }
             }
+
             int matches = 0;
+            if (0 == vState.otherServers.size()) {
+                return true;
+            }
+
             for (UUID otherServerID : vState.otherServers.keySet()) {
                 int match = leader.matchIndex.get(otherServerID);
                 if (match >= logIndex) {
-                    // TODO: It should be ++matches
-                    if (matches++ >= majorityQuorumSize() - 1) { // -1 because the leader implicitly matches
+                    if (++matches >= majorityQuorumSize() - 1) { // -1 because the leader implicitly matches
                         return true;
                     }
                 }
@@ -590,10 +594,8 @@ public class Server { // This outer class contains everything common to leaders,
                 });
             }
             logger.info(String.format("%s: Waiting for logindex %d to be committed to %d majority quorum.", pState.myServerID, logIndex, majorityQuorumSize()));
-            boolean quorumAchieved = false;
             try {
-                replicationCounter.acquire(majorityQuorumSize());
-                quorumAchieved = true;
+                replicationCounter.acquire(majorityQuorumSize() - 1);
             } catch (InterruptedException e) {
                 logger.warning(String.format("Failed to commit logindex %d to quorum of %d.  Reason: %s", logIndex, majorityQuorumSize(), e));
             }
@@ -849,7 +851,8 @@ public class Server { // This outer class contains everything common to leaders,
                 public void run() {
                     boolean votedInAsLeader = false;
                     try {
-                        votedInAsLeader = voteCounter.tryAcquire(majorityQuorumSize(), LEADER_ELECTION_TIMEOUT, TimeUnit.MILLISECONDS);
+                        votedInAsLeader = voteCounter.tryAcquire(majorityQuorumSize() - 1, LEADER_ELECTION_TIMEOUT, TimeUnit.MILLISECONDS);
+
                     } catch (InterruptedException e) {
                         logger.info(pState.myServerID + "Interrupted while waiting to receive a majority of votes in leader election.");
                     }

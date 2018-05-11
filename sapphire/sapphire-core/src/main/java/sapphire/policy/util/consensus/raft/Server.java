@@ -178,33 +178,31 @@ public class Server { // This outer class contains everything common to leaders,
             }
         }
 
-        if (entries.size() > 0) { // Not for empty heartbeats
-            /**
-             *  3. If an existing entry conflicts with a new one (same index
-             *     but different terms), delete the existing entry and all that
-             *     follow it (§5.3)
-             **/
-            int logIndex = prevLogIndex;
-            for (Iterator<LogEntry> i = entries.iterator(); i.hasNext(); ) {
-                LogEntry newEntry = (LogEntry) i.next();
-                if (pState.log().size() - 1 >= ++logIndex) { // We already have a log entry with that index
-                    if (pState.log().get(logIndex).term != term) { // conflicts
-                        logger.info(String.format("%s: Removing conflicting log entries, replcing log with server's log from index %d to %d", pState.myServerID, 0, logIndex));
-                        pState.setLog(pState.log().subList(0, logIndex)); // delete the existing entry and all that follow.
-                    }
-                } else {
-                    pState.log().add(newEntry); // Append any new entries not already in the log
-                }
-            }
-            /**
-             *  4. If leaderCommit > commitIndex, set commitIndex =
-             *     min(leaderCommit, index of last new entry)
-             **/
-            if (leaderCommit > vState.getCommitIndex()) {
-                vState.setCommitIndex(Math.min(leaderCommit, pState.log().size() - 1), vState.getCommitIndex());
-            }
-            applyCommitted();
+        /**
+         *  3. If an existing entry conflicts with a new one (same index
+         *     but different terms), delete the existing entry and all that
+         *     follow it (§5.3)
+         **/
+        int logIndex = prevLogIndex;
+
+        /* Delete the existing conflicting entries and append the new entries */
+        if (pState.log().size() - 1 >= ++logIndex) {
+            logger.info(String.format("%s: Removing conflicting log entries. Current log size=%d, Current commit index=%d. Replacing logs starting from index=%d", pState.myServerID, pState.log().size(), this.vState.getCommitIndex(), logIndex));
+            pState.setLog(pState.log().subList(0, logIndex));
         }
+
+        //entries is non null. Could be empty or with some entries in it
+        pState.log().addAll(entries);
+
+        /**
+         *  4. If leaderCommit > commitIndex, set commitIndex =
+         *     min(leaderCommit, index of last new entry)
+         **/
+        if (leaderCommit > vState.getCommitIndex()) {
+            vState.setCommitIndex(Math.min(leaderCommit, pState.log().size() - 1), vState.getCommitIndex());
+        }
+        applyCommitted();
+
         return pState.getCurrentTerm();
     }
 
@@ -403,9 +401,8 @@ public class Server { // This outer class contains everything common to leaders,
                 matchIndex.put(i, 0);
             }
 
-            if(appendEntriesThreadPool == null ) {
-                appendEntriesThreadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool(vState.otherServers.size() * 2);
-            }
+            appendEntriesThreadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool(vState.otherServers.size() * 2 + 1);
+
             leaderHeartbeatSendTimer = new ResettableTimer(new TimerTask() {
                 public void run() {
                     sendHeartbeats();
@@ -521,12 +518,16 @@ public class Server { // This outer class contains everything common to leaders,
                     return false;
                 }
             }
+
             int matches = 0;
+            if (0 == vState.otherServers.size()) {
+                return true;
+            }
+
             for (UUID otherServerID : vState.otherServers.keySet()) {
                 int match = leader.matchIndex.get(otherServerID);
                 if (match >= logIndex) {
-                    // TODO: It should be ++matches
-                    if (matches++ >= majorityQuorumSize() - 1) { // -1 because the leader implicitly matches
+                    if (++matches >= majorityQuorumSize() - 1) { // -1 because the leader implicitly matches
                         return true;
                     }
                 }
@@ -596,10 +597,8 @@ public class Server { // This outer class contains everything common to leaders,
                 });
             }
             logger.info(String.format("%s: Waiting for logindex %d to be committed to %d majority quorum.", pState.myServerID, logIndex, majorityQuorumSize()));
-            boolean quorumAchieved = false;
             try {
-                replicationCounter.acquire(majorityQuorumSize());
-                quorumAchieved = true;
+                replicationCounter.acquire(majorityQuorumSize() - 1);
             } catch (InterruptedException e) {
                 logger.warning(String.format("Failed to commit logindex %d to quorum of %d.  Reason: %s", logIndex, majorityQuorumSize(), e));
             }
@@ -814,10 +813,22 @@ public class Server { // This outer class contains everything common to leaders,
          */
         void sendVoteRequest(UUID serverID, Semaphore voteCounter) {
             Server server = getServer(serverID);
+            final Integer currentTerm = pState.getCurrentTerm();
             boolean voteGranted = true;
             try {
                 logger.info("Sending vote request to server " + serverID);
                 server.requestVote(pState.getCurrentTerm(), pState.myServerID, lastLogIndex(), lastLogTerm());
+
+                /* Condition to check if this grant is still valid/useful */
+                /* If the state is follower OR if it is candidate or leader with term changed,
+                then this grant is not valid anymore. Also, once majority quorum grant votes,
+                state transition happens from candidate to leader and can safely consider
+                the pending awaited vote grants as not useful. It can happen due to blocking call */
+                if ((vState.getState() != State.CANDIDATE) || (!currentTerm.equals(pState.getCurrentTerm()))) {
+                    //Not a valid/useful grant
+                    voteGranted = false;
+                    logger.info(String.format("%s While waiting in blocking call, state transitioned from CANDIDATE to %s, old term : %d and current term : %d", pState.myServerID, vState.getState(), currentTerm, pState.getCurrentTerm()));
+                }
             }
             catch (Server.VotingException e) {
                 voteGranted = false;
@@ -825,7 +836,7 @@ public class Server { // This outer class contains everything common to leaders,
                 respondToRemoteTerm(e.currentTerm);
             }
             if (voteGranted) {
-                logger.info("Vote received from server " + pState.myServerID);
+                logger.info("Vote received from server " + serverID);
                 voteCounter.release(1); // Yay!  We got one vote.
             }
         }
@@ -840,6 +851,7 @@ public class Server { // This outer class contains everything common to leaders,
             final Semaphore voteCounter = new Semaphore(0); // Initially we have zero votes.
             // Send vote requests in parallel
             final Iterator<UUID> i = vState.otherServers.keySet().iterator();
+            final Integer currentTerm = pState.getCurrentTerm();
             while(i.hasNext()) {
                 final UUID server = i.next();
                 voteRequestThreadPool.execute(new Runnable() {
@@ -856,16 +868,25 @@ public class Server { // This outer class contains everything common to leaders,
                 public void run() {
                     boolean votedInAsLeader = false;
                     try {
-                        votedInAsLeader = voteCounter.tryAcquire(majorityQuorumSize(), LEADER_ELECTION_TIMEOUT, TimeUnit.MILLISECONDS);
+                        votedInAsLeader = voteCounter.tryAcquire(majorityQuorumSize() - 1, LEADER_ELECTION_TIMEOUT, TimeUnit.MILLISECONDS);
+
                     } catch (InterruptedException e) {
                         logger.info(pState.myServerID + "Interrupted while waiting to receive a majority of votes in leader election.");
                     }
-                    if (votedInAsLeader && vState.getState() == State.CANDIDATE) {
+
+                    /* If the state is not candidate or term has changed during election process,
+                    then this election is not valid anymore. Just return. It can happen due to
+                    blocking call */
+                    if ((vState.getState() != State.CANDIDATE) || (!currentTerm.equals(pState.getCurrentTerm()))) {
+                        logger.info(String.format("%s While waiting in blocking call, state transitioned from CANDIDATE to %s, old term : %d and current term : %d", pState.myServerID, vState.getState(), currentTerm, pState.getCurrentTerm()));
+                        return;
+                    }
+
+                    /* Control reaches here only when current state is CANDIDATE */
+                    if (votedInAsLeader) {
                         become(State.LEADER, State.CANDIDATE);
-                    } else if (vState.getState() == State.CANDIDATE) {
-                        become(State.CANDIDATE, State.CANDIDATE);
                     } else {
-                        become(State.FOLLOWER, vState.getState()); // It doesn't matter what we were before.
+                        become(State.CANDIDATE, State.CANDIDATE);
                     }
                 }
             });

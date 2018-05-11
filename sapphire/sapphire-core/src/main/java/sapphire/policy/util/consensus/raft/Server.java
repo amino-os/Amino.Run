@@ -178,33 +178,31 @@ public class Server { // This outer class contains everything common to leaders,
             }
         }
 
-        if (entries.size() > 0) { // Not for empty heartbeats
-            /**
-             *  3. If an existing entry conflicts with a new one (same index
-             *     but different terms), delete the existing entry and all that
-             *     follow it (§5.3)
-             **/
-            int logIndex = prevLogIndex;
-            for (Iterator<LogEntry> i = entries.iterator(); i.hasNext(); ) {
-                LogEntry newEntry = (LogEntry) i.next();
-                if (pState.log().size() - 1 >= ++logIndex) { // We already have a log entry with that index
-                    if (pState.log().get(logIndex).term != term) { // conflicts
-                        logger.info(String.format("%s: Removing conflicting log entries, replcing log with server's log from index %d to %d", pState.myServerID, 0, logIndex));
-                        pState.setLog(pState.log().subList(0, logIndex)); // delete the existing entry and all that follow.
-                    }
-                } else {
-                    pState.log().add(newEntry); // Append any new entries not already in the log
-                }
-            }
-            /**
-             *  4. If leaderCommit > commitIndex, set commitIndex =
-             *     min(leaderCommit, index of last new entry)
-             **/
-            if (leaderCommit > vState.getCommitIndex()) {
-                vState.setCommitIndex(Math.min(leaderCommit, pState.log().size() - 1), vState.getCommitIndex());
-            }
-            applyCommitted();
+        /**
+         *  3. If an existing entry conflicts with a new one (same index
+         *     but different terms), delete the existing entry and all that
+         *     follow it (§5.3)
+         **/
+        int logIndex = prevLogIndex;
+
+        /* Delete the existing conflicting entries and append the new entries */
+        if (pState.log().size() - 1 >= ++logIndex) {
+            logger.info(String.format("%s: Removing conflicting log entries. Current log size=%d, Current commit index=%d. Replacing logs starting from index=%d", pState.myServerID, pState.log().size(), this.vState.getCommitIndex(), logIndex));
+            pState.setLog(pState.log().subList(0, logIndex));
         }
+
+        //entries is non null. Could be empty or with some entries in it
+        pState.log().addAll(entries);
+
+        /**
+         *  4. If leaderCommit > commitIndex, set commitIndex =
+         *     min(leaderCommit, index of last new entry)
+         **/
+        if (leaderCommit > vState.getCommitIndex()) {
+            vState.setCommitIndex(Math.min(leaderCommit, pState.log().size() - 1), vState.getCommitIndex());
+        }
+        applyCommitted();
+
         return pState.getCurrentTerm();
     }
 

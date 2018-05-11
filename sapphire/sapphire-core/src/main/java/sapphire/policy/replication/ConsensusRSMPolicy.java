@@ -1,6 +1,7 @@
 package sapphire.policy.replication;
 
 
+import java.io.Serializable;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +19,7 @@ import sapphire.policy.util.consensus.raft.StateMachineApplier;
  * **/
 
 public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
-    public static class RPC {
+    public static class RPC implements Serializable {
         String method;
         ArrayList<Object> params;
         public RPC(String method, ArrayList<Object> params) {
@@ -88,10 +89,8 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
             if (rpc.params == null) {
                 rpc.params = new ArrayList<Object>();
             }
-            // TODO: AppObject is not being initialized correctly.
-            // Presumably because stub's have not yet been generated.
-            // : return super.onRPC(rpc.method, rpc.params);
-            return null;
+
+            return super.onRPC(rpc.method, rpc.params);
         }
 
         @Override

@@ -139,22 +139,27 @@ public class Server { // This outer class contains everything common to leaders,
      */
     int appendEntries(int term, UUID leader, int prevLogIndex, int prevLogTerm, List<LogEntry> entries, int leaderCommit) throws InvalidTermException, PrevLogTermMismatch, InvalidLogIndex {
         logger.info(String.format(
-                "%s: received AppendEntries request from leader %s, term %d, prevLogIndex=%d, leaderCommit=%d, entries=%d",
-                pState.myServerID, leader, term, prevLogTerm, leaderCommit, entries.size()));
-        become(State.FOLLOWER, vState.getState().CANDIDATE); // If we are a candidate, become a follower, as the new leader sent us an appendEntries request.
-        leaderHeartbeatReceiveTimer.reset(); // This is a heartbeat from the leader.
+                "%s: received AppendEntries request from leader %s, term %d, prevLogIndex=%d, prevLogTerm=%d, leaderCommit=%d, entries=%d",
+                pState.myServerID, leader, term, prevLogIndex, prevLogTerm, leaderCommit, entries.size()));
+
         /**
          * All servers convert to followers if their current term is behind (§5.1).
          */
         respondToRemoteTerm(term);
+
         /**
          *  1. Reply false if term < currentTerm (§5.1)
          **/
         if (term < pState.getCurrentTerm()) {
-            throw new InvalidTermException("Server: Attempt to append entries from prior leader term " + term + ", current term " + term, pState.getCurrentTerm());
+            throw new InvalidTermException("Server: Attempt to append entries from prior leader term " + term + ", current term " + pState.getCurrentTerm(), pState.getCurrentTerm());
         }
 
         vState.setCurrentLeader(leader);
+
+        /* After checking the leader's term and deciding whether to become the follower(if current
+        term is less than leader's term) or to reject rpc(throw exception and continue in same
+        state(i.e., candidate or follower state), need to reset the leader heartbeat receive timer*/
+        leaderHeartbeatReceiveTimer.reset(); // This is a heartbeat from the leader.
 
         /**
          *  2. Reply false if log doesn’t contain an entry at prevLogIndex
@@ -197,6 +202,7 @@ public class Server { // This outer class contains everything common to leaders,
         if (leaderCommit > vState.getCommitIndex()) {
             vState.setCommitIndex(Math.min(leaderCommit, pState.log().size() - 1), vState.getCommitIndex());
         }
+
         applyCommitted();
 
         return pState.getCurrentTerm();
@@ -235,7 +241,6 @@ public class Server { // This outer class contains everything common to leaders,
          */
         UUID votedFor = pState.getVotedFor();
         if (votedFor.equals(NO_LEADER) || votedFor.equals(candidate)) {
-            logger.info(String.format("%s: Before local log size calculation: log=%s", pState.myServerID, pState.log()));
             int localLogSize = pState.log().size();
             logger.info(String.format("%s deciding whether to vote for %s: local log size = %d", pState.myServerID, candidate, localLogSize));
             if (lastLogIndex >= this.lastLogIndex() && (localLogSize==0 || lastLogTerm >= pState.log().get(this.lastLogIndex()).term)) {
@@ -245,7 +250,7 @@ public class Server { // This outer class contains everything common to leaders,
             }
             else {
                 throw new CandidateBehindException(String.format("Candidate is behind.  Candidate last log index, term  = (%d, %d), current last log index, term = (%d, %d)",
-                        lastLogIndex, lastLogTerm, this.lastLogIndex(), this.lastLogTerm()), currentTerm);
+                        lastLogIndex, lastLogTerm, this.lastLogIndex(), this.lastLogTerm()), pState.getCurrentTerm());
             }
         }
         else {
@@ -454,7 +459,7 @@ public class Server { // This outer class contains everything common to leaders,
                     else {
                         prevLogTerm = INVALID_INDEX;
                     }
-                    List<LogEntry> entries = pState.log().size() > 0 ? (List<LogEntry>)pState.log().subList(nextIndex, lastLogIndex() + 1) : NO_LOG_ENTRIES;
+                    List<LogEntry> entries = pState.log().size() > 0 ? pState.log().subList(nextIndex, lastLogIndex() + 1) : NO_LOG_ENTRIES;
                     int remoteTerm = getServer(otherServerID).appendEntries(pState.getCurrentTerm(), pState.myServerID,
                             nextIndex - 1, prevLogTerm, entries, vState.getCommitIndex());
                     success = true;
@@ -605,7 +610,7 @@ public class Server { // This outer class contains everything common to leaders,
             if (vState.getLastApplied() >= logIndex) {
                 logger.info("logIndex " + logIndex + " applied to state machine: " + operation);
             } else {
-                logger.severe(String.format("Whooah! Internal error: logIndex %d was committed by a majority quorum, but not applied locally."));
+                logger.severe(String.format("Whooah! Internal error: logIndex %d was committed by a majority quorum, but not applied locally.", logIndex));
             }
             return returnVal;
         }

@@ -1,12 +1,14 @@
 #!/bin/bash
 
+SODIR=$( cd $(dirname $0)/../.. && pwd )
+
 conf_prop="/home/ubuntu/work/DCAP-Sapphire/sapphire/logging.properties"
 log_dir=/tmp/ubuntu/sapphire_code/deployment/logs
 mkdir -p ${log_dir}
 
-cp_sapphire=../sapphire/sapphire-core/build/libs/sapphire-core.jar
-cp_harmony=../sapphire/dependencies/apache.harmony/build/libs/apache.harmony.jar
-cp_app=../sapphire/examples/hanksTodo/build/libs/hanksTodo.jar
+cp_sapphire=${SODIR}/sapphire/sapphire-core/build/libs/sapphire-core.jar
+cp_harmony=${SODIR}/sapphire/dependencies/apache.harmony/build/libs/apache.harmony.jar
+cp_app=${SODIR}/sapphire/examples/hanksTodo/build/libs/hanksTodo.jar
 
 app_ep=sapphire.appexamples.hankstodo.cloud.TodoStart
 

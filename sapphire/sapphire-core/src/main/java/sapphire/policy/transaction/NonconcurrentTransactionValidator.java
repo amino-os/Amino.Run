@@ -32,6 +32,10 @@ public class NonconcurrentTransactionValidator implements TransactionValidator, 
                 return false;
             }
 
+            if (this.promised.size() == 1 && this.promised.iterator().next() == transactionId) {
+                return true;
+            }
+
             if (!this.promised.isEmpty()) {
                 return false;
             }

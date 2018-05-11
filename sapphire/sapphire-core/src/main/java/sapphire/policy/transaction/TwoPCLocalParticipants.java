@@ -46,18 +46,25 @@ public class TwoPCLocalParticipants implements Serializable{
         ArrayList<Object> paramsTX = TransactionWrapper.getTransactionRPCParams(transactionId, primitiveMethod, null);
         TransactionContext.enterTransaction(transactionId, this.getParticipantManager(transactionId));
 
-        // todo: consider in parallel requests
-        // todo: make sure the transaction context would be properly propagated in such case
-        for (SapphirePolicy.SapphireClientPolicy p: this.getParticipants(transactionId))
-        {
-            try {
-                p.onRPC(TransactionWrapper.txWrapperTag, paramsTX);
-            } catch (Exception e) {
-                throw new TransactionExecutionException("DCAP 2PC transaction exception: " + primitiveMethod, e);
-            }
-        }
+        try {
+            // todo: consider in parallel requests
+            // todo: make sure the transaction context would be properly propagated in such case
+            for (SapphirePolicy.SapphireClientPolicy p : this.getParticipants(transactionId)) {
+                if (TransactionContext.getProcessedClients().contains(p)) {
+                    continue;
+                }
 
-        TransactionContext.leaveTransaction();
+                TransactionContext.getProcessedClients().add(p);
+
+                try {
+                    p.onRPC(TransactionWrapper.txWrapperTag, paramsTX);
+                } catch (Exception e) {
+                    throw new TransactionExecutionException("DCAP 2PC transaction exception: " + primitiveMethod, e);
+                }
+            }
+        } finally {
+            TransactionContext.leaveTransaction();
+        }
     }
 
     /**
@@ -70,22 +77,30 @@ public class TwoPCLocalParticipants implements Serializable{
         ArrayList<Object> paramsVoteReq =  TransactionWrapper.getTransactionRPCParams(transactionId, TwoPCPrimitive.VoteReq, null);
         TransactionContext.enterTransaction(transactionId, this.getParticipantManager(transactionId));
 
-        // todo: consider in parallel requests
-        // todo: make sure the transaction context would be properly propagated in such case
-        boolean isAllYes = true;
-        for (SapphirePolicy.SapphireClientPolicy p: this.getParticipants(transactionId)){
-            try {
-                Object vote = p.onRPC(TransactionWrapper.txWrapperTag, paramsVoteReq);
-                if (!TransactionManager.Vote.YES.equals(vote)) {
-                    isAllYes = false;
-                    break;
+        try {
+            // todo: consider in parallel requests
+            // todo: make sure the transaction context would be properly propagated in such case
+            boolean isAllYes = true;
+            for (SapphirePolicy.SapphireClientPolicy p : this.getParticipants(transactionId)) {
+                if (TransactionContext.getProcessedClients().contains(p)) {
+                    continue;
                 }
-            } catch (Exception e) {
-                throw new TransactionExecutionException("DCAP 2PC transaction exception: vote_req", e);
-            }
-        }
 
-        TransactionContext.leaveTransaction();
-        return isAllYes;
+                try {
+                    TransactionContext.getProcessedClients().add(p);
+                    Object vote = p.onRPC(TransactionWrapper.txWrapperTag, paramsVoteReq);
+                    if (!TransactionManager.Vote.YES.equals(vote)) {
+                        isAllYes = false;
+                        break;
+                    }
+                } catch (Exception e) {
+                    throw new TransactionExecutionException("DCAP 2PC transaction exception: vote_req", e);
+                }
+            }
+
+            return isAllYes;
+        }finally {
+            TransactionContext.leaveTransaction();
+        }
     }
 }

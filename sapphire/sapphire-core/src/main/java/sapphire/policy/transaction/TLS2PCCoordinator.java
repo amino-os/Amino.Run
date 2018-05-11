@@ -63,6 +63,9 @@ public class TLS2PCCoordinator implements TwoPCCoordinator{
             return Vote.NO;
         }
 
+        // clears the processed SO client list for the subsequent vote propagation
+        TransactionContext.initPrecessed();
+
         if (this.localParticipantsManager.allParticipantsVotedYes(transactionId)) {
             return Vote.YES;
         } else {
@@ -75,6 +78,9 @@ public class TLS2PCCoordinator implements TwoPCCoordinator{
     public void commit(UUID transactionId) {
         this.validator.onCommit(transactionId);
         try {
+            // clears the processed SO client list for the subsequent commit propagation
+            TransactionContext.initPrecessed();
+
             this.localParticipantsManager.fanOutTransactionPrimitive(transactionId, TwoPCPrimitive.Commit);
         } catch (TransactionExecutionException e) {
             // todo: proper error handling - commit itself should always succeed
@@ -87,6 +93,9 @@ public class TLS2PCCoordinator implements TwoPCCoordinator{
     public void abort(UUID transactionId) {
         this.validator.onAbort(transactionId);
         try {
+            // clears the processed SO client list for the subsequent abort propagation
+            TransactionContext.initPrecessed();
+
             this.localParticipantsManager.fanOutTransactionPrimitive(transactionId, TwoPCPrimitive.Abort);
         } catch (TransactionExecutionException e) {
             // todo: proper error handling - abort itself should always succeed

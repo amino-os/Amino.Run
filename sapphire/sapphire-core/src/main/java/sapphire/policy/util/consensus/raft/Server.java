@@ -146,6 +146,7 @@ public class Server { // This outer class contains everything common to leaders,
          * All servers convert to followers if their current term is behind (§5.1).
          */
         respondToRemoteTerm(term);
+
         /**
          *  1. Reply false if term < currentTerm (§5.1)
          **/
@@ -201,6 +202,7 @@ public class Server { // This outer class contains everything common to leaders,
         if (leaderCommit > vState.getCommitIndex()) {
             vState.setCommitIndex(Math.min(leaderCommit, pState.log().size() - 1), vState.getCommitIndex());
         }
+
         applyCommitted();
 
         return pState.getCurrentTerm();
@@ -401,9 +403,8 @@ public class Server { // This outer class contains everything common to leaders,
                 matchIndex.put(i, 0);
             }
 
-            if(appendEntriesThreadPool == null ) {
-                appendEntriesThreadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool(vState.otherServers.size() * 2);
-            }
+            appendEntriesThreadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool(vState.otherServers.size() * 2 + 1);
+
             leaderHeartbeatSendTimer = new ResettableTimer(new TimerTask() {
                 public void run() {
                     sendHeartbeats();
@@ -519,12 +520,16 @@ public class Server { // This outer class contains everything common to leaders,
                     return false;
                 }
             }
+
             int matches = 0;
+            if (0 == vState.otherServers.size()) {
+                return true;
+            }
+
             for (UUID otherServerID : vState.otherServers.keySet()) {
                 int match = leader.matchIndex.get(otherServerID);
                 if (match >= logIndex) {
-                    // TODO: It should be ++matches
-                    if (matches++ >= majorityQuorumSize() - 1) { // -1 because the leader implicitly matches
+                    if (++matches >= majorityQuorumSize() - 1) { // -1 because the leader implicitly matches
                         return true;
                     }
                 }
@@ -594,10 +599,8 @@ public class Server { // This outer class contains everything common to leaders,
                 });
             }
             logger.info(String.format("%s: Waiting for logindex %d to be committed to %d majority quorum.", pState.myServerID, logIndex, majorityQuorumSize()));
-            boolean quorumAchieved = false;
             try {
-                replicationCounter.acquire(majorityQuorumSize());
-                quorumAchieved = true;
+                replicationCounter.acquire(majorityQuorumSize() - 1);
             } catch (InterruptedException e) {
                 logger.warning(String.format("Failed to commit logindex %d to quorum of %d.  Reason: %s", logIndex, majorityQuorumSize(), e));
             }
@@ -687,6 +690,15 @@ public class Server { // This outer class contains everything common to leaders,
             logger.info(pState.myServerID + ": Start being a follower.");
             vState.setState(State.FOLLOWER, vState.getState()); // Doesn't matter what we were before.
 
+            /* On state transition to follower, should reset the votedFor. Consider the case, when
+            requestVote is received from remote server with higher term(compared to our current term).
+            It triggers state transition to follower inside respondToRemoteTerm. And continue further
+            processing to decide whether to vote for that remote server. So if we don't reset votedFor
+            here, requestVote would fail taking old votedFor into consideration. */
+            pState.setVotedFor(NO_LEADER, pState.getVotedFor());
+
+            vState.removeCurrentLeader();
+
             if (null == leaderHeartbeatReceiveTimer) {
                 /* Create a leader heartbeat timer instance for the very first time follower.start
                 method is called. Further call to follower.start due to FSM, doesn't create another
@@ -749,6 +761,12 @@ public class Server { // This outer class contains everything common to leaders,
             logger.info(pState.myServerID + ": Start being a candidate.");
             vState.setState(State.CANDIDATE, vState.getState()); // Doesn't matter what we were before.
 
+            /* Need to reset the votedFor before requesting vote. Because, it could have happened
+            that we had received a vote request from remote server and voted for it before the state
+            transition happen from follower to candidate upon leaderHeartbeatReceiveTimer expiry. It
+            avoids AlreadyVotedException while voting for self */
+            pState.setVotedFor(NO_LEADER, pState.getVotedFor());
+
             if (null == leaderElectionTimer) {
                 /* Create a leader election timer instance for the very first time candidate.start
                 method is called. Further call to candidate.start due to FSM, doesn't create another
@@ -764,13 +782,9 @@ public class Server { // This outer class contains everything common to leaders,
             }
 
             pState.incrementCurrentTerm(pState.getCurrentTerm());
+
             try { // Vote for self
                 requestVote(pState.getCurrentTerm(), pState.myServerID, lastLogIndex(), lastLogTerm());
-            }
-            catch (Server.AlreadyVotedException e) {
-                logger.info("Failed to vote for self.  Already voted: " + e.toString());
-                become(State.FOLLOWER, State.CANDIDATE);
-                return;
             }
             catch (Server.VotingException e) {
                 logger.warning("Unexpected error voting for self: " + e.toString());
@@ -801,10 +815,22 @@ public class Server { // This outer class contains everything common to leaders,
          */
         void sendVoteRequest(UUID serverID, Semaphore voteCounter) {
             Server server = getServer(serverID);
+            final Integer currentTerm = pState.getCurrentTerm();
             boolean voteGranted = true;
             try {
                 logger.info("Sending vote request to server " + serverID);
                 server.requestVote(pState.getCurrentTerm(), pState.myServerID, lastLogIndex(), lastLogTerm());
+
+                /* Condition to check if this grant is still valid/useful */
+                /* If the state is follower OR if it is candidate or leader with term changed,
+                then this grant is not valid anymore. Also, once majority quorum grant votes,
+                state transition happens from candidate to leader and can safely consider
+                the pending awaited vote grants as not useful. It can happen due to blocking call */
+                if ((vState.getState() != State.CANDIDATE) || (!currentTerm.equals(pState.getCurrentTerm()))) {
+                    //Not a valid/useful grant
+                    voteGranted = false;
+                    logger.info(String.format("%s While waiting in blocking call, state transitioned from CANDIDATE to %s, old term : %d and current term : %d", pState.myServerID, vState.getState(), currentTerm, pState.getCurrentTerm()));
+                }
             }
             catch (Server.VotingException e) {
                 voteGranted = false;
@@ -812,7 +838,7 @@ public class Server { // This outer class contains everything common to leaders,
                 respondToRemoteTerm(e.currentTerm);
             }
             if (voteGranted) {
-                logger.info("Vote received from server " + pState.myServerID);
+                logger.info("Vote received from server " + serverID);
                 voteCounter.release(1); // Yay!  We got one vote.
             }
         }
@@ -827,6 +853,7 @@ public class Server { // This outer class contains everything common to leaders,
             final Semaphore voteCounter = new Semaphore(0); // Initially we have zero votes.
             // Send vote requests in parallel
             final Iterator<UUID> i = vState.otherServers.keySet().iterator();
+            final Integer currentTerm = pState.getCurrentTerm();
             while(i.hasNext()) {
                 final UUID server = i.next();
                 voteRequestThreadPool.execute(new Runnable() {
@@ -843,16 +870,25 @@ public class Server { // This outer class contains everything common to leaders,
                 public void run() {
                     boolean votedInAsLeader = false;
                     try {
-                        votedInAsLeader = voteCounter.tryAcquire(majorityQuorumSize(), LEADER_ELECTION_TIMEOUT, TimeUnit.MILLISECONDS);
+                        votedInAsLeader = voteCounter.tryAcquire(majorityQuorumSize() - 1, LEADER_ELECTION_TIMEOUT, TimeUnit.MILLISECONDS);
+
                     } catch (InterruptedException e) {
                         logger.info(pState.myServerID + "Interrupted while waiting to receive a majority of votes in leader election.");
                     }
-                    if (votedInAsLeader && vState.getState() == State.CANDIDATE) {
+
+                    /* If the state is not candidate or term has changed during election process,
+                    then this election is not valid anymore. Just return. It can happen due to
+                    blocking call */
+                    if ((vState.getState() != State.CANDIDATE) || (!currentTerm.equals(pState.getCurrentTerm()))) {
+                        logger.info(String.format("%s While waiting in blocking call, state transitioned from CANDIDATE to %s, old term : %d and current term : %d", pState.myServerID, vState.getState(), currentTerm, pState.getCurrentTerm()));
+                        return;
+                    }
+
+                    /* Control reaches here only when current state is CANDIDATE */
+                    if (votedInAsLeader) {
                         become(State.LEADER, State.CANDIDATE);
-                    } else if (vState.getState() == State.CANDIDATE) {
-                        become(State.CANDIDATE, State.CANDIDATE);
                     } else {
-                        become(State.FOLLOWER, vState.getState()); // It doesn't matter what we were before.
+                        become(State.CANDIDATE, State.CANDIDATE);
                     }
                 }
             });

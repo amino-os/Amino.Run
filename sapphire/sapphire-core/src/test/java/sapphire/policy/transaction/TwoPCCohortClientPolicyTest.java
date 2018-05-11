@@ -21,26 +21,14 @@ public class TwoPCCohortClientPolicyTest {
     }
 
     @Test
-    public void test_no_participant_if_no_txn() throws Exception {
-        final TwoPCParticipants participants = mock(TwoPCParticipants.class);
+    public void test_regular_passthrough_if_no_txn() throws Exception {
         TwoPCCohortServerPolicy serverPolicy = mock(TwoPCCohortServerPolicy.class);
 
         TwoPCCohortClientPolicy clientPolicy = new TwoPCCohortClientPolicy();
         clientPolicy.setServer(serverPolicy);
 
-        ReflectionTestUtil.setField(clientPolicy,
-                "participantManagerProvider",
-                new TwoPCCohortClientPolicy.ParticipantManagerProvider() {
-                    @Override
-                    public TwoPCParticipants Get() {
-                        return participants;
-                    }
-                }
-        );
-
         clientPolicy.onRPC("foo", null);
 
-        verifyZeroInteractions(participants);
         verify(serverPolicy, times(1)).onRPC("foo", null);
     }
 
@@ -51,14 +39,6 @@ public class TwoPCCohortClientPolicyTest {
 
         TwoPCCohortClientPolicy clientPolicy = new TwoPCCohortClientPolicy();
         clientPolicy.setServer(serverPolicy);
-        ReflectionTestUtil.setField(clientPolicy,
-                "participantManagerProvider",
-                new TwoPCCohortClientPolicy.ParticipantManagerProvider() {
-                    @Override
-                    public TwoPCParticipants Get() {
-                        return participants;
-                    }
-                });
 
         UUID txnId = UUID.randomUUID();
         TransactionContext.enterTransaction(txnId, participants);

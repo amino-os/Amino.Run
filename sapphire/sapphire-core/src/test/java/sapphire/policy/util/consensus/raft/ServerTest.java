@@ -13,6 +13,7 @@ import sapphire.policy.SapphirePolicy;
 import sapphire.policy.replication.ConsensusRSMPolicy;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 
 /**
@@ -22,10 +23,14 @@ public class ServerTest {
     final int SERVER_COUNT = 3;
     SapphirePolicy.SapphireServerPolicy[] serverPolicy = new SapphirePolicy.SapphireServerPolicy[SERVER_COUNT];
     Server raftServer[] = new Server[SERVER_COUNT];
+    private AppObject appObject;
+
     @Before
     public void setUp() throws Exception {
+        appObject = mock(AppObject.class);
         for (int i=0; i<SERVER_COUNT; i++) {
             serverPolicy[i] = spy(ConsensusRSMPolicy.ServerPolicy.class);
+            serverPolicy[i].$__initialize(appObject);
             raftServer[i] = new Server((ConsensusRSMPolicy.ServerPolicy)serverPolicy[i]);
         }
         for (int i=0; i<SERVER_COUNT; i++) {

@@ -1,5 +1,14 @@
 package sapphire.kernel.server;
 
+import java.io.Serializable;
+import java.net.InetSocketAddress;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+import java.rmi.server.UnicastRemoteObject;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import sapphire.app.AppEntryPoint;
 import sapphire.common.AppObjectStub;
 import sapphire.kernel.client.KernelClient;
@@ -8,23 +17,10 @@ import sapphire.kernel.common.KernelOID;
 import sapphire.kernel.common.KernelObjectMigratingException;
 import sapphire.kernel.common.KernelObjectNotCreatedException;
 import sapphire.kernel.common.KernelObjectNotFoundException;
-import sapphire.kernel.common.KernelRPCException;
-
 import sapphire.kernel.common.KernelRPC;
-import sapphire.oms.OMSServer;
-
-import java.io.Serializable;
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
-import java.net.UnknownHostException;
-import java.rmi.registry.Registry;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.RemoteException;
-import java.rmi.server.UnicastRemoteObject;
-import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import sapphire.kernel.common.KernelRPCException;
 import sapphire.kernel.common.ServerInfo;
+import sapphire.oms.OMSServer;
 
 /** 
  * Sapphire Kernel Server. Runs on every Sapphire node, knows how to talk to the OMS, handles RPCs and has a client for making RPCs.
@@ -89,6 +85,7 @@ public class KernelServerImpl implements KernelServer{
 		object = objectManager.lookupObject(rpc.getOID());
 		
 		logger.log(Level.FINE, "Invoking RPC on Kernel Object with OID: " + rpc.getOID() + "with rpc:" + rpc.getMethod() + " params: " + rpc.getParams().toString());
+
 		Object ret = null;
 		try {
 			ret = object.invoke(rpc.getMethod(), rpc.getParams());
@@ -113,7 +110,8 @@ public class KernelServerImpl implements KernelServer{
 	/** 
 	 * Create a new kernel object locally on this server.
 	 * 
-	 * @param stub
+	 * @param cl
+	 * @param args
 	 */
 	public KernelOID newKernelObject(Class<?> cl, Object ... args) throws KernelObjectNotCreatedException {
 		KernelOID oid = null;

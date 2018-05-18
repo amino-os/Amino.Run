@@ -35,7 +35,7 @@ public class KernelClient {
 	/** 
 	 * Add a host to the list of hosts that we've contacted
 	 * 
-	 * @param hostname
+	 * @param host
 	 */
 	private KernelServer addHost(InetSocketAddress host) {
 		try {
@@ -98,7 +98,7 @@ public class KernelClient {
 	/** 
 	 * Make an RPC to the kernel server.
 	 * 
-	 * @param hostname
+	 * @param stub
 	 * @param rpc
 	 * @return
 	 * @throws RemoteException when kernel server cannot be contacted

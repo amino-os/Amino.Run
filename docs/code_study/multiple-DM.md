@@ -59,5 +59,13 @@ behaviors, namely:
   1. The above is intercepted by ConsensusRSM.client.onRPC(), that
      invokes the RAFT consensus algorithm across all replicas to
      ensure that the RPC call (acquireLock() in this case)  is
-     committed against the quorum.
-
+     committed against the quorum.  (note that in the current
+     implementation, LockingTransactions.server issues the lease
+     identifier (a random UUID).  Given that there will be 2f+1
+     servers in this case, 2f+1 different lease id's would be
+     issued. So to make this work, there should be an option to have
+     the lease ID generated on the client -
+     LockingTransactions.client - to ensure that the lock identifier
+     is consistent across all replicas.  This change should be
+     straightforward.
+	 

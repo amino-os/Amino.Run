@@ -12,6 +12,13 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.io.Serializable;
 import java.net.InetSocketAddress;
+import java.rmi.AccessException;
+import java.rmi.AlreadyBoundException;
+import java.rmi.NotBoundException;
+import java.rmi.Remote;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -22,23 +29,24 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import sapphire.common.AppObject;
+import sapphire.common.SapphireUtils;
 import sapphire.kernel.common.GlobalKernelReferences;
 import sapphire.kernel.common.KernelOID;
 import sapphire.kernel.common.KernelObjectFactory;
 import sapphire.kernel.common.KernelObjectStub;
-import sapphire.kernel.server.KernelObject;
-import sapphire.kernel.server.KernelObjectManager;
 import sapphire.kernel.server.KernelServerImpl;
 import sapphire.oms.OMSServerImpl;
 import sapphire.policy.SapphirePolicy;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
+import static org.powermock.api.mockito.PowerMockito.when;
 import static sapphire.common.SapphireUtils.addHost;
 import static sapphire.common.SapphireUtils.startSpiedKernelServer;
 import static sapphire.common.SapphireUtils.startSpiedOms;
@@ -50,7 +58,7 @@ import static sapphire.common.UtilsTest.setFieldValue;
  * Created by Vishwajeet on 2/4/18.
  */
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({KernelObjectFactory.class})
+@PrepareForTest({KernelServerImpl.class, KernelObjectFactory.class, LocateRegistry.class, SapphireUtils.class})
 public class LoadBalancedFrontendPolicyTest implements Serializable {
     LoadBalancedFrontendPolicy.ClientPolicy client;
     LoadBalancedFrontendPolicy.ServerPolicy server;
@@ -64,7 +72,7 @@ public class LoadBalancedFrontendPolicyTest implements Serializable {
     public String toString() {
 	    /* Overridden toString to just add delay in the app object rpc call */
 	    try {
-            Thread.sleep(10);
+            Thread.sleep(15);
         } catch(InterruptedException e) {
 
         }
@@ -90,12 +98,45 @@ public class LoadBalancedFrontendPolicyTest implements Serializable {
 
     @Before
     public void setUp() throws Exception {
+
+        Registry test = new Registry() {
+            @Override
+            public Remote lookup(String s) throws RemoteException, NotBoundException, AccessException {
+                return null;
+            }
+
+            @Override
+            public void bind(String s, Remote remote) throws RemoteException, AlreadyBoundException, AccessException {
+
+            }
+
+            @Override
+            public void unbind(String s) throws RemoteException, NotBoundException, AccessException {
+
+            }
+
+            @Override
+            public void rebind(String s, Remote remote) throws RemoteException, AccessException {
+
+            }
+
+            @Override
+            public String[] list() throws RemoteException, AccessException {
+                return new String[0];
+            }
+        };
+
+        PowerMockito.mockStatic(LocateRegistry.class);
+        when(LocateRegistry.getRegistry(anyString(), anyInt())).thenReturn(test);
+
     	// create a spied oms instance
         OMSServerImpl spiedOms = startSpiedOms("LoadBalancedFrontendPolicyTest");
         KernelServerImpl.oms = spiedOms;
+
 		// create a spied kernel server instance
         KernelServerImpl spiedKs1 = startSpiedKernelServer(spiedOms, 10001, "IND");
         KernelServerImpl spiedKs2 = startSpiedKernelServer(spiedOms, 10002, "IND");
+
         // Set this instance of kernel server as local kernel server
         GlobalKernelReferences.nodeServer = spiedKs1;
 
@@ -111,11 +152,6 @@ public class LoadBalancedFrontendPolicyTest implements Serializable {
 
         sequential.lock();
         this.group = spy(new LoadBalancedFrontendPolicy.GroupPolicy());
-		KernelOID groupOid = spiedOms.registerKernelObject(spiedKs1.getLocalHost());
-		this.group.$__setKernelOID(groupOid);
-        KernelObjectManager objectManager = (KernelObjectManager) extractFieldValueOnInstance(GlobalKernelReferences.nodeServer, "objectManager");
-        assert(objectManager != null);
-		objectManager.addObject(groupOid, new KernelObject(this.group));
 
         this.client.onCreate(this.group);
         this.server.onCreate(this.group);
@@ -179,7 +215,7 @@ public class LoadBalancedFrontendPolicyTest implements Serializable {
         Integer max = (Integer) extractFieldValueOnInstance(this.server, "MAX_CONCURRENT_REQUESTS");
 
         List<FutureTask<Object>> taskList = new ArrayList<FutureTask<Object>>();
-        for (int i = 0; i < 3 * max; i++) {
+        for (int i = 0; i < 5 * max; i++) {
             FutureTask<Object> task = new FutureTask<Object>(new Callable<Object>() {
                 @Override
                 public Object call() throws Exception {

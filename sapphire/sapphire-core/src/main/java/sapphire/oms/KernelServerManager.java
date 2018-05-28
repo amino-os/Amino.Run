@@ -8,6 +8,7 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.ArrayList;
+import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -15,7 +16,9 @@ import java.util.logging.Logger;
 import org.json.JSONException;
 
 import sapphire.kernel.common.ServerInfo;
+import sapphire.kernel.common.KernelServerNotFoundException;
 import sapphire.kernel.server.KernelServer;
+import sapphire.policy.util.ResettableTimer;
 
 /**
  * Manages Sapphire kernel servers. Tracks which servers are up, which regions each server belongs to, etc.
@@ -27,12 +30,43 @@ public class KernelServerManager {
 	
 	private ConcurrentHashMap<InetSocketAddress, KernelServer> servers;
 	private ConcurrentHashMap<String, ArrayList<InetSocketAddress>> regions;
+	private ConcurrentHashMap<InetSocketAddress, ResettableTimer> ksHeartBeatTimers;
 
 	public KernelServerManager() throws IOException, NotBoundException, JSONException {
 		servers = new ConcurrentHashMap<InetSocketAddress, KernelServer>();
 		regions = new ConcurrentHashMap<String, ArrayList<InetSocketAddress>>();
+		ksHeartBeatTimers = new ConcurrentHashMap<InetSocketAddress, ResettableTimer>();
 	}
-	
+
+	void stopHeartBeat(ServerInfo srvInfo) {
+		logger.info("Heartbeat not received from region:"+ srvInfo.getRegion() +"host:"+srvInfo.getHost().toString());
+
+		ResettableTimer ksHeartBeatTimer = ksHeartBeatTimers.get(srvInfo.getHost());
+		ksHeartBeatTimer.cancel();
+		ksHeartBeatTimers.remove(srvInfo.getHost());
+		removeKernelServer(srvInfo);
+	}
+
+	public void removeKernelServer(ServerInfo srvInfo)  {
+
+		//removing from the servers list
+		servers.remove(srvInfo.getHost());
+
+		//removing from the regions map
+		ArrayList<InetSocketAddress> serverList = regions.get(srvInfo.getRegion());
+		if (serverList == null) {
+			logger.severe("region does not exisit for removeKernelServer: " + srvInfo.getHost().toString() + " in region " + srvInfo.getRegion());
+			return;
+		}
+		serverList.remove(srvInfo.getHost());
+
+		//if no servers in the region remove full entry from the map
+		if (serverList.size() == 0) {
+			regions.remove(srvInfo.getRegion());
+		}
+
+	}
+
 	public void registerKernelServer(ServerInfo info) throws RemoteException, NotBoundException {
 		logger.info("New kernel server: " + info.getHost().toString() + " in region " + info.getRegion());
 
@@ -44,6 +78,41 @@ public class KernelServerManager {
 
 		serverList.add(info.getHost());
 		regions.put(info.getRegion(), serverList);
+
+		final ServerInfo srvInfo = info;
+		ResettableTimer ksHeartBeatTimer = new ResettableTimer(new TimerTask() {
+			public void run() {
+				/**
+				 * If we don't receive a heartbeat from this kernel server, remove that from the list
+				 */
+				stopHeartBeat(srvInfo);
+
+			}
+		}, (long) OMSServer.KS_HEARTBEAT_TIMEOUT);
+
+		ksHeartBeatTimers.put(info.getHost(),ksHeartBeatTimer);
+		ksHeartBeatTimer.start();
+
+	}
+
+	public void heartBeatKernelServer(ServerInfo info) throws RemoteException, NotBoundException,KernelServerNotFoundException {
+		logger.info("heartBeatKernelServer: " + info.getHost().toString() + " in region " + info.getRegion());
+
+		ArrayList<InetSocketAddress> serverList = regions.get(info.getRegion());
+
+		if (null == serverList) {
+			logger.severe("region does not exisit for heartBeatKernelServer: " + info.getHost().toString() + " in region " + info.getRegion());
+			throw new KernelServerNotFoundException("region does not exisit");
+		}
+
+		if(serverList.contains( info.getHost() ) ) {
+			ResettableTimer ksHeartBeatTimer = ksHeartBeatTimers.get(info.getHost());
+			ksHeartBeatTimer.reset();
+			return;
+		}
+		logger.severe("Host does not exisit for heartBeatKernelServer: " + info.getHost().toString() + " in region " + info.getRegion());
+		throw new KernelServerNotFoundException("region exisist but host does not exisit");
+
 	}
 	
 

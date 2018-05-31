@@ -22,9 +22,12 @@ public interface RemoteRaftServer {
      * @param entries      log entries to store (empty for heartbeat; may send more than one for efficiency)
      * @param leaderCommit leader’s commitIndex
      * @return currentTerm, for leader to update itself
+     * @throws InvalidTermException
+     * @throws PrevLogTermMismatch
+     * @throws InvalidLogIndex
      */
     int appendEntries(int term, UUID leader, int prevLogIndex, int prevLogTerm, List<LogEntry> entries, int leaderCommit)
-            throws Server.InvalidTermException, Server.PrevLogTermMismatch, Server.InvalidLogIndex;
+            throws InvalidTermException, PrevLogTermMismatch, InvalidLogIndex;
 
     /**
      * Invoked by candidates to gather votes.
@@ -33,12 +36,12 @@ public interface RemoteRaftServer {
      * @param lastLogIndex index of candidate’s last log entry
      * @param lastLogTerm term of candidate’s last log entry
      * @return currentTerm, for candidate to update itself
-     * @throws Server.InvalidTermException
-     * @throws Server.AlreadyVotedException
-     * @throws Server.CandidateBehindException
+     * @throws InvalidTermException
+     * @throws AlreadyVotedException
+     * @throws CandidateBehindException
      */
     int requestVote(int term, UUID candidate, int lastLogIndex, int lastLogTerm)
-            throws Server.InvalidTermException, Server.AlreadyVotedException, Server.CandidateBehindException;
+            throws InvalidTermException, AlreadyVotedException, CandidateBehindException;
 
     /**
      * applyToStateMachine applies an operation to the local state machine if the local node is

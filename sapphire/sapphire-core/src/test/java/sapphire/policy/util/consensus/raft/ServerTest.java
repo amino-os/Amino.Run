@@ -153,10 +153,9 @@ public class ServerTest {
         successfulLeaderElection();
         String[] methods = { "fooMethod", "barMethod" };
         ArrayList<Object> args = new ArrayList<Object>();
-        for (Server server: raftServer) {
-            for (String method : methods) {
-                server.applyToStateMachine(new ConsensusRSMPolicy.RPC(method, args));
-            }
+        for (String method : methods) {
+            // Apply to statemachine is invoked only on leader
+            raftServer[0].applyToStateMachine(new ConsensusRSMPolicy.RPC(method, args));
         }
     }
 }

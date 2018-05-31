@@ -11,9 +11,14 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Logger;
 
 import sapphire.policy.DefaultSapphirePolicy;
+import sapphire.policy.util.consensus.raft.AlreadyVotedException;
+import sapphire.policy.util.consensus.raft.CandidateBehindException;
+import sapphire.policy.util.consensus.raft.InvalidLogIndex;
+import sapphire.policy.util.consensus.raft.InvalidTermException;
+import sapphire.policy.util.consensus.raft.LeaderException;
 import sapphire.policy.util.consensus.raft.LogEntry;
+import sapphire.policy.util.consensus.raft.PrevLogTermMismatch;
 import sapphire.policy.util.consensus.raft.RemoteRaftServer;
-import sapphire.policy.util.consensus.raft.Server;
 import sapphire.policy.util.consensus.raft.StateMachineApplier;
 
 /**
@@ -32,26 +37,78 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
         }
     }
 
-    public static class ClientPolicy extends DefaultSapphirePolicy.DefaultClientPolicy {}
+    public static class ClientPolicy extends DefaultSapphirePolicy.DefaultClientPolicy {
+        public Object onRPC(String method, ArrayList<Object> params) throws Exception {
+            Object ret = null;
+
+            try {
+                ret = getServer().onRPC(method, params);
+            } catch (LeaderException e) {
+
+                if(null == e.getLeader()) {
+                    throw new RemoteException("Raft leader is not elected");
+                }
+
+                setServer((ServerPolicy)e.getLeader());
+                ret = ((ServerPolicy)e.getLeader()).onRPC(method, params);
+            } catch (RemoteException e) {
+                /* Get servers from the group and find a responding server */
+                boolean serverFound = false;
+                ArrayList<SapphireServerPolicy> servers = getGroup().getServers();
+                for (SapphireServerPolicy server : servers) {
+                    /* Excluding the server failed to respond in the above try block */
+                    if (getServer().$__getKernelOID().equals(server.$__getKernelOID())) {
+                        continue;
+                    }
+
+                    try {
+                        ret = server.onRPC(method, params);
+                        serverFound = true;
+                        break;
+                    } catch (RemoteException re) {
+                        /* Try with next server */
+                    } catch (sapphire.policy.util.consensus.raft.LeaderException le) {
+                        /* Store this server as reachable and use it for the rpcs to follow */
+                        if (null == le.getLeader()) {
+                            setServer(server);
+                            throw new RemoteException("Raft leader is not elected");
+                        }
+
+                        setServer(((ServerPolicy) le.getLeader()));
+                        ret = ((ServerPolicy) le.getLeader()).onRPC(method, params);
+                        serverFound = true;
+                        break;
+                    }
+                }
+
+                /* Responding server not found */
+                if (true != serverFound) {
+                    throw new RemoteException("Failed to connect atleast one server");
+                }
+            }
+
+            return ret;
+        }
+    }
 
     // TODO: ServerPolicy needs to be Serializable
     public static class ServerPolicy extends DefaultSapphirePolicy.DefaultServerPolicy implements StateMachineApplier, RemoteRaftServer {
         static Logger logger = Logger.getLogger(ServerPolicy.class.getCanonicalName());
         // There are so many servers and clients in this code,
         // include full package name to make it clear to the reader.
-        transient sapphire.policy.util.consensus.raft.Server raftServer;
+        transient private sapphire.policy.util.consensus.raft.Server raftServer;
 
-        public sapphire.policy.util.consensus.raft.Server getRaftServer() {
-            return raftServer;
+        public UUID getRaftServerId() {
+            return raftServer.getMyServerID();
         }
 
         @Override
-        public int appendEntries(int term, UUID leader, int prevLogIndex, int prevLogTerm, List<LogEntry> entries, int leaderCommit) throws Server.InvalidTermException, Server.PrevLogTermMismatch, Server.InvalidLogIndex {
+        public int appendEntries(int term, UUID leader, int prevLogIndex, int prevLogTerm, List<LogEntry> entries, int leaderCommit) throws InvalidTermException, PrevLogTermMismatch, InvalidLogIndex {
             return raftServer.appendEntries(term, leader, prevLogIndex, prevLogTerm, entries, leaderCommit);
         }
 
         @Override
-        public int requestVote(int term, UUID candidate, int lastLogIndex, int lastLogTerm) throws Server.InvalidTermException, Server.AlreadyVotedException, Server.CandidateBehindException {
+        public int requestVote(int term, UUID candidate, int lastLogIndex, int lastLogTerm) throws InvalidTermException, AlreadyVotedException, CandidateBehindException {
             return raftServer.requestVote(term, candidate, lastLogIndex, lastLogTerm);
         }
 
@@ -66,14 +123,14 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
         }
 
         /** TODO: Handle added and failed servers - i.e. quorum membership changes
-         @Override
-         public void onMembershipChange() {
+        @Override
+        public void onMembershipChange() {
             super.onMembershipChange();
             for(SapphireServerPolicy server: this.getGroup().getServers()) {
                 ServerPolicy consensusServer = (ServerPolicy)server;
                 this.raftServer.addServer(consensusServer.getRaftServer().getMyServerID(), consensusServer.getRaftServer());
             }
-         }
+        }
          */
 
         /**
@@ -141,7 +198,7 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
                 List<SapphireServerPolicy> servers = getServers();
                 for (SapphireServerPolicy i: servers) {
                     ServerPolicy s = (ServerPolicy)i;
-                    allServers.put(s.getRaftServer().getMyServerID(), s);
+                    allServers.put(s.getRaftServerId(), s);
                 }
                 // Now tell each server about the location and ID of all the servers, and start the RAFT protocol on each server.
                 for (ServerPolicy s: allServers.values()) {

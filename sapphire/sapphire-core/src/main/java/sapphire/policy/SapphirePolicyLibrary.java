@@ -140,8 +140,6 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 			this.appObject = appObject;
 		}
 
-		public AppObject $__getAppObject() { return this.appObject; }
-
 		public void $__setKernelOID(KernelOID oid) {
 			this.oid = oid;
 		}

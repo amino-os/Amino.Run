@@ -158,14 +158,18 @@ public class Sapphire {
 			dmChainManager.setClients(clientPolicies);
 
 			/* Create and set the App object for all server policies. */
+			// TODO: Currently, this will result in assigning an AppObject to a single policy which will result in null reference
+			// TODO: when the last server policy tries to invoke the AppObject.
+			// TODO: Therefore, we need to assign reference for AppObject to each server policy (not just the first server policy).
 			appStub = getAppStub(appObjectClass, serverPolicies.get(serverPolicies.size() - 1), args);
 			appStub.$__initialize(clientPolicies.get(0));
-			AppObject appObject = appStub.$__getAppObject();
 
-			for (int i=serverPolicies.size()-2; i>=0; i--) {
-				appStub = getAppStub(appObjectClass, serverPolicies.get(i), args);
-				appStub.$__initialize(appObject);
-			}
+//			AppObject appObject = appStub.$__getAppObject();
+
+//			for (int i=serverPolicies.size()-2; i>=0; i--) {
+//				appStub = getAppStub(appObjectClass, serverPolicies.get(i), args);
+//				appStub.$__initialize(appObject);
+//			}
 
 			logger.info("Sapphire Object created: " + appObjectClass.getName());
 			return appStub;

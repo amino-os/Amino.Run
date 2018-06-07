@@ -97,16 +97,6 @@ public final class AppStub extends Stub {
 		buffer.append(indenter.tIncrease() + "$__directInvocation = directInvocation;" + EOLN);
 		buffer.append(indenter.indent() + "}" + EOLN + EOLN);
 
-		/* The $__initialize function to set with new AppObject */
-		buffer.append(indenter.indent() + "public void $__initialize(AppObject appObject) {" + EOLN);
-		buffer.append(indenter.tIncrease() + "this.appObject = appObject;" + EOLN);
-		buffer.append(indenter.indent() + "}" + EOLN + EOLN);
-
-		/* The $__initialize function to set with new AppObject */
-		buffer.append(indenter.indent() + "public void $__getAppObject() {" + EOLN);
-		buffer.append(indenter.tIncrease() + "return this.appObject;" + EOLN);
-		buffer.append(indenter.indent() + "}" + EOLN + EOLN);
-
 		/* Implement the $__clone() method */
 		buffer.append(indenter.indent() + "public Object $__clone() throws CloneNotSupportedException {" + EOLN);
 		buffer.append(indenter.tIncrease() + "return super.clone();" + EOLN + indenter.indent() + "}" + EOLN + EOLN);

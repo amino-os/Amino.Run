@@ -8,8 +8,11 @@ import static sapphire.runtime.Sapphire.*;
 import sapphire.policy.dht.DHTPolicy;
 import sapphire.policy.interfaces.dht.DHTInterface;
 import sapphire.policy.interfaces.dht.DHTKey;
+import sapphire.runtime.SapphireConfiguration;
 
-public class TodoListManager implements SapphireObject<DHTPolicy>, DHTInterface {
+
+@SapphireConfiguration(DMs = "DMChainRetryPolicy,DMChainExplicitMigrationPolicy")
+public class TodoListManager implements SapphireObject, DHTInterface {
     Map<DHTKey, TodoList> todoLists = new Hashtable<DHTKey, TodoList>();
 
 	public TodoList newTodoList(String name) {

@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import sapphire.app.*;
 import sapphire.policy.cache.CacheLeasePolicy;
 
-public class TodoList implements SapphireObject<CacheLeasePolicy>{ 
+public class TodoList implements SapphireObject {
 	ArrayList<Object> toDos = new ArrayList<Object>();
 	String name = "Hanks todo";
 

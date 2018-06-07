@@ -5,6 +5,8 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import sapphire.policy.dmchain.DMChainManager;
+
 public class DefaultSapphirePolicy extends SapphirePolicy {
 	
 	public static class DefaultServerPolicy extends SapphireServerPolicy {

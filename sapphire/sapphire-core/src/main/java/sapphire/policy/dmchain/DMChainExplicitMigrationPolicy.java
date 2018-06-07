@@ -1,15 +1,14 @@
-package sapphire.policy.mobility.explicitmigration;
+package sapphire.policy.dmchain;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import sapphire.kernel.common.GlobalKernelReferences;
+import sapphire.kernel.common.KernelObjectMigratingException;
 import sapphire.kernel.server.KernelServerImpl;
 import sapphire.oms.OMSServer;
 import sapphire.policy.DefaultSapphirePolicy;
-import sapphire.kernel.common.KernelObjectMigratingException;
 
 /**
  * Created by Malepati Bala Siva Sai Akhil on 1/22/18.
@@ -20,9 +19,9 @@ import sapphire.kernel.common.KernelObjectMigratingException;
  * TODO: improve this by using annotations instead
  **/
 
-public class ExplicitMigrationPolicy extends DefaultSapphirePolicy {
+public class DMChainExplicitMigrationPolicy extends DefaultSapphirePolicy {
     public static class ClientPolicy extends DefaultClientPolicy {
-        private static Logger logger = Logger.getLogger(ExplicitMigrationPolicy.ClientPolicy.class.getName());
+        private static Logger logger = Logger.getLogger(DMChainExplicitMigrationPolicy.ClientPolicy.class.getName());
 
         // ToDo: Provide an option to take or change value of RETRY_TIMEOUT from user
         // Maximum time interval for wait before timing out (in milliseconds)
@@ -56,7 +55,7 @@ public class ExplicitMigrationPolicy extends DefaultSapphirePolicy {
     }
 
     public static class ServerPolicy extends DefaultServerPolicy {
-        private static Logger logger = Logger.getLogger(ExplicitMigrationPolicy.ServerPolicy.class.getName());
+        private static Logger logger = Logger.getLogger(DMChainExplicitMigrationPolicy.ServerPolicy.class.getName());
 
         @Override
         public Object onRPC(String method, ArrayList<Object> params) throws Exception {

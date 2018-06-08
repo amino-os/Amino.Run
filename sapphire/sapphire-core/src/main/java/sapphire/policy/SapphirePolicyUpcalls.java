@@ -5,7 +5,6 @@ import java.util.ArrayList;
 
 import sapphire.policy.SapphirePolicy.SapphireGroupPolicy;
 import sapphire.policy.SapphirePolicy.SapphireServerPolicy;
-import sapphire.policy.dmchain.DMChainManager;
 
 public interface SapphirePolicyUpcalls {
 	interface  SapphireClientPolicyUpcalls extends Serializable {

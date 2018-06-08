@@ -11,7 +11,6 @@ import java.util.logging.Logger;
 import org.apache.harmony.rmi.common.RMIUtil;
 
 import sapphire.app.SapphireObject;
-import sapphire.common.AppObject;
 import sapphire.common.AppObjectStub;
 import sapphire.compiler.GlobalPolicyConstants;
 import sapphire.compiler.GlobalStubConstants;
@@ -28,7 +27,7 @@ import sapphire.policy.DefaultSapphirePolicy.DefaultServerPolicy;
 import sapphire.policy.SapphirePolicy.SapphireClientPolicy;
 import sapphire.policy.SapphirePolicy.SapphireGroupPolicy;
 import sapphire.policy.SapphirePolicy.SapphireServerPolicy;
-import sapphire.policy.dmchain.DMChainManager;
+import sapphire.policy.DMChainManager;
 
 /**
  * Used by the developer to create a Sapphire Object given
@@ -84,7 +83,8 @@ public class Sapphire {
 				System.out.println("Processing DM chain for: " + DM);
 
 
-				Class<?> policy = getPolicy(GlobalPolicyConstants.getPolicyPackageName() + "." + DM);
+//				Class<?> policy = getPolicy(GlobalPolicyConstants.getPolicyPackageName() + "." + DM);
+				Class<?> policy = getPolicy(DM);
 
 			/* Extract the policy component classes (server, client and group) */
 				Class<?>[] policyClasses = policy.getDeclaredClasses();

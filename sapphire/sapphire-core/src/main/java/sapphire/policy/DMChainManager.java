@@ -1,4 +1,4 @@
-package sapphire.policy.dmchain;
+package sapphire.policy;
 
 import java.io.Serializable;
 import java.util.ArrayList;

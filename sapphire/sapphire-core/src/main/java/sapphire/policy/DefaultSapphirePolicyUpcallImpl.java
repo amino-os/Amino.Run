@@ -1,7 +1,6 @@
 package sapphire.policy;
 
 import sapphire.policy.SapphirePolicy.SapphireServerPolicy;
-import sapphire.policy.dmchain.DMChainManager;
 import sapphire.policy.transaction.IllegalComponentException;
 import sapphire.policy.transaction.TransactionContext;
 import sapphire.policy.transaction.TwoPCClient;

@@ -184,6 +184,7 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
     public static class GroupPolicy extends DefaultSapphirePolicy.DefaultGroupPolicy {
         private static Logger logger = Logger.getLogger(GroupPolicy.class.getName());
 
+        @Override
         public void onCreate(SapphireServerPolicy server, Annotation[] annotations) {
             try {
                 ArrayList<String> regions = sapphire_getRegions();

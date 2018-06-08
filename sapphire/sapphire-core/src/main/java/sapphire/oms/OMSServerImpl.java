@@ -16,16 +16,23 @@ import sapphire.common.SapphireObjectID;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireReplicaID;
 import sapphire.kernel.common.KernelOID;
+import sapphire.kernel.common.KernelObjectNotCreatedException;
 import sapphire.kernel.common.KernelObjectNotFoundException;
 import sapphire.kernel.common.KernelServerNotFoundException;
 import sapphire.kernel.common.ServerInfo;
 import sapphire.kernel.server.KernelServer;
+import sapphire.kernel.server.KernelServerImpl;
+import sapphire.policy.SapphirePolicy.SapphireGroupPolicy;
+import sapphire.policy.SapphirePolicy.SapphireServerPolicy;
 import sapphire.runtime.EventHandler;
+import static sapphire.runtime.Sapphire.getPolicyStub;
+import static sapphire.runtime.Sapphire.initializeGroupPolicy;
 
 /**
  * OMSServer for tracking objects in Sapphire
  *
  * @author iyzhang
+ *
  */
 public class OMSServerImpl implements OMSServer {
     private static Logger logger = Logger.getLogger("sapphire.oms.OMSServerImpl");
@@ -168,6 +175,26 @@ public class OMSServerImpl implements OMSServer {
         }
     }
 
+	/**
+	 * Creates the group policy instance on the kernel server running within OMS and returns the
+	 * group policy Object Stub
+	 * @throws RemoteException
+	 * @throws KernelObjectNotCreatedException
+	 * @throws ClassNotFoundException
+	 */
+	@Override
+	public SapphireGroupPolicy createGroupPolicy(Class<?> policyClass) throws RemoteException,
+			KernelObjectNotCreatedException, ClassNotFoundException {
+		SapphireGroupPolicy groupStub = (SapphireGroupPolicy)getPolicyStub(policyClass);
+		try {
+			initializeGroupPolicy(groupStub);
+		} catch (KernelObjectNotFoundException e) {
+			logger.warning("Failed to find the group kernel object created just before it. Exception info: " + e.toString());
+		}
+
+		return groupStub;
+	}
+
     public static void main(String args[]) {
         if (args.length != 3) {
             System.out.println("Invalid arguments to OMS.");
@@ -190,6 +217,12 @@ public class OMSServerImpl implements OMSServer {
             OMSServer omsStub = (OMSServer) UnicastRemoteObject.exportObject(oms, 0);
             Registry registry = LocateRegistry.createRegistry(port);
             registry.rebind("SapphireOMS", omsStub);
+
+            /* Create an instance of kernel server and export kernel server service */
+			KernelServer localKernelServer = new KernelServerImpl(new InetSocketAddress(args[0], port), oms);
+			KernelServer localKernelServerStub = (KernelServer) UnicastRemoteObject.exportObject(localKernelServer, 0);
+			registry.rebind("SapphireKernelServer", localKernelServerStub);
+
             logger.info("OMS ready");
             for (Iterator<InetSocketAddress> it = oms.getServers().iterator(); it.hasNext(); ) {
                 InetSocketAddress address = it.next();

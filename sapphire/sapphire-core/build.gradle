@@ -1,9 +1,16 @@
 apply plugin: 'java'
 
+repositories {
+    flatDir {
+        dirs '../libs'
+    }
+}
+
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     compile 'org.json:json:20171018'
-    compile project(':dependencies:java.rmi')
+    compile name: 'java.rmi'
+    compile name: 'apache.harmony'
     testCompile 'junit:junit:4.12'
     testCompile 'org.mockito:mockito-core:1.+'
 }

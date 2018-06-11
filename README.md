@@ -1,20 +1,32 @@
+# What is DCAP
 
-# Onboarding Process
+DCAP, Distributed Cloud Application Platform, is a development platform and a runtime engine to develop and run distributed applications.
 
-* Send public GitHub account, Slack account and Huawei email address to Sungwook (sungwook.moon@huawei.com)
-* Join [slack workspace](https://huawei.slack.com/)
-* Get access to GitHub Repo by contacting Sungwook
-* Read [papers](https://sapphire.cs.washington.edu/research/)
-* Read [Sapphire source code](https://sapphire.cs.washington.edu/code.html)
-* Read [code study notes](./docs/code_study/)
-* Read [github workflow guide](https://github.com/kubernetes/community/blob/master/contributors/devel/development.md). Please follow this workflow to submit pull requests.
-* Follows instructions in [this document](https://github.com/Huawei-PaaS/DCAP-Sapphire/blob/master/docs/Development.md) to set up environment
+# Why we created DCAP
 
+1. DCAP makes distributed application development super fast, easy & fun!
+a) Take advantage of a wide range of [available production-ready Deployment Managers (DMs)](https://github.com/Huawei-PaaS/DCAP-Sapphire-Core/blob/master/docs/code_study/DMList.md).
+b) DMs are functionalities that are common across many distributed applications.
+c) Developers can simply plugin to their code any one of these ready-to-use DMs (rather than writing them from scratch)
 
-# Important Links
+2. Develop your application on DCAP once, deploy it anywhere, move it around as you wish!
+a) On your local machine
+b) On any cloud server
+c) On any mobile phone (Android, iOS)
+d) On any edge device
+
+3. Write your application in any language of choice
+a) Current DCAP release supports Java, Golang, C++ (more to come soon!)
+
+4. DCAP covers it all
+a) Sapphire (Runtime Manager), Diamond (Memory Manager), Tapir/ERIS (Storage System) and Agate (Security System)
+
+## More docs here: [Getting started](docs/GettingStarted.md)
+
+## Important Links
 * [Design Docs](./docs/design_proposals/)
 * [DCAP Planning](https://github.com/Huawei-PaaS/DCAP-Sapphire/wiki/DCAP-Planning)
 * [Thoughts on DCAP](https://github.com/Huawei-PaaS/DCAP-Sapphire/wiki/Thoughts-on-DCAP)
 * [Technical Challenges](https://github.com/Huawei-PaaS/DCAP-Sapphire/wiki/Technical-Challenges)
 * [Meetings](https://github.com/Huawei-PaaS/DCAP-Sapphire/wiki/Meetings)
- 
+

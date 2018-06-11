@@ -38,15 +38,19 @@ public class ExplicitMigrationPolicy extends DefaultSapphirePolicy {
             // thrown from server side and exception would go to user, in order to avoid throwing exception
             // to user, catching the exception here in the client policy and retrying. If even after retryTimes,
             // we get the same KernelObjectMigratingException, then we throw the same to the user
-            for (long delay = MIN_WAIT_INTERVAL; currentTime < (startTime + RETRY_TIMEOUT - delay); delay *= 2, currentTime = System.currentTimeMillis()) {
+
+            /* Disable Retry for now to try RetryDM in DM chain instead */
+//            for (long delay = MIN_WAIT_INTERVAL; currentTime < (startTime + RETRY_TIMEOUT - delay); delay *= 2, currentTime = System.currentTimeMillis()) {
                 try {
                     return super.onRPC(method, params);
                 } catch (KernelObjectMigratingException e) {
-                    logger.info("Caught KernelObjectMigratingException at client policy of ExplicitMigrator Policy: " + e + " retrying migration again");
-                    Thread.sleep(delay);
+//                    logger.info("Caught KernelObjectMigratingException at client policy of ExplicitMigrator Policy: " + e + " retrying migration again");
+                    logger.info("Caught KernelObjectMigratingException at client policy of ExplicitMigrator Policy: " + e);
+//                    Thread.sleep(delay);
                 }
-            }
-            logger.info("Retry times has exceeded, so throwing the KernelObjectMigratingException to user");
+//            }
+//            logger.info("Retry times has exceeded, so throwing the KernelObjectMigratingException to user");
+            logger.info("RPC Failed at" + this.getClass().getCanonicalName());
             throw new KernelObjectMigratingException();
         }
     }

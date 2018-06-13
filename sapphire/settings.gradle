@@ -1,2 +1,5 @@
 // Sapphire
 include ':sapphire-core'
+
+// Example Apps
+include ':examples:helloWorld'

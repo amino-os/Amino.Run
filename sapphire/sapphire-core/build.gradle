@@ -15,6 +15,11 @@ dependencies {
     testCompile 'org.mockito:mockito-core:1.+'
 }
 
+task copyJar(type: Copy) {
+    from file("${buildDir}/libs/sapphire-core.jar")
+    into file("${buildDir}/../../libs")
+}
+
 task deleteJar(type: Delete) {
     delete 'libs/sapphire-core.jar'
 }

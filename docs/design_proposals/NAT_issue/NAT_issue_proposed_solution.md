@@ -17,14 +17,17 @@ We make use of a proxy server, with a static external IP address, in the middle.
 ![image](ProposedSolution.PNG)
 
 ## Steps to implement the proposed solution
-1. Set up Porxy Server
+1. Set up Proxy Server
     - Any node with a public IP address can be used
-    - E.g., we created an Ubuntu 16.04 VM on AWS with the public IPv4 address 34.208.50.35    - 
+    - E.g., we created an Ubuntu 16.04 VM on AWS with the public IPv4 address 34.208.50.35    
+    - Note that UDP port 1194 should be open from firewall.
 2. Install OpenVPN Server on Proxy Server
     - Run the following script. Make sure you input the public IP address during the setup
         ```
         $ wget https://git.io/vpn -O openvpn-install.sh && bash openvpn-install.sh
         ```
+    - Note that the IP address of this server will be "10.8.0.1" by default. Therefore, connection from other client should be to "10.8.0.1", not the public IP address
+    - When creating a client profile, name it different from the default value "client". For example, "client1" should work. It will generate "client1.ovpn" which will be later used in client set up
 3. Install Nginx Proxy on Proxy Server
     - On Proxy Server run:
         ```
@@ -36,15 +39,15 @@ We make use of a proxy server, with a static external IP address, in the middle.
         ```
         $ sudo apt-get install openvpn
         ```
-    - For Android install Android OpenVPN Connect on Google Play Store
+    - For Android install Android OpenVPN Connect on Google Play Store    
 5.  Connect S1 to OpenVPN Server
-    - Use the configuration created in Step 2 to connect to the OpenVPN Server
+    - For Ubuntu: use the configuration created in Step 2 to connect to the OpenVPN Server
         ```
-        $ sudo openvpn --config client.ovpn
+        $ sudo openvpn --config client1.ovpn
         ```
-    - E.g., OpenVPN Server alocated IP address 10.8.0.3 to S1
+    - Log message should display the assigned IP address (e.g., "Connected: SUCCESS, 10.8.0.3,18.219.220.105,1194" 10.8.0.3 is assigned client IP address)
 6.  Update nginx proxy to add forwarding rules
-    - Edit nginx config under /etc/nginx/sites-enabled/default to add forwarding rules for S1
+    - Edit nginx config under /etc/nginx/sites-enabled/default to add forwarding rules for S1. Remove the existing setting inside location bracket (e.g., "try_files...") and replace with the below 'proxy_pass' example (IP address should match to the new client). 
         ```
         server {
             listen 22345 default_server;

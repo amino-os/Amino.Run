@@ -1,6 +1,7 @@
 package sapphire.policy;
 
 import java.io.Serializable;
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 
 import sapphire.policy.SapphirePolicy.SapphireGroupPolicy;
@@ -18,7 +19,7 @@ public interface SapphireCachingPolicyUpcalls extends Serializable {
 	}
 	
 	public interface SapphireCachingServerUpcalls extends Serializable {
-		public void onCreate(SapphireGroupPolicy group);
+		public void onCreate(SapphireGroupPolicy group, Annotation[] annotations);
 		public SapphireGroupPolicy getGroup();
 		public Object onRPC(String method, ArrayList<Object> params) throws Exception;
 	}

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.lang.annotation.Annotation;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -187,7 +188,7 @@ public class CacheLeasePolicy extends SapphirePolicy {
 		}
 
 		@Override
-		public void onCreate(SapphireGroupPolicy group) {
+		public void onCreate(SapphireGroupPolicy group, Annotation[] annotations) {
 			// TODO Auto-generated method stub
 			this.group = (CacheLeaseGroupPolicy) group;
 		}
@@ -291,6 +292,10 @@ public class CacheLeasePolicy extends SapphirePolicy {
 		}
 
 		@Override
+		public void removeServer(SapphireServerPolicy server) {
+		}
+
+		@Override
 		public SapphireServerPolicy onRefRequest() {
 			return server;
 		}
@@ -302,7 +307,7 @@ public class CacheLeasePolicy extends SapphirePolicy {
 		}
 
 		@Override
-		public void onCreate(SapphireServerPolicy server) {
+		public void onCreate(SapphireServerPolicy server, Annotation[] annotations) {
 			// TODO Auto-generated method stub
 			addServer(server);
 		}

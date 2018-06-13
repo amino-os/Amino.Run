@@ -13,5 +13,6 @@ public interface StateMachineApplier {
      * @return The result of applying the operation.
      * @throws Exception Any exception arising from applying the operation.
      */
+    // TODO: Suggest define it as `Object apply(RPC rpc)`
     public Object apply(Object operation) throws Exception;
 }

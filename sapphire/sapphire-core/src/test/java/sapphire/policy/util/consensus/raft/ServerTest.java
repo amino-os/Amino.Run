@@ -13,6 +13,7 @@ import sapphire.policy.SapphirePolicy;
 import sapphire.policy.replication.ConsensusRSMPolicy;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 
 /**
@@ -22,10 +23,14 @@ public class ServerTest {
     final int SERVER_COUNT = 3;
     SapphirePolicy.SapphireServerPolicy[] serverPolicy = new SapphirePolicy.SapphireServerPolicy[SERVER_COUNT];
     Server raftServer[] = new Server[SERVER_COUNT];
+    private AppObject appObject;
+
     @Before
     public void setUp() throws Exception {
+        appObject = mock(AppObject.class);
         for (int i=0; i<SERVER_COUNT; i++) {
             serverPolicy[i] = spy(ConsensusRSMPolicy.ServerPolicy.class);
+            serverPolicy[i].$__initialize(appObject);
             raftServer[i] = new Server((ConsensusRSMPolicy.ServerPolicy)serverPolicy[i]);
         }
         for (int i=0; i<SERVER_COUNT; i++) {
@@ -59,16 +64,6 @@ public class ServerTest {
     }
 
     @Test
-    public void removeCurrentLeader() throws Exception {
-        raftServer[0].removeCurrentLeader();
-    }
-
-    @Test
-    public void setCurrentLeader() throws Exception {
-        raftServer[0].setCurrentLeader(raftServer[1].getMyServerID());
-    }
-
-    @Test
     public void majorityQuorumSize() throws Exception {
         raftServer[0].majorityQuorumSize();
     }
@@ -96,11 +91,11 @@ public class ServerTest {
     @Test
     public void become() throws Exception {
         raftServer[0].start();
-        raftServer[0].become(Server.State.FOLLOWER);
+        raftServer[0].become(Server.State.FOLLOWER, Server.State.FOLLOWER);
         assert(raftServer[0].getState() == Server.State.FOLLOWER);
-        raftServer[0].become(Server.State.CANDIDATE);
+        raftServer[0].become(Server.State.CANDIDATE, Server.State.FOLLOWER);
         assert(raftServer[0].getState() == Server.State.CANDIDATE);
-        raftServer[0].become(Server.State.LEADER);
+        raftServer[0].become(Server.State.LEADER, Server.State.CANDIDATE);
         assert(raftServer[0].getState() == Server.State.LEADER);
     }
 
@@ -109,7 +104,7 @@ public class ServerTest {
         for(Server s: raftServer) {
             s.start();
         }
-        raftServer[0].become(Server.State.CANDIDATE); // Immediately tell the first one to start an election, just to speed things up in this unit test.
+        raftServer[0].become(Server.State.CANDIDATE, Server.State.FOLLOWER); // Immediately tell the first one to start an election, just to speed things up in this unit test.
 
         int leaderCount = 0;
         UUID initialLeader = null, finalLeader=null;
@@ -158,10 +153,9 @@ public class ServerTest {
         successfulLeaderElection();
         String[] methods = { "fooMethod", "barMethod" };
         ArrayList<Object> args = new ArrayList<Object>();
-        for (Server server: raftServer) {
-            for (String method : methods) {
-                server.applyToStateMachine(new ConsensusRSMPolicy.RPC(method, args));
-            }
+        for (String method : methods) {
+            // Apply to statemachine is invoked only on leader
+            raftServer[0].applyToStateMachine(new ConsensusRSMPolicy.RPC(method, args));
         }
     }
 }

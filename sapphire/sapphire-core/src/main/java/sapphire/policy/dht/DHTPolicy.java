@@ -1,6 +1,7 @@
 package sapphire.policy.dht;
 
 import java.io.Serializable;
+import java.lang.annotation.Annotation;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -73,7 +74,7 @@ public class DHTPolicy extends SapphirePolicy {
 		}
 		
 		@Override
-		public void onCreate(SapphireGroupPolicy group) {
+		public void onCreate(SapphireGroupPolicy group, Annotation[] annotations) {
 			this.group = (DHTGroupPolicy) group;
 			try {
 				dhtData = castMap((Map<DHTKey, ?>)((DHTInterface)appObject.getObject()).dhtGetData(), DHTKey.class, Object.class);
@@ -170,17 +171,9 @@ public class DHTPolicy extends SapphirePolicy {
 				}
 			}
 		}
-
-		public DHTServerPolicy dhtReplicate() {
-			return (DHTServerPolicy) this.sapphire_replicate();
-		}
 		
 		public void setKey(DHTKey key) {
 			this.key = key;
-		}
-		
-		public void dhtPin(String region) throws RemoteException {
-			sapphire_pin(region);
 		}
 	}
 
@@ -224,7 +217,7 @@ public class DHTPolicy extends SapphirePolicy {
 		}
 		
 		@Override
-		public void onCreate(SapphireServerPolicy server) {
+		public void onCreate(SapphireServerPolicy server, Annotation[] annotations) {
 			nodes = new TreeSet<DHTNode>();
 			dhtNodeIdGenerator = new Random();
 			
@@ -238,17 +231,16 @@ public class DHTPolicy extends SapphirePolicy {
 				dhtServer.setKey(newNode.id);
 				
 				for (int i = 1; i < regions.size(); i++) {
-					DHTServerPolicy replica = dhtServer.dhtReplicate();
-					replica.dhtPin(regions.get(i));
+					DHTServerPolicy replica = (DHTServerPolicy)dhtServer.sapphire_replicate();
+					replica.sapphire_pin(regions.get(i));
 				}				
-				dhtServer.dhtPin(regions.get(0));
+				dhtServer.sapphire_pin(regions.get(0));
 
 			} catch (RemoteException e) {
 				e.printStackTrace();
 				throw new Error("Could not create new group policy because the oms is not available.");
 			}
 		}
-		
 		/**
 		 * Returns the predecessor of the given node.
 		 * 
@@ -282,6 +274,10 @@ public class DHTPolicy extends SapphirePolicy {
 		@Override
 		public ArrayList<SapphireServerPolicy> getServers() {
 			return null;
+		}
+
+		@Override
+		public void removeServer(SapphireServerPolicy server) {
 		}
 
 		@Override

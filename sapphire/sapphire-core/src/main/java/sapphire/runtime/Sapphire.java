@@ -1,5 +1,6 @@
 package sapphire.runtime;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -108,8 +109,9 @@ public class Sapphire {
 			client.setServer(serverPolicyStub);
 			client.onCreate(groupPolicyStub);
 			appStub.$__initialize(client);
-			serverPolicy.onCreate(groupPolicyStub);
-			groupPolicy.onCreate(serverPolicyStub);
+			Annotation[] annotations = appObjectClass.getAnnotations();
+			serverPolicy.onCreate(groupPolicyStub, annotations);
+			groupPolicy.onCreate(serverPolicyStub, annotations);
 
 			logger.info("Sapphire Object created: " + appObjectClass.getName());
 			return appStub;

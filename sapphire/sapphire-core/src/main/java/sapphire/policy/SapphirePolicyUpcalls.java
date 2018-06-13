@@ -1,32 +1,34 @@
 package sapphire.policy;
 
 import java.io.Serializable;
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 
 import sapphire.policy.SapphirePolicy.SapphireGroupPolicy;
 import sapphire.policy.SapphirePolicy.SapphireServerPolicy;
 
 public interface SapphirePolicyUpcalls {
-	public interface  SapphireClientPolicyUpcalls extends Serializable {
-		public void onCreate(SapphireGroupPolicy group);
-		public void setServer(SapphireServerPolicy server);
-		public SapphireServerPolicy getServer();
-		public SapphireGroupPolicy getGroup();
-		public Object onRPC(String method, ArrayList<Object> params) throws Exception;
+	interface  SapphireClientPolicyUpcalls extends Serializable {
+		void onCreate(SapphireGroupPolicy group);
+		void setServer(SapphireServerPolicy server);
+		SapphireServerPolicy getServer();
+		SapphireGroupPolicy getGroup();
+		Object onRPC(String method, ArrayList<Object> params) throws Exception;
 	}
 	
-	public interface SapphireServerPolicyUpcalls extends Serializable {
-		public void onCreate(SapphireGroupPolicy group);
-		public SapphireGroupPolicy getGroup();
-		public Object onRPC(String method, ArrayList<Object> params) throws Exception;
-		public void onMembershipChange();
+	interface SapphireServerPolicyUpcalls extends Serializable {
+		void onCreate(SapphireGroupPolicy group, Annotation[] annotations);
+		SapphireGroupPolicy getGroup();
+		Object onRPC(String method, ArrayList<Object> params) throws Exception;
+		void onMembershipChange();
 	}
 	
-	public interface SapphireGroupPolicyUpcalls extends Serializable {
-		public void onCreate(SapphireServerPolicy server);
-		public void addServer(SapphireServerPolicy server);
-		public ArrayList<SapphireServerPolicy> getServers();
-		public void onFailure(SapphireServerPolicy server);
-		public SapphireServerPolicy onRefRequest();
+	interface SapphireGroupPolicyUpcalls extends Serializable {
+		void onCreate(SapphireServerPolicy server, Annotation[] annotations);
+		void addServer(SapphireServerPolicy server);
+		void removeServer(SapphireServerPolicy server);
+		ArrayList<SapphireServerPolicy> getServers();
+		void onFailure(SapphireServerPolicy server);
+		SapphireServerPolicy onRefRequest();
 	}
 }

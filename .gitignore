@@ -14,32 +14,15 @@ local.properties
 # Source: https://github.com/github/gitignore/blob/master/Global/JetBrains.gitignore
 
 # User-specific stuff:
-**/.idea/**/workspace.xml
-**/.idea/**/tasks.xml
-**/.idea/dictionaries
-**/.idea/**/misc.xml
-**/.idea/libraries
+**/.idea/**
 *.iml
-
-# Sensitive or high-churn files:
-**/.idea/**/dataSources/
-**/.idea/**/dataSources.ids
-**/.idea/**/dataSources.xml
-**/.idea/**/dataSources.local.xml
-**/.idea/**/sqlDataSources.xml
-**/.idea/**/dynamic.xml
-**/.idea/**/uiDesigner.xml
+**/.idea_modules/**
 
 # Gradle:
-.idea/**/gradle.xml
-.idea/**/libraries
 .gradle
 
 # CMake
 cmake-build-debug/
-
-# Mongo Explorer plugin:
-.idea/**/mongoSettings.xml
 
 ## File-based project format:
 *.iws
@@ -49,14 +32,8 @@ cmake-build-debug/
 # IntelliJ
 out/
 
-# mpeltonen/sbt-idea plugin
-.idea_modules/
-
 # JIRA plugin
 atlassian-ide-plugin.xml
-
-# Cursive Clojure plugin
-.idea/replstate.xml
 
 # Crashlytics plugin (for Android Studio and IntelliJ)
 com_crashlytics_export_strings.xml
@@ -101,5 +78,4 @@ cscope.*
 
 /bazel-*
 *.pyc
-sapphire/.idea/workspace.xml
 **/stubs/**

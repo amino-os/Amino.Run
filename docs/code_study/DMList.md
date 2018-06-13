@@ -331,7 +331,7 @@ Status: Not yet implemented (2018-01-30)
 
 > Simple load balancing w/ static number of replicas and no consistency
 
-Status: Not yet implemented (2018-01-30)
+Status: Implemented by @SrinivasChilveri (https://github.com/Huawei-PaaS/DCAP-Sapphire/pull/70)
 
 Quinton: On the client side of the DM for a server Sapphire Object, all RPC's to a server Sapphire Object from a given client are load balanced (using simple round robin load balancing) equally across all replicas of the server Sapphire Object.  More details on Round Robin load balancing are available [here](http://www.jscape.com/blog/load-balancing-algorithms).  Each client side DM instance should randomise the order in which it performs round robin against replicas, so that all clients do not target replicas in the same order, leading to unbalanced load.
 
@@ -349,6 +349,8 @@ Status: Not yet implemented (2018-01-30)
 
 Quinton: As above, but when a given replica reaches it's full capacity (see above), the server-side DM for that replica should create one additional replica.  A given server-side DM instance should not create more than 1 replica per n milliseconds (with n being configurable).  This is to limit the rate at which scale-up can occur.  When the load at a given replica drops to approximately p * (m-2)/m (where m is the current number of replicas, and p is the maximum concurrency setting per replica), then the server-side DM for that replica should remove one replica (randomly chosen).  This is because there are in theory two more replicas than required, so one can be removed.  The number of replicas should not be reduced below 2 (in case one fails).  The aforementioned algorithm is inadequate in a production environment, but is good enough to illustrate the concept.  In later versions, more sophisticated and configurable scale-up and scale-down algorithms can be implmented, and DM's which offload scale-up to external agents (e.g. istio, kubernetes HPA or similar) can be implemented.
 
+SrinivasChilveri:
+if we implement the Scaleup Logic in ServerSide DM then we may end up creating/scaling up multiple replicas in short duration {suppose we have 3 replicas and all are over loaded then all the server DMs tries to scale up  so we may end up 6 replicas, of course if the request rate comes down then it may scale down but scaling up more than 1 in short duration may not be a good idea} so if we implement the scale up logic in the group DM then group might receive scale up requets from 3 Servers in 10 milli seconds but group will scale up only one replica instead of scaling up 3 replicas. what do you say?
 
 ### LoadBalancedMasterSlave 177 LoC
 

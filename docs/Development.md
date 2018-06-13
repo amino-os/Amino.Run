@@ -1,6 +1,14 @@
 ## Read Development Workflow
 * DCAP team follows Kubernetes development workflow. Please read [Kubernetes Development Workflow Guide](https://github.com/kubernetes/community/blob/master/contributors/guide/github-workflow.md) closely.
 
+## Review the Principles of Distributed Systems
+If you have not done a university course on distributed systems you will need to read one or more of the following
+to get a basic understanding of the principles and common terminology. Here are a few recommendations. 
+Feel free to add more resource links below:
+
+* [UMass Course 677](http://lass.cs.umass.edu/~shenoy/courses/677/)
+* [Distributed System Principles by Andrew Tanenbaum](https://www.amazon.com/Distributed-Systems-Principles-Andrew-Tanenbaum/dp/153028175X)
+
 ## Install Android Studio
 * Install Android Studio (Windows or Linux all are fine). Latest version or 3.0
 * Download Gradle update if necessary (Android Studio will inform you).

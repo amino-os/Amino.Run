@@ -59,7 +59,12 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 				SapphireServerPolicy serverPolicy = (SapphireServerPolicy) kernel().getObject(serverPolicyStub.$__getKernelOID());
 				serverPolicy.$__initialize(appObject);
 				serverPolicy.$__setKernelOID(serverPolicyStub.$__getKernelOID());
-				serverPolicy.onCreate(getGroup());
+				/* Here getClass() gives the Applications Object Stub class so we should use getSuperclass to get the actual Application class
+				   for example getClass() gives as class sapphire.appexamples.hankstodo.app.stubs.TodoListManager_Stub
+				   getClass().getSuperclass() gives as class sapphire.appexamples.hankstodo.app.TodoListManager
+				 */
+				Class c = sapphire_getAppObject().getObject().getClass().getSuperclass();
+				serverPolicy.onCreate(getGroup(), c.getAnnotations());
 				getGroup().addServer((SapphireServerPolicy)serverPolicyStub);
 			} catch (ClassNotFoundException e) {
 				// TODO Auto-generated catch block

@@ -1,5 +1,6 @@
 package sapphire.policy.checkpoint.periodiccheckpoint;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -7,7 +8,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 import sapphire.common.AppObject;
-import sapphire.policy.checkpoint.periodiccheckpoint.PeriodicCheckpointPolicy;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.never;
@@ -40,6 +41,11 @@ public class PeriodicCheckpointPolicyTest {
         oneParam.add(new Integer(1));
         twoParam = new ArrayList<Object>();
         twoParam.add(new Integer(2));
+    }
+
+    @After
+    public void tearDown() {
+        this.server.deleteCheckpoint();
     }
 
     @Test

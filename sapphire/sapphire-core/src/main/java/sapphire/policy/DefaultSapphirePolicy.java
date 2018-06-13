@@ -1,6 +1,10 @@
 package sapphire.policy;
 
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class DefaultSapphirePolicy extends SapphirePolicy {
 	
@@ -16,7 +20,7 @@ public class DefaultSapphirePolicy extends SapphirePolicy {
 		public void onMembershipChange() {}
 
 		@Override
-		public void onCreate(SapphireGroupPolicy group) {
+		public void onCreate(SapphireGroupPolicy group, Annotation[] annotations) {
 			// TODO Auto-generated method stub
 			this.group = (DefaultGroupPolicy) group;
 		}
@@ -49,9 +53,18 @@ public class DefaultSapphirePolicy extends SapphirePolicy {
 	}
 	
 	public static class DefaultGroupPolicy extends SapphireGroupPolicy {
+		private Set<SapphireServerPolicy> servers = Collections.newSetFromMap(
+                new ConcurrentHashMap<SapphireServerPolicy, Boolean>());
 
 		@Override
-		public void addServer(SapphireServerPolicy server) {}
+		public void addServer(SapphireServerPolicy server) {
+			servers.add(server);
+		}
+
+		@Override
+		public void removeServer(SapphireServerPolicy server) {
+			servers.remove(server);
+		}
 
 		@Override
 		public void onFailure(SapphireServerPolicy server) {}
@@ -63,14 +76,12 @@ public class DefaultSapphirePolicy extends SapphirePolicy {
 
 		@Override
 		public ArrayList<SapphireServerPolicy> getServers() {
-			return null;
+			return new ArrayList<SapphireServerPolicy>(servers);
 		}
 
 		@Override
-		public void onCreate(SapphireServerPolicy server) {
+		public void onCreate(SapphireServerPolicy server, Annotation[] annotations) {
 			// TODO Auto-generated method stub
-			
 		}
-		
 	}
 }

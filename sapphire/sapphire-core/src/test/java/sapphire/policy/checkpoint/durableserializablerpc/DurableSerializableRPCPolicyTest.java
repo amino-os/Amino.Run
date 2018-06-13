@@ -1,5 +1,6 @@
 package sapphire.policy.checkpoint.durableserializablerpc;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -45,6 +46,11 @@ public class DurableSerializableRPCPolicyTest extends SerializableRPCPolicyTest 
         oneParam.add(new Integer(1));
         twoParam = new ArrayList<Object>();
         twoParam.add(new Integer(2));
+    }
+
+    @After
+    public void tearDown() {
+        this.checkpointServer.deleteCheckpoint();
     }
 
     @Test

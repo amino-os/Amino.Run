@@ -5,6 +5,7 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.Hashtable;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import sapphire.kernel.common.GlobalKernelReferences;
@@ -34,7 +35,7 @@ public class KernelClient {
 	/** 
 	 * Add a host to the list of hosts that we've contacted
 	 * 
-	 * @param hostname
+	 * @param host
 	 */
 	private KernelServer addHost(InetSocketAddress host) {
 		try {
@@ -97,7 +98,7 @@ public class KernelClient {
 	/** 
 	 * Make an RPC to the kernel server.
 	 * 
-	 * @param hostname
+	 * @param stub
 	 * @param rpc
 	 * @return
 	 * @throws RemoteException when kernel server cannot be contacted
@@ -105,7 +106,7 @@ public class KernelClient {
 	 */
 	public Object makeKernelRPC(KernelObjectStub stub, KernelRPC rpc) throws KernelObjectNotFoundException, Exception {
 		InetSocketAddress host = stub.$__getHostname();
-		logger.info("Making RPC to " + host.toString() + " RPC: " + rpc.toString());
+		logger.log(Level.FINE,"Making RPC to " + host.toString() + " RPC: " + rpc.toString());
 
 		// Check whether this object is local.
 		KernelServer server;

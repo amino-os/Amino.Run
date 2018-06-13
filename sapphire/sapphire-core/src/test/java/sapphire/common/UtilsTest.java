@@ -108,6 +108,8 @@ public class UtilsTest {
         field = getField(instance.getClass(), name);
         if (null != field) {
             field.set(instance, value);
+        }
+    }
 
     @Test
     public void testLogEntrySerialization() throws Exception {

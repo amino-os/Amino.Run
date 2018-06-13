@@ -32,7 +32,8 @@ public class OptConcurrentTransactPolicy extends DefaultSapphirePolicy {
             oos = new ObjectOutputStream(dos);
             oos.writeObject(appObject);
             digest = dos.getMessageDigest().digest();
-        } catch (NoSuchAlgorithmException | IOException e) {
+        } catch (NoSuchAlgorithmException e) {
+        } catch (IOException e) {
         } finally {
             if (null != oos) {
                 try {

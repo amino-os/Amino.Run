@@ -6,6 +6,7 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -21,6 +22,7 @@ import sapphire.kernel.common.KernelRPC;
 import sapphire.kernel.common.KernelRPCException;
 import sapphire.kernel.common.ServerInfo;
 import sapphire.oms.OMSServer;
+import sapphire.policy.util.ResettableTimer;
 
 /** 
  * Sapphire Kernel Server. Runs on every Sapphire node, knows how to talk to the OMS, handles RPCs and has a client for making RPCs.
@@ -39,6 +41,11 @@ public class KernelServerImpl implements KernelServer{
 	public static OMSServer oms;
 	/** local kernel client for making RPCs */
 	private KernelClient client;
+	// heartbeat period is 1/3of the heartbeat timeout period
+	static final long KS_HEARTBEAT_PERIOD = OMSServer.KS_HEARTBEAT_TIMEOUT / 3;
+
+	// heartbeat timer
+	static ResettableTimer ksHeartbeatSendTimer;
 	
 	public KernelServerImpl(InetSocketAddress host, InetSocketAddress omsHost) {
 		OMSServer oms = null;
@@ -216,8 +223,21 @@ public class KernelServerImpl implements KernelServer{
 	public MemoryStatThread getMemoryStatThread() {
 		return new MemoryStatThread();
 	}
-	
-	
+
+	/**
+	 * Send heartbeats to OMS.
+	 */
+	static void startheartbeat(ServerInfo srvinfo) {
+		logger.info("heartbeat KernelServer" + srvinfo);
+		try {
+			oms.heartbeatKernelServer(srvinfo);
+		}
+		catch(Exception e){
+			logger.severe("Cannot heartbeat KernelServer"+ srvinfo);
+			e.printStackTrace();
+		}
+		ksHeartbeatSendTimer.reset();
+	}
 	/**
 	 * At startup, contact the OMS.
 	 * @param args
@@ -256,10 +276,19 @@ public class KernelServerImpl implements KernelServer{
 				// TODO once we are sure we can comment below line & uncomment above line
 				server.setRegion(host.toString());
 			}
-			oms.registerKernelServer(new ServerInfo(host,server.getRegion()));
+			final ServerInfo srvinfo = new ServerInfo(host,server.getRegion());
+			oms.registerKernelServer(srvinfo);
 			logger.info("Server ready!");
 			System.out.println("Server ready!");
-			
+
+			ksHeartbeatSendTimer = new ResettableTimer(new TimerTask() {
+				public void run() {
+					startheartbeat(srvinfo);
+				}
+			}, KS_HEARTBEAT_PERIOD);
+
+			oms.heartbeatKernelServer(srvinfo);
+			ksHeartbeatSendTimer.start();
 			/* Start a thread that print memory stats */
 			server.getMemoryStatThread().start();
 

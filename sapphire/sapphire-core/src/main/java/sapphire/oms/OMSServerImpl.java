@@ -85,9 +85,9 @@ public class OMSServerImpl implements OMSServer{
 		   serverManager.registerKernelServer(info);
        }
 
-       @Override
-	   public void heartBeatKernelServer(ServerInfo info) throws RemoteException, NotBoundException,KernelServerNotFoundException{
-			serverManager.heartBeatKernelServer(info);
+	   @Override
+	   public void heartbeatKernelServer(ServerInfo srvinfo) throws RemoteException, NotBoundException,KernelServerNotFoundException{
+		    serverManager.heartbeatKernelServer(srvinfo);
 	   }
        
 	   /**

@@ -39,7 +39,7 @@ public class KernelServerManager {
 	}
 
 	void stopHeartBeat(ServerInfo srvInfo) {
-		logger.info("Heartbeat not received from region:"+ srvInfo.getRegion() +"host:"+srvInfo.getHost().toString());
+		logger.info("Heartbeat not received from region:"+ srvInfo.getRegion() +"host:"+ srvInfo.getHost().toString());
 
 		ResettableTimer ksHeartBeatTimer = ksHeartBeatTimers.get(srvInfo.getHost());
 		ksHeartBeatTimer.cancel();
@@ -48,23 +48,20 @@ public class KernelServerManager {
 	}
 
 	public void removeKernelServer(ServerInfo srvInfo)  {
-
-		//removing from the servers list
+		// removing from the servers list
 		servers.remove(srvInfo.getHost());
 
-		//removing from the regions map
+		// removing from the regions map
 		ArrayList<InetSocketAddress> serverList = regions.get(srvInfo.getRegion());
 		if (serverList == null) {
-			logger.severe("region does not exisit for removeKernelServer: " + srvInfo.getHost().toString() + " in region " + srvInfo.getRegion());
+			logger.severe("region does not exist for removeKernelServer: " + srvInfo.getHost().toString() + " in region " + srvInfo.getRegion());
 			return;
 		}
 		serverList.remove(srvInfo.getHost());
-
-		//if no servers in the region remove full entry from the map
+		// if no servers in the region remove full entry from the map
 		if (serverList.size() == 0) {
 			regions.remove(srvInfo.getRegion());
 		}
-
 	}
 
 	public void registerKernelServer(ServerInfo info) throws RemoteException, NotBoundException {
@@ -75,43 +72,37 @@ public class KernelServerManager {
 		if (null == serverList) {
 			serverList = new ArrayList<InetSocketAddress>();
 		}
-
 		serverList.add(info.getHost());
 		regions.put(info.getRegion(), serverList);
 
 		final ServerInfo srvInfo = info;
 		ResettableTimer ksHeartBeatTimer = new ResettableTimer(new TimerTask() {
 			public void run() {
-				/**
-				 * If we don't receive a heartbeat from this kernel server, remove that from the list
-				 */
+				// If we don't receive a heartbeat from this kernel server, remove that from the list
 				stopHeartBeat(srvInfo);
-
 			}
-		}, (long) OMSServer.KS_HEARTBEAT_TIMEOUT);
+		}, OMSServer.KS_HEARTBEAT_TIMEOUT);
 
 		ksHeartBeatTimers.put(info.getHost(),ksHeartBeatTimer);
 		ksHeartBeatTimer.start();
-
 	}
 
-	public void heartBeatKernelServer(ServerInfo info) throws RemoteException, NotBoundException,KernelServerNotFoundException {
-		logger.info("heartBeatKernelServer: " + info.getHost().toString() + " in region " + info.getRegion());
+	public void heartbeatKernelServer(ServerInfo srvinfo) throws RemoteException, NotBoundException,KernelServerNotFoundException {
+		logger.info("heartbeat from KernelServer: " + srvinfo.getHost().toString() + " in region " + srvinfo.getRegion());
 
-		ArrayList<InetSocketAddress> serverList = regions.get(info.getRegion());
+		ArrayList<InetSocketAddress> serverList = regions.get(srvinfo.getRegion());
 
 		if (null == serverList) {
-			logger.severe("region does not exisit for heartBeatKernelServer: " + info.getHost().toString() + " in region " + info.getRegion());
-			throw new KernelServerNotFoundException("region does not exisit");
+			logger.severe("region does not exist for heartbeat KernelServer: " + srvinfo.getHost().toString() + " in region " + srvinfo.getRegion());
+			throw new KernelServerNotFoundException("region does not exist");
 		}
-
-		if(serverList.contains( info.getHost() ) ) {
-			ResettableTimer ksHeartBeatTimer = ksHeartBeatTimers.get(info.getHost());
+		if(serverList.contains(srvinfo.getHost())) {
+			ResettableTimer ksHeartBeatTimer = ksHeartBeatTimers.get(srvinfo.getHost());
 			ksHeartBeatTimer.reset();
 			return;
 		}
-		logger.severe("Host does not exisit for heartBeatKernelServer: " + info.getHost().toString() + " in region " + info.getRegion());
-		throw new KernelServerNotFoundException("region exisist but host does not exisit");
+		logger.severe("Host does not exist for heartbeat KernelServer: " + srvinfo.getHost().toString() + " in region " + srvinfo.getRegion());
+		throw new KernelServerNotFoundException("region exist but host does not exist");
 
 	}
 	

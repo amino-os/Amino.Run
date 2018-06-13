@@ -41,11 +41,10 @@ public class KernelServerImpl implements KernelServer{
 	public static OMSServer oms;
 	/** local kernel client for making RPCs */
 	private KernelClient client;
-	/* keep sending hearbeat to oms on heartbeat period timeout */
-	static final int KS_HEARTBEAT_PERIOD = OMSServer.KS_HEARTBEAT_TIMEOUT / 3;
+	// heartbeat period is 1/3of the heartbeat timeout period
+	static final long KS_HEARTBEAT_PERIOD = OMSServer.KS_HEARTBEAT_TIMEOUT / 3;
 
-	/**
-	 * Periodically send heartbeats to OMS.	 */
+	// heartbeat timer
 	static ResettableTimer ksHeartbeatSendTimer;
 	
 	public KernelServerImpl(InetSocketAddress host, InetSocketAddress omsHost) {
@@ -228,18 +227,16 @@ public class KernelServerImpl implements KernelServer{
 	/**
 	 * Send heartbeats to OMS.
 	 */
-	static void startHeartBeat(ServerInfo info) {
-		logger.info("heartBeatKernelServer " + info);
-		//send hearbeat to oms
+	static void startheartbeat(ServerInfo srvinfo) {
+		logger.info("heartbeat KernelServer" + srvinfo);
 		try {
-			oms.heartBeatKernelServer(info);
+			oms.heartbeatKernelServer(srvinfo);
 		}
 		catch(Exception e){
-			logger.severe("Cannot heartBeatKernelServer "+info);
+			logger.severe("Cannot heartbeat KernelServer"+ srvinfo);
 			e.printStackTrace();
 		}
 		ksHeartbeatSendTimer.reset();
-
 	}
 	/**
 	 * At startup, contact the OMS.
@@ -279,18 +276,18 @@ public class KernelServerImpl implements KernelServer{
 				// TODO once we are sure we can comment below line & uncomment above line
 				server.setRegion(host.toString());
 			}
-			final ServerInfo info = new ServerInfo(host,server.getRegion());
-			oms.registerKernelServer(info);
+			final ServerInfo srvinfo = new ServerInfo(host,server.getRegion());
+			oms.registerKernelServer(srvinfo);
 			logger.info("Server ready!");
 			System.out.println("Server ready!");
 
 			ksHeartbeatSendTimer = new ResettableTimer(new TimerTask() {
 				public void run() {
-					startHeartBeat(info);
+					startheartbeat(srvinfo);
 				}
-			}, (long) KS_HEARTBEAT_PERIOD);
+			}, KS_HEARTBEAT_PERIOD);
 
-			oms.heartBeatKernelServer(info);
+			oms.heartbeatKernelServer(srvinfo);
 			ksHeartbeatSendTimer.start();
 			/* Start a thread that print memory stats */
 			server.getMemoryStatThread().start();

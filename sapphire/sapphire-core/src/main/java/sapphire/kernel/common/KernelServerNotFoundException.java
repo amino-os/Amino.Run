@@ -2,10 +2,8 @@ package sapphire.kernel.common;
 
 /**
  * Created by SrinivasChilveri on 5/28/18.
- * Server overload exception
+ * KernelServerNotFoundException exception
  */
-
-
 
 public class KernelServerNotFoundException extends Exception {
 

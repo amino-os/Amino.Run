@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 import org.apache.harmony.rmi.common.RMIUtil;
 
 import sapphire.app.SapphireObject;
+import sapphire.common.AppObject;
 import sapphire.common.AppObjectStub;
 import sapphire.compiler.GlobalPolicyConstants;
 import sapphire.compiler.GlobalStubConstants;
@@ -58,8 +59,6 @@ public class Sapphire {
 	 * @throws KernelObjectNotCreatedException
 	 */
 	public static Object new_(Class<?> appObjectClass, Object ... args) {
-		AppObjectStub appStub = null;
-
 		try {
 			// Read annotation from this class.
 			Annotation[] annotations = appObjectClass.getAnnotations();
@@ -161,15 +160,15 @@ public class Sapphire {
 			// TODO: Currently, this will result in assigning an AppObject to a single policy which will result in null reference
 			// TODO: when the last server policy tries to invoke the AppObject.
 			// TODO: Therefore, we need to assign reference for AppObject to each server policy (not just the first server policy).
-			appStub = getAppStub(appObjectClass, serverPolicies.get(serverPolicies.size() - 1), args);
+			AppObjectStub appStub = getAppStub(appObjectClass, serverPolicies.get(serverPolicies.size() - 1), args);
 			appStub.$__initialize(clientPolicies.get(0));
 
-//			AppObject appObject = appStub.$__getAppObject();
+			AppObject appObject = appStub.$__getAppObject();
 
-//			for (int i=serverPolicies.size()-2; i>=0; i--) {
-//				appStub = getAppStub(appObjectClass, serverPolicies.get(i), args);
-//				appStub.$__initialize(appObject);
-//			}
+			for (int i=serverPolicies.size()-2; i>=0; i--) {
+				serverPolicies.get(i).$__initialize(appObject);
+				appStub = getAppStub(serverPolicies.get(i), appObject, appStub);
+			}
 
 			logger.info("Sapphire Object created: " + appObjectClass.getName());
 			return appStub;
@@ -246,6 +245,12 @@ public class Sapphire {
 			throws Exception {
 		String appStubClassName = GlobalStubConstants.getAppPackageName(RMIUtil.getPackageName(appObjectClass)) + "." + RMIUtil.getShortName(appObjectClass) + GlobalStubConstants.STUB_SUFFIX;
 		return extractAppStub(serverPolicy.$__initialize(Class.forName(appStubClassName), args));
+	}
+
+	private static AppObjectStub getAppStub(SapphireServerPolicy serverPolicy, AppObject appObject, AppObjectStub appObjectStub)
+			throws Exception {
+		serverPolicy.$__initialize(appObject);
+		return extractAppStub(appObjectStub);
 	}
 
 	private static AppObjectStub extractAppStub(AppObjectStub appObject) throws Exception {

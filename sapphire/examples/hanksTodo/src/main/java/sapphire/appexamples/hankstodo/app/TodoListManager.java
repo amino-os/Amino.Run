@@ -1,5 +1,6 @@
 package sapphire.appexamples.hankstodo.app;
 
+import java.io.Console;
 import java.util.Hashtable;
 import java.util.Map;
 
@@ -13,13 +14,19 @@ import sapphire.policy.interfaces.dht.DHTKey;
 import sapphire.policy.mobility.explicitmigration.ExplicitMigrationPolicy;
 import sapphire.runtime.SapphireConfiguration;
 
-
-//@SapphireConfiguration(DMs = "DMChainRetryPolicy,DMChainExplicitMigrationPolicy")
 @SapphireConfiguration(DMs = "sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy,sapphire.policy.mobility.explicitmigration.ExplicitMigrationPolicy")
 public class TodoListManager implements SapphireObject, DHTInterface {
     Map<DHTKey, TodoList> todoLists = new Hashtable<DHTKey, TodoList>();
-	ExplicitMigrationPolicy m;
-	AtLeastOnceRPCPolicy a;
+//	ExplicitMigrationPolicy m;
+//	AtLeastOnceRPCPolicy a;
+
+	public TodoListManager() {
+		System.out.println("Instantiating TodoListManager...");
+	}
+
+	public void doSomething(String input) {
+		System.out.println("Input received: " + input);
+	}
 
 	public TodoList newTodoList(String name) {
 		TodoList t = todoLists.get(new DHTKey(name));

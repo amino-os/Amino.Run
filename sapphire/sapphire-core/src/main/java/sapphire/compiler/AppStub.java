@@ -41,6 +41,11 @@ public final class AppStub extends Stub {
 	}
 
 	@Override
+	public String getImportStatement() {
+		return "import " + GlobalStubConstants.getAppObjectPackageName() +";" + EOLN + EOLN; //$NON-NLS-1$
+	}
+
+	@Override
 	public String getStubClassDeclaration() {
 		StringBuilder buffer = new StringBuilder("");
 		buffer.append("public final class " + stubName + " extends " + className + " implements ");
@@ -54,6 +59,7 @@ public final class AppStub extends Stub {
 		StringBuilder buffer = new StringBuilder();
 		buffer.append(indenter.indent() + "sapphire.policy.SapphirePolicy.SapphireClientPolicy $__client = null;" + EOLN);
 		buffer.append(indenter.indent() + "boolean $__directInvocation = false;" + EOLN);
+		buffer.append(indenter.indent() + "AppObject appObject = null;" + EOLN);
 		return buffer.toString();
 	}
 
@@ -95,6 +101,16 @@ public final class AppStub extends Stub {
 		/* The $__initialize function for directInvocation */
 		buffer.append(indenter.indent() + "public void $__initialize(boolean directInvocation) {" + EOLN);
 		buffer.append(indenter.tIncrease() + "$__directInvocation = directInvocation;" + EOLN);
+		buffer.append(indenter.indent() + "}" + EOLN + EOLN);
+
+		/* The $__initialize function to set with new AppObject */
+		buffer.append(indenter.indent() + "public void $__initialize(AppObject appObject) {" + EOLN);
+		buffer.append(indenter.tIncrease() + "this.appObject = appObject;" + EOLN);
+		buffer.append(indenter.indent() + "}" + EOLN + EOLN);
+
+		/* The $__initialize function to set with new AppObject */
+		buffer.append(indenter.indent() + "public AppObject $__getAppObject() {" + EOLN);
+		buffer.append(indenter.tIncrease() + "return this.appObject;" + EOLN);
 		buffer.append(indenter.indent() + "}" + EOLN + EOLN);
 
 		/* Implement the $__clone() method */

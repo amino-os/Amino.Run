@@ -25,24 +25,27 @@ public class TodoActivity {
             System.out.println("Received tlm: " + tlm);
             
             KernelServer nodeServer = new KernelServerImpl(new InetSocketAddress(args[2], Integer.parseInt(args[3])), new InetSocketAddress(args[0], Integer.parseInt(args[1])));
-            
-			TodoList tl = tlm.newTodoList("Hanks");	
-			System.out.println("Received tl1: " + tl);
-			System.out.println(tl.addToDo("First todo"));
-			System.out.println(tl.addToDo("Second todo"));
-			System.out.println(tl.addToDo("Third todo"));
-
-			TodoList tl2 = tlm.newTodoList("AAA");
-			System.out.println("Received tl2: " + tl2);
-			System.out.println(tl2.addToDo("First todo"));
-			System.out.println(tl2.addToDo("Second todo"));
-			System.out.println(tl2.addToDo("Third todo"));
-	
-			TodoList tl3 = tlm.newTodoList("HHH");	
-			System.out.println("Received tl3: " + tl3);
-			System.out.println(tl3.addToDo("First todo"));
-			System.out.println(tl3.addToDo("Second todo"));
-			System.out.println(tl3.addToDo("Third todo"));
+            tlm.doSomething("do 1");
+            tlm.doSomething("do 2");
+            tlm.doSomething("do 3");
+//
+//			TodoList tl = tlm.newTodoList("Hanks");
+//			System.out.println("Received tl1: " + tl);
+//			System.out.println(tl.addToDo("First todo"));
+//			System.out.println(tl.addToDo("Second todo"));
+//			System.out.println(tl.addToDo("Third todo"));
+//
+//			TodoList tl2 = tlm.newTodoList("AAA");
+//			System.out.println("Received tl2: " + tl2);
+//			System.out.println(tl2.addToDo("First todo"));
+//			System.out.println(tl2.addToDo("Second todo"));
+//			System.out.println(tl2.addToDo("Third todo"));
+//
+//			TodoList tl3 = tlm.newTodoList("HHH");
+//			System.out.println("Received tl3: " + tl3);
+//			System.out.println(tl3.addToDo("First todo"));
+//			System.out.println(tl3.addToDo("Second todo"));
+//			System.out.println(tl3.addToDo("Third todo"));
 			
 		} catch (Exception e) {
 			// TODO Auto-generated catch block

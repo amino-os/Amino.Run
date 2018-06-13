@@ -61,6 +61,7 @@ public abstract class Stub implements RmicConstants {
 		indenter = new Indenter();
 
 		return (getStubHeader() + getPackageStatement() + EOLN //$NON-NLS-1$
+				+ getImportStatement() + EOLN
 				+ getStubClassDeclaration()
 				+ indenter.hIncrease()
 				+ getStubFields() + EOLN
@@ -98,6 +99,7 @@ public abstract class Stub implements RmicConstants {
 
 	public abstract TreeSet<MethodStub> getMethods();
 	public abstract String getPackageStatement();
+	public abstract String getImportStatement();
 	public abstract String getStubClassDeclaration();
 	public abstract String getStubFields();
 	public abstract String getStubConstructors();

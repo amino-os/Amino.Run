@@ -1,0 +1,39 @@
+
+
+1) from the app code need to generate the .proto files using some tools(currently its manually written)
+from the .proto files generate the grpc stubs (for demo purpose its already generated & placed in proper folders
+
+Just clone and place the sapphire_grpc  folder in GOPATH/src folder
+
+2) generate the algo & greeting shared lib as shown below (currently the shared libs also checked in)
+
+root1@root1-HP-EliteBook-840-G2:~/SriniCH/workspace/src/sapphire_grpc/algo_obj$ go build -buildmode=plugin   -o ./../sapphire_objects/SapphireObj_Algo.so 
+
+root1@root1-HP-EliteBook-840-G2:~/SriniCH/workspace/src/sapphire_grpc/greeting_obj$ go build -buildmode=plugin   -o ./../sapphire_objects/SapphireObj_Greeting.so 
+
+
+3) build & bring up the grpc service process as shown below 
+
+root1@root1-HP-EliteBook-840-G2:~/SriniCH/workspace/src/sapphire_grpc/sapphire_process$ go build main.go 
+
+root1@root1-HP-EliteBook-840-G2:~/SriniCH/workspace/src/sapphire_grpc/sapphire_process$ ./main
+
+
+currently Different clients are used to test manually AlgoClient & GreetingClient  have the full flow 
+
+4) build and bring up/test as shown below
+
+root1@root1-HP-EliteBook-840-G2:~/SriniCH/workspace/src/sapphire_grpc/client/GreetingClient$  go build main.go 
+root1@root1-HP-EliteBook-840-G2:~/SriniCH/workspace/src/sapphire_grpc/client/GreetingClient$ ./main 
+
+
+
+root1@root1-HP-EliteBook-840-G2:~/SriniCH/workspace/src/sapphire_grpc/client/AlgoClient$  go build main.go 
+root1@root1-HP-EliteBook-840-G2:~/SriniCH/workspace/src/sapphire_grpc/client/AlgoClient$ ./main
+
+
+
+
+
+
+

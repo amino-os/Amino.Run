@@ -351,8 +351,7 @@ func (c *mgmtgrpcServiceClient) GenericMethodInvoke(ctx context.Context, in *Gen
 	return out, nil
 }
 
-// Server API for MgmtgrpcService service
-
+// MgmtgrpcServiceServer is the server API for MgmtgrpcService service.
 type MgmtgrpcServiceServer interface {
 	CreateSapphireObject(context.Context, *CreateRequest) (*CreateReply, error)
 	DeleteSapphireObject(context.Context, *DeleteRequest) (*DeleteReply, error)

@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"sapphire_grpc/api"
-
+	"sapphire_grpc/api/greeting"
 	"github.com/golang/protobuf/proto"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -20,17 +20,19 @@ func main() {
 	c := api.NewMgmtgrpcServiceClient(conn)
 	var request api.GenericMethodRequest
 	request.FuncName = "HelloWorld"
-	request.ObjId = "de0e5bc5-c92c-4916-b905-dfa9063d8b91"
-	request.SapphireObjName = "New"
+	request.ObjId = "83a85426-9cef-40f2-a60f-6dd0c0862c07"
+	request.SapphireObjName = "SapphireObj_Greeting"
 	
-	request.Params, _ = proto.Marshal(&api.HelloWorldRequest{Num: 10, Name: "Test String"})
+	request.Params, _ = proto.Marshal(&greeting.HelloWorldRequest{Num: 10, Name: "Test String"})
 
 	response, err := c.GenericMethodInvoke(context.Background(), &request)
 	if err != nil {
-		fmt.Println("Unable to Recive the mesage")
+		fmt.Println("Unable to Recive the mesage",err)
 		return
 	}
-	var methodResponse api.HelloWorldReply
+
+        fmt.Println("Result",response)
+	var methodResponse greeting.HelloWorldReply
 
 	proto.Unmarshal(response.Ret, &methodResponse)
 

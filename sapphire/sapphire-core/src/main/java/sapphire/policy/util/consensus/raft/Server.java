@@ -310,8 +310,7 @@ public class Server implements RemoteRaftServer { // This outer class contains e
             return leader.applyToStateMachine(operation);
         }
         else {
-            // TODO (Consensus): getCurrentLeader() may return null, handle correctly
-            return getCurrentLeader().applyToStateMachine(operation); // Forward to the leader.
+            throw new LeaderException(String.format("Current Leader is %s", vState.getCurrentLeader()), getCurrentLeader());
         }
     }
 
@@ -453,15 +452,15 @@ public class Server implements RemoteRaftServer { // This outer class contains e
                     else {
                         prevLogTerm = INVALID_INDEX;
                     }
-                    List<LogEntry> entries = pState.log().size() > 0 ? pState.log().subList(nextIndex, lastLogIndex() + 1) : NO_LOG_ENTRIES;
+                    List<LogEntry> entries = pState.log().size() > 0 ? new ArrayList(pState.log().subList(nextIndex, lastLogIndex() + 1)) : NO_LOG_ENTRIES;
                     int remoteTerm = getServer(otherServerID).appendEntries(pState.getCurrentTerm(), pState.myServerID,
                             nextIndex - 1, prevLogTerm, entries, vState.getCommitIndex());
                     success = true;
                     respondToRemoteTerm(remoteTerm); // Might lose leadership.
-                } catch (Server.InvalidTermException e) {
+                } catch (InvalidTermException e) {
                     logger.warning(e.toString());
                     respondToRemoteTerm(e.currentTerm);
-                } catch (Server.PrevLogTermMismatch e) {
+                } catch (PrevLogTermMismatch e) {
                     logger.warning(e.toString());
                     this.nextIndex.put(otherServerID, otherServerNextIndex - 1); // Decrement and try again.
                 } catch (InvalidLogIndex e) { // The remote server doesn't have that log entry at all.
@@ -780,7 +779,7 @@ public class Server implements RemoteRaftServer { // This outer class contains e
             try { // Vote for self
                 requestVote(pState.getCurrentTerm(), pState.myServerID, lastLogIndex(), lastLogTerm());
             }
-            catch (Server.VotingException e) {
+            catch (VotingException e) {
                 logger.warning("Unexpected error voting for self: " + e.toString());
                 become(State.FOLLOWER, State.CANDIDATE);
                 return;
@@ -826,7 +825,7 @@ public class Server implements RemoteRaftServer { // This outer class contains e
                     logger.info(String.format("%s While waiting in blocking call, state transitioned from CANDIDATE to %s, old term : %d and current term : %d", pState.myServerID, vState.getState(), currentTerm, pState.getCurrentTerm()));
                 }
             }
-            catch (Server.VotingException e) {
+            catch (VotingException e) {
                 voteGranted = false;
                 logger.info("Leader election vote request denied by server: " + e.toString());
                 respondToRemoteTerm(e.currentTerm);
@@ -886,68 +885,6 @@ public class Server implements RemoteRaftServer { // This outer class contains e
                     }
                 }
             });
-        }
-    }
-
-    /**
-     * Base class for all voting exceptions.
-     * When candidates request a vote but are denied, they need to know the current term of the voter to update themselves.
-     */
-    public static class VotingException extends Exception {
-        public int currentTerm;
-        public VotingException(String s, int currentTerm) {
-            super(s);
-            this.currentTerm = currentTerm;
-        }
-    }
-    /**
-     * If term < currentTerm on appendEntries or requestVote RPC
-     */
-    public static class InvalidTermException extends VotingException {
-        public InvalidTermException(String s, int currentTerm) {
-            super(s, currentTerm);
-        }
-    }
-
-    /**
-     * If log doesn’t contain an entry at prevLogIndex whose term matches prevLogTerm on appendEntries RPC
-     */
-    public static class PrevLogTermMismatch extends Exception {
-        int logIndex, remoteTerm, localTerm;
-        public PrevLogTermMismatch(String s, int logIndex, int remoteTerm, int localTerm) {
-            super(s);
-            this.logIndex = logIndex;
-            this.remoteTerm = remoteTerm;
-            this.localTerm = localTerm;
-        }
-    }
-
-    /**
-     * If log doesn’t contain an entry at specified logIndex on appendEntries RPC
-     */
-    public static class InvalidLogIndex extends sapphire.policy.util.consensus.raft.RaftRuntimeException {
-        int invalidIndex;
-        public InvalidLogIndex(String s, int invalidIndex) {
-            super(s);
-            this.invalidIndex = invalidIndex;
-        }
-    }
-
-    /**
-     * If member has already voted for a different leader when receiving requestVote RPC
-     */
-    public static class AlreadyVotedException extends Server.VotingException {
-        public AlreadyVotedException(String s, int currentTerm) {
-            super(s, currentTerm);
-        }
-    }
-
-    /**
-     * If candidate’s log is not at least as up-to-date as receiver’s log on requestVote RPC
-     */
-    public static class CandidateBehindException extends Server.VotingException {
-        public CandidateBehindException(String s, int currentTerm) {
-            super(s, currentTerm);
         }
     }
 }

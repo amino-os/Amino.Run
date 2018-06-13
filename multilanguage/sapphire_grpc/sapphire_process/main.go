@@ -3,8 +3,10 @@ package main
 import (
 	"crypto/rand"
 	"errors"
+	"reflect"
 	"fmt"
 	"io"
+	"os"
 	"net"
 	"plugin"
 	api "sapphire_grpc/api"
@@ -59,6 +61,7 @@ type PlugInInfo struct {
 	ObjectAddress *plugin.Plugin
 }
 
+var SharedLibsPath string
 //PlugInName & PlugIn Map
 var SapphireNameMap map[string]PlugInInfo
 
@@ -81,11 +84,20 @@ func (s *Server) CreateSapphireObject(c context.Context, in *api.CreateRequest) 
 	//if the plug in is not loaded then load it other wise just create the UUID &Create the SapphireObject
 	if !ok {
 
-		plug, err = plugin.Open("../sapphire_obj/sobj.so")
+		sharedlibPath := fmt.Sprintf("%s%s.so",SharedLibsPath,sapphireObjName)
+
+		_,err = os.Stat(sharedlibPath)
+
 		if err != nil {
-			err = errors.New("UnableToCreateObject")
+			fmt.Println("Shared library is not there is the path", sharedlibPath)
 			return nil, err
 		}
+		plug, err = plugin.Open(sharedlibPath)
+		if err != nil {
+			fmt.Println("plugin.Open Failed",err)
+			return nil, err
+		}
+
 		SapphireNameMap[sapphireObjName] = PlugInInfo{ObjectAddress: plug}
 		fmt.Println("Successfully Loaded  the Dynamic lib", SapphireNameMap)
 	} else {
@@ -119,15 +131,29 @@ func (s *Server) CreateSapphireObject(c context.Context, in *api.CreateRequest) 
 // Delete the Sapphire Object
 func (s *Server) DeleteSapphireObject(c context.Context, in *api.DeleteRequest) (*api.DeleteReply, error) {
 
+	_, flag := SapphireIDMap[in.ObjId]
+
+	if (! flag ) {
+		err := errors.New("SapphireObject ID is Invalid")
+		fmt.Println("SapphireObject ID is Invalid")
+		return &api.DeleteReply{Flag: false},err
+	}
+
 	delete(SapphireIDMap, in.ObjId)
-	fmt.Println("Successfully DeleteSapphireObject the Sapphire Object", SapphireIDMap)
+	fmt.Println("Successfully&api.DeleteReply{Flag: true} DeleteSapphireObject the Sapphire Object", SapphireIDMap)
 	return &api.DeleteReply{Flag: true}, nil
 }
 func (s *Server) GenericMethodInvoke(c context.Context, in *api.GenericMethodRequest) (*api.GenericMethodReply, error) {
 
-	plug := SapphireNameMap[in.SapphireObjName]
+	plugInfo, ok := SapphireNameMap[in.SapphireObjName]
 
-	symGreeter1, err1 := plug.ObjectAddress.Lookup("GenericSOMethodInvoke")
+	if (! ok ) {
+		err := errors.New("SapphireObject Name is wrong")
+		fmt.Println("SapphireObject Name is wrong")
+		return nil,err
+	}
+
+	symGreeter1, err1 := plugInfo.ObjectAddress.Lookup("GenericSOMethodInvoke")
 	if err1 != nil {
 		fmt.Println("Error in plug.Lookup for GenericSOMethodInvoke")
 		fmt.Println(err1)
@@ -141,7 +167,23 @@ func (s *Server) GenericMethodInvoke(c context.Context, in *api.GenericMethodReq
 		return nil, err
 	}
 
-	ret := method(in, SapphireIDMap[in.ObjId])
+	Obj, flag := SapphireIDMap[in.ObjId]
+
+	if (! flag ) {
+		err := errors.New("SapphireObject ID is Invalid")
+		fmt.Println("SapphireObject ID is Invalid")
+		return nil,err
+	}
+
+	actualmethod := reflect.ValueOf(Obj).MethodByName(in.FuncName)
+
+	if ! actualmethod.IsValid() {
+		err := errors.New("Method Name is Inavlid")
+		fmt.Println("Method Name is Inavlid :", actualmethod)
+		return nil,err
+	}
+
+	ret := method(in, Obj)
 
 	return &api.GenericMethodReply{Ret: ret}, nil
 }
@@ -149,6 +191,9 @@ func main() {
 
 	SapphireNameMap = make(map[string]PlugInInfo)
 	SapphireIDMap = make(map[string]interface{})
+
+	//currently its hard coded either we can take from config or input parameters
+	SharedLibsPath = "../sapphire_objects/"
 
 	lis, err := net.Listen("tcp", ":7000")
 	if err != nil {

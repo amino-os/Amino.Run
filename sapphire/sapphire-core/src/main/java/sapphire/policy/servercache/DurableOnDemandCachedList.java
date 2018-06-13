@@ -1,5 +1,6 @@
 package sapphire.policy.servercache;
 
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 
 
@@ -42,9 +43,6 @@ public class DurableOnDemandCachedList extends SapphirePolicy {
 		@Override
 		public Object onRPC(String method, ArrayList<Object> params) throws Exception {
 			/* Switch on the method we need to execute */
-
-
-
 			return null;
 		}
 	}
@@ -56,9 +54,8 @@ public class DurableOnDemandCachedList extends SapphirePolicy {
 		int listSize;  // cache the size of the list
 		int numMisses; // to automatically grow the cache if possible
 
-
 		@Override
-		public void onCreate(SapphireGroupPolicy group) {
+		public void onCreate(SapphireGroupPolicy group, Annotation[] annotations) {
 			// TODO Auto-generated method stub
 			this.group = (DurableOnDemandCachedListGroupPolicy) group;
 		}
@@ -73,12 +70,10 @@ public class DurableOnDemandCachedList extends SapphirePolicy {
 
 		}
 		
-		
 		@Override
 		public Object onRPC(String method, ArrayList<Object> params) throws Exception {
 			return null;
 		}
-		
 	}
 
 	public static class DurableOnDemandCachedListGroupPolicy extends SapphireGroupPolicy {
@@ -98,7 +93,6 @@ public class DurableOnDemandCachedList extends SapphirePolicy {
 
 		}
 
-
 		@Override
 		public SapphireServerPolicy onRefRequest() {
 			return server;
@@ -110,7 +104,7 @@ public class DurableOnDemandCachedList extends SapphirePolicy {
 		}
 
 		@Override
-		public void onCreate(SapphireServerPolicy server) {
+		public void onCreate(SapphireServerPolicy server, Annotation[] annotations) {
 			addServer(server);
 		}
 	}

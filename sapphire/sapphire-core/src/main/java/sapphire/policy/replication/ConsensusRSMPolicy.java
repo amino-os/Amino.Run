@@ -2,6 +2,7 @@ package sapphire.policy.replication;
 
 
 import java.io.Serializable;
+import java.lang.annotation.Annotation;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
@@ -9,7 +10,6 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Logger;
-
 import sapphire.policy.DefaultSapphirePolicy;
 import sapphire.policy.util.consensus.raft.AlreadyVotedException;
 import sapphire.policy.util.consensus.raft.CandidateBehindException;
@@ -118,8 +118,8 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
         }
 
         @Override
-        public void onCreate(SapphireGroupPolicy group) {
-            super.onCreate(group);
+        public void onCreate(SapphireGroupPolicy group, Annotation[] annotations) {
+            super.onCreate(group, annotations);
         }
 
         /** TODO: Handle added and failed servers - i.e. quorum membership changes
@@ -178,7 +178,7 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
     public static class GroupPolicy extends DefaultSapphirePolicy.DefaultGroupPolicy {
         private static Logger logger = Logger.getLogger(GroupPolicy.class.getName());
 
-        public void onCreate(SapphireServerPolicy server) {
+        public void onCreate(SapphireServerPolicy server, Annotation[] annotations) {
             try {
                 ArrayList<String> regions = sapphire_getRegions();
                 // Register the first replica, which has already been created.

@@ -7,6 +7,7 @@ import sapphire.policy.SapphirePolicyUpcalls.SapphireServerPolicyUpcalls;
 import sapphire.policy.scalability.masterslave.MethodInvocationRequest;
 import sapphire.policy.scalability.masterslave.MethodInvocationResponse;
 
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 
 /**
@@ -17,7 +18,7 @@ public class AppObjectShimServerPolicy implements SapphireServerPolicyUpcalls{
     private AppObject originMaster;
 
     @Override
-    public void onCreate(SapphirePolicy.SapphireGroupPolicy group) {
+    public void onCreate(SapphirePolicy.SapphireGroupPolicy group, Annotation[] annotations) {
 
     }
 

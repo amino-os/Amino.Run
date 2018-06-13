@@ -1,6 +1,7 @@
 package sapphire.policy.scalability;
 
 import java.io.Serializable;
+import java.lang.annotation.Annotation;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -50,8 +51,8 @@ public class LoadBalancedMasterSlaveSyncPolicy extends LoadBalancedMasterSlaveBa
         private transient Processor processor;
 
         @Override
-        public void onCreate(SapphireGroupPolicy group) {
-            super.onCreate(group);
+        public void onCreate(SapphireGroupPolicy group, Annotation[] annotations) {
+            super.onCreate(group,annotations);
         }
 
         @Override

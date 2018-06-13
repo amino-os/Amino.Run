@@ -70,12 +70,13 @@ public class LoadBalancedFrontendPolicyTest implements Serializable {
 
     @Override
     public String toString() {
-	    /* Overridden toString to just add delay in the app object rpc call */
-	    try {
+        /* Overridden toString to just add delay in the app object rpc call */
+        try {
             Thread.sleep(15);
         } catch(InterruptedException e) {
 
         }
+
         return "LoadBalancedFrontendPolicyTest";
     }
 

@@ -1,0 +1,73 @@
+////apply plugin: 'com.android.application'
+//apply plugin: 'com.android.library'
+//
+//android {
+//    compileSdkVersion project.ext.compileSdkVersion.toInteger()
+//    buildToolsVersion project.ext.buildToolsVersion
+//
+//    lintOptions {
+//        checkReleaseBuilds false
+//        // Or, if you prefer, you can continue to check for errors in release builds,
+//        // but continue the build even when errors are found:
+//        abortOnError false
+//    }
+//
+//    defaultConfig {
+//        //applicationId "com.example.hankstodo"
+//        versionCode 1
+//        versionName "1.0"
+//        minSdkVersion 24
+//        targetSdkVersion 27
+//    }
+//
+//    buildTypes {
+//        release {
+//            minifyEnabled false
+//            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+//        }
+//    }
+//
+//    dexOptions {
+//        preDexLibraries = false
+//        additionalParameters=['--core-library']
+//    }
+//}
+//
+//repositories {
+//    flatDir {
+//        dirs '../../libs'
+//    }
+//}
+//
+//dependencies {
+//    compile 'com.android.support:support-v4:27.0.2'
+//    compile name: 'sapphire-core'
+//    compile name: 'java.rmi'
+//    compile name: 'apache.harmony'
+//}
+
+apply plugin: 'java'
+
+repositories {
+    flatDir {
+        dirs '../../libs'
+    }
+}
+
+dependencies {
+    //compile project(':sapphire-core')
+    compile name: 'sapphire-core'
+    compile name: 'java.rmi'
+    compile name: 'apache.harmony'
+}
+
+sourceSets {
+    main {
+        java {
+            exclude 'sapphire/appexamples/helloworld/glue/**'
+        }
+    }
+}
+
+sourceCompatibility = "1.6"
+targetCompatibility = "1.6"

@@ -6,6 +6,9 @@ dependencies {
     compile project(':dependencies:java.rmi')
     testCompile 'junit:junit:4.12'
     testCompile 'org.mockito:mockito-core:1.+'
+    testCompile 'org.powermock:powermock:1.6.5'
+    testCompile 'org.powermock:powermock-module-junit4:1.6.5'
+    testCompile 'org.powermock:powermock-api-mockito:1.6.5'
 }
 
 task deleteJar(type: Delete) {

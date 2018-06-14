@@ -5,6 +5,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.Serializable;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 
@@ -50,8 +51,8 @@ public class LoadBalancedMasterSlaveSyncPolicyIntegTest {
 
         client.setServer(server1);
         client.onCreate(group);
-        server1.onCreate(group);
-        server2.onCreate(group);
+        server1.onCreate(group, new Annotation[]{});
+        server2.onCreate(group, new Annotation[]{});
         server1.start();
         server2.start();
     }

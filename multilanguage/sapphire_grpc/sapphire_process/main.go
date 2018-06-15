@@ -133,7 +133,7 @@ func (s *Server) DeleteSapphireObject(c context.Context, in *api.DeleteRequest) 
 
 	_, flag := SapphireIDMap[in.ObjId]
 
-	if (! flag ) {
+	if ! flag  {
 		err := errors.New("SapphireObject ID is Invalid")
 		fmt.Println("SapphireObject ID is Invalid")
 		return &api.DeleteReply{Flag: false},err
@@ -145,14 +145,14 @@ func (s *Server) DeleteSapphireObject(c context.Context, in *api.DeleteRequest) 
 }
 func (s *Server) GenericMethodInvoke(c context.Context, in *api.GenericMethodRequest) (*api.GenericMethodReply, error) {
 
-	plugInfo, ok := SapphireNameMap[in.SapphireObjName]
+	_, ok := SapphireNameMap[in.SapphireObjName]
 
-	if (! ok ) {
+	if ! ok  {
 		err := errors.New("SapphireObject Name is wrong")
 		fmt.Println("SapphireObject Name is wrong")
 		return nil,err
 	}
-
+    /* GenericSOMethodInvoke  is not required as part of go lang Sapphire Object Shared lib
 	symGreeter1, err1 := plugInfo.ObjectAddress.Lookup("GenericSOMethodInvoke")
 	if err1 != nil {
 		fmt.Println("Error in plug.Lookup for GenericSOMethodInvoke")
@@ -166,24 +166,42 @@ func (s *Server) GenericMethodInvoke(c context.Context, in *api.GenericMethodReq
 		fmt.Println("Error in symGreeter.(func(string) interface{} )")
 		return nil, err
 	}
+	*/
 
 	Obj, flag := SapphireIDMap[in.ObjId]
 
-	if (! flag ) {
+	if ! flag  {
 		err := errors.New("SapphireObject ID is Invalid")
 		fmt.Println("SapphireObject ID is Invalid")
 		return nil,err
 	}
 
-	actualmethod := reflect.ValueOf(Obj).MethodByName(in.FuncName)
+	actualMethod := reflect.ValueOf(Obj).MethodByName(in.FuncName)
 
-	if ! actualmethod.IsValid() {
+	if ! actualMethod.IsValid() {
 		err := errors.New("Method Name is Inavlid")
-		fmt.Println("Method Name is Inavlid :", actualmethod)
+		fmt.Println("Method Name is Inavlid :", actualMethod)
 		return nil,err
 	}
+	wrapperMethod := reflect.ValueOf(Obj).MethodByName(in.FuncName + "_Wrap")
+	
+	if ! wrapperMethod.IsValid() {
+		err := errors.New("wrappermethod is wrong some issue in stub generation")
+		fmt.Println("Method Name is Inavlid :", wrapperMethod ,err)
+		return nil, err
+	}
+	
+	objects := make(map[reflect.Type]interface{})
+	reqin := make([]reflect.Value, wrapperMethod.Type().NumIn())
 
-	ret := method(in, Obj)
+	paramtype := wrapperMethod.Type().In(0).Elem()
+	objects[paramtype] = in.Params
+	reqin[0] = reflect.ValueOf(objects[paramtype])
+	
+
+	methodReslut := wrapperMethod.Call(reqin)
+
+	ret := methodReslut[0].Interface().([]byte)
 
 	return &api.GenericMethodReply{Ret: ret}, nil
 }

@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"reflect"
-	"sapphire_grpc/api"
+	//"reflect"
+	//"sapphire_grpc/api"
 	"sapphire_grpc/api/algo"
 
 	"github.com/golang/protobuf/proto"
@@ -16,7 +16,7 @@ func GenericCreate() interface{} {
 
 	return &temp
 }
-
+/*
 func GenericSOMethodInvoke(methodInfoInterface interface{}, soObjectInterface interface{}) []byte {
 
 	objects := make(map[reflect.Type]interface{})
@@ -41,6 +41,7 @@ func GenericSOMethodInvoke(methodInfoInterface interface{}, soObjectInterface in
 	fmt.Println("GenericSOMethodInvoke return ret:", ret)
 	return ret
 }
+*/
 
 func (soObj *GenericAlgoSo) Search_Wrap(reqData []byte) []byte {
 	fmt.Println("Search_Wrap:", reqData)

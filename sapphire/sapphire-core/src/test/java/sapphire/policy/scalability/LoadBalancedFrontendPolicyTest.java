@@ -27,6 +27,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -151,13 +152,17 @@ public class LoadBalancedFrontendPolicyTest implements Serializable {
         this.server = (LoadBalancedFrontendPolicy.ServerPolicy) spy(KernelObjectFactory.create(Server_Stub.class.getName()));
         this.server.$__initialize(appObject);
         this.client.setServer(this.server);
-        setFieldValueOnInstance(this.server, "maxConcurrentReq", 2);
 
         sequential.lock();
         this.group = spy(new LoadBalancedFrontendPolicy.GroupPolicy());
 
         this.client.onCreate(this.group);
         this.server.onCreate(this.group, new Annotation[]{});
+        
+        /* set field values to lower for UT */
+        int MAX_CONCURRENT_REQUEST = 2;
+        setFieldValueOnInstance(this.server, "maxConcurrentReq", MAX_CONCURRENT_REQUEST);
+        setFieldValueOnInstance(this.server, "limiter", new Semaphore(MAX_CONCURRENT_REQUEST, true));
 
         // Stub the static factory create method to pass our test stub class name
         KernelObjectStub spiedReplicaServerStub = spy(KernelObjectFactory.create(Server_Stub.class.getName()));
@@ -174,6 +179,9 @@ public class LoadBalancedFrontendPolicyTest implements Serializable {
             // Should update this.server2.. and so on based on the number of server stubs created
             if (spiedKs2.getLocalHost().equals(((Server_Stub)stub).$__getHostname())) {
                 this.server2 = (LoadBalancedFrontendPolicy.ServerPolicy)stub;
+                this.server2.onCreate(this.group, new Annotation[]{});
+                setFieldValueOnInstance(this.server2, "maxConcurrentReq", MAX_CONCURRENT_REQUEST);
+                setFieldValueOnInstance(this.server2, "limiter", new Semaphore(MAX_CONCURRENT_REQUEST, true));
             }
             stub.$__initialize(appObject);
         }
@@ -185,33 +193,22 @@ public class LoadBalancedFrontendPolicyTest implements Serializable {
      * Anytime the client makes an onRPC call, the first request is randomly assigned to any server.
      * Subsequent onRPC call is always redirected to the other server and so on.
      */
-    @Test @Ignore
+    @Test
     public void testRandomLoadBalance() throws Exception {
         String methodName = "public java.lang.String java.lang.Object.toString()";
         ArrayList<Object> params = new ArrayList<Object>();
 
         this.client.onRPC(methodName, params);
-        int index = (Integer) extractFieldValueOnInstance(this.client, "index");
-        if (0 == index) {
-            verify((this.server), times(1)).onRPC(methodName, params);
-            this.client.onRPC(methodName, params);
-            index = (Integer) extractFieldValueOnInstance(this.client, "index");
-            verify((this.server2), times(1)).onRPC(methodName, params);
-            assertEquals(index, 1);
-        } else {
-            verify((this.server2), times(1)).onRPC(methodName, params);
-            this.client.onRPC(methodName, params);
-            index = (Integer) extractFieldValueOnInstance(this.client, "index");
-            verify((this.server), times(1)).onRPC(methodName, params);
-            assertEquals(index, 0);
-        }
+        this.client.onRPC(methodName, params);
+        verify((this.server), times(1)).onRPC(methodName, params);
+        verify((this.server2), times(1)).onRPC(methodName, params);
     }
 
     /**
      * If the number of concurrent requests against a given replica exceeds the MAX_CONCURRENT_REQUESTS, requests to that server
      * replica should fail with a ServerOverLoadException.
      */
-    @Test @Ignore
+    @Test
     public void testMaxConcurrentRequests() throws Exception {
         final String methodName = "public java.lang.String java.lang.Object.toString()";
         final ArrayList<Object> params = new ArrayList<Object>();
@@ -249,7 +246,7 @@ public class LoadBalancedFrontendPolicyTest implements Serializable {
     /**
      * If the created number of replicas is lesser than the configured number of replicas, it throws an error.
      */
-    @Test @Ignore
+    @Test
     public void testStaticReplicaCount() throws Exception {
         LoadBalancedFrontendPolicy.GroupPolicy group1;
         sequential.lock();
@@ -262,13 +259,8 @@ public class LoadBalancedFrontendPolicyTest implements Serializable {
 
         // Expecting error message- Configured replicas count: 5, created replica count : 1
         thrown.expectMessage("Configured replicas count: 5, created replica count : 1");
-        setFieldValue(LoadBalancedFrontendPolicy.GroupPolicy.class, "replicaCount", 5);
+        setFieldValueOnInstance(group1, "replicaCount", 5);
         group1.onCreate(this.server, new Annotation[]{});
         sequential.unlock();
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        setFieldValue(LoadBalancedFrontendPolicy.GroupPolicy.class,"replicaCount", 2);
     }
 }

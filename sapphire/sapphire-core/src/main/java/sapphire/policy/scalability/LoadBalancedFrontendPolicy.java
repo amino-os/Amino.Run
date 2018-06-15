@@ -83,13 +83,12 @@ public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
 	 */
 	public static class ServerPolicy extends DefaultSapphirePolicy.DefaultServerPolicy {
 		private static Logger logger = Logger.getLogger(ServerPolicy.class.getName());
-		private int maxConcurrentReq; //we can read from default config or annotations
+		private int maxConcurrentReq = MAX_CONCURRENT_REQUESTS; //we can read from default config or annotations
 		private Semaphore limiter;
 
 		@Override
 		public void onCreate(SapphireGroupPolicy group, Annotation[] annotations) {
 			super.onCreate(group,annotations);
-			this.maxConcurrentReq = MAX_CONCURRENT_REQUESTS;
 			LoadBalancedFrontendPolicyConfigAnnotation annotation = getAnnotation(annotations);
 			if (annotation != null){
 				this.maxConcurrentReq = annotation.maxconcurrentReq();
@@ -123,13 +122,11 @@ public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
 	 *
 	 */
 	public static class GroupPolicy extends DefaultSapphirePolicy.DefaultGroupPolicy {
-		private static int STATIC_REPLICAS = 2 ; //currently its hard coded we can read from config or annotations
 		private static Logger logger = Logger.getLogger(GroupPolicy.class.getName());
-		private static int replicaCount;// we can read from config or annotations
+		private int replicaCount = STATIC_REPLICA_COUNT;// we can read from config or annotations
+        
 		@Override
 		public void onCreate(SapphireServerPolicy server, Annotation[] annotations) {
-
-			this.replicaCount = STATIC_REPLICA_COUNT;
 			LoadBalancedFrontendPolicyConfigAnnotation annotation = getAnnotation(annotations);
 
 			if (annotation != null){

@@ -3,6 +3,7 @@ package sapphire.policy;
 import static sapphire.policy.DefaultSapphirePolicy.DefaultGroupPolicy;
 import static sapphire.policy.DefaultSapphirePolicy.DefaultServerPolicy;
 
+import java.rmi.RemoteException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -34,7 +35,10 @@ public class DefaultSapphirePolicyTest {
                             new Runnable() {
                                 @Override
                                 public void run() {
-                                    group.addServer(s);
+                                    try {
+                                        group.addServer(s);
+                                    } catch (RemoteException e) {
+                                    }
                                 }
                             });
         }
@@ -46,7 +50,10 @@ public class DefaultSapphirePolicyTest {
                             new Runnable() {
                                 @Override
                                 public void run() {
-                                    group.removeServer(s);
+                                    try {
+                                        group.removeServer(s);
+                                    } catch (RemoteException e) {
+                                    }
                                 }
                             });
         }

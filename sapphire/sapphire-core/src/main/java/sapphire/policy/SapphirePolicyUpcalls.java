@@ -2,6 +2,7 @@ package sapphire.policy;
 
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import sapphire.policy.SapphirePolicy.SapphireGroupPolicy;
 import sapphire.policy.SapphirePolicy.SapphireServerPolicy;
@@ -30,16 +31,16 @@ public interface SapphirePolicyUpcalls {
     }
 
     interface SapphireGroupPolicyUpcalls extends Serializable {
-        void onCreate(SapphireServerPolicy server, Annotation[] annotations) throws Exception;;
+        void onCreate(SapphireServerPolicy server, Annotation[] annotations) throws RemoteException;
 
-        void addServer(SapphireServerPolicy server) throws Exception;;
+        void addServer(SapphireServerPolicy server) throws RemoteException;
 
-        void removeServer(SapphireServerPolicy server) throws Exception;;
+        void removeServer(SapphireServerPolicy server) throws RemoteException;
 
-        ArrayList<SapphireServerPolicy> getServers() throws Exception;;
+        ArrayList<SapphireServerPolicy> getServers() throws RemoteException;
 
-        void onFailure(SapphireServerPolicy server) throws Exception;
+        void onFailure(SapphireServerPolicy server) throws RemoteException;
 
-        SapphireServerPolicy onRefRequest() throws Exception;
+        SapphireServerPolicy onRefRequest() throws RemoteException;
     }
 }

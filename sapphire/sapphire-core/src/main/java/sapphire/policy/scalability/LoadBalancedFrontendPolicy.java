@@ -136,13 +136,13 @@ public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
                     0; // count is compared below < STATIC_REPLICAS-1 excluding the present server
             int numnodes = 0; // num of nodes/servers in the selected region
 
-            // Initialize and consider this server
-            addServer(server);
-
             /* Creation of group happens when the first instance of sapphire object is
             being created. Loop through all the kernel servers and replicate the
             sapphire objects on them based on the static replica count */
             try {
+
+                // Initialize and consider this server
+                addServer(server);
 
                 /* Find the current region and the kernel server on which this first instance of
                 sapphire object is being created. And try to replicate the

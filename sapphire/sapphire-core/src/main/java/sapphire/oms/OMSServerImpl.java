@@ -1,5 +1,8 @@
 package sapphire.oms;
 
+import static sapphire.runtime.Sapphire.getPolicyStub;
+import static sapphire.runtime.Sapphire.initializeGroupPolicy;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.rmi.NotBoundException;
@@ -23,16 +26,12 @@ import sapphire.kernel.common.ServerInfo;
 import sapphire.kernel.server.KernelServer;
 import sapphire.kernel.server.KernelServerImpl;
 import sapphire.policy.SapphirePolicy.SapphireGroupPolicy;
-import sapphire.policy.SapphirePolicy.SapphireServerPolicy;
 import sapphire.runtime.EventHandler;
-import static sapphire.runtime.Sapphire.getPolicyStub;
-import static sapphire.runtime.Sapphire.initializeGroupPolicy;
 
 /**
  * OMSServer for tracking objects in Sapphire
  *
  * @author iyzhang
- *
  */
 public class OMSServerImpl implements OMSServer {
     private static Logger logger = Logger.getLogger("sapphire.oms.OMSServerImpl");
@@ -175,25 +174,29 @@ public class OMSServerImpl implements OMSServer {
         }
     }
 
-	/**
-	 * Creates the group policy instance on the kernel server running within OMS and returns the
-	 * group policy Object Stub
-	 * @throws RemoteException
-	 * @throws KernelObjectNotCreatedException
-	 * @throws ClassNotFoundException
-	 */
-	@Override
-	public SapphireGroupPolicy createGroupPolicy(Class<?> policyClass) throws RemoteException,
-			KernelObjectNotCreatedException, ClassNotFoundException {
-		SapphireGroupPolicy groupStub = (SapphireGroupPolicy)getPolicyStub(policyClass);
-		try {
-			initializeGroupPolicy(groupStub);
-		} catch (KernelObjectNotFoundException e) {
-			logger.warning("Failed to find the group kernel object created just before it. Exception info: " + e.toString());
-		}
+    /**
+     * Creates the group policy instance on the kernel server running within OMS and returns the
+     * group policy Object Stub
+     *
+     * @throws RemoteException
+     * @throws KernelObjectNotCreatedException
+     * @throws ClassNotFoundException
+     */
+    @Override
+    public SapphireGroupPolicy createGroupPolicy(Class<?> policyClass)
+            throws RemoteException, KernelObjectNotCreatedException, ClassNotFoundException {
+        SapphireGroupPolicy groupStub = (SapphireGroupPolicy) getPolicyStub(policyClass);
+        try {
+            initializeGroupPolicy(groupStub);
+        } catch (KernelObjectNotFoundException e) {
+            logger.severe(
+                    "Failed to find the group kernel object created just before it. Exception info: "
+                            + e.toString());
+            throw new KernelObjectNotCreatedException("Failed to find the kernel object", e);
+        }
 
-		return groupStub;
-	}
+        return groupStub;
+    }
 
     public static void main(String args[]) {
         if (args.length != 3) {
@@ -219,9 +222,11 @@ public class OMSServerImpl implements OMSServer {
             registry.rebind("SapphireOMS", omsStub);
 
             /* Create an instance of kernel server and export kernel server service */
-			KernelServer localKernelServer = new KernelServerImpl(new InetSocketAddress(args[0], port), oms);
-			KernelServer localKernelServerStub = (KernelServer) UnicastRemoteObject.exportObject(localKernelServer, 0);
-			registry.rebind("SapphireKernelServer", localKernelServerStub);
+            KernelServer localKernelServer =
+                    new KernelServerImpl(new InetSocketAddress(args[0], port), oms);
+            KernelServer localKernelServerStub =
+                    (KernelServer) UnicastRemoteObject.exportObject(localKernelServer, 0);
+            registry.rebind("SapphireKernelServer", localKernelServerStub);
 
             logger.info("OMS ready");
             for (Iterator<InetSocketAddress> it = oms.getServers().iterator(); it.hasNext(); ) {

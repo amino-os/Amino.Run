@@ -128,7 +128,7 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
             ArrayList<SapphireServerPolicy> replicaServers;
             try {
                 replicaServers = getGroup().getServers();
-            } catch (Exception e) {
+            } catch (RemoteException e) {
                 return;
             }
 
@@ -249,7 +249,7 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
         }
 
         public synchronized void scaleDownReplica(SapphireServerPolicy server)
-                throws ScaleDownException {
+                throws RemoteException, ScaleDownException {
             ArrayList<SapphireServerPolicy> serverList = getServers();
 
             if (2 >= serverList.size()) {

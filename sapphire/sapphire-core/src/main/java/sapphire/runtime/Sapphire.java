@@ -84,7 +84,9 @@ public class Sapphire {
                 sapphireGroupPolicyClass = DefaultGroupPolicy.class;
 
             /* Create the Kernel Object for the Group Policy and get the Group Policy Stub from OMS */
-			SapphireGroupPolicy groupPolicyStub =  GlobalKernelReferences.nodeServer.oms.createGroupPolicy(sapphireGroupPolicyClass);
+            SapphireGroupPolicy groupPolicyStub =
+                    GlobalKernelReferences.nodeServer.oms.createGroupPolicy(
+                            sapphireGroupPolicyClass);
 
             /* Create the Kernel Object for the Server Policy, and get the Server Policy Stub */
             SapphireServerPolicy serverPolicyStub =

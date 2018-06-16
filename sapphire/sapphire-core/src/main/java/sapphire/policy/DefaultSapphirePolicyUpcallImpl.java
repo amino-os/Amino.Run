@@ -73,8 +73,8 @@ public abstract class DefaultSapphirePolicyUpcallImpl extends SapphirePolicyLibr
             this.params = params;
         }
 
-        public SapphireServerPolicy onRefRequest() throws Exception {
-			ArrayList<SapphireServerPolicy> servers =  getServers();
+        public SapphireServerPolicy onRefRequest() throws RemoteException {
+            ArrayList<SapphireServerPolicy> servers = getServers();
             return servers.get(0);
         }
     }

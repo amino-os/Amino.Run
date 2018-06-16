@@ -1,0 +1,15 @@
+language: java
+
+jdk:
+  - oraclejdk8
+
+os:
+  - linux
+
+script:
+  - cd sapphire/
+  - ./gradlew assemble
+  - ./gradlew copyJar
+  - ./gradlew genStubs
+  - ./gradlew assemble
+  - ./gradlew bintrayUpload #use wget to download: wget --user kshafiee --password 664fa17e8af1f95e2cd83449bf1ba2dc0ee794e5 https://dl.bintray.com/kshafiee/DCAP-Sapphire/sapphire-core.jar

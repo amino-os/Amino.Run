@@ -2,19 +2,24 @@ package sapphire.policy.util.consensus.raft;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 import sapphire.common.AppObject;
-import sapphire.policy.DefaultSapphirePolicy;
 import sapphire.policy.SapphirePolicy;
 import sapphire.policy.replication.ConsensusRSMPolicy;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static sapphire.common.UtilsTest.extractFieldValueOnInstance;
+import static sapphire.policy.util.consensus.raft.Server.State.FOLLOWER;
 
 /**
  * Created by quinton on 3/16/18.
@@ -28,29 +33,33 @@ public class ServerTest {
     @Before
     public void setUp() throws Exception {
         appObject = mock(AppObject.class);
+
         for (int i=0; i<SERVER_COUNT; i++) {
             serverPolicy[i] = spy(ConsensusRSMPolicy.ServerPolicy.class);
             serverPolicy[i].$__initialize(appObject);
-            raftServer[i] = new Server((ConsensusRSMPolicy.ServerPolicy)serverPolicy[i]);
-        }
-        for (int i=0; i<SERVER_COUNT; i++) {
-            for(int j=0;j<SERVER_COUNT; j++) {
-                if (i!= j) {
-                    raftServer[i].addServer(raftServer[j].getMyServerID(), raftServer[j]);
-                }
+            ((ConsensusRSMPolicy.ServerPolicy)serverPolicy[i]).initializeRaftServer();
+            try {
+                raftServer[i] = (Server) (extractFieldValueOnInstance(this.serverPolicy[i], "raftServer"));
+
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
             }
         }
-        /*
-        so = new LockingTransactionTestStub();
-        appObject = new AppObject(so);
-        this.server = spy(LockingTransactionPolicy.ServerPolicy.class);
-        this.server.$__initialize(appObject);
-        */
+        // Tell all the servers about one another
+        ConcurrentHashMap<UUID, ConsensusRSMPolicy.ServerPolicy> allServers = new ConcurrentHashMap<UUID, ConsensusRSMPolicy.ServerPolicy>();
+        int k=0;
+        for(SapphirePolicy.SapphireServerPolicy i: serverPolicy) {
+            ConsensusRSMPolicy.ServerPolicy s = (ConsensusRSMPolicy.ServerPolicy)i;
+            allServers.put(raftServer[k++].getMyServerID(), s);
+        }
+
+        for(int i=0; i<SERVER_COUNT; i++){
+            ((ConsensusRSMPolicy.ServerPolicy)serverPolicy[i]).initializeRaft(allServers);
+        }
     }
 
     @After
     public void tearDown() throws Exception {
-
     }
 
     @Test
@@ -75,7 +84,7 @@ public class ServerTest {
 
     @Test
     public void getServer() throws Exception {
-        assert(raftServer[0].getServer(raftServer[1].getMyServerID()) == raftServer[1]);
+        assert(raftServer[0].getServer(raftServer[1].getMyServerID()) == serverPolicy[1]);
     }
 
     @Test
@@ -131,8 +140,127 @@ public class ServerTest {
         assertTrue(leaderCount==1 && finalLeader.equals(initialLeader));
     }
 
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
+
     @Test
-    public void appendEntries() throws Exception {
+    public void appendEntries() throws java.lang.Exception {
+        for(Server s: raftServer) {
+            s.start();
+        }
+        raftServer[0].become(Server.State.CANDIDATE, FOLLOWER);
+        Thread.sleep(100);
+
+        String methodName = "public java.lang.String java.lang.Object.toString()";
+        ArrayList<Object> args = new ArrayList<Object>();
+        Object obj = new ConsensusRSMPolicy.RPC(methodName, args);
+
+        assertEquals(0, raftServer[0].pState.log().size());
+        assertEquals(0, raftServer[1].pState.log().size());
+        assertEquals(0, raftServer[2].pState.log().size());
+
+        raftServer[0].applyToStateMachine(obj);
+        Thread.sleep(100);
+
+        assertEquals(1, raftServer[0].pState.log().size());
+        assertEquals(1, raftServer[1].pState.log().size());
+        assertEquals(1, raftServer[2].pState.log().size());
+    }
+
+    @Test
+    public void alreadyVoted() throws java.lang.Exception {
+        for(Server s: raftServer) {
+            s.start();
+        }
+        raftServer[0].become(Server.State.CANDIDATE, FOLLOWER);
+        Thread.sleep(100);
+
+        thrown.expect(AlreadyVotedException.class);
+        raftServer[2].requestVote(1,raftServer[1].getMyServerID(),-1,-1);
+    }
+
+    @Test
+    public void candidateBehind() throws java.lang.Exception {
+        int term;
+        List<LogEntry> entries = new ArrayList<LogEntry>();
+
+        for (Server s : raftServer) {
+            String methodName = "public java.lang.String java.lang.Object.toString()";
+            ArrayList<Object> args = new ArrayList<Object>();
+            Object obj = new ConsensusRSMPolicy.RPC(methodName, args);
+            term =1;
+            LogEntry one = new LogEntry(obj, term);
+            entries.add(one);
+
+            s.pState.setLog(entries);
+            s.pState.setCurrentTerm(term, s.pState.getCurrentTerm());
+        }
+
+        thrown.expect(CandidateBehindException.class);
+        raftServer[1].requestVote(2, raftServer[0].getMyServerID(), -1, -1);
+    }
+
+    @Test
+    public void invalidPrevLogIndex() throws java.lang.Exception {
+        int term;
+        List<LogEntry> entries = new ArrayList<LogEntry>();
+
+        for (Server s : raftServer) {
+            String methodName = "public java.lang.String java.lang.Object.toString()";
+            ArrayList<Object> args = new ArrayList<Object>();
+            Object obj = new ConsensusRSMPolicy.RPC(methodName, args);
+            term =1;
+            LogEntry one = new LogEntry(obj, term);
+            entries.add(one);
+
+            s.pState.setLog(entries);
+            s.pState.setCurrentTerm(term, s.pState.getCurrentTerm());
+        }
+
+        thrown.expect(InvalidLogIndex.class);
+        raftServer[1].appendEntries(2, raftServer[0].getMyServerID(), 3,1, entries,-1);
+    }
+
+    @Test
+    public void prevLogTermMismatch() throws java.lang.Exception {
+        int term;
+        List<LogEntry> entries = new ArrayList<LogEntry>();
+
+        for (Server s : raftServer) {
+            String methodName = "public java.lang.String java.lang.Object.toString()";
+            ArrayList<Object> args = new ArrayList<Object>();
+            Object obj = new ConsensusRSMPolicy.RPC(methodName, args);
+            term =1;
+            LogEntry one = new LogEntry(obj, term);
+            entries.add(one);
+
+            s.pState.setLog(entries);
+            s.pState.setCurrentTerm(term, s.pState.getCurrentTerm());
+        }
+
+        thrown.expect(PrevLogTermMismatch.class);
+        raftServer[1].appendEntries(3, raftServer[0].getMyServerID(), 1,2, entries,-1);
+    }
+
+    @Test
+    public void invalidTerm() throws java.lang.Exception {
+        int term;
+        List<LogEntry> entries = new ArrayList<LogEntry>();
+
+        for (Server s : raftServer) {
+            String methodName = "public java.lang.String java.lang.Object.toString()";
+            ArrayList<Object> args = new ArrayList<Object>();
+            Object obj = new ConsensusRSMPolicy.RPC(methodName, args);
+            term =2;
+            LogEntry one = new LogEntry(obj, term);
+            entries.add(one);
+
+            s.pState.setLog(entries);
+            s.pState.setCurrentTerm(term, s.pState.getCurrentTerm());
+        }
+
+        thrown.expect(InvalidTermException.class);
+        raftServer[2].requestVote(1, raftServer[1].getMyServerID(), -1, -1);
     }
 
     @Test
@@ -142,10 +270,31 @@ public class ServerTest {
 
     @Test
     public void applyCommitted() throws Exception {
+        raftServer[0].applyCommitted();
     }
 
     @Test
     public void respondToRemoteTerm() throws Exception {
+        for(Server s: raftServer) {
+            s.start();
+        }
+        raftServer[0].become(Server.State.CANDIDATE, FOLLOWER);
+
+        int leaderCount = 0;
+        UUID initialLeader = null;
+        long startTime = System.currentTimeMillis();
+        while (leaderCount==0 && System.currentTimeMillis() < startTime + Server.LEADER_HEARTBEAT_TIMEOUT) {
+            for (Server s : raftServer) {
+                if (s.getState() == Server.State.LEADER) {
+                    initialLeader = s.getMyServerID();
+                    leaderCount++;
+                }
+            }
+        }
+        assertEquals(raftServer[0].getMyServerID(), initialLeader);
+
+        raftServer[0].respondToRemoteTerm(2);
+        assertEquals(FOLLOWER, raftServer[0].getState());
     }
 
     @Test
@@ -154,7 +303,7 @@ public class ServerTest {
         String[] methods = { "fooMethod", "barMethod" };
         ArrayList<Object> args = new ArrayList<Object>();
         for (String method : methods) {
-            // Apply to statemachine is invoked only on leader
+            // Apply to stateMachine is invoked only on leader
             raftServer[0].applyToStateMachine(new ConsensusRSMPolicy.RPC(method, args));
         }
     }

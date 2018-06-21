@@ -42,7 +42,7 @@ public final class AppStub extends Stub {
 
 	@Override
 	public String getImportStatement() {
-		return "import " + GlobalStubConstants.getAppObjectPackageName() +";" + EOLN + EOLN; //$NON-NLS-1$
+		return "import " + GlobalStubConstants.getImportAppObjectPackageName() +";" + EOLN + EOLN; //$NON-NLS-1$
 	}
 
 	@Override

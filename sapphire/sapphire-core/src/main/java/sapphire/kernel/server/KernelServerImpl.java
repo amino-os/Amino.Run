@@ -82,16 +82,18 @@ public class KernelServerImpl implements KernelServer{
 	@Override
 	public Object makeKernelRPC(KernelRPC rpc) throws RemoteException, KernelObjectNotFoundException, KernelObjectMigratingException, KernelRPCException {
 		KernelObject object = null;
+		Object ret = null;
+
 		object = objectManager.lookupObject(rpc.getOID());
-		
+
 		logger.log(Level.FINE, "Invoking RPC on Kernel Object with OID: " + rpc.getOID() + "with rpc:" + rpc.getMethod() + " params: " + rpc.getParams().toString());
 
-		Object ret = null;
 		try {
 			ret = object.invoke(rpc.getMethod(), rpc.getParams());
 		} catch (Exception e) {
 			throw new KernelRPCException(e);
 		}
+
 		return ret;
 	}
 	

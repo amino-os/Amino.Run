@@ -127,7 +127,6 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 
 				// Create the App Object
 				appObject = new AppObject(actualAppObject);
-				actualAppObject.$__initialize(appObject);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

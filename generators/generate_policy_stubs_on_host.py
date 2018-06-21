@@ -17,8 +17,8 @@ if __name__ == '__main__':
     package = 'sapphire.policy'
     outFolder = sapphire_home + '/sapphire/sapphire-core/src/main/java/sapphire/policy/stubs/'
     
-    cp_sapphire = sapphire_home + '/sapphire/sapphire-core/build/libs/sapphire-core.jar'
-    cp_harmony = sapphire_home + "/sapphire/dependencies/apache.harmony/build/libs/apache.harmony.jar"
+    cp_sapphire = sapphire_home + '/sapphire/libs/sapphire-core.jar'
+    cp_harmony = sapphire_home + "/sapphire/libs/apache.harmony.jar"
  
     cmd = ['java', '-cp', cp_sapphire+":"+cp_harmony, 'sapphire.compiler.StubGenerator', inFolder, package, outFolder]
 

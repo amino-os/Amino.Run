@@ -1,4 +1,34 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.+'
+    }
+}
+apply plugin: 'com.jfrog.bintray'
 apply plugin: 'java'
+
+bintray {
+    user = 'kshafiee'
+    key = '664fa17e8af1f95e2cd83449bf1ba2dc0ee794e5'
+    filesSpec {
+       from 'build/libs'
+       into '.'
+    }
+    pkg {
+       repo = 'DCAP-Sapphire'
+       name = 'sapphire-core'
+       licenses = ['Apache-2.0']
+       vcsUrl = 'https://github.com/bintray/gradle-bintray-plugin.git'
+    }
+}
+
+repositories {
+    flatDir {
+        dirs '../libs'
+    }
+}
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
@@ -12,11 +42,12 @@ dependencies {
 }
 
 task deleteJar(type: Delete) {
-    delete 'libs/sapphire-core.jar'
+    delete 'build/libs/sapphire-core.jar'
+    delete '../libs/sapphire-core.jar'
 }
 
 // run `gradle delstubs` to remove stub java files
-task delstubs(type: Delete) {
+task delStubs(type: Delete) {
     delete fileTree('src/main/java/sapphire/policy/stubs') {
         include '**/*_Stub.java'
     }
@@ -24,20 +55,16 @@ task delstubs(type: Delete) {
 
 // TODO: We could use gradle to do automatic incremental builds.  
 // Details can be found at https://blog.gradle.org/introducing-incremental-build-support
-task genstubs(type: Exec) {
-  dependsOn 'delstubs', 'build'
-  executable "bash"
-  args "-c", "pushd ../../generators && python generate_policy_stubs_on_host.py && popd"
+task genStubs(type: Exec) {
+    executable "bash"
+    args "-c", "pushd ../../generators && python3 generate_policy_stubs_on_host.py && popd"
 }
 
-task createJar(type: Copy) {
-    from('build/intermediates/bundles/release/')
-    into('libs/jars/')
-    include('classes.jar')
-    rename('classes.jar', 'sapphire-core.jar')
+task copyJar(type: Copy) {
+    from('build/libs/')
+    into('../libs/')
+    include('sapphire-core.jar')
 }
 
-createJar.dependsOn(deleteJar, build)
-
-sourceCompatibility = "1.6"
-targetCompatibility = "1.6"
+sourceCompatibility = "1.7"
+targetCompatibility = "1.7"

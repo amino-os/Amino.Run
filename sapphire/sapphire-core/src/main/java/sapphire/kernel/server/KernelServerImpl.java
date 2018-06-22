@@ -176,12 +176,7 @@ public class KernelServerImpl implements KernelServer{
 	 * @throws KernelObjectNotFoundException
 	 */
 	public void deleteKernelObject(KernelOID oid) throws RemoteException, KernelObjectNotFoundException {
-		try {
-			oms.unRegisterKernelObject(oid, host);
-		} catch (RemoteException e) {
-			throw new RemoteException("Error making RPC to OMS: " + e);
-		}
-
+		oms.unRegisterKernelObject(oid, host);
 		objectManager.removeObject(oid);
 	}
 

@@ -1,0 +1,152 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.3'
+    }
+}
+
+plugins {
+    id "com.google.protobuf" version "0.8.3"
+    id "java"
+    id "application"
+    id "idea"
+}
+
+version '1.0-SNAPSHOT'
+
+protobuf {
+    protoc {
+        // The version of protoc must match protobuf-java. If you don't depend on
+        // protobuf-java directly, you will be transitively depending on the
+        // protobuf-java version that grpc depends on.
+        artifact = "com.google.protobuf:protoc:3.5.1-1"
+    }
+    plugins {
+        grpc {
+            artifact = 'io.grpc:protoc-gen-grpc-java:1.9.0'
+        }
+    }
+    generateProtoTasks {
+        all()*.plugins {
+            grpc {}
+        }
+    }
+    generatedFilesBaseDir = "$projectDir/src/generated"
+}
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+    compile 'io.grpc:grpc-all:1.9.0'
+}
+
+idea {
+    module {
+        sourceDirs += file("${projectDir}/src/generated/main/java");
+        sourceDirs += file("${projectDir}/src/generated/main/grpc");
+    }
+}
+
+task runServer(type: JavaExec) {
+    classpath = sourceSets.main.runtimeClasspath
+    main = 'sapphire.sapphireProcess.SapphireProcess'
+}
+
+task greetingApp(type: JavaExec) {
+    classpath = sourceSets.main.runtimeClasspath
+    main = 'sapphire.userApp.Greeting.Greeting'
+}
+task greetingAppSO(type: JavaExec) {
+    classpath = sourceSets.main.runtimeClasspath
+    main = 'sapphire.userApp.sapphireObject.Greeting.Greeting'
+}
+
+task algoApp(type: JavaExec) {
+    classpath = sourceSets.main.runtimeClasspath
+    main = 'sapphire.userApp.Algo.Algo'
+}
+task algoAppSO(type: JavaExec) {
+    classpath = sourceSets.main.runtimeClasspath
+    main = 'sapphire.userApp.sapphireObject.Algo.Algo'
+}
+
+task genericApp(type: JavaExec) {
+    classpath = sourceSets.main.runtimeClasspath
+    main = 'sapphire.userApp.Generic.Generic'
+}
+task genericAppSO(type: JavaExec) {
+    classpath = sourceSets.main.runtimeClasspath
+    main = 'sapphire.userApp.sapphireObject.Generic.Generic'
+}
+
+startScripts.enabled = false
+
+task SapphireProcess(type: CreateStartScripts) {
+    mainClassName = "sapphire.sapphireProcess.SapphireProcess"
+    applicationName = "sapphireProcess"
+    outputDir = new File(project.buildDir, 'tmp')
+    classpath = jar.outputs.files + project.configurations.runtime
+}
+
+task GreetingApp(type: CreateStartScripts) {
+    mainClassName = "sapphire.userApp.Greeting.Greeting"
+    applicationName = "GreetingApp"
+    outputDir = new File(project.buildDir, 'tmp')
+    classpath = jar.outputs.files + project.configurations.runtime
+}
+task GreetingAppSO(type: CreateStartScripts) {
+    mainClassName = "sapphire.userApp.sapphireObject.Greeting.Greeting"
+    applicationName = "GreetingAppSO"
+    outputDir = new File(project.buildDir, 'tmp')
+    classpath = jar.outputs.files + project.configurations.runtime
+}
+
+task AlgoApp(type: CreateStartScripts) {
+    mainClassName = "sapphire.userApp.Algo.Algo"
+    applicationName = "AlgoApp"
+    outputDir = new File(project.buildDir, 'tmp')
+    classpath = jar.outputs.files + project.configurations.runtime
+}
+task AlgoAppSO(type: CreateStartScripts) {
+    mainClassName = "sapphire.userApp.sapphireObject.Algo.Algo"
+    applicationName = "AlgoAppSO"
+    outputDir = new File(project.buildDir, 'tmp')
+    classpath = jar.outputs.files + project.configurations.runtime
+}
+
+
+task GenericApp(type: CreateStartScripts) {
+    mainClassName = "sapphire.userApp.Generic.Generic"
+    applicationName = "GenericApp"
+    outputDir = new File(project.buildDir, 'tmp')
+    classpath = jar.outputs.files + project.configurations.runtime
+}
+task GenericAppSO(type: CreateStartScripts) {
+    mainClassName = "sapphire.userApp.sapphireObject.Generic.Generic"
+    applicationName = "GAppSO"
+    outputDir = new File(project.buildDir, 'tmp')
+    classpath = jar.outputs.files + project.configurations.runtime
+}
+
+applicationDistribution.into("bin") {
+    from(SapphireProcess)
+
+    from(GreetingApp)
+    from(GreetingAppSO)
+
+    from(AlgoApp)
+    from(AlgoAppSO)
+
+    from(GenericApp)
+    from(GenericAppSO)
+
+    fileMode = 0755
+}

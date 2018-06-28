@@ -16,21 +16,21 @@ import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 public class SapphireProcess {
 
     private Server server;
     public static final int sapphire_process_port = 7000;
-    public static final String SharedLibsPath = "/home/root1/Work/DCAP/Multi-Language/trials/June21/java-runtime/";
+    public static final String SharedLibsPath = "/home/root1/Work/DCAP/Multi-Language/trials/June27/dcap_java/";
 
     // Map's needed for storing the Sapphire Object details.
     // 1). Map for storing SapphireObjName and the corrsponding Java Class mapping.
-    public static final Map<String, Class> SapphireNameMap = new HashMap<String, Class>();
+    public static final ConcurrentMap<String, Class> SapphireNameMap = new ConcurrentHashMap<String, Class>();
     // 2). Map for storing UUID and SapphireObject instance mapping.
-    public static final Map<String, Object> SapphireIDMap = new HashMap<String, Object>();
+    public static final ConcurrentMap<String, Object> SapphireIDMap = new ConcurrentHashMap<String, Object>();
 
     private void start() throws IOException {
         server = ServerBuilder.forPort(sapphire_process_port)
@@ -84,6 +84,7 @@ public class SapphireProcess {
 
             System.out.println("Inside createSapphireObject(), SObj_name: " + req.getName());
 
+            URLClassLoader urlClassLoader = null;
             Class <?> sObjClass = null;
             String className = null;
 
@@ -91,11 +92,11 @@ public class SapphireProcess {
             if (sObjClass == null) {
                 System.out.println("Sapphire Object class not found in Map. SObj_name: " + req.getName());
 
-                String sharedClassPath = String.format("file://sapphireObj_%s%s.jar", SharedLibsPath, req.getName());
+                String sharedClassPath = String.format("file://%ssapphireObj_%s.jar", SharedLibsPath, req.getName());
 
                     try {
                         URL[] classLoaderUrls = new URL[] { new URL(sharedClassPath)};
-                        URLClassLoader urlClassLoader = new URLClassLoader(classLoaderUrls);
+                        urlClassLoader = new URLClassLoader(classLoaderUrls);
 
                         className = String.format("sapphire.userApp.sapphireObject.%s.%sStub", req.getName(), req.getName());
                         sObjClass = urlClassLoader.loadClass(className);

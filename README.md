@@ -21,12 +21,16 @@ a) Current DCAP release supports Java, Golang, C++ (more to come soon!)
 4. DCAP covers it all
 a) Sapphire (Runtime Manager), Diamond (Memory Manager), Tapir/ERIS (Storage System) and Agate (Security System)
 
-## More docs here: [Getting started](docs/GettingStarted.md)
+## Design Docs
+* [User Experience Design](https://docs.google.com/document/d/1fJ8C-uQYdzOIDPSFRlD5QQ_QTJ_H3mO-RSl95hDuotQ/edit)
+* [Sapphire Core Enhancement](https://docs.google.com/document/d/1aqJxQ9LqnWxo7vWU2cbCiCkrkn55g9I6Piogs6VTo_U/edit#heading=h.x7ziw49lzhk5)
+* [Multi-Lang Design](https://docs.google.com/document/d/1WwmX7fuVr4AoRz0lgbAwv4nt4Jwc9I9WHP5dO07jBj8/edit)
+* [Multi-DM Design](https://docs.google.com/document/d/1g5SnzsnyGXzdZVDF_uj9MQJomQpHS-PMpfwnYn4RNDU/edit#)
+* [Code Offloading Design](https://docs.google.com/document/d/17umH9X61h8A6ckQ0LakGTiMD81P3Z7hZEm_UAAGW4B0/edit#heading=h.ftifncwym4cn)
+* [Diamond Tapir Integration](https://docs.google.com/document/d/1JvIofXhEMqulPfb2BxfTtNgmvhmLTna2lJo0FmZIZeM/edit#heading=h.yprn9eci8t8e)
 
-## Important Links
-* [Design Docs](./docs/design_proposals/)
+## Other Important Links
+* [Getting started](docs/GettingStarted.md)
 * [DCAP Planning](https://github.com/Huawei-PaaS/DCAP-Sapphire/wiki/DCAP-Planning)
-* [Thoughts on DCAP](https://github.com/Huawei-PaaS/DCAP-Sapphire/wiki/Thoughts-on-DCAP)
-* [Technical Challenges](https://github.com/Huawei-PaaS/DCAP-Sapphire/wiki/Technical-Challenges)
 * [Meetings](https://github.com/Huawei-PaaS/DCAP-Sapphire/wiki/Meetings)
-
+* Huawei Repository: http://rnd-github-usa-g.huawei.com/SeattleCloudBU/DCAP-Sapphire

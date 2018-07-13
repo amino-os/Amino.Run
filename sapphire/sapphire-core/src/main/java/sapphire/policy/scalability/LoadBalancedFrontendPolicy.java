@@ -14,6 +14,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import static sapphire.common.Utils.getAnnotation;
+
 /**
  * Created by SrinivasChilveri on 2/19/18.
  * Simple load balancing w/ static number of replicas and no consistency
@@ -31,15 +33,6 @@ public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
 		int replicacount()     default STATIC_REPLICA_COUNT;
 	}
 
-	private static LoadBalancedFrontendPolicyConfigAnnotation getAnnotation(Annotation[] annotations){
-		for (Annotation annotation : annotations) {
-			if (annotation instanceof LoadBalancedFrontendPolicyConfigAnnotation) {
-				return (LoadBalancedFrontendPolicyConfigAnnotation) annotation;
-			}
-		}
-		return null;
-	}
-
 	/**
 	 * LoadBalancedFrontend client policy. The client will LoadBalance among the Sapphire Server replica objects.
 	 * client side DM instance should randomise the order in which it performs round robin against replicas
@@ -47,8 +40,8 @@ public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
 	 *
 	 */
 	public static class ClientPolicy extends DefaultSapphirePolicy.DefaultClientPolicy {
-		private static int index;
-		private ArrayList<SapphireServerPolicy> replicaList;
+		private int index;
+		protected ArrayList<SapphireServerPolicy> replicaList;
 		private static Logger logger = Logger.getLogger(ClientPolicy.class.getName());
 
 
@@ -83,13 +76,13 @@ public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
 	 */
 	public static class ServerPolicy extends DefaultSapphirePolicy.DefaultServerPolicy {
 		private static Logger logger = Logger.getLogger(ServerPolicy.class.getName());
-		private int maxConcurrentReq = MAX_CONCURRENT_REQUESTS; //we can read from default config or annotations
-		private Semaphore limiter;
+		protected int maxConcurrentReq = MAX_CONCURRENT_REQUESTS; //we can read from default config or annotations
+		protected Semaphore limiter;
 
 		@Override
 		public void onCreate(SapphireGroupPolicy group, Annotation[] annotations) {
 			super.onCreate(group,annotations);
-			LoadBalancedFrontendPolicyConfigAnnotation annotation = getAnnotation(annotations);
+			LoadBalancedFrontendPolicyConfigAnnotation annotation = (LoadBalancedFrontendPolicyConfigAnnotation)getAnnotation(annotations, LoadBalancedFrontendPolicyConfigAnnotation.class);
 			if (annotation != null){
 				this.maxConcurrentReq = annotation.maxconcurrentReq();
 			}
@@ -127,7 +120,7 @@ public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
         
 		@Override
 		public void onCreate(SapphireServerPolicy server, Annotation[] annotations) {
-			LoadBalancedFrontendPolicyConfigAnnotation annotation = getAnnotation(annotations);
+		    LoadBalancedFrontendPolicyConfigAnnotation annotation = (LoadBalancedFrontendPolicyConfigAnnotation)getAnnotation(annotations, LoadBalancedFrontendPolicyConfigAnnotation.class);
 
 			if (annotation != null){
 				this.replicaCount = annotation.replicacount();

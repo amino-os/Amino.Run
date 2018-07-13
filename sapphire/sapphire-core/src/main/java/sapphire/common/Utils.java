@@ -8,6 +8,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.logging.Level;
@@ -181,5 +182,22 @@ public class Utils {
      */
     public static RuntimeSpec getRuntimeSpec(Class<?> clazz) {
         return clazz.getAnnotation(RuntimeSpec.class);
+    }
+
+    /**
+     * Returns the annotation of specified type from the given annotations
+     *
+     * @param annotations
+     * @param annotationType
+     * @return
+     */
+    public static Annotation getAnnotation(Annotation[] annotations, Class <?> annotationType){
+        for (Annotation annotation : annotations) {
+            if (annotation.annotationType() == annotationType) {
+                return annotation;
+            }
+        }
+
+        return null;
     }
 }

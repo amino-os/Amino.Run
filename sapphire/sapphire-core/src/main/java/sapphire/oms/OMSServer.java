@@ -22,6 +22,7 @@ public interface OMSServer extends Remote {
        public static final long KS_HEARTBEAT_TIMEOUT = 6000; // milliseconds
        KernelOID registerKernelObject(InetSocketAddress host) throws RemoteException;
        void registerKernelObject(KernelOID oid, InetSocketAddress host) throws RemoteException, KernelObjectNotFoundException;
+       void unRegisterKernelObject(KernelOID oid, InetSocketAddress host) throws RemoteException, KernelObjectNotFoundException;
        InetSocketAddress lookupKernelObject(KernelOID oid) throws RemoteException, KernelObjectNotFoundException;
        
        ArrayList<InetSocketAddress> getServers() throws NumberFormatException, RemoteException, NotBoundException;

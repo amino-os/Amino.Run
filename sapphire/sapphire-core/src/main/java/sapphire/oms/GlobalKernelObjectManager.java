@@ -53,6 +53,23 @@ public class GlobalKernelObjectManager {
         	kernelObjects.put(oid, host);    		
     	}
     }
+
+    /**
+     * Unregister the kernel oid from the host
+     * @param oid
+     * @param host
+     * @throws KernelObjectNotFoundException
+     */
+    public void unRegister(KernelOID oid, InetSocketAddress host) throws KernelObjectNotFoundException {
+        InetSocketAddress oidHost = lookup(oid);
+        if (oidHost.equals(host)) {
+            kernelObjects.remove(oid);
+        }
+        else {
+            throw new KernelObjectNotFoundException("Kernel oid's host address" + oidHost.toString() +
+                    " does not match with input host address " + host.toString());
+        }
+    }
     
     /**
      * Find the host for a kernel object 

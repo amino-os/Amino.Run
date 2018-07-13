@@ -188,15 +188,6 @@ public class Sapphire {
 		// Return shallow copy of the kernel object
 		AppObjectStub obj = (AppObjectStub)appObject.$__clone();
 
-		// Replace all superclass fields with null
-		Field[] fields = obj.getClass().getSuperclass().getFields();
-		for (Field f : fields) {
-			f.setAccessible(true);
-			f.set(obj, null);
-		}
-
-		// Replace the values in stub with new values - is this necessary?
-
 		// Update the directInvocation
 		obj.$__initialize(false);
 		return obj;

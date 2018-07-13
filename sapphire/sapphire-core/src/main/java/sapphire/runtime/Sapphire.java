@@ -105,10 +105,10 @@ public class Sapphire {
             AppObjectStub appStub = getAppStub(appObjectClass, serverPolicy, args);
 
             /* Link everything together */
-            client.setServer(serverPolicyStub);
-            client.onCreate(groupPolicyStub);
-            appStub.$__initialize(client);
             Annotation[] annotations = appObjectClass.getAnnotations();
+            client.setServer(serverPolicyStub);
+            client.onCreate(groupPolicyStub, annotations);
+            appStub.$__initialize(client);
             serverPolicy.onCreate(groupPolicyStub, annotations);
             groupPolicy.onCreate(serverPolicyStub, annotations);
 

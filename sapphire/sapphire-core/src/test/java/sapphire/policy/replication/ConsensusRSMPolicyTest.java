@@ -150,7 +150,7 @@ public class ConsensusRSMPolicyTest implements Serializable {
 
         this.group = spy(new ConsensusRSMPolicy.GroupPolicy());
 
-        this.client.onCreate(this.group);
+        this.client.onCreate(this.group, new Annotation[] {});
         this.server1.onCreate(this.group, new Annotation[] {});
 
         // Stub the static factory create method to pass our test stub class name

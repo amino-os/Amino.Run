@@ -25,8 +25,9 @@ public class CacheLeasePolicy extends SapphirePolicy {
     public static final long DEFAULT_LEASE_PERIOD = 10 * 1000; // milliseconds
     /** stick in some buffer to account for differences in time * */
     static final int LEASE_BUFFER =
-            1 * 1000; // milliseconds TODO: Quinton.  This won't work.  Don't rely on clocks
-    // being in sync.
+            1
+                    * 1000; // milliseconds TODO: Quinton.  This won't work.  Don't rely on clocks
+                            // being in sync.
     // Rather rely on server sending back a duration.  Both client and server expire after that
     // duration.
     // The lease on the server is then guaranteed to expire before the lease on the client, by
@@ -78,7 +79,7 @@ public class CacheLeasePolicy extends SapphirePolicy {
         protected AppObject cachedObject = null;
 
         @Override
-        public void onCreate(SapphireGroupPolicy group) {
+        public void onCreate(SapphireGroupPolicy group, Annotation[] annotations) {
             this.group = (CacheLeaseGroupPolicy) group;
         }
 

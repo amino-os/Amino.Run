@@ -10,6 +10,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.Serializable;
+import java.lang.reflect.Field;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import org.junit.Before;
@@ -38,7 +39,8 @@ public class ExplicitMigrationPolicyTest {
 
     @Before
     public void setUp() throws Exception {
-        this.client = spy(ExplicitMigrationPolicy.ClientPolicy.class);
+        this.client = new ExplicitMigrationPolicy.ClientPolicy();
+        setRetryConfig(client);
         this.server = spy(ExplicitMigrationPolicy.ServerPolicy.class);
         so = new ExplicitMigratorTestStub();
         appObject = new AppObject(so);
@@ -77,27 +79,6 @@ public class ExplicitMigrationPolicyTest {
         thrown.expect(KernelObjectMigratingException.class);
 
         this.client.onRPC(methodName, noParams);
-    }
-
-    @Test
-    public void retryRegularRPCFromClientTimeoutCaseVerifyRPCCalls() throws Exception {
-        String methodName = "public java.lang.String java.lang.Object.toString()";
-
-        // Mocking the Server Policy such that, would always throw KernelObjectMigratingException
-        // onRPC()
-        // In order to test the scenario of the exponential backoff retry in this case
-        ExplicitMigrationPolicy.ServerPolicy mockServerPolicy =
-                mock(ExplicitMigrationPolicy.ServerPolicy.class);
-        when(mockServerPolicy.onRPC(methodName, noParams))
-                .thenThrow(new KernelObjectMigratingException());
-
-        this.client.setServer(mockServerPolicy);
-
-        try {
-            this.client.onRPC(methodName, noParams);
-        } catch (Exception e) {
-            // Caught the KernelObjectMigratingException as a user
-        }
 
         // Check that onRPC() of server is called 7 times, as per the current values which
         // decide the number of exponential backoffs
@@ -329,14 +310,20 @@ public class ExplicitMigrationPolicyTest {
             // Caught the KernelObjectMigratingException as a user
         }
 
-        // Check that onRPC() of server is called 7 times, as per the current values which
-        // decide the number of exponential backoffs
-        verify(this.server, times(7)).onRPC(explicitMigrateObject, oneParam);
-
         // Check that DM method migrateObject(...) was called all the 7 times, the onRPC() was
         // called
         verify(this.server, times(7))
                 .migrateObject(ExplicitMigrationPolicyTestConstants.kernelServerAddr3);
+    }
+
+    private void setRetryConfig(ExplicitMigrationPolicy.ClientPolicy client) throws Exception {
+        Field retryTimeoutField = client.getClass().getDeclaredField("retryTimeoutInMillis");
+        retryTimeoutField.setAccessible(true);
+        retryTimeoutField.set(client, 1000);
+
+        Field minWaitIntervalField = client.getClass().getDeclaredField("minWaitIntervalInMillis");
+        minWaitIntervalField.setAccessible(true);
+        minWaitIntervalField.set(client, 10);
     }
 }
 

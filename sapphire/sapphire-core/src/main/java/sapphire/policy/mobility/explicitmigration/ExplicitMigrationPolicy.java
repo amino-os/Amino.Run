@@ -1,8 +1,10 @@
 package sapphire.policy.mobility.explicitmigration;
 
+import java.lang.annotation.Annotation;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.logging.Logger;
+import sapphire.common.Utils;
 import sapphire.kernel.common.GlobalKernelReferences;
 import sapphire.kernel.common.KernelObjectMigratingException;
 import sapphire.kernel.server.KernelServerImpl;
@@ -21,11 +23,23 @@ public class ExplicitMigrationPolicy extends DefaultSapphirePolicy {
         private static Logger logger =
                 Logger.getLogger(ExplicitMigrationPolicy.ClientPolicy.class.getName());
 
-        // ToDo: Provide an option to take or change value of RETRY_TIMEOUT from user
+        // ToDo: Provide an option to take or change value of retryTimeoutInMillis from user
         // Maximum time interval for wait before timing out (in milliseconds)
-        private static final long RETRY_TIMEOUT = 15000;
+        private long retryTimeoutInMillis = 15000;
         // Minimum time interval for wait before retrying (in milliseconds)
-        private static final long MIN_WAIT_INTERVAL = 100;
+        private long minWaitIntervalInMillis = 100;
+
+        @Override
+        public void onCreate(SapphireGroupPolicy group, Annotation[] annotations) {
+            super.onCreate(group, annotations);
+
+            ExplicitMigrationPolicySpec spec =
+                    Utils.getAnnotation(annotations, ExplicitMigrationPolicySpec.class);
+            if (spec != null) {
+                retryTimeoutInMillis = spec.retryTimeoutInMillis();
+                minWaitIntervalInMillis = spec.minWaitIntervalInMillis();
+            }
+        }
 
         @Override
         public Object onRPC(String method, ArrayList<Object> params) throws Exception {
@@ -37,8 +51,8 @@ public class ExplicitMigrationPolicy extends DefaultSapphirePolicy {
             // to user, catching the exception here in the client policy and retrying. If even after
             // retryTimes,
             // we get the same KernelObjectMigratingException, then we throw the same to the user
-            for (long delay = MIN_WAIT_INTERVAL;
-                    currentTime < (startTime + RETRY_TIMEOUT - delay);
+            for (long delay = minWaitIntervalInMillis;
+                    currentTime < (startTime + retryTimeoutInMillis - delay);
                     delay *= 2, currentTime = System.currentTimeMillis()) {
                 try {
                     return super.onRPC(method, params);
@@ -59,6 +73,18 @@ public class ExplicitMigrationPolicy extends DefaultSapphirePolicy {
     public static class ServerPolicy extends DefaultServerPolicy {
         private static Logger logger =
                 Logger.getLogger(ExplicitMigrationPolicy.ServerPolicy.class.getName());
+        private String migrateObjectMethodName = "migrateObject";
+
+        @Override
+        public void onCreate(SapphireGroupPolicy group, Annotation[] annotations) {
+            super.onCreate(group, annotations);
+
+            ExplicitMigrationPolicySpec spec =
+                    Utils.getAnnotation(annotations, ExplicitMigrationPolicySpec.class);
+            if (spec != null) {
+                migrateObjectMethodName = spec.migrateObjecgtMethodName();
+            }
+        }
 
         @Override
         public Object onRPC(String method, ArrayList<Object> params) throws Exception {
@@ -109,8 +135,7 @@ public class ExplicitMigrationPolicy extends DefaultSapphirePolicy {
         }
 
         Boolean isMigrateObject(String method) {
-            // TODO better check than simple base name
-            return method.contains(".migrateObject(");
+            return method.contains("." + migrateObjectMethodName + "(");
         }
     }
 

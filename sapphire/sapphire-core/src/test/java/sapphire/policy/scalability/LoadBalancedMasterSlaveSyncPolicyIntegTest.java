@@ -46,7 +46,7 @@ public class LoadBalancedMasterSlaveSyncPolicyIntegTest {
         group.addServer(server2);
 
         client.setServer(server1);
-        client.onCreate(group);
+        client.onCreate(group, new Annotation[] {});
         server1.onCreate(group, new Annotation[] {});
         server2.onCreate(group, new Annotation[] {});
         server1.start();

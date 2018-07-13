@@ -194,10 +194,11 @@ public class Utils {
      * @param annotationType
      * @return
      */
-    public static Annotation getAnnotation(Annotation[] annotations, Class<?> annotationType) {
+    public static <A extends Annotation> A getAnnotation(
+            Annotation[] annotations, Class<A> annotationType) {
         for (Annotation annotation : annotations) {
             if (annotation.annotationType() == annotationType) {
-                return annotation;
+                return (A) annotation;
             }
         }
 

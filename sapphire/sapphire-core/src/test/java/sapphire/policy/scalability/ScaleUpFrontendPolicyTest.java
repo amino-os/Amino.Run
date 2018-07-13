@@ -13,6 +13,7 @@ import static sapphire.common.SapphireUtils.startSpiedOms;
 import static sapphire.common.UtilsTest.extractFieldValueOnInstance;
 
 import java.io.Serializable;
+import java.lang.annotation.Annotation;
 import java.net.InetSocketAddress;
 import java.rmi.AccessException;
 import java.rmi.AlreadyBoundException;
@@ -167,7 +168,7 @@ public class ScaleUpFrontendPolicyTest {
 
         this.group = spy(new ScaleUpFrontendPolicy.GroupPolicy());
 
-        this.client.onCreate(this.group);
+        this.client.onCreate(this.group, new Annotation[] {});
         this.server1.onCreate(this.group, SO.class.getAnnotations());
 
         // Stub the static factory create method to pass our test stub class name

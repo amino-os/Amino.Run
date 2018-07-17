@@ -46,8 +46,7 @@ public class DefaultSapphirePolicy extends SapphirePolicy {
         }
 
         @Override
-        public void onCreate(SapphireGroupPolicy group) {
-            // TODO Auto-generated method stub
+        public void onCreate(SapphireGroupPolicy group, Annotation[] annotations) {
             this.group = (DefaultGroupPolicy) group;
         }
     }

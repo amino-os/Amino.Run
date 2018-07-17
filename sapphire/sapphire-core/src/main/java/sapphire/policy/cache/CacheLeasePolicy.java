@@ -78,7 +78,7 @@ public class CacheLeasePolicy extends SapphirePolicy {
         protected AppObject cachedObject = null;
 
         @Override
-        public void onCreate(SapphireGroupPolicy group) {
+        public void onCreate(SapphireGroupPolicy group, Annotation[] annotations) {
             this.group = (CacheLeaseGroupPolicy) group;
         }
 

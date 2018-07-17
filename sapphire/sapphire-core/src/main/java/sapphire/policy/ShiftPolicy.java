@@ -21,7 +21,7 @@ public class ShiftPolicy extends SapphirePolicy {
         SapphireGroupPolicy group = null;
 
         @Override
-        public void onCreate(SapphireGroupPolicy group) {
+        public void onCreate(SapphireGroupPolicy group, Annotation[] annotations) {
             this.group = group;
         }
 

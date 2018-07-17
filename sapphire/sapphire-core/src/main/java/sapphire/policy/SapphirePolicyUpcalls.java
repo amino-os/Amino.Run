@@ -8,7 +8,7 @@ import sapphire.policy.SapphirePolicy.SapphireServerPolicy;
 
 public interface SapphirePolicyUpcalls {
     interface SapphireClientPolicyUpcalls extends Serializable {
-        void onCreate(SapphireGroupPolicy group);
+        void onCreate(SapphireGroupPolicy group, Annotation[] annotations);
 
         void setServer(SapphireServerPolicy server);
 

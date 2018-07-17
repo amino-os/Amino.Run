@@ -163,7 +163,7 @@ public class LoadBalancedFrontendPolicyTest implements Serializable {
         sequential.lock();
         this.group = spy(new LoadBalancedFrontendPolicy.GroupPolicy());
 
-        this.client.onCreate(this.group);
+        this.client.onCreate(this.group, new Annotation[] {});
         this.server.onCreate(this.group, new Annotation[] {});
 
         /* set field values to lower for UT */

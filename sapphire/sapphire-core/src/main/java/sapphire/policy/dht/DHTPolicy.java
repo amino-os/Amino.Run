@@ -19,14 +19,13 @@ import sapphire.policy.interfaces.dht.DHTInterface;
 import sapphire.policy.interfaces.dht.DHTKey;
 
 public class DHTPolicy extends SapphirePolicy {
-
     public static class DHTClientPolicy extends SapphireClientPolicy {
 
         DHTServerPolicy server = null;
         DHTGroupPolicy group = null;
 
         @Override
-        public void onCreate(SapphireGroupPolicy group) {
+        public void onCreate(SapphireGroupPolicy group, Annotation[] annotations) {
             this.group = (DHTGroupPolicy) group;
         }
 

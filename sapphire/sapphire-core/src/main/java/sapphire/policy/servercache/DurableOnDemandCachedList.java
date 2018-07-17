@@ -18,7 +18,7 @@ public class DurableOnDemandCachedList extends SapphirePolicy {
         private DurableOnDemandCachedListGroupPolicy group;
 
         @Override
-        public void onCreate(SapphireGroupPolicy group) {
+        public void onCreate(SapphireGroupPolicy group, Annotation[] annotations) {
             this.group = (DurableOnDemandCachedListGroupPolicy) group;
         }
 

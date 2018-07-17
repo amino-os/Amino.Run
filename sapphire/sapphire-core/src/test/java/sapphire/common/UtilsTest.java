@@ -3,6 +3,7 @@ package sapphire.common;
 import static org.junit.Assert.assertNotEquals;
 
 import java.io.Serializable;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -10,6 +11,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import sapphire.kernel.common.KernelOID;
 import sapphire.kernel.common.KernelRPC;
+import sapphire.policy.mobility.explicitmigration.ExplicitMigrationPolicySpec;
 import sapphire.policy.scalability.masterslave.LogEntry;
 import sapphire.policy.scalability.masterslave.MethodInvocationRequest;
 import sapphire.runtime.annotations.Immutable;
@@ -178,9 +180,18 @@ public class UtilsTest {
     }
 
     @Test
-    public void testGetRuntimeSpec() throws Exception {
+    public void testGetRuntimeSpec() {
         Clazz clazz = new Clazz();
         Assert.assertEquals(3, Utils.getRuntimeSpec(clazz.getClass()).replicas());
+    }
+
+    @Test
+    public void testGetAnnotation() {
+        Annotation[] annotations = Clazz.class.getAnnotations();
+        RuntimeSpec spec = Utils.getAnnotation(annotations, RuntimeSpec.class);
+        Assert.assertEquals(3, spec.replicas());
+
+        Assert.assertNull(Utils.getAnnotation(annotations, ExplicitMigrationPolicySpec.class));
     }
 
     @RuntimeSpec(replicas = 3)

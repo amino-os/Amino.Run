@@ -23,7 +23,6 @@ public class ExplicitMigrationPolicy extends DefaultSapphirePolicy {
         private static Logger logger =
                 Logger.getLogger(ExplicitMigrationPolicy.ClientPolicy.class.getName());
 
-        // ToDo: Provide an option to take or change value of retryTimeoutInMillis from user
         // Maximum time interval for wait before timing out (in milliseconds)
         private long retryTimeoutInMillis = 15000;
         // Minimum time interval for wait before retrying (in milliseconds)
@@ -82,7 +81,7 @@ public class ExplicitMigrationPolicy extends DefaultSapphirePolicy {
             ExplicitMigrationPolicySpec spec =
                     Utils.getAnnotation(annotations, ExplicitMigrationPolicySpec.class);
             if (spec != null) {
-                migrateObjectMethodName = spec.migrateObjecgtMethodName();
+                migrateObjectMethodName = spec.migrateObjectMethodName();
             }
         }
 

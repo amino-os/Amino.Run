@@ -17,5 +17,5 @@ public @interface ExplicitMigrationPolicySpec {
     long minWaitIntervalInMillis() default 100;
 
     /** @return name of method that triggers object migration */
-    String migrateObjecgtMethodName() default ".migrateObject(";
+    String migrateObjectMethodName() default "migrateObject";
 }

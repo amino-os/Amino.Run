@@ -1,12 +1,11 @@
 package sapphire.policy.transaction;
 
-import org.junit.Test;
-import sapphire.common.AppObject;
+import static org.junit.Assert.assertNotSame;
 
 import java.io.Serializable;
 import java.util.UUID;
-
-import static org.junit.Assert.assertNotSame;
+import org.junit.Test;
+import sapphire.common.AppObject;
 
 public class AppObjectSandboxProviderTest {
     @Test
@@ -14,11 +13,13 @@ public class AppObjectSandboxProviderTest {
         UUID txId = UUID.randomUUID();
         Serializable coreOrigin = "aaa";
         AppObject originAppObject = new AppObject(coreOrigin);
-        TwoPCCohortPolicy.TwoPCCohortServerPolicy origin = new TwoPCCohortPolicy.TwoPCCohortServerPolicy();
+        TwoPCCohortPolicy.TwoPCCohortServerPolicy origin =
+                new TwoPCCohortPolicy.TwoPCCohortServerPolicy();
         origin.$__initialize(originAppObject);
 
         AppObjectSandboxProvider provider = new AppObjectSandboxProvider();
-        AppObjectShimServerPolicy sandbox = (AppObjectShimServerPolicy)provider.getSandbox(origin, txId);
+        AppObjectShimServerPolicy sandbox =
+                (AppObjectShimServerPolicy) provider.getSandbox(origin, txId);
 
         AppObject sandboxAppObject = sandbox.getAppObject();
         assertNotSame(sandboxAppObject, originAppObject);

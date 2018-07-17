@@ -1,7 +1,10 @@
 package sapphire.policy.primitive;
 
-import org.junit.Before;
-import org.junit.Test;
+import static junit.framework.TestCase.assertEquals;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -10,18 +13,11 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
-
+import org.junit.Before;
+import org.junit.Test;
 import sapphire.common.AppObject;
 
-import static junit.framework.TestCase.assertEquals;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-
-/**
- * @author terryz
- */
+/** @author terryz */
 public class ImmutablePolicyTest {
     private ImmutablePolicy.ClientPolicy client;
     private ImmutablePolicy.ServerPolicy server;
@@ -39,27 +35,30 @@ public class ImmutablePolicyTest {
 
     @Test
     public void execOnImmutableObjectRepeatedly() throws Exception {
-        final String methodName = "public int sapphire.policy.primitive.ImmutablePolicyTest$SO.getValue() throws java.lang.Exception";
+        final String methodName =
+                "public int sapphire.policy.primitive.ImmutablePolicyTest$SO.getValue() throws java.lang.Exception";
         final int len = 5;
         final List<FutureTask<Object>> taskList = new ArrayList<FutureTask<Object>>();
 
-        for (int i=0; i<len; i++) {
-            FutureTask<Object> task = new FutureTask<Object>(new Callable<Object>() {
-                @Override
-                public Object call() throws Exception {
-                    return client.onRPC(methodName, new ArrayList<Object>());
-                }
-            });
+        for (int i = 0; i < len; i++) {
+            FutureTask<Object> task =
+                    new FutureTask<Object>(
+                            new Callable<Object>() {
+                                @Override
+                                public Object call() throws Exception {
+                                    return client.onRPC(methodName, new ArrayList<Object>());
+                                }
+                            });
             taskList.add(task);
         }
 
         // Run tasks in parallel
         ExecutorService executor = Executors.newFixedThreadPool(taskList.size());
-        for (FutureTask<Object> t: taskList) {
+        for (FutureTask<Object> t : taskList) {
             executor.execute(t);
         }
 
-        for (int i=0; i<taskList.size(); i++) {
+        for (int i = 0; i < taskList.size(); i++) {
             Object actual = taskList.get(i).get();
             // verify return result is correct
             assertEquals(SO.DEFAULT, actual);
@@ -80,7 +79,5 @@ public class ImmutablePolicyTest {
         }
     }
 
-    public static class SO_Stub extends ImmutablePolicyTest.SO {
-    }
-
+    public static class SO_Stub extends ImmutablePolicyTest.SO {}
 }

@@ -1,10 +1,6 @@
 package sapphire.kernel.common;
 
-/**
- * Created by SrinivasChilveri on 5/28/18.
- * KernelServerNotFoundException exception
- */
-
+/** Created by SrinivasChilveri on 5/28/18. KernelServerNotFoundException exception */
 public class KernelServerNotFoundException extends Exception {
 
     public KernelServerNotFoundException() {}
@@ -17,5 +13,7 @@ public class KernelServerNotFoundException extends Exception {
         super(cause);
     }
 
-    public KernelServerNotFoundException(String message, Throwable cause) { super(message, cause); }
+    public KernelServerNotFoundException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

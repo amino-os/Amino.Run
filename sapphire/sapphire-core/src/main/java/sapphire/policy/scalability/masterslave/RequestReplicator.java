@@ -1,5 +1,7 @@
 package sapphire.policy.scalability.masterslave;
 
+import static sapphire.policy.scalability.LoadBalancedMasterSlaveBase.GroupBase;
+
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.concurrent.Callable;
@@ -10,15 +12,13 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static sapphire.policy.scalability.LoadBalancedMasterSlaveBase.GroupBase;
-
 /**
  * RequestReplicator replicates requests from master to slaves.
  *
  * @author terryz
  */
 public class RequestReplicator implements Replicator, Closeable {
-    private final static Logger logger = Logger.getLogger(RequestReplicator.class.getName());
+    private static final Logger logger = Logger.getLogger(RequestReplicator.class.getName());
     private final Configuration config;
     private final GroupBase group;
     private volatile ScheduledExecutorService replicator;
@@ -39,15 +39,22 @@ public class RequestReplicator implements Replicator, Closeable {
         Future<ReplicationResponse> future = replicateInAsync(request);
 
         if (future == null) {
-            response = new ReplicationResponse(
-                    ReplicationResponse.ReturnCode.FAILURE,
-                    new Exception("replicator not initialized"));
+            response =
+                    new ReplicationResponse(
+                            ReplicationResponse.ReturnCode.FAILURE,
+                            new Exception("replicator not initialized"));
         } else {
             try {
                 response = future.get();
-                logger.log(Level.FINER, "successfully replicated request {0}: {1}", new Object[]{request, response});
+                logger.log(
+                        Level.FINER,
+                        "successfully replicated request {0}: {1}",
+                        new Object[] {request, response});
             } catch (Exception e) {
-                logger.log(Level.WARNING, String.format("failed to replicate request %s: %s", request, e), e);
+                logger.log(
+                        Level.WARNING,
+                        String.format("failed to replicate request %s: %s", request, e),
+                        e);
             }
         }
         return response;
@@ -60,19 +67,26 @@ public class RequestReplicator implements Replicator, Closeable {
             return null;
         }
 
-        return replicator.submit(new Callable<ReplicationResponse>() {
-            @Override
-            public ReplicationResponse call() throws Exception {
-                ReplicationResponse response = null;
-                try {
-                    response = group.getSlave().handleReplication(request);
-                    logger.log(Level.FINER, "successfully replicated request {0}: {1}", new Object[]{request, response});
-                } catch (Exception e) {
-                    logger.log(Level.WARNING, String.format("failed to replicate request %s: %s", request, e), e);
-                }
-                return response;
-            }
-        });
+        return replicator.submit(
+                new Callable<ReplicationResponse>() {
+                    @Override
+                    public ReplicationResponse call() throws Exception {
+                        ReplicationResponse response = null;
+                        try {
+                            response = group.getSlave().handleReplication(request);
+                            logger.log(
+                                    Level.FINER,
+                                    "successfully replicated request {0}: {1}",
+                                    new Object[] {request, response});
+                        } catch (Exception e) {
+                            logger.log(
+                                    Level.WARNING,
+                                    String.format("failed to replicate request %s: %s", request, e),
+                                    e);
+                        }
+                        return response;
+                    }
+                });
     }
 
     @Override
@@ -80,12 +94,18 @@ public class RequestReplicator implements Replicator, Closeable {
         if (replicator != null) {
             replicator.shutdown();
             try {
-                if (! replicator.awaitTermination(config.getShutdownGracePeriodInMillis(), TimeUnit.MILLISECONDS)) {
-                    logger.log(Level.SEVERE, "replicator shut down time out after {0} milliseconds",
+                if (!replicator.awaitTermination(
+                        config.getShutdownGracePeriodInMillis(), TimeUnit.MILLISECONDS)) {
+                    logger.log(
+                            Level.SEVERE,
+                            "replicator shut down time out after {0} milliseconds",
                             config.getShutdownGracePeriodInMillis());
                 }
             } catch (Exception e) {
-                logger.log(Level.SEVERE, String.format("got exception during replicator shut down: %s", e), e);
+                logger.log(
+                        Level.SEVERE,
+                        String.format("got exception during replicator shut down: %s", e),
+                        e);
             }
         }
     }

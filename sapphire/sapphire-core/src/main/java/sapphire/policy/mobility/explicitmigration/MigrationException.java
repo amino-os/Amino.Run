@@ -1,9 +1,6 @@
 package sapphire.policy.mobility.explicitmigration;
 
-/**
- * Created by Malepati Bala Siva Sai Akhil on 4/2/18.
- */
-
+/** Created by Malepati Bala Siva Sai Akhil on 4/2/18. */
 public class MigrationException extends Exception {
     public MigrationException() {}
 

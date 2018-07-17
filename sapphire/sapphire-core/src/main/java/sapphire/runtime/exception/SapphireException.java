@@ -1,8 +1,8 @@
 package sapphire.runtime.exception;
 
 /**
- * SapphireException is the superclass of those exceptions that can be thrown
- * due to Sapphire runtime issues.
+ * SapphireException is the superclass of those exceptions that can be thrown due to Sapphire
+ * runtime issues.
  *
  * @author terryz
  */
@@ -23,5 +23,4 @@ public class SapphireException extends Exception {
     public SapphireException(Throwable cause) {
         super(cause);
     }
-
 }

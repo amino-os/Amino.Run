@@ -1,13 +1,6 @@
 package sapphire.policy.serializability;
 
-import java.io.Serializable;
-
-import sapphire.policy.checkpoint.explicitcheckpoint.ExplicitCheckpointer;
-
-/**
- * Created by quinton on 1/22/18.
- */
-
+/** Created by quinton on 1/22/18. */
 public class LockingTransactionImpl extends TransactionImpl implements LockingTransaction {
     @Override
     public void startTransaction(long timeoutMillisec) {}

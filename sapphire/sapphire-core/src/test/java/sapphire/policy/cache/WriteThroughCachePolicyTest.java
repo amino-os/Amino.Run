@@ -1,22 +1,17 @@
 package sapphire.policy.cache;
 
-import org.junit.Before;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import sapphire.common.AppObject;
-
 import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.fail;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import org.junit.Before;
+import sapphire.common.AppObject;
 
 public class WriteThroughCachePolicyTest {
     private WriteThroughCachePolicy.ClientPolicy client;
@@ -66,7 +61,8 @@ public class WriteThroughCachePolicyTest {
         assertEquals(true, actual);
 
         // verify that server side object has been modified
-        assertEquals(expectedResult.toString(), server.sapphire_getAppObject().getObject().toString());
+        assertEquals(
+                expectedResult.toString(), server.sapphire_getAppObject().getObject().toString());
 
         // read from cache one more time to verify that cached object is correct
         String m = "public java.lang.String java.util.AbstractCollection.toString()";

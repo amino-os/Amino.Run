@@ -38,7 +38,7 @@ public class LogEntry extends Entry implements Serializable {
         return Objects.hash(super.hashCode(), getRequest());
     }
 
-    public final static class Builder {
+    public static final class Builder {
         private long term;
         private long index;
         private MethodInvocationRequest request;

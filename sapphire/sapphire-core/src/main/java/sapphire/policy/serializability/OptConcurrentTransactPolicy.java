@@ -3,24 +3,21 @@ package sapphire.policy.serializability;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-
-import java.io.Serializable;
-
 import sapphire.common.AppObject;
 import sapphire.policy.DefaultSapphirePolicy;
 
 /**
- * Created by Venugopal Reddy K 00900280 on 1/2/18.
- * Optimistic concurrent Transaction Policy allows for concurrent transactions unlike locking
- * transaction policy where only single client can perform transaction at any point of time.
- * Multiple clients can start the transactions simultaneously. But the first
- * client committing, succeed its transaction and others fail, rollback their transaction.
+ * Created by Venugopal Reddy K 00900280 on 1/2/18. Optimistic concurrent Transaction Policy allows
+ * for concurrent transactions unlike locking transaction policy where only single client can
+ * perform transaction at any point of time. Multiple clients can start the transactions
+ * simultaneously. But the first client committing, succeed its transaction and others fail,
+ * rollback their transaction.
  */
-
 public class OptConcurrentTransactPolicy extends DefaultSapphirePolicy {
 
     private static byte[] calculateMessageDigest(Object appObject) throws TransactionException {
@@ -45,15 +42,19 @@ public class OptConcurrentTransactPolicy extends DefaultSapphirePolicy {
         }
 
         if (null == digest) {
-            throw new TransactionException("Message Digest calculation exception. Start new transaction again.");
+            throw new TransactionException(
+                    "Message Digest calculation exception. Start new transaction again.");
         }
 
         return digest;
     }
 
     public static class ClientPolicy extends DefaultClientPolicy {
-        private byte[] msgDigest; // Message digest of the app object prior to the modification of object state
+        private byte[]
+                msgDigest; // Message digest of the app object prior to the modification of object
+        // state
         private AppObject cachedObject; // app object
+
         @Override
         public Object onRPC(String method, ArrayList<Object> params) throws Exception {
             if (isStartTransaction(method)) {
@@ -71,8 +72,10 @@ public class OptConcurrentTransactPolicy extends DefaultSapphirePolicy {
                     try {
                         return cachedObject.invoke(method, params);
                     } catch (Exception e) {
-                            rollbackTransaction();
-                            throw new TransactionException("Exception occurred inside transaction.  Transaction rolled back.", e);
+                        rollbackTransaction();
+                        throw new TransactionException(
+                                "Exception occurred inside transaction.  Transaction rolled back.",
+                                e);
                     }
                 } else {
                     // Non transactional based invocation. Make an RPC call
@@ -99,11 +102,12 @@ public class OptConcurrentTransactPolicy extends DefaultSapphirePolicy {
         public synchronized void startTransaction(ArrayList<Object> params) throws Exception {
             AppObject localCachedObject = cachedObject;
             if (null == localCachedObject) {
-                localCachedObject = ((ServerPolicy)getServer()).getAppObject();
+                localCachedObject = ((ServerPolicy) getServer()).getAppObject();
                 msgDigest = calculateMessageDigest(localCachedObject.getObject());
                 cachedObject = localCachedObject;
             } else {
-                throw new TransactionAlreadyStartedException("Transaction already started on Sapphire object.  Rollback or commit before starting a new transaction.");
+                throw new TransactionAlreadyStartedException(
+                        "Transaction already started on Sapphire object.  Rollback or commit before starting a new transaction.");
             }
         }
 
@@ -122,7 +126,8 @@ public class OptConcurrentTransactPolicy extends DefaultSapphirePolicy {
                 }
 
                 // Sync the local object to server
-                ((ServerPolicy) getServer()).syncObject(localMsgDigest, localCachedObject.getObject());
+                ((ServerPolicy) getServer())
+                        .syncObject(localMsgDigest, localCachedObject.getObject());
             } else {
                 throw new NoTransactionStartedException("No transaction to commit.");
             }
@@ -145,22 +150,23 @@ public class OptConcurrentTransactPolicy extends DefaultSapphirePolicy {
             return sapphire_getAppObject();
         }
 
-        synchronized public void syncObject(byte[] msgDigest, Serializable object) throws Exception {
+        public synchronized void syncObject(byte[] msgDigest, Serializable object)
+                throws Exception {
             /* TODO :  Have serialized object to generate the digest. This approach is slow. Need to be optimized later */
             byte[] oldDigest = calculateMessageDigest(sapphire_getAppObject().getObject());
             if (MessageDigest.isEqual(msgDigest, oldDigest)) {
                 /* App object synchronization is allowed only when object snapshot has not been
                 modified since the beginning of transaction */
                 appObject.setObject(object);
-            }
-            else {
-                throw new TransactionException("Some other client updated the object. " +
-                        "Transaction is invalid now. Get app object and try again.");
+            } else {
+                throw new TransactionException(
+                        "Some other client updated the object. "
+                                + "Transaction is invalid now. Get app object and try again.");
             }
         }
 
         @Override
-        synchronized public Object onRPC(String method, ArrayList<Object> params) throws Exception {
+        public synchronized Object onRPC(String method, ArrayList<Object> params) throws Exception {
             return super.onRPC(method, params);
         }
     }

@@ -1,16 +1,13 @@
 package sapphire.policy.transaction;
 
-import org.junit.Test;
-import sapphire.common.AppObject;
-import sapphire.common.ReflectionTestUtil;
+import static org.mockito.Mockito.*;
+import static sapphire.policy.transaction.TwoPCExtResourceCohortPolicy.TwoPCExtResourceCohortServerPolicy;
 
 import java.io.Serializable;
 import java.util.UUID;
-
-import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.assertTrue;
-import static org.mockito.Mockito.*;
-import static sapphire.policy.transaction.TwoPCExtResourceCohortPolicy.TwoPCExtResourceCohortServerPolicy;
+import org.junit.Test;
+import sapphire.common.AppObject;
+import sapphire.common.ReflectionTestUtil;
 
 public class TwoPCExtResourceCohortServerPolicyTest {
     @Test
@@ -21,15 +18,18 @@ public class TwoPCExtResourceCohortServerPolicyTest {
         SandboxProvider sandboxProvider = mock(SandboxProvider.class);
         ReflectionTestUtil.setField(serverPolicy, "sandboxProvider", sandboxProvider);
         TransactionManager transactionManager = mock(TransactionManager.class);
-        serverPolicy.setTransactionManager(new ExtResourceTransactionManager(sandboxProvider, transactionManager));
+        serverPolicy.setTransactionManager(
+                new ExtResourceTransactionManager(sandboxProvider, transactionManager));
 
-        TransactionManager businessObj = mock(TransactionManager.class, withSettings().extraInterfaces(Serializable.class));
+        TransactionManager businessObj =
+                mock(TransactionManager.class, withSettings().extraInterfaces(Serializable.class));
         AppObject appObject = new AppObject(businessObj);
 
         AppObjectShimServerPolicy sandboxedServerPolicy = mock(AppObjectShimServerPolicy.class);
         when(sandboxedServerPolicy.getAppObject()).thenReturn(appObject);
 
-        when(sandboxProvider.getSandbox(serverPolicy, transactionId)).thenReturn(sandboxedServerPolicy);
+        when(sandboxProvider.getSandbox(serverPolicy, transactionId))
+                .thenReturn(sandboxedServerPolicy);
         when(sandboxProvider.getSandbox(transactionId)).thenReturn(sandboxedServerPolicy);
 
         serverPolicy.$__initialize(appObject);

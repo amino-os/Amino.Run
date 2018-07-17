@@ -1,15 +1,14 @@
 package sapphire.policy.cache.explicitcaching;
 
-import org.junit.Before;
-import org.junit.Test;
-import sapphire.common.AppObject;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.*;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import org.junit.Before;
+import org.junit.Test;
+import sapphire.common.AppObject;
 
 public class ExplicitCachingPolicyTest {
     ExplicitCachingPolicy.ExplicitCachingClientPolicy client;
@@ -24,7 +23,8 @@ public class ExplicitCachingPolicyTest {
 
     @Test
     public void firstRPCPulls() throws Exception {
-        Serializable so = mock(Serializable.class, withSettings().extraInterfaces(ExplicitCacher.class));
+        Serializable so =
+                mock(Serializable.class, withSettings().extraInterfaces(ExplicitCacher.class));
         AppObject appObject = mock(AppObject.class);
         when(appObject.getObject()).thenReturn(so);
         when(this.server.getCopy()).thenReturn(appObject);
@@ -41,7 +41,8 @@ public class ExplicitCachingPolicyTest {
     @Test
     public void regularRPC() throws Exception {
         ArrayList<Object> params = new ArrayList<Object>();
-        Serializable so = mock(Serializable.class, withSettings().extraInterfaces(ExplicitCacher.class));
+        Serializable so =
+                mock(Serializable.class, withSettings().extraInterfaces(ExplicitCacher.class));
         AppObject localCopy = mock(AppObject.class);
         when(localCopy.getObject()).thenReturn(so);
         this.client.setCopy(localCopy);
@@ -53,10 +54,11 @@ public class ExplicitCachingPolicyTest {
     }
 
     @Test
-    public void pull() throws Exception{
+    public void pull() throws Exception {
         String methodPull = "public void sapphire.appexamples.minnietwitter.app.UserManager.pull()";
 
-        Serializable latestSO = mock(Serializable.class, withSettings().extraInterfaces(ExplicitCacher.class));
+        Serializable latestSO =
+                mock(Serializable.class, withSettings().extraInterfaces(ExplicitCacher.class));
         AppObject remoteCopy = mock(AppObject.class);
         when(remoteCopy.getObject()).thenReturn(latestSO);
         when(this.server.getCopy()).thenReturn(remoteCopy);
@@ -72,7 +74,7 @@ public class ExplicitCachingPolicyTest {
     }
 
     @Test
-    public void push() throws Exception{
+    public void push() throws Exception {
         String methodPush = "public void sapphire.appexamples.minnietwitter.app.UserManager.push()";
 
         Serializable latestSO = mock(Serializable.class);

@@ -9,39 +9,28 @@ import java.io.Serializable;
  */
 public class ReplicationResponse implements Serializable {
 
-    /**
-     * Valid Return Codes
-     */
+    /** Valid Return Codes */
     public enum ReturnCode {
         /**
-         * Replication succeeded. It may be a partial success.
-         * The result is a <code>Long</code> that refers to
-         * the largest successfully replicated log entry index
-         * on the slave.
+         * Replication succeeded. It may be a partial success. The result is a <code>Long</code>
+         * that refers to the largest successfully replicated log entry index on the slave.
          */
         SUCCESS,
 
         /**
-         * Replication failed invocation failed in which case
-         * {@link #result} stores the
-         * {@link Throwable} that caused the failure
+         * Replication failed invocation failed in which case {@link #result} stores the {@link
+         * Throwable} that caused the failure
          */
         FAILURE,
 
-        /**
-         *
-         */
+        /** */
         TRACEBACK
     }
 
-    /**
-     * Method invocation return code
-     */
+    /** Method invocation return code */
     private final ReturnCode returnCode;
 
-    /**
-     * Method invocation result
-     */
+    /** Method invocation result */
     private final Object result;
 
     public ReplicationResponse(ReturnCode returnCode, Object result) {
@@ -49,25 +38,18 @@ public class ReplicationResponse implements Serializable {
         this.result = result;
     }
 
-    /**
-     * @return return code
-     */
+    /** @return return code */
     public ReturnCode getReturnCode() {
         return returnCode;
     }
 
-    /**
-     * @return result
-     */
+    /** @return result */
     public Object getResult() {
         return result;
     }
 
     @Override
     public String toString() {
-        return "ReplicationResponse{" +
-                "returnCode=" + returnCode +
-                ", result=" + result +
-                '}';
+        return "ReplicationResponse{" + "returnCode=" + returnCode + ", result=" + result + '}';
     }
 }

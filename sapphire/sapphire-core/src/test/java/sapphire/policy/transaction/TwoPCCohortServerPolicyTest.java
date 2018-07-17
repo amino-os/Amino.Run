@@ -1,17 +1,16 @@
 package sapphire.policy.transaction;
 
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.*;
+import static sapphire.policy.SapphirePolicyUpcalls.SapphireServerPolicyUpcalls;
+import static sapphire.policy.transaction.TwoPCCohortPolicy.TwoPCCohortServerPolicy;
+
+import java.util.UUID;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import sapphire.common.AppObject;
 import sapphire.common.ReflectionTestUtil;
-
-import java.util.UUID;
-
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.*;
-import static sapphire.policy.transaction.TwoPCCohortPolicy.TwoPCCohortServerPolicy;
-import static sapphire.policy.SapphirePolicyUpcalls.SapphireServerPolicyUpcalls;
 
 public class TwoPCCohortServerPolicyTest {
     private SandboxProvider sandboxProvider = mock(SandboxProvider.class);
@@ -25,7 +24,7 @@ public class TwoPCCohortServerPolicyTest {
     }
 
     @After
-    public void clean(){
+    public void clean() {
         TransactionContext.leaveTransaction();
     }
 

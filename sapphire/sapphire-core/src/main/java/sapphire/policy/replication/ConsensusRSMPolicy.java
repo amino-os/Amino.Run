@@ -1,6 +1,5 @@
 package sapphire.policy.replication;
 
-
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.rmi.RemoteException;
@@ -22,10 +21,9 @@ import sapphire.policy.util.consensus.raft.RemoteRaftServer;
 import sapphire.policy.util.consensus.raft.StateMachineApplier;
 
 /**
- * Created by quinton on 1/31/18.
- * Single cluster replicated SO w/ atomic RPCs across at least f + 1 replicas, using RAFT algorithm.
- * **/
-
+ * Created by quinton on 1/31/18. Single cluster replicated SO w/ atomic RPCs across at least f + 1
+ * replicas, using RAFT algorithm. *
+ */
 public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
     public static class RPC implements Serializable {
         String method;
@@ -45,12 +43,12 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
                 ret = getServer().onRPC(method, params);
             } catch (LeaderException e) {
 
-                if(null == e.getLeader()) {
+                if (null == e.getLeader()) {
                     throw new RemoteException("Raft leader is not elected");
                 }
 
-                setServer((ServerPolicy)e.getLeader());
-                ret = ((ServerPolicy)e.getLeader()).onRPC(method, params);
+                setServer((ServerPolicy) e.getLeader());
+                ret = ((ServerPolicy) e.getLeader()).onRPC(method, params);
             } catch (RemoteException e) {
                 /* Get servers from the group and find a responding server */
                 boolean serverFound = false;
@@ -92,23 +90,33 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
     }
 
     // TODO: ServerPolicy needs to be Serializable
-    public static class ServerPolicy extends DefaultSapphirePolicy.DefaultServerPolicy implements StateMachineApplier, RemoteRaftServer {
+    public static class ServerPolicy extends DefaultSapphirePolicy.DefaultServerPolicy
+            implements StateMachineApplier, RemoteRaftServer {
         static Logger logger = Logger.getLogger(ServerPolicy.class.getCanonicalName());
         // There are so many servers and clients in this code,
         // include full package name to make it clear to the reader.
-        transient private sapphire.policy.util.consensus.raft.Server raftServer;
+        private transient sapphire.policy.util.consensus.raft.Server raftServer;
 
         public UUID getRaftServerId() {
             return raftServer.getMyServerID();
         }
 
         @Override
-        public int appendEntries(int term, UUID leader, int prevLogIndex, int prevLogTerm, List<LogEntry> entries, int leaderCommit) throws InvalidTermException, PrevLogTermMismatch, InvalidLogIndex {
-            return raftServer.appendEntries(term, leader, prevLogIndex, prevLogTerm, entries, leaderCommit);
+        public int appendEntries(
+                int term,
+                UUID leader,
+                int prevLogIndex,
+                int prevLogTerm,
+                List<LogEntry> entries,
+                int leaderCommit)
+                throws InvalidTermException, PrevLogTermMismatch, InvalidLogIndex {
+            return raftServer.appendEntries(
+                    term, leader, prevLogIndex, prevLogTerm, entries, leaderCommit);
         }
 
         @Override
-        public int requestVote(int term, UUID candidate, int lastLogIndex, int lastLogTerm) throws InvalidTermException, AlreadyVotedException, CandidateBehindException {
+        public int requestVote(int term, UUID candidate, int lastLogIndex, int lastLogTerm)
+                throws InvalidTermException, AlreadyVotedException, CandidateBehindException {
             return raftServer.requestVote(term, candidate, lastLogIndex, lastLogTerm);
         }
 
@@ -122,20 +130,15 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
             super.onCreate(group, annotations);
         }
 
-        /** TODO: Handle added and failed servers - i.e. quorum membership changes
-        @Override
-        public void onMembershipChange() {
-            super.onMembershipChange();
-            for(SapphireServerPolicy server: this.getGroup().getServers()) {
-                ServerPolicy consensusServer = (ServerPolicy)server;
-                this.raftServer.addServer(consensusServer.getRaftServer().getMyServerID(), consensusServer.getRaftServer());
-            }
-        }
+        /**
+         * TODO: Handle added and failed servers - i.e. quorum membership changes @Override public
+         * void onMembershipChange() { super.onMembershipChange(); for(SapphireServerPolicy server:
+         * this.getGroup().getServers()) { ServerPolicy consensusServer = (ServerPolicy)server;
+         * this.raftServer.addServer(consensusServer.getRaftServer().getMyServerID(),
+         * consensusServer.getRaftServer()); } }
          */
 
-        /**
-         * Initialize the local RAFT Server instance.
-         */
+        /** Initialize the local RAFT Server instance. */
         public void initializeRaftServer() {
             raftServer = new sapphire.policy.util.consensus.raft.Server(this);
         }
@@ -159,7 +162,7 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
         // If we implement log compaction in the future, we also need to
         // ensure snapshot operation and apply operation are synchronized.
         public Object apply(Object operation) throws Exception {
-            RPC rpc = (RPC)operation;
+            RPC rpc = (RPC) operation;
             logger.info(String.format("Applying %s(%s)", rpc.method, rpc.params));
             if (rpc.params == null) {
                 rpc.params = new ArrayList<Object>();
@@ -170,7 +173,10 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
 
         @Override
         public Object onRPC(String method, ArrayList<Object> params) throws Exception {
-            return raftServer.applyToStateMachine(new RPC(method, params)); // first commit it to the logs of a consensus of replicas.
+            return raftServer.applyToStateMachine(
+                    new RPC(
+                            method,
+                            params)); // first commit it to the logs of a consensus of replicas.
         }
     }
 
@@ -184,30 +190,35 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
                 // Register the first replica, which has already been created.
                 ServerPolicy consensusServer = (ServerPolicy) server;
                 addServer(consensusServer);
-                // Create additional replicas, one per region. TODO:  Create N-1 replicas on different servers in the same zone.
+                // Create additional replicas, one per region. TODO:  Create N-1 replicas on
+                // different servers in the same zone.
                 for (int i = 1; i < regions.size(); i++) {
-                    ServerPolicy replica = (ServerPolicy)consensusServer.sapphire_replicate();
+                    ServerPolicy replica = (ServerPolicy) consensusServer.sapphire_replicate();
                     replica.sapphire_pin(regions.get(i));
                     replica.initializeRaftServer();
                 }
                 consensusServer.sapphire_pin(regions.get(0));
                 consensusServer.initializeRaftServer();
                 // Tell all the servers about one another
-                ConcurrentHashMap<UUID, ServerPolicy> allServers = new ConcurrentHashMap<UUID, ServerPolicy>();
+                ConcurrentHashMap<UUID, ServerPolicy> allServers =
+                        new ConcurrentHashMap<UUID, ServerPolicy>();
                 // First get the self-assigned ID from each server
                 List<SapphireServerPolicy> servers = getServers();
-                for (SapphireServerPolicy i: servers) {
-                    ServerPolicy s = (ServerPolicy)i;
+                for (SapphireServerPolicy i : servers) {
+                    ServerPolicy s = (ServerPolicy) i;
                     allServers.put(s.getRaftServerId(), s);
                 }
-                // Now tell each server about the location and ID of all the servers, and start the RAFT protocol on each server.
-                for (ServerPolicy s: allServers.values()) {
+                // Now tell each server about the location and ID of all the servers, and start the
+                // RAFT protocol on each server.
+                for (ServerPolicy s : allServers.values()) {
                     s.initializeRaft(allServers);
                 }
 
             } catch (RemoteException e) {
-                // TODO: Sapphire Group Policy Interface does not allow throwing exceptions, so in the mean time convert to an Error.
-                throw new Error("Could not create new group policy because the oms is not available.", e);
+                // TODO: Sapphire Group Policy Interface does not allow throwing exceptions, so in
+                // the mean time convert to an Error.
+                throw new Error(
+                        "Could not create new group policy because the oms is not available.", e);
             }
         }
     }

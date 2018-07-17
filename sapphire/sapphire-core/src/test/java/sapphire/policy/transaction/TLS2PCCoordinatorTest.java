@@ -1,15 +1,14 @@
 package sapphire.policy.transaction;
 
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
 import sapphire.common.ReflectionTestUtil;
 import sapphire.policy.serializability.TransactionAlreadyStartedException;
-
-import java.util.UUID;
-
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 public class TLS2PCCoordinatorTest {
     private TransactionValidator validator = mock(TransactionValidator.class);
@@ -51,5 +50,4 @@ public class TLS2PCCoordinatorTest {
 
         assertEquals(TransactionManager.Vote.NO, vote);
     }
-
 }

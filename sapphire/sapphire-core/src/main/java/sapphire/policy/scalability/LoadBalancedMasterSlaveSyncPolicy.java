@@ -1,10 +1,11 @@
 package sapphire.policy.scalability;
 
+import static sapphire.policy.scalability.masterslave.MethodInvocationResponse.ReturnCode.REDIRECT;
+
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import sapphire.policy.scalability.masterslave.Committer;
 import sapphire.policy.scalability.masterslave.Configuration;
 import sapphire.policy.scalability.masterslave.Context;
@@ -18,32 +19,26 @@ import sapphire.policy.scalability.masterslave.RequestReplicator;
 import sapphire.policy.scalability.masterslave.StateManager;
 import sapphire.runtime.annotations.RuntimeSpec;
 
-import static sapphire.policy.scalability.masterslave.MethodInvocationResponse.ReturnCode.REDIRECT;
-
 /**
- * A master slave DM that replicates requests from master to slave synchronously in best effort.
- * It stops replication if the slave is down or is not reachable. When slave is back online, master
+ * A master slave DM that replicates requests from master to slave synchronously in best effort. It
+ * stops replication if the slave is down or is not reachable. When slave is back online, master
  * will sync up slave's object state and enable replications.
  *
- * TODO: Make Group Policy highly available. Unlink PAXOS or RAFT, Master Slave DM is not able to
+ * <p>TODO: Make Group Policy highly available. Unlink PAXOS or RAFT, Master Slave DM is not able to
  * decide the leader by itself when run in two nodes. It relies on some arbitrator to decide the
  * leader. In this implementation, it is the Group policy who decides the leader. The Group policy
  * itself has only one instance - it is not highly available. This should be addressed after we
- * integrates Sapphire with Diamond and Tapir.
- * TODO: Support multiple slaves and enable semi-synchronous replication
+ * integrates Sapphire with Diamond and Tapir. TODO: Support multiple slaves and enable
+ * semi-synchronous replication
  */
 public class LoadBalancedMasterSlaveSyncPolicy extends LoadBalancedMasterSlaveBase {
 
-    /**
-     * Client side policy
-     */
+    /** Client side policy */
     public static class ClientPolicy extends ClientBase {}
 
-    /**
-     * Server side policy
-     */
+    /** Server side policy */
     // TODO (Terry): Move annotation onto Sapphire object
-    @RuntimeSpec(replicas=2)
+    @RuntimeSpec(replicas = 2)
     public static class ServerPolicy extends ServerBase {
         private transient Logger logger;
         private transient Committer commitExecutor;
@@ -52,13 +47,13 @@ public class LoadBalancedMasterSlaveSyncPolicy extends LoadBalancedMasterSlaveBa
 
         @Override
         public void onCreate(SapphireGroupPolicy group, Annotation[] annotations) {
-            super.onCreate(group,annotations);
+            super.onCreate(group, annotations);
         }
 
         @Override
         public void start() {
-            logger =  Logger.getLogger(ServerPolicy.class.getName());
-            GroupPolicy groupPolicy = (GroupPolicy)getGroup();
+            logger = Logger.getLogger(ServerPolicy.class.getName());
+            GroupPolicy groupPolicy = (GroupPolicy) getGroup();
 
             Configuration config = new Configuration();
             RequestReplicator replicator = new RequestReplicator(config, groupPolicy);
@@ -69,11 +64,7 @@ public class LoadBalancedMasterSlaveSyncPolicy extends LoadBalancedMasterSlaveBa
             processor = new Processor(config, groupPolicy, commitExecutor, replicator);
             processor.open();
 
-            Context context = new Context(
-                    groupPolicy,
-                    config,
-                    commitExecutor,
-                    replicator);
+            Context context = new Context(groupPolicy, config, commitExecutor, replicator);
 
             this.stateMgr = new StateManager(getServerId(), context);
             logger.log(Level.INFO, "LoadBalancedMasterSlavePolicy$ServerPolicy created");
@@ -87,24 +78,25 @@ public class LoadBalancedMasterSlaveSyncPolicy extends LoadBalancedMasterSlaveBa
         /**
          * Handles replication requests from master. This method will only be invoked on slaves.
          *
-         * 1. Log entries must be appended in order (according to index)
-         * 2. Previous entry must exist before appending the current entry
+         * <p>1. Log entries must be appended in order (according to index) 2. Previous entry must
+         * exist before appending the current entry
          *
-         * Since we have only one master and master uses one thread to do replications, there
-         * is no need to synchronize on this method.
+         * <p>Since we have only one master and master uses one thread to do replications, there is
+         * no need to synchronize on this method.
          *
          * @param request replication request
          * @return replication response
          */
         @Override
         public ReplicationResponse handleReplication(ReplicationRequest request) {
-            if (request == null || request.getEntries() == null || request.getEntries().size() == 0) {
-                return new ReplicationResponse(
-                        ReplicationResponse.ReturnCode.SUCCESS,
-                        null);
+            if (request == null
+                    || request.getEntries() == null
+                    || request.getEntries().size() == 0) {
+                return new ReplicationResponse(ReplicationResponse.ReturnCode.SUCCESS, null);
             }
 
-            if (request.getIndexOfLargestCommittedEntry() > commitExecutor.getIndexOfLargestCommittedEntry()) {
+            if (request.getIndexOfLargestCommittedEntry()
+                    > commitExecutor.getIndexOfLargestCommittedEntry()) {
                 // Last committed index on master does not exist on Slave.
                 // Slave is out of date
                 return new ReplicationResponse(
@@ -117,14 +109,12 @@ public class LoadBalancedMasterSlaveSyncPolicy extends LoadBalancedMasterSlaveBa
                 commitExecutor.applyWriteSync(entry.getRequest(), entry.getIndex());
             }
 
-            return new ReplicationResponse(
-                    ReplicationResponse.ReturnCode.SUCCESS,
-                    null);
+            return new ReplicationResponse(ReplicationResponse.ReturnCode.SUCCESS, null);
         }
 
         /**
          * invoke the given request on App object
-         * 
+         *
          * @param request method invocation request
          * @return method invocation response
          */
@@ -153,8 +143,6 @@ public class LoadBalancedMasterSlaveSyncPolicy extends LoadBalancedMasterSlaveBa
         }
     }
 
-    /**
-     * Group policy
-     */
+    /** Group policy */
     public static class GroupPolicy extends LoadBalancedMasterSlaveBase.GroupBase {}
 }

@@ -4,15 +4,12 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
- * @author terryz
- */
+/** @author terryz */
 public interface State {
-    /**
-     * Valid state names
-     */
+    /** Valid state names */
     enum StateName {
-        SLAVE, MASTER
+        SLAVE,
+        MASTER
     }
 
     //
@@ -20,16 +17,14 @@ public interface State {
     //
 
     /**
-     * Method to be called when we enter a new state.
-     * Suppose we transit from state A to state B, the state manager will first call
-     * <code>A.leave()</code>, then call <code>B.enter()</code>.
+     * Method to be called when we enter a new state. Suppose we transit from state A to state B,
+     * the state manager will first call <code>A.leave()</code>, then call <code>B.enter()</code>.
      */
     void enter();
 
     /**
-     * Method to be called when we leave an old state.
-     * Suppose we transit from state A to state B, the state manager will first call
-     * <code>A.leave()</code>, then call <code>B.enter()</code>.
+     * Method to be called when we leave an old state. Suppose we transit from state A to state B,
+     * the state manager will first call <code>A.leave()</code>, then call <code>B.enter()</code>.
      */
     void leave();
 
@@ -63,14 +58,11 @@ public interface State {
 
         @Override
         public boolean equals(Object o) {
-            if (this == o)
-                return true;
+            if (this == o) return true;
 
-            if (o == null)
-                return false;
+            if (o == null) return false;
 
-            if (getClass() != o.getClass())
-                return false;
+            if (getClass() != o.getClass()) return false;
 
             return getName() == ((State) o).getName();
         }
@@ -79,17 +71,18 @@ public interface State {
     /**
      * Represents master state in a master/slave set up.
      *
-     * Servers in master state performs the following operations.
+     * <p>Servers in master state performs the following operations.
+     *
      * <ul>
-     *      <li>initialize <code>nextIndex</code> for each slave</li>
-     *      <li>accept commands from clients and append new entries into append</li>
-     *      <li>replicate append entries to slaves</li>
-     *      <li>mark append entry committed if it is stored on a majority of servers</li>
-     *      <li>renew lock periodically</li>
-     *      <ul>
-     *          <li>renew succeeded: stay as master</li>
-     *          <li>renew failed: step down as slave if fails to renew lock</li>
-     *      </ul>
+     *   <li>initialize <code>nextIndex</code> for each slave
+     *   <li>accept commands from clients and append new entries into append
+     *   <li>replicate append entries to slaves
+     *   <li>mark append entry committed if it is stored on a majority of servers
+     *   <li>renew lock periodically
+     *       <ul>
+     *         <li>renew succeeded: stay as master
+     *         <li>renew failed: step down as slave if fails to renew lock
+     *       </ul>
      * </ul>
      */
     final class Master extends AbstractState {
@@ -156,15 +149,16 @@ public interface State {
     /**
      * Represents slave state in a Master Slave set up.
      *
-     * Servers in slave state performs the following operations.
+     * <p>Servers in slave state performs the following operations.
+     *
      * <ul>
-     *      <li>serves read requests</li>
-     *      <li>respond to <code>AppendEntries</code> RPC from master</li>
-     *      <li>obtains lock from group periodically</li>
-     *      <ul>
-     *          <li>lock obtained: becomes master</li>
-     *          <li>lock not obtained: stay as slave</li>
-     *      </ul>
+     *   <li>serves read requests
+     *   <li>respond to <code>AppendEntries</code> RPC from master
+     *   <li>obtains lock from group periodically
+     *       <ul>
+     *         <li>lock obtained: becomes master
+     *         <li>lock not obtained: stay as slave
+     *       </ul>
      * </ul>
      */
     final class Slave extends AbstractState {
@@ -209,4 +203,3 @@ public interface State {
         }
     }
 }
-

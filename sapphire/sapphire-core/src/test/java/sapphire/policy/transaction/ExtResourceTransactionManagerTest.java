@@ -1,29 +1,32 @@
 package sapphire.policy.transaction;
 
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
+
+import java.io.Serializable;
+import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
 import sapphire.common.AppObject;
 
-import java.io.Serializable;
-import java.util.UUID;
-
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
-
 public class ExtResourceTransactionManagerTest {
     private UUID transcationId = UUID.randomUUID();
-    private TransactionManager businessObject = mock(TransactionManager.class, withSettings().extraInterfaces(Serializable.class));
+    private TransactionManager businessObject =
+            mock(TransactionManager.class, withSettings().extraInterfaces(Serializable.class));
     private AppObject appObject = new AppObject(businessObject);
-    private AppObjectShimServerPolicy appObjectShimServerPolicy = mock(AppObjectShimServerPolicy.class);
+    private AppObjectShimServerPolicy appObjectShimServerPolicy =
+            mock(AppObjectShimServerPolicy.class);
     private SandboxProvider sandboxProvider = mock(SandboxProvider.class);
     private TransactionManager intTxManager = mock(TransactionManager.class);
-    private ExtResourceTransactionManager txMgr = new ExtResourceTransactionManager(sandboxProvider, intTxManager);
+    private ExtResourceTransactionManager txMgr =
+            new ExtResourceTransactionManager(sandboxProvider, intTxManager);
 
     @Before
     public void setup() throws TransactionExecutionException {
         when(appObjectShimServerPolicy.getAppObject()).thenReturn(appObject);
         when(sandboxProvider.getSandbox(transcationId)).thenReturn(appObjectShimServerPolicy);
-        ExtResourceTransactionManager txMgr = new ExtResourceTransactionManager(sandboxProvider, intTxManager);
+        ExtResourceTransactionManager txMgr =
+                new ExtResourceTransactionManager(sandboxProvider, intTxManager);
     }
 
     @Test

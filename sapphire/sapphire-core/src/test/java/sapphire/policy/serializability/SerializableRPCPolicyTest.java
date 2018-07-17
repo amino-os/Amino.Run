@@ -1,6 +1,6 @@
 package sapphire.policy.serializability;
 
-import org.junit.Before;
+import static org.junit.Assert.*;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -9,14 +9,10 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
-
+import org.junit.Before;
 import sapphire.common.AppObject;
 
-import static org.junit.Assert.*;
-
-/**
- * @author terryz
- */
+/** @author terryz */
 public class SerializableRPCPolicyTest {
     private SerializableRPCPolicy.ClientPolicy client;
     private SerializableRPCPolicy.ServerPolicy server;
@@ -33,18 +29,21 @@ public class SerializableRPCPolicyTest {
 
     @org.junit.Test
     public void testSerializableRPCsOnServer() throws Exception {
-        final String methodName = "public int sapphire.policy.serializability.SerializableRPCPolicyTest$Counter.addOne() throws java.lang.Exception";
+        final String methodName =
+                "public int sapphire.policy.serializability.SerializableRPCPolicyTest$Counter.addOne() throws java.lang.Exception";
         final int len = 5;
         List<FutureTask<Object>> taskList = new ArrayList<FutureTask<Object>>();
 
-        for (int i=0; i< len; i++) {
-            FutureTask<Object> task = new FutureTask<Object>(new Callable<Object>() {
-                @Override
-                public Object call() throws Exception {
-                    // invoke onRPC method on server
-                    return server.onRPC(methodName, new ArrayList<Object>());
-                }
-            });
+        for (int i = 0; i < len; i++) {
+            FutureTask<Object> task =
+                    new FutureTask<Object>(
+                            new Callable<Object>() {
+                                @Override
+                                public Object call() throws Exception {
+                                    // invoke onRPC method on server
+                                    return server.onRPC(methodName, new ArrayList<Object>());
+                                }
+                            });
             taskList.add(task);
         }
 
@@ -53,18 +52,21 @@ public class SerializableRPCPolicyTest {
 
     @org.junit.Test
     public void testSerializableRPCsOnClient() throws Exception {
-        final String methodName = "public int sapphire.policy.serializability.SerializableRPCPolicyTest$Counter.addOne() throws java.lang.Exception";
+        final String methodName =
+                "public int sapphire.policy.serializability.SerializableRPCPolicyTest$Counter.addOne() throws java.lang.Exception";
         final int len = 5;
         List<FutureTask<Object>> taskList = new ArrayList<FutureTask<Object>>();
 
-        for (int i=0; i< len; i++) {
-            FutureTask<Object> task = new FutureTask<Object>(new Callable<Object>() {
-                @Override
-                public Object call() throws Exception {
-                    // invoke onRPC method on client
-                    return client.onRPC(methodName, new ArrayList<Object>());
-                }
-            });
+        for (int i = 0; i < len; i++) {
+            FutureTask<Object> task =
+                    new FutureTask<Object>(
+                            new Callable<Object>() {
+                                @Override
+                                public Object call() throws Exception {
+                                    // invoke onRPC method on client
+                                    return client.onRPC(methodName, new ArrayList<Object>());
+                                }
+                            });
             taskList.add(task);
         }
 
@@ -76,14 +78,14 @@ public class SerializableRPCPolicyTest {
 
         // Run tasks in parallel
         // Each task will increment counter by one
-        for (FutureTask<Object> t: taskList) {
+        for (FutureTask<Object> t : taskList) {
             executor.execute(t);
         }
 
         int max = 0;
-        for (int i=0; i<taskList.size(); i++) {
+        for (int i = 0; i < taskList.size(); i++) {
             Object ret = taskList.get(i).get();
-            max = Math.max(max, (Integer)ret);
+            max = Math.max(max, (Integer) ret);
         }
 
         // Since 1) each task increment counter by one
@@ -102,6 +104,5 @@ public class SerializableRPCPolicyTest {
         }
     }
 
-    public static class Counter_Stub extends Counter {
-    }
+    public static class Counter_Stub extends Counter {}
 }

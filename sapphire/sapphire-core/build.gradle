@@ -1,4 +1,14 @@
-apply plugin: 'java'
+// Usage of googleJavaPlugin can be found at 
+// https://github.com/sherter/google-java-format-gradle-plugin
+plugins {
+  id 'com.github.sherter.google-java-format' version '0.7.1'
+  id 'java'
+}
+
+googleJavaFormat {
+  // Using Android AOSP code style
+  options style: 'AOSP'
+}
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
@@ -10,6 +20,8 @@ dependencies {
     testCompile 'org.powermock:powermock-module-junit4:1.6.5'
     testCompile 'org.powermock:powermock-api-mockito:1.6.5'
 }
+
+compileJava.dependsOn tasks.googleJavaFormat
 
 task deleteJar(type: Delete) {
     delete 'libs/sapphire-core.jar'

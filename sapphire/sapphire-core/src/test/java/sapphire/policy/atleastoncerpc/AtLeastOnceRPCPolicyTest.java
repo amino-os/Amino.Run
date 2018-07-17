@@ -1,14 +1,13 @@
 package sapphire.policy.atleastoncerpc;
 
-import sapphire.policy.SapphirePolicy;
-
-import java.util.ArrayList;
-import java.util.concurrent.TimeoutException;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import java.util.ArrayList;
+import java.util.concurrent.TimeoutException;
+import sapphire.policy.SapphirePolicy;
 
 public class AtLeastOnceRPCPolicyTest {
     SapphirePolicy.SapphireClientPolicy clientPolicy;
@@ -25,12 +24,12 @@ public class AtLeastOnceRPCPolicyTest {
     @org.junit.Test
     public void atleaseOnceRPC() throws Exception {
         // normal case: call goes well
-       when(this.serverPolicy.onRPC("foo", new ArrayList<Object>())).thenReturn("OK");
+        when(this.serverPolicy.onRPC("foo", new ArrayList<Object>())).thenReturn("OK");
 
         Object expected = null;
         try {
             expected = this.clientPolicy.onRPC("foo", new ArrayList<Object>());
-        }catch (Exception e){
+        } catch (Exception e) {
             fail(String.format("unexpected exception was thrown: %s", e.toString()));
         }
 
@@ -48,7 +47,7 @@ public class AtLeastOnceRPCPolicyTest {
         Object expected = null;
         try {
             expected = this.clientPolicy.onRPC("foo", new ArrayList<Object>());
-        }catch (Exception e){
+        } catch (Exception e) {
             fail(String.format("unexpected exception was thrown: %s", e.toString()));
         }
 
@@ -58,10 +57,11 @@ public class AtLeastOnceRPCPolicyTest {
     @org.junit.Test(timeout = 500, expected = TimeoutException.class)
     public void atleaseOnceRPCGivesupAfterTimeout() throws Exception {
         // persistent failure case
-        when(this.serverPolicy.onRPC("foo", new ArrayList<Object>())).thenThrow(new Exception("persistent"));
+        when(this.serverPolicy.onRPC("foo", new ArrayList<Object>()))
+                .thenThrow(new Exception("persistent"));
 
         // to shorten RPC timeout allowance for unit test
-        ((AtLeastOnceRPCPolicy.AtLeastOnceRPCClientPolicy)this.clientPolicy).setTimeout(100);
+        ((AtLeastOnceRPCPolicy.AtLeastOnceRPCClientPolicy) this.clientPolicy).setTimeout(100);
 
         Object result = null;
         result = this.clientPolicy.onRPC("foo", new ArrayList<Object>());

@@ -1,5 +1,7 @@
 package sapphire.policy.transaction;
 
+import java.lang.annotation.Annotation;
+import java.util.ArrayList;
 import sapphire.common.AppObject;
 import sapphire.common.Utils;
 import sapphire.policy.SapphirePolicy;
@@ -7,20 +9,13 @@ import sapphire.policy.SapphirePolicyUpcalls.SapphireServerPolicyUpcalls;
 import sapphire.policy.scalability.masterslave.MethodInvocationRequest;
 import sapphire.policy.scalability.masterslave.MethodInvocationResponse;
 
-import java.lang.annotation.Annotation;
-import java.util.ArrayList;
-
-/**
- * server policy that directly works on the deep-cloned copy of an AppObject
- */
-public class AppObjectShimServerPolicy implements SapphireServerPolicyUpcalls{
+/** server policy that directly works on the deep-cloned copy of an AppObject */
+public class AppObjectShimServerPolicy implements SapphireServerPolicyUpcalls {
     private AppObject appObject;
     private AppObject originMaster;
 
     @Override
-    public void onCreate(SapphirePolicy.SapphireGroupPolicy group, Annotation[] annotations) {
-
-    }
+    public void onCreate(SapphirePolicy.SapphireGroupPolicy group, Annotation[] annotations) {}
 
     @Override
     public SapphirePolicy.SapphireGroupPolicy getGroup() {
@@ -37,12 +32,11 @@ public class AppObjectShimServerPolicy implements SapphireServerPolicyUpcalls{
     }
 
     @Override
-    public void onMembershipChange() {
-
-    }
+    public void onMembershipChange() {}
 
     /**
      * gets the app object referenced by the server policy
+     *
      * @return the app object
      */
     public AppObject getAppObject() {
@@ -51,6 +45,7 @@ public class AppObjectShimServerPolicy implements SapphireServerPolicyUpcalls{
 
     /**
      * gets the origin app object
+     *
      * @return the origin app object
      */
     public AppObject getOriginMaster() {
@@ -63,11 +58,13 @@ public class AppObjectShimServerPolicy implements SapphireServerPolicyUpcalls{
     }
 
     /**
-     *  creates server policy which contains deep copy of the input app object
+     * creates server policy which contains deep copy of the input app object
+     *
      * @param appObject the origin app object
      */
-    public static AppObjectShimServerPolicy cloneInShimServerPolicy(AppObject appObject) throws Exception {
-        AppObject deepCloneAppObject = (AppObject)Utils.ObjectCloner.deepCopy(appObject);
+    public static AppObjectShimServerPolicy cloneInShimServerPolicy(AppObject appObject)
+            throws Exception {
+        AppObject deepCloneAppObject = (AppObject) Utils.ObjectCloner.deepCopy(appObject);
         return new AppObjectShimServerPolicy(appObject, deepCloneAppObject);
     }
 }

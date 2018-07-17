@@ -1,25 +1,24 @@
 package sapphire.policy.cache.explicitcaching;
 
-import sapphire.common.AppObject;
-import sapphire.policy.DefaultSapphirePolicy;
-
 import java.io.Serializable;
 import java.util.ArrayList;
+import sapphire.common.AppObject;
+import sapphire.policy.DefaultSapphirePolicy;
 
 // caching with explicit push and pull calls from the application
 // The guarded SO MUST provide pull/push method body (placeholder) of ExplicitCacher interface
 // TODO: stub generator to generate related methods
 // TODO: inherit from a common caching base class which has getCopy/syncCopy methods
-public class ExplicitCachingPolicy extends DefaultSapphirePolicy{
+public class ExplicitCachingPolicy extends DefaultSapphirePolicy {
     public static class ExplicitCachingClientPolicy extends DefaultClientPolicy {
         private AppObject cachedCopy = null;
 
         private void pull() {
-            this.cachedCopy = ((ExplicitCachingServerPolicy)this.getServer()).getCopy();
+            this.cachedCopy = ((ExplicitCachingServerPolicy) this.getServer()).getCopy();
         }
 
         private void push() {
-            ((ExplicitCachingServerPolicy)this.getServer()).syncCopy(this.cachedCopy);
+            ((ExplicitCachingServerPolicy) this.getServer()).syncCopy(this.cachedCopy);
         }
 
         // for unit test use
@@ -46,19 +45,20 @@ public class ExplicitCachingPolicy extends DefaultSapphirePolicy{
         public Object onRPC(String method, ArrayList<Object> params) throws Exception {
             // almost every op goes against local cache, except for pull/push
             if (this.isPull(method)) {
-                this.cachedCopy = ((ExplicitCachingServerPolicy)this.getServer()).getCopy();
+                this.cachedCopy = ((ExplicitCachingServerPolicy) this.getServer()).getCopy();
                 return null;
             }
 
             if (this.isPush(method)) {
-                if (this.cachedCopy != null){
-                    ((ExplicitCachingServerPolicy)this.getServer()).syncCopy(this.cachedCopy.getObject());
+                if (this.cachedCopy != null) {
+                    ((ExplicitCachingServerPolicy) this.getServer())
+                            .syncCopy(this.cachedCopy.getObject());
                 }
                 return null;
             }
 
             if (this.cachedCopy == null) {
-                this.cachedCopy = ((ExplicitCachingServerPolicy)this.getServer()).getCopy();
+                this.cachedCopy = ((ExplicitCachingServerPolicy) this.getServer()).getCopy();
             }
 
             if (!(this.cachedCopy.getObject() instanceof ExplicitCacher)) {
@@ -70,7 +70,7 @@ public class ExplicitCachingPolicy extends DefaultSapphirePolicy{
     }
 
     public static class ExplicitCachingServerPolicy extends DefaultServerPolicy {
-        public AppObject getCopy(){
+        public AppObject getCopy() {
             return this.appObject;
         }
 
@@ -80,5 +80,4 @@ public class ExplicitCachingPolicy extends DefaultSapphirePolicy{
     }
 
     public static class ExplicitCachingGroupPolicy extends DefaultGroupPolicy {}
-
 }

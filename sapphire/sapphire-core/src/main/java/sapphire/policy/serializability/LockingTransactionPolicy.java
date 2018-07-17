@@ -1,24 +1,19 @@
 package sapphire.policy.serializability;
 
-import java.rmi.RemoteException;
 import java.util.ArrayList;
-
-import sapphire.common.SapphireObjectNotAvailableException;
-import sapphire.kernel.common.KernelObjectNotFoundException;
 import sapphire.policy.cache.CacheLeasePolicy;
 
 /**
- * Created by quinton on 1/21/18.
- * Multi-RPC transactions w/ server-side locking, no concurrent transactions.
+ * Created by quinton on 1/21/18. Multi-RPC transactions w/ server-side locking, no concurrent
+ * transactions.
  */
 public class LockingTransactionPolicy extends CacheLeasePolicy {
-	/**
-	 * Locking Transaction client policy. The client side proxy that holds the
-	 * cached object, gets leases from the server and writes locally during transactions.
-	 *
-	 */
-	public static class ClientPolicy extends CacheLeasePolicy.CacheLeaseClientPolicy {
-        protected boolean transactionInProgress;  // Has this client begun a transaction?
+    /**
+     * Locking Transaction client policy. The client side proxy that holds the cached object, gets
+     * leases from the server and writes locally during transactions.
+     */
+    public static class ClientPolicy extends CacheLeasePolicy.CacheLeaseClientPolicy {
+        protected boolean transactionInProgress; // Has this client begun a transaction?
 
         @Override
         public Object onRPC(String method, ArrayList<Object> params) throws Exception {
@@ -33,13 +28,16 @@ public class LockingTransactionPolicy extends CacheLeasePolicy {
                 return null;
             } else { // Normal method invocation
                 Object ret = null;
-                if (transactionInProgress) { // Inside a transaction we invoke against the local copy.
+                if (transactionInProgress) { // Inside a transaction we invoke against the local
+                    // copy.
                     if (leaseStillValid()) {
                         try {
                             return cachedObject.invoke(method, params);
                         } catch (Exception e) {
                             rollbackTransaction();
-                            throw new Exception("Exception occurred inside transaction.  Transaction rolled back.", e);
+                            throw new Exception(
+                                    "Exception occurred inside transaction.  Transaction rolled back.",
+                                    e);
                         }
                     } else { // Transaction has timed out.
                         rollbackTransaction();
@@ -68,15 +66,15 @@ public class LockingTransactionPolicy extends CacheLeasePolicy {
 
         public synchronized void startTransaction(ArrayList<Object> params) throws Exception {
             if (!transactionInProgress) {
-                if(!params.isEmpty()) {
-                    getNewLease((Integer)params.get(0));
-                }
-                else {
+                if (!params.isEmpty()) {
+                    getNewLease((Integer) params.get(0));
+                } else {
                     getNewLease(CacheLeasePolicy.DEFAULT_LEASE_PERIOD);
                 }
                 transactionInProgress = true;
             } else {
-                throw new TransactionAlreadyStartedException("Transaction already started on Sapphire object.  Rollback or commit before starting a new transaction.");
+                throw new TransactionAlreadyStartedException(
+                        "Transaction already started on Sapphire object.  Rollback or commit before starting a new transaction.");
             }
         }
 
@@ -111,7 +109,7 @@ public class LockingTransactionPolicy extends CacheLeasePolicy {
         }
     }
 
-	public static class ServerPolicy extends CacheLeasePolicy.CacheLeaseServerPolicy {}
-	
-	public static class GroupPolicy extends CacheLeasePolicy.CacheLeaseGroupPolicy {}
+    public static class ServerPolicy extends CacheLeasePolicy.CacheLeaseServerPolicy {}
+
+    public static class GroupPolicy extends CacheLeasePolicy.CacheLeaseGroupPolicy {}
 }

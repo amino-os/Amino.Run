@@ -3,43 +3,30 @@ package sapphire.policy.scalability.masterslave;
 import java.io.Serializable;
 import java.util.Objects;
 
-/**
- * @author terryz
- */
+/** @author terryz */
 public class MethodInvocationResponse implements Serializable {
-    /**
-     * Valid Return Codes
-     */
+    /** Valid Return Codes */
     public enum ReturnCode {
         /**
-         * Method invocation succeeded in which case
-         * {@link MethodInvocationResponse#result} stores
+         * Method invocation succeeded in which case {@link MethodInvocationResponse#result} stores
          * the result
          */
         SUCCESS,
 
         /**
-         * Method invocation failed in which case
-         * {@link MethodInvocationResponse#result} stores the
+         * Method invocation failed in which case {@link MethodInvocationResponse#result} stores the
          * {@link Throwable} that caused the failure
          */
         FAILURE,
 
-        /**
-         * Indicating that the request should be redirected to
-         * other servers
-         */
+        /** Indicating that the request should be redirected to other servers */
         REDIRECT
     }
 
-    /**
-     * Method invocation return code
-     */
+    /** Method invocation return code */
     private final ReturnCode returnCode;
 
-    /**
-     * Method invocation result
-     */
+    /** Method invocation result */
     private Object result;
 
     public MethodInvocationResponse(ReturnCode returnCode, Object result) {
@@ -60,8 +47,8 @@ public class MethodInvocationResponse implements Serializable {
         if (this == o) return true;
         if (!(o instanceof MethodInvocationResponse)) return false;
         MethodInvocationResponse that = (MethodInvocationResponse) o;
-        return getReturnCode() == that.getReturnCode() &&
-                Objects.equals(getResult(), that.getResult());
+        return getReturnCode() == that.getReturnCode()
+                && Objects.equals(getResult(), that.getResult());
     }
 
     @Override

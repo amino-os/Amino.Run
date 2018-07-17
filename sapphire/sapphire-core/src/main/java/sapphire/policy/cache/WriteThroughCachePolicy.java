@@ -1,16 +1,15 @@
 package sapphire.policy.cache;
 
 import java.util.ArrayList;
-
 import sapphire.common.AppObject;
 import sapphire.policy.DefaultSapphirePolicy;
 
 /**
- * <code><WriteThroughCache</code> directs write operations onto cached object and through to
- * remote object before confirming write completion. Read operations will be invoked on cached
- * object directly.
- * <p>
- * State changes on remote object caused by one client will not automatically invalidate to
+ * <code><WriteThroughCache</code> directs write operations onto cached object and through to remote
+ * object before confirming write completion. Read operations will be invoked on cached object
+ * directly.
+ *
+ * <p>State changes on remote object caused by one client will not automatically invalidate to
  * cached objects on other clients. Therefore <code>WriteThroughCache</code> may contain staled
  * object.
  *
@@ -67,4 +66,3 @@ public class WriteThroughCachePolicy extends DefaultSapphirePolicy {
 
     public static class GroupPolicy extends DefaultGroupPolicy {}
 }
-

@@ -1,11 +1,10 @@
 package sapphire.policy.atleastoncerpc;
 
-import sapphire.policy.DefaultSapphirePolicy;
-
 import java.util.ArrayList;
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
+import sapphire.policy.DefaultSapphirePolicy;
 
 // AtLeastOnceRPC: automatically retry RPCs for bounded amount of time
 public class AtLeastOnceRPCPolicy extends DefaultSapphirePolicy {
@@ -22,9 +21,9 @@ public class AtLeastOnceRPCPolicy extends DefaultSapphirePolicy {
         }
 
         private Object doOnRPC(String method, ArrayList<Object> params) throws Exception {
-            try{
+            try {
                 return super.onRPC(method, params);
-            }catch(Exception e) {
+            } catch (Exception e) {
                 return this.onRPC(method, params);
             }
         }
@@ -36,12 +35,14 @@ public class AtLeastOnceRPCPolicy extends DefaultSapphirePolicy {
             final String method_ = method;
             final ArrayList<Object> params_ = params;
 
-            timeoutTask = new FutureTask<Object>(new Callable<Object>() {
-                @Override
-                public Object call() throws Exception{
-                    return clientPolicy.doOnRPC(method_, params_);
-                }
-            });
+            timeoutTask =
+                    new FutureTask<Object>(
+                            new Callable<Object>() {
+                                @Override
+                                public Object call() throws Exception {
+                                    return clientPolicy.doOnRPC(method_, params_);
+                                }
+                            });
 
             new Thread(timeoutTask).start();
             Object result = timeoutTask.get(this.timeoutMilliSeconds, TimeUnit.MILLISECONDS);

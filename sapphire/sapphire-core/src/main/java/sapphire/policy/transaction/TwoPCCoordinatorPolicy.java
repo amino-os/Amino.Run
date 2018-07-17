@@ -1,28 +1,23 @@
 package sapphire.policy.transaction;
 
-import sapphire.policy.DefaultSapphirePolicy;
-
 import java.util.ArrayList;
 import java.util.UUID;
+import sapphire.policy.DefaultSapphirePolicy;
 
-/**
- * DCAP distributed transaction coordinator default DM set
- */
+/** DCAP distributed transaction coordinator default DM set */
 public class TwoPCCoordinatorPolicy extends DefaultSapphirePolicy {
-    /**
-     * DCAP distributed transaction coordinator client policy
-     */
+    /** DCAP distributed transaction coordinator client policy */
     public static class TwoPCCoordinatorClientPolicy extends DefaultClientPolicy {}
 
-    /**
-     * DCAP distributed transaction coordinator server policy
-     */
+    /** DCAP distributed transaction coordinator server policy */
     public static class TwoPCCoordinatorServerPolicy extends DefaultServerPolicy {
-        private transient final TwoPCCoordinator coordinator;
-        private transient final SandboxProvider sandboxProvider = new AppObjectSandboxProvider();
+        private final transient TwoPCCoordinator coordinator;
+        private final transient SandboxProvider sandboxProvider = new AppObjectSandboxProvider();
 
         public TwoPCCoordinatorServerPolicy() {
-            NonconcurrentTransactionValidator validator = new NonconcurrentTransactionValidator(this.sapphire_getAppObject(), this.sandboxProvider);
+            NonconcurrentTransactionValidator validator =
+                    new NonconcurrentTransactionValidator(
+                            this.sapphire_getAppObject(), this.sandboxProvider);
             this.coordinator = new TLS2PCCoordinator(validator);
         }
 
@@ -31,12 +26,13 @@ public class TwoPCCoordinatorPolicy extends DefaultSapphirePolicy {
             this.coordinator.beginTransaction();
             UUID transactionId = this.coordinator.getTransactionId();
 
-            SapphireServerPolicyUpcalls sandbox = this.sandboxProvider.getSandbox(this, transactionId);
+            SapphireServerPolicyUpcalls sandbox =
+                    this.sandboxProvider.getSandbox(this, transactionId);
 
             Object rpcResult;
             try {
                 rpcResult = sandbox.onRPC(method, params);
-            }catch (Exception e) {
+            } catch (Exception e) {
                 this.coordinator.abort(transactionId);
                 this.sandboxProvider.removeSandbox(transactionId);
                 throw new TransactionAbortException("execution had error.", e);
@@ -58,13 +54,11 @@ public class TwoPCCoordinatorPolicy extends DefaultSapphirePolicy {
         }
 
         private void makeUpdateDurable(SapphireServerPolicyUpcalls sandbox) {
-            AppObjectShimServerPolicy shimServerPolicy = (AppObjectShimServerPolicy)sandbox;
+            AppObjectShimServerPolicy shimServerPolicy = (AppObjectShimServerPolicy) sandbox;
             this.appObject = shimServerPolicy.getAppObject();
         }
     }
 
-    /**
-     * DCAP distributed transaction coordinator group policy
-     */
+    /** DCAP distributed transaction coordinator group policy */
     public static class TwoPCCoordinatorGroupPolicy extends DefaultGroupPolicy {}
 }

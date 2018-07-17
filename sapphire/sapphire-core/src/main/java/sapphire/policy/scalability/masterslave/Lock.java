@@ -3,9 +3,8 @@ package sapphire.policy.scalability.masterslave;
 /**
  * A lease lock that will expire after {@link #lockTimeoutInMillis} milliseconds.
  *
- * Lock is a tuple of (clientId, lastUpdatedTimestamp) in which clientId the Id of
- * the client who owns the lock and lastUpdatedTimestamp is the timestamp when the
- * lock was updated.
+ * <p>Lock is a tuple of (clientId, lastUpdatedTimestamp) in which clientId the Id of the client who
+ * owns the lock and lastUpdatedTimestamp is the timestamp when the lock was updated.
  *
  * @author terryz
  */
@@ -20,7 +19,8 @@ public class Lock {
         }
 
         if (lockTimeoutInMillis <= 0) {
-            throw new IllegalArgumentException(String.format("invalid lockTimeoutInMillis(%s)", lockTimeoutInMillis));
+            throw new IllegalArgumentException(
+                    String.format("invalid lockTimeoutInMillis(%s)", lockTimeoutInMillis));
         }
 
         this.clientId = clientId;
@@ -43,8 +43,8 @@ public class Lock {
     }
 
     /**
-     * Lock will be renewed iff 1) the clientId equals the clientId in the lock,
-     * and 2) the current lock has not expired.
+     * Lock will be renewed iff 1) the clientId equals the clientId in the lock, and 2) the current
+     * lock has not expired.
      *
      * @param clientId Id of the client
      * @return <code>true</code> if lock renew succeeds; <code>false</code> otherwise
@@ -54,7 +54,7 @@ public class Lock {
             throw new IllegalArgumentException("clientId not specified");
         }
 
-        if (clientId.equals(this.clientId) &&  !isExpired()) {
+        if (clientId.equals(this.clientId) && !isExpired()) {
             this.updateLastUpdatedTimestamp();
             return true;
         }
@@ -63,10 +63,9 @@ public class Lock {
     }
 
     /**
-     * The lock will be granted iff the lock has expired which means the
-     * <code>lastUpdatedTimestamp</code> of the current lock has passed
-     * the threshold.
-
+     * The lock will be granted iff the lock has expired which means the <code>lastUpdatedTimestamp
+     * </code> of the current lock has passed the threshold.
+     *
      * @param clientId
      * @return <code>true</code> if the lock is obtained; <code>false</code> otherwise
      */
@@ -75,7 +74,7 @@ public class Lock {
             throw new IllegalArgumentException("clientId not specified");
         }
 
-        if (! this.isExpired()) {
+        if (!this.isExpired()) {
             return false;
         }
 

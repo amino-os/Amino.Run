@@ -1,13 +1,12 @@
 package sapphire.policy;
 
+import static sapphire.policy.DefaultSapphirePolicy.DefaultGroupPolicy;
+import static sapphire.policy.DefaultSapphirePolicy.DefaultServerPolicy;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
 import sapphire.kernel.common.KernelOID;
-
-import static sapphire.policy.DefaultSapphirePolicy.DefaultGroupPolicy;
-import static sapphire.policy.DefaultSapphirePolicy.DefaultServerPolicy;
 
 public class DefaultSapphirePolicyTest {
     private int cnt;
@@ -23,40 +22,43 @@ public class DefaultSapphirePolicyTest {
         addThreads = new Thread[cnt];
         delThreads = new Thread[cnt];
         servers = new DefaultServerPolicy[cnt];
-        for (int i = 0; i< addThreads.length; i++) {
+        for (int i = 0; i < addThreads.length; i++) {
             servers[i] = new DefaultServerPolicy();
             servers[i].$__setKernelOID(new KernelOID(i));
         }
 
-        for (int i = 0; i<addThreads.length; i++) {
+        for (int i = 0; i < addThreads.length; i++) {
             final DefaultServerPolicy s = servers[i];
-            addThreads[i] = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    group.addServer(s);
-                }
-            });
+            addThreads[i] =
+                    new Thread(
+                            new Runnable() {
+                                @Override
+                                public void run() {
+                                    group.addServer(s);
+                                }
+                            });
         }
 
-        for (int i = 0; i<delThreads.length; i++) {
+        for (int i = 0; i < delThreads.length; i++) {
             final DefaultServerPolicy s = servers[i];
-            delThreads[i] = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    group.removeServer(s);
-                }
-            });
+            delThreads[i] =
+                    new Thread(
+                            new Runnable() {
+                                @Override
+                                public void run() {
+                                    group.removeServer(s);
+                                }
+                            });
         }
-
     }
 
     @Test
     public void testAddRemoveServer() throws Exception {
         // start addServer threads
-        for (int i = 0; i< addThreads.length; i++) {
+        for (int i = 0; i < addThreads.length; i++) {
             addThreads[i].start();
         }
-        for (int i = 0; i< addThreads.length; i++) {
+        for (int i = 0; i < addThreads.length; i++) {
             addThreads[i].join();
         }
 
@@ -64,11 +66,11 @@ public class DefaultSapphirePolicyTest {
         Assert.assertEquals(cnt, group.getServers().size());
 
         // start delete server threads
-        for (int i = 0; i< delThreads.length; i++) {
+        for (int i = 0; i < delThreads.length; i++) {
             delThreads[i].start();
         }
 
-        for (int i = 0; i< delThreads.length; i++) {
+        for (int i = 0; i < delThreads.length; i++) {
             delThreads[i].join();
         }
 

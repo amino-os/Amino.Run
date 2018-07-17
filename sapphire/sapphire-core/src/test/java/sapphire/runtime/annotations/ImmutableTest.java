@@ -1,13 +1,10 @@
 package sapphire.runtime.annotations;
 
+import java.lang.reflect.Method;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.lang.reflect.Method;
-
-/**
- * Created by terryz on 3/15/18.
- */
+/** Created by terryz on 3/15/18. */
 public class ImmutableTest {
     @Test
     public void testImmutableAnnotation() throws Exception {
@@ -21,9 +18,8 @@ public class ImmutableTest {
 
     public static class Clazz {
         @Immutable
-        public void immutableOperation() {
-        }
-        public void mutableOperation() {
-        }
+        public void immutableOperation() {}
+
+        public void mutableOperation() {}
     }
 }

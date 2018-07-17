@@ -1,23 +1,19 @@
 package sapphire.policy.scalability;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 import sapphire.common.AppObject;
 import sapphire.kernel.common.KernelOID;
 import sapphire.policy.scalability.masterslave.MethodInvocationRequest;
 import sapphire.policy.scalability.masterslave.MethodInvocationResponse;
 import sapphire.runtime.annotations.Immutable;
 
-/**
- * @author terryz
- */
+/** @author terryz */
 public class LoadBalancedMasterSlaveSyncPolicyIntegTest {
     private LoadBalancedMasterSlaveSyncPolicy.ClientPolicy client;
     private LoadBalancedMasterSlaveSyncPolicy.GroupPolicy group;
@@ -51,15 +47,15 @@ public class LoadBalancedMasterSlaveSyncPolicyIntegTest {
 
         client.setServer(server1);
         client.onCreate(group);
-        server1.onCreate(group, new Annotation[]{});
-        server2.onCreate(group, new Annotation[]{});
+        server1.onCreate(group, new Annotation[] {});
+        server2.onCreate(group, new Annotation[] {});
         server1.start();
         server2.start();
     }
 
     @Test
     public void testImmutableOperation() throws Exception {
-        Method m = object1.getClass().getMethod("getData", new Class[]{});
+        Method m = object1.getClass().getMethod("getData", new Class[] {});
         String methodName = m.toGenericString();
         ArrayList<Object> params = new ArrayList<Object>();
 
@@ -82,11 +78,11 @@ public class LoadBalancedMasterSlaveSyncPolicyIntegTest {
         Assert.assertNull(ret);
 
         // verify app object1 in server1 has been updated
-        Data d1 = (Data)server1.sapphire_getAppObject().getObject();
+        Data d1 = (Data) server1.sapphire_getAppObject().getObject();
         Assert.assertEquals(newData, d1.getData());
 
         // verify app object1 in server2 has been udpated (via replication)
-        Data d2 = (Data)server2.sapphire_getAppObject().getObject();
+        Data d2 = (Data) server2.sapphire_getAppObject().getObject();
         Assert.assertEquals(newData, d2.getData());
     }
 
@@ -100,38 +96,42 @@ public class LoadBalancedMasterSlaveSyncPolicyIntegTest {
         String methodName = m.toGenericString();
         ArrayList<Object> params = new ArrayList<Object>();
 
-        for (int i=0; i<cnt; i++) {
+        for (int i = 0; i < cnt; i++) {
             invokeWithRetry(CLIENT_ID, requestId, methodName, params, client);
         }
 
         // verify app object1 in server1 has been updated
-        Data d1 = (Data)server1.sapphire_getAppObject().getObject();
+        Data d1 = (Data) server1.sapphire_getAppObject().getObject();
         Assert.assertTrue(1 == d1.getCnt());
 
         // verify app object1 in server2 has been udpated (via replication)
-        Data d2 = (Data)server2.sapphire_getAppObject().getObject();
+        Data d2 = (Data) server2.sapphire_getAppObject().getObject();
         Assert.assertTrue(1 == d2.getCnt());
     }
 
-    private MethodInvocationResponse invokeWithRetry (String CLIENT_ID,
-                                                      long requestId,
-                                                      String methodName,
-                                                      ArrayList<Object> params,
-                                                      LoadBalancedMasterSlaveSyncPolicy.ClientPolicy client) {
+    private MethodInvocationResponse invokeWithRetry(
+            String CLIENT_ID,
+            long requestId,
+            String methodName,
+            ArrayList<Object> params,
+            LoadBalancedMasterSlaveSyncPolicy.ClientPolicy client) {
         int retry = 0;
         long waitInMilliseconds = 50L;
 
         do {
             try {
-                MethodInvocationRequest request = new MethodInvocationRequest(
-                        CLIENT_ID,
-                        requestId,
-                        methodName,
-                        params,
-                        MethodInvocationRequest.MethodType.MUTABLE);
+                MethodInvocationRequest request =
+                        new MethodInvocationRequest(
+                                CLIENT_ID,
+                                requestId,
+                                methodName,
+                                params,
+                                MethodInvocationRequest.MethodType.MUTABLE);
 
-                LoadBalancedMasterSlaveBase.GroupBase group = (LoadBalancedMasterSlaveBase.GroupBase) client.getGroup();
-                LoadBalancedMasterSlaveBase.ServerBase server = (LoadBalancedMasterSlaveBase.ServerBase)group.getMaster();
+                LoadBalancedMasterSlaveBase.GroupBase group =
+                        (LoadBalancedMasterSlaveBase.GroupBase) client.getGroup();
+                LoadBalancedMasterSlaveBase.ServerBase server =
+                        (LoadBalancedMasterSlaveBase.ServerBase) group.getMaster();
 
                 return server.onRPC(request);
             } catch (Exception e) {
@@ -147,14 +147,11 @@ public class LoadBalancedMasterSlaveSyncPolicyIntegTest {
         return null;
     }
 
-    private static class ClientMock extends LoadBalancedMasterSlaveSyncPolicy.ClientPolicy {
-    }
+    private static class ClientMock extends LoadBalancedMasterSlaveSyncPolicy.ClientPolicy {}
 
-    private static class ServerMock extends LoadBalancedMasterSlaveSyncPolicy.ServerPolicy {
-    }
+    private static class ServerMock extends LoadBalancedMasterSlaveSyncPolicy.ServerPolicy {}
 
-    private static class GroupMock extends LoadBalancedMasterSlaveSyncPolicy.GroupPolicy {
-    }
+    private static class GroupMock extends LoadBalancedMasterSlaveSyncPolicy.GroupPolicy {}
 
     public static class Data implements Serializable {
         private String data = "";

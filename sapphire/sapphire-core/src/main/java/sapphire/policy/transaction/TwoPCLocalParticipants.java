@@ -1,17 +1,15 @@
 package sapphire.policy.transaction;
 
-import sapphire.policy.SapphirePolicy;
-import sapphire.policy.SapphirePolicy.SapphireClientPolicy;
-
 import java.io.Serializable;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import sapphire.policy.SapphirePolicy;
+import sapphire.policy.SapphirePolicy.SapphireClientPolicy;
 
-/**
- * type to keep track of participants of transactions
- */
-public class TwoPCLocalParticipants implements Serializable{
-    private final ConcurrentHashMap<UUID, TwoPCParticipants> localParticipants = new ConcurrentHashMap<UUID, TwoPCParticipants>();
+/** type to keep track of participants of transactions */
+public class TwoPCLocalParticipants implements Serializable {
+    private final ConcurrentHashMap<UUID, TwoPCParticipants> localParticipants =
+            new ConcurrentHashMap<UUID, TwoPCParticipants>();
 
     public TwoPCParticipants getParticipantManager(UUID transactionId) {
         if (!this.localParticipants.containsKey(transactionId)) {
@@ -27,7 +25,7 @@ public class TwoPCLocalParticipants implements Serializable{
 
     public void addParticipants(UUID transactionId, Collection<SapphireClientPolicy> participants) {
         TwoPCParticipants participantManager = this.getParticipantManager(transactionId);
-        for (SapphireClientPolicy participant: participants) {
+        for (SapphireClientPolicy participant : participants) {
             participantManager.register(participant);
         }
     }
@@ -38,13 +36,17 @@ public class TwoPCLocalParticipants implements Serializable{
 
     /**
      * sends out 2PC protocol primitives to all registered participants; no responses collected
+     *
      * @param transactionId the transaction all the participants are in
      * @param primitiveMethod the name of promitive
      * @throws TransactionExecutionException exception of RPC execution
      */
-    public void fanOutTransactionPrimitive(UUID transactionId, String primitiveMethod) throws TransactionExecutionException {
-        ArrayList<Object> paramsTX = TransactionWrapper.getTransactionRPCParams(transactionId, primitiveMethod, null);
-        TransactionContext.enterTransaction(transactionId, this.getParticipantManager(transactionId));
+    public void fanOutTransactionPrimitive(UUID transactionId, String primitiveMethod)
+            throws TransactionExecutionException {
+        ArrayList<Object> paramsTX =
+                TransactionWrapper.getTransactionRPCParams(transactionId, primitiveMethod, null);
+        TransactionContext.enterTransaction(
+                transactionId, this.getParticipantManager(transactionId));
 
         try {
             // todo: consider in parallel requests
@@ -59,7 +61,8 @@ public class TwoPCLocalParticipants implements Serializable{
                 try {
                     p.onRPC(TransactionWrapper.txWrapperTag, paramsTX);
                 } catch (Exception e) {
-                    throw new TransactionExecutionException("DCAP 2PC transaction exception: " + primitiveMethod, e);
+                    throw new TransactionExecutionException(
+                            "DCAP 2PC transaction exception: " + primitiveMethod, e);
                 }
             }
         } finally {
@@ -69,13 +72,18 @@ public class TwoPCLocalParticipants implements Serializable{
 
     /**
      * collects votes from all the registered 2PC participants of a specific transaction
+     *
      * @param transactionId id of the transaction
      * @return true if all participants voted yes; otherwise false
      * @throws TransactionExecutionException error happened while getting the votes
      */
-    public Boolean allParticipantsVotedYes(UUID transactionId) throws TransactionExecutionException {
-        ArrayList<Object> paramsVoteReq =  TransactionWrapper.getTransactionRPCParams(transactionId, TwoPCPrimitive.VoteReq, null);
-        TransactionContext.enterTransaction(transactionId, this.getParticipantManager(transactionId));
+    public Boolean allParticipantsVotedYes(UUID transactionId)
+            throws TransactionExecutionException {
+        ArrayList<Object> paramsVoteReq =
+                TransactionWrapper.getTransactionRPCParams(
+                        transactionId, TwoPCPrimitive.VoteReq, null);
+        TransactionContext.enterTransaction(
+                transactionId, this.getParticipantManager(transactionId));
 
         try {
             // todo: consider in parallel requests
@@ -94,12 +102,13 @@ public class TwoPCLocalParticipants implements Serializable{
                         break;
                     }
                 } catch (Exception e) {
-                    throw new TransactionExecutionException("DCAP 2PC transaction exception: vote_req", e);
+                    throw new TransactionExecutionException(
+                            "DCAP 2PC transaction exception: vote_req", e);
                 }
             }
 
             return isAllYes;
-        }finally {
+        } finally {
             TransactionContext.leaveTransaction();
         }
     }

@@ -1,22 +1,23 @@
 package sapphire.policy.transaction;
 
-import sapphire.policy.SapphirePolicyLibrary.SapphireServerPolicyLibrary;
-import sapphire.policy.SapphirePolicyUpcalls.SapphireServerPolicyUpcalls;
-
 import java.io.Serializable;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import sapphire.policy.SapphirePolicyLibrary.SapphireServerPolicyLibrary;
+import sapphire.policy.SapphirePolicyUpcalls.SapphireServerPolicyUpcalls;
 
-/**
- * sandbox provider that manages sandbox containing the enclosed app object only
- */
+/** sandbox provider that manages sandbox containing the enclosed app object only */
 public class AppObjectSandboxProvider implements SandboxProvider, Serializable {
-    private ConcurrentHashMap<UUID, AppObjectShimServerPolicy> sandboxes = new ConcurrentHashMap<UUID, AppObjectShimServerPolicy>();
+    private ConcurrentHashMap<UUID, AppObjectShimServerPolicy> sandboxes =
+            new ConcurrentHashMap<UUID, AppObjectShimServerPolicy>();
 
     @Override
-    public SapphireServerPolicyUpcalls getSandbox(SapphireServerPolicyLibrary origin, UUID transactionId) throws Exception {
+    public SapphireServerPolicyUpcalls getSandbox(
+            SapphireServerPolicyLibrary origin, UUID transactionId) throws Exception {
         if (!this.sandboxes.containsKey(transactionId)) {
-            AppObjectShimServerPolicy sandbox = AppObjectShimServerPolicy.cloneInShimServerPolicy(origin.sapphire_getAppObject());
+            AppObjectShimServerPolicy sandbox =
+                    AppObjectShimServerPolicy.cloneInShimServerPolicy(
+                            origin.sapphire_getAppObject());
             this.sandboxes.put(transactionId, sandbox);
         }
 

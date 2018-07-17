@@ -4,18 +4,24 @@ import java.io.Serializable;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * type to keep track of transaction's local status
- */
-public class TwoPCLocalStatus implements Serializable{
+/** type to keep track of transaction's local status */
+public class TwoPCLocalStatus implements Serializable {
     public enum LocalStatus {
-        UNCERTAIN, GOOD, BAD, YESVOTED, NOVOTED, COMMITTED, ABORTED,
+        UNCERTAIN,
+        GOOD,
+        BAD,
+        YESVOTED,
+        NOVOTED,
+        COMMITTED,
+        ABORTED,
     }
 
-    ConcurrentHashMap<UUID, LocalStatus> localStatusManager = new ConcurrentHashMap<UUID, LocalStatus>();
+    ConcurrentHashMap<UUID, LocalStatus> localStatusManager =
+            new ConcurrentHashMap<UUID, LocalStatus>();
 
     /**
      * set local status of the component in the specified transaction
+     *
      * @param id id of the transaction
      * @param status local status
      */
@@ -29,6 +35,7 @@ public class TwoPCLocalStatus implements Serializable{
 
     /**
      * gets the currrent local status of component in the active transaction
+     *
      * @param id id of the transaction
      * @return the local status
      */

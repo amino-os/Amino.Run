@@ -1,30 +1,22 @@
 package sapphire.policy.serializability;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Matchers;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.UUID;
-
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Matchers;
 import sapphire.common.AppObject;
 import sapphire.common.Utils;
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.any;
-
-/**
- * Created by quinton on 1/16/18.
- */
-
+/** Created by quinton on 1/16/18. */
 public class LockingTransactionPolicyTest {
     LockingTransactionPolicy.ClientPolicy client;
     LockingTransactionPolicy.ServerPolicy server;
@@ -32,7 +24,6 @@ public class LockingTransactionPolicyTest {
     private LockingTransactionTest so;
     private AppObject appObject;
     private ArrayList<Object> noParams, oneParam, twoParam;
-
 
     @Before
     public void setUp() throws Exception {
@@ -54,16 +45,21 @@ public class LockingTransactionPolicyTest {
         String methodName = "public java.lang.String java.lang.Object.toString()";
         this.client.onRPC(methodName, noParams);
         verify(this.server).onRPC(methodName, noParams);
-       // Check that DM methods were not called
+        // Check that DM methods were not called
         verify(this.server, never()).getLease((Matchers.anyLong()));
     }
 
     @Test
     public void startAndCommitTransaction() throws Exception {
-        String startMethodName = "public void sapphire.policy.serializability.LockingTransactionImpl.startTransaction() throws java.lang.Exception",
-                commitMethodName = "public void sapphire.policy.serializability.LockingTransactionImpl.commitTransaction() throws java.lang.Exception",
-                setMethodName = "public void sapphire.policy.serializability.LockingTransactionTest.setI(int)",
-                getMethodName = "public int sapphire.policy.serializability.LockingTransactionTest.getI()";
+        String
+                startMethodName =
+                        "public void sapphire.policy.serializability.LockingTransactionImpl.startTransaction() throws java.lang.Exception",
+                commitMethodName =
+                        "public void sapphire.policy.serializability.LockingTransactionImpl.commitTransaction() throws java.lang.Exception",
+                setMethodName =
+                        "public void sapphire.policy.serializability.LockingTransactionTest.setI(int)",
+                getMethodName =
+                        "public int sapphire.policy.serializability.LockingTransactionTest.getI()";
 
         // Update the object to 1
         this.client.onRPC(setMethodName, oneParam);
@@ -80,19 +76,25 @@ public class LockingTransactionPolicyTest {
         // Commit the transaction
         this.client.onRPC(commitMethodName, noParams);
         // Check that it got sync'd to the server.
-        verify(this.server).syncObject((UUID) any(), (Serializable)any());
+        verify(this.server).syncObject((UUID) any(), (Serializable) any());
 
         // Verify that the object has been updated
         this.client.onRPC(getMethodName, noParams);
         verify(this.server).onRPC(getMethodName, noParams);
-        assertEquals(((LockingTransactionTest)appObject.getObject()).getI(), 2);
+        assertEquals(((LockingTransactionTest) appObject.getObject()).getI(), 2);
     }
+
     @Test
     public void startAndRollbackTransaction() throws Exception {
-        String startMethodName = "public void sapphire.policy.serializability.LockingTransactionImpl.startTransaction() throws java.lang.Exception",
-                rollbackMethodName = "public void sapphire.policy.serializability.LockingTransactionImpl.rollbackTransaction() throws java.lang.Exception",
-                setMethodName = "public void sapphire.policy.serializability.LockingTransactionTest.setI(int)",
-                getMethodName = "public int sapphire.policy.serializability.LockingTransactionTest.getI()";
+        String
+                startMethodName =
+                        "public void sapphire.policy.serializability.LockingTransactionImpl.startTransaction() throws java.lang.Exception",
+                rollbackMethodName =
+                        "public void sapphire.policy.serializability.LockingTransactionImpl.rollbackTransaction() throws java.lang.Exception",
+                setMethodName =
+                        "public void sapphire.policy.serializability.LockingTransactionTest.setI(int)",
+                getMethodName =
+                        "public int sapphire.policy.serializability.LockingTransactionTest.getI()";
 
         // Update the object to 1
         this.client.onRPC(setMethodName, oneParam);
@@ -100,9 +102,11 @@ public class LockingTransactionPolicyTest {
         assertEquals(1, so.getI());
 
         // Start a transaction
-        AppObject clone = (AppObject)Utils.ObjectCloner.deepCopy(appObject);
-        // We need to mock the implementation in this case, because in this fake unit test environment,
-        // RMI does not occur, so client and server DM's end up referring to the same object (rather than
+        AppObject clone = (AppObject) Utils.ObjectCloner.deepCopy(appObject);
+        // We need to mock the implementation in this case, because in this fake unit test
+        // environment,
+        // RMI does not occur, so client and server DM's end up referring to the same object (rather
+        // than
         // different objects, due to RMI serialization.
         doReturn(clone).when(this.server).sapphire_getAppObject();
         this.client.onRPC(startMethodName, noParams);
@@ -127,6 +131,3 @@ public class LockingTransactionPolicyTest {
 
 // Stub because AppObject expects a stub/subclass of the original class.
 class LockingTransactionTestStub extends LockingTransactionTest implements Serializable {}
-
-
-

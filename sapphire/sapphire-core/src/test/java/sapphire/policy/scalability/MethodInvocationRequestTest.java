@@ -1,11 +1,9 @@
 package sapphire.policy.scalability;
 
-import org.junit.Assert;
-import org.junit.Test;
-
 import java.util.ArrayList;
 import java.util.Date;
-
+import org.junit.Assert;
+import org.junit.Test;
 import sapphire.policy.scalability.masterslave.MethodInvocationRequest;
 
 public class MethodInvocationRequestTest {
@@ -14,15 +12,12 @@ public class MethodInvocationRequestTest {
         String clientId = "clientId";
         long requestId = 100;
         String methodName = "method";
-        MethodInvocationRequest.MethodType methodType = MethodInvocationRequest.MethodType.IMMUTABLE;
+        MethodInvocationRequest.MethodType methodType =
+                MethodInvocationRequest.MethodType.IMMUTABLE;
         ArrayList<Object> params = new ArrayList<Object>();
         params.add(new Date());
-        MethodInvocationRequest request = new MethodInvocationRequest(
-                clientId,
-                requestId,
-                methodName,
-                params,
-                methodType);
+        MethodInvocationRequest request =
+                new MethodInvocationRequest(clientId, requestId, methodName, params, methodType);
 
         Assert.assertEquals(clientId, request.getClientId());
         Assert.assertEquals(requestId, request.getRequestId());

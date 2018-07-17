@@ -3,17 +3,14 @@ package sapphire.policy.scalability.masterslave;
 import java.io.Closeable;
 import java.util.concurrent.Future;
 
-/**
- * @author terryz
- */
+/** @author terryz */
 public interface Replicator extends Closeable {
-    /**
-     * Initializes the replicator
-     */
+    /** Initializes the replicator */
     void open();
 
     /**
      * Replicates the given request to remote servers synchronously
+     *
      * @param request request to be replicated
      * @return replication response
      */

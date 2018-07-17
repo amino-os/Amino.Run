@@ -1,32 +1,32 @@
 package sapphire.policy.transaction;
 
-import sapphire.policy.SapphirePolicyUpcalls.SapphireServerPolicyUpcalls;
-import sapphire.policy.serializability.TransactionAlreadyStartedException;
-
 import java.io.Serializable;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import sapphire.policy.SapphirePolicyUpcalls.SapphireServerPolicyUpcalls;
+import sapphire.policy.serializability.TransactionAlreadyStartedException;
 
 /**
- * transaction manager type for external resource.
- * It uses an internal transaction manager to book-keep the in-memory SO transaction status,
- * also consult the business object through its well-defined interface for the external resource transaction condition.
+ * transaction manager type for external resource. It uses an internal transaction manager to
+ * book-keep the in-memory SO transaction status, also consult the business object through its
+ * well-defined interface for the external resource transaction condition.
  */
 public class ExtResourceTransactionManager implements TransactionManager, Serializable {
     private SandboxProvider sandboxProvider;
     private TransactionManager internalTransactionManager;
     private static Logger logger = Logger.getLogger(ExtResourceTransactionManager.class.getName());
 
-    public ExtResourceTransactionManager(SandboxProvider sandboxProvider, TransactionManager internalTransactionManager) {
+    public ExtResourceTransactionManager(
+            SandboxProvider sandboxProvider, TransactionManager internalTransactionManager) {
         this.sandboxProvider = sandboxProvider;
         this.internalTransactionManager = internalTransactionManager;
     }
 
     private TransactionManager getBusinessObject(UUID transactionId) {
         SapphireServerPolicyUpcalls sandbox = this.sandboxProvider.getSandbox(transactionId);
-        AppObjectShimServerPolicy appObjectShimServerPolicy = (AppObjectShimServerPolicy)sandbox;
-        return (TransactionManager)appObjectShimServerPolicy.getAppObject().getObject();
+        AppObjectShimServerPolicy appObjectShimServerPolicy = (AppObjectShimServerPolicy) sandbox;
+        return (TransactionManager) appObjectShimServerPolicy.getAppObject().getObject();
     }
 
     @Override

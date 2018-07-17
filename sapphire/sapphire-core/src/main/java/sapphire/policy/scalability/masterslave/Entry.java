@@ -3,9 +3,7 @@ package sapphire.policy.scalability.masterslave;
 import java.io.Serializable;
 import java.util.Objects;
 
-/**
- * @author terryz
- */
+/** @author terryz */
 public abstract class Entry implements Serializable {
     private long term;
     private long index;
@@ -45,8 +43,7 @@ public abstract class Entry implements Serializable {
         if (this == o) return true;
         if (!(o instanceof Entry)) return false;
         Entry entry = (Entry) o;
-        return getTerm() == entry.getTerm() &&
-                getIndex() == entry.getIndex();
+        return getTerm() == entry.getTerm() && getIndex() == entry.getIndex();
     }
 
     @Override

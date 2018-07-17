@@ -1,17 +1,14 @@
 package sapphire.policy.transaction;
 
-import sapphire.policy.serializability.TransactionAlreadyStartedException;
-
-import java.io.Serializable;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import sapphire.policy.serializability.TransactionAlreadyStartedException;
 
-/**
- * 2PC Coordinator based on thread local storage
- */
-public class TLS2PCCoordinator implements TwoPCCoordinator{
-    private static Logger logger = Logger.getLogger("sapphire.policy.transaction.TLS2PCCoordinator");
+/** 2PC Coordinator based on thread local storage */
+public class TLS2PCCoordinator implements TwoPCCoordinator {
+    private static Logger logger =
+            Logger.getLogger("sapphire.policy.transaction.TLS2PCCoordinator");
 
     private final TransactionValidator validator;
     private final TwoPCLocalParticipants localParticipantsManager = new TwoPCLocalParticipants();
@@ -27,7 +24,8 @@ public class TLS2PCCoordinator implements TwoPCCoordinator{
         }
 
         UUID transactionId = UUID.randomUUID();
-        TwoPCParticipants participants = this.localParticipantsManager.getParticipantManager(transactionId);
+        TwoPCParticipants participants =
+                this.localParticipantsManager.getParticipantManager(transactionId);
         TransactionContext.enterTransaction(transactionId, participants);
     }
 
@@ -40,7 +38,10 @@ public class TLS2PCCoordinator implements TwoPCCoordinator{
     public void join(UUID transactionId) throws TransactionAlreadyStartedException {
         UUID currentTransactionId = TransactionContext.getCurrentTransaction();
         if (!(transactionId.equals(currentTransactionId))) {
-            String message = String.format("already in transaction %s; illegal to join %s.", currentTransactionId.toString(), transactionId.toString());
+            String message =
+                    String.format(
+                            "already in transaction %s; illegal to join %s.",
+                            currentTransactionId.toString(), transactionId.toString());
             throw new TransactionAlreadyStartedException(message);
         }
     }
@@ -81,7 +82,8 @@ public class TLS2PCCoordinator implements TwoPCCoordinator{
             // clears the processed SO client list for the subsequent commit propagation
             TransactionContext.initPrecessed();
 
-            this.localParticipantsManager.fanOutTransactionPrimitive(transactionId, TwoPCPrimitive.Commit);
+            this.localParticipantsManager.fanOutTransactionPrimitive(
+                    transactionId, TwoPCPrimitive.Commit);
         } catch (TransactionExecutionException e) {
             // todo: proper error handling - commit itself should always succeed
         }
@@ -96,7 +98,8 @@ public class TLS2PCCoordinator implements TwoPCCoordinator{
             // clears the processed SO client list for the subsequent abort propagation
             TransactionContext.initPrecessed();
 
-            this.localParticipantsManager.fanOutTransactionPrimitive(transactionId, TwoPCPrimitive.Abort);
+            this.localParticipantsManager.fanOutTransactionPrimitive(
+                    transactionId, TwoPCPrimitive.Abort);
         } catch (TransactionExecutionException e) {
             // todo: proper error handling - abort itself should always succeed
         }

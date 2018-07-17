@@ -2,12 +2,9 @@ package sapphire.policy.scalability;
 
 import org.junit.Assert;
 import org.junit.Test;
-
 import sapphire.policy.scalability.masterslave.Lock;
 
-/**
- * @author terryz
- */
+/** @author terryz */
 public class LockTest {
     private String clientId = "clientId";
     private long lockTimeoutInMillis = 50L;
@@ -37,8 +34,10 @@ public class LockTest {
     public void testLockRenewFailedWithInvalidClientId() throws Exception {
         Lock lock = new Lock(clientId, lockTimeoutInMillis);
         Thread.sleep(Math.max(0, lockTimeoutInMillis - 20));
-        Assert.assertFalse("renew should fail because client id not match", lock.renew("invalidclient"));
-        Assert.assertEquals("client id of the lock should not change", clientId, lock.getClientId());
+        Assert.assertFalse(
+                "renew should fail because client id not match", lock.renew("invalidclient"));
+        Assert.assertEquals(
+                "client id of the lock should not change", clientId, lock.getClientId());
     }
 
     @Test
@@ -72,8 +71,9 @@ public class LockTest {
     @Test
     public void testObtainLockFailedWithUnexpiredLock() throws Exception {
         String newClientId = "newClientId";
-        Lock lock = new Lock(clientId, Math.max(0, lockTimeoutInMillis-20));
-        Assert.assertFalse("obtain lock should fail because lock is not expired", lock.obtain(newClientId));
+        Lock lock = new Lock(clientId, Math.max(0, lockTimeoutInMillis - 20));
+        Assert.assertFalse(
+                "obtain lock should fail because lock is not expired", lock.obtain(newClientId));
         Assert.assertEquals("lock client id should not changed", clientId, lock.getClientId());
     }
 }

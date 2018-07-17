@@ -1,33 +1,31 @@
-## Read Development Workflow
+## Env Setup
+### Read Development Workflow
 * DCAP team follows Kubernetes development workflow. Please read [Kubernetes Development Workflow Guide](https://github.com/kubernetes/community/blob/master/contributors/guide/github-workflow.md) closely.
 
-## Review the Principles of Distributed Systems
-If you have not done a university course on distributed systems you will need to read one or more of the following
-to get a basic understanding of the principles and common terminology. Here are a few recommendations. 
-Feel free to add more resource links below:
-
-* [UMass Course 677](http://lass.cs.umass.edu/~shenoy/courses/677/)
-* [Distributed System Principles by Andrew Tanenbaum](https://www.amazon.com/Distributed-Systems-Principles-Andrew-Tanenbaum/dp/153028175X)
-
-## Install Android Studio
-* Install Android Studio (Windows or Linux all are fine). Latest version or 3.0
+### Install Android Studio
 * Download Gradle update if necessary (Android Studio will inform you).
 * Install JDK (latest version) if you don't have one.
+* Install Android Studio (Windows or Linux all are fine). Latest version or 3.0
+* Install [Google Java Format plugin](https://plugins.jetbrains.com/plugin/8527-google-java-format) in Android Studio
+  * Download [Google Java Format plugin](https://plugins.jetbrains.com/plugin/8527-google-java-format)
+  * Follow [instructions](https://stackoverflow.com/questions/30617408/how-to-install-plugin-in-android-studio) to install plugin
+  * Change code style to Android Open Source Project style in plugin (File &gt; OtherSettings &gt; DefaultSettings &gt; OtherSettings &gt; google-java-format settings).
 
-## Checkout Out Code
+### Checkout Out Code
 * Fork your own repository from [DCAP-Sapphire repository](https://github.com/Huawei-PaaS/DCAP-Sapphire) 
 * `git clone` from your own repository
 * Make sure to sync with the latest source before creating a pull request to Huawei-PaaS/DCAP-Sapphire.
 * Make sure to rebase your code instead of simple git pull (read carefully about git pull part from above link).
 
-## Open Project in Android Studio.
+### Open Project in Android Studio.
 * Open Sapphire project from the local repo you just cloned. (i.e open DCAP-Sapphire/sapphire/)
 * Android Studio will ask you about missing files - click OK.
 * Sync Gradle. If it fails, just restart and try it again.
-* Android Studio may show the bar for Gradle sync. If not: Tools>Android>Sync with Gradle files.
+* Android Studio may show the bar for Gradle sync. If not: Tools &gt; Android &gt; Sync with Gradle files.
 * Build project in Android Studio.
 
-## Run MinnieTwitter in Simulator
+## Run Demo App
+### Run OMS and Kernel Server in Android Studio
 
 #### Check Host IP
 * Lookup your host IP and note it down
@@ -77,7 +75,7 @@ Feel free to add more resource links below:
 ![StartMinnieTwitter](images/StartMinnieTwitter.png)
 
 
-## Run OMS and Kernel Server in CLI
+### Run OMS and Kernel Server in CLI
 If you want to manually run a Sapphire kernel (e.g., want to run on a remote server), you can execute them by running the following script after copying the jar files. Please replace IP addresses and port number to your need as necessary. In the example, 192.168.10.231 22346 is the host address for OMS, and 192.168.10.231 31111 is the host address for Sapphire Kernel. Please first create a policy file with similar content as in the following for RMI to work.
 
 **Notes: The following scripts are for Windows users. For Linux users, please replace `;` with `:`.**
@@ -95,7 +93,7 @@ Sapphire Kernel:
 ```
 java -Djava.security.manager -Djava.rmi.server.useCodebaseOnly=false -Djava.security.policy=./client.policy -cp sapphire-core.jar;java.rmi.jar;minnietwitter.jar;apache.harmony.jar sapphire.kernel.server.KernelServerImpl 192.168.10.231 31111 192.168.10.231 22346
 ```
-## Stub File Generation
+### Stub File Generation
 
 In order to create stubs for a DM (DMs)
 1. First make sure the .class files already exist under `sapphire-core\build\classes\java\main\sapphire\policy`
@@ -105,7 +103,7 @@ If they do not exist, build the project first to create them.
 
 ![StubFileGeneration](images/StubFileGeneration.PNG)
 
-## Troubleshooting
+### Troubleshooting
 Android Studio can be unstable sometimes. Close all Android Studio projects and restart when you observe unexpected behavior.
 Do not try to change Android Emulator as it can cause RMI incompatibility issue if not done properly.
 If any of the process fails for some unknown reason, you may consider creating a new directory and clone the repository again.
@@ -122,4 +120,13 @@ adb -P 5038 start-server
 In Windows, go to Environment Variables – Add a new one called ANDROID_ADB_SERVER_PORT and set it to whatever you want, e.g., 5038 (or 5039). Scroll down the to the screen show from below linked page:
 https://stackoverflow.com/questions/3836571/changing-default-port-i-e-5037-on-which-adb-server-runs
 
+## Resources
+#### Code Style Check with `gradle`
+```bash
+# To format all *.java files in project
+$ ./gradlew goJF
 
+# To verify the code style on all *.java files in project
+./gradlew verGJF
+```
+Details can be found at [google-java-format-gradle-plugin](https://github.com/sherter/google-java-format-gradle-plugin)

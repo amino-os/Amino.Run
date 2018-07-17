@@ -17,17 +17,15 @@ public class ReplicationRequest implements Serializable {
         this.entries = entries;
     }
 
-    /**
-     * @return log entries
-     */
+    /** @return log entries */
     public List<LogEntry> getEntries() {
         return entries;
     }
 
-    /**
-     * @return index of largest committed entry
-     */
-    public long getIndexOfLargestCommittedEntry() { return this.indexOfLargestCommittedEntry; }
+    /** @return index of largest committed entry */
+    public long getIndexOfLargestCommittedEntry() {
+        return this.indexOfLargestCommittedEntry;
+    }
 
     @Override
     public String toString() {

@@ -1,21 +1,17 @@
 package sapphire.common;
 
+import static org.mockito.Mockito.spy;
+import static sapphire.common.UtilsTest.extractFieldValueOnInstance;
+
 import java.net.InetSocketAddress;
 import java.util.Hashtable;
-
 import sapphire.kernel.common.GlobalKernelReferences;
 import sapphire.kernel.common.ServerInfo;
 import sapphire.kernel.server.KernelServer;
 import sapphire.kernel.server.KernelServerImpl;
 import sapphire.oms.OMSServerImpl;
 
-import static org.mockito.Mockito.spy;
-import static sapphire.common.UtilsTest.extractFieldValueOnInstance;
-
-/**
- * Created by Vishwajeet on 4/4/18.
- */
-
+/** Created by Vishwajeet on 4/4/18. */
 public class SapphireUtils {
     public static int omsPort = 10000;
     public static String LOOP_BACK_IP_ADDR = "127.0.0.1";
@@ -33,9 +29,12 @@ public class SapphireUtils {
         return spiedOms;
     }
 
-    public static KernelServerImpl startSpiedKernelServer(OMSServerImpl spiedOms, int port, String region) throws Exception {
-        KernelServerImpl ks = new KernelServerImpl(new InetSocketAddress(LOOP_BACK_IP_ADDR, port),
-                new InetSocketAddress(LOOP_BACK_IP_ADDR, omsPort));
+    public static KernelServerImpl startSpiedKernelServer(
+            OMSServerImpl spiedOms, int port, String region) throws Exception {
+        KernelServerImpl ks =
+                new KernelServerImpl(
+                        new InetSocketAddress(LOOP_BACK_IP_ADDR, port),
+                        new InetSocketAddress(LOOP_BACK_IP_ADDR, omsPort));
         ks.setRegion(region);
         KernelServerImpl.oms = spiedOms;
 
@@ -50,7 +49,10 @@ public class SapphireUtils {
     }
 
     public static void addHost(KernelServer ks) throws Exception {
-        Hashtable<InetSocketAddress,KernelServer> servers = (Hashtable<InetSocketAddress,KernelServer>) extractFieldValueOnInstance(GlobalKernelReferences.nodeServer.getKernelClient(), "servers");
-        servers.put(((KernelServerImpl)ks).getLocalHost(), ks);
+        Hashtable<InetSocketAddress, KernelServer> servers =
+                (Hashtable<InetSocketAddress, KernelServer>)
+                        extractFieldValueOnInstance(
+                                GlobalKernelReferences.nodeServer.getKernelClient(), "servers");
+        servers.put(((KernelServerImpl) ks).getLocalHost(), ks);
     }
 }

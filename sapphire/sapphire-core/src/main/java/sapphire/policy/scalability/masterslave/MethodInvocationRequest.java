@@ -1,10 +1,10 @@
 package sapphire.policy.scalability.masterslave;
 
+import static sapphire.policy.scalability.masterslave.MethodInvocationRequest.MethodType.IMMUTABLE;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Objects;
-
-import static sapphire.policy.scalability.masterslave.MethodInvocationRequest.MethodType.IMMUTABLE;
 
 /**
  * Method invocation request on App Objects.
@@ -12,11 +12,10 @@ import static sapphire.policy.scalability.masterslave.MethodInvocationRequest.Me
  * @author terryz
  */
 public final class MethodInvocationRequest implements Serializable {
-    /**
-     * Method types
-     */
+    /** Method types */
     public enum MethodType {
-        IMMUTABLE, MUTABLE
+        IMMUTABLE,
+        MUTABLE
     };
 
     private final String clientId;
@@ -25,11 +24,12 @@ public final class MethodInvocationRequest implements Serializable {
     private final ArrayList<Object> params;
     private final MethodType methodType;
 
-    public MethodInvocationRequest(String clientId,
-                                    Long requestId,
-                                    String methodName,
-                                    ArrayList<Object> params,
-                                    MethodType methodType) {
+    public MethodInvocationRequest(
+            String clientId,
+            Long requestId,
+            String methodName,
+            ArrayList<Object> params,
+            MethodType methodType) {
         this.clientId = clientId;
         this.requestId = requestId;
         this.methodName = methodName;
@@ -37,9 +37,13 @@ public final class MethodInvocationRequest implements Serializable {
         this.params = params;
     }
 
-    public final String getClientId() { return clientId; }
+    public final String getClientId() {
+        return clientId;
+    }
 
-    public final long getRequestId() { return requestId; }
+    public final long getRequestId() {
+        return requestId;
+    }
 
     public final ArrayList<Object> getParams() {
         return params;
@@ -78,8 +82,8 @@ public final class MethodInvocationRequest implements Serializable {
         if (this == o) return true;
         if (!(o instanceof MethodInvocationRequest)) return false;
         MethodInvocationRequest that = (MethodInvocationRequest) o;
-        return Objects.equals(getClientId(), that.getClientId()) &&
-                Objects.equals(getRequestId(), that.getRequestId());
+        return Objects.equals(getClientId(), that.getClientId())
+                && Objects.equals(getRequestId(), that.getRequestId());
     }
 
     @Override

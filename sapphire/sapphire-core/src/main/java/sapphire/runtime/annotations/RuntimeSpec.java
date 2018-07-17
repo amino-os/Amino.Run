@@ -15,13 +15,9 @@ import java.lang.annotation.Target;
 @Inherited
 @Retention(RetentionPolicy.RUNTIME)
 public @interface RuntimeSpec {
-    /**
-     * @return number of desired replicas
-     */
+    /** @return number of desired replicas */
     int replicas() default 1;
 
-    /**
-     * @return labels used to select hosts to run replicas
-     */
+    /** @return labels used to select hosts to run replicas */
     String[] hostLabels() default {};
 }

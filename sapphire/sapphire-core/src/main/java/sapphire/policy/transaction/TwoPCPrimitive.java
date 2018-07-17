@@ -2,16 +2,15 @@ package sapphire.policy.transaction;
 
 import java.util.Objects;
 
-/**
- * utility class for 2PC primitive verbs
- */
+/** utility class for 2PC primitive verbs */
 class TwoPCPrimitive {
-    final static String VoteReq = "tx_vote_req";
-    final static String Commit = "tx_commit";
-    final static String Abort = "tx_abort";
+    static final String VoteReq = "tx_vote_req";
+    static final String Commit = "tx_commit";
+    static final String Abort = "tx_abort";
 
     /**
      * checks for the vote_req promitive verb
+     *
      * @param methodName the input to be checked
      * @return the check result
      */
@@ -21,6 +20,7 @@ class TwoPCPrimitive {
 
     /**
      * checks for transaction commit verb
+     *
      * @param methodName the input to be checked
      * @return the check result
      */
@@ -30,6 +30,7 @@ class TwoPCPrimitive {
 
     /**
      * checks for transaction abort verb
+     *
      * @param methodName the input to be checked
      * @return the check result
      */

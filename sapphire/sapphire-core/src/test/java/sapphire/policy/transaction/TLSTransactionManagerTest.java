@@ -1,14 +1,13 @@
 package sapphire.policy.transaction;
 
-import org.junit.Before;
-import org.junit.Test;
-import sapphire.common.ReflectionTestUtil;
-
-import java.util.UUID;
-
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
+
+import java.util.UUID;
+import org.junit.Before;
+import org.junit.Test;
+import sapphire.common.ReflectionTestUtil;
 
 public class TLSTransactionManagerTest {
     UUID txId;
@@ -21,7 +20,8 @@ public class TLSTransactionManagerTest {
         this.txId = UUID.randomUUID();
         this.participantsManager = mock(TwoPCLocalParticipants.class);
 
-        ReflectionTestUtil.setField(this.txManager, "localParticipantsManager", participantsManager);
+        ReflectionTestUtil.setField(
+                this.txManager, "localParticipantsManager", participantsManager);
         this.txManager.setValidator(txPromiser);
     }
 

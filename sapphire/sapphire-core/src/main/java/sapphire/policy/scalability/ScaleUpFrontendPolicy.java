@@ -1,242 +1,262 @@
 package sapphire.policy.scalability;
 
+import static sapphire.common.Utils.getAnnotation;
 
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
-import java.net.InetSocketAddress;
-
 import java.util.TimerTask;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
-
 import sapphire.kernel.common.KernelObjectNotFoundException;
 import sapphire.kernel.common.KernelObjectStub;
 import sapphire.policy.util.ResettableTimer;
 
-import static sapphire.common.Utils.getAnnotation;
-
 /**
- * ScaleUpFrontEnd DM: Load-balancing w/ dynamic allocation of replicas and no consistency
- * Created by Venugopal Reddy K 00900280 on 2/18/18.
+ * ScaleUpFrontEnd DM: Load-balancing w/ dynamic allocation of replicas and no consistency Created
+ * by Venugopal Reddy K 00900280 on 2/18/18.
  */
-
 public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
-	final static int REPLICA_CREATE_MIN_TIME_IN_MSEC = 100;
+    static final int REPLICA_CREATE_MIN_TIME_IN_MSEC = 100;
 
-	@Retention(RetentionPolicy.RUNTIME)
-	@Target({ElementType.TYPE})
-	public @interface ScaleUpFrontendPolicyConfigAnnotation {
-		int replicationRateInMs() default REPLICA_CREATE_MIN_TIME_IN_MSEC;
-		LoadBalancedFrontendPolicyConfigAnnotation loadbalanceConfig();
-	}
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target({ElementType.TYPE})
+    public @interface ScaleUpFrontendPolicyConfigAnnotation {
+        int replicationRateInMs() default REPLICA_CREATE_MIN_TIME_IN_MSEC;
 
-	public static class ClientPolicy extends LoadBalancedFrontendPolicy.ClientPolicy {
-		private final AtomicInteger replicaListSyncCtr = new AtomicInteger();
-		@Override
-		public Object onRPC(String method, ArrayList<Object> params) throws Exception {
-			if (0 == (replicaListSyncCtr.getAndIncrement() % 100)) {
-				synchronized (this) {
-					// TODO: Should device a mechanism to fetch the latest replica list
-					replicaList = null;
-				}
-			}
+        LoadBalancedFrontendPolicyConfigAnnotation loadbalanceConfig();
+    }
 
-			return super.onRPC(method, params);
-		}
-	}
+    public static class ClientPolicy extends LoadBalancedFrontendPolicy.ClientPolicy {
+        private final AtomicInteger replicaListSyncCtr = new AtomicInteger();
 
-	public static class ServerPolicy extends LoadBalancedFrontendPolicy.ServerPolicy {
-		private int replicationRateInMs = REPLICA_CREATE_MIN_TIME_IN_MSEC; // for n milliseconds
-		private int replicaCount = 1; // 1 replica in n milliseconds
-		private Semaphore replicaCreateLimiter;
-		transient volatile private ResettableTimer timer; // Timer for limiting
+        @Override
+        public Object onRPC(String method, ArrayList<Object> params) throws Exception {
+            if (0 == (replicaListSyncCtr.getAndIncrement() % 100)) {
+                synchronized (this) {
+                    // TODO: Should device a mechanism to fetch the latest replica list
+                    replicaList = null;
+                }
+            }
 
-		private void startServerTimer() {
-			/* Double checked locking */
-			if (null == timer) {
-				synchronized (this) {
-					if (null == timer) {
-						timer = new ResettableTimer(new TimerTask() {
-							public void run() {
-								replicaCreateLimiter.release(replicaCount - replicaCreateLimiter.availablePermits());
-								scaleDown();
-							}
-						}, replicationRateInMs);
-						timer.start();
-					}
-				}
-			}
-		}
+            return super.onRPC(method, params);
+        }
+    }
 
-		@Override
-		public void onCreate(SapphireGroupPolicy group, Annotation[] annotations) {
-			Annotation[] lbConfigAnnotations = annotations;
-			ScaleUpFrontendPolicyConfigAnnotation annotation = (ScaleUpFrontendPolicyConfigAnnotation)getAnnotation(annotations, ScaleUpFrontendPolicyConfigAnnotation.class);
-			if (annotation != null && null != annotation.loadbalanceConfig()) {
-				lbConfigAnnotations = new Annotation[]{annotation.loadbalanceConfig()};
-			}
+    public static class ServerPolicy extends LoadBalancedFrontendPolicy.ServerPolicy {
+        private int replicationRateInMs = REPLICA_CREATE_MIN_TIME_IN_MSEC; // for n milliseconds
+        private int replicaCount = 1; // 1 replica in n milliseconds
+        private Semaphore replicaCreateLimiter;
+        private transient volatile ResettableTimer timer; // Timer for limiting
 
-			super.onCreate(group, lbConfigAnnotations);
+        private void startServerTimer() {
+            /* Double checked locking */
+            if (null == timer) {
+                synchronized (this) {
+                    if (null == timer) {
+                        timer =
+                                new ResettableTimer(
+                                        new TimerTask() {
+                                            public void run() {
+                                                replicaCreateLimiter.release(
+                                                        replicaCount
+                                                                - replicaCreateLimiter
+                                                                        .availablePermits());
+                                                scaleDown();
+                                            }
+                                        },
+                                        replicationRateInMs);
+                        timer.start();
+                    }
+                }
+            }
+        }
 
-			if (annotation != null){
-				replicationRateInMs = annotation.replicationRateInMs();
-			}
+        @Override
+        public void onCreate(SapphireGroupPolicy group, Annotation[] annotations) {
+            Annotation[] lbConfigAnnotations = annotations;
+            ScaleUpFrontendPolicyConfigAnnotation annotation =
+                    (ScaleUpFrontendPolicyConfigAnnotation)
+                            getAnnotation(annotations, ScaleUpFrontendPolicyConfigAnnotation.class);
+            if (annotation != null && null != annotation.loadbalanceConfig()) {
+                lbConfigAnnotations = new Annotation[] {annotation.loadbalanceConfig()};
+            }
 
-			replicaCreateLimiter = new Semaphore(replicaCount, true);
-		}
+            super.onCreate(group, lbConfigAnnotations);
 
-		@Override
-		public Object onRPC(String method, ArrayList<Object> params) throws Exception {
-			try {
-				/* Check and start the timer. Currently, sapphire library do not provide
-				the support for dynamic data initialization of DM upon migration of kernel objects.
-				Need to remove check and start timer call here when sapphire supports dynamic data
-				initialization */
-				startServerTimer();
-				return super.onRPC(method, params);
-			} catch (ServerOverLoadException e) {
-				if (!replicaCreateLimiter.tryAcquire()) {
-					throw new ScaleUpException("Replica creation rate exceeded for this sapphire object");
-				}
+            if (annotation != null) {
+                replicationRateInMs = annotation.replicationRateInMs();
+            }
 
-				((GroupPolicy)getGroup()).scaleUpReplica(sapphire_getRegion());
-				throw e;
-			}
-		}
+            replicaCreateLimiter = new Semaphore(replicaCount, true);
+        }
 
-		private void scaleDown() {
+        @Override
+        public Object onRPC(String method, ArrayList<Object> params) throws Exception {
+            try {
+                /* Check and start the timer. Currently, sapphire library do not provide
+                the support for dynamic data initialization of DM upon migration of kernel objects.
+                Need to remove check and start timer call here when sapphire supports dynamic data
+                initialization */
+                startServerTimer();
+                return super.onRPC(method, params);
+            } catch (ServerOverLoadException e) {
+                if (!replicaCreateLimiter.tryAcquire()) {
+                    throw new ScaleUpException(
+                            "Replica creation rate exceeded for this sapphire object");
+                }
 
-			/* When the load at a given replica drops to approximately p * (m-2)/m
-			(where m is the current number of replicas, and p is the maximum concurrency
-			setting per replica), then the server-side DM for that replica should remove one
-			replica (randomly chosen). This is because there are in theory two more replicas
-			than required, so one can be removed. The number of replicas should not be
-			reduced below 2 (in case one fails).
-			 */
-			ArrayList<SapphireServerPolicy> replicaServers = getGroup().getServers();
-			double currentReplicas = replicaServers.size();
-			if (currentReplicas <= 2) {
-				// Scale down shouldn't happen if the replica count is less than or equal to 2
-				return;
-			}
+                ((GroupPolicy) getGroup()).scaleUpReplica(sapphire_getRegion());
+                throw e;
+            }
+        }
 
-			double maxConcurrencyLimit = maxConcurrentReq;
-			double currentLoad = maxConcurrencyLimit - limiter.availablePermits();
-			if (currentLoad < ((maxConcurrencyLimit * (currentReplicas - 2))/currentReplicas)) {
-				//delete this replica
-				try {
-					((GroupPolicy)getGroup()).scaleDownReplica(this);
-					sapphire_deleteKernelObject();
-					synchronized(this) {
-						timer.cancel();
-					}
-				} catch (RemoteException e) {
-					e.printStackTrace();
-				}  catch (ScaleDownException e) {
-					e.printStackTrace();
-				} catch (KernelObjectNotFoundException e) {
-					throw new Error("Kernel Object is not found", e);
-				}
-			}
-		}
-	}
+        private void scaleDown() {
 
-	public static class GroupPolicy extends LoadBalancedFrontendPolicy.GroupPolicy {
-		private int replicationRateInMs = REPLICA_CREATE_MIN_TIME_IN_MSEC;// n milliseconds
-		private int replicaCount = 1; // 1 replica in n milliseconds
-		private Semaphore replicaCreateLimiter;
-		transient private ResettableTimer timer; // Timer for limiting
+            /* When the load at a given replica drops to approximately p * (m-2)/m
+            (where m is the current number of replicas, and p is the maximum concurrency
+            setting per replica), then the server-side DM for that replica should remove one
+            replica (randomly chosen). This is because there are in theory two more replicas
+            than required, so one can be removed. The number of replicas should not be
+            reduced below 2 (in case one fails).
+             */
+            ArrayList<SapphireServerPolicy> replicaServers = getGroup().getServers();
+            double currentReplicas = replicaServers.size();
+            if (currentReplicas <= 2) {
+                // Scale down shouldn't happen if the replica count is less than or equal to 2
+                return;
+            }
 
-		private void startGroupTimer() {
-			/* Double checked locking */
-			if (null == timer) {
-				synchronized (this) {
-					if (null == timer) {
-						timer = new ResettableTimer(new TimerTask() {
-							public void run() {
-								replicaCreateLimiter.release(replicaCount - replicaCreateLimiter.availablePermits());
-							}
-						}, replicationRateInMs);
-						timer.start();
-					}
-				}
-			}
-		}
+            double maxConcurrencyLimit = maxConcurrentReq;
+            double currentLoad = maxConcurrencyLimit - limiter.availablePermits();
+            if (currentLoad < ((maxConcurrencyLimit * (currentReplicas - 2)) / currentReplicas)) {
+                // delete this replica
+                try {
+                    ((GroupPolicy) getGroup()).scaleDownReplica(this);
+                    sapphire_deleteKernelObject();
+                    synchronized (this) {
+                        timer.cancel();
+                    }
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                } catch (ScaleDownException e) {
+                    e.printStackTrace();
+                } catch (KernelObjectNotFoundException e) {
+                    throw new Error("Kernel Object is not found", e);
+                }
+            }
+        }
+    }
 
-		@Override
-		public void onCreate(SapphireServerPolicy server, Annotation[] annotations) {
-			Annotation[] lbConfigAnnotations = annotations;
-			ScaleUpFrontendPolicyConfigAnnotation annotation = (ScaleUpFrontendPolicyConfigAnnotation)getAnnotation(annotations, ScaleUpFrontendPolicyConfigAnnotation.class);
-			if (annotation != null && null != annotation.loadbalanceConfig()) {
-				lbConfigAnnotations = new Annotation[]{annotation.loadbalanceConfig()};
-			}
+    public static class GroupPolicy extends LoadBalancedFrontendPolicy.GroupPolicy {
+        private int replicationRateInMs = REPLICA_CREATE_MIN_TIME_IN_MSEC; // n milliseconds
+        private int replicaCount = 1; // 1 replica in n milliseconds
+        private Semaphore replicaCreateLimiter;
+        private transient ResettableTimer timer; // Timer for limiting
 
-			super.onCreate(server, lbConfigAnnotations);
+        private void startGroupTimer() {
+            /* Double checked locking */
+            if (null == timer) {
+                synchronized (this) {
+                    if (null == timer) {
+                        timer =
+                                new ResettableTimer(
+                                        new TimerTask() {
+                                            public void run() {
+                                                replicaCreateLimiter.release(
+                                                        replicaCount
+                                                                - replicaCreateLimiter
+                                                                        .availablePermits());
+                                            }
+                                        },
+                                        replicationRateInMs);
+                        timer.start();
+                    }
+                }
+            }
+        }
 
-			if (annotation != null){
-				replicationRateInMs = annotation.replicationRateInMs();
-			}
-			if (replicaCreateLimiter == null){
-				replicaCreateLimiter = new Semaphore(replicaCount, true);
-			}
+        @Override
+        public void onCreate(SapphireServerPolicy server, Annotation[] annotations) {
+            Annotation[] lbConfigAnnotations = annotations;
+            ScaleUpFrontendPolicyConfigAnnotation annotation =
+                    (ScaleUpFrontendPolicyConfigAnnotation)
+                            getAnnotation(annotations, ScaleUpFrontendPolicyConfigAnnotation.class);
+            if (annotation != null && null != annotation.loadbalanceConfig()) {
+                lbConfigAnnotations = new Annotation[] {annotation.loadbalanceConfig()};
+            }
 
-			/* Check and start the group timer. Currently, sapphire library do not provide the support
-			for dynamic data initialization of DM upon migration of kernel objects. Need to remove
-			check and start timer call here when sapphire supports dynamic data initialization */
-			startGroupTimer();
-		}
+            super.onCreate(server, lbConfigAnnotations);
 
-		public synchronized void scaleUpReplica(String region) throws ScaleUpException, RemoteException {
-			if (!replicaCreateLimiter.tryAcquire()) {
-				throw new ScaleUpException("Replica creation rate exceeded for this sapphire object.");
-			}
+            if (annotation != null) {
+                replicationRateInMs = annotation.replicationRateInMs();
+            }
+            if (replicaCreateLimiter == null) {
+                replicaCreateLimiter = new Semaphore(replicaCount, true);
+            }
 
-			/* Get the list of available servers in region */
-			ArrayList<InetSocketAddress> fullKernelList;
-			fullKernelList = sapphire_getServersInRegion(region);
-			if (null == fullKernelList) {
-				throw new ScaleUpException("Scaleup failed. Couldn't fetch kernel server list.");
-			}
+            /* Check and start the group timer. Currently, sapphire library do not provide the support
+            for dynamic data initialization of DM upon migration of kernel objects. Need to remove
+            check and start timer call here when sapphire supports dynamic data initialization */
+            startGroupTimer();
+        }
 
-			/* Get the list of servers on which replicas already exist */
-			ArrayList<InetSocketAddress> sappObjReplicatedKernelList = new ArrayList <InetSocketAddress>();
-			for (SapphireServerPolicy tmp : getServers()) {
-				sappObjReplicatedKernelList.add(((KernelObjectStub)tmp).$__getHostname());
-			}
+        public synchronized void scaleUpReplica(String region)
+                throws ScaleUpException, RemoteException {
+            if (!replicaCreateLimiter.tryAcquire()) {
+                throw new ScaleUpException(
+                        "Replica creation rate exceeded for this sapphire object.");
+            }
 
-			/* Remove the servers which already have replicas of this sapphire object */
-			fullKernelList.removeAll(sappObjReplicatedKernelList);
+            /* Get the list of available servers in region */
+            ArrayList<InetSocketAddress> fullKernelList;
+            fullKernelList = sapphire_getServersInRegion(region);
+            if (null == fullKernelList) {
+                throw new ScaleUpException("Scaleup failed. Couldn't fetch kernel server list.");
+            }
 
-			if (!fullKernelList.isEmpty()) {
-				/* create a replica on the first server in the list */
-				SapphireServerPolicy server = getServers().get(0);
-				SapphireServerPolicy replica = server.sapphire_replicate();
-				replica.sapphire_pin_to_server(fullKernelList.get(0));
-				((KernelObjectStub) replica).$__updateHostname(fullKernelList.get(0));
-			}
-			else {
-				throw new ScaleUpException("Replica cannot be created for this sapphire object. All kernel servers have its replica.");
-			}
-		}
+            /* Get the list of servers on which replicas already exist */
+            ArrayList<InetSocketAddress> sappObjReplicatedKernelList =
+                    new ArrayList<InetSocketAddress>();
+            for (SapphireServerPolicy tmp : getServers()) {
+                sappObjReplicatedKernelList.add(((KernelObjectStub) tmp).$__getHostname());
+            }
 
-		public synchronized void scaleDownReplica(SapphireServerPolicy server) throws ScaleDownException {
-			ArrayList<SapphireServerPolicy> serverList = getServers();
+            /* Remove the servers which already have replicas of this sapphire object */
+            fullKernelList.removeAll(sappObjReplicatedKernelList);
 
-			if (2 >= serverList.size()) {
-				throw new ScaleDownException("Cannot scale down. Current replica count is " + serverList.size());
-			}
+            if (!fullKernelList.isEmpty()) {
+                /* create a replica on the first server in the list */
+                SapphireServerPolicy server = getServers().get(0);
+                SapphireServerPolicy replica = server.sapphire_replicate();
+                replica.sapphire_pin_to_server(fullKernelList.get(0));
+                ((KernelObjectStub) replica).$__updateHostname(fullKernelList.get(0));
+            } else {
+                throw new ScaleUpException(
+                        "Replica cannot be created for this sapphire object. All kernel servers have its replica.");
+            }
+        }
 
-			for (SapphireServerPolicy serverPolicyStub : serverList) {
-				if (serverPolicyStub.$__getKernelOID().equals(server.$__getKernelOID())) {
-					removeServer(serverPolicyStub);
-					break;
-				}
-			}
-		}
-	}
+        public synchronized void scaleDownReplica(SapphireServerPolicy server)
+                throws ScaleDownException {
+            ArrayList<SapphireServerPolicy> serverList = getServers();
+
+            if (2 >= serverList.size()) {
+                throw new ScaleDownException(
+                        "Cannot scale down. Current replica count is " + serverList.size());
+            }
+
+            for (SapphireServerPolicy serverPolicyStub : serverList) {
+                if (serverPolicyStub.$__getKernelOID().equals(server.$__getKernelOID())) {
+                    removeServer(serverPolicyStub);
+                    break;
+                }
+            }
+        }
+    }
 }

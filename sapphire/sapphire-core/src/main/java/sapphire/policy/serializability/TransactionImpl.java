@@ -1,13 +1,9 @@
 package sapphire.policy.serializability;
 
-import java.io.Serializable;
-
 /**
- * Created by Venugopal Reddy K 00900280 on 1/2/18.
- * A convenience implementation (TransactionImpl) is provided, so that SO's
- * can just extend it.
+ * Created by Venugopal Reddy K 00900280 on 1/2/18. A convenience implementation (TransactionImpl)
+ * is provided, so that SO's can just extend it.
  */
-
 public class TransactionImpl implements Transaction {
 
     @Override

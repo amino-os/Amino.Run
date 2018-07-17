@@ -1,25 +1,20 @@
 package sapphire.policy.cache;
 
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-
-import java.util.ArrayList;
-import java.util.UUID;
-
-import sapphire.common.AppObject;
-
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
-/**
- * Created by Vishwajeet on 13/2/18.
- */
+import java.util.ArrayList;
+import java.util.UUID;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import sapphire.common.AppObject;
 
+/** Created by Vishwajeet on 13/2/18. */
 public class CacheLeasePolicyTest {
     CacheLeasePolicy.CacheLeaseClientPolicy client;
     CacheLeasePolicy.CacheLeaseClientPolicy clientOne;
@@ -30,7 +25,7 @@ public class CacheLeasePolicyTest {
     public long time = CacheLeasePolicy.DEFAULT_LEASE_PERIOD;
 
     @Before
-    public void setUp() throws Exception{
+    public void setUp() throws Exception {
         this.client = spy(CacheLeasePolicy.CacheLeaseClientPolicy.class);
         appObject = mock(AppObject.class);
         this.server = spy(CacheLeasePolicy.CacheLeaseServerPolicy.class);
@@ -42,19 +37,19 @@ public class CacheLeasePolicyTest {
     }
 
     /**
-     * Check if the client has a valid lease,
-     * if not, then under onRPC a new lease will be assigned to the client
-     * and method will be invoked on the cachedObject.
+     * Check if the client has a valid lease, if not, then under onRPC a new lease will be assigned
+     * to the client and method will be invoked on the cachedObject.
      */
     @Test
-    public void testGetLease() throws Exception{
+    public void testGetLease() throws Exception {
         assertFalse(this.client.leaseStillValid());
 
-        String methodName = "public Object sapphire.common.ObjectHandler.invoke() throws java.lang.Exception";
+        String methodName =
+                "public Object sapphire.common.ObjectHandler.invoke() throws java.lang.Exception";
         ArrayList<Object> params = new ArrayList<Object>();
 
         // Get new lease and invoke cached object
-        this.client.onRPC(methodName,params);
+        this.client.onRPC(methodName, params);
 
         // Verify if the client has a valid lease
         assertTrue(this.client.leaseStillValid());
@@ -66,16 +61,15 @@ public class CacheLeasePolicyTest {
     }
 
     // Verify that the code throws a specific exception
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
+    @Rule public ExpectedException thrown = ExpectedException.none();
 
     /**
-     * When the client has a valid lease,
-     * a new request for getNewLease by another client(clientOne in this case) should fail
-     * unless the client lease expires or client executes releaseCurrentLease.
+     * When the client has a valid lease, a new request for getNewLease by another client(clientOne
+     * in this case) should fail unless the client lease expires or client executes
+     * releaseCurrentLease.
      */
     @Test
-    public void testFailedLease() throws Exception{
+    public void testFailedLease() throws Exception {
         // Assign lease to client
         this.client.getNewLease(time);
 
@@ -85,12 +79,12 @@ public class CacheLeasePolicyTest {
     }
 
     /**
-     * If a client needs lease for extended period, renew his lease.
-     * If the client lease is still valid, renew using the same lease ID.
-     * In case current lease expires, throw error if someone else holds the lease.
+     * If a client needs lease for extended period, renew his lease. If the client lease is still
+     * valid, renew using the same lease ID. In case current lease expires, throw error if someone
+     * else holds the lease.
      */
     @Test
-    public void testRenewLeaseWithCurrentLeaseId() throws Exception{
+    public void testRenewLeaseWithCurrentLeaseId() throws Exception {
         long time = 100;
         this.client.getNewLease(time);
         lease = this.client.lease;
@@ -111,11 +105,11 @@ public class CacheLeasePolicyTest {
     }
 
     /**
-     * Renewing client lease with a new lease ID if someone else's lease has expired.
-     * When trying to release an already expired lease, throw error.
+     * Renewing client lease with a new lease ID if someone else's lease has expired. When trying to
+     * release an already expired lease, throw error.
      */
     @Test
-    public void testRenewLeaseAndReleaseExpired() throws Exception{
+    public void testRenewLeaseAndReleaseExpired() throws Exception {
         long time = 100;
         this.client.getNewLease(time);
         verify(this.server).getLease(time);

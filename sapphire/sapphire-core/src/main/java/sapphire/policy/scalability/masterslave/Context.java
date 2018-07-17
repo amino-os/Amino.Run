@@ -2,9 +2,7 @@ package sapphire.policy.scalability.masterslave;
 
 import static sapphire.policy.DefaultSapphirePolicy.DefaultGroupPolicy;
 
-/**
- * @author terryz
- */
+/** @author terryz */
 public class Context {
     private final DefaultGroupPolicy group;
 
@@ -14,10 +12,11 @@ public class Context {
 
     private final Replicator replicator;
 
-    public Context(DefaultGroupPolicy group,
-                    Configuration config,
-                    Committer commitExecutor,
-                    Replicator replicator) {
+    public Context(
+            DefaultGroupPolicy group,
+            Configuration config,
+            Committer commitExecutor,
+            Replicator replicator) {
         this.group = group;
         this.config = config;
         this.commitExecutor = commitExecutor;
@@ -32,7 +31,11 @@ public class Context {
         return this.config;
     }
 
-    public Committer getCommitExecutor() {return this.commitExecutor;}
+    public Committer getCommitExecutor() {
+        return this.commitExecutor;
+    }
 
-    public Replicator getReplicator() {return this.replicator;}
+    public Replicator getReplicator() {
+        return this.replicator;
+    }
 }

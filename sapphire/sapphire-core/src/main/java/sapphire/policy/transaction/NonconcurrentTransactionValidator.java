@@ -1,18 +1,17 @@
 package sapphire.policy.transaction;
 
-import sapphire.common.AppObject;
-
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import sapphire.common.AppObject;
 
 /**
- * simplistic one of the transaction validator - only allowing one transaction, any
- * commit invalidates the unfinished ones.
+ * simplistic one of the transaction validator - only allowing one transaction, any commit
+ * invalidates the unfinished ones.
  */
-public class NonconcurrentTransactionValidator implements TransactionValidator, Serializable{
+public class NonconcurrentTransactionValidator implements TransactionValidator, Serializable {
     private Set<UUID> promised = Collections.newSetFromMap(new ConcurrentHashMap<UUID, Boolean>());
     private AppObject master;
     private SandboxProvider sandboxProvider;
@@ -24,10 +23,12 @@ public class NonconcurrentTransactionValidator implements TransactionValidator, 
 
     @Override
     public boolean promises(UUID transactionId) throws Exception {
-        AppObjectShimServerPolicy sandbox = (AppObjectShimServerPolicy) this.sandboxProvider.getSandbox(transactionId);
+        AppObjectShimServerPolicy sandbox =
+                (AppObjectShimServerPolicy) this.sandboxProvider.getSandbox(transactionId);
 
         synchronized (this) {
-            // checking for identity of sandbox's origin and this master ensures sandbox is not stale
+            // checking for identity of sandbox's origin and this master ensures sandbox is not
+            // stale
             if (this.master != null && sandbox.getOriginMaster() != this.master) {
                 return false;
             }
@@ -53,7 +54,8 @@ public class NonconcurrentTransactionValidator implements TransactionValidator, 
             sandbox = (AppObjectShimServerPolicy) this.sandboxProvider.getSandbox(transactionId);
         } catch (Exception e) {
             // todo: handle exception properly
-            // note: getSandbox should not fail at this moment - todo: refactor in order to provide such guarantee
+            // note: getSandbox should not fail at this moment - todo: refactor in order to provide
+            // such guarantee
             // note: onCommit itself should not throw exception
         }
 
@@ -64,7 +66,7 @@ public class NonconcurrentTransactionValidator implements TransactionValidator, 
     }
 
     @Override
-    synchronized public void onAbort(UUID transactionId) {
+    public synchronized void onAbort(UUID transactionId) {
         this.promised.remove(transactionId);
     }
 }

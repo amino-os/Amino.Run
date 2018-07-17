@@ -3,12 +3,10 @@ package sapphire.runtime.annotations;
 import org.junit.Assert;
 import org.junit.Test;
 
-/**
- * Created by terryz on 3/15/18.
- */
+/** Created by terryz on 3/15/18. */
 public class RuntimeSpecTest {
     private static final int numOfReplicas = 3;
-    private static final String[] labels = new String[]{"cloud", "gpu"};
+    private static final String[] labels = new String[] {"cloud", "gpu"};
 
     @Test
     public void testRuntimeAnnotation() throws Exception {
@@ -39,27 +37,25 @@ public class RuntimeSpecTest {
         RuntimeSpec runtimeSpec = clazz.getClass().getAnnotation(RuntimeSpec.class);
         System.out.println(runtimeSpec);
         Assert.assertEquals(1, runtimeSpec.replicas());
-        assertEquals(new String[]{}, runtimeSpec.hostLabels());
+        assertEquals(new String[] {}, runtimeSpec.hostLabels());
     }
 
     private void assertEquals(String[] expected, String[] actual) {
         Assert.assertEquals(expected.length, actual.length);
-        for (int i=0; i<expected.length; i++) {
+        for (int i = 0; i < expected.length; i++) {
             Assert.assertEquals(expected[i], actual[i]);
         }
     }
 
-    @RuntimeSpec(replicas = numOfReplicas, hostLabels = {"cloud", "gpu"})
-    public static class TestClass {
-    }
+    @RuntimeSpec(
+            replicas = numOfReplicas,
+            hostLabels = {"cloud", "gpu"})
+    public static class TestClass {}
 
-    public static class SubClass extends TestClass {
-    }
+    public static class SubClass extends TestClass {}
 
     @RuntimeSpec
-    public static class AnnotationDefaultClass {
-    }
+    public static class AnnotationDefaultClass {}
 
-    public static class NoAnnotationClass {
-    }
+    public static class NoAnnotationClass {}
 }

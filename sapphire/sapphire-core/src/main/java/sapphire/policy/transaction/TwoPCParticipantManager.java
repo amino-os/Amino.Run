@@ -1,16 +1,15 @@
 package sapphire.policy.transaction;
 
+import static sapphire.policy.SapphirePolicy.SapphireClientPolicy;
+
 import java.io.Serializable;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static sapphire.policy.SapphirePolicy.SapphireClientPolicy;
-
-/**
- * DCAP transaction participant manager
- */
+/** DCAP transaction participant manager */
 public class TwoPCParticipantManager implements TwoPCParticipants, Serializable {
-    private Set participants = Collections.newSetFromMap(new ConcurrentHashMap<SapphireClientPolicy, Boolean>());
+    private Set participants =
+            Collections.newSetFromMap(new ConcurrentHashMap<SapphireClientPolicy, Boolean>());
 
     @Override
     public void register(SapphireClientPolicy cohort) {

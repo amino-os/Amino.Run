@@ -1,14 +1,5 @@
 package sapphire.policy.transaction;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.ArgumentCaptor;
-import sapphire.policy.SapphirePolicy;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.UUID;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -18,10 +9,20 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.UUID;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import sapphire.policy.SapphirePolicy;
+
 public class TwoPCLocalParticipantsTest {
     UUID id = UUID.randomUUID();
-    SapphirePolicy.SapphireClientPolicy part1 = mock(TwoPCCohortPolicy.TwoPCCohortClientPolicy.class);
-    SapphirePolicy.SapphireClientPolicy part2 = mock(TwoPCCohortPolicy.TwoPCCohortClientPolicy.class);
+    SapphirePolicy.SapphireClientPolicy part1 =
+            mock(TwoPCCohortPolicy.TwoPCCohortClientPolicy.class);
+    SapphirePolicy.SapphireClientPolicy part2 =
+            mock(TwoPCCohortPolicy.TwoPCCohortClientPolicy.class);
 
     TwoPCLocalParticipants participants = new TwoPCLocalParticipants();
 
@@ -29,7 +30,6 @@ public class TwoPCLocalParticipantsTest {
     public void setup() {
         participants.addParticipants(id, Arrays.asList(part1, part2));
     }
-
 
     @Test
     public void test_fanout_to_all() throws Exception {
@@ -45,8 +45,10 @@ public class TwoPCLocalParticipantsTest {
 
     @Test
     public void test_on_all_yes_voted() throws Exception {
-        when(part1.onRPC(eq("tx_rpc"), any(ArrayList.class))).thenReturn(TransactionManager.Vote.YES);
-        when(part2.onRPC(eq("tx_rpc"), any(ArrayList.class))).thenReturn(TransactionManager.Vote.YES);
+        when(part1.onRPC(eq("tx_rpc"), any(ArrayList.class)))
+                .thenReturn(TransactionManager.Vote.YES);
+        when(part2.onRPC(eq("tx_rpc"), any(ArrayList.class)))
+                .thenReturn(TransactionManager.Vote.YES);
 
         Boolean isAllYes = participants.allParticipantsVotedYes(id);
 
@@ -55,8 +57,10 @@ public class TwoPCLocalParticipantsTest {
 
     @Test
     public void test_on_any_not_yes_voted() throws Exception {
-        when(part1.onRPC(eq("tx_rpc"), any(ArrayList.class))).thenReturn(TransactionManager.Vote.YES);
-        when(part2.onRPC(eq("tx_rpc"), any(ArrayList.class))).thenReturn(TransactionManager.Vote.UNCERTIAN);
+        when(part1.onRPC(eq("tx_rpc"), any(ArrayList.class)))
+                .thenReturn(TransactionManager.Vote.YES);
+        when(part2.onRPC(eq("tx_rpc"), any(ArrayList.class)))
+                .thenReturn(TransactionManager.Vote.UNCERTIAN);
 
         Boolean isAllYes = participants.allParticipantsVotedYes(id);
 

@@ -8,7 +8,7 @@
 * Read [code study notes](./docs/code_study/)
 * Read [github workflow guide](https://github.com/kubernetes/community/blob/master/contributors/devel/development.md). Please follow this workflow to submit pull requests.
 * Follows instructions in [this document](https://github.com/Huawei-PaaS/DCAP-Sapphire/blob/master/docs/Development.md) to set up environment
-* Review the Principles of Distributed Systems. Here are a couple of recommendations: 
+* Review the Principles of Distributed Systems. If you have not done a university course on distributed systems you will need to read the following to get a basic understanding of the principles and common terminology. Feel free to add more resource links below.
   * [UMass Course 677](http://lass.cs.umass.edu/~shenoy/courses/677/)
   * [Distributed System Principles by Andrew Tanenbaum](https://www.amazon.com/Distributed-Systems-Principles-Andrew-Tanenbaum/dp/153028175X)
 

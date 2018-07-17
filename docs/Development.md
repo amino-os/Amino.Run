@@ -5,7 +5,7 @@
 ### Install Android Studio
 * Download Gradle update if necessary (Android Studio will inform you).
 * Install JDK (latest version) if you don't have one.
-* Install Android Studio (Windows or Linux all are fine). Latest version or 3.0
+* Install Android Studio. Latest version or 3.0
 * Install [Google Java Format plugin](https://plugins.jetbrains.com/plugin/8527-google-java-format) in Android Studio
   * Download [Google Java Format plugin](https://plugins.jetbrains.com/plugin/8527-google-java-format)
   * Follow [instructions](https://stackoverflow.com/questions/30617408/how-to-install-plugin-in-android-studio) to install plugin

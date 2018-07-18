@@ -94,13 +94,16 @@ Sapphire Kernel:
 java -Djava.security.manager -Djava.rmi.server.useCodebaseOnly=false -Djava.security.policy=./client.policy -cp sapphire-core.jar;java.rmi.jar;minnietwitter.jar;apache.harmony.jar sapphire.kernel.server.KernelServerImpl 192.168.10.231 31111 192.168.10.231 22346
 ```
 ### Stub File Generation
-
+**Server Policy Stub Generation:**
 In order to create stubs for a DM (DMs)
 1. First make sure the .class files already exist under `sapphire-core\build\classes\java\main\sapphire\policy`
 If they do not exist, build the project first to create them.
 
 2. Create an Application with the configuration in the following picture to run the main() method in class `sapphire.compiler.StubGenerator`. Running this Application will create the DM stubs for you.
 
+**App Stub Generation:**
+Run `gradle delstubs` or `gradle genstubs` from application home (e.g. $DCAP\_Sapphire/sapphire/examples/hanksTodo) directory
+to generate application stubs. 
 ![StubFileGeneration](images/StubFileGeneration.PNG)
 
 ### Troubleshooting

@@ -36,3 +36,14 @@ dependencies {
     compile 'com.android.support:support-v4:27.0.2'
     compile project(':sapphire-core')
 }
+
+task delstubs(type: Delete) {
+    delete fileTree('src/main/java/sapphire/appexamples/hankstodo/app/stubs') {
+        include '**/*_Stub.java'
+    }
+}
+
+task genstubs(type: Exec) {
+    dependsOn 'delstubs', 'build'
+    commandLine "python", "generators/generate_app_stubs_on_hosts.py", "-s", "~/Workspace/DCAP-Sapphire", "-a", "hanksTodo" 
+}

@@ -1,10 +1,15 @@
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
     repositories {
         google()
         jcenter()
     }
     dependencies {
+        /**
+         * The following dependencies are added to support bintray upload.
+         */
+        classpath 'com.github.dcendents:android-maven-gradle-plugin:2.0'
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.0'
+
         /**
          * Be careful at upgrading to higher version of gradle (e.g., > 3.0):
          * Compilation may work but application will have error when executed due to AAPT2 exception.
@@ -16,17 +21,20 @@ buildscript {
         classpath 'com.android.tools.build:gradle:2.3.3'
     }
 }
+
 task wrapper(type: Wrapper) {
     gradleVersion = '4.1'
 }
-allprojects {
+
+configure(subprojects.findAll()) {
     repositories {
         jcenter()
         google()
     }
 
-    project.ext {
-        compileSdkVersion=27
-        buildToolsVersion="27.0.2"
+    if (! (it.name in ['hanksTodo', 'example-minnietwitter'])) {
+        apply plugin: 'java-library'
+        sourceCompatibility = "1.6"
+        targetCompatibility = "1.6"
     }
 }

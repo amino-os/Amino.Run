@@ -6,15 +6,12 @@ plugins {
 }
 
 googleJavaFormat {
-  // Using Android AOSP code style
   options style: 'AOSP'
 }
 
 dependencies {
-    compile fileTree(include: ['*.jar'], dir: 'libs')
     compile 'org.json:json:20171018'
     compile project(':dependencies:java.rmi')
-    testCompile 'junit:junit:4.12'
     testCompile 'org.mockito:mockito-core:1.+'
     testCompile 'org.powermock:powermock:1.6.5'
     testCompile 'org.powermock:powermock-module-junit4:1.6.5'
@@ -50,6 +47,3 @@ task createJar(type: Copy) {
 }
 
 createJar.dependsOn(deleteJar, build)
-
-sourceCompatibility = "1.6"
-targetCompatibility = "1.6"

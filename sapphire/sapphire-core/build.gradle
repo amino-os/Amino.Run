@@ -45,5 +45,11 @@ task createJar(type: Copy) {
     include('classes.jar')
     rename('classes.jar', 'sapphire-core.jar')
 }
-
 createJar.dependsOn(deleteJar, build)
+
+task uberJar(type: Jar) {
+    dependsOn ':dependencies:build'
+    baseName = 'sapphire-core-all'
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}

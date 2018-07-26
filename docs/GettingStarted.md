@@ -13,15 +13,65 @@
   * [Distributed System Principles by Andrew Tanenbaum](https://www.amazon.com/Distributed-Systems-Principles-Andrew-Tanenbaum/dp/153028175X)
 
 
-# Fast Start: build & push sapphire-core.jar to remote repo.
+# Qick Start
 
+### Checking out Sapphire
+```shell
+> git clone https://github.com/Huawei-PaaS/DCAP-Sapphire
 ```
-$ cd sapphire/
-$ ./gradlew goJF # format java files
-$ ./gradlew assemble
-$ ./gradlew copyJar
-$ ./gradlew genStubs
-$ ./gradlew assemble
-$ ./gradlew bintrayUpload
+### List Sapphire Projects
+```shell
+> DCAP_Sapphire/sapphire
+> ./gradlew projects
+```
+
+### Clean Sapphire
+```shell
+# clean sapphire-core and dependencies
+> cd DCAP_Sapphire/sapphire
+> ./gradlew clean
+
+# clean only sapphire-core
+> ./gradlew :sapphire-core:clean
+```
+
+### Format Soruce Code
+```shell
+# format source code
+> cd DCAP_Sapphire/sapphire
+> ./gradlew goJF
+
+# verify source code style
+> ./gradlew verGJF
+```
+
+### Build Sapphrie
+```shell
+# build sapphire-core and dependencies
+> cd DCAP_Sapphire/sapphire
+> ./gradlew build
+
+# build only sapphire-core
+> ./gradlew :sapphire-core:build
+```
+
+### Publish Sapphire 
+```shell
+export BINTRAY_USER="<bintray_user>"
+export BINTRAY_API_KEY="<bintray_api_key>"
+
+# publish sapphire-core to bintray
+> ./gradlew --info :sapphire-core:bintrayUpload
+
+# publish apache harmony to bintray
+> ./gradlew --info :apache.harmony:bintrayUpload
+```
+
+### Gradle Tips
+```shell
+> ./gradlew projects
+> ./gradlew tasks --all
+> ./gradlew properties
+> ./gradlew jar
 ```
 

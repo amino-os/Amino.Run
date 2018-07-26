@@ -13,7 +13,7 @@
   * [Distributed System Principles by Andrew Tanenbaum](https://www.amazon.com/Distributed-Systems-Principles-Andrew-Tanenbaum/dp/153028175X)
 
 
-# Qick Start
+# Quick Start
 
 ### Checking out Sapphire
 ```shell
@@ -35,7 +35,7 @@
 > ./gradlew :sapphire-core:clean
 ```
 
-### Format Soruce Code
+### Format Source Code
 ```shell
 # format source code
 > cd DCAP_Sapphire/sapphire
@@ -45,7 +45,7 @@
 > ./gradlew verGJF
 ```
 
-### Build Sapphrie
+### Build Sapphire
 ```shell
 # build sapphire-core and dependencies
 > cd DCAP_Sapphire/sapphire

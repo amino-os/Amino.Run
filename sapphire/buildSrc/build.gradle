@@ -1,0 +1,15 @@
+apply plugin: 'maven'
+apply plugin: 'java'
+
+repositories {
+    jcenter()
+    google()
+    // TODO: Getting packages from personal maven repository temporarily.
+    // Replace it with the offical team repository.
+    maven { url  "https://dl.bintray.com/terryzhuo/DCAP" }
+}
+
+dependencies {
+    implementation gradleApi()
+    compile 'com.huawei.paas:sapphire-core:1.0.0'
+}

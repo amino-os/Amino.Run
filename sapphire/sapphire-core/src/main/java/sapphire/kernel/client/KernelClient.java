@@ -49,7 +49,7 @@ public class KernelClient {
         return null;
     }
 
-    private KernelServer getServer(InetSocketAddress host) {
+    public KernelServer getServer(InetSocketAddress host) {
         KernelServer server = servers.get(host);
         if (server == null) {
             server = addHost(host);

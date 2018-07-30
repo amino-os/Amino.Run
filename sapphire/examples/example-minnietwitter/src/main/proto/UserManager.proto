@@ -1,0 +1,16 @@
+package sapphire_appexamples_minnietwitter_app_usermanager;
+
+import "protostuff-default.proto";
+
+option java_package = "sapphire.appexamples.minnietwitter.app";
+option java_outer_classname = "userManagerProto";
+
+message UserManager {
+  optional net_webby_protostuff_runtime.MapObjectObject users = 1;
+  optional TagManager tm = 2;
+}
+
+message TagManager {
+  optional net_webby_protostuff_runtime.MapObjectObject tags = 1;
+}
+

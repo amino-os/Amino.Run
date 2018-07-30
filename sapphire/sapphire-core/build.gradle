@@ -3,8 +3,13 @@
 plugins {
   id 'com.github.sherter.google-java-format' version '0.7.1'
   id 'java'
-}
 
+  // Added for gRPC and Protobuf compilation
+  id "com.google.protobuf" version "0.8.3"
+  id "idea"
+  id "application"
+}
+mainClassName = 'sapphire.kernel.server'
 googleJavaFormat {
   options style: 'AOSP'
 }
@@ -18,7 +23,47 @@ dependencies {
     testCompile 'org.powermock:powermock-api-mockito:1.6.5'
 }
 
-compileJava.dependsOn tasks.googleJavaFormat
+// Added for gRPC and Protobuf compilation -->
+repositories {
+    mavenCentral()
+}
+dependencies {
+    compile 'io.grpc:grpc-all:1.9.0'
+    compile 'org.apache.commons:commons-lang3:3.7'
+}
+protobuf {
+    protoc {
+        // The version of protoc must match protobuf-java. If you don't depend on
+        // protobuf-java directly, you will be transitively depending on the
+        // protobuf-java version that grpc depends on.
+        artifact = "com.google.protobuf:protoc:3.5.1-1"
+    }
+    plugins {
+        /*javalite {
+            artifact = "com.google.protobuf:protoc-gen-javalite:3.0.0"
+        }*/
+        grpc {
+            artifact = 'io.grpc:protoc-gen-grpc-java:1.9.0'
+        }
+    }
+    generateProtoTasks {
+        all()*.plugins {
+            //javalite {}
+            grpc {}
+        }
+    }
+    generatedFilesBaseDir = "$projectDir/src/generated"
+}
+idea {
+    module {
+        //sourceDirs += file("$projectDir/src/main/grpc");
+        sourceDirs += file("$projectDir/src/generated/main/grpc")
+        sourceDirs += file("$projectDir/src/generated/main/java")
+    }
+}
+// <-- End of changes for gRPC and Protobuf compilation.
+
+//compileJava.dependsOn tasks.googleJavaFormat
 
 task deleteJar(type: Delete) {
     delete 'libs/sapphire-core.jar'

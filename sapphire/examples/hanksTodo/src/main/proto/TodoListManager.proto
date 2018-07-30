@@ -1,0 +1,19 @@
+package hankstodo_app;
+
+import "protostuff-default.proto";
+
+option java_package = "hankstodo.app";
+
+message TodoListManager {
+  optional net_webby_protostuff_runtime.MapObjectObject todoLists = 1;
+}
+
+message newTodo {
+  required string arg0 = 1;
+}
+
+/*
+service TodoListManagerService{
+  rpc newTodoList(newTodo) returns (TodoList){}
+}*/
+

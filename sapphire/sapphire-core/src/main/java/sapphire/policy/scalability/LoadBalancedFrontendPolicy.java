@@ -50,12 +50,12 @@ public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
             return server.onRPC(method, params);
         }
 
-        private synchronized ServerPolicy getCurrentServer() {
+        private synchronized ServerPolicy getCurrentServer() throws Exception {
 
             if (null == replicaList || replicaList.isEmpty()) {
                 // get all the servers which has replicated Objects only once
                 // dynamically added replicas are considered later
-                replicaList = ((GroupPolicy) getGroup()).getServers();
+                replicaList = getGroup().getServers();
                 index = (int) (Math.random() * 100);
             }
             index = ++index % replicaList.size();

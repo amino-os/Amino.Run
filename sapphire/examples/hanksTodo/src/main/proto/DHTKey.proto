@@ -1,0 +1,11 @@
+package hankstodo_app;
+
+import "protostuff-default.proto";
+
+option java_package = "hankstodo.app";
+
+message DHTKey {
+  optional string identifier = 1;
+  optional bytes key = 2;
+}
+

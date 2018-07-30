@@ -1,6 +1,8 @@
 package sapphire.common;
 
-public class SapphireReplicaID {
+import java.io.Serializable;
+
+public class SapphireReplicaID implements Serializable {
     private SapphireObjectID oid;
     private int rid;
 
@@ -20,7 +22,7 @@ public class SapphireReplicaID {
     @Override
     public boolean equals(Object obj) {
         final SapphireReplicaID other = (SapphireReplicaID) obj;
-        if (oid != other.getOID() || rid != other.getID()) return false;
+        if (oid.getID() != other.getOID().getID() || rid != other.getID()) return false;
         return true;
     }
 

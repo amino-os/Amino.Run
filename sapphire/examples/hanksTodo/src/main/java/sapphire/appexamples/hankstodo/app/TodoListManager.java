@@ -9,7 +9,7 @@ import sapphire.policy.dht.DHTPolicy;
 import sapphire.policy.interfaces.dht.DHTInterface;
 import sapphire.policy.interfaces.dht.DHTKey;
 
-public class TodoListManager implements SapphireObject<DHTPolicy>, DHTInterface {
+public class TodoListManager implements DHTInterface {
     Map<DHTKey, TodoList> todoLists = new Hashtable<DHTKey, TodoList>();
 
 	public TodoList newTodoList(String name) {

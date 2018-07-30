@@ -3,7 +3,9 @@ package sapphire.appexamples.minnietwitter.device;
 import java.net.InetSocketAddress;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import sapphire.appexamples.minnietwitter.app.Timeline;
 import sapphire.appexamples.minnietwitter.app.TagManager;
@@ -11,9 +13,13 @@ import sapphire.appexamples.minnietwitter.app.Tweet;
 import sapphire.appexamples.minnietwitter.app.TwitterManager;
 import sapphire.appexamples.minnietwitter.app.User;
 import sapphire.appexamples.minnietwitter.app.UserManager;
+import sapphire.common.SapphireObjectID;
 import sapphire.kernel.server.KernelServer;
 import sapphire.kernel.server.KernelServerImpl;
 import sapphire.oms.OMSServer;
+import sapphire.oms.SapphireClientInfo;
+
+import static sapphire.common.Utils.toObject;
 
 public class TwitterActivityTwo {
     /**
@@ -40,7 +46,12 @@ public class TwitterActivityTwo {
         // other kernel servers. To keep things simple, I hard coded it as "127.0.0.2".
         KernelServer nodeServer = new KernelServerImpl(new InetSocketAddress("127.0.0.2", Integer.parseInt(args[2])), new InetSocketAddress(args[0], Integer.parseInt(args[1])));
 
-        TwitterManager tm = (TwitterManager) server.getAppEntryPoint();
+        SapphireObjectID sapphireObjId = server.createSapphireObject("sapphire.appexamples.minnietwitter.app.TwitterManager", new Object[0]);
+        TwitterManager tm = (TwitterManager)server.acquireSapphireObjectStub(sapphireObjId);
+        //SapphireObjectID twitterManagerId = server.createSapphireObject("sapphire.appexamples.minnietwitter.app.TwitterManager");
+        //System.out.println("Received Twitter Manager Id: " + twitterManagerId);
+
+        //TwitterManager tm = (TwitterManager) server.getSapphireObjectStub(twitterManagerId);
         System.out.println("Received Twitter Manager Stub: " + tm);
 
         UserManager userManger = tm.getUserManager();

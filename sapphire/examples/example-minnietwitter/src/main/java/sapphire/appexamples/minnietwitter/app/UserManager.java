@@ -6,13 +6,10 @@ import java.util.Hashtable;
 import java.util.Map;
 
 import sapphire.app.AppObjectNotCreatedException;
-import sapphire.app.SapphireObject;
-import static sapphire.runtime.Sapphire.*;
-import sapphire.policy.dht.DHTPolicy;
 import sapphire.policy.interfaces.dht.DHTInterface;
 import sapphire.policy.interfaces.dht.DHTKey;
 
-public class UserManager implements SapphireObject<DHTPolicy>, DHTInterface {
+public class UserManager implements DHTInterface {
 	Map<DHTKey, User> users;
 	private TagManager tm;
 
@@ -23,7 +20,7 @@ public class UserManager implements SapphireObject<DHTPolicy>, DHTInterface {
 
 	public User addUser(String username, String passwd) throws AppObjectNotCreatedException {
 
-		User user = (User) new_(User.class, new UserInfo(username, passwd), tm);
+		User user = (User) new User(new UserInfo(username, passwd), tm);
 		user.initialize(user);
 		users.put(new DHTKey(username), user);
 

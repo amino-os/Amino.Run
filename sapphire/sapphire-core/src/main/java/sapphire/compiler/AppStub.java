@@ -109,6 +109,14 @@ public final class AppStub extends Stub {
         buffer.append(indenter.tIncrease() + "$__directInvocation = directInvocation;" + EOLN);
         buffer.append(indenter.indent() + "}" + EOLN + EOLN);
 
+        /* The $__getSapphireClientPolicy function */
+        buffer.append(
+                indenter.indent()
+                        + "public sapphire.policy.SapphirePolicy.SapphireClientPolicy $__getSapphireClientPolicy() {"
+                        + EOLN);
+        buffer.append(indenter.tIncrease() + "return $__client;" + EOLN);
+        buffer.append(indenter.indent() + "}" + EOLN + EOLN);
+
         /* Implement the $__clone() method */
         buffer.append(
                 indenter.indent()

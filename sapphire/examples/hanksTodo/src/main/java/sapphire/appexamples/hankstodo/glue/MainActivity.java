@@ -14,8 +14,12 @@ import android.widget.TextView;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
+import sapphire.appexamples.hankstodo.app.AppGrpcClient;
+import sapphire.appexamples.hankstodo.app.GlobalGrpcClientRef;
 import sapphire.appexamples.hankstodo.app.TodoList;
 import sapphire.appexamples.hankstodo.app.TodoListManager;
+import sapphire.appexamples.hankstodo.app.grpcStubs.TodoListManager_Stub;
+import sapphire.appexamples.hankstodo.app.grpcStubs.TodoList_Stub;
 import sapphire.oms.OMSServer;
 
 public class MainActivity extends Activity {
@@ -31,7 +35,38 @@ public class MainActivity extends Activity {
     private class AccessRemoteObject extends AsyncTask<String, Void, String>{
     	protected String doInBackground(String... params) {
     		String response = null;
-    		Registry registry;
+
+            String [] args = { "192.168.43.231", "20005", "192.168.43.231", "20003", "192.168.43.231", "10003" };
+            AppGrpcClient grpcClient = new AppGrpcClient(args[0], Integer.parseInt(args[1]), args[2], Integer.parseInt(args[3]), args[4], Integer.parseInt(args[5]));
+            GlobalGrpcClientRef.grpcClient = grpcClient;
+            TodoListManager_Stub tlm;
+            try {
+                tlm = new TodoListManager_Stub();
+                System.out.println("Finished");
+
+            } catch (Exception e) {
+                return response;
+            }
+
+            TodoList_Stub tl = tlm.newTodoList("Hanks");
+            System.out.println("Received tl1: " + tl);
+            System.out.println(tl.addToDo("First todo"));
+            System.out.println(tl.addToDo("Second todo"));
+            System.out.println(tl.addToDo("Third todo"));
+
+            TodoList_Stub tl2 = tlm.newTodoList("AAA");
+            System.out.println("Received tl2: " + tl2);
+            System.out.println(tl2.addToDo("First todo"));
+            System.out.println(tl2.addToDo("Second todo"));
+            System.out.println(tl2.addToDo("Third todo"));
+
+            TodoList_Stub tl3 = tlm.newTodoList("HHH");
+            System.out.println("Received tl3: " + tl3);
+            System.out.println(tl3.addToDo("First todo"));
+            System.out.println(tl3.addToDo("Second todo"));
+            System.out.println(tl3.addToDo("Third todo"));
+
+    		/*Registry registry;
     		try {
     			registry = LocateRegistry.getRegistry("128.208.4.114");
     			OMSServer server = (OMSServer) registry.lookup("SapphireOMS");
@@ -54,7 +89,7 @@ public class MainActivity extends Activity {
     		} catch (Exception e) {
     			// TODO Auto-generated catch block
     			e.printStackTrace();
-    		}
+    		}*/
     		return response;
     	}
     }

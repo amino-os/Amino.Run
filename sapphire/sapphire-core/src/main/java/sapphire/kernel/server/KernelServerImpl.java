@@ -1,17 +1,30 @@
 package sapphire.kernel.server;
 
+import static sapphire.runtime.Sapphire.createInnerSo;
+import static sapphire.runtime.Sapphire.createSo;
+import static sapphire.runtime.Sapphire.delete_;
+import static sapphire.runtime.Sapphire.new_;
+
 import java.io.Serializable;
+import java.lang.annotation.Annotation;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import sapphire.app.AppEntryPoint;
 import sapphire.common.AppObjectStub;
+import sapphire.common.SapphireObjectCreationException;
+import sapphire.common.SapphireObjectID;
+import sapphire.common.SapphireObjectNotFoundException;
+import sapphire.common.SapphireReplicaID;
+import sapphire.common.SapphireSoStub;
 import sapphire.kernel.client.KernelClient;
+import sapphire.kernel.common.DMConfigInfo;
 import sapphire.kernel.common.GlobalKernelReferences;
 import sapphire.kernel.common.KernelOID;
 import sapphire.kernel.common.KernelObjectMigratingException;
@@ -21,7 +34,9 @@ import sapphire.kernel.common.KernelRPC;
 import sapphire.kernel.common.KernelRPCException;
 import sapphire.kernel.common.ServerInfo;
 import sapphire.oms.OMSServer;
+import sapphire.policy.SapphirePolicy;
 import sapphire.policy.util.ResettableTimer;
+import sapphire.runtime.EventHandler;
 
 /**
  * Sapphire Kernel Server. Runs on every Sapphire node, knows how to talk to the OMS, handles RPCs
@@ -35,8 +50,14 @@ public class KernelServerImpl implements KernelServer {
     private String region;
     /** manager for kernel objects that live on this server */
     private KernelObjectManager objectManager;
+
+    private int role = ServerInfo.ROLE_KERNEL_SERVER;
+    private KernelGrpcServer grpcServer;
+    private KernelGrpcClient javaGrpcClient;
+
     /** stub for the OMS */
     public static OMSServer oms;
+
     /** local kernel client for making RPCs */
     private KernelClient client;
     // heartbeat period is 1/3of the heartbeat timeout period
@@ -77,6 +98,30 @@ public class KernelServerImpl implements KernelServer {
         return this.region;
     }
 
+    public int getRole() {
+        return role;
+    }
+
+    public void setRole(int role) {
+        this.role = role;
+    }
+
+    public void setGrpcServer(KernelGrpcServer grpcServer) {
+        this.grpcServer = grpcServer;
+    }
+
+    public KernelGrpcServer getGrpcServer() {
+        return this.grpcServer;
+    }
+
+    public void setJavaGrpcClient(KernelGrpcClient javaGrpcClient) {
+        this.javaGrpcClient = javaGrpcClient;
+    }
+
+    public KernelGrpcClient getJavaGrpcClient() {
+        return this.javaGrpcClient;
+    }
+
     /** RPC INTERFACES * */
 
     /**
@@ -107,6 +152,22 @@ public class KernelServerImpl implements KernelServer {
         } catch (Exception e) {
             throw new KernelRPCException(e);
         }
+        return ret;
+    }
+
+    public Object genericInvoke(String clientId, String methodName, ArrayList<Object> params)
+            throws KernelObjectNotFoundException, KernelRPCException {
+        int clientIndex = Integer.parseInt(clientId);
+        KernelOID clientOid = new KernelOID(clientIndex);
+        KernelObject object = null;
+        object = objectManager.lookupObject(clientOid);
+        Object ret = null;
+        try {
+            ret = object.invoke(methodName, params);
+        } catch (Exception e) {
+            throw new KernelRPCException(e);
+        }
+
         return ret;
     }
 
@@ -218,19 +279,170 @@ public class KernelServerImpl implements KernelServer {
     }
 
     /** Start the first server-side app object */
-    @Override
+    /*@Override
     public AppObjectStub startApp(String className) throws RemoteException {
-        AppObjectStub appEntryPoint = null;
-        try {
-            AppEntryPoint entryPoint = (AppEntryPoint) Class.forName(className).newInstance();
-            appEntryPoint = entryPoint.start();
-        } catch (Exception e) {
-            logger.severe("Could not start app");
-            e.printStackTrace();
-        }
-        return appEntryPoint;
+    	AppObjectStub appEntryPoint = null;
+    	try {
+    		AppEntryPoint entryPoint =  (AppEntryPoint) Class.forName(className).newInstance();
+               appEntryPoint = entryPoint.start();
+    	} catch (Exception e) {
+    		logger.severe("Could not start app");
+    		e.printStackTrace();
+    	}
+    	return appEntryPoint;
+    }*/
+
+    /** ********** Begin: multilanguage related methods ************** */
+    /** Create the sapphire object on runtime. */
+    @Override
+    public SapphireSoStub createSapphireObject(String className, Object... args)
+            throws RemoteException, SapphireObjectCreationException, ClassNotFoundException {
+        SapphireSoStub soStub = null;
+        Class<?> cls = Class.forName(className);
+        AppObjectStub appObjStub = (AppObjectStub) new_(cls, args);
+        soStub = new SapphireSoStub.SapphireSoStubBuilder().setSapphireObjId(appObjStub.$__getSapphireClientPolicy().getServer().getReplicaId().getOID())
+                    .setParentSapphireObjId(null)
+                    .setAppObjectStub(appObjStub)
+                    .create();
+        return soStub;
     }
 
+    @Override
+    public SapphireSoStub createSapphireObject(
+            String className, String runtimeType, String constructorName, byte[] args)
+            throws RemoteException, ClassNotFoundException, KernelObjectNotCreatedException,
+            InstantiationException, KernelObjectNotFoundException,
+            SapphireObjectNotFoundException, IllegalAccessException {
+        return createSo(className, runtimeType, constructorName, args);
+    }
+
+    /* Delete sapphire Object handlers created on this server */
+    @Override
+    public void deleteSapphireObject(SapphireObjectID sapphireObjId, EventHandler handler)
+            throws RemoteException, SapphireObjectNotFoundException {
+        delete_(sapphireObjId, handler);
+    }
+
+    /* Delete sapphire Object replica handlers created on this server and also delete the SO copy on runtime */
+    @Override
+    public void deleteSapphireReplica(SapphireReplicaID sapphireReplicaId, EventHandler handler)
+            throws RemoteException, SapphireObjectNotFoundException, KernelObjectNotFoundException {
+        /* Delete SO copy on runtime */
+        SapphirePolicy.SapphireServerPolicy serverPolicy =
+                getServerPolicyObjectReplicaId(sapphireReplicaId, handler);
+
+        if (null != serverPolicy.sapphire_getAppObject().getRuntime()) {
+            if (serverPolicy.sapphire_getAppObject().getRuntime().equalsIgnoreCase("java")) {
+                GlobalKernelReferences.nodeServer
+                        .getJavaGrpcClient()
+                        .deleteSapphireReplica(sapphireReplicaId);
+            } else if (serverPolicy.sapphire_getAppObject().getRuntime().equalsIgnoreCase("go")) {
+                // TODO: Need to call the go runtime
+            }
+        }
+
+        delete_(sapphireReplicaId, handler);
+    }
+
+    /* Create sapphire client policy object on this server */
+    @Override
+    public SapphirePolicy.SapphireClientPolicy createSapphireClientPolicy(
+            String sapphireClientPolicy,
+            SapphirePolicy.SapphireServerPolicy serverPolicy,
+            SapphirePolicy.SapphireGroupPolicy groupPolicy,
+            Annotation[] annotations)
+            throws RemoteException, IllegalAccessException, InstantiationException,
+                    ClassNotFoundException, KernelObjectNotCreatedException {
+        /* Create the Client Policy Object on the remote kernel server */
+        Class<?> sapphireClientPolicyClass = Class.forName(sapphireClientPolicy);
+        KernelOID oid =
+                GlobalKernelReferences.nodeServer.newKernelObject(sapphireClientPolicyClass);
+        SapphirePolicy.SapphireClientPolicy clientPolicy;
+        try {
+            clientPolicy =
+                    (SapphirePolicy.SapphireClientPolicy)
+                            objectManager.lookupObject(oid).getObject();
+        } catch (KernelObjectNotFoundException e) {
+            throw new KernelObjectNotCreatedException(
+                    "Failed to create kernel object for client policy");
+        }
+
+        clientPolicy.$__setKernelOID(oid);
+
+        /* Link everything together */
+        clientPolicy.setServer(serverPolicy);
+        clientPolicy.onCreate(groupPolicy, annotations);
+        return clientPolicy;
+    }
+
+    @Override
+    public void deleteSapphireClientPolicy(KernelOID oid)
+            throws RemoteException, KernelObjectNotFoundException {
+        deleteKernelObject(oid);
+    }
+
+    public SapphirePolicy.SapphireServerPolicy getServerPolicyObjectReplicaId(
+            SapphireReplicaID replicaId, EventHandler handler)
+            throws RemoteException, SapphireObjectNotFoundException, KernelObjectNotFoundException {
+        List<Object> policies = handler.getObjects();
+        KernelOID oid;
+
+        for (Object policy : policies) {
+            oid = null;
+            if (policy instanceof SapphirePolicy.SapphireServerPolicy) {
+                oid = ((SapphirePolicy.SapphireServerPolicy) policy).$__getKernelOID();
+            } else if (policy instanceof SapphirePolicy.SapphireGroupPolicy) {
+                oid = ((SapphirePolicy.SapphireGroupPolicy) policy).$__getKernelOID();
+            } else {
+                logger.warning("unknown object instance");
+                continue;
+            }
+
+            if (null == oid) {
+                logger.warning("oid is null");
+                continue;
+            }
+
+            KernelObject object = objectManager.lookupObject(oid);
+            SapphirePolicy.SapphireServerPolicy serverPolicy =
+                    (SapphirePolicy.SapphireServerPolicy) object.getObject();
+            if (serverPolicy.getReplicaId().equals(replicaId)) {
+                return serverPolicy;
+            }
+        }
+
+        throw new KernelObjectNotFoundException("Kernel Object not found for oid");
+    }
+
+    /* Method called from grpc server (invoked by runtime process  */
+    public SapphireReplicaID createInnerSapphireObject(
+            String className,
+            DMConfigInfo dmConfig,
+            SapphireObjectID parentSapphireObjId,
+            byte[] objectStream)
+            throws RemoteException, SapphireObjectNotFoundException, KernelObjectNotFoundException,
+                    ClassNotFoundException, KernelObjectNotCreatedException, InstantiationException,
+                    IllegalAccessException, SapphireObjectCreationException {
+
+        try {
+            return createInnerSo(className, "java", dmConfig, parentSapphireObjId, objectStream);
+        } catch (SapphireObjectNotFoundException e) {
+            throw new SapphireObjectCreationException(
+                    "Failed to create sapphire object : " + className + " : Trace : " + e);
+        } catch (KernelObjectNotFoundException e) {
+            throw new SapphireObjectCreationException(
+                    "Failed to create sapphire object : " + className + " : Trace : " + e);
+        }
+    }
+
+    /* Method called from grpc server(invoked by runtime process ) */
+    public boolean deleteInnerSapphireObject(SapphireObjectID sapphireObjId)
+            throws RemoteException, SapphireObjectNotFoundException {
+        GlobalKernelReferences.nodeServer.oms.deleteSapphireObject(sapphireObjId);
+        return true;
+    }
+
+    /** ********** End: multilanguage related methods ************** */
     public class MemoryStatThread extends Thread {
         public void run() {
             while (true) {
@@ -270,7 +482,7 @@ public class KernelServerImpl implements KernelServer {
         // Time Being for backward compatibility Region is optional in the configuration
         if (args.length < 4) {
             System.out.println("Incorrect arguments to the kernel server");
-            System.out.println("[host ip] [host port] [oms ip] [oms port] [region]");
+            System.out.println("[host ip] [host port] [oms ip] [oms port] [ [grpc-servingip] [port] ] [ [java-grpc-serverip] [port] ][region]");
             return;
         }
 
@@ -287,24 +499,47 @@ public class KernelServerImpl implements KernelServer {
 
         System.setProperty("java.rmi.server.hostname", host.getAddress().getHostAddress());
 
+        KernelServerImpl server = null;
+
         try {
-            KernelServerImpl server = new KernelServerImpl(host, omsHost);
+            server = new KernelServerImpl(host, omsHost);
             KernelServer stub = (KernelServer) UnicastRemoteObject.exportObject(server, 0);
             Registry registry = LocateRegistry.createRegistry(Integer.parseInt(args[1]));
             registry.rebind("SapphireKernelServer", stub);
 
             if (args.length > 4) {
-                server.setRegion(args[4]);
+                //server.setRegion(args[args.length - 1]);
+                server.setRegion(host.toString());
             } else {
                 // server.setRegion("default");
                 // TODO once we are sure we can comment below line & uncomment above line
                 server.setRegion(host.toString());
             }
-            final ServerInfo srvinfo = new ServerInfo(host, server.getRegion());
+
+            if (args.length > 5) {
+                server.setGrpcServer(
+                        new KernelGrpcServer(
+                                new InetSocketAddress(args[4], Integer.parseInt(args[5])), server));
+                server.getGrpcServer().start();
+
+                if (args.length > 7) {
+                    /* Start client for each runtime */
+                    server.setJavaGrpcClient(
+                            new KernelGrpcClient(args[6], Integer.parseInt(args[7])));
+                } else if (args.length == 7) {
+                    int role = Integer.parseInt(args[6]);
+                    if (role <= 1) {
+                        server.setRole(role);
+                    }
+                }
+            }
+
+            final ServerInfo srvinfo = new ServerInfo(host, server.getRegion(), server.getRole());
             oms.registerKernelServer(srvinfo);
             logger.info("Server ready!");
             System.out.println("Server ready!");
 
+            /*
             ksHeartbeatSendTimer =
                     new ResettableTimer(
                             new TimerTask() {
@@ -316,12 +551,27 @@ public class KernelServerImpl implements KernelServer {
 
             oms.heartbeatKernelServer(srvinfo);
             ksHeartbeatSendTimer.start();
+            */
             /* Start a thread that print memory stats */
             server.getMemoryStatThread().start();
 
         } catch (Exception e) {
             logger.severe("Cannot start Sapphire Kernel Server");
             e.printStackTrace();
+
+            if (null != server.getGrpcServer()) {
+                server.getGrpcServer().stop();
+            }
+
+            try {
+                if (null != server.getJavaGrpcClient()) {
+                    server.getJavaGrpcClient().shutdown();
+                }
+            } catch (Exception e1) {
+                e1.printStackTrace();
+            }
+
+            //ksHeartbeatSendTimer.cancel();
         }
     }
 }

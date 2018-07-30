@@ -1,0 +1,74 @@
+package net_webby_protostuff_runtime;
+
+option java_package = "net.webby.protostuff.runtime";
+
+message ArrayObject {
+  optional string id = 15;
+  optional string mapped = 17;
+  optional int32 len = 3;
+  optional int32 dimension = 2;
+  repeated DynamicObject value = 1;
+}
+
+message EnumObject {
+  optional string enumId = 24;
+  optional int32 ordinal = 1;
+}
+
+message DynamicObject {
+  optional bool booleanValue = 1;
+  optional uint32 byteValue = 2;
+  optional uint32 charValue = 3;
+  optional uint32 shortValue = 4;
+  optional int32 intValue = 5;
+  optional int64 longValue = 6;
+  optional float floatValue = 7;
+  optional double doubleValue = 8;
+  optional string stringValue = 9;
+  optional bytes bytesValue = 10;
+  optional bytes byteArrayValue = 11;
+  optional string bigDecimalValue = 12;
+  optional bytes bigIntegerValue = 13;
+  optional fixed64 dateValue = 14;
+  optional string arrayClass = 15;
+  optional JavaObject objectValue = 16;  
+  optional string enumClass = 24;
+  optional string pojoClass = 127;
+}
+
+message JavaObject {
+  optional bool unknown = 1;
+}
+
+message UUID {
+  optional int64 mostSigBits = 1;
+  optional int64 leastSigBits = 2;
+}
+
+message MapStringString {
+  repeated MapEntryStringString value = 1;
+}
+
+message MapEntryStringString {
+  optional string key = 1;
+  optional string value = 2;
+}
+
+message MapStringObject {
+  repeated MapEntryStringObject value = 1;
+}
+
+message MapEntryStringObject {
+  optional string key = 1;
+  optional DynamicObject value = 2;
+}
+
+message MapObjectObject {
+  repeated MapEntryObjectObject value = 1;
+}
+
+message MapEntryObjectObject {
+  optional DynamicObject key = 1;
+  optional DynamicObject value = 2;
+}
+

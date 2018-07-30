@@ -1,0 +1,53 @@
+package sapphire_appexamples_minnietwitter_app_user;
+
+import "protostuff-default.proto";
+
+option java_package = "sapphire.appexamples.minnietwitter.app";
+option java_outer_classname = "UserProto";
+
+message User {
+  optional Timeline timeline = 1;
+  optional UserInfo ui = 2;
+  repeated User followers = 3;
+  repeated User following = 4;
+  optional TagManager tagManager = 5;
+}
+
+message Timeline {
+  optional string userName = 1;
+  repeated TweetContainer tweets = 2;
+  optional TagManager tm = 3;
+  optional int32 currentId = 4;
+  optional Timeline timelineStub = 5;
+}
+
+message TagManager {
+  optional net_webby_protostuff_runtime.MapObjectObject tags = 1;
+}
+
+message TweetContainer {
+  optional Tweet tweet = 1;
+  repeated string favorited = 2;
+  repeated string retweeted = 3;
+}
+
+message Tweet {
+  optional int32 id = 1;
+  optional int32 favorites = 2;
+  optional int32 retweetes = 3;
+  optional Timeline timeline = 4;
+  optional string text = 5;
+  repeated Tag tags = 6;
+  optional string authorUsername = 7;
+}
+
+message UserInfo {
+  optional string username = 1;
+  optional bytes password = 2;
+}
+
+message Tag {
+  optional string label = 1;
+  repeated Tweet tweets = 2;
+}
+

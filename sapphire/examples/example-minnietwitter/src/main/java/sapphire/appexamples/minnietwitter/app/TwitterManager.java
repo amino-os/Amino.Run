@@ -1,15 +1,12 @@
 package sapphire.appexamples.minnietwitter.app;
 
-import sapphire.app.SapphireObject;
-import static sapphire.runtime.Sapphire.*;
-
-public class TwitterManager implements SapphireObject {
+public class TwitterManager {
 	private UserManager userManager;
 	private TagManager tagManager;
 	
 	public TwitterManager() {
-		tagManager = (TagManager) new_(TagManager.class);
-		userManager = (UserManager) new_(UserManager.class, tagManager);
+		tagManager = (TagManager) new TagManager();
+		userManager = (UserManager) new UserManager(tagManager);
 	}
 
 	public UserManager getUserManager() {
@@ -20,3 +17,5 @@ public class TwitterManager implements SapphireObject {
 		return tagManager;
 	}	
 }
+
+

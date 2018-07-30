@@ -1,0 +1,37 @@
+syntax="proto3";
+
+package KernelServerApiToRuntime;
+
+option java_multiple_files = true;
+option java_package = "sapphire.kernel.KernelServerApiToRuntime";
+
+message DMInfo {
+    string clientPolicy = 1;
+    string serverPolicy = 2;
+    string groupPolicy = 3;
+}
+
+message CreateChildSObjRequest {
+    string sObjName = 1;
+    string  sObjParentSObjId = 2;
+    DMInfo sObjDMInfo = 3;
+    bytes  sObjReplicaObject = 4;
+}
+
+message CreateChildSObjResponse {
+    string sObjId = 1;
+    string sObjReplicaId = 2;
+}
+
+message DeleteChildSObjRequest {
+    string sObjId = 1;
+}
+
+message DeleteChildSObjResponse {
+    bool status = 1;
+}
+
+service RuntimeKernelServerGrpcService {
+    rpc CreateChildSObj (CreateChildSObjRequest) returns (CreateChildSObjResponse) {}
+    rpc DeleteChildSObj (DeleteChildSObjRequest) returns (DeleteChildSObjResponse) {}
+}

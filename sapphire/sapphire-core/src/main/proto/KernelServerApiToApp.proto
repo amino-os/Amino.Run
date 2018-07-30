@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package KernelServerApiToApp;
+
+option java_package = "sapphire.kernel.KernelServerApiToApp";
+
+service GenericInvokeService {
+    rpc genericInvoke (InvokeRequest) returns (InvokeResponse) {}
+}
+
+message InvokeRequest {
+    string DMClientId = 1;
+    string funcName = 2;
+    bytes funcParams = 3;
+}
+
+message InvokeResponse {
+    bytes objectStream = 1;
+}

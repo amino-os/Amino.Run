@@ -1,0 +1,12 @@
+package sapphire_appexamples_minnietwitter_app_userinfo;
+
+import "protostuff-default.proto";
+
+option java_package = "sapphire.appexamples.minnietwitter.app";
+option java_outer_classname = "UserInfoProto";
+
+message UserInfo {
+  optional string username = 1;
+  optional bytes password = 2;
+}
+

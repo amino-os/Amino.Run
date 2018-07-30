@@ -1,0 +1,82 @@
+syntax = "proto3";
+
+package OmsApiToApp;
+
+option java_package = "sapphire.oms.OmsApiToApp";
+
+service OMSService {
+    rpc attach(AttachRequest) returns (AttachResponse) {}
+    rpc detach(DetachRequest) returns (DetachResponse) {}
+    rpc createSapphireObject(CreateRequest) returns (CreateResponse) {}
+    rpc setURL(URLRequest) returns (URLResponse) {}
+    rpc deleteSapphireObject(DeleteRequest) returns (DeleteResponse) {}
+    rpc acquireAppStub(AcquireRequest) returns (AcquireResponse) {}
+    rpc releaseAppStub(ReleaseRequest) returns (ReleaseResponse) {}
+}
+
+message AttachRequest{
+    string url = 1;
+    string dmClientRmiEndPoint = 2;
+}
+
+message AttachResponse{
+    bytes objectStream = 1;
+    string sId = 2;
+    string clientId = 3;
+}
+
+message DetachRequest{
+    string sId = 1;
+    string clientId = 2;
+}
+
+message DetachResponse{
+    bool status = 1;
+}
+
+message CreateRequest{
+    string soName = 1;
+    string constructName = 2;
+    bytes constructParams = 3;
+    string langType = 4;
+}
+
+message CreateResponse{
+    string sId = 1;
+}
+
+message URLRequest{
+    string sId = 1;
+    string url = 2;
+}
+
+message URLResponse{
+    bool status = 1;
+}
+
+message DeleteRequest{
+    string sId = 1;
+}
+
+message DeleteResponse{
+    bool status = 1;
+}
+
+message AcquireRequest{
+    string sId = 1;
+    string dmClientRmiEndPoint = 2;
+}
+
+message AcquireResponse{
+    bytes objectStream = 1;
+    string clientId = 2;
+}
+
+message ReleaseRequest{
+    string sId = 1;
+    string clientId = 2;
+}
+
+message ReleaseResponse{
+    bool status = 1;
+}

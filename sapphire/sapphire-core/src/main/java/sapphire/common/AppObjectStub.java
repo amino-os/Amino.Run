@@ -8,5 +8,7 @@ public interface AppObjectStub extends Serializable, Cloneable {
 
     public void $__initialize(boolean directInvocation);
 
+    public SapphireClientPolicy $__getSapphireClientPolicy();
+
     public Object $__clone() throws CloneNotSupportedException;
 }

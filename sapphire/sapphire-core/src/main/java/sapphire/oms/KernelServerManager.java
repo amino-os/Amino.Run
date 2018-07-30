@@ -17,6 +17,8 @@ import sapphire.kernel.common.ServerInfo;
 import sapphire.kernel.server.KernelServer;
 import sapphire.policy.util.ResettableTimer;
 
+import static sapphire.kernel.common.ServerInfo.ROLE_KERNEL_CLIENT;
+
 /**
  * Manages Sapphire kernel servers. Tracks which servers are up, which regions each server belongs
  * to, etc.
@@ -29,11 +31,13 @@ public class KernelServerManager {
     private ConcurrentHashMap<InetSocketAddress, KernelServer> servers;
     private ConcurrentHashMap<String, ArrayList<InetSocketAddress>> regions;
     private ConcurrentHashMap<InetSocketAddress, ResettableTimer> ksHeartBeatTimers;
+    private ConcurrentHashMap<InetSocketAddress, InetSocketAddress> clientRoleServers;
 
     public KernelServerManager() throws IOException, NotBoundException, JSONException {
         servers = new ConcurrentHashMap<InetSocketAddress, KernelServer>();
         regions = new ConcurrentHashMap<String, ArrayList<InetSocketAddress>>();
         ksHeartBeatTimers = new ConcurrentHashMap<InetSocketAddress, ResettableTimer>();
+        clientRoleServers = new ConcurrentHashMap<InetSocketAddress, InetSocketAddress>();
     }
 
     void stopHeartBeat(ServerInfo srvInfo) {
@@ -52,6 +56,11 @@ public class KernelServerManager {
     public void removeKernelServer(ServerInfo srvInfo) {
         // removing from the servers list
         servers.remove(srvInfo.getHost());
+
+        if (ROLE_KERNEL_CLIENT == srvInfo.getRole()) {
+            clientRoleServers.remove(srvInfo.getHost());
+            return;
+        }
 
         // removing from the regions map
         ArrayList<InetSocketAddress> serverList = regions.get(srvInfo.getRegion());
@@ -77,6 +86,12 @@ public class KernelServerManager {
                         + " in region "
                         + info.getRegion());
 
+        if (ROLE_KERNEL_CLIENT == info.getRole()) {
+            clientRoleServers.put(info.getHost(), info.getHost());
+            //TODO; Need to start heartbeat for kernel clients too..
+            return;
+        }
+
         ArrayList<InetSocketAddress> serverList = regions.get(info.getRegion());
 
         if (null == serverList) {
@@ -85,6 +100,7 @@ public class KernelServerManager {
         serverList.add(info.getHost());
         regions.put(info.getRegion(), serverList);
 
+        /*
         final ServerInfo srvInfo = info;
         ResettableTimer ksHeartBeatTimer =
                 new ResettableTimer(
@@ -99,6 +115,7 @@ public class KernelServerManager {
 
         ksHeartBeatTimers.put(info.getHost(), ksHeartBeatTimer);
         ksHeartBeatTimer.start();
+        */
     }
 
     public void heartbeatKernelServer(ServerInfo srvinfo)
@@ -109,7 +126,7 @@ public class KernelServerManager {
                         + " in region "
                         + srvinfo.getRegion());
 
-        ArrayList<InetSocketAddress> serverList = regions.get(srvinfo.getRegion());
+        /*ArrayList<InetSocketAddress> serverList = regions.get(srvinfo.getRegion());
 
         if (null == serverList) {
             logger.severe(
@@ -119,11 +136,21 @@ public class KernelServerManager {
                             + srvinfo.getRegion());
             throw new KernelServerNotFoundException("region does not exist");
         }
+
         if (serverList.contains(srvinfo.getHost())) {
             ResettableTimer ksHeartBeatTimer = ksHeartBeatTimers.get(srvinfo.getHost());
             ksHeartBeatTimer.reset();
             return;
         }
+        */
+
+
+        ResettableTimer ksHeartBeatTimer = ksHeartBeatTimers.get(srvinfo.getHost());
+        if (null != ksHeartBeatTimer) {
+            ksHeartBeatTimer.reset();
+            return;
+        }
+
         logger.severe(
                 "Host does not exist for heartbeat KernelServer: "
                         + srvinfo.getHost().toString()

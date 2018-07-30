@@ -1,0 +1,58 @@
+/**
+ * Created by Jithu Thomas on 17/07/2018.
+ */
+syntax= "proto3";
+
+package RuntimeApiToKernelServer;
+
+option java_multiple_files = true;
+option java_package = "sapphire.runtime.RuntimeApiToKernelServer";
+
+
+
+message CreateSObjReplicaRequest {
+    string sObjName = 1;
+    string sObjConstructorName = 2;
+    bytes  sObjConstructorParams = 3;
+    string  sObjParentSObjId = 4;
+    string  sObjId = 5;
+    string  sObjReplicaId = 6;
+    bytes  sObjReplicaObject = 7;
+}
+
+message DMInfo {
+    string clientPolicy = 1;
+    string serverPolicy = 2;
+    string groupPolicy = 3;
+}
+
+message CreateSObjReplicaResponse {
+    bytes  sObjReplicaObject = 1;
+    DMInfo sObjDMInfo = 2;
+}
+
+message DeleteSObjReplicaRequest {
+    string sObjId = 1;
+    string sObjReplicaId = 2;
+}
+
+message DeleteSObjReplicaResponse {
+    bool status = 1;
+}
+
+message SObjMethodInvokeRequest {
+    string  sObjId = 1;
+    string  sObjReplicaId = 2;
+    string sObjMethodName = 3;
+    bytes  sObjMethodParams = 4;
+}
+
+message SObjMethodInvokeResponse {
+    bytes sObjMethodResponse = 1;
+}
+
+service KernelServerRuntimeGrpcService {
+    rpc CreateSObjReplica (CreateSObjReplicaRequest) returns (CreateSObjReplicaResponse) {}
+    rpc DeleteSObjReplica (DeleteSObjReplicaRequest) returns (DeleteSObjReplicaResponse) {}
+    rpc SObjMethodInvoke (SObjMethodInvokeRequest) returns (SObjMethodInvokeResponse) {}
+}

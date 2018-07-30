@@ -30,16 +30,16 @@ public interface SapphirePolicyUpcalls {
     }
 
     interface SapphireGroupPolicyUpcalls extends Serializable {
-        void onCreate(SapphireServerPolicy server, Annotation[] annotations);
+        void onCreate(SapphireServerPolicy server, Annotation[] annotations) throws Exception;
 
-        void addServer(SapphireServerPolicy server);
+        void addServer(SapphireServerPolicy server) throws Exception;
 
-        void removeServer(SapphireServerPolicy server);
+        void removeServer(SapphireServerPolicy server) throws Exception;
 
-        ArrayList<SapphireServerPolicy> getServers();
+        ArrayList<SapphireServerPolicy> getServers() throws Exception;
 
-        void onFailure(SapphireServerPolicy server);
+        void onFailure(SapphireServerPolicy server) throws Exception;
 
-        SapphireServerPolicy onRefRequest();
+        SapphireServerPolicy onRefRequest() throws Exception;
     }
 }

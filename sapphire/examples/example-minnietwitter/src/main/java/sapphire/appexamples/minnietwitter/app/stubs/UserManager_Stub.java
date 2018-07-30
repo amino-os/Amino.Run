@@ -23,6 +23,10 @@ public final class UserManager_Stub extends sapphire.appexamples.minnietwitter.a
         $__directInvocation = directInvocation;
     }
 
+    public sapphire.policy.SapphirePolicy.SapphireClientPolicy $__getSapphireClientPolicy() {
+        return $__client;
+    }
+
     public Object $__clone() throws CloneNotSupportedException {
         return super.clone();
     }

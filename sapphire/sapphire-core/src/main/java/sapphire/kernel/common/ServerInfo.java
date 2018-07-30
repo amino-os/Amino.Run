@@ -10,12 +10,16 @@ import java.net.InetSocketAddress;
  * @author SrinivasChilveri
  */
 public class ServerInfo implements Serializable {
+    public static int ROLE_KERNEL_SERVER = 0;
+    public static int ROLE_KERNEL_CLIENT = 1;
     private InetSocketAddress host;
     private String region;
+    private int role;
 
-    public ServerInfo(InetSocketAddress addr, String reg) {
+    public ServerInfo(InetSocketAddress addr, String reg, int role) {
         this.host = addr;
         this.region = reg;
+        this.role = role;
     }
 
     public InetSocketAddress getHost() {
@@ -24,5 +28,9 @@ public class ServerInfo implements Serializable {
 
     public String getRegion() {
         return region;
+    }
+
+    public int getRole() {
+        return role;
     }
 }

@@ -1,0 +1,11 @@
+package hankstodo_app;
+
+import "protostuff-default.proto";
+
+option java_package = "hankstodo.app";
+
+message TodoList {
+  repeated net_webby_protostuff_runtime.DynamicObject toDos = 1;
+  optional string name = 2;
+}
+

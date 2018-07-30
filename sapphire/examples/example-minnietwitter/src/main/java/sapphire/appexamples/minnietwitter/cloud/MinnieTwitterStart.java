@@ -6,6 +6,7 @@ import static sapphire.runtime.Sapphire.*;
 import sapphire.appexamples.minnietwitter.app.TwitterManager;
 import sapphire.common.AppObjectStub;
 
+/*
 public class MinnieTwitterStart implements AppEntryPoint {
 
 	@Override
@@ -13,3 +14,4 @@ public class MinnieTwitterStart implements AppEntryPoint {
 			return (AppObjectStub) new_(TwitterManager.class);
 	}
 }
+*/

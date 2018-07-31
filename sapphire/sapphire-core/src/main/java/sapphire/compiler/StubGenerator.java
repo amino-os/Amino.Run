@@ -4,6 +4,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.lang.reflect.Modifier;
+import java.util.logging.Logger;
 import org.apache.harmony.rmi.common.RMIUtil;
 import sapphire.app.SapphireObject;
 import sapphire.policy.SapphirePolicy;
@@ -11,9 +12,10 @@ import sapphire.policy.SapphirePolicy.SapphireGroupPolicy;
 import sapphire.policy.SapphirePolicy.SapphireServerPolicy;
 
 public class StubGenerator {
+    private static final Logger LOGGER = Logger.getLogger(StubGenerator.class.getName());
 
     public static void generateStub(String stubType, Class<?> c, String destFolder) {
-        System.out.println("Generating stub for: " + c.getName());
+        LOGGER.info("Generating stub for: " + c.getName());
         Stub s;
 
         try {
@@ -28,6 +30,9 @@ public class StubGenerator {
                             + GlobalStubConstants.STUB_SUFFIX
                             + ".java";
             File dest = new File(stubName);
+            if (!dest.getParentFile().exists()) {
+                dest.getParentFile().mkdir();
+            }
             dest.createNewFile();
 
             BufferedWriter out = new BufferedWriter(new FileWriter(dest));
@@ -116,7 +121,8 @@ public class StubGenerator {
         // TODO: Create destFolder if it doesn't exist or delete existing stubs
         File dest = new File(args[2]);
         if (!dest.exists()) {
-            System.out.println(String.format("Creating dir %s.", dest.getPath()));
+
+            LOGGER.info(String.format("Creating dir %s.", dest.getPath()));
             dest.mkdir();
         }
 

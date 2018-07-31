@@ -1,7 +1,12 @@
+import dcap.sapphire.gradle.PolicyStubGenerationTask
+
 plugins {
-  // Usage of googleJavaPlugin can be found at 
-  // https://github.com/sherter/google-java-format-gradle-plugin
-  id 'com.github.sherter.google-java-format' version '0.7.1'
+    // Google Java Format Plugin:
+    // 1. Run `gradlew goJF` to format source codes
+    // 2. Run `gradlew verGJF` to verify code farmat
+    // 3. More usage information can be found at 
+    // https://github.com/sherter/google-java-format-gradle-plugin
+    id 'com.github.sherter.google-java-format' version '0.7.1'
 }
 
 googleJavaFormat {
@@ -25,24 +30,20 @@ compileJava.dependsOn tasks.googleJavaFormat
 group = project.property('mavenGroupId')
 version =  project.property('mavenVersion')
 
-// run `gradle delstubs` to remove stub java files
-task delstubs(type: Delete) {
-    delete fileTree('src/main/java/sapphire/policy/stubs') {
-        include '**/*_Stub.java'
-    }
-}
+// Task for Policy Stub Generation:
+// 1. Run `gradlew genPolicyStubs` to generate policy stub files
+// 2. Run `gradlew cleanGenPolicyStubs` to delete stub files
+task genPolicyStubs(type: PolicyStubGenerationTask) {
+    group 'Stub'
+    description 'Generates sub classes for Sapphire policies'
 
-// TODO: We could use gradle to do automatic incremental builds.  
-// Details can be found at https://blog.gradle.org/introducing-incremental-build-support
-task genstubs(type: Exec) {
-  dependsOn 'delstubs', 'build'
-  executable "bash"
-  args "-c", "pushd ../../generators && python generate_policy_stubs_on_host.py && popd"
-}
+    pkgName 'sapphire.policy'
 
-task uberJar(type: Jar) {
-    dependsOn ':dependencies:build'
-    baseName = 'sapphire-core-all'
-    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
-    with jar
+    def src = new File("$buildDir/classes/java/main/sapphire/policy/")
+    srcDir src
+    inputs.dir src
+
+    def dst = new File("src/main/java/sapphire/policy/stubs/")
+    dstDir dst 
+    outputs.dir dst
 }

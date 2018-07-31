@@ -1,0 +1,5 @@
+// Mave Plugin Properties
+// Reset maven properties to ensure that their values are
+// consistent with the values used by Maven Publish Plugin
+group = project.property('mavenGroupId')
+version = project.property('mavenVersion')

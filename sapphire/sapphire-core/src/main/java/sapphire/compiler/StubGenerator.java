@@ -4,6 +4,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.lang.reflect.Modifier;
+import java.util.logging.Logger;
 import org.apache.harmony.rmi.common.RMIUtil;
 import sapphire.app.SapphireObject;
 import sapphire.policy.SapphirePolicy;
@@ -11,14 +12,20 @@ import sapphire.policy.SapphirePolicy.SapphireGroupPolicy;
 import sapphire.policy.SapphirePolicy.SapphireServerPolicy;
 
 public class StubGenerator {
+    private static final Logger LOGGER = Logger.getLogger(StubGenerator.class.getName());
 
     public static void generateStub(String stubType, Class<?> c, String destFolder) {
-        System.out.println("Generating stub for: " + c.getName());
-        Stub s;
+        LOGGER.info("Generating stub for: " + c.getName());
 
+        Stub s;
         try {
             if (stubType.equals("policy")) s = new PolicyStub(c);
             else s = new AppStub(c);
+
+            File destDir = new File(destFolder);
+            if (!destDir.exists()) {
+                destDir.mkdirs();
+            }
 
             String shortClassName = RMIUtil.getShortName(c);
             String stubName =
@@ -27,6 +34,7 @@ public class StubGenerator {
                             + shortClassName
                             + GlobalStubConstants.STUB_SUFFIX
                             + ".java";
+
             File dest = new File(stubName);
             dest.createNewFile();
 
@@ -113,13 +121,6 @@ public class StubGenerator {
 
     /* TODO: Support for multiple packages for app stubs; right now you must run this for each app package that contains a SapphireObject */
     public static void main(String args[]) {
-        // TODO: Create destFolder if it doesn't exist or delete existing stubs
-        File dest = new File(args[2]);
-        if (!dest.exists()) {
-            System.out.println(String.format("Creating dir %s.", dest.getPath()));
-            dest.mkdir();
-        }
-
         generateStubs(args[0], args[1], args[2]);
         System.exit(0);
     }

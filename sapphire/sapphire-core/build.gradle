@@ -10,7 +10,7 @@ plugins {
 }
 
 googleJavaFormat {
-  options style: 'AOSP'
+    options style: 'AOSP'
 }
 
 dependencies {
@@ -22,7 +22,6 @@ dependencies {
     testCompile 'org.powermock:powermock-api-mockito:1.6.5'
 }
 
-compileJava.dependsOn tasks.googleJavaFormat
 
 // Maven Plugin Properties
 // Reset maven properties to ensure that their values are 
@@ -47,3 +46,8 @@ task genPolicyStubs(type: PolicyStubGenerationTask) {
     dstDir dst 
     outputs.dir dst
 }
+
+genPolicyStubs.mustRunAfter compileJava
+compileStubs.dependsOn genPolicyStubs
+tasks.googleJavaFormat.mustRunAfter genPolicyStubs
+check.dependsOn tasks.googleJavaFormat

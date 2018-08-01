@@ -1,0 +1,26 @@
+import dcap.sapphire.gradle.PolicyStubGenerationTask
+
+dependencies {
+    compile project(':sapphire-core')
+}
+
+// Task for app stub generation
+task genAppStubs(type: JavaExec) {
+    main = "sapphire.compiler.StubGenerator"
+    classpath = sourceSets.main.runtimeClasspath
+    def pkgName = 'sapphire.appexamples.helloworld'
+    def src = "$buildDir/classes/java/main/sapphire/appexamples/helloworld/"
+    def dst = "src/main/java/sapphire/appexamples/helloworld/stubs/"
+    args src, pkgName, dst 
+}
+
+genAppStubs.mustRunAfter compileJava
+compileStubs.dependsOn genAppStubs
+
+// Task for run HelloWorld demo app
+// Usage: gradlew runHelloWorld -PW=DisneyWorld
+task runHelloWorld(type: JavaExec) {
+    main = "sapphire.appexamples.helloworld.HelloWorldMain"
+    classpath = sourceSets.main.runtimeClasspath
+    args project.hasProperty('W') ? project.property('W') : "DCAP World"
+}

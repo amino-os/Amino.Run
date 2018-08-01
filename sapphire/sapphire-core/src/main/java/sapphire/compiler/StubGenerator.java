@@ -22,6 +22,11 @@ public class StubGenerator {
             if (stubType.equals("policy")) s = new PolicyStub(c);
             else s = new AppStub(c);
 
+            File destDir = new File(destFolder);
+            if (!destDir.exists()) {
+                destDir.mkdirs();
+            }
+
             String shortClassName = RMIUtil.getShortName(c);
             String stubName =
                     destFolder
@@ -29,10 +34,8 @@ public class StubGenerator {
                             + shortClassName
                             + GlobalStubConstants.STUB_SUFFIX
                             + ".java";
+
             File dest = new File(stubName);
-            if (!dest.getParentFile().exists()) {
-                dest.getParentFile().mkdir();
-            }
             dest.createNewFile();
 
             BufferedWriter out = new BufferedWriter(new FileWriter(dest));

@@ -37,7 +37,7 @@ subprojects {
     apply plugin: 'com.jfrog.bintray'
 
     // Bintray Configurations:
-    // 1. Env viriable BINTRAY_USER and BINTRAY_API_KEY must be set
+    // 1. Env variable BINTRAY_USER and BINTRAY_API_KEY must be set
     // properly in order to enable bintray upload. 
     // 2. Run gradlew bintrayUpload to upload sapphire-core.jar.
     // 3. If you modified sapphire-core.jar without bumping up the 

@@ -14,6 +14,23 @@ googleJavaFormat {
     options style: 'AOSP'
 }
 
+sourceSets {
+    integrationTest {
+        java {
+            compileClasspath += main.output + test.output
+            runtimeClasspath += main.output + test.output
+            srcDir file('src/integrationTest/java')
+        }
+        resources.srcDir file('src/integrationTest/resources')
+    }
+    test.java.srcDirs += 'src/integrationTest/java'
+}
+
+configurations {
+    integrationTestCompile.extendsFrom testCompile
+    integrationTestRuntime.extendsFrom testRuntime
+}
+
 dependencies {
     compile 'org.json:json:20171018'
     compile project(':dependencies:java.rmi')
@@ -21,6 +38,8 @@ dependencies {
     testCompile 'org.powermock:powermock:1.6.5'
     testCompile 'org.powermock:powermock-module-junit4:1.6.5'
     testCompile 'org.powermock:powermock-api-mockito:1.6.5'
+    testCompile project(':examples:helloworld')
+    integrationTestCompile project(':examples:helloworld')
 }
 
 
@@ -61,3 +80,11 @@ compileStubs.dependsOn genPolicyStubs
 tasks.googleJavaFormat.mustRunAfter genPolicyStubs
 check.dependsOn tasks.googleJavaFormat
 jar.dependsOn compileStubs
+
+// Task for integration tests.
+// Usage: gradlew integTest
+task integTest(type: Test) {
+    testClassesDirs = sourceSets.integrationTest.output.classesDirs
+    classpath = sourceSets.integrationTest.runtimeClasspath
+    outputs.upToDateWhen { false }
+}

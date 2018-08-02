@@ -1,7 +1,9 @@
 package sapphire.policy;
 
 import java.io.Serializable;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.List;
 
 import sapphire.policy.SapphirePolicy.SapphireGroupPolicy;
 import sapphire.policy.SapphirePolicy.SapphireServerPolicy;
@@ -20,6 +22,7 @@ public interface SapphirePolicyUpcalls {
 		SapphireGroupPolicy getGroup();
 		Object onRPC(String method, ArrayList<Object> params) throws Exception;
 		void onMembershipChange();
+		void setNextDMs(List<String> DMChain);
 	}
 	
 	interface SapphireGroupPolicyUpcalls extends Serializable {

@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -34,6 +35,8 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 		protected AppObject appObject;
 		protected KernelOID oid;
 		static Logger logger = Logger.getLogger("sapphire.policy.SapphirePolicyLibrary");
+		protected SapphireServerPolicy nextServerPolicy;
+		protected List<String> nextDMs;
 
 		private OMSServer oms() {
 			return GlobalKernelReferences.nodeServer.oms;
@@ -51,6 +54,43 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 		 * Creates a replica of this server and registers it with the group
 		 */
 		// TODO: Also replicate the policy ??
+//		public SapphireServerPolicy sapphire_replicate() {
+//			KernelObjectStub serverPolicyStub = null;
+//			String policyStubClassName = GlobalStubConstants.getPolicyPackageName() + "." + RMIUtil.getShortName(this.getClass()) + GlobalStubConstants.STUB_SUFFIX;
+//			try {
+//				serverPolicyStub = (KernelObjectStub) KernelObjectFactory.create(policyStubClassName);
+//				SapphireServerPolicy serverPolicy = (SapphireServerPolicy) kernel().getObject(serverPolicyStub.$__getKernelOID());
+//				serverPolicy.$__initialize(appObject);
+//				serverPolicy.$__setKernelOID(serverPolicyStub.$__getKernelOID());
+//				serverPolicy.onCreate(getGroup());
+//				getGroup().addServer((SapphireServerPolicy)serverPolicyStub);
+//				if (nextServerPolicy != null) {
+//
+//				}
+//			} catch (ClassNotFoundException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//				throw new Error("Could not find the class for replication!");
+//			} catch (KernelObjectNotCreatedException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//				throw new Error("Could not create a replica!");
+//			} catch (KernelObjectNotFoundException e) {
+//				e.printStackTrace();
+//				throw new Error("Could not find object to replicate!");
+//			}
+//			return (SapphireServerPolicy) serverPolicyStub;
+//		}
+//
+
+		public void setNextDMs(List<String> nextDMs) {
+			this.nextDMs = nextDMs;
+		}
+
+		/**
+		 * Creates a replica of this server and registers it with the group
+		 */
+		// TODO: Also replicate the policy ??
 		public SapphireServerPolicy sapphire_replicate() {
 			KernelObjectStub serverPolicyStub = null;
 			String policyStubClassName = GlobalStubConstants.getPolicyPackageName() + "." + RMIUtil.getShortName(this.getClass()) + GlobalStubConstants.STUB_SUFFIX;
@@ -61,6 +101,7 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 				serverPolicy.$__setKernelOID(serverPolicyStub.$__getKernelOID());
 				serverPolicy.onCreate(getGroup());
 				getGroup().addServer((SapphireServerPolicy)serverPolicyStub);
+				Sapphire.getAppStub(null, this.nextDMs, serverPolicy, serverPolicyStub, null);
 			} catch (ClassNotFoundException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -72,6 +113,9 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 			} catch (KernelObjectNotFoundException e) {
 				e.printStackTrace();
 				throw new Error("Could not find object to replicate!");
+			} catch (Exception e) {
+				e.printStackTrace();
+				throw new Error("Unknown exception occurred!");
 			}
 			return (SapphireServerPolicy) serverPolicyStub;
 		}

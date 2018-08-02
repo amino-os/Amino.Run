@@ -50,7 +50,7 @@ public class MainActivity extends Activity {
                 
     			TodoList tl = tlm.newTodoList("Hanks");		
     			System.out.println("Received tl: " + tl);
-    			System.out.println(tl.addToDo("First todo"));
+//    			System.out.println(tl.addToDo("First todo"));
     		} catch (Exception e) {
     			// TODO Auto-generated catch block
     			e.printStackTrace();

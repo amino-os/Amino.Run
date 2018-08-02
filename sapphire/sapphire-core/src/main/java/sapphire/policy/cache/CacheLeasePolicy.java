@@ -7,6 +7,7 @@ import java.io.Serializable;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -310,6 +311,5 @@ public class CacheLeasePolicy extends SapphirePolicy {
 			// TODO Auto-generated method stub
 			addServer(server);
 		}
-		
 	}
 }

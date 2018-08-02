@@ -5,26 +5,43 @@ import java.util.ArrayList;
 
 import sapphire.app.*;
 import sapphire.policy.cache.CacheLeasePolicy;
+import sapphire.runtime.SapphireConfiguration;
 
+@SapphireConfiguration(DMs = "sapphire.policy.dht.DHTPolicy2")
 public class TodoList implements SapphireObject {
-	ArrayList<Object> toDos = new ArrayList<Object>();
-	String name = "Hanks todo";
+	ArrayList<String> toDos = new ArrayList<String>();
+	String id = "0";
 
-	public TodoList(String name) {
-		toDos = new ArrayList<Object>();
-		this.name = name;
+	public TodoList(String id) {
+		toDos = new ArrayList<String>();
+		this.id = id;
 	}
 
-	public String addToDo(String todo) {
-		System.out.println("Inside todo: " + todo);
+	/**
+	 * TODO: id should not be required. This is in place just to mimic hash key that is passed to group policy for finding a responsible node.
+	 * @param id
+	 * @return
+	 */
+	public String addToDo(String id, String todo) {
+		System.out.println("id: " + id + " addToDo: " + todo);
 		toDos.add(todo);
 		return "OK!";
 	}
 
-	public void completeToDo(String todo) {
-	}
+	/**
+	 * TODO: id should not be required. This is in place just to mimic hash key that is passed to group policy for finding a responsible node.
+	 * @param id
+	 * @return
+	 */
+	public String getToDoString(String id) {
+		StringBuilder sb = new StringBuilder();
 
-	public ArrayList<Object> getHighPriority() {
-		return new ArrayList<Object>();
+		for (String toDo: toDos) {
+			sb.append(toDo);
+			sb.append(" : ");
+		}
+
+		sb.append("\n");
+		return sb.toString();
 	}
 }

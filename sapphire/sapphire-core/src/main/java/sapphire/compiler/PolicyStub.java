@@ -41,7 +41,9 @@ public class PolicyStub extends Stub {
 
 	@Override
 	public String getImportStatement() {
-		return "import " + GlobalStubConstants.getImportPolicyPackageName() +";" + EOLN + EOLN; //$NON-NLS-1$
+		return "import " + GlobalStubConstants.getImportPolicyPackageName() +";" + EOLN //$NON-NLS-1$
+		+ "import " + GlobalStubConstants.getImportAppObjectPackageName() +";" + EOLN + EOLN; //$NON-NLS-1$
+
 	}
 
 	@Override
@@ -58,6 +60,7 @@ public class PolicyStub extends Stub {
 		StringBuilder buffer = new StringBuilder();
 		buffer.append(indenter.indent() + "sapphire.kernel.common.KernelOID $__oid = null;" + EOLN);
 		buffer.append(indenter.indent() + "java.net.InetSocketAddress $__hostname = null;" + EOLN);
+		buffer.append(indenter.indent() + "AppObject appObject = null;" + EOLN);
 		buffer.append(indenter.indent() + "SapphirePolicy.SapphireClientPolicy $__nextClientPolicy = null;" + EOLN);
 		return buffer.toString();
 	}
@@ -89,6 +92,10 @@ public class PolicyStub extends Stub {
 		/* Implementation for setNextClientPolicy */
 		buffer.append(indenter.indent() + "public void $__setNextClientPolicy(SapphirePolicy.SapphireClientPolicy clientPolicy) {" + EOLN);
 		buffer.append(indenter.tIncrease() + "this.$__nextClientPolicy = clientPolicy;" + EOLN + indenter.indent() + "}" + EOLN + EOLN);
+
+		/* Implementation for getAppObject */
+		buffer.append(indenter.indent() + "public AppObject $__getAppObject() {" + EOLN);
+		buffer.append(indenter.tIncrease() + "return this.appObject;" + EOLN + indenter.indent() + "}" + EOLN + EOLN);
 
 		/* Implementation for makeRPC */
 		buffer.append(indenter.indent() + "public Object $__makeKernelRPC(java.lang.String method, java.util.ArrayList<Object> params) throws java.rmi.RemoteException, java.lang.Exception {" + EOLN);

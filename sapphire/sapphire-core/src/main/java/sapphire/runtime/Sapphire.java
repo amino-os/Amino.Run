@@ -1,6 +1,7 @@
 package sapphire.runtime;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -10,9 +11,11 @@ import java.util.logging.Logger;
 
 import org.apache.harmony.rmi.common.RMIUtil;
 
+import sapphire.app.AppObjectNotCreatedException;
 import sapphire.app.SapphireObject;
 import sapphire.common.AppObject;
 import sapphire.common.AppObjectStub;
+import sapphire.compiler.AppStub;
 import sapphire.compiler.GlobalPolicyConstants;
 import sapphire.compiler.GlobalStubConstants;
 import sapphire.kernel.common.GlobalKernelReferences;
@@ -28,6 +31,7 @@ import sapphire.policy.DefaultSapphirePolicy.DefaultServerPolicy;
 import sapphire.policy.SapphirePolicy.SapphireClientPolicy;
 import sapphire.policy.SapphirePolicy.SapphireGroupPolicy;
 import sapphire.policy.SapphirePolicy.SapphireServerPolicy;
+import sapphire.policy.primitive.ImmutablePolicy;
 
 /**
  * Used by the developer to create a Sapphire Object given
@@ -59,8 +63,6 @@ public class Sapphire {
 			// Read annotation from this class.
 			Annotation[] annotations = appObjectClass.getAnnotations();
 			List<String> DMchain = new ArrayList<String>();
-			SapphireServerPolicy previousServerPolicy = null;
-			SapphireServerPolicy previousServerPolicyStub = null;
 
 			for (Annotation annotation : annotations) {
 				if (annotation instanceof SapphireConfiguration) {
@@ -68,83 +70,16 @@ public class Sapphire {
 					for (String DMannotation : DMannotations) {
 						String [] DMs = DMannotation.split(",");
 						for (String DM : DMs) {
-							DMchain.add(DM);
+							DMchain.add(DM.trim());
 						}
 					}
 				}
 			}
 
-			AppObjectStub appStub = null;
+			SapphireServerPolicy previousServerPolicy = null;
+			KernelObjectStub previousServerPolicyStub = null;
 
-			for (String DM : DMchain) {
-				/* Get the policy used by the Sapphire Object we need to create */
-				System.out.println("Processing DM chain for: " + DM);
-				Class<?> policy = getPolicy(DM);
-
-				/* Extract the policy component classes (server, client and group) */
-				Class<?>[] policyClasses = policy.getDeclaredClasses();
-
-				Class<?> sapphireServerPolicyClass = null;
-				Class<?> sapphireClientPolicyClass = null;
-				Class<?> sapphireGroupPolicyClass = null;
-
-				for (Class<?> c : policyClasses) {
-					if (SapphireServerPolicy.class.isAssignableFrom(c)) {
-						sapphireServerPolicyClass = c;
-						continue;
-					}
-					if (SapphireClientPolicy.class.isAssignableFrom(c)) {
-						sapphireClientPolicyClass = c;
-						continue;
-					}
-					if (SapphireGroupPolicy.class.isAssignableFrom(c)) {
-						sapphireGroupPolicyClass = c;
-						continue;
-					}
-				}
-
-				/* If no policies specified use the defaults */
-				if (sapphireServerPolicyClass == null)
-					sapphireServerPolicyClass = DefaultServerPolicy.class;
-				if (sapphireClientPolicyClass == null)
-					sapphireClientPolicyClass = DefaultClientPolicy.class;
-				if (sapphireGroupPolicyClass == null)
-					sapphireGroupPolicyClass = DefaultGroupPolicy.class;
-
-				/* Create and the Kernel Object for the Group Policy and get the Group Policy Stub */
-				SapphireGroupPolicy groupPolicyStub = (SapphireGroupPolicy) getPolicyStub(sapphireGroupPolicyClass);
-
-				/* Create the Kernel Object for the Server Policy, and get the Server Policy Stub */
-				SapphireServerPolicy serverPolicyStub = (SapphireServerPolicy) getPolicyStub(sapphireServerPolicyClass);
-
-				/* Create the Client Policy Object */
-				SapphireClientPolicy client = (SapphireClientPolicy) sapphireClientPolicyClass.newInstance();
-
-				/* Initialize the group policy and return a local pointer to the object itself */
-				SapphireGroupPolicy groupPolicy = initializeGroupPolicy(groupPolicyStub);
-
-				/* Initialize the server policy and return a local pointer to the object itself */
-				SapphireServerPolicy serverPolicy = initializeServerPolicy(serverPolicyStub);
-
-				/* Link everything together */
-				client.setServer(serverPolicyStub);
-				client.onCreate(groupPolicyStub);
-
-				serverPolicy.onCreate(groupPolicyStub);
-				groupPolicy.onCreate(serverPolicyStub);
-
-				if (previousServerPolicy != null) {
-					serverPolicy.setNextServerPolicy(previousServerPolicy);
-					((KernelObjectStub)previousServerPolicyStub).$__setNextClientPolicy(client);
-				} else {
-					// First DM.
-					appStub = getAppStub(appObjectClass, serverPolicy, args);
-					appStub.$__initialize(client);
-				}
-
-				previousServerPolicy = serverPolicy;
-				previousServerPolicyStub = serverPolicyStub;
-			}
+			AppObjectStub appStub = getAppStub(appObjectClass, DMchain, previousServerPolicy, previousServerPolicyStub, args);
 
 			logger.info("Sapphire Object created: " + appObjectClass.getName());
 			return appStub;
@@ -154,7 +89,106 @@ public class Sapphire {
 			return null;
 			//throw new AppObjectNotCreatedException();
 		}
+	}
 
+	/**
+	 * Creates app object stub along with instantiation of policies and stubs, and returns the app object stub for given DM chain.
+	 * @param appObjectClass
+	 * @param DMchain
+	 * @param previousServerPolicy
+	 * @param previousServerPolicyStub
+	 * @param args
+	 * @return AppObjectStub
+	 * @throws Exception
+	 */
+	public static AppObjectStub getAppStub(
+			Class<?> appObjectClass,
+			List<String> DMchain,
+			SapphireServerPolicy previousServerPolicy,
+			KernelObjectStub previousServerPolicyStub,
+			Object[] args) throws Exception {
+
+		AppObjectStub appStub = null;
+
+		if (DMchain == null || DMchain.size() == 0) return null;
+		String DM = DMchain.get(0);
+
+		/* Get the policy used by the Sapphire Object we need to create */
+		System.out.println("Processing DM chain for: " + DM);
+		Class<?> policy = getPolicy(DM);
+
+		/* Extract the policy component classes (server, client and group) */
+		Class<?>[] policyClasses = policy.getDeclaredClasses();
+
+		Class<?> sapphireServerPolicyClass = null;
+		Class<?> sapphireClientPolicyClass = null;
+		Class<?> sapphireGroupPolicyClass = null;
+
+		for (Class<?> c : policyClasses) {
+			if (SapphireServerPolicy.class.isAssignableFrom(c)) {
+				sapphireServerPolicyClass = c;
+				continue;
+			}
+			if (SapphireClientPolicy.class.isAssignableFrom(c)) {
+				sapphireClientPolicyClass = c;
+				continue;
+			}
+			if (SapphireGroupPolicy.class.isAssignableFrom(c)) {
+				sapphireGroupPolicyClass = c;
+				continue;
+			}
+		}
+
+			/* If no policies specified use the defaults */
+		if (sapphireServerPolicyClass == null)
+			sapphireServerPolicyClass = DefaultServerPolicy.class;
+		if (sapphireClientPolicyClass == null)
+			sapphireClientPolicyClass = DefaultClientPolicy.class;
+		if (sapphireGroupPolicyClass == null)
+			sapphireGroupPolicyClass = DefaultGroupPolicy.class;
+
+			/* Create and the Kernel Object for the Group Policy and get the Group Policy Stub */
+		SapphireGroupPolicy groupPolicyStub = (SapphireGroupPolicy) getPolicyStub(sapphireGroupPolicyClass);
+
+			/* Create the Kernel Object for the Server Policy, and get the Server Policy Stub */
+		SapphireServerPolicy serverPolicyStub = (SapphireServerPolicy) getPolicyStub(sapphireServerPolicyClass);
+
+			/* Create the Client Policy Object */
+		SapphireClientPolicy client = (SapphireClientPolicy) sapphireClientPolicyClass.newInstance();
+
+			/* Initialize the group policy and return a local pointer to the object itself */
+		SapphireGroupPolicy groupPolicy = initializeGroupPolicy(groupPolicyStub);
+
+			/* Initialize the server policy and return a local pointer to the object itself */
+		SapphireServerPolicy serverPolicy = initializeServerPolicy(serverPolicyStub);
+
+			/* Link everything together */
+		client.setServer(serverPolicyStub);
+		client.onCreate(groupPolicyStub);
+
+		if (previousServerPolicy != null) {
+			// non-first DMs references the already created object.
+			serverPolicyStub.$__initialize(previousServerPolicyStub.$__getAppObject());
+			serverPolicy.setNextServerPolicy(previousServerPolicy);
+			previousServerPolicyStub.$__setNextClientPolicy(client);
+		} else {
+			// First DM needs to create an app stub.
+			appStub = getAppStub(appObjectClass, serverPolicy, args);
+			appStub.$__initialize(client);
+		}
+
+		List<String> nextDMs = DMchain.subList(1, DMchain.size());
+
+		serverPolicy.onCreate(groupPolicyStub);
+		serverPolicy.setNextDMs(nextDMs);
+		groupPolicy.onCreate(serverPolicyStub);
+
+		previousServerPolicy = serverPolicy;
+		previousServerPolicyStub = (KernelObjectStub)serverPolicyStub;
+
+		getAppStub(appObjectClass, nextDMs, previousServerPolicy, previousServerPolicyStub, args);
+
+		return appStub;
 	}
 
 	/* Returns a pointer to the given Sapphire Object */

@@ -3,6 +3,7 @@ package sapphire.kernel.common;
 import java.io.Serializable;
 import java.net.InetSocketAddress;
 
+import sapphire.common.AppObject;
 import sapphire.policy.SapphirePolicy;
 
 /**
@@ -15,4 +16,5 @@ public interface KernelObjectStub extends Serializable {
 	public InetSocketAddress $__getHostname();
 	public void $__updateHostname(InetSocketAddress hostname);
 	public void $__setNextClientPolicy(SapphirePolicy.SapphireClientPolicy clientPolicy);
+	public AppObject $__getAppObject();
 }

@@ -41,8 +41,6 @@ public abstract class DefaultSapphirePolicyUpcallImpl extends SapphirePolicyLibr
 	}
 	
 	public abstract static class DefaultSapphireServerPolicyUpcallImpl extends SapphireServerPolicyLibrary {
-		SapphireServerPolicy nextServerPolicy;
-
 		public Object onRPC(String method, ArrayList<Object> params) throws Exception {
 //			return appObject.invoke(method, params);
 
@@ -83,6 +81,20 @@ public abstract class DefaultSapphirePolicyUpcallImpl extends SapphirePolicyLibr
 			this.appObjectClassName = appObjectClassName;
 			this.params = params;
 		}
+//
+//		public Object onRPC(String method, ArrayList<Object> params) throws Exception {
+////			return appObject.invoke(method, params);
+//
+//			if (nextServerPolicy == null) {
+//				/* The default behavior is to just invoke the method on the Sapphire Object this Server Policy Object manages */
+//				return appObject.invoke(method, params);
+//			} else {
+////				return methods.get(method).invoke(object, params.toArray());
+//				String newMethod = (String)params.get(0);
+//				ArrayList<Object> nextParams = (ArrayList<Object>) params.get(1);
+//				return nextServerPolicy.onRPC(newMethod, nextParams);
+//			}
+//		}
 
 		public SapphireServerPolicy onRefRequest() {
 			return getServers().get(0);

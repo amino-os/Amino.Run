@@ -192,7 +192,7 @@ public class KernelServerImpl implements KernelServer{
 	public AppObjectStub startApp(String className) throws RemoteException {
 		AppObjectStub appEntryPoint = null;
 		try {
-			AppEntryPoint entryPoint =  (AppEntryPoint) Class.forName(className).newInstance();
+			AppEntryPoint entryPoint = (AppEntryPoint) Class.forName(className).newInstance();
             appEntryPoint = entryPoint.start();
 		} catch (Exception e) {
 			logger.severe("Could not start app");

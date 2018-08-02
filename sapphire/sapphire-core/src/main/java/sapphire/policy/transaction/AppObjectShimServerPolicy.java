@@ -8,6 +8,7 @@ import sapphire.policy.scalability.masterslave.MethodInvocationRequest;
 import sapphire.policy.scalability.masterslave.MethodInvocationResponse;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * server policy that directly works on the deep-cloned copy of an AppObject
@@ -39,6 +40,9 @@ public class AppObjectShimServerPolicy implements SapphireServerPolicyUpcalls{
     public void onMembershipChange() {
 
     }
+
+    @Override
+    public void setNextDMs(List<String> nextDMs) {}
 
     /**
      * gets the app object referenced by the server policy

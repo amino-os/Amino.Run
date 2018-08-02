@@ -10,9 +10,10 @@ import sapphire.policy.interfaces.dht.DHTInterface;
 import sapphire.policy.interfaces.dht.DHTKey;
 import sapphire.runtime.SapphireConfiguration;
 
-@SapphireConfiguration(DMs = "sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy,sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy,sapphire.policy.mobility.explicitmigration.ExplicitMigrationPolicy")
-public class TodoListManager implements SapphireObject, DHTInterface {
-    Map<DHTKey, TodoList> todoLists = new Hashtable<DHTKey, TodoList>();
+//@SapphireConfiguration(DMs = "sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy,sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy,sapphire.policy.mobility.explicitmigration.ExplicitMigrationPolicy")
+@SapphireConfiguration(DMs = "sapphire.policy.DefaultSapphirePolicy")
+public class TodoListManager implements SapphireObject {
+    Map<String, TodoList> todoLists = new Hashtable<String, TodoList>();
 
 	public TodoListManager() {
 		System.out.println("Instantiating TodoListManager...");
@@ -22,20 +23,24 @@ public class TodoListManager implements SapphireObject, DHTInterface {
 		System.out.println("Input received: " + input);
 	}
 
-	public TodoList newTodoList(String name) {
-		TodoList t = todoLists.get(new DHTKey(name));
+	public TodoList newTodoList(String id) {
+		TodoList t = todoLists.get(id);
 		if (t == null) {
-			t = (TodoList) new_(TodoList.class, name);
-			todoLists.put(new DHTKey(name), t);
+			t = (TodoList) new_(TodoList.class, id);
+			todoLists.put(id, t);
+			System.out.println("Created new list");
+		} else {
+			System.out.println("ToDoList for ID: "+ id + " already exists.");
 		}
-		System.out.println("Created new list");
-		System.out.println("This managers lists" + todoLists.toString());
+
 		return t;
 	}
 
-	@Override
-	public Map<DHTKey, ?> dhtGetData() {
-		// TODO Auto-generated method stub
-		return todoLists;
+	public TodoList getToDoList(String id) {
+		TodoList t = todoLists.get(id);
+		if (t == null) {
+			return null;
+		}
+		return t;
 	}
 }

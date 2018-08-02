@@ -1,23 +1,22 @@
 package sapphire.policy.dht;
 
 import java.io.Serializable;
+import java.lang.reflect.Array;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Timer;
-import java.util.TimerTask;
 import java.util.TreeSet;
 import java.util.logging.Logger;
 
 import sapphire.policy.SapphirePolicy;
-import sapphire.policy.SapphirePolicy.SapphireClientPolicy;
-import sapphire.policy.SapphirePolicy.SapphireGroupPolicy;
-import sapphire.policy.SapphirePolicy.SapphireServerPolicy;
 import sapphire.policy.interfaces.dht.DHTInterface;
 import sapphire.policy.interfaces.dht.DHTKey;
+import sapphire.runtime.Sapphire;
 
 public class DHTPolicy extends SapphirePolicy {
 	
@@ -205,7 +204,7 @@ public class DHTPolicy extends SapphirePolicy {
 					return true;
 				return false;
 			}
-			
+
 			@Override
 			/** 
 			 * @throws NullPointerException if another is null
@@ -214,12 +213,38 @@ public class DHTPolicy extends SapphirePolicy {
 				return another.id.compareTo(this.id);
 			}
 		}
-		
+//
+//		@Override
+//		public void onCreate(SapphireServerPolicy server) {
+//			nodes = new TreeSet<DHTNode>();
+//			dhtNodeIdGenerator = new Random();
+//
+//			try {
+//				ArrayList<String> regions = sapphire_getRegions();
+//				// Add the first DHT node
+//				DHTKey id = new DHTKey(Integer.toString(dhtNodeIdGenerator.nextInt(Integer.MAX_VALUE)));
+//				DHTServerPolicy dhtServer = (DHTServerPolicy) server;
+//				DHTNode newNode = new DHTNode(id, dhtServer);
+//				nodes.add(newNode);
+//				dhtServer.setKey(newNode.id);
+//
+//				for (int i = 1; i < regions.size(); i++) {
+//					DHTServerPolicy replica = (DHTServerPolicy)dhtServer.sapphire_replicate();
+//					replica.sapphire_pin(regions.get(i));
+//				}
+//				dhtServer.sapphire_pin(regions.get(0));
+//
+//			} catch (RemoteException e) {
+//				e.printStackTrace();
+//				throw new Error("Could not create new group policy because the oms is not available.");
+//			}
+//		}
+
 		@Override
 		public void onCreate(SapphireServerPolicy server) {
 			nodes = new TreeSet<DHTNode>();
 			dhtNodeIdGenerator = new Random();
-			
+
 			try {
 				ArrayList<String> regions = sapphire_getRegions();
 				// Add the first DHT node
@@ -228,19 +253,18 @@ public class DHTPolicy extends SapphirePolicy {
 				DHTNode newNode = new DHTNode(id, dhtServer);
 				nodes.add(newNode);
 				dhtServer.setKey(newNode.id);
-				
+
 				for (int i = 1; i < regions.size(); i++) {
 					DHTServerPolicy replica = (DHTServerPolicy)dhtServer.sapphire_replicate();
 					replica.sapphire_pin(regions.get(i));
-				}				
+				}
 				dhtServer.sapphire_pin(regions.get(0));
-
 			} catch (RemoteException e) {
 				e.printStackTrace();
 				throw new Error("Could not create new group policy because the oms is not available.");
 			}
 		}
-		
+
 		/**
 		 * Returns the predecessor of the given node.
 		 * 
@@ -273,7 +297,12 @@ public class DHTPolicy extends SapphirePolicy {
 
 		@Override
 		public ArrayList<SapphireServerPolicy> getServers() {
-			return null;
+			ArrayList servers  = new ArrayList<SapphireServerPolicy> ();
+			for (DHTNode node : nodes) {
+				servers.add(node.server);
+			}
+
+			return servers;
 		}
 
 		@Override

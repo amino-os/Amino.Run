@@ -87,4 +87,13 @@ subprojects {
             }
         }
     }
+
+    // Task for Stub compilation
+    task compileStubs(type: JavaCompile) {
+        source = sourceSets.main.java.srcDirs
+        classpath = sourceSets.main.compileClasspath
+        destinationDir = sourceSets.main.output.classesDir
+        options.incremental = true
+    }
+    jar.dependsOn compileStubs
 }

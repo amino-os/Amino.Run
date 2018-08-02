@@ -6,3 +6,6 @@ include ':dependencies:java.rmi'
 include ':dependencies:javax.rmi'
 include ':dependencies:javax.activity'
 include ':dependencies:apache.harmony'
+
+// Sapphire demo app
+include ':examples:helloworld'

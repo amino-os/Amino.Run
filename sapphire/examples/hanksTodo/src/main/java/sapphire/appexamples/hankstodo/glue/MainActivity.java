@@ -16,8 +16,10 @@ import java.rmi.registry.Registry;
 
 import sapphire.appexamples.hankstodo.app.AppGrpcClient;
 import sapphire.appexamples.hankstodo.app.GlobalGrpcClientRef;
+/*
 import sapphire.appexamples.hankstodo.app.TodoList;
 import sapphire.appexamples.hankstodo.app.TodoListManager;
+*/
 import sapphire.appexamples.hankstodo.app.grpcStubs.TodoListManager_Stub;
 import sapphire.appexamples.hankstodo.app.grpcStubs.TodoList_Stub;
 import sapphire.oms.OMSServer;

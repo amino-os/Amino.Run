@@ -26,6 +26,7 @@ EOF
 
 ### Checking out Sapphire
 ```shell
+# checkout sapphire
 > git clone https://github.com/Huawei-PaaS/DCAP-Sapphire
 
 # set path to gradlew

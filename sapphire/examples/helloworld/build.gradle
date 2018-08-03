@@ -1,7 +1,16 @@
 import dcap.sapphire.gradle.PolicyStubGenerationTask
+apply plugin: 'java-library'
 
 dependencies {
     compile project(':sapphire-core')
+}
+
+// Task for Stub compilation
+task compileStubs(type: JavaCompile) {
+    source = sourceSets.main.java.srcDirs
+    classpath = sourceSets.main.compileClasspath
+    destinationDir = sourceSets.main.output.classesDir
+    options.incremental = true
 }
 
 // Task for app stub generation
@@ -16,6 +25,7 @@ task genAppStubs(type: JavaExec) {
 
 genAppStubs.mustRunAfter compileJava
 compileStubs.dependsOn genAppStubs
+jar.dependsOn compileStubs
 
 // Task for run HelloWorld demo app
 // Usage: gradlew runHelloWorld -PW=DisneyWorld

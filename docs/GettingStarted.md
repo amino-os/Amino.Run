@@ -23,10 +23,15 @@ ndk.dir=<your ndk dir>
 sdk.dir=<your sdk dir>
 EOF
 ```
+
 ### Checking out Sapphire
 ```shell
 > git clone https://github.com/Huawei-PaaS/DCAP-Sapphire
+
+# set path to gradlew
+> export PATH=$PATH:<path to gradlew>
 ```
+
 ### List Sapphire Projects
 ```shell
 > cd DCAP_Sapphire/sapphire

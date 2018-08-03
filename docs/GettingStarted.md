@@ -53,14 +53,21 @@ EOF
 > ./gradlew verGJF
 ```
 
+### Generate Policy Stub
+```shell
+> cd DCAP_Sapphire/sapphire/sapphire-core
+> ../gradlew genPolicyStubs
+```
+
 ### Build Sapphire
 ```shell
-# build sapphire-core and dependencies
-> cd DCAP_Sapphire/sapphire
-> ./gradlew build
+# build sapphire-core
+> cd DCAP_Sapphire/sapphire/sapphire-core
+> ../gradlew build
 
-# build only sapphire-core
-> ./gradlew :sapphire-core:build
+# build hankstodo
+> cd DCAP_Sapphire/sapphire/examples/hanksTodo
+> ../../gradlew build
 ```
 
 ### Publish Sapphire 

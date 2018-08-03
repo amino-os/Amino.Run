@@ -9,5 +9,5 @@ include ':dependencies:apache.harmony'
 
 // Sapphire demo app
 include ':examples:helloworld'
-include ':examples:hankstodo'
+include ':examples:hanksTodo'
 include ':examples:example-minnietwitter'

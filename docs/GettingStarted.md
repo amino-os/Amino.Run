@@ -15,13 +15,21 @@
 
 # Quick Start
 
+### Add Android Properties
+```shell
+> cd DCAP_Sapphire/sapphire
+> cat >> local.properties  << EOF
+ndk.dir=<your ndk dir>
+sdk.dir=<your sdk dir>
+EOF
+```
 ### Checking out Sapphire
 ```shell
 > git clone https://github.com/Huawei-PaaS/DCAP-Sapphire
 ```
 ### List Sapphire Projects
 ```shell
-> DCAP_Sapphire/sapphire
+> cd DCAP_Sapphire/sapphire
 > ./gradlew projects
 ```
 

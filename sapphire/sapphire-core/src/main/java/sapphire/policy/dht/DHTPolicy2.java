@@ -127,12 +127,12 @@ public class DHTPolicy2 extends SapphirePolicy {
 
 		@Override
 		public void addServer(SapphireServerPolicy server) {
+			groupSize++;
 			String id = Integer.toString(groupSize);
 			DHTServerPolicy dhtServer = (DHTServerPolicy) server;
 			DHTNode newNode = new DHTNode(id, dhtServer);
 			nodes.put(id, newNode);
 
-			groupSize++;
 			logger.info("NODES: " + nodes.toString() + " Group size = " + groupSize);
 		}
 

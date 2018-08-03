@@ -57,7 +57,7 @@ public class TodoActivity {
 			System.out.println(tl3.addToDo("First todo"));
 			System.out.println(tl3.addToDo("Second todo"));
 			System.out.println(tl3.addToDo("Third todo"));
-			
+
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

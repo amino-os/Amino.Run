@@ -8,12 +8,3 @@ message TodoListManager {
   optional net_webby_protostuff_runtime.MapObjectObject todoLists = 1;
 }
 
-message newTodo {
-  required string arg0 = 1;
-}
-
-/*
-service TodoListManagerService{
-  rpc newTodoList(newTodo) returns (TodoList){}
-}*/
-

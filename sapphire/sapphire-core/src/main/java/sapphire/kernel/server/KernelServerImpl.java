@@ -372,6 +372,7 @@ public class KernelServerImpl implements KernelServer {
         /* Link everything together */
         clientPolicy.setServer(serverPolicy);
         clientPolicy.onCreate(groupPolicy, annotations);
+        logger.info("Created sapphire client policy object. Oid : " + oid.toString());
         return clientPolicy;
     }
 

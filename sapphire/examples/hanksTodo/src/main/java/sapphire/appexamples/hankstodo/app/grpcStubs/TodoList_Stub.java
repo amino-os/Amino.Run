@@ -8,8 +8,10 @@ import net.webby.protostuff.runtime.ProtostuffDefault;
 import java.util.List;
 
 import hankstodo.app.TodoListOuterClass;
-import io.protostuff.Schema;
-import io.protostuff.runtime.RuntimeSchema;
+import com.dyuproject.protostuff.LinkedBuffer;
+import com.dyuproject.protostuff.ProtostuffIOUtil;
+import com.dyuproject.protostuff.Schema;
+import static com.dyuproject.protostuff.runtime.RuntimeSchema.getSchema;;
 
 
 /**
@@ -17,7 +19,7 @@ import io.protostuff.runtime.RuntimeSchema;
  */
 
 public final class TodoList_Stub implements TodoListOuterClass.TodoListOrBuilder {
-	public static final Schema<TodoListOuterClass.TodoList> TODOLIST_SCHEMA = RuntimeSchema.getSchema(TodoListOuterClass.TodoList.class);
+	public static final Schema<TodoListOuterClass.TodoList> TODOLIST_SCHEMA = getSchema(TodoListOuterClass.TodoList.class);
 	private String sapphireObjId;
 	private String clientId;
 	private TodoListOuterClass.TodoList object;

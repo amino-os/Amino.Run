@@ -5,6 +5,11 @@ package KernelServerApiToRuntime;
 option java_multiple_files = true;
 option java_package = "sapphire.kernel.KernelServerApiToRuntime";
 
+service RuntimeKernelServerGrpcService {
+    rpc CreateChildSObj (CreateChildSObjRequest) returns (CreateChildSObjResponse) {}
+    rpc DeleteChildSObj (DeleteChildSObjRequest) returns (DeleteChildSObjResponse) {}
+}
+
 message DMInfo {
     string clientPolicy = 1;
     string serverPolicy = 2;
@@ -29,9 +34,4 @@ message DeleteChildSObjRequest {
 
 message DeleteChildSObjResponse {
     bool status = 1;
-}
-
-service RuntimeKernelServerGrpcService {
-    rpc CreateChildSObj (CreateChildSObjRequest) returns (CreateChildSObjResponse) {}
-    rpc DeleteChildSObj (DeleteChildSObjRequest) returns (DeleteChildSObjResponse) {}
 }

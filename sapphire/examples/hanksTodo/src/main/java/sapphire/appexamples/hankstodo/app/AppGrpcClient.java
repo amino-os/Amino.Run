@@ -207,7 +207,7 @@ public class AppGrpcClient {
 			OmsApiToApp.AcquireRequest request =
 					OmsApiToApp.AcquireRequest.newBuilder().setSId(sid).setDmClientRmiEndPoint(getKernelClientAddr().getHostName() + ":" + getKernelClientAddr().getPort()).build();
 			OmsApiToApp.AcquireResponse response = omsBlockingStub.acquireAppStub(request);
-			return new SapphireClientInfo(response.getClientId(), null, response.getObjectStream().toByteArray());
+			return new SapphireClientInfo(response.getClientId(), sid, response.getObjectStream().toByteArray());
 		} catch (Exception e) {
 			// TODO: Need to handle the exceptions part
 			e.printStackTrace();
@@ -226,9 +226,9 @@ public class AppGrpcClient {
 		}
 	}
 
-	public byte [] genericInvoke(String clientId, String method, Object... param) {
+	public byte [] genericInvoke(String clientId, String method, ByteString stream) {
 		try {
-			KernelServerApiToApp.InvokeRequest request = KernelServerApiToApp.InvokeRequest.newBuilder().setDMClientId(clientId).setFuncName(method).setFuncParams(ByteString.copyFrom(toBytes(param))).build();
+			KernelServerApiToApp.InvokeRequest request = KernelServerApiToApp.InvokeRequest.newBuilder().setDMClientId(clientId).setFuncName(method).setFuncParams(stream).build();
 			KernelServerApiToApp.InvokeResponse response = kernelBlockingStub.genericInvoke(request);
 			return response.getObjectStream().toByteArray();
 		} catch (Exception e) {

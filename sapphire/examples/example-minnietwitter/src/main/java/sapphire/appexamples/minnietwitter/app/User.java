@@ -3,9 +3,10 @@ package sapphire.appexamples.minnietwitter.app;
 import java.util.ArrayList;
 import java.util.List;
 
+import sapphire.app.SapphireObject;
+import static sapphire.runtime.Sapphire.*;
 
-
-public class User {
+public class User implements SapphireObject {
 	private Timeline timeline;
 	private UserInfo ui;
 	List<User> followers;
@@ -20,7 +21,7 @@ public class User {
 	}
 
 	public void initialize(User u) {
-		timeline = (Timeline) new Timeline(u, tagManager);
+		timeline = (Timeline) new_(Timeline.class, u, tagManager);
 		timeline.initialize(timeline);
 	}
 	

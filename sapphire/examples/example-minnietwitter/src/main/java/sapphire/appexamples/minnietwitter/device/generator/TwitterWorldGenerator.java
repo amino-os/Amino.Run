@@ -6,9 +6,8 @@ import java.rmi.registry.Registry;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
-import sapphire.appexamples.minnietwitter.app.AppGrpcClient;
-import sapphire.appexamples.minnietwitter.app.GlobalGrpcClientRef;
 import sapphire.appexamples.minnietwitter.app.TagManager;
 import sapphire.appexamples.minnietwitter.app.Timeline;
 import sapphire.appexamples.minnietwitter.app.Tweet;
@@ -78,34 +77,27 @@ public class TwitterWorldGenerator {
 	 * This method adds a single user and send tweet messages for predefined times.
 	 */
 	private static void ExecuteSingleUserDemo(String[] args) {
+		Registry registry;
 
-		AppGrpcClient grpcClient = new AppGrpcClient(args[0], Integer.parseInt(args[1]), args[2], Integer.parseInt(args[3]), args[4], Integer.parseInt(args[5]));
-		GlobalGrpcClientRef.grpcClient = grpcClient;
-
-		//Registry registry;
-
-		/*try {
+		try {
 			registry = LocateRegistry.getRegistry(args[0], Integer.parseInt(args[1]));
 			OMSServer server = (OMSServer) registry.lookup("SapphireOMS");
 
 			KernelServer nodeServer = new KernelServerImpl(new InetSocketAddress(args[2], Integer.parseInt(args[3])), new InetSocketAddress(args[0], Integer.parseInt(args[1])));
 
-            *//* Get Twitter and User Manager *//*
-			SapphireObjectID sapphireObjId = server.createSapphireObject("sapphire.appexamples.minnietwitter.app.TwitterManager", new Object[0]);
+            /* Get Twitter and User Manager */
+			SapphireObjectID sapphireObjId = server.createSapphireObject("sapphire.appexamples.minnietwitter.app.TwitterManager", null);
 			TwitterManager tm = (TwitterManager)server.acquireSapphireObjectStub(sapphireObjId);
 
-			//SapphireObjectID sapphireObjId = server.createSapphireObject("sapphire.appexamples.minnietwitter.app.TwitterManager", "java", "TwitterManager", null);
-			//SapphireClientInfo sapphireClientInfo = server.acquireSapphireObjectStub(sapphireObjId, new InetSocketAddress(args[2], Integer.parseInt(args[3])));
-			//TwitterManager tm = (TwitterManager)toObject(sapphireClientInfo.getOpaqueObject());
 			UserManager userManager = tm.getUserManager();
 			TagManager tagManager = tm.getTagManager();
 
-            *//* Create the users *//*
+            /* Create the users */
 			List<User> users = new ArrayList<User>();
 			User u = userManager.addUser("user" + 0, "user" + 0);
 			System.out.println("Added user0");
 
-            *//* Generate events *//*
+            /* Generate events */
 			int cnt = 0;
 			u = userManager.getUser("user0");
 			Timeline t = u.getTimeline();
@@ -127,7 +119,7 @@ public class TwitterWorldGenerator {
 			System.out.println("Done populating!");
 		} catch (Exception e) {
 			e.printStackTrace();
-		}*/
+		}
 	}
 	private static void ExecuteFullDemo(String[] args) {
 

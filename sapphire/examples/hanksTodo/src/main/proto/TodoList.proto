@@ -5,7 +5,16 @@ import "protostuff-default.proto";
 option java_package = "hankstodo.app";
 
 message TodoList {
-  repeated net_webby_protostuff_runtime.DynamicObject toDos = 1;
-  optional string name = 2;
+  optional string sid = 1;
+  repeated net_webby_protostuff_runtime.DynamicObject toDos = 2;
+  optional string name = 3;
+}
+
+message inAddToDo {
+  optional string arg0 = 1;
+}
+
+message outAddToDo {
+  optional string arg0 = 1;
 }
 

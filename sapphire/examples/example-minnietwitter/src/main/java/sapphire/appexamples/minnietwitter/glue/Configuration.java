@@ -8,9 +8,8 @@ public class Configuration {
 
     /**
      * TODO (Sungwook, 1/3/2018): Remove hardcoded IP addresses.
-     * The first address: OMS host grpc server
-     * The second address: kernel client host grpc server
-     * The third address: kernel client host rmi
+     * The first address: OMS host
+     * The second address: this host
      */
-    public static String [] hostAddress = { "192.168.42.7", "20005", "192.168.42.7", "20003", "192.168.42.7", "10003" };
+    public static String [] hostAddress = { "192.168.10.68", "22346", "10.0.2.15", "22345" };
 }

@@ -5,7 +5,8 @@ import "protostuff-default.proto";
 option java_package = "hankstodo.app";
 
 message TodoListManager {
-  optional net_webby_protostuff_runtime.MapObjectObject todoLists = 1;
+  optional string sid = 1;
+  optional net_webby_protostuff_runtime.MapObjectObject todoLists = 2;
 }
 
 message newTodo {

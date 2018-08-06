@@ -1,15 +1,10 @@
 package sapphire.appexamples.hankstodo.app.grpcStubs;
 
-import com.google.protobuf.ByteString;
-import com.google.protobuf.MessageLite;
-
-import net.webby.protostuff.runtime.ProtostuffDefault;
-
-import java.util.List;
-
-import hankstodo.app.TodoListOuterClass;
 import com.dyuproject.protostuff.LinkedBuffer;
 import com.dyuproject.protostuff.ProtostuffIOUtil;
+import com.google.protobuf.ByteString;
+import sapphire.appexamples.hankstodo.app.GlobalGrpcClientRef;
+import hankstodo.app.TodoListOuterClass;
 import com.dyuproject.protostuff.Schema;
 import static com.dyuproject.protostuff.runtime.RuntimeSchema.getSchema;;
 
@@ -18,13 +13,16 @@ import static com.dyuproject.protostuff.runtime.RuntimeSchema.getSchema;;
  * Created by root1 on 25/7/18.
  */
 
-public final class TodoList_Stub implements TodoListOuterClass.TodoListOrBuilder {
-	public static final Schema<TodoListOuterClass.TodoList> TODOLIST_SCHEMA = getSchema(TodoListOuterClass.TodoList.class);
+public final class TodoList_Stub {
+    private final Schema<TodoListOuterClass.TodoList> TODOLIST_SCHEMA = getSchema(TodoListOuterClass.TodoList.class);
+    private final Schema<TodoListOuterClass.inAddToDo> INADDTODO_SCHEMA = getSchema(TodoListOuterClass.inAddToDo.class);
+    private final Schema<TodoListOuterClass.outAddToDo> OUTTODO_SCHEMA = getSchema(TodoListOuterClass.outAddToDo.class);
+    private final LinkedBuffer BUFFER = LinkedBuffer.allocate(LinkedBuffer.DEFAULT_BUFFER_SIZE);
 	private String sapphireObjId;
 	private String clientId;
 	private TodoListOuterClass.TodoList object;
 
-	public String getClientId() {
+	private String getClientId() {
 		return clientId;
 	}
 
@@ -32,7 +30,7 @@ public final class TodoList_Stub implements TodoListOuterClass.TodoListOrBuilder
 		this.clientId = clientId;
 	}
 
-	public String getSapphireObjId() {
+	private String getSapphireObjId() {
 		return sapphireObjId;
 	}
 
@@ -48,48 +46,33 @@ public final class TodoList_Stub implements TodoListOuterClass.TodoListOrBuilder
 		this.object = object;
 	}
 
-	public String addToDo(String todo) {
-		System.out.println("Inside todo: " + todo);
-		return "OK!";
-	}
+    public static <T> byte[] serialize(T obj, Schema<T> schema, LinkedBuffer buffer) {
+        try {
+            return ProtostuffIOUtil.toByteArray(obj, schema, buffer);
+        } finally {
+            buffer.clear();
+        }
+    }
 
-	@Override
-	public List<ProtostuffDefault.DynamicObject> getToDosList() {
-		return null;
-	}
+    public static <T> T deserialize(byte[] stream, Schema<T> schema) throws Exception {
+        T obj = schema.newMessage();
+        ProtostuffIOUtil.mergeFrom(stream, obj, schema);
+        return obj;
+    }
 
-	@Override
-	public ProtostuffDefault.DynamicObject getToDos(int index) {
-		return null;
-	}
+	public String addToDo(String todo) throws Exception {
+        String method = "addToDo";
+        if (null == sapphireObjId) {
+            /* Local invocation in case of stub instance is not for a sapphire object */
+            //TODO: Need to check on how to update the local object */
+            return "OK!";
+        }
+        byte [] inStream = serialize(TodoListOuterClass.inAddToDo.newBuilder().setArg0(todo).build(), INADDTODO_SCHEMA, BUFFER);
+        byte [] outstream = GlobalGrpcClientRef.grpcClient.genericInvoke(getClientId(), method, ByteString.copyFrom(inStream));
+        TodoListOuterClass.outAddToDoOrBuilder result = deserialize(outstream, OUTTODO_SCHEMA);
 
-	@Override
-	public int getToDosCount() {
-		return 0;
-	}
-
-	@Override
-	public boolean hasName() {
-		return false;
-	}
-
-	@Override
-	public String getName() {
-		return null;
-	}
-
-	@Override
-	public ByteString getNameBytes() {
-		return null;
-	}
-
-	@Override
-	public MessageLite getDefaultInstanceForType() {
-		return null;
-	}
-
-	@Override
-	public boolean isInitialized() {
-		return false;
+        /* TODO: Check if the method return type is primitive or string or autoboxed, then return them as is to app */
+        String stub = new String(result.getArg0());
+        return stub;
 	}
 }

@@ -1,12 +1,7 @@
 package sapphire.appexamples.hankstodo.app.grpcStubs;
 
 
-import com.dyuproject.protostuff.ByteArrayInput;
-import com.dyuproject.protostuff.ProtobufIOUtil;
 import com.google.protobuf.ByteString;
-import com.google.protobuf.MessageLite;
-
-import net.webby.protostuff.runtime.ProtostuffDefault;
 
 import hankstodo.app.TodoListManagerOuterClass;
 import hankstodo.app.TodoListOuterClass;
@@ -16,8 +11,6 @@ import sapphire.appexamples.hankstodo.app.GlobalGrpcClientRef;
 import com.dyuproject.protostuff.LinkedBuffer;
 import com.dyuproject.protostuff.ProtostuffIOUtil;
 import com.dyuproject.protostuff.Schema;
-
-import java.io.ByteArrayInputStream;
 
 import static com.dyuproject.protostuff.runtime.RuntimeSchema.getSchema;;
 
@@ -34,13 +27,17 @@ public final class TodoListManager_Stub {
 	private String clientId;
 	private TodoListManagerOuterClass.TodoListManager object;
 
-	public String getClientId() {
+	private String getClientId() {
 		return clientId;
 	}
 
 	public void setClientId(String clientId) {
 		this.clientId = clientId;
 	}
+
+    public void setSapphireObjId(String sapphireObjId) {
+        this.sapphireObjId = sapphireObjId;
+    }
 
 	public TodoListManagerOuterClass.TodoListManager getObject() {
 		return object;
@@ -69,7 +66,7 @@ public final class TodoListManager_Stub {
 		/* create sapphire obj on server */
 		sapphireObjId = GlobalGrpcClientRef.grpcClient.createSapphireObject("hankstodo.app.TodoListManager", "java", "hankstodo.app.TodoListManager",null);
 
-		/* Get client and app stub */
+        /* Get client and app stub */
 		AppGrpcClient.SapphireClientInfo sapphireClientInfo = GlobalGrpcClientRef.grpcClient.acquireSapphireObjRef(sapphireObjId);
 		clientId = sapphireClientInfo.getClientId();
 
@@ -78,16 +75,31 @@ public final class TodoListManager_Stub {
 
 	//rpc call
 	public TodoList_Stub newTodoList(String name) throws Exception {
-		Schema<TodoListOuterClass.TodoList> TODOLIST_SCHEMA = getSchema(TodoListOuterClass.TodoList.class);
 		String method = "newTodoList";
 		byte [] inStream = serialize(TodoListManagerOuterClass.newTodo.newBuilder().setArg0(name).build(), NEWTODO_SCHEMA, BUFFER);
-
 		byte [] outstream = GlobalGrpcClientRef.grpcClient.genericInvoke(getClientId(), method, ByteString.copyFrom(inStream));
 		TodoListOuterClass.TodoList result = deserialize(outstream, TODOLIST_SCHEMA);
 
-		// check and create the stub instance and set all the field values in it
-		TodoList_Stub todoList = new TodoList_Stub();
-		todoList.setObject(result);
-		return todoList;
+        // check and create the stub instance and set all the field values in it
+        TodoList_Stub stub = null;
+
+        if (result.hasSid()) {
+            /* Inner SO */
+            /* TODO: Check if stub exists for this sid on the client side. Create stub if not exists. otherwise return stub  */
+            stub = new TodoList_Stub();
+
+            /* Get client and app stub */
+            AppGrpcClient.SapphireClientInfo sapphireClientInfo = GlobalGrpcClientRef.grpcClient.acquireSapphireObjRef(result.getSid());
+            stub.setClientId( sapphireClientInfo.getClientId());
+            stub.setSapphireObjId( sapphireClientInfo.getSapphireId());
+            stub.setObject(result);
+            /* TODO: Add the stub to object store if created now */
+        } else {
+            stub = new TodoList_Stub();
+            stub.setObject(result);
+        }
+
+        /* TODO: Need to copy all the fields from deserialized object to stub object */
+		return stub;
 	}
 }

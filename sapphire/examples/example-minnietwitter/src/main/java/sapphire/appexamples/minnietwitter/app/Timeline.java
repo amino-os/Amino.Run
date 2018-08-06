@@ -3,7 +3,10 @@ package sapphire.appexamples.minnietwitter.app;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Timeline {
+import sapphire.app.SapphireObject;
+import sapphire.policy.ShiftPolicy;
+
+public class Timeline implements SapphireObject<ShiftPolicy> {
 	//private User user;
 	private String userName;
 

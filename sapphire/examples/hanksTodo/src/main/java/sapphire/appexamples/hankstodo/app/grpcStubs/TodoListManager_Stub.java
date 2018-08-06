@@ -3,6 +3,7 @@ package sapphire.appexamples.hankstodo.app.grpcStubs;
 
 import com.dyuproject.protostuff.ByteArrayInput;
 import com.dyuproject.protostuff.ProtobufIOUtil;
+import com.google.protobuf.ByteString;
 import com.google.protobuf.MessageLite;
 
 import net.webby.protostuff.runtime.ProtostuffDefault;
@@ -25,9 +26,9 @@ import static com.dyuproject.protostuff.runtime.RuntimeSchema.getSchema;;
  */
 
 public final class TodoListManager_Stub {
-	public final Schema<TodoListManagerOuterClass.TodoListManager> TODOLISTMGR_SCHEMA = getSchema(TodoListManagerOuterClass.TodoListManager.class);
-	//public final Schema<TodoListOuterClass.TodoList> TODOLIST_SCHEMA = getSchema(TodoListOuterClass.TodoList.class);
-	//public final Schema<TodoListManagerOuterClass.newTodo> NEWTODO_SCHEMA = getSchema(TodoListManagerOuterClass.newTodo.class);
+	private final Schema<TodoListManagerOuterClass.TodoListManager> TODOLISTMGR_SCHEMA = getSchema(TodoListManagerOuterClass.TodoListManager.class);
+	private final Schema<TodoListOuterClass.TodoList> TODOLIST_SCHEMA = getSchema(TodoListOuterClass.TodoList.class);
+	private final Schema<TodoListManagerOuterClass.newTodo> NEWTODO_SCHEMA = getSchema(TodoListManagerOuterClass.newTodo.class);
 	private final LinkedBuffer BUFFER = LinkedBuffer.allocate(LinkedBuffer.DEFAULT_BUFFER_SIZE);
 	private String sapphireObjId;
 	private String clientId;
@@ -65,28 +66,28 @@ public final class TodoListManager_Stub {
 
 	// user create instance of this obj
 	public TodoListManager_Stub () throws Exception {
-
 		/* create sapphire obj on server */
 		sapphireObjId = GlobalGrpcClientRef.grpcClient.createSapphireObject("hankstodo.app.TodoListManager", "java", "hankstodo.app.TodoListManager",null);
 
+		/* Get client and app stub */
 		AppGrpcClient.SapphireClientInfo sapphireClientInfo = GlobalGrpcClientRef.grpcClient.acquireSapphireObjRef(sapphireObjId);
-		/* And get back the byte stream from the server */
 		clientId = sapphireClientInfo.getClientId();
 
 		object = deserialize(sapphireClientInfo.getOpaqueObject(), TODOLISTMGR_SCHEMA);
 	}
 
 	//rpc call
-	public TodoList_Stub newTodoList(String name) {
+	public TodoList_Stub newTodoList(String name) throws Exception {
 		Schema<TodoListOuterClass.TodoList> TODOLIST_SCHEMA = getSchema(TodoListOuterClass.TodoList.class);
 		String method = "newTodoList";
-		//byte [] inStream = serialize(TodoListManagerOuterClass.newTodo.newBuilder().setArg0(name).build(), NEWTODO_SCHEMA, BUFFER);
+		byte [] inStream = serialize(TodoListManagerOuterClass.newTodo.newBuilder().setArg0(name).build(), NEWTODO_SCHEMA, BUFFER);
 
-		//byte [] outstream = GlobalGrpcClientRef.grpcClient.genericInvoke(getClientId(), method, inStream);
-		//TodoListOuterClass.TodoList result = deserialize(outstream, TODOLIST_SCHEMA);
-		// check and create the instance and set all the field values in it
+		byte [] outstream = GlobalGrpcClientRef.grpcClient.genericInvoke(getClientId(), method, ByteString.copyFrom(inStream));
+		TodoListOuterClass.TodoList result = deserialize(outstream, TODOLIST_SCHEMA);
+
+		// check and create the stub instance and set all the field values in it
 		TodoList_Stub todoList = new TodoList_Stub();
-		//todoList.setObject(result);
+		todoList.setObject(result);
 		return todoList;
 	}
 }

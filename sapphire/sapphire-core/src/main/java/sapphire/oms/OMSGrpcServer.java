@@ -1,8 +1,6 @@
 package sapphire.oms;
 
 import com.google.protobuf.ByteString;
-
-import io.grpc.BindableService;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.grpc.netty.NettyServerBuilder;
@@ -14,10 +12,9 @@ import sapphire.common.SapphireObjectID;
 import sapphire.oms.OmsApiToApp.OMSServiceGrpc;
 import sapphire.oms.OmsApiToApp.OmsApiToApp;
 
-/** Created by Venugopal Reddy K on 22/7/18. */
+/** Created by Venugopal Reddy K 00900280 on 22/7/18. */
 public class OMSGrpcServer {
     private static final Logger logger = Logger.getLogger(OMSGrpcServer.class.getName());
-    private final InetSocketAddress serverAddr;
     private final Server server;
     private final OMSServer handler;
 
@@ -29,7 +26,6 @@ public class OMSGrpcServer {
     public OMSGrpcServer(
             ServerBuilder<?> serverBuilder, InetSocketAddress serverInetAddr, OMSServer omsInstance)
             throws IOException {
-        this.serverAddr = serverInetAddr;
         handler = omsInstance;
         server = serverBuilder.addService(new OMSService(handler)).build();
     }

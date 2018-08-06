@@ -1,8 +1,12 @@
 package sapphire.kernel.server;
 
+import com.google.protobuf.ByteString;
+
 import java.lang.annotation.Annotation;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
+
 import sapphire.common.SapphireObjectCreationException;
 import sapphire.common.SapphireObjectID;
 import sapphire.common.SapphireObjectNotFoundException;
@@ -66,4 +70,6 @@ public interface KernelServer extends Remote {
 
     boolean deleteInnerSapphireObject(SapphireObjectID sapphireObjId)
             throws RemoteException, SapphireObjectNotFoundException;
+
+	ByteString genericInvoke(String dmClientId, String funcName, ArrayList<Object> param) throws RemoteException, KernelObjectNotFoundException, KernelRPCException;
 }

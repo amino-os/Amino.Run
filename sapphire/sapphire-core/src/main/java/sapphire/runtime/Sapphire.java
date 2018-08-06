@@ -238,7 +238,7 @@ public class Sapphire {
             /* Call java runtime */
             sapphireObjInfo =
                     GlobalKernelReferences.nodeServer
-                            .getJavaGrpcClient()
+                            .getGrpcClientToJavaRuntime()
                             .createSapphireReplica(
                                     className,
                                     sapphireReplicaId,

@@ -1,5 +1,7 @@
 package sapphire.kernel.server;
 
+import com.google.protobuf.ByteString;
+
 import static sapphire.runtime.Sapphire.createInnerSo;
 import static sapphire.runtime.Sapphire.createSo;
 import static sapphire.runtime.Sapphire.delete_;
@@ -7,6 +9,7 @@ import static sapphire.runtime.Sapphire.new_;
 
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -14,7 +17,6 @@ import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import sapphire.common.AppObjectStub;
@@ -52,8 +54,9 @@ public class KernelServerImpl implements KernelServer {
     private KernelObjectManager objectManager;
 
     private int role = ServerInfo.ROLE_KERNEL_SERVER;
-    private KernelGrpcServer grpcServer;
-    private KernelGrpcClient javaGrpcClient;
+    private KernelGrpcServer grpcServerToRuntime;
+    private KernelGrpcServer grpcServerToApp;
+    private KernelGrpcClient grpcClientToJavaRuntime;
 
     /** stub for the OMS */
     public static OMSServer oms;
@@ -106,20 +109,28 @@ public class KernelServerImpl implements KernelServer {
         this.role = role;
     }
 
-    public void setGrpcServer(KernelGrpcServer grpcServer) {
-        this.grpcServer = grpcServer;
+    public void setGrpcServerToRuntime(KernelGrpcServer grpcServer) {
+        grpcServerToRuntime = grpcServer;
     }
 
-    public KernelGrpcServer getGrpcServer() {
-        return this.grpcServer;
+    public KernelGrpcServer getGrpcServerToRuntime() {
+        return grpcServerToRuntime;
     }
 
-    public void setJavaGrpcClient(KernelGrpcClient javaGrpcClient) {
-        this.javaGrpcClient = javaGrpcClient;
+    public KernelGrpcServer getGrpcServerToApp() {
+        return grpcServerToApp;
     }
 
-    public KernelGrpcClient getJavaGrpcClient() {
-        return this.javaGrpcClient;
+    public void setGrpcServerToApp(KernelGrpcServer grpcServerToApp) {
+        this.grpcServerToApp = grpcServerToApp;
+    }
+
+    public void setGrpcClientToJavaRuntime(KernelGrpcClient grpcClient) {
+        grpcClientToJavaRuntime = grpcClient;
+    }
+
+    public KernelGrpcClient getGrpcClientToJavaRuntime() {
+        return grpcClientToJavaRuntime;
     }
 
     /** RPC INTERFACES * */
@@ -155,20 +166,21 @@ public class KernelServerImpl implements KernelServer {
         return ret;
     }
 
-    public Object genericInvoke(String clientId, String methodName, ArrayList<Object> params)
+    public ByteString genericInvoke(String clientId, String methodName, ArrayList<Object> params)
             throws KernelObjectNotFoundException, KernelRPCException {
-        int clientIndex = Integer.parseInt(clientId);
-        KernelOID clientOid = new KernelOID(clientIndex);
+        KernelOID clientOid = new KernelOID(Integer.parseInt(clientId));
         KernelObject object = null;
         object = objectManager.lookupObject(clientOid);
         Object ret = null;
         try {
-            ret = object.invoke(methodName, params);
+            Method method = object.getObject().getClass().getMethod("onRPC", methodName.getClass(), new ArrayList<Object>().getClass());
+            ret = method.invoke(object.getObject(), methodName, params);
         } catch (Exception e) {
+            e.printStackTrace();
             throw new KernelRPCException(e);
         }
 
-        return ret;
+        return (ByteString)ret;
     }
 
     /**
@@ -334,7 +346,7 @@ public class KernelServerImpl implements KernelServer {
         if (null != serverPolicy.sapphire_getAppObject().getRuntime()) {
             if (serverPolicy.sapphire_getAppObject().getRuntime().equalsIgnoreCase("java")) {
                 GlobalKernelReferences.nodeServer
-                        .getJavaGrpcClient()
+                        .getGrpcClientToJavaRuntime()
                         .deleteSapphireReplica(sapphireReplicaId);
             } else if (serverPolicy.sapphire_getAppObject().getRuntime().equalsIgnoreCase("go")) {
                 // TODO: Need to call the go runtime
@@ -518,19 +530,26 @@ public class KernelServerImpl implements KernelServer {
             }
 
             if (args.length > 5) {
-                server.setGrpcServer(
-                        new KernelGrpcServer(
-                                new InetSocketAddress(args[4], Integer.parseInt(args[5])), server));
-                server.getGrpcServer().start();
+                int role = Integer.parseInt(args[args.length - 1]);
+                if (1 == role) {
+                    /* Role is client */
+                    server.setRole(role);
+                    server.setGrpcServerToApp(
+                            new KernelGrpcServer(
+                                    new InetSocketAddress(args[4], Integer.parseInt(args[5])), server, ServerInfo.ROLE_KERNEL_CLIENT));
+                    server.getGrpcServerToApp().start();
 
-                if (args.length > 7) {
+                } else {
+                    /* Role is server */
+                    server.setGrpcServerToRuntime(
+                            new KernelGrpcServer(
+                                    new InetSocketAddress(args[4], Integer.parseInt(args[5])), server, ServerInfo.ROLE_KERNEL_SERVER));
+                    server.getGrpcServerToRuntime().start();
+
+                    if (args.length > 7) {
                     /* Start client for each runtime */
-                    server.setJavaGrpcClient(
-                            new KernelGrpcClient(args[6], Integer.parseInt(args[7])));
-                } else if (args.length == 7) {
-                    int role = Integer.parseInt(args[6]);
-                    if (role <= 1) {
-                        server.setRole(role);
+                        server.setGrpcClientToJavaRuntime(
+                                new KernelGrpcClient(args[6], Integer.parseInt(args[7])));
                     }
                 }
             }
@@ -560,13 +579,17 @@ public class KernelServerImpl implements KernelServer {
             logger.severe("Cannot start Sapphire Kernel Server");
             e.printStackTrace();
 
-            if (null != server.getGrpcServer()) {
-                server.getGrpcServer().stop();
+            if (null != server.getGrpcServerToRuntime()) {
+                server.getGrpcServerToRuntime().stop();
+            }
+
+            if (null != server.getGrpcServerToApp()) {
+                server.getGrpcServerToApp().stop();
             }
 
             try {
-                if (null != server.getJavaGrpcClient()) {
-                    server.getJavaGrpcClient().shutdown();
+                if (null != server.getGrpcClientToJavaRuntime()) {
+                    server.getGrpcClientToJavaRuntime().shutdown();
                 }
             } catch (Exception e1) {
                 e1.printStackTrace();

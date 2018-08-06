@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import sapphire.policy.SapphirePolicy;
 
-/** Created by root1 on 18/7/18. */
+/** Created by Venugopal Reddy K 00900280 on 18/7/18. */
 public class SapphireSoStub implements Serializable {
     private final SapphireObjectID sapphireObjId;
     private final SapphireObjectID parentSapphireObjId;
@@ -15,7 +15,7 @@ public class SapphireSoStub implements Serializable {
     private final SapphirePolicy.SapphireServerPolicy serverPolicy;
     private final SapphirePolicy.SapphireGroupPolicy groupPolicy;
 
-    public SapphireSoStub(SapphireSoStubBuilder builder) {
+    private SapphireSoStub(SapphireSoStubBuilder builder) {
         sapphireObjId = builder.sapphireObjId;
         parentSapphireObjId = builder.parentSapphireObjId;
         opaqueObject = builder.opaqueObject;

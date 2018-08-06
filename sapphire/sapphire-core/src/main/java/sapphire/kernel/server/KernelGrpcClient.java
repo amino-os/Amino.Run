@@ -4,10 +4,7 @@ import com.google.protobuf.ByteString;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.StatusRuntimeException;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.ObjectOutput;
-import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
@@ -15,9 +12,7 @@ import sapphire.common.SapphireObjectID;
 import sapphire.common.SapphireReplicaID;
 import sapphire.kernel.common.DMConfigInfo;
 import sapphire.kernel.common.SapphireObjectInfo;
-import sapphire.oms.OmsApiToApp.OmsApiToApp;
 import sapphire.runtime.RuntimeApiToKernelServer.CreateSObjReplicaRequest;
-import sapphire.runtime.RuntimeApiToKernelServer.CreateSObjReplicaRequestOrBuilder;
 import sapphire.runtime.RuntimeApiToKernelServer.CreateSObjReplicaResponse;
 import sapphire.runtime.RuntimeApiToKernelServer.DeleteSObjReplicaRequest;
 import sapphire.runtime.RuntimeApiToKernelServer.DeleteSObjReplicaResponse;
@@ -25,7 +20,7 @@ import sapphire.runtime.RuntimeApiToKernelServer.KernelServerRuntimeGrpcServiceG
 import sapphire.runtime.RuntimeApiToKernelServer.SObjMethodInvokeRequest;
 import sapphire.runtime.RuntimeApiToKernelServer.SObjMethodInvokeResponse;
 
-/** Created by Venugopal Reddy K on 23/7/18. */
+/** Created by Venugopal Reddy K 00900280 on 23/7/18. */
 public class KernelGrpcClient {
     private static final Logger logger = Logger.getLogger(KernelGrpcClient.class.getName());
     private final ManagedChannel channel;
@@ -106,28 +101,19 @@ public class KernelGrpcClient {
     public Object rpcInvoke(
             SapphireReplicaID sapphireReplicaId, String method, ArrayList<Object> params)
             throws IOException {
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutput out;
-
         try {
-            out = new ObjectOutputStream(bos);
-            for (Object param : params) {
-                out.writeObject(param);
-            }
-            out.flush();
+            ByteString inStream = (ByteString)params.get(0);
             SObjMethodInvokeRequest request =
                     SObjMethodInvokeRequest.newBuilder()
                             .setSObjId(String.valueOf(sapphireReplicaId.getOID().getID()))
                             .setSObjReplicaId(String.valueOf(sapphireReplicaId.getID()))
                             .setSObjMethodName(method)
-                            .setSObjMethodParams(ByteString.copyFrom(bos.toByteArray()))
+                            .setSObjMethodParams(ByteString.copyFrom(inStream.toByteArray()))
                             .build();
             SObjMethodInvokeResponse response = blockingStub.sObjMethodInvoke(request);
             return response.getSObjMethodResponse();
         } catch (StatusRuntimeException e) {
             e.printStackTrace();
-        } finally {
-            bos.close();
         }
 
         return null;

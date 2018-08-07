@@ -1,11 +1,12 @@
 syntax="proto3";
 
-package KernelServerApiToRuntime;
+package sapphire.kernel.runtime;
 
+option java_outer_classname = "Service";
 option java_multiple_files = true;
-option java_package = "sapphire.kernel.KernelServerApiToRuntime";
+option java_package = "sapphire.kernel.runtime";
 
-service RuntimeKernelServerGrpcService {
+service RuntimeService {
     rpc CreateChildSObj (CreateChildSObjRequest) returns (CreateChildSObjResponse) {}
     rpc DeleteChildSObj (DeleteChildSObjRequest) returns (DeleteChildSObjResponse) {}
 }

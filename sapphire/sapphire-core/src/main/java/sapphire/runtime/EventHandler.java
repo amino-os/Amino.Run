@@ -81,6 +81,6 @@ public class EventHandler implements Serializable {
             fillMethodTable();
         }
 
-        return handlers.contains(method);
+        return handlers.containsKey(method);
     }
 }

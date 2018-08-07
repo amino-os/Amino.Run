@@ -24,7 +24,7 @@ public class TodoActivity {
 	public static void main(String[] args) {
 		Registry registry;
 		try {
-			AppGrpcClient grpcClient = new AppGrpcClient(args[0], Integer.parseInt(args[1]), args[2], Integer.parseInt(args[3]), args[4], Integer.parseInt(args[5]));
+			AppGrpcClient grpcClient = new AppGrpcClient(args[0], Integer.parseInt(args[1]), args[2], Integer.parseInt(args[3]));
 			GlobalGrpcClientRef.grpcClient = grpcClient;
 			TodoListManager_Stub tlm;
 			try {

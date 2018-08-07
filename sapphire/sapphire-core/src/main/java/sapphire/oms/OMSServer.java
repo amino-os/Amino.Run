@@ -5,7 +5,6 @@ import java.rmi.NotBoundException;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
-
 import sapphire.common.AppObjectStub;
 import sapphire.common.SapphireObjectCreationException;
 import sapphire.common.SapphireObjectID;
@@ -54,19 +53,19 @@ public interface OMSServer extends Remote {
 
     SapphireObjectID registerSapphireObject() throws RemoteException;
 
-    SapphireReplicaID registerSapphireReplica(SapphireObjectID oid, EventHandler dispatcher)
+    SapphireReplicaID registerSapphireReplica(SapphireObjectID sapphireObjId)
             throws RemoteException, SapphireObjectNotFoundException;
 
-    EventHandler getSapphireObjectDispatcher(SapphireObjectID oid)
+    EventHandler getSapphireObjectDispatcher(SapphireObjectID sapphireObjId)
             throws RemoteException, SapphireObjectNotFoundException;
 
-    EventHandler getSapphireReplicaDispatcher(SapphireReplicaID rid)
+    EventHandler getSapphireReplicaDispatcher(SapphireReplicaID replicaId)
             throws RemoteException, SapphireObjectNotFoundException;
 
-    void setSapphireObjectHandler(SapphireObjectID oid, EventHandler dispatcher)
+    void setSapphireObjectDispatcher(SapphireObjectID sapphireObjId, EventHandler dispatcher)
             throws RemoteException, SapphireObjectNotFoundException;
 
-    void setSapphireReplicaHandler(SapphireReplicaID rid, EventHandler dispatcher)
+    void setSapphireReplicaDispatcher(SapphireReplicaID replicaId, EventHandler dispatcher)
             throws RemoteException, SapphireObjectNotFoundException;
 
     void unRegisterSapphireObject(SapphireObjectID oid)
@@ -77,11 +76,20 @@ public interface OMSServer extends Remote {
     /* Called by the client */
     // AppObjectStub getAppEntryPoint() throws RemoteException;
 
-    SapphireObjectID createSapphireObject(String absoluteSapphireClassName, Object... args) throws RemoteException, SapphireObjectCreationException, ClassNotFoundException;
-    AppObjectStub acquireSapphireObjectStub(SapphireObjectID sapphireObjId) throws RemoteException, SapphireObjectNotFoundException;
-    boolean releaseSapphireObjectStub(SapphireObjectID sapphireObjId) throws RemoteException, SapphireObjectNotFoundException;
-    AppObjectStub attachToSapphireObject(String sapphireObjName) throws RemoteException, SapphireObjectNotFoundException;
-    boolean detachFromSapphireObject(String sapphireObjName) throws RemoteException, SapphireObjectNotFoundException;
+    SapphireObjectID createSapphireObject(String absoluteSapphireClassName, Object... args)
+            throws RemoteException, SapphireObjectCreationException, ClassNotFoundException;
+
+    AppObjectStub acquireSapphireObjectStub(SapphireObjectID sapphireObjId)
+            throws RemoteException, SapphireObjectNotFoundException;
+
+    boolean releaseSapphireObjectStub(SapphireObjectID sapphireObjId)
+            throws RemoteException, SapphireObjectNotFoundException;
+
+    AppObjectStub attachToSapphireObject(String sapphireObjName)
+            throws RemoteException, SapphireObjectNotFoundException;
+
+    boolean detachFromSapphireObject(String sapphireObjName)
+            throws RemoteException, SapphireObjectNotFoundException;
 
     SapphireObjectID createSapphireObject(
             String absoluteSapphireClassName,
@@ -114,5 +122,6 @@ public interface OMSServer extends Remote {
     boolean deleteSapphireObject(SapphireObjectID sapphireObjectID)
             throws RemoteException, SapphireObjectNotFoundException;
 
-    void setInnerSapphireObject(SapphireSoStub soStub) throws RemoteException, SapphireObjectNotFoundException;
+    void setInnerSapphireObject(SapphireSoStub soStub)
+            throws RemoteException, SapphireObjectNotFoundException;
 }

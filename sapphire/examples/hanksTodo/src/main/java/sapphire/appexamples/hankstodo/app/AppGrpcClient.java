@@ -2,24 +2,14 @@ package sapphire.appexamples.hankstodo.app;
 
 import com.google.protobuf.ByteString;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutput;
-import java.io.ObjectOutputStream;
 import java.net.InetSocketAddress;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
-import sapphire.kernel.KernelServerApiToApp.GenericInvokeServiceGrpc;
-import sapphire.kernel.KernelServerApiToApp.KernelServerApiToApp;
-import sapphire.oms.OmsApiToApp.OMSServiceGrpc;
-import sapphire.oms.OmsApiToApp.OmsApiToApp;
+import sapphire.kernel.app.AppServiceGrpc;
+import sapphire.kernel.app.*;
 
 /**
  * Created by Venugopal Reddy K on 25/7/18.
@@ -27,29 +17,20 @@ import sapphire.oms.OmsApiToApp.OmsApiToApp;
 
 public class AppGrpcClient {
 	private static final Logger logger = Logger.getLogger(AppGrpcClient.class.getName());
-	private final ManagedChannel omsChannel;
-	private final ManagedChannel kernelClientChannel;
-	private final OMSServiceGrpc.OMSServiceBlockingStub  omsBlockingStub;
-	private final GenericInvokeServiceGrpc.GenericInvokeServiceBlockingStub  kernelBlockingStub;
+	private final ManagedChannel channel;
+	private final AppServiceGrpc.AppServiceBlockingStub blockingStub;
 	private final InetSocketAddress kernelClientAddr;
 
-	public AppGrpcClient(String grpcOmsHost, int grpcOmsPort, String grpcKernelClientHost, int grpcKernelClientPort, String rmiServerHost, int rmiPort) {
-		ManagedChannelBuilder<?> channelBuilder = ManagedChannelBuilder.forAddress(grpcOmsHost, grpcOmsPort).usePlaintext(true);
-		omsChannel = channelBuilder.build();
-		omsBlockingStub = OMSServiceGrpc.newBlockingStub(omsChannel);
-		channelBuilder = ManagedChannelBuilder.forAddress(grpcKernelClientHost, grpcKernelClientPort).usePlaintext(true);
-		kernelClientChannel = channelBuilder.build();
-		kernelBlockingStub = GenericInvokeServiceGrpc.newBlockingStub(kernelClientChannel);
+	public AppGrpcClient(String rmiServerHost, int rmiPort, String grpcServerHost, int grpcServerPort) {
+		ManagedChannelBuilder<?> channelBuilder = ManagedChannelBuilder.forAddress(grpcServerHost, grpcServerPort).usePlaintext(true);
+		channel = channelBuilder.build();
+        blockingStub = AppServiceGrpc.newBlockingStub(channel);
 		kernelClientAddr = new InetSocketAddress(rmiServerHost, rmiPort);
 	}
 
 	public void shutdown() throws InterruptedException {
-		if (null != omsChannel) {
-			omsChannel.shutdown().awaitTermination(5, TimeUnit.SECONDS);
-		}
-
-		if (null != kernelClientChannel) {
-			kernelClientChannel.shutdown().awaitTermination(5, TimeUnit.SECONDS);
+		if (null != channel) {
+			channel.shutdown().awaitTermination(5, TimeUnit.SECONDS);
 		}
 	}
 
@@ -81,71 +62,16 @@ public class AppGrpcClient {
 		}
 	}
 
-	public static final byte[] toBytes(Object... args) throws IOException {
-		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		ObjectOutput out = null;
-		try {
-			out = new ObjectOutputStream(bos);
-			for (Object param : args) {
-				out.writeObject(param);
-			}
-			out.flush();
-			return bos.toByteArray();
-		} finally {
-			if (bos != null) {
-				try {
-					bos.close();
-				} catch (IOException e) {
-					logger.log(Level.WARNING, "failed to close stream bos", e);
-				}
-			}
-
-			if (out != null) {
-				try {
-					out.close();
-				} catch (IOException e) {
-					logger.log(Level.WARNING, "failed to close stream bos", e);
-				}
-			}
-		}
-	}
-
-	public static Object toObject(byte[] bytes) throws IOException, ClassNotFoundException {
-		ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
-		ObjectInput in = null;
-		try {
-			in = new ObjectInputStream(bis);
-			Object object = in.readObject();
-			return object;
-		} finally {
-			if (bis != null) {
-				try {
-					bis.close();
-				} catch (IOException e) {
-					logger.log(Level.WARNING, "failed to close stream bis", e);
-				}
-			}
-			if (in != null) {
-				try {
-					in.close();
-				} catch (IOException e) {
-					logger.log(Level.WARNING, "failed to close stream in", e);
-				}
-			}
-		}
-	}
-
 	public String createSapphireObject(String className, String runtime, String initializerMethod, byte [] args) {
 		try {
-			OmsApiToApp.CreateRequest.Builder builder =
-					OmsApiToApp.CreateRequest.newBuilder().setSoName(className).setLangType(runtime).setConstructName(initializerMethod);
+			CreateRequest.Builder builder = CreateRequest.newBuilder().setSoName(className).setLangType(runtime).setConstructName(initializerMethod);
 
 			if(null != args) {
 				builder.setConstructParams(ByteString.copyFrom(args));
 			}
 
-			OmsApiToApp.CreateRequest request = builder.build();
-			OmsApiToApp.CreateResponse response = omsBlockingStub.createSapphireObject(request);
+			CreateRequest request = builder.build();
+			CreateResponse response = blockingStub.createSapphireObject(request);
 			return response.getSId();
 		} catch (Exception e) {
 			// TODO: Need to handle the exceptions part
@@ -157,9 +83,8 @@ public class AppGrpcClient {
 
 	public void deleteSapphireObject(String sid) {
 		try {
-			OmsApiToApp.DeleteRequest request =
-					OmsApiToApp.DeleteRequest.newBuilder().setSId(sid).build();
-			OmsApiToApp.DeleteResponse response = omsBlockingStub.deleteSapphireObject(request);
+			DeleteRequest request = DeleteRequest.newBuilder().setSId(sid).build();
+			DeleteResponse response = blockingStub.deleteSapphireObject(request);
 		} catch (Exception e) {
 			// TODO: Need to handle the exceptions part
 			e.printStackTrace();
@@ -168,9 +93,8 @@ public class AppGrpcClient {
 
 	public SapphireClientInfo attach(String url) {
 		try {
-			OmsApiToApp.AttachRequest request =
-					OmsApiToApp.AttachRequest.newBuilder().setUrl(url).setDmClientRmiEndPoint(getKernelClientAddr().getHostName() + ":" + getKernelClientAddr().getPort()).build();
-			OmsApiToApp.AttachResponse response = omsBlockingStub.attach(request);
+			AttachRequest request = AttachRequest.newBuilder().setUrl(url).setDmClientRmiEndPoint(getKernelClientAddr().getHostName() + ":" + getKernelClientAddr().getPort()).build();
+			AttachResponse response = blockingStub.attach(request);
 			return new SapphireClientInfo(response.getClientId(), response.getSId(), response.getObjectStream().toByteArray());
 		} catch (Exception e) {
 			// TODO: Need to handle the exceptions part
@@ -182,8 +106,8 @@ public class AppGrpcClient {
 
 	public void detach(String sid, String clientId) {
 		try {
-			OmsApiToApp.DetachRequest request = OmsApiToApp.DetachRequest.newBuilder().setSId(sid).setClientId(clientId).build();
-			OmsApiToApp.DetachResponse response = omsBlockingStub.detach(request);
+			DetachRequest request = DetachRequest.newBuilder().setSId(sid).setClientId(clientId).build();
+			DetachResponse response = blockingStub.detach(request);
 		} catch (Exception e) {
 			// TODO: Need to handle the exceptions part
 			e.printStackTrace();
@@ -192,9 +116,8 @@ public class AppGrpcClient {
 
 	public void setURL(String sid, String url) {
 		try {
-			OmsApiToApp.URLRequest request =
-					OmsApiToApp.URLRequest.newBuilder().setSId(sid).setUrl(url).build();
-			OmsApiToApp.URLResponse response = omsBlockingStub.setURL(request);
+			URLRequest request = URLRequest.newBuilder().setSId(sid).setUrl(url).build();
+			URLResponse response = blockingStub.setURL(request);
 		} catch (Exception e) {
 			// TODO: Need to handle the exceptions part
 			e.printStackTrace();
@@ -202,11 +125,9 @@ public class AppGrpcClient {
 	}
 
 	public SapphireClientInfo acquireSapphireObjRef(String sid) {
-		SapphireClientInfo clientInfo;
 		try {
-			OmsApiToApp.AcquireRequest request =
-					OmsApiToApp.AcquireRequest.newBuilder().setSId(sid).setDmClientRmiEndPoint(getKernelClientAddr().getHostName() + ":" + getKernelClientAddr().getPort()).build();
-			OmsApiToApp.AcquireResponse response = omsBlockingStub.acquireAppStub(request);
+			AcquireRequest request = AcquireRequest.newBuilder().setSId(sid).setDmClientRmiEndPoint(getKernelClientAddr().getHostName() + ":" + getKernelClientAddr().getPort()).build();
+			AcquireResponse response = blockingStub.acquireAppStub(request);
 			return new SapphireClientInfo(response.getClientId(), sid, response.getObjectStream().toByteArray());
 		} catch (Exception e) {
 			// TODO: Need to handle the exceptions part
@@ -218,8 +139,8 @@ public class AppGrpcClient {
 
 	public void releaseSapphireobjRef(String sid, String clientId) {
 		try {
-			OmsApiToApp.ReleaseRequest request = OmsApiToApp.ReleaseRequest.newBuilder().setSId(sid).setClientId(clientId).build();
-			OmsApiToApp.ReleaseResponse response = omsBlockingStub.releaseAppStub(request);
+			ReleaseRequest request = ReleaseRequest.newBuilder().setSId(sid).setClientId(clientId).build();
+			ReleaseResponse response = blockingStub.releaseAppStub(request);
 		} catch (Exception e) {
 			// TODO: Need to handle the exceptions part
 			e.printStackTrace();
@@ -228,8 +149,8 @@ public class AppGrpcClient {
 
 	public byte [] genericInvoke(String clientId, String method, ByteString stream) {
 		try {
-			KernelServerApiToApp.InvokeRequest request = KernelServerApiToApp.InvokeRequest.newBuilder().setDMClientId(clientId).setFuncName(method).setFuncParams(stream).build();
-			KernelServerApiToApp.InvokeResponse response = kernelBlockingStub.genericInvoke(request);
+			InvokeRequest request = InvokeRequest.newBuilder().setDMClientId(clientId).setFuncName(method).setFuncParams(stream).build();
+			InvokeResponse response = blockingStub.genericInvoke(request);
 			return response.getObjectStream().toByteArray();
 		} catch (Exception e) {
 			// TODO: Need to handle the exceptions part

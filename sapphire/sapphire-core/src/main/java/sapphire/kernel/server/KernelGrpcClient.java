@@ -12,20 +12,14 @@ import sapphire.common.SapphireObjectID;
 import sapphire.common.SapphireReplicaID;
 import sapphire.kernel.common.DMConfigInfo;
 import sapphire.kernel.common.SapphireObjectInfo;
-import sapphire.runtime.RuntimeApiToKernelServer.CreateSObjReplicaRequest;
-import sapphire.runtime.RuntimeApiToKernelServer.CreateSObjReplicaResponse;
-import sapphire.runtime.RuntimeApiToKernelServer.DeleteSObjReplicaRequest;
-import sapphire.runtime.RuntimeApiToKernelServer.DeleteSObjReplicaResponse;
-import sapphire.runtime.RuntimeApiToKernelServer.KernelServerRuntimeGrpcServiceGrpc;
-import sapphire.runtime.RuntimeApiToKernelServer.SObjMethodInvokeRequest;
-import sapphire.runtime.RuntimeApiToKernelServer.SObjMethodInvokeResponse;
+import sapphire.runtime.kernel.*;
+import sapphire.runtime.kernel.KernelServiceGrpc;
 
 /** Created by Venugopal Reddy K 00900280 on 23/7/18. */
 public class KernelGrpcClient {
     private static final Logger logger = Logger.getLogger(KernelGrpcClient.class.getName());
     private final ManagedChannel channel;
-    private final KernelServerRuntimeGrpcServiceGrpc.KernelServerRuntimeGrpcServiceBlockingStub
-            blockingStub;
+    private final KernelServiceGrpc.KernelServiceBlockingStub blockingStub;
 
     public KernelGrpcClient(String host, int port) {
         this(ManagedChannelBuilder.forAddress(host, port).usePlaintext(true));
@@ -33,7 +27,7 @@ public class KernelGrpcClient {
 
     public KernelGrpcClient(ManagedChannelBuilder<?> channelBuilder) {
         channel = channelBuilder.build();
-        blockingStub = KernelServerRuntimeGrpcServiceGrpc.newBlockingStub(channel);
+        blockingStub = KernelServiceGrpc.newBlockingStub(channel);
     }
 
     public void shutdown() throws InterruptedException {
@@ -59,7 +53,7 @@ public class KernelGrpcClient {
                             .setSObjConstructorName(constructorName)
                             .setSObjConstructorParams(ByteString.copyFrom(args));
 
-            String parentObjId = null;
+            String parentObjId;
             if (null != sapphireParentObjId) {
                 parentObjId = String.valueOf(sapphireParentObjId.getID());
                 builder.setSObjParentSObjId(parentObjId);
@@ -75,7 +69,8 @@ public class KernelGrpcClient {
             return new SapphireObjectInfo(
                     dmConfigInfo, response.getSObjReplicaObject().toByteArray());
         } catch (StatusRuntimeException e) {
-            // TODO: Need to translate and throw exceptions.. should not return null. applies to all the methods in this file
+            // TODO: Need to translate and throw exceptions.. should not return null. applies to all
+            // the methods in this file
             e.printStackTrace();
         }
 
@@ -102,7 +97,7 @@ public class KernelGrpcClient {
             SapphireReplicaID sapphireReplicaId, String method, ArrayList<Object> params)
             throws IOException {
         try {
-            ByteString inStream = (ByteString)params.get(0);
+            ByteString inStream = (ByteString) params.get(0);
             SObjMethodInvokeRequest request =
                     SObjMethodInvokeRequest.newBuilder()
                             .setSObjId(String.valueOf(sapphireReplicaId.getOID().getID()))

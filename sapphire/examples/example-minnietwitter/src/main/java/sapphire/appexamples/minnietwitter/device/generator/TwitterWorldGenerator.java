@@ -86,7 +86,7 @@ public class TwitterWorldGenerator {
 			KernelServer nodeServer = new KernelServerImpl(new InetSocketAddress(args[2], Integer.parseInt(args[3])), new InetSocketAddress(args[0], Integer.parseInt(args[1])));
 
             /* Get Twitter and User Manager */
-			SapphireObjectID sapphireObjId = server.createSapphireObject("sapphire.appexamples.minnietwitter.app.TwitterManager", null);
+			SapphireObjectID sapphireObjId = server.createSapphireObject("sapphire.appexamples.minnietwitter.app.TwitterManager");
 			TwitterManager tm = (TwitterManager)server.acquireSapphireObjectStub(sapphireObjId);
 
 			UserManager userManager = tm.getUserManager();

@@ -2,9 +2,6 @@ package sapphire.oms;
 
 import java.io.Serializable;
 
-import sapphire.common.AppObjectStub;
-import sapphire.runtime.Sapphire;
-
 /** Created by Venugopal Reddy K on 23/7/18. */
 public class SapphireClientInfo implements Serializable {
     private byte[] opaqueObject;

@@ -38,8 +38,8 @@ public class MainActivity extends Activity {
     	protected String doInBackground(String... params) {
     		String response = null;
 
-            String [] args = { "192.168.0.101", "20005", "192.168.0.101", "20003", "192.168.0.101", "10003" };
-            AppGrpcClient grpcClient = new AppGrpcClient(args[0], Integer.parseInt(args[1]), args[2], Integer.parseInt(args[3]), args[4], Integer.parseInt(args[5]));
+            String [] args = { "192.168.0.101", "10003", "192.168.0.101", "20003" };
+            AppGrpcClient grpcClient = new AppGrpcClient(args[0], Integer.parseInt(args[1]), args[2], Integer.parseInt(args[3]));
             GlobalGrpcClientRef.grpcClient = grpcClient;
             TodoListManager_Stub tlm;
             try {

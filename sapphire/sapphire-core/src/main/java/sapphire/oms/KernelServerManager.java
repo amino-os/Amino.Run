@@ -1,5 +1,7 @@
 package sapphire.oms;
 
+import static sapphire.kernel.common.ServerInfo.ROLE_KERNEL_CLIENT;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.rmi.NotBoundException;
@@ -16,8 +18,6 @@ import sapphire.kernel.common.KernelServerNotFoundException;
 import sapphire.kernel.common.ServerInfo;
 import sapphire.kernel.server.KernelServer;
 import sapphire.policy.util.ResettableTimer;
-
-import static sapphire.kernel.common.ServerInfo.ROLE_KERNEL_CLIENT;
 
 /**
  * Manages Sapphire kernel servers. Tracks which servers are up, which regions each server belongs
@@ -57,11 +57,6 @@ public class KernelServerManager {
         // removing from the servers list
         servers.remove(srvInfo.getHost());
 
-        if (ROLE_KERNEL_CLIENT == srvInfo.getRole()) {
-            clientRoleServers.remove(srvInfo.getHost());
-            return;
-        }
-
         // removing from the regions map
         ArrayList<InetSocketAddress> serverList = regions.get(srvInfo.getRegion());
         if (serverList == null) {
@@ -88,7 +83,7 @@ public class KernelServerManager {
 
         if (ROLE_KERNEL_CLIENT == info.getRole()) {
             clientRoleServers.put(info.getHost(), info.getHost());
-            //TODO; Need to start heartbeat for kernel clients too..
+            // TODO: Need to start heartbeat for kernel clients too ??
             return;
         }
 
@@ -100,7 +95,6 @@ public class KernelServerManager {
         serverList.add(info.getHost());
         regions.put(info.getRegion(), serverList);
 
-        /*
         final ServerInfo srvInfo = info;
         ResettableTimer ksHeartBeatTimer =
                 new ResettableTimer(
@@ -115,7 +109,6 @@ public class KernelServerManager {
 
         ksHeartBeatTimers.put(info.getHost(), ksHeartBeatTimer);
         ksHeartBeatTimer.start();
-        */
     }
 
     public void heartbeatKernelServer(ServerInfo srvinfo)
@@ -143,7 +136,6 @@ public class KernelServerManager {
             return;
         }
         */
-
 
         ResettableTimer ksHeartBeatTimer = ksHeartBeatTimers.get(srvinfo.getHost());
         if (null != ksHeartBeatTimer) {

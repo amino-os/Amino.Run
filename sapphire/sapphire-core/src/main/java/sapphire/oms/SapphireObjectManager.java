@@ -6,7 +6,6 @@ import java.util.Random;
 import sapphire.common.SapphireObjectID;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireReplicaID;
-import sapphire.kernel.common.KernelObjectNotFoundException;
 import sapphire.runtime.EventHandler;
 
 public class SapphireObjectManager {
@@ -15,7 +14,7 @@ public class SapphireObjectManager {
     private Random oidGenerator;
 
     /**
-     * Randomly generate a new kernel object id
+     * Randomly generate a new sapphire object id
      *
      * @return
      */
@@ -30,10 +29,10 @@ public class SapphireObjectManager {
     }
 
     /**
-     * Add the event handler for the sapphire object
+     * Adds a new sapphire instance
      *
      * @param dispatcher
-     * @return
+     * @return Returns a new sapphire object id
      */
     public SapphireObjectID add(EventHandler dispatcher) {
         SapphireObjectID oid = generateSapphireObjectID();
@@ -43,37 +42,53 @@ public class SapphireObjectManager {
     }
 
     /**
-     * Set the Event handler for the sapphire object
+     * Set the Event handler of the sapphire instance
      *
+     * @param sapphireObjId
      * @param dispatcher
-     * @return
+     * @throws SapphireObjectNotFoundException
      */
-    public void set(SapphireObjectID oid, EventHandler dispatcher)
+    public void set(SapphireObjectID sapphireObjId, EventHandler dispatcher)
             throws SapphireObjectNotFoundException {
-        SapphireInstanceManager instance = sapphireObjects.get(oid);
+        SapphireInstanceManager instance = sapphireObjects.get(sapphireObjId);
         if (instance == null) {
             throw new SapphireObjectNotFoundException("Not a valid Sapphire object id.");
         }
         instance.setInstanceDispatcher(dispatcher);
     }
 
-    public SapphireReplicaID add(SapphireObjectID oid, EventHandler dispatcher)
+    /**
+     * Generates a new sapphire replica id of the given sapphire instance
+     *
+     * @param sapphireObjId
+     * @param dispatcher
+     * @return Returns a new sapphire replica id
+     * @throws SapphireObjectNotFoundException
+     */
+    public SapphireReplicaID add(SapphireObjectID sapphireObjId, EventHandler dispatcher)
             throws SapphireObjectNotFoundException {
-        SapphireInstanceManager instance = sapphireObjects.get(oid);
+        SapphireInstanceManager instance = sapphireObjects.get(sapphireObjId);
         if (instance == null) {
             throw new SapphireObjectNotFoundException("Not a valid Sapphire object id.");
         }
         return instance.addReplica(dispatcher);
     }
 
-    public void set(SapphireReplicaID oid, EventHandler dispatcher)
+    /**
+     * Set the Event handler of the sapphire replica
+     *
+     * @param replicaId
+     * @param dispatcher
+     * @throws SapphireObjectNotFoundException
+     */
+    public void set(SapphireReplicaID replicaId, EventHandler dispatcher)
             throws SapphireObjectNotFoundException {
-        SapphireInstanceManager instance = sapphireObjects.get(oid.getOID());
+        SapphireInstanceManager instance = sapphireObjects.get(replicaId.getOID());
         if (instance == null) {
             throw new SapphireObjectNotFoundException("Not a valid Sapphire object id.");
         }
 
-        instance.setReplicaDispatcher(oid, dispatcher);
+        instance.setReplicaDispatcher(replicaId, dispatcher);
     }
 
     public void remove(SapphireObjectID oid) throws SapphireObjectNotFoundException {
@@ -106,23 +121,33 @@ public class SapphireObjectManager {
     }
 
     /**
-     * Get the event handler for a Sapphire instance
+     * Get the event handler of the Sapphire instance
      *
-     * @param oid
+     * @param sapphireObjId
      * @return
-     * @throws KernelObjectNotFoundException
+     * @throws SapphireObjectNotFoundException
      */
-    public EventHandler get(SapphireObjectID oid) throws SapphireObjectNotFoundException {
-        SapphireInstanceManager instance = sapphireObjects.get(oid);
+    public EventHandler get(SapphireObjectID sapphireObjId) throws SapphireObjectNotFoundException {
+        SapphireInstanceManager instance = sapphireObjects.get(sapphireObjId);
         if (instance == null) {
             throw new SapphireObjectNotFoundException("Not a valid Sapphire object id.");
         }
         return instance.getInstanceDispatcher();
     }
 
-    public EventHandler get(SapphireReplicaID rid) throws SapphireObjectNotFoundException {
-        SapphireInstanceManager instance = sapphireObjects.get(rid.getOID());
-        return instance.getReplicaDispatcher(rid);
+    /**
+     * Get the event handler of the Sapphire replica
+     *
+     * @param replicaId
+     * @return
+     * @throws SapphireObjectNotFoundException
+     */
+    public EventHandler get(SapphireReplicaID replicaId) throws SapphireObjectNotFoundException {
+        SapphireInstanceManager instance = sapphireObjects.get(replicaId.getOID());
+        if (instance == null) {
+            throw new SapphireObjectNotFoundException("Not a valid Sapphire object id.");
+        }
+        return instance.getReplicaDispatcher(replicaId);
     }
 
     public SapphireObjectID get(String sapphireObjName) throws SapphireObjectNotFoundException {

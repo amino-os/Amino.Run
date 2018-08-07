@@ -15,7 +15,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Logger;
 import org.json.JSONException;
-
 import sapphire.common.AppObjectStub;
 import sapphire.common.SapphireObjectCreationException;
 import sapphire.common.SapphireObjectID;
@@ -46,7 +45,6 @@ public class OMSServerImpl implements OMSServer {
     private GlobalKernelObjectManager kernelObjectManager;
     private KernelServerManager serverManager;
     private SapphireObjectManager objectManager;
-    private OMSGrpcServer grpcServer;
 
     /** CONSTRUCTOR * */
     // TODO Should receive a List of servers
@@ -54,14 +52,6 @@ public class OMSServerImpl implements OMSServer {
         kernelObjectManager = new GlobalKernelObjectManager();
         serverManager = new KernelServerManager();
         objectManager = new SapphireObjectManager();
-    }
-
-    public void setGrpcServer(OMSGrpcServer grpcServer) {
-        this.grpcServer = grpcServer;
-    }
-
-    public OMSGrpcServer getGrpcServer() {
-        return this.grpcServer;
     }
 
     /** KERNEL METHODS * */
@@ -186,7 +176,8 @@ public class OMSServerImpl implements OMSServer {
     }*/
 
     @Override
-    public AppObjectStub acquireSapphireObjectStub(SapphireObjectID sapphireObjId) throws RemoteException, SapphireObjectNotFoundException {
+    public AppObjectStub acquireSapphireObjectStub(SapphireObjectID sapphireObjId)
+            throws RemoteException, SapphireObjectNotFoundException {
         SapphireInstanceManager instance = objectManager.getSapphireInstanceManager(sapphireObjId);
         SapphireSoStub soStub = instance.getObjectStub();
         return soStub.getAppObjectStub();
@@ -198,10 +189,8 @@ public class OMSServerImpl implements OMSServer {
             throws RemoteException, SapphireObjectNotFoundException, ClassNotFoundException,
                     KernelObjectNotCreatedException, InstantiationException,
                     IllegalAccessException {
-        SapphireInstanceManager instance =
-                objectManager.getSapphireInstanceManager(sapphireObjId);
+        SapphireInstanceManager instance = objectManager.getSapphireInstanceManager(sapphireObjId);
         SapphireSoStub soStub = instance.getObjectStub();
-
 
         KernelServer ks =
                 GlobalKernelReferences.nodeServer
@@ -222,7 +211,8 @@ public class OMSServerImpl implements OMSServer {
         instance.addClientId(client.$__getKernelOID());
 
         /* byte stream, client id and sapphire id */
-        return new SapphireClientInfo(client.$__getKernelOID().getID(), sapphireObjId.getID(), soStub.getOpaqueObject());
+        return new SapphireClientInfo(
+                client.$__getKernelOID().getID(), sapphireObjId.getID(), soStub.getOpaqueObject());
     }
 
     @Override
@@ -232,12 +222,15 @@ public class OMSServerImpl implements OMSServer {
     }
 
     @Override
-    public SapphireObjectID createSapphireObject(String absoluteSapphireClassName, Object... args) throws RemoteException, SapphireObjectCreationException, ClassNotFoundException {
+    public SapphireObjectID createSapphireObject(String absoluteSapphireClassName, Object... args)
+            throws RemoteException, SapphireObjectCreationException, ClassNotFoundException {
         InetSocketAddress host = serverManager.getServerInRegion(serverManager.getRegions().get(0));
         KernelServer server = serverManager.getServer(host);
         SapphireSoStub soStub = server.createSapphireObject(absoluteSapphireClassName, args);
         try {
-            objectManager.getSapphireInstanceManager(soStub.getSapphireObjId()).setObjectStub(soStub);
+            objectManager
+                    .getSapphireInstanceManager(soStub.getSapphireObjId())
+                    .setObjectStub(soStub);
         } catch (SapphireObjectNotFoundException e) {
             throw new SapphireObjectCreationException(
                     "Failed to create sapphire object : "
@@ -352,7 +345,8 @@ public class OMSServerImpl implements OMSServer {
     }
 
     @Override
-    public boolean releaseSapphireObjectStub(SapphireObjectID sapphireObjId) throws SapphireObjectNotFoundException, RemoteException {
+    public boolean releaseSapphireObjectStub(SapphireObjectID sapphireObjId)
+            throws SapphireObjectNotFoundException, RemoteException {
         SapphireInstanceManager instance = objectManager.getSapphireInstanceManager(sapphireObjId);
         return true;
     }
@@ -371,7 +365,8 @@ public class OMSServerImpl implements OMSServer {
     }
 
     @Override
-    public boolean detachFromSapphireObject(String sapphireObjName) throws RemoteException, SapphireObjectNotFoundException {
+    public boolean detachFromSapphireObject(String sapphireObjName)
+            throws RemoteException, SapphireObjectNotFoundException {
         SapphireObjectID sapphireObjId = objectManager.get(sapphireObjName);
         releaseSapphireObjectStub(sapphireObjId);
         if (0 != objectManager.getSapphireInstanceManager(sapphireObjId).decrRefCountAndGet()) {
@@ -393,7 +388,8 @@ public class OMSServerImpl implements OMSServer {
     }
 
     @Override
-    public AppObjectStub attachToSapphireObject(String sapphireObjName) throws RemoteException, SapphireObjectNotFoundException {
+    public AppObjectStub attachToSapphireObject(String sapphireObjName)
+            throws RemoteException, SapphireObjectNotFoundException {
         SapphireObjectID sapphireObjId = objectManager.get(sapphireObjName);
         AppObjectStub appObjStub = acquireSapphireObjectStub(sapphireObjId);
         objectManager.getSapphireInstanceManager(sapphireObjId).incrRefCountAndGet();
@@ -439,7 +435,7 @@ public class OMSServerImpl implements OMSServer {
                                 add(groupStub);
                             }
                         });
-        GlobalKernelReferences.nodeServer.oms.setSapphireObjectHandler(
+        GlobalKernelReferences.nodeServer.oms.setSapphireObjectDispatcher(
                 sapphireObjId, sapphireHandler);
         return groupStub;
     }
@@ -456,9 +452,9 @@ public class OMSServerImpl implements OMSServer {
     }
 
     public static void main(String args[]) {
-        if ((args.length < 2) || (args.length > 4))  {
+        if (args.length != 2) {
             System.out.println("Invalid arguments to OMS.");
-            System.out.println("[IP] [port] [ [grpc-serverip] [port] ]");
+            System.out.println("[IP] [port]");
             return;
         }
 
@@ -467,7 +463,7 @@ public class OMSServerImpl implements OMSServer {
             port = Integer.parseInt(args[1]);
         } catch (NumberFormatException e) {
             System.out.println("Invalid arguments to OMS.");
-            System.out.println("[IP] [port] [AppClassName]");
+            System.out.println("[IP] [port]");
             return;
         }
 
@@ -483,18 +479,10 @@ public class OMSServerImpl implements OMSServer {
 
             /* Create an instance of kernel server and export kernel server service */
             KernelServer localKernelServer =
-                    new KernelServerImpl(
-                            new InetSocketAddress(args[0], Integer.parseInt(args[1])), oms);
+                    new KernelServerImpl(new InetSocketAddress(args[0], port), oms);
             KernelServer localKernelServerStub =
                     (KernelServer) UnicastRemoteObject.exportObject(localKernelServer, 0);
             registry.rebind("SapphireKernelServer", localKernelServerStub);
-
-            if (args.length >= 4) {
-                oms.setGrpcServer(
-                        new OMSGrpcServer(
-                                new InetSocketAddress(args[2], Integer.parseInt(args[3])), oms));
-                oms.getGrpcServer().start();
-            }
 
             logger.info("OMS ready");
             for (Iterator<InetSocketAddress> it = oms.getServers().iterator(); it.hasNext(); ) {
@@ -504,46 +492,88 @@ public class OMSServerImpl implements OMSServer {
         } catch (Exception e) {
             logger.severe("Server exception: " + e.toString());
             e.printStackTrace();
-
-            if (null != oms.getGrpcServer()) {
-                oms.getGrpcServer().stop();
-            }
         }
     }
 
+    /**
+     * Registers a sapphire object
+     *
+     * @return Returns sapphire object id
+     * @throws RemoteException
+     */
     @Override
     public SapphireObjectID registerSapphireObject() throws RemoteException {
         return objectManager.add(null);
     }
 
+    /**
+     * Register a sapphire replica of a given sapphire object
+     *
+     * @param sapphireObjId
+     * @return Return sapphire replica id
+     * @throws RemoteException
+     * @throws SapphireObjectNotFoundException
+     */
     @Override
-    public SapphireReplicaID registerSapphireReplica(SapphireObjectID oid, EventHandler dispatcher)
+    public SapphireReplicaID registerSapphireReplica(SapphireObjectID sapphireObjId)
             throws RemoteException, SapphireObjectNotFoundException {
-        return objectManager.add(oid, dispatcher);
+        return objectManager.add(sapphireObjId, null);
     }
 
+    /**
+     * Sets the event handler of the sapphire object
+     *
+     * @param sapphireObjId
+     * @param dispatcher
+     * @throws RemoteException
+     * @throws SapphireObjectNotFoundException
+     */
     @Override
-    public void setSapphireObjectHandler(SapphireObjectID oid, EventHandler dispatcher)
+    public void setSapphireObjectDispatcher(SapphireObjectID sapphireObjId, EventHandler dispatcher)
             throws RemoteException, SapphireObjectNotFoundException {
-        objectManager.set(oid, dispatcher);
+        objectManager.set(sapphireObjId, dispatcher);
     }
 
+    /**
+     * Sets the event handler of the sapphire replica
+     *
+     * @param replicaId
+     * @param dispatcher
+     * @throws RemoteException
+     * @throws SapphireObjectNotFoundException
+     */
     @Override
-    public void setSapphireReplicaHandler(SapphireReplicaID rid, EventHandler dispatcher)
+    public void setSapphireReplicaDispatcher(SapphireReplicaID replicaId, EventHandler dispatcher)
             throws RemoteException, SapphireObjectNotFoundException {
-        objectManager.set(rid, dispatcher);
+        objectManager.set(replicaId, dispatcher);
     }
 
+    /**
+     * gets the event handler of the given sapphire object
+     *
+     * @param sapphireObjId
+     * @return
+     * @throws RemoteException
+     * @throws SapphireObjectNotFoundException
+     */
     @Override
-    public EventHandler getSapphireObjectDispatcher(SapphireObjectID oid)
+    public EventHandler getSapphireObjectDispatcher(SapphireObjectID sapphireObjId)
             throws RemoteException, SapphireObjectNotFoundException {
-        return objectManager.get(oid);
+        return objectManager.get(sapphireObjId);
     }
 
+    /**
+     * Gets the event handler of the given sapphire replica
+     *
+     * @param replicaId
+     * @return
+     * @throws RemoteException
+     * @throws SapphireObjectNotFoundException
+     */
     @Override
-    public EventHandler getSapphireReplicaDispatcher(SapphireReplicaID rid)
+    public EventHandler getSapphireReplicaDispatcher(SapphireReplicaID replicaId)
             throws RemoteException, SapphireObjectNotFoundException {
-        return objectManager.get(rid);
+        return objectManager.get(replicaId);
     }
 
     @Override

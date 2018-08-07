@@ -1,12 +1,11 @@
 package sapphire.kernel.server;
 
-import com.google.protobuf.ByteString;
-
 import static sapphire.runtime.Sapphire.createInnerSo;
 import static sapphire.runtime.Sapphire.createSo;
 import static sapphire.runtime.Sapphire.delete_;
 import static sapphire.runtime.Sapphire.new_;
 
+import com.google.protobuf.ByteString;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -17,6 +16,7 @@ import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import sapphire.common.AppObjectStub;
@@ -169,18 +169,23 @@ public class KernelServerImpl implements KernelServer {
     public ByteString genericInvoke(String clientId, String methodName, ArrayList<Object> params)
             throws KernelObjectNotFoundException, KernelRPCException {
         KernelOID clientOid = new KernelOID(Integer.parseInt(clientId));
-        KernelObject object = null;
-        object = objectManager.lookupObject(clientOid);
-        Object ret = null;
+        KernelObject object = objectManager.lookupObject(clientOid);
+        Object ret;
         try {
-            Method method = object.getObject().getClass().getMethod("onRPC", methodName.getClass(), new ArrayList<Object>().getClass());
+            Method method =
+                    object.getObject()
+                            .getClass()
+                            .getMethod(
+                                    "onRPC",
+                                    methodName.getClass(),
+                                    new ArrayList<Object>().getClass());
             ret = method.invoke(object.getObject(), methodName, params);
         } catch (Exception e) {
             e.printStackTrace();
             throw new KernelRPCException(e);
         }
 
-        return (ByteString)ret;
+        return (ByteString) ret;
     }
 
     /**
@@ -309,13 +314,20 @@ public class KernelServerImpl implements KernelServer {
     @Override
     public SapphireSoStub createSapphireObject(String className, Object... args)
             throws RemoteException, SapphireObjectCreationException, ClassNotFoundException {
-        SapphireSoStub soStub = null;
+        SapphireSoStub soStub;
         Class<?> cls = Class.forName(className);
         AppObjectStub appObjStub = (AppObjectStub) new_(cls, args);
-        soStub = new SapphireSoStub.SapphireSoStubBuilder().setSapphireObjId(appObjStub.$__getSapphireClientPolicy().getServer().getReplicaId().getOID())
-                    .setParentSapphireObjId(null)
-                    .setAppObjectStub(appObjStub)
-                    .create();
+        soStub =
+                new SapphireSoStub.SapphireSoStubBuilder()
+                        .setSapphireObjId(
+                                appObjStub
+                                        .$__getSapphireClientPolicy()
+                                        .getServer()
+                                        .getReplicaId()
+                                        .getOID())
+                        .setParentSapphireObjId(null)
+                        .setAppObjectStub(appObjStub)
+                        .create();
         return soStub;
     }
 
@@ -323,8 +335,8 @@ public class KernelServerImpl implements KernelServer {
     public SapphireSoStub createSapphireObject(
             String className, String runtimeType, String constructorName, byte[] args)
             throws RemoteException, ClassNotFoundException, KernelObjectNotCreatedException,
-            InstantiationException, KernelObjectNotFoundException,
-            SapphireObjectNotFoundException, IllegalAccessException {
+                    InstantiationException, KernelObjectNotFoundException,
+                    SapphireObjectNotFoundException, IllegalAccessException {
         return createSo(className, runtimeType, constructorName, args);
     }
 
@@ -401,7 +413,6 @@ public class KernelServerImpl implements KernelServer {
         KernelOID oid;
 
         for (Object policy : policies) {
-            oid = null;
             if (policy instanceof SapphirePolicy.SapphireServerPolicy) {
                 oid = ((SapphirePolicy.SapphireServerPolicy) policy).$__getKernelOID();
             } else if (policy instanceof SapphirePolicy.SapphireGroupPolicy) {
@@ -411,7 +422,7 @@ public class KernelServerImpl implements KernelServer {
                 continue;
             }
 
-            if (null == oid) {
+            if (oid == null) {
                 logger.warning("oid is null");
                 continue;
             }
@@ -484,7 +495,10 @@ public class KernelServerImpl implements KernelServer {
             logger.severe("Cannot heartbeat KernelServer" + srvinfo);
             e.printStackTrace();
         }
-        ksHeartbeatSendTimer.reset();
+
+        if (ksHeartbeatSendTimer != null) {
+            ksHeartbeatSendTimer.reset();
+        }
     }
     /**
      * At startup, contact the OMS.
@@ -495,7 +509,8 @@ public class KernelServerImpl implements KernelServer {
         // Time Being for backward compatibility Region is optional in the configuration
         if (args.length < 4) {
             System.out.println("Incorrect arguments to the kernel server");
-            System.out.println("[host ip] [host port] [oms ip] [oms port] [ [grpc-servingip] [port] ] [ [java-grpc-serverip] [port] ][region]");
+            System.out.println(
+                    "[host ip] [host port] [oms ip] [oms port] [grpc-servingip] [grpc-port] [ [java-grpc-serverip] [grpc-port] ] [role]");
             return;
         }
 
@@ -506,7 +521,8 @@ public class KernelServerImpl implements KernelServer {
             omsHost = new InetSocketAddress(args[2], Integer.parseInt(args[3]));
         } catch (NumberFormatException e) {
             System.out.println("Incorrect arguments to the kernel server");
-            System.out.println("[host ip] [host port] [oms ip] [oms port] [ [grpc-servingip] [port] [ [java-grpc-serverip] [port] ] [role] ]");
+            System.out.println(
+                    "[host ip] [host port] [oms ip] [oms port] [grpc-servingip] [grpc-port] [ [java-grpc-serverip] [grpc-port] ] [role]");
             return;
         }
 
@@ -521,7 +537,8 @@ public class KernelServerImpl implements KernelServer {
             registry.rebind("SapphireKernelServer", stub);
 
             if (args.length > 4) {
-                //server.setRegion(args[args.length - 1]);
+                // TODO: Need to check how to get region
+                // server.setRegion(args[args.length - 1]);
                 server.setRegion(host.toString());
             } else {
                 // server.setRegion("default");
@@ -531,23 +548,29 @@ public class KernelServerImpl implements KernelServer {
 
             if (args.length > 5) {
                 int role = Integer.parseInt(args[args.length - 1]);
-                if (1 == role) {
+                if (ServerInfo.ROLE_KERNEL_CLIENT == role) {
                     /* Role is client */
                     server.setRole(role);
                     server.setGrpcServerToApp(
                             new KernelGrpcServer(
-                                    new InetSocketAddress(args[4], Integer.parseInt(args[5])), server, ServerInfo.ROLE_KERNEL_CLIENT));
+                                    new InetSocketAddress(args[4], Integer.parseInt(args[5])),
+                                    server,
+                                    ServerInfo.ROLE_KERNEL_CLIENT,
+                                    oms));
                     server.getGrpcServerToApp().start();
 
                 } else {
                     /* Role is server */
                     server.setGrpcServerToRuntime(
                             new KernelGrpcServer(
-                                    new InetSocketAddress(args[4], Integer.parseInt(args[5])), server, ServerInfo.ROLE_KERNEL_SERVER));
+                                    new InetSocketAddress(args[4], Integer.parseInt(args[5])),
+                                    server,
+                                    ServerInfo.ROLE_KERNEL_SERVER,
+                                    oms));
                     server.getGrpcServerToRuntime().start();
 
                     if (args.length > 7) {
-                    /* Start client for each runtime */
+                        /* Start client for each runtime */
                         server.setGrpcClientToJavaRuntime(
                                 new KernelGrpcClient(args[6], Integer.parseInt(args[7])));
                     }
@@ -559,19 +582,20 @@ public class KernelServerImpl implements KernelServer {
             logger.info("Server ready!");
             System.out.println("Server ready!");
 
-            /*
-            ksHeartbeatSendTimer =
-                    new ResettableTimer(
-                            new TimerTask() {
-                                public void run() {
-                                    startheartbeat(srvinfo);
-                                }
-                            },
-                            KS_HEARTBEAT_PERIOD);
+            if (ServerInfo.ROLE_KERNEL_CLIENT != server.getRole()) {
+                ksHeartbeatSendTimer =
+                        new ResettableTimer(
+                                new TimerTask() {
+                                    public void run() {
+                                        startheartbeat(srvinfo);
+                                    }
+                                },
+                                KS_HEARTBEAT_PERIOD);
 
-            oms.heartbeatKernelServer(srvinfo);
-            ksHeartbeatSendTimer.start();
-            */
+                oms.heartbeatKernelServer(srvinfo);
+                ksHeartbeatSendTimer.start();
+            }
+
             /* Start a thread that print memory stats */
             server.getMemoryStatThread().start();
 
@@ -595,7 +619,7 @@ public class KernelServerImpl implements KernelServer {
                 e1.printStackTrace();
             }
 
-            //ksHeartbeatSendTimer.cancel();
+            ksHeartbeatSendTimer.cancel();
         }
     }
 }

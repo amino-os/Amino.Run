@@ -3,10 +3,17 @@
  */
 syntax= "proto3";
 
-package RuntimeApiToKernelServer;
+package sapphire.runtime.kernel;
 
+option java_outer_classname = "Service";
 option java_multiple_files = true;
-option java_package = "sapphire.runtime.RuntimeApiToKernelServer";
+option java_package = "sapphire.runtime.kernel";
+
+service KernelService {
+    rpc CreateSObjReplica (CreateSObjReplicaRequest) returns (CreateSObjReplicaResponse) {}
+    rpc DeleteSObjReplica (DeleteSObjReplicaRequest) returns (DeleteSObjReplicaResponse) {}
+    rpc SObjMethodInvoke (SObjMethodInvokeRequest) returns (SObjMethodInvokeResponse) {}
+}
 
 message CreateSObjReplicaRequest {
     string sObjName = 1;
@@ -47,10 +54,4 @@ message SObjMethodInvokeRequest {
 
 message SObjMethodInvokeResponse {
     bytes sObjMethodResponse = 1;
-}
-
-service KernelServerRuntimeGrpcService {
-    rpc CreateSObjReplica (CreateSObjReplicaRequest) returns (CreateSObjReplicaResponse) {}
-    rpc DeleteSObjReplica (DeleteSObjReplicaRequest) returns (DeleteSObjReplicaResponse) {}
-    rpc SObjMethodInvoke (SObjMethodInvokeRequest) returns (SObjMethodInvokeResponse) {}
 }

@@ -124,12 +124,9 @@ public class Sapphire {
         Annotation[] annotations =
                 new Annotation[] {}; // TODO: This config should come from caller */
 
-        if (clientPolicyName.isEmpty())
-            clientPolicyName = DefaultClientPolicy.class.getName();
-        if (serverPolicyName.isEmpty())
-            serverPolicyName = DefaultServerPolicy.class.getName();
-        if (groupPolicyName.isEmpty())
-            groupPolicyName = DefaultGroupPolicy.class.getName();
+        if (clientPolicyName.isEmpty()) clientPolicyName = DefaultClientPolicy.class.getName();
+        if (serverPolicyName.isEmpty()) serverPolicyName = DefaultServerPolicy.class.getName();
+        if (groupPolicyName.isEmpty()) groupPolicyName = DefaultGroupPolicy.class.getName();
 
         DMPolicy dm =
                 createDM(
@@ -162,7 +159,7 @@ public class Sapphire {
                             }
                         });
 
-        GlobalKernelReferences.nodeServer.oms.setSapphireReplicaHandler(
+        GlobalKernelReferences.nodeServer.oms.setSapphireReplicaDispatcher(
                 sapphireReplicaId, replicaHandler);
 
         /* return the byte stream received from runtime */
@@ -188,13 +185,10 @@ public class Sapphire {
                     KernelObjectNotFoundException, IllegalAccessException {
 
         /* register sapphire object and a replica created on this kernel server */
-        EventHandler replicaHandler =
-                new EventHandler(GlobalKernelReferences.nodeServer.getLocalHost(), new ArrayList());
         SapphireObjectID sapphireObjId =
                 GlobalKernelReferences.nodeServer.oms.registerSapphireObject();
         SapphireReplicaID sapphireReplicaId =
-                GlobalKernelReferences.nodeServer.oms.registerSapphireReplica(
-                        sapphireObjId, replicaHandler);
+                GlobalKernelReferences.nodeServer.oms.registerSapphireReplica(sapphireObjId);
 
         SapphireSoStub sapphireSoStub =
                 CreateAppObjectAndLinkToDM(
@@ -221,13 +215,10 @@ public class Sapphire {
                     InstantiationException, IllegalAccessException {
 
         /* register sapphire object and a replica created on this kernel server */
-        EventHandler replicaHandler =
-                new EventHandler(GlobalKernelReferences.nodeServer.getLocalHost(), new ArrayList());
         SapphireObjectID sapphireObjId =
                 GlobalKernelReferences.nodeServer.oms.registerSapphireObject();
         SapphireReplicaID sapphireReplicaId =
-                GlobalKernelReferences.nodeServer.oms.registerSapphireReplica(
-                        sapphireObjId, replicaHandler);
+                GlobalKernelReferences.nodeServer.oms.registerSapphireReplica(sapphireObjId);
 
         byte[] opaqueObject = new byte[0];
         SapphireObjectID parentSapphireObjId = null;
@@ -318,14 +309,10 @@ public class Sapphire {
             Annotation[] annotations = appObjectClass.getAnnotations();
 
             /* register sapphire object and a replica created on this kernel server */
-            EventHandler replicaHandler =
-                    new EventHandler(
-                            GlobalKernelReferences.nodeServer.getLocalHost(), new ArrayList());
             SapphireObjectID sapphireObjId =
                     GlobalKernelReferences.nodeServer.oms.registerSapphireObject();
             SapphireReplicaID sapphireReplicaId =
-                    GlobalKernelReferences.nodeServer.oms.registerSapphireReplica(
-                            sapphireObjId, replicaHandler);
+                    GlobalKernelReferences.nodeServer.oms.registerSapphireReplica(sapphireObjId);
 
             DMPolicy dm =
                     createDM(
@@ -338,7 +325,7 @@ public class Sapphire {
 
             final SapphirePolicy.SapphireServerPolicy serverStub = dm.serverPolicyStub;
 
-            replicaHandler =
+            EventHandler replicaHandler =
                     new EventHandler(
                             GlobalKernelReferences.nodeServer.getLocalHost(),
                             new ArrayList() {
@@ -347,7 +334,7 @@ public class Sapphire {
                                 }
                             });
 
-            GlobalKernelReferences.nodeServer.oms.setSapphireReplicaHandler(
+            GlobalKernelReferences.nodeServer.oms.setSapphireReplicaDispatcher(
                     sapphireReplicaId, replicaHandler);
 
             /* Create the App Object and return the App Stub */
@@ -384,7 +371,6 @@ public class Sapphire {
         KernelOID oid;
 
         for (Object policy : policies) {
-            oid = null;
             if (policy instanceof SapphirePolicy.SapphireServerPolicy) {
                 oid = ((SapphirePolicy.SapphireServerPolicy) policy).$__getKernelOID();
             } else if (policy instanceof SapphirePolicy.SapphireGroupPolicy) {
@@ -394,7 +380,7 @@ public class Sapphire {
                 continue;
             }
 
-            if (null == oid) {
+            if (oid == null) {
                 logger.warning("oid is null");
                 continue;
             }

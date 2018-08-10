@@ -42,7 +42,11 @@ public final class UserManager_Stub extends sapphire.appexamples.minnietwitter.a
                 $__params.add($param_String_2);
                 $__result = $__client.onRPC($__method, $__params);
             }
-        } catch (Exception e) {
+        } catch (java.lang.RuntimeException e) {
+            throw e;
+        } catch (java.rmi.RemoteException e) {
+            throw new java.lang.RuntimeException(e);
+        } catch (java.lang.Exception e) {
             e.printStackTrace();
         }
         return ((sapphire.appexamples.minnietwitter.app.User) $__result);
@@ -60,7 +64,11 @@ public final class UserManager_Stub extends sapphire.appexamples.minnietwitter.a
                 $__params.add($param_String_1);
                 $__result = $__client.onRPC($__method, $__params);
             }
-        } catch (Exception e) {
+        } catch (java.lang.RuntimeException e) {
+            throw e;
+        } catch (java.rmi.RemoteException e) {
+            throw new java.lang.RuntimeException(e);
+        } catch (java.lang.Exception e) {
             e.printStackTrace();
         }
         return ((sapphire.appexamples.minnietwitter.app.User) $__result);
@@ -77,7 +85,11 @@ public final class UserManager_Stub extends sapphire.appexamples.minnietwitter.a
                 String $__method = "public java.util.Map<sapphire.policy.interfaces.dht.DHTKey, ?> sapphire.appexamples.minnietwitter.app.UserManager.dhtGetData()";
                 $__result = $__client.onRPC($__method, $__params);
             }
-        } catch (Exception e) {
+        } catch (java.lang.RuntimeException e) {
+            throw e;
+        } catch (java.rmi.RemoteException e) {
+            throw new java.lang.RuntimeException(e);
+        } catch (java.lang.Exception e) {
             e.printStackTrace();
         }
         return ((java.util.Map) $__result);
@@ -97,7 +109,13 @@ public final class UserManager_Stub extends sapphire.appexamples.minnietwitter.a
                 $__params.add($param_String_2);
                 $__result = $__client.onRPC($__method, $__params);
             }
-        } catch (Exception e) {
+        } catch (java.lang.RuntimeException e) {
+            throw e;
+        } catch (java.rmi.RemoteException e) {
+            throw new java.lang.RuntimeException(e);
+        } catch (sapphire.app.AppObjectNotCreatedException e) {
+            throw e;
+        } catch (java.lang.Exception e) {
             e.printStackTrace();
         }
         return ((sapphire.appexamples.minnietwitter.app.User) $__result);

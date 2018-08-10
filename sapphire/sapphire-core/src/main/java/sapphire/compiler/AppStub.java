@@ -3,6 +3,8 @@ package sapphire.compiler;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.rmi.RemoteException;
+import java.util.Iterator;
 import java.util.TreeSet;
 import org.apache.harmony.rmi.common.RMIUtil;
 import org.apache.harmony.rmi.compiler.RmicUtil;
@@ -135,24 +137,14 @@ public final class AppStub extends Stub {
     public String getMethodContent(MethodStub m) {
         StringBuilder buffer = new StringBuilder("");
 
-        // Construct list of comma separated params & the ArrayList of params
-        StringBuilder cListParams = new StringBuilder("(");
-        StringBuilder listParams = new StringBuilder("");
-
-        for (int i = 0; i < m.numParams; i++) {
-            listParams.append(
-                    indenter.tIncrease(2) + "$__params.add(" + m.paramNames[i] + ");" + EOLN);
-            cListParams.append(((i > 0) ? ", " : "") + ' ' + m.paramNames[i]);
-        }
-        cListParams.append(")");
-
         buffer.append(indenter.indent() + "java.lang.Object $__result = null;" + EOLN);
 
         int tabWidth;
         if (!m.exceptions.contains(Exception.class)) {
             /* If method do not throw generic exception. Catch all the exceptions in the stub and rethrow
             them based on exceptions method is allowed to throw. And for the rest of the exceptions,
-             just print stack trace */
+            just print stack trace. Runtime exceptions are thrown to app as is. Remote exceptions
+             are wrapped into runtime exceptions and thrown to app */
             /* tab width used for alignment in this case */
             tabWidth = 2;
 
@@ -164,6 +156,21 @@ public final class AppStub extends Stub {
             /* tab width used for alignment in this case */
             tabWidth = 1;
         }
+
+        // Construct list of comma separated params & the ArrayList of params
+        StringBuilder cListParams = new StringBuilder("(");
+        StringBuilder listParams = new StringBuilder("");
+
+        for (int i = 0; i < m.numParams; i++) {
+            listParams.append(
+                    indenter.tIncrease(tabWidth)
+                            + "$__params.add("
+                            + m.paramNames[i]
+                            + ");"
+                            + EOLN);
+            cListParams.append(((i > 0) ? ", " : "") + ' ' + m.paramNames[i]);
+        }
+        cListParams.append(")");
 
         // Check if direct invocation
         buffer.append(indenter.tIncrease(tabWidth - 1) + "if ($__directInvocation)" + EOLN);
@@ -202,41 +209,41 @@ public final class AppStub extends Stub {
         buffer.append(indenter.tIncrease(tabWidth - 1) + "}" + EOLN);
 
         if (!m.exceptions.contains(Exception.class)) {
-            /* Append catch block to buffer */
-            buffer.append(
-                    indenter.indent()
-                            + "} catch (Exception e) {"
-                            + EOLN); //$NON-NLS-1$ //$NON-NLS-2$
-            if (!m.exceptions.isEmpty()) {
-                /* TODO: Need to confirm whether to catch rmi specific exceptions(or just remote exceptions) in the stub itself */
-                boolean elseif = false;
-                /* Rethrow the exceptions method is allowed to */
-                for (Class<?> e : m.exceptions) {
-                    if (false == elseif) {
-                        buffer.append(
-                                indenter.tIncrease()
-                                        + "if (e instanceof "
-                                        + e.getName()
-                                        + ") {"
-                                        + EOLN);
-                        elseif = true;
-                    } else {
-                        buffer.append(
-                                indenter.tIncrease()
-                                        + "else if (e instanceof "
-                                        + e.getName()
-                                        + ") {"
-                                        + EOLN);
-                    }
-
+            for (Iterator i = m.catches.iterator(); i.hasNext(); ) {
+                Class clz = (Class) i.next();
+                if (clz == RemoteException.class) {
                     buffer.append(
-                            indenter.tIncrease(tabWidth) + "throw (" + e.getName() + ") e;" + EOLN);
-                    buffer.append(indenter.tIncrease() + "}" + EOLN); // $NON-NLS-1$
+                            indenter.indent()
+                                    + "} catch (" //$NON-NLS-1$
+                                    + clz.getName()
+                                    + " e) {"
+                                    + EOLN //$NON-NLS-1$
+                                    + indenter.tIncrease()
+                                    + "throw new java.lang.RuntimeException(e);"
+                                    + EOLN); //$NON-NLS-1$
+                } else {
+                    buffer.append(
+                            indenter.indent()
+                                    + "} catch (" //$NON-NLS-1$
+                                    + clz.getName()
+                                    + " e) {"
+                                    + EOLN //$NON-NLS-1$
+                                    + indenter.tIncrease()
+                                    + "throw e;"
+                                    + EOLN); //$NON-NLS-1$
                 }
             }
 
-            buffer.append(indenter.tIncrease() + "e.printStackTrace();" + EOLN); // $NON-NLS-1$
-            buffer.append(indenter.indent() + "}" + EOLN); // $NON-NLS-1$
+            buffer.append(
+                    indenter.indent()
+                            + "} catch (java.lang.Exception e) {"
+                            + EOLN //$NON-NLS-1$
+                            + indenter.tIncrease()
+                            + "e.printStackTrace();" //$NON-NLS-1$
+                            + EOLN //$NON-NLS-1$
+                            + indenter.indent()
+                            + '}'
+                            + EOLN);
         }
 
         if (!m.retType.getSimpleName().equals("void")) {

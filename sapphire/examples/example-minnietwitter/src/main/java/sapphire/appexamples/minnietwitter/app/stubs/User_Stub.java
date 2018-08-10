@@ -41,7 +41,11 @@ public final class User_Stub extends sapphire.appexamples.minnietwitter.app.User
                 $__params.add($param_User_1);
                 $__result = $__client.onRPC($__method, $__params);
             }
-        } catch (Exception e) {
+        } catch (java.lang.RuntimeException e) {
+            throw e;
+        } catch (java.rmi.RemoteException e) {
+            throw new java.lang.RuntimeException(e);
+        } catch (java.lang.Exception e) {
             e.printStackTrace();
         }
     }
@@ -57,7 +61,11 @@ public final class User_Stub extends sapphire.appexamples.minnietwitter.app.User
                 String $__method = "public sapphire.appexamples.minnietwitter.app.UserInfo sapphire.appexamples.minnietwitter.app.User.getUserInfo()";
                 $__result = $__client.onRPC($__method, $__params);
             }
-        } catch (Exception e) {
+        } catch (java.lang.RuntimeException e) {
+            throw e;
+        } catch (java.rmi.RemoteException e) {
+            throw new java.lang.RuntimeException(e);
+        } catch (java.lang.Exception e) {
             e.printStackTrace();
         }
         return ((sapphire.appexamples.minnietwitter.app.UserInfo) $__result);
@@ -74,7 +82,11 @@ public final class User_Stub extends sapphire.appexamples.minnietwitter.app.User
                 String $__method = "public sapphire.appexamples.minnietwitter.app.Timeline sapphire.appexamples.minnietwitter.app.User.getTimeline()";
                 $__result = $__client.onRPC($__method, $__params);
             }
-        } catch (Exception e) {
+        } catch (java.lang.RuntimeException e) {
+            throw e;
+        } catch (java.rmi.RemoteException e) {
+            throw new java.lang.RuntimeException(e);
+        } catch (java.lang.Exception e) {
             e.printStackTrace();
         }
         return ((sapphire.appexamples.minnietwitter.app.Timeline) $__result);
@@ -93,7 +105,11 @@ public final class User_Stub extends sapphire.appexamples.minnietwitter.app.User
                 $__params.add($param_int_2);
                 $__result = $__client.onRPC($__method, $__params);
             }
-        } catch (Exception e) {
+        } catch (java.lang.RuntimeException e) {
+            throw e;
+        } catch (java.rmi.RemoteException e) {
+            throw new java.lang.RuntimeException(e);
+        } catch (java.lang.Exception e) {
             e.printStackTrace();
         }
         return ((java.util.List) $__result);
@@ -112,7 +128,11 @@ public final class User_Stub extends sapphire.appexamples.minnietwitter.app.User
                 $__params.add($param_int_2);
                 $__result = $__client.onRPC($__method, $__params);
             }
-        } catch (Exception e) {
+        } catch (java.lang.RuntimeException e) {
+            throw e;
+        } catch (java.rmi.RemoteException e) {
+            throw new java.lang.RuntimeException(e);
+        } catch (java.lang.Exception e) {
             e.printStackTrace();
         }
         return ((java.util.List) $__result);
@@ -130,7 +150,11 @@ public final class User_Stub extends sapphire.appexamples.minnietwitter.app.User
                 $__params.add($param_User_1);
                 $__result = $__client.onRPC($__method, $__params);
             }
-        } catch (Exception e) {
+        } catch (java.lang.RuntimeException e) {
+            throw e;
+        } catch (java.rmi.RemoteException e) {
+            throw new java.lang.RuntimeException(e);
+        } catch (java.lang.Exception e) {
             e.printStackTrace();
         }
     }
@@ -147,7 +171,11 @@ public final class User_Stub extends sapphire.appexamples.minnietwitter.app.User
                 $__params.add($param_User_1);
                 $__result = $__client.onRPC($__method, $__params);
             }
-        } catch (Exception e) {
+        } catch (java.lang.RuntimeException e) {
+            throw e;
+        } catch (java.rmi.RemoteException e) {
+            throw new java.lang.RuntimeException(e);
+        } catch (java.lang.Exception e) {
             e.printStackTrace();
         }
     }

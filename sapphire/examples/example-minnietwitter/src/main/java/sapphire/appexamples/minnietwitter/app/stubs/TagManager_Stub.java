@@ -43,7 +43,11 @@ public final class TagManager_Stub extends sapphire.appexamples.minnietwitter.ap
                 $__params.add($param_int_3);
                 $__result = $__client.onRPC($__method, $__params);
             }
-        } catch (Exception e) {
+        } catch (java.lang.RuntimeException e) {
+            throw e;
+        } catch (java.rmi.RemoteException e) {
+            throw new java.lang.RuntimeException(e);
+        } catch (java.lang.Exception e) {
             e.printStackTrace();
         }
         return ((java.util.List) $__result);
@@ -62,7 +66,11 @@ public final class TagManager_Stub extends sapphire.appexamples.minnietwitter.ap
                 $__params.add($param_Tweet_2);
                 $__result = $__client.onRPC($__method, $__params);
             }
-        } catch (Exception e) {
+        } catch (java.lang.RuntimeException e) {
+            throw e;
+        } catch (java.rmi.RemoteException e) {
+            throw new java.lang.RuntimeException(e);
+        } catch (java.lang.Exception e) {
             e.printStackTrace();
         }
     }

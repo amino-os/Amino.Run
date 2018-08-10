@@ -2,6 +2,8 @@ package sapphire.compiler;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.rmi.RemoteException;
+import java.util.Iterator;
 import java.util.TreeSet;
 import org.apache.harmony.rmi.compiler.RmicUtil;
 
@@ -224,54 +226,53 @@ public class PolicyStub extends Stub {
         // Write return statement.
         buffer.append(indenter.indent() + "java.lang.Object $__result = null;" + EOLN);
 
+        /* If method do not throw generic exception. Catch all the exceptions in the stub and rethrow
+        them based on exceptions method is allowed to throw. And for the rest of the exceptions,
+        just print stack trace. Runtime exceptions are also thrown. */
         if (!m.exceptions.contains(Exception.class)) {
-            /* If method do not throw generic exception. Catch all the exceptions in the stub and rethrow
-            them based on exceptions method is allowed to throw. And for the rest of the exceptions,
-             just print stack trace */
+            /* Append try catch block for this case */
             buffer.append(indenter.indent() + "try {" + EOLN);
             buffer.append(
                     indenter.tIncrease()
                             + "$__result = $__makeKernelRPC($__method, $__params);"
                             + EOLN); //$NON-NLS-1$ //$NON-NLS-2$
-            buffer.append(
-                    indenter.indent()
-                            + "} catch (Exception e) {"
-                            + EOLN); //$NON-NLS-1$ //$NON-NLS-2$
-            if (!m.exceptions.isEmpty()) {
-                /* TODO: Need to confirm whether to catch rmi specific exceptions(or just remote exceptions) in the stub itself */
-                boolean elseif = false;
-                /* Rethrow the exceptions method is allowed to */
-                for (Class<?> e : m.exceptions) {
-                    if (false == elseif) {
-                        buffer.append(
-                                indenter.tIncrease()
-                                        + "if (e instanceof "
-                                        + e.getName()
-                                        + ") {"
-                                        + EOLN);
-                        elseif = true;
-                    } else {
-                        buffer.append(
-                                indenter.tIncrease()
-                                        + "else if (e instanceof "
-                                        + e.getName()
-                                        + ") {"
-                                        + EOLN);
-                    }
 
-                    buffer.append(indenter.tIncrease(2) + "throw (" + e.getName() + ") e;" + EOLN);
-                    buffer.append(indenter.tIncrease() + "}" + EOLN); // $NON-NLS-1$
-                }
-            }
-
-            buffer.append(indenter.tIncrease() + "e.printStackTrace();" + EOLN); // $NON-NLS-1$
-            buffer.append(indenter.indent() + "}" + EOLN); // $NON-NLS-1$
         } else {
-            /* Method throws generic exception. Let policy handle all the exceptions */
             buffer.append(
                     indenter.indent()
                             + "$__result = $__makeKernelRPC($__method, $__params);"
                             + EOLN); //$NON-NLS-1$ //$NON-NLS-2$
+        }
+
+        if (!m.exceptions.contains(Exception.class)) {
+            for (Iterator i = m.catches.iterator(); i.hasNext(); ) {
+                Class clz = (Class) i.next();
+                if ((clz == RemoteException.class)
+                        && (!m.exceptions.contains(RemoteException.class))) {
+                    continue;
+                }
+
+                buffer.append(
+                        indenter.indent()
+                                + "} catch (" //$NON-NLS-1$
+                                + clz.getName()
+                                + " e) {"
+                                + EOLN //$NON-NLS-1$
+                                + indenter.tIncrease()
+                                + "throw e;"
+                                + EOLN); //$NON-NLS-1$
+            }
+
+            buffer.append(
+                    indenter.indent()
+                            + "} catch (java.lang.Exception e) {"
+                            + EOLN //$NON-NLS-1$
+                            + indenter.tIncrease()
+                            + "e.printStackTrace();" //$NON-NLS-1$
+                            + EOLN //$NON-NLS-1$
+                            + indenter.indent()
+                            + '}'
+                            + EOLN);
         }
 
         if (!m.retType.getSimpleName().equals("void")) {

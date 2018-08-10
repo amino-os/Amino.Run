@@ -40,7 +40,11 @@ public final class TwitterManager_Stub extends sapphire.appexamples.minnietwitte
                 String $__method = "public sapphire.appexamples.minnietwitter.app.UserManager sapphire.appexamples.minnietwitter.app.TwitterManager.getUserManager()";
                 $__result = $__client.onRPC($__method, $__params);
             }
-        } catch (Exception e) {
+        } catch (java.lang.RuntimeException e) {
+            throw e;
+        } catch (java.rmi.RemoteException e) {
+            throw new java.lang.RuntimeException(e);
+        } catch (java.lang.Exception e) {
             e.printStackTrace();
         }
         return ((sapphire.appexamples.minnietwitter.app.UserManager) $__result);
@@ -57,7 +61,11 @@ public final class TwitterManager_Stub extends sapphire.appexamples.minnietwitte
                 String $__method = "public sapphire.appexamples.minnietwitter.app.TagManager sapphire.appexamples.minnietwitter.app.TwitterManager.getTagManager()";
                 $__result = $__client.onRPC($__method, $__params);
             }
-        } catch (Exception e) {
+        } catch (java.lang.RuntimeException e) {
+            throw e;
+        } catch (java.rmi.RemoteException e) {
+            throw new java.lang.RuntimeException(e);
+        } catch (java.lang.Exception e) {
             e.printStackTrace();
         }
         return ((sapphire.appexamples.minnietwitter.app.TagManager) $__result);

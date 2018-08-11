@@ -2,7 +2,6 @@ package sapphire.compiler;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.rmi.RemoteException;
 import java.util.Iterator;
 import java.util.TreeSet;
 import org.apache.harmony.rmi.compiler.RmicUtil;
@@ -227,8 +226,8 @@ public class PolicyStub extends Stub {
         buffer.append(indenter.indent() + "java.lang.Object $__result = null;" + EOLN);
 
         /* If method do not throw generic exception. Catch all the exceptions in the stub and rethrow
-        them based on exceptions method is allowed to throw. And for the rest of the exceptions,
-        just print stack trace. Runtime exceptions are also thrown. */
+        them based on exceptions method is allowed to throw. Runtime exceptions are thrown to app
+        as is. And rest of the exceptions are wrapped into runtime exceptions and thrown to app */
         if (!m.exceptions.contains(Exception.class)) {
             /* Append try catch block for this case */
             buffer.append(indenter.indent() + "try {" + EOLN);
@@ -247,11 +246,6 @@ public class PolicyStub extends Stub {
         if (!m.exceptions.contains(Exception.class)) {
             for (Iterator i = m.catches.iterator(); i.hasNext(); ) {
                 Class clz = (Class) i.next();
-                if ((clz == RemoteException.class)
-                        && (!m.exceptions.contains(RemoteException.class))) {
-                    continue;
-                }
-
                 buffer.append(
                         indenter.indent()
                                 + "} catch (" //$NON-NLS-1$
@@ -268,7 +262,7 @@ public class PolicyStub extends Stub {
                             + "} catch (java.lang.Exception e) {"
                             + EOLN //$NON-NLS-1$
                             + indenter.tIncrease()
-                            + "e.printStackTrace();" //$NON-NLS-1$
+                            + "throw new java.lang.RuntimeException(e);" //$NON-NLS-1$
                             + EOLN //$NON-NLS-1$
                             + indenter.indent()
                             + '}'

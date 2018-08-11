@@ -32,20 +32,27 @@ public final class TwitterManager_Stub extends sapphire.appexamples.minnietwitte
     // Implementation of getUserManager()
     public sapphire.appexamples.minnietwitter.app.UserManager getUserManager() {
         java.lang.Object $__result = null;
-        try {
-            if ($__directInvocation)
+        if ($__directInvocation) {
+            try {
                 $__result = super.getUserManager();
-            else {
-                java.util.ArrayList<Object> $__params = new java.util.ArrayList<Object>();
-                String $__method = "public sapphire.appexamples.minnietwitter.app.UserManager sapphire.appexamples.minnietwitter.app.TwitterManager.getUserManager()";
-                $__result = $__client.onRPC($__method, $__params);
+            } catch (java.lang.Exception e) {
+                throw new sapphire.common.AppExceptionWrapper(e);
             }
-        } catch (java.lang.RuntimeException e) {
-            throw e;
-        } catch (java.rmi.RemoteException e) {
-            throw new java.lang.RuntimeException(e);
-        } catch (java.lang.Exception e) {
-            e.printStackTrace();
+        } else {
+            java.util.ArrayList<Object> $__params = new java.util.ArrayList<Object>();
+            String $__method = "public sapphire.appexamples.minnietwitter.app.UserManager sapphire.appexamples.minnietwitter.app.TwitterManager.getUserManager()";
+            try {
+                $__result = $__client.onRPC($__method, $__params);
+            } catch (sapphire.common.AppExceptionWrapper e) {
+                Exception ex = e.getException();
+                if (ex instanceof java.lang.RuntimeException) {
+                    throw (java.lang.RuntimeException)ex;
+                } else {
+                    throw new java.lang.RuntimeException(ex);
+                }
+            } catch (java.lang.Exception e) {
+                throw new java.lang.RuntimeException(e);
+            }
         }
         return ((sapphire.appexamples.minnietwitter.app.UserManager) $__result);
     }
@@ -53,20 +60,27 @@ public final class TwitterManager_Stub extends sapphire.appexamples.minnietwitte
     // Implementation of getTagManager()
     public sapphire.appexamples.minnietwitter.app.TagManager getTagManager() {
         java.lang.Object $__result = null;
-        try {
-            if ($__directInvocation)
+        if ($__directInvocation) {
+            try {
                 $__result = super.getTagManager();
-            else {
-                java.util.ArrayList<Object> $__params = new java.util.ArrayList<Object>();
-                String $__method = "public sapphire.appexamples.minnietwitter.app.TagManager sapphire.appexamples.minnietwitter.app.TwitterManager.getTagManager()";
-                $__result = $__client.onRPC($__method, $__params);
+            } catch (java.lang.Exception e) {
+                throw new sapphire.common.AppExceptionWrapper(e);
             }
-        } catch (java.lang.RuntimeException e) {
-            throw e;
-        } catch (java.rmi.RemoteException e) {
-            throw new java.lang.RuntimeException(e);
-        } catch (java.lang.Exception e) {
-            e.printStackTrace();
+        } else {
+            java.util.ArrayList<Object> $__params = new java.util.ArrayList<Object>();
+            String $__method = "public sapphire.appexamples.minnietwitter.app.TagManager sapphire.appexamples.minnietwitter.app.TwitterManager.getTagManager()";
+            try {
+                $__result = $__client.onRPC($__method, $__params);
+            } catch (sapphire.common.AppExceptionWrapper e) {
+                Exception ex = e.getException();
+                if (ex instanceof java.lang.RuntimeException) {
+                    throw (java.lang.RuntimeException)ex;
+                } else {
+                    throw new java.lang.RuntimeException(ex);
+                }
+            } catch (java.lang.Exception e) {
+                throw new java.lang.RuntimeException(e);
+            }
         }
         return ((sapphire.appexamples.minnietwitter.app.TagManager) $__result);
     }

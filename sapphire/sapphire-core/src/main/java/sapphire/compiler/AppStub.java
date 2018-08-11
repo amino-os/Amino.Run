@@ -3,7 +3,6 @@ package sapphire.compiler;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.rmi.RemoteException;
 import java.util.Iterator;
 import java.util.TreeSet;
 import org.apache.harmony.rmi.common.RMIUtil;
@@ -139,23 +138,7 @@ public final class AppStub extends Stub {
 
         buffer.append(indenter.indent() + "java.lang.Object $__result = null;" + EOLN);
 
-        int tabWidth;
-        if (!m.exceptions.contains(Exception.class)) {
-            /* If method do not throw generic exception. Catch all the exceptions in the stub and rethrow
-            them based on exceptions method is allowed to throw. And for the rest of the exceptions,
-            just print stack trace. Runtime exceptions are thrown to app as is. Remote exceptions
-             are wrapped into runtime exceptions and thrown to app */
-            /* tab width used for alignment in this case */
-            tabWidth = 2;
-
-            /* Append try catch block for this case */
-            buffer.append(indenter.indent() + "try {" + EOLN);
-        } else {
-            /* Method throws generic exception. Let app handle all the exceptions. Do not append
-            try catch block in this case */
-            /* tab width used for alignment in this case */
-            tabWidth = 1;
-        }
+        int tabWidth = 1;
 
         // Construct list of comma separated params & the ArrayList of params
         StringBuilder cListParams = new StringBuilder("(");
@@ -173,10 +156,12 @@ public final class AppStub extends Stub {
         cListParams.append(")");
 
         // Check if direct invocation
-        buffer.append(indenter.tIncrease(tabWidth - 1) + "if ($__directInvocation)" + EOLN);
+        buffer.append(indenter.indent() + "if ($__directInvocation) {" + EOLN);
+
+        buffer.append(indenter.tIncrease(tabWidth) + "try {" + EOLN);
         if (!m.retType.getSimpleName().equals("void"))
             buffer.append(
-                    indenter.tIncrease(tabWidth)
+                    indenter.tIncrease(tabWidth + 1)
                             + "$__result = super."
                             + m.name
                             + cListParams.toString()
@@ -184,13 +169,25 @@ public final class AppStub extends Stub {
                             + EOLN);
         else
             buffer.append(
-                    indenter.tIncrease(tabWidth)
+                    indenter.tIncrease(tabWidth + 1)
                             + "super."
                             + m.name
                             + cListParams.toString()
                             + ";"
                             + EOLN);
-        buffer.append(indenter.tIncrease(tabWidth - 1) + "else {" + EOLN);
+
+        buffer.append(
+                indenter.tIncrease(tabWidth)
+                        + "} catch (java.lang.Exception e) {"
+                        + EOLN
+                        + indenter.tIncrease(tabWidth + 1)
+                        + "throw new sapphire.common.AppExceptionWrapper(e);"
+                        + EOLN
+                        + indenter.tIncrease(tabWidth)
+                        + '}'
+                        + EOLN);
+
+        buffer.append(indenter.indent() + "} else {" + EOLN); // $NON-NLS-1$
         buffer.append(
                 indenter.tIncrease(tabWidth)
                         + "java.util.ArrayList<Object> $__params = new java.util.ArrayList<Object>();"
@@ -202,49 +199,57 @@ public final class AppStub extends Stub {
                         + "\";"
                         + EOLN); //$NON-NLS-1$
         buffer.append(listParams.toString()); // $NON-NLS-1$
+        buffer.append(indenter.tIncrease(tabWidth) + "try {" + EOLN); // $NON-NLS-1$
+        buffer.append(
+                indenter.tIncrease(tabWidth + 1)
+                        + "$__result = $__client.onRPC($__method, $__params);"
+                        + EOLN); // $NON-NLS-1$
         buffer.append(
                 indenter.tIncrease(tabWidth)
-                        + "$__result = $__client.onRPC($__method, $__params);"
+                        + "} catch (sapphire.common.AppExceptionWrapper e) {"
+                        + EOLN
+                        + indenter.tIncrease(tabWidth + 1)
+                        + "Exception ex = e.getException();"
                         + EOLN);
-        buffer.append(indenter.tIncrease(tabWidth - 1) + "}" + EOLN);
-
-        if (!m.exceptions.contains(Exception.class)) {
-            for (Iterator i = m.catches.iterator(); i.hasNext(); ) {
-                Class clz = (Class) i.next();
-                if (clz == RemoteException.class) {
-                    buffer.append(
-                            indenter.indent()
-                                    + "} catch (" //$NON-NLS-1$
-                                    + clz.getName()
-                                    + " e) {"
-                                    + EOLN //$NON-NLS-1$
-                                    + indenter.tIncrease()
-                                    + "throw new java.lang.RuntimeException(e);"
-                                    + EOLN); //$NON-NLS-1$
-                } else {
-                    buffer.append(
-                            indenter.indent()
-                                    + "} catch (" //$NON-NLS-1$
-                                    + clz.getName()
-                                    + " e) {"
-                                    + EOLN //$NON-NLS-1$
-                                    + indenter.tIncrease()
-                                    + "throw e;"
-                                    + EOLN); //$NON-NLS-1$
-                }
-            }
-
+        buffer.append(indenter.tIncrease(tabWidth + 1));
+        for (Iterator i = m.catches.iterator(); i.hasNext(); ) {
+            Class clz = (Class) i.next();
             buffer.append(
-                    indenter.indent()
-                            + "} catch (java.lang.Exception e) {"
-                            + EOLN //$NON-NLS-1$
-                            + indenter.tIncrease()
-                            + "e.printStackTrace();" //$NON-NLS-1$
-                            + EOLN //$NON-NLS-1$
-                            + indenter.indent()
-                            + '}'
+                    "if (ex instanceof "
+                            + clz.getName()
+                            + ") {"
+                            + EOLN
+                            + indenter.tIncrease(tabWidth + 2)
+                            + "throw ("
+                            + clz.getName()
+                            + ")ex;"
                             + EOLN);
+            if (i.hasNext()) {
+                buffer.append(indenter.tIncrease(tabWidth + 1) + "} else ");
+            }
         }
+
+        buffer.append(
+                indenter.tIncrease(tabWidth + 1)
+                        + "} else {"
+                        + EOLN //$NON-NLS-1$
+                        + indenter.tIncrease(tabWidth + 2)
+                        + "throw new java.lang.RuntimeException(ex);"
+                        + EOLN
+                        + indenter.tIncrease(tabWidth + 1)
+                        + '}'
+                        + EOLN);
+        buffer.append(
+                indenter.tIncrease(tabWidth)
+                        + "} catch (java.lang.Exception e) {"
+                        + EOLN //$NON-NLS-1$
+                        + indenter.tIncrease(tabWidth + 1)
+                        + "throw new java.lang.RuntimeException(e);"
+                        + EOLN //$NON-NLS-1$
+                        + indenter.tIncrease(tabWidth)
+                        + "}"
+                        + EOLN); //$NON-NLS-1$
+        buffer.append(indenter.indent() + "}" + EOLN); // $NON-NLS-1$
 
         if (!m.retType.getSimpleName().equals("void")) {
             buffer.append(
@@ -254,6 +259,7 @@ public final class AppStub extends Stub {
                             + ';'
                             + EOLN);
         }
+
         return buffer.toString();
     }
 }

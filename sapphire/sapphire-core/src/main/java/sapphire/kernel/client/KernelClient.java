@@ -78,6 +78,10 @@ public class KernelClient {
             /* If invocation exception is with any exception,including runtime, app exceptions, unwrap it
             and throw. Else it is invocation exception with error. Throw the invocation exception as is */
             Throwable cause = e.getException().getCause();
+            if (cause instanceof InvocationTargetException) {
+                cause = cause.getCause();
+            }
+
             throw (cause instanceof Exception) ? ((Exception) cause) : e.getException();
 
         } catch (KernelObjectMigratingException e) {

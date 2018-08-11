@@ -32,107 +32,142 @@ public final class Timeline_Stub extends sapphire.appexamples.minnietwitter.app.
     // Implementation of tweet(String)
     public void tweet(java.lang.String $param_String_1) {
         java.lang.Object $__result = null;
-        try {
-            if ($__directInvocation)
+        if ($__directInvocation) {
+            try {
                 super.tweet( $param_String_1);
-            else {
-                java.util.ArrayList<Object> $__params = new java.util.ArrayList<Object>();
-                String $__method = "public void sapphire.appexamples.minnietwitter.app.Timeline.tweet(java.lang.String)";
-                $__params.add($param_String_1);
-                $__result = $__client.onRPC($__method, $__params);
+            } catch (java.lang.Exception e) {
+                throw new sapphire.common.AppExceptionWrapper(e);
             }
-        } catch (java.lang.RuntimeException e) {
-            throw e;
-        } catch (java.rmi.RemoteException e) {
-            throw new java.lang.RuntimeException(e);
-        } catch (java.lang.Exception e) {
-            e.printStackTrace();
+        } else {
+            java.util.ArrayList<Object> $__params = new java.util.ArrayList<Object>();
+            String $__method = "public void sapphire.appexamples.minnietwitter.app.Timeline.tweet(java.lang.String)";
+            $__params.add($param_String_1);
+            try {
+                $__result = $__client.onRPC($__method, $__params);
+            } catch (sapphire.common.AppExceptionWrapper e) {
+                Exception ex = e.getException();
+                if (ex instanceof java.lang.RuntimeException) {
+                    throw (java.lang.RuntimeException)ex;
+                } else {
+                    throw new java.lang.RuntimeException(ex);
+                }
+            } catch (java.lang.Exception e) {
+                throw new java.lang.RuntimeException(e);
+            }
         }
     }
 
     // Implementation of retweetedBy(int, String)
     public void retweetedBy(int $param_int_1, java.lang.String $param_String_2) {
         java.lang.Object $__result = null;
-        try {
-            if ($__directInvocation)
+        if ($__directInvocation) {
+            try {
                 super.retweetedBy( $param_int_1,  $param_String_2);
-            else {
-                java.util.ArrayList<Object> $__params = new java.util.ArrayList<Object>();
-                String $__method = "public void sapphire.appexamples.minnietwitter.app.Timeline.retweetedBy(int,java.lang.String)";
-                $__params.add($param_int_1);
-                $__params.add($param_String_2);
-                $__result = $__client.onRPC($__method, $__params);
+            } catch (java.lang.Exception e) {
+                throw new sapphire.common.AppExceptionWrapper(e);
             }
-        } catch (java.lang.RuntimeException e) {
-            throw e;
-        } catch (java.rmi.RemoteException e) {
-            throw new java.lang.RuntimeException(e);
-        } catch (java.lang.Exception e) {
-            e.printStackTrace();
+        } else {
+            java.util.ArrayList<Object> $__params = new java.util.ArrayList<Object>();
+            String $__method = "public void sapphire.appexamples.minnietwitter.app.Timeline.retweetedBy(int,java.lang.String)";
+            $__params.add($param_int_1);
+            $__params.add($param_String_2);
+            try {
+                $__result = $__client.onRPC($__method, $__params);
+            } catch (sapphire.common.AppExceptionWrapper e) {
+                Exception ex = e.getException();
+                if (ex instanceof java.lang.RuntimeException) {
+                    throw (java.lang.RuntimeException)ex;
+                } else {
+                    throw new java.lang.RuntimeException(ex);
+                }
+            } catch (java.lang.Exception e) {
+                throw new java.lang.RuntimeException(e);
+            }
         }
     }
 
     // Implementation of retweet(Tweet)
     public void retweet(sapphire.appexamples.minnietwitter.app.Tweet $param_Tweet_1) {
         java.lang.Object $__result = null;
-        try {
-            if ($__directInvocation)
+        if ($__directInvocation) {
+            try {
                 super.retweet( $param_Tweet_1);
-            else {
-                java.util.ArrayList<Object> $__params = new java.util.ArrayList<Object>();
-                String $__method = "public void sapphire.appexamples.minnietwitter.app.Timeline.retweet(sapphire.appexamples.minnietwitter.app.Tweet)";
-                $__params.add($param_Tweet_1);
-                $__result = $__client.onRPC($__method, $__params);
+            } catch (java.lang.Exception e) {
+                throw new sapphire.common.AppExceptionWrapper(e);
             }
-        } catch (java.lang.RuntimeException e) {
-            throw e;
-        } catch (java.rmi.RemoteException e) {
-            throw new java.lang.RuntimeException(e);
-        } catch (java.lang.Exception e) {
-            e.printStackTrace();
+        } else {
+            java.util.ArrayList<Object> $__params = new java.util.ArrayList<Object>();
+            String $__method = "public void sapphire.appexamples.minnietwitter.app.Timeline.retweet(sapphire.appexamples.minnietwitter.app.Tweet)";
+            $__params.add($param_Tweet_1);
+            try {
+                $__result = $__client.onRPC($__method, $__params);
+            } catch (sapphire.common.AppExceptionWrapper e) {
+                Exception ex = e.getException();
+                if (ex instanceof java.lang.RuntimeException) {
+                    throw (java.lang.RuntimeException)ex;
+                } else {
+                    throw new java.lang.RuntimeException(ex);
+                }
+            } catch (java.lang.Exception e) {
+                throw new java.lang.RuntimeException(e);
+            }
         }
     }
 
     // Implementation of initialize(Timeline)
     public void initialize(sapphire.appexamples.minnietwitter.app.Timeline $param_Timeline_1) {
         java.lang.Object $__result = null;
-        try {
-            if ($__directInvocation)
+        if ($__directInvocation) {
+            try {
                 super.initialize( $param_Timeline_1);
-            else {
-                java.util.ArrayList<Object> $__params = new java.util.ArrayList<Object>();
-                String $__method = "public void sapphire.appexamples.minnietwitter.app.Timeline.initialize(sapphire.appexamples.minnietwitter.app.Timeline)";
-                $__params.add($param_Timeline_1);
-                $__result = $__client.onRPC($__method, $__params);
+            } catch (java.lang.Exception e) {
+                throw new sapphire.common.AppExceptionWrapper(e);
             }
-        } catch (java.lang.RuntimeException e) {
-            throw e;
-        } catch (java.rmi.RemoteException e) {
-            throw new java.lang.RuntimeException(e);
-        } catch (java.lang.Exception e) {
-            e.printStackTrace();
+        } else {
+            java.util.ArrayList<Object> $__params = new java.util.ArrayList<Object>();
+            String $__method = "public void sapphire.appexamples.minnietwitter.app.Timeline.initialize(sapphire.appexamples.minnietwitter.app.Timeline)";
+            $__params.add($param_Timeline_1);
+            try {
+                $__result = $__client.onRPC($__method, $__params);
+            } catch (sapphire.common.AppExceptionWrapper e) {
+                Exception ex = e.getException();
+                if (ex instanceof java.lang.RuntimeException) {
+                    throw (java.lang.RuntimeException)ex;
+                } else {
+                    throw new java.lang.RuntimeException(ex);
+                }
+            } catch (java.lang.Exception e) {
+                throw new java.lang.RuntimeException(e);
+            }
         }
     }
 
     // Implementation of getTweets(int, int)
     public java.util.List getTweets(int $param_int_1, int $param_int_2) {
         java.lang.Object $__result = null;
-        try {
-            if ($__directInvocation)
+        if ($__directInvocation) {
+            try {
                 $__result = super.getTweets( $param_int_1,  $param_int_2);
-            else {
-                java.util.ArrayList<Object> $__params = new java.util.ArrayList<Object>();
-                String $__method = "public java.util.List<sapphire.appexamples.minnietwitter.app.Tweet> sapphire.appexamples.minnietwitter.app.Timeline.getTweets(int,int)";
-                $__params.add($param_int_1);
-                $__params.add($param_int_2);
-                $__result = $__client.onRPC($__method, $__params);
+            } catch (java.lang.Exception e) {
+                throw new sapphire.common.AppExceptionWrapper(e);
             }
-        } catch (java.lang.RuntimeException e) {
-            throw e;
-        } catch (java.rmi.RemoteException e) {
-            throw new java.lang.RuntimeException(e);
-        } catch (java.lang.Exception e) {
-            e.printStackTrace();
+        } else {
+            java.util.ArrayList<Object> $__params = new java.util.ArrayList<Object>();
+            String $__method = "public java.util.List<sapphire.appexamples.minnietwitter.app.Tweet> sapphire.appexamples.minnietwitter.app.Timeline.getTweets(int,int)";
+            $__params.add($param_int_1);
+            $__params.add($param_int_2);
+            try {
+                $__result = $__client.onRPC($__method, $__params);
+            } catch (sapphire.common.AppExceptionWrapper e) {
+                Exception ex = e.getException();
+                if (ex instanceof java.lang.RuntimeException) {
+                    throw (java.lang.RuntimeException)ex;
+                } else {
+                    throw new java.lang.RuntimeException(ex);
+                }
+            } catch (java.lang.Exception e) {
+                throw new java.lang.RuntimeException(e);
+            }
         }
         return ((java.util.List) $__result);
     }
@@ -140,23 +175,30 @@ public final class Timeline_Stub extends sapphire.appexamples.minnietwitter.app.
     // Implementation of getRetweets(int, int, int)
     public java.util.List getRetweets(int $param_int_1, int $param_int_2, int $param_int_3) {
         java.lang.Object $__result = null;
-        try {
-            if ($__directInvocation)
+        if ($__directInvocation) {
+            try {
                 $__result = super.getRetweets( $param_int_1,  $param_int_2,  $param_int_3);
-            else {
-                java.util.ArrayList<Object> $__params = new java.util.ArrayList<Object>();
-                String $__method = "public java.util.List<java.lang.String> sapphire.appexamples.minnietwitter.app.Timeline.getRetweets(int,int,int)";
-                $__params.add($param_int_1);
-                $__params.add($param_int_2);
-                $__params.add($param_int_3);
-                $__result = $__client.onRPC($__method, $__params);
+            } catch (java.lang.Exception e) {
+                throw new sapphire.common.AppExceptionWrapper(e);
             }
-        } catch (java.lang.RuntimeException e) {
-            throw e;
-        } catch (java.rmi.RemoteException e) {
-            throw new java.lang.RuntimeException(e);
-        } catch (java.lang.Exception e) {
-            e.printStackTrace();
+        } else {
+            java.util.ArrayList<Object> $__params = new java.util.ArrayList<Object>();
+            String $__method = "public java.util.List<java.lang.String> sapphire.appexamples.minnietwitter.app.Timeline.getRetweets(int,int,int)";
+            $__params.add($param_int_1);
+            $__params.add($param_int_2);
+            $__params.add($param_int_3);
+            try {
+                $__result = $__client.onRPC($__method, $__params);
+            } catch (sapphire.common.AppExceptionWrapper e) {
+                Exception ex = e.getException();
+                if (ex instanceof java.lang.RuntimeException) {
+                    throw (java.lang.RuntimeException)ex;
+                } else {
+                    throw new java.lang.RuntimeException(ex);
+                }
+            } catch (java.lang.Exception e) {
+                throw new java.lang.RuntimeException(e);
+            }
         }
         return ((java.util.List) $__result);
     }
@@ -164,23 +206,30 @@ public final class Timeline_Stub extends sapphire.appexamples.minnietwitter.app.
     // Implementation of getFavorites(int, int, int)
     public java.util.List getFavorites(int $param_int_1, int $param_int_2, int $param_int_3) {
         java.lang.Object $__result = null;
-        try {
-            if ($__directInvocation)
+        if ($__directInvocation) {
+            try {
                 $__result = super.getFavorites( $param_int_1,  $param_int_2,  $param_int_3);
-            else {
-                java.util.ArrayList<Object> $__params = new java.util.ArrayList<Object>();
-                String $__method = "public java.util.List<java.lang.String> sapphire.appexamples.minnietwitter.app.Timeline.getFavorites(int,int,int)";
-                $__params.add($param_int_1);
-                $__params.add($param_int_2);
-                $__params.add($param_int_3);
-                $__result = $__client.onRPC($__method, $__params);
+            } catch (java.lang.Exception e) {
+                throw new sapphire.common.AppExceptionWrapper(e);
             }
-        } catch (java.lang.RuntimeException e) {
-            throw e;
-        } catch (java.rmi.RemoteException e) {
-            throw new java.lang.RuntimeException(e);
-        } catch (java.lang.Exception e) {
-            e.printStackTrace();
+        } else {
+            java.util.ArrayList<Object> $__params = new java.util.ArrayList<Object>();
+            String $__method = "public java.util.List<java.lang.String> sapphire.appexamples.minnietwitter.app.Timeline.getFavorites(int,int,int)";
+            $__params.add($param_int_1);
+            $__params.add($param_int_2);
+            $__params.add($param_int_3);
+            try {
+                $__result = $__client.onRPC($__method, $__params);
+            } catch (sapphire.common.AppExceptionWrapper e) {
+                Exception ex = e.getException();
+                if (ex instanceof java.lang.RuntimeException) {
+                    throw (java.lang.RuntimeException)ex;
+                } else {
+                    throw new java.lang.RuntimeException(ex);
+                }
+            } catch (java.lang.Exception e) {
+                throw new java.lang.RuntimeException(e);
+            }
         }
         return ((java.util.List) $__result);
     }
@@ -188,22 +237,29 @@ public final class Timeline_Stub extends sapphire.appexamples.minnietwitter.app.
     // Implementation of favorite(int, String)
     public void favorite(int $param_int_1, java.lang.String $param_String_2) {
         java.lang.Object $__result = null;
-        try {
-            if ($__directInvocation)
+        if ($__directInvocation) {
+            try {
                 super.favorite( $param_int_1,  $param_String_2);
-            else {
-                java.util.ArrayList<Object> $__params = new java.util.ArrayList<Object>();
-                String $__method = "public void sapphire.appexamples.minnietwitter.app.Timeline.favorite(int,java.lang.String)";
-                $__params.add($param_int_1);
-                $__params.add($param_String_2);
-                $__result = $__client.onRPC($__method, $__params);
+            } catch (java.lang.Exception e) {
+                throw new sapphire.common.AppExceptionWrapper(e);
             }
-        } catch (java.lang.RuntimeException e) {
-            throw e;
-        } catch (java.rmi.RemoteException e) {
-            throw new java.lang.RuntimeException(e);
-        } catch (java.lang.Exception e) {
-            e.printStackTrace();
+        } else {
+            java.util.ArrayList<Object> $__params = new java.util.ArrayList<Object>();
+            String $__method = "public void sapphire.appexamples.minnietwitter.app.Timeline.favorite(int,java.lang.String)";
+            $__params.add($param_int_1);
+            $__params.add($param_String_2);
+            try {
+                $__result = $__client.onRPC($__method, $__params);
+            } catch (sapphire.common.AppExceptionWrapper e) {
+                Exception ex = e.getException();
+                if (ex instanceof java.lang.RuntimeException) {
+                    throw (java.lang.RuntimeException)ex;
+                } else {
+                    throw new java.lang.RuntimeException(ex);
+                }
+            } catch (java.lang.Exception e) {
+                throw new java.lang.RuntimeException(e);
+            }
         }
     }
 }

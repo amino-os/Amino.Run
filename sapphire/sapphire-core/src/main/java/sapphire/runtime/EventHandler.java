@@ -2,14 +2,18 @@ package sapphire.runtime;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
-import sapphire.common.ObjectHandler;
 
-public class EventHandler extends ObjectHandler {
+/**
+ * Event handler holds the group policy stub or server policy stub object of the sapphire object or
+ * sapphire replica respectively created on the particular kernel server.
+ */
+public class EventHandler implements Serializable {
 
-    private class PolicyHandler implements Serializable {
+    private class PolicyHandler {
         private Object policyObject;
         private Method handler;
 
@@ -23,14 +27,15 @@ public class EventHandler extends ObjectHandler {
         }
     }
 
+    private InetSocketAddress host;
     private ArrayList<Object> objects;
-    private Hashtable<String, PolicyHandler> handlers;
+    private transient Hashtable<String, PolicyHandler> handlers;
 
     private void fillMethodTable() {
         this.handlers = new Hashtable<String, PolicyHandler>();
         Iterator<Object> it = objects.iterator();
-        Object obj = it.next();
         while (it.hasNext()) {
+            Object obj = it.next();
             Class<?> cl = obj.getClass();
             // Grab the methods of the class
             Method[] methods = cl.getDeclaredMethods();
@@ -41,9 +46,9 @@ public class EventHandler extends ObjectHandler {
         }
     }
 
-    public EventHandler(ArrayList<Object> policies) {
-        super(null);
-        fillMethodTable();
+    public EventHandler(InetSocketAddress hostAddr, ArrayList<Object> policies) {
+        host = hostAddr;
+        objects = policies;
     }
 
     /**
@@ -54,14 +59,32 @@ public class EventHandler extends ObjectHandler {
      * @return the return value from the method
      */
     public Object invoke(String method, ArrayList<Object> params) throws Exception {
-        if (handlers.contains(method)) {
+        if (null == handlers) {
+            /* Fill the method table for the very first time it is being used */
+            fillMethodTable();
+        }
+
+        if (handlers.containsKey(method)) {
             return handlers.get(method).invokeHandler(params);
         } else {
             return null;
         }
     }
 
+    public InetSocketAddress getHost() {
+        return host;
+    }
+
+    public ArrayList<Object> getObjects() {
+        return objects;
+    }
+
     public Boolean hasHandler(String method) {
-        return handlers.contains(method);
+        if (null == handlers) {
+            /* Fill the method table for the very first time it is being used */
+            fillMethodTable();
+        }
+
+        return handlers.containsKey(method);
     }
 }

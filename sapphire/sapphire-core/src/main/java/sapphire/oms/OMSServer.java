@@ -48,15 +48,21 @@ public interface OMSServer extends Remote {
     SapphireGroupPolicy createGroupPolicy(Class<?> policyClass)
             throws RemoteException, KernelObjectNotCreatedException, ClassNotFoundException;
 
-    SapphireObjectID registerSapphireObject(EventHandler dispatcher) throws RemoteException;
+    SapphireObjectID registerSapphireObject() throws RemoteException;
 
-    SapphireReplicaID registerSapphireReplica(SapphireObjectID oid, EventHandler dispatcher)
+    SapphireReplicaID registerSapphireReplica(SapphireObjectID sapphireObjId)
             throws RemoteException, SapphireObjectNotFoundException;
 
-    EventHandler getSapphireObjectDispatcher(SapphireObjectID oid)
+    void setSapphireObjectDispatcher(SapphireObjectID sapphireObjId, EventHandler dispatcher)
             throws RemoteException, SapphireObjectNotFoundException;
 
-    EventHandler getSapphireReplicaDispatcher(SapphireReplicaID rid)
+    void setSapphireReplicaDispatcher(SapphireReplicaID replicaId, EventHandler dispatcher)
+            throws RemoteException, SapphireObjectNotFoundException;
+
+    EventHandler getSapphireObjectDispatcher(SapphireObjectID sapphireObjId)
+            throws RemoteException, SapphireObjectNotFoundException;
+
+    EventHandler getSapphireReplicaDispatcher(SapphireReplicaID replicaId)
             throws RemoteException, SapphireObjectNotFoundException;
 
     /* Called by the client */

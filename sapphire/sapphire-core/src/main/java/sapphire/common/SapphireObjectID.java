@@ -1,8 +1,8 @@
 package sapphire.common;
 
-import sapphire.kernel.common.KernelOID;
+import java.io.Serializable;
 
-public class SapphireObjectID {
+public class SapphireObjectID implements Serializable {
     private int oid;
 
     public SapphireObjectID(int oid) {
@@ -15,7 +15,7 @@ public class SapphireObjectID {
 
     @Override
     public boolean equals(Object obj) {
-        final KernelOID other = (KernelOID) obj;
+        final SapphireObjectID other = (SapphireObjectID) obj;
         if (oid != other.getID()) return false;
         return true;
     }

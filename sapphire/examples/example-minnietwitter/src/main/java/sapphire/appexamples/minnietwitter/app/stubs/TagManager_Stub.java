@@ -32,19 +32,30 @@ public final class TagManager_Stub extends sapphire.appexamples.minnietwitter.ap
     // Implementation of getTweetsForTag(String, int, int)
     public java.util.List getTweetsForTag(java.lang.String $param_String_1, int $param_int_2, int $param_int_3) {
         java.lang.Object $__result = null;
-        try {
-            if ($__directInvocation)
+        if ($__directInvocation) {
+            try {
                 $__result = super.getTweetsForTag( $param_String_1,  $param_int_2,  $param_int_3);
-            else {
-                java.util.ArrayList<Object> $__params = new java.util.ArrayList<Object>();
-                String $__method = "public java.util.List<sapphire.appexamples.minnietwitter.app.Tweet> sapphire.appexamples.minnietwitter.app.TagManager.getTweetsForTag(java.lang.String,int,int)";
-                $__params.add($param_String_1);
-                $__params.add($param_int_2);
-                $__params.add($param_int_3);
-                $__result = $__client.onRPC($__method, $__params);
+            } catch (java.lang.Exception e) {
+                throw new sapphire.common.AppExceptionWrapper(e);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+        } else {
+            java.util.ArrayList<Object> $__params = new java.util.ArrayList<Object>();
+            String $__method = "public java.util.List<sapphire.appexamples.minnietwitter.app.Tweet> sapphire.appexamples.minnietwitter.app.TagManager.getTweetsForTag(java.lang.String,int,int)";
+            $__params.add($param_String_1);
+            $__params.add($param_int_2);
+            $__params.add($param_int_3);
+            try {
+                $__result = $__client.onRPC($__method, $__params);
+            } catch (sapphire.common.AppExceptionWrapper e) {
+                Exception ex = e.getException();
+                if (ex instanceof java.lang.RuntimeException) {
+                    throw (java.lang.RuntimeException)ex;
+                } else {
+                    throw new java.lang.RuntimeException(ex);
+                }
+            } catch (java.lang.Exception e) {
+                throw new java.lang.RuntimeException(e);
+            }
         }
         return ((java.util.List) $__result);
     }
@@ -52,18 +63,29 @@ public final class TagManager_Stub extends sapphire.appexamples.minnietwitter.ap
     // Implementation of addTag(String, Tweet)
     public void addTag(java.lang.String $param_String_1, sapphire.appexamples.minnietwitter.app.Tweet $param_Tweet_2) {
         java.lang.Object $__result = null;
-        try {
-            if ($__directInvocation)
+        if ($__directInvocation) {
+            try {
                 super.addTag( $param_String_1,  $param_Tweet_2);
-            else {
-                java.util.ArrayList<Object> $__params = new java.util.ArrayList<Object>();
-                String $__method = "public void sapphire.appexamples.minnietwitter.app.TagManager.addTag(java.lang.String,sapphire.appexamples.minnietwitter.app.Tweet)";
-                $__params.add($param_String_1);
-                $__params.add($param_Tweet_2);
-                $__result = $__client.onRPC($__method, $__params);
+            } catch (java.lang.Exception e) {
+                throw new sapphire.common.AppExceptionWrapper(e);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+        } else {
+            java.util.ArrayList<Object> $__params = new java.util.ArrayList<Object>();
+            String $__method = "public void sapphire.appexamples.minnietwitter.app.TagManager.addTag(java.lang.String,sapphire.appexamples.minnietwitter.app.Tweet)";
+            $__params.add($param_String_1);
+            $__params.add($param_Tweet_2);
+            try {
+                $__result = $__client.onRPC($__method, $__params);
+            } catch (sapphire.common.AppExceptionWrapper e) {
+                Exception ex = e.getException();
+                if (ex instanceof java.lang.RuntimeException) {
+                    throw (java.lang.RuntimeException)ex;
+                } else {
+                    throw new java.lang.RuntimeException(ex);
+                }
+            } catch (java.lang.Exception e) {
+                throw new java.lang.RuntimeException(e);
+            }
         }
     }
 }

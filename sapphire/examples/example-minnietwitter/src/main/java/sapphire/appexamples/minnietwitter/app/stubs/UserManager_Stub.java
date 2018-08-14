@@ -32,18 +32,29 @@ public final class UserManager_Stub extends sapphire.appexamples.minnietwitter.a
     // Implementation of login(String, String)
     public sapphire.appexamples.minnietwitter.app.User login(java.lang.String $param_String_1, java.lang.String $param_String_2) {
         java.lang.Object $__result = null;
-        try {
-            if ($__directInvocation)
+        if ($__directInvocation) {
+            try {
                 $__result = super.login( $param_String_1,  $param_String_2);
-            else {
-                java.util.ArrayList<Object> $__params = new java.util.ArrayList<Object>();
-                String $__method = "public sapphire.appexamples.minnietwitter.app.User sapphire.appexamples.minnietwitter.app.UserManager.login(java.lang.String,java.lang.String)";
-                $__params.add($param_String_1);
-                $__params.add($param_String_2);
-                $__result = $__client.onRPC($__method, $__params);
+            } catch (java.lang.Exception e) {
+                throw new sapphire.common.AppExceptionWrapper(e);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+        } else {
+            java.util.ArrayList<Object> $__params = new java.util.ArrayList<Object>();
+            String $__method = "public sapphire.appexamples.minnietwitter.app.User sapphire.appexamples.minnietwitter.app.UserManager.login(java.lang.String,java.lang.String)";
+            $__params.add($param_String_1);
+            $__params.add($param_String_2);
+            try {
+                $__result = $__client.onRPC($__method, $__params);
+            } catch (sapphire.common.AppExceptionWrapper e) {
+                Exception ex = e.getException();
+                if (ex instanceof java.lang.RuntimeException) {
+                    throw (java.lang.RuntimeException)ex;
+                } else {
+                    throw new java.lang.RuntimeException(ex);
+                }
+            } catch (java.lang.Exception e) {
+                throw new java.lang.RuntimeException(e);
+            }
         }
         return ((sapphire.appexamples.minnietwitter.app.User) $__result);
     }
@@ -51,17 +62,28 @@ public final class UserManager_Stub extends sapphire.appexamples.minnietwitter.a
     // Implementation of getUser(String)
     public sapphire.appexamples.minnietwitter.app.User getUser(java.lang.String $param_String_1) {
         java.lang.Object $__result = null;
-        try {
-            if ($__directInvocation)
+        if ($__directInvocation) {
+            try {
                 $__result = super.getUser( $param_String_1);
-            else {
-                java.util.ArrayList<Object> $__params = new java.util.ArrayList<Object>();
-                String $__method = "public sapphire.appexamples.minnietwitter.app.User sapphire.appexamples.minnietwitter.app.UserManager.getUser(java.lang.String)";
-                $__params.add($param_String_1);
-                $__result = $__client.onRPC($__method, $__params);
+            } catch (java.lang.Exception e) {
+                throw new sapphire.common.AppExceptionWrapper(e);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+        } else {
+            java.util.ArrayList<Object> $__params = new java.util.ArrayList<Object>();
+            String $__method = "public sapphire.appexamples.minnietwitter.app.User sapphire.appexamples.minnietwitter.app.UserManager.getUser(java.lang.String)";
+            $__params.add($param_String_1);
+            try {
+                $__result = $__client.onRPC($__method, $__params);
+            } catch (sapphire.common.AppExceptionWrapper e) {
+                Exception ex = e.getException();
+                if (ex instanceof java.lang.RuntimeException) {
+                    throw (java.lang.RuntimeException)ex;
+                } else {
+                    throw new java.lang.RuntimeException(ex);
+                }
+            } catch (java.lang.Exception e) {
+                throw new java.lang.RuntimeException(e);
+            }
         }
         return ((sapphire.appexamples.minnietwitter.app.User) $__result);
     }
@@ -69,16 +91,27 @@ public final class UserManager_Stub extends sapphire.appexamples.minnietwitter.a
     // Implementation of dhtGetData()
     public java.util.Map dhtGetData() {
         java.lang.Object $__result = null;
-        try {
-            if ($__directInvocation)
+        if ($__directInvocation) {
+            try {
                 $__result = super.dhtGetData();
-            else {
-                java.util.ArrayList<Object> $__params = new java.util.ArrayList<Object>();
-                String $__method = "public java.util.Map<sapphire.policy.interfaces.dht.DHTKey, ?> sapphire.appexamples.minnietwitter.app.UserManager.dhtGetData()";
-                $__result = $__client.onRPC($__method, $__params);
+            } catch (java.lang.Exception e) {
+                throw new sapphire.common.AppExceptionWrapper(e);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+        } else {
+            java.util.ArrayList<Object> $__params = new java.util.ArrayList<Object>();
+            String $__method = "public java.util.Map<sapphire.policy.interfaces.dht.DHTKey, ?> sapphire.appexamples.minnietwitter.app.UserManager.dhtGetData()";
+            try {
+                $__result = $__client.onRPC($__method, $__params);
+            } catch (sapphire.common.AppExceptionWrapper e) {
+                Exception ex = e.getException();
+                if (ex instanceof java.lang.RuntimeException) {
+                    throw (java.lang.RuntimeException)ex;
+                } else {
+                    throw new java.lang.RuntimeException(ex);
+                }
+            } catch (java.lang.Exception e) {
+                throw new java.lang.RuntimeException(e);
+            }
         }
         return ((java.util.Map) $__result);
     }
@@ -87,18 +120,31 @@ public final class UserManager_Stub extends sapphire.appexamples.minnietwitter.a
     public sapphire.appexamples.minnietwitter.app.User addUser(java.lang.String $param_String_1, java.lang.String $param_String_2)
             throws sapphire.app.AppObjectNotCreatedException {
         java.lang.Object $__result = null;
-        try {
-            if ($__directInvocation)
+        if ($__directInvocation) {
+            try {
                 $__result = super.addUser( $param_String_1,  $param_String_2);
-            else {
-                java.util.ArrayList<Object> $__params = new java.util.ArrayList<Object>();
-                String $__method = "public sapphire.appexamples.minnietwitter.app.User sapphire.appexamples.minnietwitter.app.UserManager.addUser(java.lang.String,java.lang.String) throws sapphire.app.AppObjectNotCreatedException";
-                $__params.add($param_String_1);
-                $__params.add($param_String_2);
-                $__result = $__client.onRPC($__method, $__params);
+            } catch (java.lang.Exception e) {
+                throw new sapphire.common.AppExceptionWrapper(e);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+        } else {
+            java.util.ArrayList<Object> $__params = new java.util.ArrayList<Object>();
+            String $__method = "public sapphire.appexamples.minnietwitter.app.User sapphire.appexamples.minnietwitter.app.UserManager.addUser(java.lang.String,java.lang.String) throws sapphire.app.AppObjectNotCreatedException";
+            $__params.add($param_String_1);
+            $__params.add($param_String_2);
+            try {
+                $__result = $__client.onRPC($__method, $__params);
+            } catch (sapphire.common.AppExceptionWrapper e) {
+                Exception ex = e.getException();
+                if (ex instanceof sapphire.app.AppObjectNotCreatedException) {
+                    throw (sapphire.app.AppObjectNotCreatedException)ex;
+                } else if (ex instanceof java.lang.RuntimeException) {
+                    throw (java.lang.RuntimeException)ex;
+                } else {
+                    throw new java.lang.RuntimeException(ex);
+                }
+            } catch (java.lang.Exception e) {
+                throw new java.lang.RuntimeException(e);
+            }
         }
         return ((sapphire.appexamples.minnietwitter.app.User) $__result);
     }

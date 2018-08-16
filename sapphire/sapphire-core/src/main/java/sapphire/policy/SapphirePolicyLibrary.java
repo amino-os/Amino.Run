@@ -19,6 +19,7 @@ import sapphire.kernel.common.KernelObjectFactory;
 import sapphire.kernel.common.KernelObjectNotCreatedException;
 import sapphire.kernel.common.KernelObjectNotFoundException;
 import sapphire.kernel.common.KernelObjectStub;
+import sapphire.kernel.server.KernelObject;
 import sapphire.kernel.server.KernelServerImpl;
 import sapphire.oms.OMSServer;
 import sapphire.policy.SapphirePolicy.SapphireServerPolicy;
@@ -35,7 +36,8 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 		protected AppObject appObject;
 		protected KernelOID oid;
 		static Logger logger = Logger.getLogger("sapphire.policy.SapphirePolicyLibrary");
-		protected SapphireServerPolicy nextServerPolicy;
+//		protected SapphireServerPolicy nextServerPolicy;
+		protected KernelObject nextServerPolicy;
 		protected List<String> nextDMs;
 
 		private OMSServer oms() {

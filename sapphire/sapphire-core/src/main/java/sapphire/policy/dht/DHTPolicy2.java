@@ -1,6 +1,7 @@
 package sapphire.policy.dht;
 
 import java.io.Serializable;
+import java.lang.reflect.Array;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,6 +13,8 @@ public class DHTPolicy2 extends SapphirePolicy {
 
 	public static class DHTClientPolicy extends SapphireClientPolicy {
 
+		// Signature for Sapphire Policy method (as opposed to application method).
+		final String sapphirePolicyStr = "sapphire.policy";
 		DHTServerPolicy server = null;
 		DHTGroupPolicy group = null;
 
@@ -34,11 +37,47 @@ public class DHTPolicy2 extends SapphirePolicy {
 		public SapphireGroupPolicy getGroup() {
 			return group;
 		}
+
+		@Override
+		/**
+		 * params may be an application parameter or method name in case of multi-DM.
+		 */
+		public Object onRPC(String method, ArrayList<Object> params) throws Exception {
+			if (method.contains(sapphirePolicyStr)) {
+				// Call any server for executing server policy call which does not care about location of the node.
+				// E.g.,) sapphire_pin() or sapphire_replicate() which is called by group policy.
+				return getServer().onRPC(method, params);
+			}
+
+			// This code path is about calling method in application.
+			ArrayList<Object> applicationParams = getApplicationParam(params, 0);
+			DHTServerPolicy responsibleNode = group.dhtGetResponsibleNode((String)applicationParams.get(0));
+			return responsibleNode.forwardedRPC(method, params);
+		}
+
+		/**
+		 * Find first application paramter from nested arraylist.
+		 * @return The first application parameter.
+		 */
+		private ArrayList<Object> getApplicationParam(ArrayList<Object> params, int nth) {
+			//String firstParam;
+			ArrayList<Object> currentParams = params;
+			while (currentParams != null && currentParams.size() == 2) {
+				if (params.get(1) instanceof ArrayList) {
+					currentParams = (ArrayList) params.get(1);
+				} else {
+					break;
+				}
+			}
+			//firstParam = (String)paramsToInspect.get(nth);
+			return currentParams;
+		}
 	}
 
 	public static class DHTServerPolicy extends SapphireServerPolicy {
 		private static Logger logger = Logger.getLogger(SapphireServerPolicy.class.getName());
 		private DHTGroupPolicy group = null;
+		final String sapphirePolicyStr = "sapphire.policy.SapphirePolicy.DHTServerPolicy";
 
 		@Override
 		public void onCreate(SapphireGroupPolicy group) {
@@ -54,14 +93,40 @@ public class DHTPolicy2 extends SapphirePolicy {
 		public void onMembershipChange() {}
 
 		@Override
+		/**
+		 * params may be an application parameter or method name in case of multi-DM.
+		 */
 		public Object onRPC(String method, ArrayList<Object> params) throws Exception {
+			if (method.contains(sapphirePolicyStr)) {
+
+			}
+			return super.onRPC(method, params);
 			/* We assume that the first param is the index */
-			DHTServerPolicy responsibleNode = group.dhtGetResponsibleNode((String)params.get(0));
-			return responsibleNode.forwardedRPC(method, params);
+//			ArrayList<Object> applicationParams = getApplicationParam(params, 0);
+//			DHTServerPolicy responsibleNode = group.dhtGetResponsibleNode((String)applicationParams.get(0));
+//			return responsibleNode.forwardedRPC(method, params);
 		}
 
 		public Object forwardedRPC(String method, ArrayList<Object> params) throws Exception {
 			return super.onRPC(method, params);
+		}
+
+		/**
+		 * Find first application paramter from nested arraylist.
+		 * @return The first application parameter.
+		 */
+		private ArrayList<Object> getApplicationParam(ArrayList<Object> params, int nth) {
+			//String firstParam;
+			ArrayList<Object> currentParams = params;
+			while (currentParams != null && currentParams.size() == 2) {
+				if (params.get(1) instanceof ArrayList) {
+					currentParams = (ArrayList) params.get(1);
+				} else {
+					break;
+				}
+			}
+			//firstParam = (String)paramsToInspect.get(nth);
+			return currentParams;
 		}
 	}
 

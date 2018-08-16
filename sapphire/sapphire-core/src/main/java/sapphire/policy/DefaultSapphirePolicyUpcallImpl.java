@@ -1,5 +1,6 @@
 package sapphire.policy;
 
+import sapphire.kernel.server.KernelObject;
 import sapphire.policy.SapphirePolicy.SapphireServerPolicy;
 import sapphire.policy.transaction.IllegalComponentException;
 import sapphire.policy.transaction.TransactionContext;
@@ -46,16 +47,24 @@ public abstract class DefaultSapphirePolicyUpcallImpl extends SapphirePolicyLibr
 
 			if (nextServerPolicy == null) {
 				/* The default behavior is to just invoke the method on the Sapphire Object this Server Policy Object manages */
+				System.out.println("No next next policy. Invoking: " + method + " with "+ params);
 				return appObject.invoke(method, params);
 			} else {
 //				return methods.get(method).invoke(object, params.toArray());
-				String newMethod = (String)params.get(0);
-				ArrayList<Object> nextParams = (ArrayList<Object>) params.get(1);
-				return nextServerPolicy.onRPC(newMethod, nextParams);
+				System.out.println("invoking RPC on next server policy for " + method + " with " + params.get(0));
+//				return nextServerPolicy.onRPC(method, params);
+				return nextServerPolicy.invoke(method, params);
+
+//				String newMethod = (String)params.get(0);
+//				System.out.println("New method = " + newMethod);
+//				ArrayList<Object> nextParams = (ArrayList<Object>) params.get(1);
+//				System.out.println("next parameters = " + nextParams);
+
+//				return nextServerPolicy.onRPC(newMethod, nextParams);
 			}
 		}
 
-		public void setNextServerPolicy(SapphireServerPolicy sapphireServerPolicy) {
+		public void setNextServerPolicy(KernelObject sapphireServerPolicy) {
 			this.nextServerPolicy = sapphireServerPolicy;
 		}
 

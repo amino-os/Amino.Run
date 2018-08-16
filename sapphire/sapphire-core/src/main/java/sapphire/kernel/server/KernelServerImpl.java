@@ -168,6 +168,11 @@ public class KernelServerImpl implements KernelServer{
 		KernelObject object = objectManager.lookupObject(oid);
 		return object.getObject();
 	}
+
+	public Serializable getKernelObject(KernelOID oid) throws KernelObjectNotFoundException {
+		KernelObject object = objectManager.lookupObject(oid);
+		return object;
+	}
 	
 	/**
 	 * Get the local hostname

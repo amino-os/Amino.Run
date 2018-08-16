@@ -24,6 +24,7 @@ import sapphire.kernel.common.KernelObjectFactory;
 import sapphire.kernel.common.KernelObjectNotCreatedException;
 import sapphire.kernel.common.KernelObjectNotFoundException;
 import sapphire.kernel.common.KernelObjectStub;
+import sapphire.kernel.server.KernelObject;
 import sapphire.policy.DefaultSapphirePolicy;
 import sapphire.policy.DefaultSapphirePolicy.DefaultClientPolicy;
 import sapphire.policy.DefaultSapphirePolicy.DefaultGroupPolicy;
@@ -169,7 +170,9 @@ public class Sapphire {
 		if (previousServerPolicy != null) {
 			// non-first DMs references the already created object.
 			serverPolicyStub.$__initialize(previousServerPolicyStub.$__getAppObject());
-			serverPolicy.setNextServerPolicy(previousServerPolicy);
+			KernelObject perviousServerPolicyKernelObject = (KernelObject) GlobalKernelReferences.nodeServer.getKernelObject(previousServerPolicyStub.$__getKernelOID());
+			serverPolicy.setNextServerPolicy(perviousServerPolicyKernelObject);
+//			serverPolicy.setNextServerPolicy(previousServerPolicy);
 			previousServerPolicyStub.$__setNextClientPolicy(client);
 		} else {
 			// First DM needs to create an app stub.

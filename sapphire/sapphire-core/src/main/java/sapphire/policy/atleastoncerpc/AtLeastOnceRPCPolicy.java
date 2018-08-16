@@ -4,6 +4,7 @@ import sapphire.policy.DefaultSapphirePolicy;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
@@ -14,8 +15,13 @@ public class AtLeastOnceRPCPolicy extends DefaultSapphirePolicy {
     public static class AtLeastOnceRPCClientPolicy extends DefaultClientPolicy {
         // 5s looks like a reasonable default timeout for production
         private long timeoutMilliSeconds = 500000L;
+        private int count = 0;
+        private int id = -1;
 
-        public AtLeastOnceRPCClientPolicy() {}
+        public AtLeastOnceRPCClientPolicy() {
+            Random rand = new Random();
+            this.id = rand.nextInt();
+        }
 
         // for unit test use
         public void setTimeout(long timeoutMilliSeconds) {
@@ -36,6 +42,8 @@ public class AtLeastOnceRPCPolicy extends DefaultSapphirePolicy {
             final AtLeastOnceRPCClientPolicy clientPolicy = this;
             final String method_ = method;
             final ArrayList<Object> params_ = params;
+            count++;
+            System.out.println("id: " + this.id + "atLeastOnRpc: " + this.count);
             return clientPolicy.doOnRPC(method_, params_);
 //            timeoutTask = new FutureTask<Object>(new Callable<Object>() {
 //                @Override

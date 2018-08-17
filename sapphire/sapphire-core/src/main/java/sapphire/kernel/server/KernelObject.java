@@ -29,7 +29,8 @@ public class KernelObject extends ObjectHandler {
 		Object ret;
 		
 		if (coalesced) {
-			throw new KernelObjectMigratingException();
+			// Object has been migrated to the other kernel server.
+			throw new KernelObjectMigratingException("Object in this kernel server was migrated and is no longer valid.");
 		}
 		
 		rpcCounter.acquire();

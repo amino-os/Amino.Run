@@ -104,6 +104,7 @@ public class KernelServerImpl implements KernelServer{
 	 * @param object the kernel object to be stored on this server
 	 */
 	public void copyKernelObject(KernelOID oid, KernelObject object) throws RemoteException, KernelObjectNotFoundException {
+		System.out.println("Adding object " + oid + " to this server at " + host.getAddress() + ":" + host.getPort());
 		objectManager.addObject(oid, object);
 		object.uncoalesce();
 	}

@@ -125,6 +125,7 @@ public class KernelClient {
 	}
 		
 	public void copyObjectToServer(InetSocketAddress host, KernelOID oid, KernelObject object) throws RemoteException, KernelObjectNotFoundException {
+		System.out.println("Copying object " + oid.toString() +  "to server: " + host.getAddress() + ":" + host.getPort());
 		getServer(host).copyKernelObject(oid, object);
 	}
 }

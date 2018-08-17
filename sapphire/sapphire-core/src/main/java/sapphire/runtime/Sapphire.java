@@ -79,9 +79,13 @@ public class Sapphire {
 
 			SapphireServerPolicy previousServerPolicy = null;
 			KernelObjectStub previousServerPolicyStub = null;
+			AppObjectStub appStub = null;
 
-			AppObjectStub appStub = getAppStub(appObjectClass, DMchain, previousServerPolicy, previousServerPolicyStub, args);
-
+			appStub = getAppStub(appObjectClass, DMchain, previousServerPolicy, previousServerPolicyStub, args);
+//
+//			for () {
+//				groupPolicy.onCreate(serverPolicyStub);
+//			}
 			logger.info("Sapphire Object created: " + appObjectClass.getName());
 			return appStub;
 		}

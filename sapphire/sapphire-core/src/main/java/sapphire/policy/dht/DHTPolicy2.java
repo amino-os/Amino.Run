@@ -2,11 +2,14 @@ package sapphire.policy.dht;
 
 import java.io.Serializable;
 import java.lang.reflect.Array;
+import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.logging.Logger;
 
+import sapphire.kernel.common.KernelOID;
+import sapphire.kernel.common.KernelObjectNotFoundException;
 import sapphire.policy.SapphirePolicy;
 
 public class DHTPolicy2 extends SapphirePolicy {
@@ -178,8 +181,11 @@ public class DHTPolicy2 extends SapphirePolicy {
 				DHTNode newNode = new DHTNode(id, dhtServer);
 				nodes.put(id, newNode);
 
+				InetSocketAddress newServer = null;
+
 				for (int i = 1; i < regions.size(); i++) {
-					DHTServerPolicy replica = (DHTServerPolicy)dhtServer.sapphire_replicate();
+//					DHTServerPolicy replica = (DHTServerPolicy)dhtServer.sapphire_replicate();
+					DHTServerPolicy replica = (DHTServerPolicy)dhtServer.sapphire_replicate(regions.get(i));
 					replica.sapphire_pin(regions.get(i));
 				}
 				dhtServer.sapphire_pin(regions.get(0));

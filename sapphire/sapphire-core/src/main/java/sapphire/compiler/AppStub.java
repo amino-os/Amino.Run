@@ -57,7 +57,9 @@ public final class AppStub extends Stub {
         StringBuilder buffer = new StringBuilder();
         buffer.append(
                 indenter.indent()
-                        + "sapphire.policy.SapphirePolicy.SapphireClientPolicy $__client = null;"
+                        + "sapphire.policy.SapphirePolicy.SapphireClientPolicy "
+                        + GlobalStubConstants.APPSTUB_POLICY_CLIENT_FIELD_NAME
+                        + " = null;"
                         + EOLN);
         buffer.append(indenter.indent() + "boolean $__directInvocation = false;" + EOLN);
         return buffer.toString();
@@ -101,7 +103,11 @@ public final class AppStub extends Stub {
                 indenter.indent()
                         + "public void $__initialize(sapphire.policy.SapphirePolicy.SapphireClientPolicy client) {"
                         + EOLN);
-        buffer.append(indenter.tIncrease() + "$__client = client;" + EOLN);
+        buffer.append(
+                indenter.tIncrease()
+                        + GlobalStubConstants.APPSTUB_POLICY_CLIENT_FIELD_NAME
+                        + " = client;"
+                        + EOLN);
         buffer.append(indenter.indent() + "}" + EOLN + EOLN);
 
         /* The $__initialize function for directInvocation */
@@ -202,7 +208,9 @@ public final class AppStub extends Stub {
         buffer.append(indenter.tIncrease(tabWidth) + "try {" + EOLN); // $NON-NLS-1$
         buffer.append(
                 indenter.tIncrease(tabWidth + 1)
-                        + "$__result = $__client.onRPC($__method, $__params);"
+                        + "$__result = "
+                        + GlobalStubConstants.APPSTUB_POLICY_CLIENT_FIELD_NAME
+                        + ".onRPC($__method, $__params);"
                         + EOLN); // $NON-NLS-1$
         buffer.append(
                 indenter.tIncrease(tabWidth)

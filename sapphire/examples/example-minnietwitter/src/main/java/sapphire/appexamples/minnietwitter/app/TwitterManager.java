@@ -18,5 +18,10 @@ public class TwitterManager implements SapphireObject {
 
 	public TagManager getTagManager() {
 		return tagManager;
-	}	
+	}
+
+	public void deInitialize() {
+		delete_(tagManager);
+		delete_(userManager);
+	}
 }

@@ -6,22 +6,30 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.ArrayList;
 import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import sapphire.app.AppEntryPoint;
 import sapphire.common.AppObjectStub;
+import sapphire.common.SapphireObjectCreationException;
+import sapphire.common.SapphireObjectID;
+import sapphire.common.SapphireObjectNotFoundException;
+import sapphire.common.SapphireReplicaID;
 import sapphire.kernel.client.KernelClient;
 import sapphire.kernel.common.GlobalKernelReferences;
 import sapphire.kernel.common.KernelOID;
 import sapphire.kernel.common.KernelObjectMigratingException;
 import sapphire.kernel.common.KernelObjectNotCreatedException;
 import sapphire.kernel.common.KernelObjectNotFoundException;
+import sapphire.kernel.common.KernelObjectStubNotCreatedException;
 import sapphire.kernel.common.KernelRPC;
 import sapphire.kernel.common.KernelRPCException;
 import sapphire.kernel.common.ServerInfo;
 import sapphire.oms.OMSServer;
+import sapphire.policy.SapphirePolicy;
 import sapphire.policy.util.ResettableTimer;
+import sapphire.runtime.EventHandler;
+import sapphire.runtime.Sapphire;
 
 /**
  * Sapphire Kernel Server. Runs on every Sapphire node, knows how to talk to the OMS, handles RPCs
@@ -117,7 +125,42 @@ public class KernelServerImpl implements KernelServer {
      * @param object the kernel object to be stored on this server
      */
     public void copyKernelObject(KernelOID oid, KernelObject object)
-            throws RemoteException, KernelObjectNotFoundException {
+            throws RemoteException, KernelObjectNotFoundException,
+                    KernelObjectStubNotCreatedException, SapphireObjectNotFoundException {
+        /* Set the policy object handlers of new host */
+        ArrayList<Object> policyObjList = new ArrayList<>();
+        EventHandler policyHandler = new EventHandler(host, policyObjList);
+        policyObjList.add(Sapphire.getPolicyStub(object.getObject().getClass(), oid));
+        if (object.getObject() instanceof SapphirePolicy.SapphireServerPolicy) {
+            SapphirePolicy.SapphireServerPolicy serverPolicy =
+                    (SapphirePolicy.SapphireServerPolicy) object.getObject();
+            oms.setSapphireReplicaDispatcher(serverPolicy.getReplicaId(), policyHandler);
+
+            /* Initialize dynamic data of server policy object(i.e., timers, executors, sockets etc) on new host */
+            Class<?> c =
+                    serverPolicy.sapphire_getAppObject().getObject().getClass().getSuperclass();
+            serverPolicy.onCreate(serverPolicy.getGroup(), c.getAnnotations());
+        } else if (object.getObject() instanceof SapphirePolicy.SapphireGroupPolicy) {
+            // TODO: Do we need to handle group policy object migration ?
+            SapphirePolicy.SapphireGroupPolicy groupPolicy =
+                    (SapphirePolicy.SapphireGroupPolicy) object.getObject();
+            oms.setSapphireObjectDispatcher(
+                    ((SapphirePolicy.SapphireGroupPolicy) object.getObject()).getSapphireObjId(),
+                    policyHandler);
+
+            /* Initialize dynamic data of group policy object(i.e., timers, executors, sockets etc) on new host */
+            ArrayList<SapphirePolicy.SapphireServerPolicy> servers = groupPolicy.getServers();
+            if (!servers.isEmpty()) {
+                Class<?> c =
+                        servers.get(0)
+                                .sapphire_getAppObject()
+                                .getObject()
+                                .getClass()
+                                .getSuperclass();
+                groupPolicy.onCreate(servers.get(0), c.getAnnotations());
+            }
+        }
+
         objectManager.addObject(oid, object);
         object.uncoalesce();
     }
@@ -155,7 +198,7 @@ public class KernelServerImpl implements KernelServer {
      * @throws KernelObjectNotFoundException
      */
     public void moveKernelObjectToServer(InetSocketAddress host, KernelOID oid)
-            throws RemoteException, KernelObjectNotFoundException {
+            throws RemoteException, KernelObjectNotFoundException, SapphireObjectNotFoundException {
         if (host.equals(this.host)) {
             return;
         }
@@ -170,12 +213,22 @@ public class KernelServerImpl implements KernelServer {
         } catch (RemoteException e) {
             e.printStackTrace();
             throw new RemoteException("Could not contact destination server.");
+        } catch (KernelObjectStubNotCreatedException e) {
+            throw new Error("Failed to create policy stub object on destination server. ", e);
         }
 
         try {
             oms.registerKernelObject(oid, host);
         } catch (RemoteException e) {
             throw new RemoteException("Could not contact oms to update kernel object host.");
+        }
+
+        if (object.getObject() instanceof SapphirePolicy.SapphireServerPolicy) {
+            /* De-initialize dynamic data of server policy object(i.e., timers, executors, sockets etc) */
+            ((SapphirePolicy.SapphireServerPolicy) object.getObject()).onDestroy();
+        } else if (object.getObject() instanceof SapphirePolicy.SapphireGroupPolicy) {
+            /* De-initialize dynamic data of group policy object(i.e., timers, executors, sockets etc) */
+            ((SapphirePolicy.SapphireGroupPolicy) object.getObject()).onDestroy();
         }
 
         objectManager.removeObject(oid);
@@ -218,17 +271,59 @@ public class KernelServerImpl implements KernelServer {
     }
 
     /** Start the first server-side app object */
-    @Override
+    /*    @Override
     public AppObjectStub startApp(String className) throws RemoteException {
-        AppObjectStub appEntryPoint = null;
-        try {
-            AppEntryPoint entryPoint = (AppEntryPoint) Class.forName(className).newInstance();
-            appEntryPoint = entryPoint.start();
-        } catch (Exception e) {
-            logger.severe("Could not start app");
-            e.printStackTrace();
-        }
-        return appEntryPoint;
+    	AppObjectStub appEntryPoint = null;
+    	try {
+    		AppEntryPoint entryPoint =  (AppEntryPoint) Class.forName(className).newInstance();
+               appEntryPoint = entryPoint.start();
+    	} catch (Exception e) {
+    		logger.severe("Could not start app");
+    		e.printStackTrace();
+    	}
+    	return appEntryPoint;
+    }*/
+
+    /**
+     * Create the sapphire object
+     *
+     * @param className
+     * @param args
+     * @return
+     * @throws RemoteException
+     * @throws SapphireObjectCreationException
+     * @throws ClassNotFoundException
+     */
+    @Override
+    public AppObjectStub createSapphireObject(String className, Object... args)
+            throws RemoteException, SapphireObjectCreationException, ClassNotFoundException {
+        return (AppObjectStub) Sapphire.new_(Class.forName(className), args);
+    }
+
+    /**
+     * Releases the registered sapphire group policy object of given sapphire object
+     *
+     * @param sapphireObjId
+     * @param handler
+     * @throws RemoteException
+     */
+    @Override
+    public void deleteSapphireObjectHandler(SapphireObjectID sapphireObjId, EventHandler handler)
+            throws RemoteException {
+        Sapphire.deleteGroupPolicyObject(sapphireObjId, handler);
+    }
+
+    /**
+     * Releases the registered sapphire server policy object of given replica
+     *
+     * @param sapphireReplicaId
+     * @param handler
+     * @throws RemoteException
+     */
+    @Override
+    public void deleteSapphireReplicaHandler(
+            SapphireReplicaID sapphireReplicaId, EventHandler handler) throws RemoteException {
+        Sapphire.deleteServerPolicyObject(sapphireReplicaId, handler);
     }
 
     public class MemoryStatThread extends Thread {

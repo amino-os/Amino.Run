@@ -11,6 +11,7 @@ import sapphire.appexamples.minnietwitter.app.Tweet;
 import sapphire.appexamples.minnietwitter.app.TwitterManager;
 import sapphire.appexamples.minnietwitter.app.User;
 import sapphire.appexamples.minnietwitter.app.UserManager;
+import sapphire.common.SapphireObjectID;
 import sapphire.kernel.common.GlobalKernelReferences;
 import sapphire.kernel.server.KernelServer;
 import sapphire.kernel.server.KernelServerImpl;
@@ -47,7 +48,8 @@ public class TwitterActivityOne {
         // other kernel servers. To keep things simple, I hard coded it as "127.0.0.2".
         GlobalKernelReferences.nodeServer = new KernelServerImpl(new InetSocketAddress("127.0.0.2", Integer.parseInt(args[2])), new InetSocketAddress(args[0], Integer.parseInt(args[1])));
 
-        TwitterManager tm = (TwitterManager) server.getAppEntryPoint();
+        SapphireObjectID sapphireObjId = server.createSapphireObject("sapphire.appexamples.minnietwitter.app.TwitterManager");
+        TwitterManager tm = (TwitterManager)server.acquireSapphireObjectStub(sapphireObjId);
         System.out.println("Received Twitter Manager Stub: " + tm);
 
         UserManager userManger = tm.getUserManager();

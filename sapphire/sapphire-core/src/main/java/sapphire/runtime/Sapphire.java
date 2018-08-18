@@ -4,11 +4,15 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.logging.Logger;
 import org.apache.harmony.rmi.common.RMIUtil;
 import sapphire.app.SapphireObject;
 import sapphire.common.AppObjectStub;
+import sapphire.common.SapphireObjectID;
+import sapphire.common.SapphireObjectNotFoundException;
+import sapphire.common.SapphireReplicaID;
 import sapphire.compiler.GlobalStubConstants;
 import sapphire.kernel.common.GlobalKernelReferences;
 import sapphire.kernel.common.KernelOID;
@@ -16,6 +20,7 @@ import sapphire.kernel.common.KernelObjectFactory;
 import sapphire.kernel.common.KernelObjectNotCreatedException;
 import sapphire.kernel.common.KernelObjectNotFoundException;
 import sapphire.kernel.common.KernelObjectStub;
+import sapphire.kernel.common.KernelObjectStubNotCreatedException;
 import sapphire.policy.DefaultSapphirePolicy;
 import sapphire.policy.DefaultSapphirePolicy.DefaultClientPolicy;
 import sapphire.policy.DefaultSapphirePolicy.DefaultGroupPolicy;
@@ -39,8 +44,6 @@ public class Sapphire {
      *
      * @param appObjectClass
      * @param args
-     * @param sapphirePolicyClass
-     * @param policyArgs
      * @return The App Object Stub
      * @throws ClassNotFoundException
      * @throws InstantiationException
@@ -83,10 +86,18 @@ public class Sapphire {
             if (sapphireGroupPolicyClass == null)
                 sapphireGroupPolicyClass = DefaultGroupPolicy.class;
 
+            /* Register for a sapphire object Id */
+            SapphireObjectID sapphireObjId =
+                    GlobalKernelReferences.nodeServer.oms.registerSapphireObject();
+
             /* Create the Kernel Object for the Group Policy and get the Group Policy Stub from OMS */
             SapphireGroupPolicy groupPolicyStub =
                     GlobalKernelReferences.nodeServer.oms.createGroupPolicy(
-                            sapphireGroupPolicyClass);
+                            sapphireGroupPolicyClass, sapphireObjId);
+
+            /* Register for a replica Id */
+            SapphireReplicaID sapphireReplicaId =
+                    GlobalKernelReferences.nodeServer.oms.registerSapphireReplica(sapphireObjId);
 
             /* Create the Kernel Object for the Server Policy, and get the Server Policy Stub */
             SapphireServerPolicy serverPolicyStub =
@@ -98,6 +109,21 @@ public class Sapphire {
 
             /* Initialize the server policy and return a local pointer to the object itself */
             SapphireServerPolicy serverPolicy = initializeServerPolicy(serverPolicyStub);
+            serverPolicyStub.setReplicaId(sapphireReplicaId);
+            serverPolicy.setReplicaId(sapphireReplicaId);
+
+            EventHandler replicaHandler =
+                    new EventHandler(
+                            GlobalKernelReferences.nodeServer.getLocalHost(),
+                            new ArrayList() {
+                                {
+                                    add(serverPolicyStub);
+                                }
+                            });
+
+            /* Register the handler for this replica */
+            GlobalKernelReferences.nodeServer.oms.setSapphireReplicaDispatcher(
+                    sapphireReplicaId, replicaHandler);
 
             /* Create the App Object and return the App Stub */
             AppObjectStub appStub = getAppStub(appObjectClass, serverPolicy, args);
@@ -114,8 +140,90 @@ public class Sapphire {
             return appStub;
         } catch (Exception e) {
             e.printStackTrace();
+            // TODO: Need to cleanup all the allocated resources
             return null;
             // throw new AppObjectNotCreatedException();
+        }
+    }
+
+    /**
+     * Deletes the given sapphire object
+     *
+     * @param stub
+     */
+    public static void delete_(Object stub) {
+        if (!(stub instanceof AppObjectStub)) {
+            throw new RuntimeException("Tried to delete invalid sapphire object");
+        }
+
+        try {
+            AppObjectStub appObjectStub = (AppObjectStub) stub;
+            Field field =
+                    appObjectStub
+                            .getClass()
+                            .getDeclaredField(GlobalStubConstants.APPSTUB_POLICY_CLIENT_FIELD_NAME);
+            field.setAccessible(true);
+            SapphireClientPolicy clientPolicy = (SapphireClientPolicy) field.get(appObjectStub);
+            GlobalKernelReferences.nodeServer.oms.deleteSapphireObject(
+                    clientPolicy.getGroup().getSapphireObjId());
+        } catch (NoSuchFieldException e) {
+            throw new RuntimeException("Tried to delete invalid sapphire object.", e);
+        } catch (SapphireObjectNotFoundException e) {
+            /* Ignore it. It might have happened that sapphire object is already deleted and still hold reference */
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to delete sapphire object.", e);
+        }
+    }
+
+    /**
+     * Delete the group policy object of sapphire object
+     *
+     * @param sapphireObjId
+     * @param handler
+     * @throws RemoteException
+     */
+    public static void deleteGroupPolicyObject(SapphireObjectID sapphireObjId, EventHandler handler)
+            throws RemoteException {
+        deletePolicyObjects(handler);
+    }
+
+    /**
+     * Delete the server policy objects of replica of sapphire object
+     *
+     * @param sapphireReplicaId
+     * @param handler
+     * @throws RemoteException
+     */
+    public static void deleteServerPolicyObject(
+            SapphireReplicaID sapphireReplicaId, EventHandler handler) throws RemoteException {
+        deletePolicyObjects(handler);
+    }
+
+    /**
+     * Delete the registered policy objects
+     *
+     * @param handler
+     * @throws RemoteException
+     */
+    public static void deletePolicyObjects(EventHandler handler) throws RemoteException {
+        KernelOID oid;
+
+        for (Object policy : handler.getObjects()) {
+            if (policy instanceof SapphireServerPolicy) {
+                oid = ((SapphireServerPolicy) policy).$__getKernelOID();
+            } else if (policy instanceof SapphireGroupPolicy) {
+                oid = ((SapphireGroupPolicy) policy).$__getKernelOID();
+            } else {
+                logger.severe("unknown object instance");
+                continue;
+            }
+
+            if (oid == null) {
+                logger.severe("oid is null");
+                continue;
+            }
+
+            KernelObjectFactory.delete(((KernelObjectStub) policy).$__getKernelOID());
         }
     }
 
@@ -145,6 +253,24 @@ public class Sapphire {
 
         // Shouldn't get here
         throw new Exception("The Object doesn't implement the SapphireObject interface.");
+    }
+
+    public static KernelObjectStub getPolicyStub(Class<?> policyClass, KernelOID oid)
+            throws KernelObjectStubNotCreatedException {
+        String policyStubClassName =
+                GlobalStubConstants.getPolicyPackageName()
+                        + "."
+                        + RMIUtil.getShortName(policyClass)
+                        + GlobalStubConstants.STUB_SUFFIX;
+        KernelObjectStub policyStub;
+        try {
+            policyStub = KernelObjectFactory.createStub(Class.forName(policyStubClassName), oid);
+        } catch (Exception e) {
+            throw new KernelObjectStubNotCreatedException(
+                    "Failed to create a policy stub object", e);
+        }
+
+        return policyStub;
     }
 
     public static KernelObjectStub getPolicyStub(Class<?> policyClass)

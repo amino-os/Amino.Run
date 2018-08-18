@@ -31,6 +31,12 @@ public class UserManager implements SapphireObject<DHTPolicy>, DHTInterface {
 		return user;
 	}
 
+	public void deleteUser(String username) {
+		User user = users.remove(new DHTKey(username));
+		user.deInitialize();
+		delete_(user);
+	}
+
 	public User getUser(String username) {
 		// TODO: check
 		return users.get(new DHTKey(username));

@@ -1,4 +1,4 @@
-package sapphire.appexamples.hankstodo.cloud;
+/*package sapphire.appexamples.hankstodo.cloud;
 
 import sapphire.app.AppEntryPoint;
 import sapphire.app.AppObjectNotCreatedException;
@@ -12,4 +12,4 @@ public class TodoStart implements AppEntryPoint {
 	public AppObjectStub start() throws AppObjectNotCreatedException {
 			return (AppObjectStub) Sapphire.new_(TodoListManager.class);
 	}
-}
+}*/

@@ -17,7 +17,7 @@ public class SapphireUtils {
     public static String LOOP_BACK_IP_ADDR = "127.0.0.1";
 
     public static OMSServerImpl startSpiedOms(String appEntryClassName) throws Exception {
-        OMSServerImpl myOms = new OMSServerImpl(appEntryClassName);
+        OMSServerImpl myOms = new OMSServerImpl();
 
         /* If needed, all the fields inside OMSServer can be spied as shown below in commented code */
         /*KernelServerManager serverManager = (KernelServerManager)extractFieldValueOnInstance(myOms, "serverManager");

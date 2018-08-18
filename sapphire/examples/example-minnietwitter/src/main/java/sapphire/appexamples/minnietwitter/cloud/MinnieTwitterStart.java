@@ -1,3 +1,4 @@
+/*
 package sapphire.appexamples.minnietwitter.cloud;
 
 import sapphire.app.AppEntryPoint;
@@ -13,3 +14,4 @@ public class MinnieTwitterStart implements AppEntryPoint {
 			return (AppObjectStub) new_(TwitterManager.class);
 	}
 }
+*/

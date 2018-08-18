@@ -23,6 +23,8 @@ public interface SapphirePolicyUpcalls {
     interface SapphireServerPolicyUpcalls extends Serializable {
         void onCreate(SapphireGroupPolicy group, Annotation[] annotations);
 
+        void onDestroy();
+
         SapphireGroupPolicy getGroup();
 
         Object onRPC(String method, ArrayList<Object> params) throws Exception;
@@ -34,6 +36,8 @@ public interface SapphirePolicyUpcalls {
         void onCreate(SapphireServerPolicy server, Annotation[] annotations) throws RemoteException;
 
         void addServer(SapphireServerPolicy server) throws RemoteException;
+
+        void onDestroy() throws RemoteException;
 
         void removeServer(SapphireServerPolicy server) throws RemoteException;
 

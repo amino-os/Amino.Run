@@ -18,6 +18,9 @@ public class AppObjectShimServerPolicy implements SapphireServerPolicyUpcalls {
     public void onCreate(SapphirePolicy.SapphireGroupPolicy group, Annotation[] annotations) {}
 
     @Override
+    public void onDestroy() {}
+
+    @Override
     public SapphirePolicy.SapphireGroupPolicy getGroup() {
         return null;
     }

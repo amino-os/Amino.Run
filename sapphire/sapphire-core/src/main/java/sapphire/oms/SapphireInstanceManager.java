@@ -2,6 +2,7 @@ package sapphire.oms;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 import sapphire.common.SapphireObjectID;
@@ -12,6 +13,8 @@ import sapphire.runtime.EventHandler;
 public class SapphireInstanceManager {
 
     private SapphireObjectID oid;
+    private String name;
+    private int referenceCount;
     private EventHandler instanceDispatcher;
     private HashMap<SapphireReplicaID, EventHandler> replicaDispatchers;
     private Random oidGenerator;
@@ -83,5 +86,46 @@ public class SapphireInstanceManager {
         SapphireReplicaID rid = generateSapphireReplicaID();
         replicaDispatchers.put(rid, dispatcher);
         return rid;
+    }
+
+    /**
+     * Removes the replica from this sapphire instance
+     *
+     * @param replicaId
+     */
+    public void removeReplica(SapphireReplicaID replicaId) {
+        replicaDispatchers.remove(replicaId);
+    }
+
+    public Map<SapphireReplicaID, EventHandler> getReplicaMap() {
+        return replicaDispatchers;
+    }
+
+    public void clear() {
+        replicaDispatchers.clear();
+    }
+
+    public SapphireObjectID getOid() {
+        return oid;
+    }
+
+    public void setName(String sapphireObjName) {
+        name = sapphireObjName;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public int incrRefCountAndGet() {
+        return ++referenceCount;
+    }
+
+    public int decrRefCountAndGet() {
+        return --referenceCount;
+    }
+
+    public int getReferenceCount() {
+        return referenceCount;
     }
 }

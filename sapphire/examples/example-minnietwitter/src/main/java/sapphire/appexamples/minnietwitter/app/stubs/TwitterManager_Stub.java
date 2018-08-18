@@ -84,4 +84,31 @@ public final class TwitterManager_Stub extends sapphire.appexamples.minnietwitte
         }
         return ((sapphire.appexamples.minnietwitter.app.TagManager) $__result);
     }
+
+    // Implementation of deInitialize()
+    public void deInitialize() {
+        java.lang.Object $__result = null;
+        if ($__directInvocation) {
+            try {
+                super.deInitialize();
+            } catch (java.lang.Exception e) {
+                throw new sapphire.common.AppExceptionWrapper(e);
+            }
+        } else {
+            java.util.ArrayList<Object> $__params = new java.util.ArrayList<Object>();
+            String $__method = "public void sapphire.appexamples.minnietwitter.app.TwitterManager.deInitialize()";
+            try {
+                $__result = $__client.onRPC($__method, $__params);
+            } catch (sapphire.common.AppExceptionWrapper e) {
+                Exception ex = e.getException();
+                if (ex instanceof java.lang.RuntimeException) {
+                    throw (java.lang.RuntimeException)ex;
+                } else {
+                    throw new java.lang.RuntimeException(ex);
+                }
+            } catch (java.lang.Exception e) {
+                throw new java.lang.RuntimeException(e);
+            }
+        }
+    }
 }

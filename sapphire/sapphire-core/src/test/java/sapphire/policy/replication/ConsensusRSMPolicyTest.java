@@ -30,6 +30,7 @@ import java.rmi.registry.Registry;
 import java.util.ArrayList;
 import java.util.UUID;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -54,6 +55,7 @@ import sapphire.policy.util.consensus.raft.LeaderException;
 import sapphire.policy.util.consensus.raft.Server;
 
 /** Created by terryz on 4/9/18. */
+@Ignore
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({
     KernelServerImpl.class,

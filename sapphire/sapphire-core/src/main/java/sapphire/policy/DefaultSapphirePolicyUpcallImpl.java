@@ -4,6 +4,8 @@ import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.UUID;
+import sapphire.common.AppObject;
+import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.policy.SapphirePolicy.SapphireServerPolicy;
 import sapphire.policy.transaction.IllegalComponentException;
 import sapphire.policy.transaction.TransactionContext;
@@ -49,17 +51,25 @@ public abstract class DefaultSapphirePolicyUpcallImpl extends SapphirePolicyLibr
             return appObject.invoke(method, params);
         }
         /* This function is added here just to generate the stub for this function in all DMs server policy */
-        public SapphireServerPolicy sapphire_replicate() {
+        public SapphireServerPolicy sapphire_replicate() throws RemoteException {
             return super.sapphire_replicate();
         }
         /* This function is added here just to generate the stub for this function in all DMs server policy */
-        public void sapphire_pin(String region) throws RemoteException {
+        public void sapphire_pin(String region)
+                throws RemoteException, SapphireObjectNotFoundException {
             super.sapphire_pin(region);
         }
         /* This function is added here just to generate the stub for this function in all DMs server policy */
-        public void sapphire_pin_to_server(InetSocketAddress server) throws RemoteException {
+        public void sapphire_pin_to_server(InetSocketAddress server)
+                throws RemoteException, SapphireObjectNotFoundException {
             super.sapphire_pin_to_server(server);
         }
+
+        public AppObject sapphire_getAppObject() {
+            return super.sapphire_getAppObject();
+        }
+
+        public void onDestroy() {}
     }
 
     public abstract static class DefaultSapphireGroupPolicyUpcallImpl
@@ -77,5 +87,7 @@ public abstract class DefaultSapphirePolicyUpcallImpl extends SapphirePolicyLibr
             ArrayList<SapphireServerPolicy> servers = getServers();
             return servers.get(0);
         }
+
+        public void onDestroy() {}
     }
 }

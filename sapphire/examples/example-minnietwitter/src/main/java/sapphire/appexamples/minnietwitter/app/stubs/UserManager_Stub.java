@@ -116,6 +116,34 @@ public final class UserManager_Stub extends sapphire.appexamples.minnietwitter.a
         return ((java.util.Map) $__result);
     }
 
+    // Implementation of deleteUser(String)
+    public void deleteUser(java.lang.String $param_String_1) {
+        java.lang.Object $__result = null;
+        if ($__directInvocation) {
+            try {
+                super.deleteUser( $param_String_1);
+            } catch (java.lang.Exception e) {
+                throw new sapphire.common.AppExceptionWrapper(e);
+            }
+        } else {
+            java.util.ArrayList<Object> $__params = new java.util.ArrayList<Object>();
+            String $__method = "public void sapphire.appexamples.minnietwitter.app.UserManager.deleteUser(java.lang.String)";
+            $__params.add($param_String_1);
+            try {
+                $__result = $__client.onRPC($__method, $__params);
+            } catch (sapphire.common.AppExceptionWrapper e) {
+                Exception ex = e.getException();
+                if (ex instanceof java.lang.RuntimeException) {
+                    throw (java.lang.RuntimeException)ex;
+                } else {
+                    throw new java.lang.RuntimeException(ex);
+                }
+            } catch (java.lang.Exception e) {
+                throw new java.lang.RuntimeException(e);
+            }
+        }
+    }
+
     // Implementation of addUser(String, String)
     public sapphire.appexamples.minnietwitter.app.User addUser(java.lang.String $param_String_1, java.lang.String $param_String_2)
             throws sapphire.app.AppObjectNotCreatedException {

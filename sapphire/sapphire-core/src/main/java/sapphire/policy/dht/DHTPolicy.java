@@ -11,6 +11,7 @@ import java.util.Random;
 import java.util.Timer;
 import java.util.TreeSet;
 import java.util.logging.Logger;
+import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.policy.SapphirePolicy;
 import sapphire.policy.SapphirePolicy.SapphireClientPolicy;
 import sapphire.policy.SapphirePolicy.SapphireGroupPolicy;
@@ -239,6 +240,8 @@ public class DHTPolicy extends SapphirePolicy {
                 e.printStackTrace();
                 throw new Error(
                         "Could not create new group policy because the oms is not available.");
+            } catch (SapphireObjectNotFoundException e) {
+                throw new Error("Failed to find sapphire object.", e);
             }
         }
         /**

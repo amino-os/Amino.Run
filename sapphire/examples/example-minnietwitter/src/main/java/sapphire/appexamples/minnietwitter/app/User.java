@@ -24,6 +24,11 @@ public class User implements SapphireObject {
 		timeline = (Timeline) new_(Timeline.class, u, tagManager);
 		timeline.initialize(timeline);
 	}
+
+	public void deInitialize() {
+		timeline.deInitialize();
+		delete_(timeline);
+	}
 	
 	public List<User> getFollowers(int from, int to) {
 		return Util.checkedSubList(followers, from, to);

@@ -1,5 +1,8 @@
 package sapphire.runtime;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
@@ -13,7 +16,7 @@ import java.util.Iterator;
  */
 public class EventHandler implements Serializable {
 
-    private class PolicyHandler {
+    private class PolicyHandler implements Serializable {
         private Object policyObject;
         private Method handler;
 
@@ -29,11 +32,11 @@ public class EventHandler implements Serializable {
 
     private InetSocketAddress host;
     private ArrayList<Object> objects;
-    private transient Hashtable<String, PolicyHandler> handlers;
+    private Hashtable<String, PolicyHandler> handlers;
 
     private void fillMethodTable() {
         this.handlers = new Hashtable<String, PolicyHandler>();
-        Iterator<Object> it = objects.iterator();
+        Iterator<Object> it = this.objects.iterator();
         while (it.hasNext()) {
             Object obj = it.next();
             Class<?> cl = obj.getClass();
@@ -59,11 +62,6 @@ public class EventHandler implements Serializable {
      * @return the return value from the method
      */
     public Object invoke(String method, ArrayList<Object> params) throws Exception {
-        if (null == handlers) {
-            /* Fill the method table for the very first time it is being used */
-            fillMethodTable();
-        }
-
         if (handlers.containsKey(method)) {
             return handlers.get(method).invokeHandler(params);
         } else {
@@ -80,11 +78,17 @@ public class EventHandler implements Serializable {
     }
 
     public Boolean hasHandler(String method) {
-        if (null == handlers) {
-            /* Fill the method table for the very first time it is being used */
-            fillMethodTable();
-        }
-
         return handlers.containsKey(method);
+    }
+
+    private void writeObject(ObjectOutputStream out) throws IOException {
+        out.writeObject(getHost());
+        out.writeObject(getObjects());
+    }
+
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        host = (InetSocketAddress) in.readObject();
+        objects = (ArrayList<Object>) in.readObject();
+        fillMethodTable();
     }
 }

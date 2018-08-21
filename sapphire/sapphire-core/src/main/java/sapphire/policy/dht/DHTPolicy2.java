@@ -17,7 +17,7 @@ public class DHTPolicy2 extends SapphirePolicy {
 	public static class DHTClientPolicy extends SapphireClientPolicy {
 
 		// Signature for Sapphire Policy method (as opposed to application method).
-		final String sapphirePolicyStr = "sapphire.policy";
+		String sapphirePolicyStr = "sapphire.policy";
 		DHTServerPolicy server = null;
 		DHTGroupPolicy group = null;
 
@@ -80,7 +80,6 @@ public class DHTPolicy2 extends SapphirePolicy {
 	public static class DHTServerPolicy extends SapphireServerPolicy {
 		private static Logger logger = Logger.getLogger(SapphireServerPolicy.class.getName());
 		private DHTGroupPolicy group = null;
-		final String sapphirePolicyStr = "sapphire.policy.SapphirePolicy.DHTServerPolicy";
 
 		@Override
 		public void onCreate(SapphireGroupPolicy group) {
@@ -100,9 +99,6 @@ public class DHTPolicy2 extends SapphirePolicy {
 		 * params may be an application parameter or method name in case of multi-DM.
 		 */
 		public Object onRPC(String method, ArrayList<Object> params) throws Exception {
-			if (method.contains(sapphirePolicyStr)) {
-
-			}
 			return super.onRPC(method, params);
 			/* We assume that the first param is the index */
 //			ArrayList<Object> applicationParams = getApplicationParam(params, 0);
@@ -184,9 +180,8 @@ public class DHTPolicy2 extends SapphirePolicy {
 				InetSocketAddress newServer = null;
 
 				for (int i = 1; i < regions.size(); i++) {
-//					DHTServerPolicy replica = (DHTServerPolicy)dhtServer.sapphire_replicate();
 					DHTServerPolicy replica = (DHTServerPolicy)dhtServer.sapphire_replicate(regions.get(i));
-					replica.sapphire_pin(regions.get(i));
+					dhtServer.sapphire_pin(replica, regions.get(i));
 				}
 				dhtServer.sapphire_pin(regions.get(0));
 			} catch (RemoteException e) {

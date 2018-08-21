@@ -75,13 +75,25 @@ public abstract class DefaultSapphirePolicyUpcallImpl extends SapphirePolicyLibr
 		public SapphireServerPolicy sapphire_replicate(String region) {
 			return super.sapphire_replicate(region);
 		}
+
 		/* This function is added here just to generate the stub for this function in all DMs server policy */
 		public void sapphire_pin(String region) throws RemoteException {
 			super.sapphire_pin(region);
 		}
+
+		/* This function is added here just to generate the stub for this function in all DMs server policy */
+		public void sapphire_pin(SapphireServerPolicy sapphireServerPolicy, String region) throws RemoteException {
+			super.sapphire_pin(sapphireServerPolicy, region);
+		}
+
 		/* This function is added here just to generate the stub for this function in all DMs server policy */
 		public void sapphire_pin_to_server(InetSocketAddress server) throws RemoteException {
 			super.sapphire_pin_to_server(server);
+		}
+
+		/* This function is added here just to generate the stub for this function in all DMs server policy */
+		public void sapphire_pin_to_server(SapphireServerPolicy sapphireServerPolicy, InetSocketAddress server) throws RemoteException {
+			super.sapphire_pin_to_server(sapphireServerPolicy, server);
 		}
 	}
 	

@@ -70,7 +70,7 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 				serverPolicy.$__setKernelOID(serverPolicyStub.$__getKernelOID());
 				serverPolicy.onCreate(getGroup());
 				getGroup().addServer((SapphireServerPolicy)serverPolicyStub);
-				Sapphire.getAppStub(null, this.nextDMs, serverPolicy, serverPolicyStub, null);
+				Sapphire.getAppStub(null, this.nextDMs, serverPolicy, serverPolicyStub, null, null);
 			} catch (ClassNotFoundException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -106,7 +106,7 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 				serverPolicy.$__setKernelOID(serverPolicyStub.$__getKernelOID());
 				serverPolicy.onCreate(getGroup());
 				getGroup().addServer((SapphireServerPolicy) serverPolicyStub);
-				Sapphire.getAppStub(null, this.nextDMs, serverPolicy, serverPolicyStub, null);
+				Sapphire.getAppStub(null, this.nextDMs, serverPolicy, serverPolicyStub, newServer, null);
 			} catch (RemoteException e) {
 				throw new Error("Could not contact oms.");
 			} catch (ClassNotFoundException e) {
@@ -142,11 +142,36 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 			sapphire_pin_to_server(server);
 		}
 
+		public void sapphire_pin(SapphireServerPolicy serverPolicy, String region) throws RemoteException {
+			logger.info("Pinning Sapphire object " + serverPolicy.$__getKernelOID() + " to " + region);
+			InetSocketAddress server = null;
+			try {
+				System.out.println("Trying to get server from OMS.");
+				server = oms().getServerInRegion(region);
+				System.out.println("Successfully received server from OMS.");
+			} catch (RemoteException e) {
+				System.out.println("Could not contact oms.");
+				throw new RemoteException("Could not contact oms.");
+			}
+			sapphire_pin_to_server(serverPolicy, server);
+		}
+
         // This function is same as sapphire_pin but pining to the server instead of region
 		public void sapphire_pin_to_server(InetSocketAddress server) throws RemoteException {
 			logger.info("Pinning Sapphire object " + oid.toString() + " to " + server);
 			try {
 				kernel().moveKernelObjectToServer(server, oid);
+			} catch (KernelObjectNotFoundException e) {
+				e.printStackTrace();
+				throw new Error("Could not find myself on this server!");
+			}
+		}
+
+        // This function is same as sapphire_pin but pining to the server instead of region
+		public void sapphire_pin_to_server(SapphireServerPolicy serverPolicy, InetSocketAddress server) throws RemoteException {
+			logger.info("Pinning Sapphire object " + serverPolicy.$__getKernelOID() + " to " + server);
+			try {
+				kernel().moveKernelObjectToServer(server, serverPolicy.$__getKernelOID());
 			} catch (KernelObjectNotFoundException e) {
 				e.printStackTrace();
 				throw new Error("Could not find myself on this server!");

@@ -5,6 +5,7 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -81,7 +82,7 @@ public class Sapphire {
 			KernelObjectStub previousServerPolicyStub = null;
 			AppObjectStub appStub = null;
 
-			appStub = getAppStub(appObjectClass, DMchain, previousServerPolicy, previousServerPolicyStub, args);
+			appStub = getAppStub(appObjectClass, DMchain, previousServerPolicy, previousServerPolicyStub, null, args);
 //
 //			for () {
 //				groupPolicy.onCreate(serverPolicyStub);
@@ -111,6 +112,7 @@ public class Sapphire {
 			List<String> DMchain,
 			SapphireServerPolicy previousServerPolicy,
 			KernelObjectStub previousServerPolicyStub,
+			InetSocketAddress hostname,
 			Object[] args) throws Exception {
 
 		AppObjectStub appStub = null;
@@ -152,11 +154,13 @@ public class Sapphire {
 		if (sapphireGroupPolicyClass == null)
 			sapphireGroupPolicyClass = DefaultGroupPolicy.class;
 
-			/* Create and the Kernel Object for the Group Policy and get the Group Policy Stub */
-		SapphireGroupPolicy groupPolicyStub = (SapphireGroupPolicy) getPolicyStub(sapphireGroupPolicyClass);
+			/* Create and the Kernel Object for the Group Policy and get the Group Policy Stub
+			Note that group policy does not need to update hostname because it only applies to
+			individual server in multi-policy scenario */
+		SapphireGroupPolicy groupPolicyStub = (SapphireGroupPolicy) getPolicyStub(sapphireGroupPolicyClass, null);
 
 			/* Create the Kernel Object for the Server Policy, and get the Server Policy Stub */
-		SapphireServerPolicy serverPolicyStub = (SapphireServerPolicy) getPolicyStub(sapphireServerPolicyClass);
+		SapphireServerPolicy serverPolicyStub = (SapphireServerPolicy) getPolicyStub(sapphireServerPolicyClass, hostname);
 
 			/* Create the Client Policy Object */
 		SapphireClientPolicy client = (SapphireClientPolicy) sapphireClientPolicyClass.newInstance();
@@ -180,11 +184,15 @@ public class Sapphire {
 			previousServerPolicyStub.$__setNextClientPolicy(client);
 		} else {
 			// First DM needs to create an app stub.
+			// TODO: Change getAppStub to a different name; the following is different method from this one.
 			appStub = getAppStub(appObjectClass, serverPolicy, args);
 			appStub.$__initialize(client);
 		}
 
-		List<String> nextDMs = DMchain.subList(1, DMchain.size());
+		// Note that subList is non serializable; hence, the new list creation.
+		List<String> nextDMs = new ArrayList<String>(DMchain.subList(1, DMchain.size()));
+
+		// TODO (sungwook, 8/17/2018): set host name for the next chain !!
 
 		serverPolicy.onCreate(groupPolicyStub);
 		serverPolicy.setNextDMs(nextDMs);
@@ -193,7 +201,7 @@ public class Sapphire {
 		previousServerPolicy = serverPolicy;
 		previousServerPolicyStub = (KernelObjectStub)serverPolicyStub;
 
-		getAppStub(appObjectClass, nextDMs, previousServerPolicy, previousServerPolicyStub, args);
+		getAppStub(appObjectClass, nextDMs, previousServerPolicy, previousServerPolicyStub, hostname, args);
 
 		return appStub;
 	}
@@ -235,10 +243,14 @@ public class Sapphire {
 		return Class.forName(policyClassName);
 	}
 
-	private static KernelObjectStub getPolicyStub(Class<?> policyClass)
+	private static KernelObjectStub getPolicyStub(Class<?> policyClass, InetSocketAddress hostname)
 			throws ClassNotFoundException, KernelObjectNotCreatedException {
 		String policyStubClassName = GlobalStubConstants.getPolicyPackageName() + "." + RMIUtil.getShortName(policyClass) + GlobalStubConstants.STUB_SUFFIX;
 		KernelObjectStub policyStub =  KernelObjectFactory.create(policyStubClassName);
+		if (hostname != null) {
+			// Hostname update only happens in multi-policy scenario.
+			policyStub.$__updateHostname(hostname);
+		}
 		return policyStub;
 	}
 

@@ -35,6 +35,7 @@ public class KernelObjectManager {
 	public KernelObject lookupObject(KernelOID oid) throws KernelObjectNotFoundException {
 		KernelObject object = objects.get(oid);
 		if (object == null) {
+			System.out.println("List of object: " + objects.keys());
 			throw new KernelObjectNotFoundException("Could not find kernel object with id: "+oid.toString()+" on local host.");
 		}
 		return object;

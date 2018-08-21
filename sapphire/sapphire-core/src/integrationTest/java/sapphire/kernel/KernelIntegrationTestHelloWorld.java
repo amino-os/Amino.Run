@@ -38,7 +38,6 @@ public class KernelIntegrationTestHelloWorld {
 
             System.out.println("result.." + helloWorld.sayHello());
             Assert.assertTrue(helloWorld.sayHello().startsWith("Hi"));
-
         } catch (Exception e) {
             e.printStackTrace();
         }

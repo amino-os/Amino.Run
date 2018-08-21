@@ -13,6 +13,7 @@ plugins {
 googleJavaFormat {
     options style: 'AOSP'
 }
+
 sourceSets {
     integrationTest {
         java {
@@ -29,6 +30,7 @@ configurations {
     integrationTestCompile.extendsFrom testCompile
     integrationTestRuntime.extendsFrom testRuntime
 }
+
 dependencies {
     compile 'org.json:json:20171018'
     compile project(':dependencies:java.rmi')

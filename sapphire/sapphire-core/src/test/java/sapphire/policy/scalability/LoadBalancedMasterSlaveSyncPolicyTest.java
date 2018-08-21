@@ -69,7 +69,7 @@ public class LoadBalancedMasterSlaveSyncPolicyTest {
     }
 
     private List<LoadBalancedMasterSlaveSyncPolicy.ServerPolicy> createServers(
-            LoadBalancedMasterSlaveSyncPolicy.GroupPolicy group, int cnt) {
+            LoadBalancedMasterSlaveSyncPolicy.GroupPolicy group, int cnt) throws Exception {
         List<LoadBalancedMasterSlaveSyncPolicy.ServerPolicy> servers =
                 new ArrayList<LoadBalancedMasterSlaveSyncPolicy.ServerPolicy>();
         for (int i = 0; i < cnt; i++) {

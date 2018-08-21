@@ -163,10 +163,12 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultSapphirePolicy 
         @Override
         public void onCreate(SapphireServerPolicy server, Annotation[] annotations) {
             logger = Logger.getLogger(this.getClass().getName());
-            this.addServer(server);
 
             RuntimeSpec spec = Utils.getRuntimeSpec(server.getClass());
             try {
+
+                this.addServer(server);
+
                 ArrayList<InetSocketAddress> servers =
                         GlobalKernelReferences.nodeServer.oms.getServers();
                 // TODO: Remove the following check. Use heap to find the best server location.
@@ -255,7 +257,7 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultSapphirePolicy 
         }
 
         /** @return master server, or <code>null</code> if no master available */
-        public ServerBase getMaster() {
+        public ServerBase getMaster() throws RemoteException {
             // TODO: cache master to avoid calling group policy remotely for RPC
             if (masterLock != null) {
                 List<ServerBase> servers = getServerPolicies();
@@ -275,7 +277,7 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultSapphirePolicy 
             return null;
         }
 
-        public ServerBase getSlave() {
+        public ServerBase getSlave() throws RemoteException {
             ServerBase master = getMaster();
             List<ServerBase> servers = getServerPolicies();
             for (ServerBase s : servers) {
@@ -286,7 +288,7 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultSapphirePolicy 
             return null;
         }
 
-        private List<ServerBase> getServerPolicies() {
+        private List<ServerBase> getServerPolicies() throws RemoteException {
             ArrayList<SapphireServerPolicy> servers = super.getServers();
             List<ServerBase> result = new ArrayList<ServerBase>();
             for (SapphireServerPolicy s : servers) {
@@ -295,7 +297,7 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultSapphirePolicy 
             return result;
         }
 
-        public ServerBase getRandomServer() {
+        public ServerBase getRandomServer() throws RemoteException {
             List<ServerBase> servers = getServerPolicies();
             return servers.get(random.nextInt(Integer.MAX_VALUE) % servers.size());
         }

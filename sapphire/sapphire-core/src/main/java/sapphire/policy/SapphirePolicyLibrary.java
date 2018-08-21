@@ -80,6 +80,11 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
             } catch (KernelObjectNotFoundException e) {
                 e.printStackTrace();
                 throw new Error("Could not find object to replicate!");
+            } catch (Exception e) {
+                // TODO Cleaup need to handle. Will be handled along with sapphire object delete
+                // task
+                e.printStackTrace();
+                throw new Error("Could not create a replica of " + appObject.getObject(), e);
             }
             return (SapphireServerPolicy) serverPolicyStub;
         }

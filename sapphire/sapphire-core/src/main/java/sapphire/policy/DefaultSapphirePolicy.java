@@ -1,6 +1,7 @@
 package sapphire.policy;
 
 import java.lang.annotation.Annotation;
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Set;
@@ -56,30 +57,31 @@ public class DefaultSapphirePolicy extends SapphirePolicy {
                 Collections.newSetFromMap(new ConcurrentHashMap<SapphireServerPolicy, Boolean>());
 
         @Override
-        public void addServer(SapphireServerPolicy server) {
+        public void addServer(SapphireServerPolicy server) throws RemoteException {
             servers.add(server);
         }
 
         @Override
-        public void removeServer(SapphireServerPolicy server) {
+        public void removeServer(SapphireServerPolicy server) throws RemoteException {
             servers.remove(server);
         }
 
         @Override
-        public void onFailure(SapphireServerPolicy server) {}
+        public void onFailure(SapphireServerPolicy server) throws RemoteException {}
 
         @Override
-        public SapphireServerPolicy onRefRequest() {
+        public SapphireServerPolicy onRefRequest() throws RemoteException {
             return null;
         }
 
         @Override
-        public ArrayList<SapphireServerPolicy> getServers() {
+        public ArrayList<SapphireServerPolicy> getServers() throws RemoteException {
             return new ArrayList<SapphireServerPolicy>(servers);
         }
 
         @Override
-        public void onCreate(SapphireServerPolicy server, Annotation[] annotations) {
+        public void onCreate(SapphireServerPolicy server, Annotation[] annotations)
+                throws RemoteException {
             // TODO Auto-generated method stub
         }
     }

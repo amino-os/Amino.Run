@@ -125,7 +125,13 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
             than required, so one can be removed. The number of replicas should not be
             reduced below 2 (in case one fails).
              */
-            ArrayList<SapphireServerPolicy> replicaServers = getGroup().getServers();
+            ArrayList<SapphireServerPolicy> replicaServers;
+            try {
+                replicaServers = getGroup().getServers();
+            } catch (RemoteException e) {
+                return;
+            }
+
             double currentReplicas = replicaServers.size();
             if (currentReplicas <= 2) {
                 // Scale down shouldn't happen if the replica count is less than or equal to 2
@@ -243,7 +249,7 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
         }
 
         public synchronized void scaleDownReplica(SapphireServerPolicy server)
-                throws ScaleDownException {
+                throws RemoteException, ScaleDownException {
             ArrayList<SapphireServerPolicy> serverList = getServers();
 
             if (2 >= serverList.size()) {

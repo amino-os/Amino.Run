@@ -10,9 +10,11 @@ import sapphire.common.SapphireObjectID;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireReplicaID;
 import sapphire.kernel.common.KernelOID;
+import sapphire.kernel.common.KernelObjectNotCreatedException;
 import sapphire.kernel.common.KernelObjectNotFoundException;
 import sapphire.kernel.common.KernelServerNotFoundException;
 import sapphire.kernel.common.ServerInfo;
+import sapphire.policy.SapphirePolicy.SapphireGroupPolicy;
 import sapphire.runtime.EventHandler;
 
 public interface OMSServer extends Remote {
@@ -42,6 +44,9 @@ public interface OMSServer extends Remote {
 
     void heartbeatKernelServer(ServerInfo srvinfo)
             throws RemoteException, NotBoundException, KernelServerNotFoundException;
+
+    SapphireGroupPolicy createGroupPolicy(Class<?> policyClass)
+            throws RemoteException, KernelObjectNotCreatedException, ClassNotFoundException;
 
     SapphireObjectID registerSapphireObject(EventHandler dispatcher) throws RemoteException;
 

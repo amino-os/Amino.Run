@@ -83,9 +83,10 @@ public class Sapphire {
             if (sapphireGroupPolicyClass == null)
                 sapphireGroupPolicyClass = DefaultGroupPolicy.class;
 
-            /* Create and the Kernel Object for the Group Policy and get the Group Policy Stub */
+            /* Create the Kernel Object for the Group Policy and get the Group Policy Stub from OMS */
             SapphireGroupPolicy groupPolicyStub =
-                    (SapphireGroupPolicy) getPolicyStub(sapphireGroupPolicyClass);
+                    GlobalKernelReferences.nodeServer.oms.createGroupPolicy(
+                            sapphireGroupPolicyClass);
 
             /* Create the Kernel Object for the Server Policy, and get the Server Policy Stub */
             SapphireServerPolicy serverPolicyStub =
@@ -94,9 +95,6 @@ public class Sapphire {
             /* Create the Client Policy Object */
             SapphireClientPolicy client =
                     (SapphireClientPolicy) sapphireClientPolicyClass.newInstance();
-
-            /* Initialize the group policy and return a local pointer to the object itself */
-            SapphireGroupPolicy groupPolicy = initializeGroupPolicy(groupPolicyStub);
 
             /* Initialize the server policy and return a local pointer to the object itself */
             SapphireServerPolicy serverPolicy = initializeServerPolicy(serverPolicyStub);
@@ -110,7 +108,7 @@ public class Sapphire {
             client.onCreate(groupPolicyStub, annotations);
             appStub.$__initialize(client);
             serverPolicy.onCreate(groupPolicyStub, annotations);
-            groupPolicy.onCreate(serverPolicyStub, annotations);
+            groupPolicyStub.onCreate(serverPolicyStub, annotations);
 
             logger.info("Sapphire Object created: " + appObjectClass.getName());
             return appStub;
@@ -149,7 +147,7 @@ public class Sapphire {
         throw new Exception("The Object doesn't implement the SapphireObject interface.");
     }
 
-    private static KernelObjectStub getPolicyStub(Class<?> policyClass)
+    public static KernelObjectStub getPolicyStub(Class<?> policyClass)
             throws ClassNotFoundException, KernelObjectNotCreatedException {
         String policyStubClassName =
                 GlobalStubConstants.getPolicyPackageName()
@@ -160,7 +158,7 @@ public class Sapphire {
         return policyStub;
     }
 
-    private static SapphireGroupPolicy initializeGroupPolicy(SapphireGroupPolicy groupPolicyStub)
+    public static SapphireGroupPolicy initializeGroupPolicy(SapphireGroupPolicy groupPolicyStub)
             throws KernelObjectNotFoundException {
         KernelOID groupOID = ((KernelObjectStub) groupPolicyStub).$__getKernelOID();
         SapphireGroupPolicy groupPolicy =

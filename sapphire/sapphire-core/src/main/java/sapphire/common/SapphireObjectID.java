@@ -1,28 +1,32 @@
 package sapphire.common;
 
 import java.io.Serializable;
+import java.util.UUID;
 
 public class SapphireObjectID implements Serializable {
-    private int oid;
+    private final UUID oid;
 
-    public SapphireObjectID(int oid) {
+    public SapphireObjectID(UUID oid) {
         this.oid = oid;
     }
 
-    public int getID() {
+    public UUID getID() {
         return this.oid;
     }
 
     @Override
-    public boolean equals(Object obj) {
-        final SapphireObjectID other = (SapphireObjectID) obj;
-        if (oid != other.getID()) return false;
-        return true;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        SapphireObjectID that = (SapphireObjectID) o;
+
+        return oid.equals(that.oid);
     }
 
     @Override
     public int hashCode() {
-        return oid;
+        return oid.hashCode();
     }
 
     @Override

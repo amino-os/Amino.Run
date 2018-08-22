@@ -16,7 +16,7 @@ import java.util.Iterator;
  */
 public class EventHandler implements Serializable {
 
-    private class PolicyHandler implements Serializable {
+    private class PolicyHandler {
         private Object policyObject;
         private Method handler;
 
@@ -35,8 +35,8 @@ public class EventHandler implements Serializable {
     private Hashtable<String, PolicyHandler> handlers;
 
     private void fillMethodTable() {
-        this.handlers = new Hashtable<String, PolicyHandler>();
-        Iterator<Object> it = this.objects.iterator();
+        handlers = new Hashtable<String, PolicyHandler>();
+        Iterator<Object> it = objects.iterator();
         while (it.hasNext()) {
             Object obj = it.next();
             Class<?> cl = obj.getClass();
@@ -44,7 +44,7 @@ public class EventHandler implements Serializable {
             Method[] methods = cl.getDeclaredMethods();
             for (int i = 0; i < methods.length; i++) {
                 PolicyHandler handler = new PolicyHandler(obj, methods[i]);
-                this.handlers.put(methods[i].toGenericString(), handler);
+                handlers.put(methods[i].toGenericString(), handler);
             }
         }
     }

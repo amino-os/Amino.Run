@@ -16,7 +16,7 @@ import java.util.Iterator;
  */
 public class EventHandler implements Serializable {
 
-    private class PolicyHandler implements Serializable {
+    private class PolicyHandler {
         private Object policyObject;
         private Method handler;
 

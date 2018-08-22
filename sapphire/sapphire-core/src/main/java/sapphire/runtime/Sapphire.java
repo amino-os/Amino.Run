@@ -206,12 +206,14 @@ public class Sapphire {
 		processedDMs.add(DM);
 		serverPolicy.setProcessedDMs(processedDMs);
 
-		groupPolicy.onCreate(serverPolicyStub);
+		groupPolicy.onCreate(serverPolicy);
 
-		previousServerPolicy = serverPolicy;
-		previousServerPolicyStub = (KernelObjectStub)serverPolicyStub;
+		if (nextDMs.size() != 0) {
+			previousServerPolicy = serverPolicy;
+			previousServerPolicyStub = (KernelObjectStub)serverPolicyStub;
 
-		getAppStub(appObjectClass, nextDMs, processedDMs, previousServerPolicy, previousServerPolicyStub, hostname, args);
+			getAppStub(appObjectClass, nextDMs, processedDMs, previousServerPolicy, previousServerPolicyStub, hostname, args);
+		}
 
 		return appStub;
 	}

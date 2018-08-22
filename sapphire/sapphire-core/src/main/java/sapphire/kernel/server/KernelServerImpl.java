@@ -174,6 +174,10 @@ public class KernelServerImpl implements KernelServer{
 		KernelObject object = objectManager.lookupObject(oid);
 		return object;
 	}
+
+	public void removeObject(KernelOID oid) throws KernelObjectNotFoundException {
+		objectManager.removeObject(oid);
+	}
 	
 	/**
 	 * Get the local hostname

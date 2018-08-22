@@ -65,6 +65,7 @@ public class Sapphire {
 			// Read annotation from this class.
 			Annotation[] annotations = appObjectClass.getAnnotations();
 			List<String> DMchain = new ArrayList<String>();
+			List<String> processedDMs = new ArrayList<String>();
 
 			for (Annotation annotation : annotations) {
 				if (annotation instanceof SapphireConfiguration) {
@@ -82,11 +83,8 @@ public class Sapphire {
 			KernelObjectStub previousServerPolicyStub = null;
 			AppObjectStub appStub = null;
 
-			appStub = getAppStub(appObjectClass, DMchain, previousServerPolicy, previousServerPolicyStub, null, args);
-//
-//			for () {
-//				groupPolicy.onCreate(serverPolicyStub);
-//			}
+			appStub = getAppStub(appObjectClass, DMchain, processedDMs, previousServerPolicy, previousServerPolicyStub, null, args);
+
 			logger.info("Sapphire Object created: " + appObjectClass.getName());
 			return appStub;
 		}
@@ -110,6 +108,7 @@ public class Sapphire {
 	public static AppObjectStub getAppStub(
 			Class<?> appObjectClass,
 			List<String> DMchain,
+			List<String> processedDMs,
 			SapphireServerPolicy previousServerPolicy,
 			KernelObjectStub previousServerPolicyStub,
 			InetSocketAddress hostname,
@@ -178,10 +177,17 @@ public class Sapphire {
 		if (previousServerPolicy != null) {
 			// non-first DMs references the already created object.
 			serverPolicyStub.$__initialize(previousServerPolicyStub.$__getAppObject());
-			KernelObject perviousServerPolicyKernelObject = (KernelObject) GlobalKernelReferences.nodeServer.getKernelObject(previousServerPolicyStub.$__getKernelOID());
-			serverPolicy.setNextServerPolicy(perviousServerPolicyKernelObject);
-//			serverPolicy.setNextServerPolicy(previousServerPolicy);
+			KernelObject previousServerPolicyKernelObject = (KernelObject)GlobalKernelReferences.nodeServer.getKernelObject(previousServerPolicyStub.$__getKernelOID());
+			serverPolicy.setNextServerKernelObject(previousServerPolicyKernelObject);
+			serverPolicy.setNextServerPolicy(previousServerPolicy);
+
+			/* Sets the first server policy which will be remotely called by client side stub.
+			This is needed for replication as it needs to copy the first server policy to other kernel server. */
+			previousServerPolicy.setPreviousServerPolicy(serverPolicy);
+
 			previousServerPolicyStub.$__setNextClientPolicy(client);
+			/* TODO: This is the first server policy (though it is last in client policy order;
+			therefore, update object manager in the kernel server owns this to point to the head object. */
 		} else {
 			// First DM needs to create an app stub.
 			// TODO: Change getAppStub to a different name; the following is different method from this one.
@@ -196,12 +202,16 @@ public class Sapphire {
 
 		serverPolicy.onCreate(groupPolicyStub);
 		serverPolicy.setNextDMs(nextDMs);
+		serverPolicy.setThisDM(DM);
+		processedDMs.add(DM);
+		serverPolicy.setProcessedDMs(processedDMs);
+
 		groupPolicy.onCreate(serverPolicyStub);
 
 		previousServerPolicy = serverPolicy;
 		previousServerPolicyStub = (KernelObjectStub)serverPolicyStub;
 
-		getAppStub(appObjectClass, nextDMs, previousServerPolicy, previousServerPolicyStub, hostname, args);
+		getAppStub(appObjectClass, nextDMs, processedDMs, previousServerPolicy, previousServerPolicyStub, hostname, args);
 
 		return appStub;
 	}

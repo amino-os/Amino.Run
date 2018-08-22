@@ -8,6 +8,7 @@ import sapphire.policy.transaction.TwoPCClient;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public abstract class DefaultSapphirePolicyUpcallImpl extends SapphirePolicyLibrary {
@@ -43,47 +44,44 @@ public abstract class DefaultSapphirePolicyUpcallImpl extends SapphirePolicyLibr
 	
 	public abstract static class DefaultSapphireServerPolicyUpcallImpl extends SapphireServerPolicyLibrary {
 		public Object onRPC(String method, ArrayList<Object> params) throws Exception {
-//			return appObject.invoke(method, params);
+			StringBuilder sb = new StringBuilder();
+			for (Object param : params) {
+				sb.append(param.toString() + ",");
+			}
 
-			if (nextServerPolicy == null) {
+			if (nextServerKernelObject == null) {
 				/* The default behavior is to just invoke the method on the Sapphire Object this Server Policy Object manages */
-				System.out.println("No next next policy. Invoking: " + method + " with "+ params);
+				System.out.println("No next next policy. Invoking: " + method + " with " + sb);
 				return appObject.invoke(method, params);
 			} else {
-//				return methods.get(method).invoke(object, params.toArray());
-				System.out.println("invoking RPC on next server policy for " + method + " with " + params.get(0));
-//				return nextServerPolicy.onRPC(method, params);
-				return nextServerPolicy.invoke(method, params);
-
-//				String newMethod = (String)params.get(0);
-//				System.out.println("New method = " + newMethod);
-//				ArrayList<Object> nextParams = (ArrayList<Object>) params.get(1);
-//				System.out.println("next parameters = " + nextParams);
-
-//				return nextServerPolicy.onRPC(newMethod, nextParams);
+				System.out.println("invoking next server policy for " + method + " with " + sb);
+				return nextServerKernelObject.invoke(method, params);
 			}
 		}
 
-		public void setNextServerPolicy(KernelObject sapphireServerPolicy) {
+		public void setNextServerKernelObject(KernelObject sapphireServerPolicy) {
+			this.nextServerKernelObject = sapphireServerPolicy;
+		}
+
+		public void setNextServerPolicy(SapphireServerPolicy sapphireServerPolicy) {
 			this.nextServerPolicy = sapphireServerPolicy;
+		}
+
+		public void setPreviousServerPolicy(SapphireServerPolicy sapphireServerPolicy) {
+			this.previousServerPolicy = sapphireServerPolicy;
 		}
 
 		/* This function is added here just to generate the stub for this function in all DMs server policy */
 		public SapphireServerPolicy sapphire_replicate() {
 			return super.sapphire_replicate();
 		}
-		public SapphireServerPolicy sapphire_replicate(String region) {
-			return super.sapphire_replicate(region);
+		public SapphireServerPolicy sapphire_replicate(List<String> processedDMs, InetSocketAddress newServerAddress) {
+			return super.sapphire_replicate(processedDMs, newServerAddress);
 		}
 
 		/* This function is added here just to generate the stub for this function in all DMs server policy */
 		public void sapphire_pin(String region) throws RemoteException {
 			super.sapphire_pin(region);
-		}
-
-		/* This function is added here just to generate the stub for this function in all DMs server policy */
-		public void sapphire_pin(SapphireServerPolicy sapphireServerPolicy, String region) throws RemoteException {
-			super.sapphire_pin(sapphireServerPolicy, region);
 		}
 
 		/* This function is added here just to generate the stub for this function in all DMs server policy */
@@ -109,14 +107,14 @@ public abstract class DefaultSapphirePolicyUpcallImpl extends SapphirePolicyLibr
 //		public Object onRPC(String method, ArrayList<Object> params) throws Exception {
 ////			return appObject.invoke(method, params);
 //
-//			if (nextServerPolicy == null) {
+//			if (nextServerKernelObject == null) {
 //				/* The default behavior is to just invoke the method on the Sapphire Object this Server Policy Object manages */
 //				return appObject.invoke(method, params);
 //			} else {
 ////				return methods.get(method).invoke(object, params.toArray());
 //				String newMethod = (String)params.get(0);
 //				ArrayList<Object> nextParams = (ArrayList<Object>) params.get(1);
-//				return nextServerPolicy.onRPC(newMethod, nextParams);
+//				return nextServerKernelObject.onRPC(newMethod, nextParams);
 //			}
 //		}
 

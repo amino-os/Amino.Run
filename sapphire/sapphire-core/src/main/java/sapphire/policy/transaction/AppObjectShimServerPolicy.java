@@ -42,7 +42,19 @@ public class AppObjectShimServerPolicy implements SapphireServerPolicyUpcalls{
     }
 
     @Override
+    public List<String> getProcessedDMs() {
+        //TODO (8/21/18) Implement to return processedDMs.
+        return null;
+    }
+
+    @Override
+    public void setThisDM(String thisDM) {}
+
+    @Override
     public void setNextDMs(List<String> nextDMs) {}
+
+    @Override
+    public void setProcessedDMs(List<String> setProcessedDMs) {}
 
     /**
      * gets the app object referenced by the server policy

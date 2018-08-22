@@ -1,11 +1,9 @@
 package sapphire.policy;
 
-import java.io.Serializable;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.harmony.rmi.common.RMIUtil;
@@ -35,10 +33,14 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 	public static abstract class SapphireServerPolicyLibrary implements SapphireServerPolicyUpcalls {
 		protected AppObject appObject;
 		protected KernelOID oid;
+
 		static Logger logger = Logger.getLogger("sapphire.policy.SapphirePolicyLibrary");
-//		protected SapphireServerPolicy nextServerPolicy;
-		protected KernelObject nextServerPolicy;
+		protected KernelObject nextServerKernelObject;
+		protected SapphireServerPolicy nextServerPolicy;
+		protected SapphireServerPolicy previousServerPolicy;
+		protected String thisDM;
 		protected List<String> nextDMs;
+		protected List<String> processedDMs;
 
 		private OMSServer oms() {
 			return GlobalKernelReferences.nodeServer.oms;
@@ -52,8 +54,20 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 		 * SAPPHIRE API FOR SERVER POLICIES
 		 */
 
+		public List<String> getProcessedDMs() {
+			return this.processedDMs;
+		}
+
+		public void setThisDM(String thisDM) {
+			this.thisDM = thisDM;
+		}
+
 		public void setNextDMs(List<String> nextDMs) {
 			this.nextDMs = nextDMs;
+		}
+
+		public void setProcessedDMs(List<String> processedDMs) {
+			this.processedDMs = processedDMs;
 		}
 
 		/**
@@ -70,7 +84,8 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 				serverPolicy.$__setKernelOID(serverPolicyStub.$__getKernelOID());
 				serverPolicy.onCreate(getGroup());
 				getGroup().addServer((SapphireServerPolicy)serverPolicyStub);
-				Sapphire.getAppStub(null, this.nextDMs, serverPolicy, serverPolicyStub, null, null);
+				//TODO (8/21/18): set processedDMs.
+				Sapphire.getAppStub(null, this.nextDMs, null, serverPolicy, serverPolicyStub, null, null);
 			} catch (ClassNotFoundException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -89,24 +104,59 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 			return (SapphireServerPolicy) serverPolicyStub;
 		}
 
-
 		/**
-		 * Creates a replica of this server and registers it with the group
+		 * Creates a replica of this server and registers it with the group.
+		 * TODO: entire server chain should be replicated and only the head server policy needs to be moved to the new server.
 		 */
-		// TODO: (sungwook, 8/16/2018) client chain?
-		public SapphireServerPolicy sapphire_replicate(String region) {
+		public SapphireServerPolicy sapphire_replicate(List<String> processedDMs, InetSocketAddress newServer) {
 			KernelObjectStub serverPolicyStub = null;
-			String policyStubClassName = GlobalStubConstants.getPolicyPackageName() + "." + RMIUtil.getShortName(this.getClass()) + GlobalStubConstants.STUB_SUFFIX;
+			SapphireServerPolicy previousServerPolicy = null;
+			SapphireServerPolicy firstServerPolicy = null;
+
+			// Remove the last DM which is the DM this method is trying to replicate.
+			processedDMs.remove(processedDMs.size() - 1);
 			try {
-				InetSocketAddress newServer = oms().getServerInRegion(region);
+				// Reprocessed already processed DMs to create the replica server policies.
+				for (String DM : processedDMs) {
+					Class<?> policyClass = Class.forName(DM);
+					String policyStubClassName = GlobalStubConstants.getPolicyPackageName() + "." + RMIUtil.getShortName(policyClass) + GlobalStubConstants.STUB_SUFFIX;
+
+					serverPolicyStub = (KernelObjectStub) KernelObjectFactory.create(policyStubClassName);
+					serverPolicyStub.$__updateHostname(newServer);
+					SapphireServerPolicy serverPolicy = (SapphireServerPolicy) kernel().getObject(serverPolicyStub.$__getKernelOID());
+					serverPolicy.$__initialize(appObject);
+					serverPolicy.$__setKernelOID(serverPolicyStub.$__getKernelOID());
+					serverPolicy.onCreate(getGroup());
+					serverPolicy.nextServerPolicy = previousServerPolicy;
+					if (previousServerPolicy != null) {
+						previousServerPolicy.previousServerPolicy = serverPolicy;
+					}
+					getGroup().addServer((SapphireServerPolicy) serverPolicyStub);
+					previousServerPolicy = serverPolicy;
+				}
+
+				// Start creating server policies from this DM.
+				String policyStubClassName = GlobalStubConstants.getPolicyPackageName() + "." + RMIUtil.getShortName(this.getClass()) + GlobalStubConstants.STUB_SUFFIX;
+
 				serverPolicyStub = (KernelObjectStub) KernelObjectFactory.create(policyStubClassName);
 				serverPolicyStub.$__updateHostname(newServer);
 				SapphireServerPolicy serverPolicy = (SapphireServerPolicy) kernel().getObject(serverPolicyStub.$__getKernelOID());
 				serverPolicy.$__initialize(appObject);
 				serverPolicy.$__setKernelOID(serverPolicyStub.$__getKernelOID());
 				serverPolicy.onCreate(getGroup());
+				serverPolicy.nextServerPolicy = previousServerPolicy;
+				if (previousServerPolicy != null) {
+					previousServerPolicy.previousServerPolicy = serverPolicy;
+				}
+
 				getGroup().addServer((SapphireServerPolicy) serverPolicyStub);
-				Sapphire.getAppStub(null, this.nextDMs, serverPolicy, serverPolicyStub, newServer, null);
+
+				Sapphire.getAppStub(null, this.nextDMs, processedDMs, serverPolicy, serverPolicyStub, newServer, null);
+
+				while (serverPolicy.previousServerPolicy != null) {
+					serverPolicy = serverPolicy.previousServerPolicy;
+				}
+				firstServerPolicy = serverPolicy;
 			} catch (RemoteException e) {
 				throw new Error("Could not contact oms.");
 			} catch (ClassNotFoundException e) {
@@ -124,7 +174,7 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 				e.printStackTrace();
 				throw new Error("Unknown exception occurred!");
 			}
-			return (SapphireServerPolicy) serverPolicyStub;
+			return (SapphireServerPolicy) firstServerPolicy;
 		}
 
 		public AppObject sapphire_getAppObject() {
@@ -142,20 +192,6 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 			sapphire_pin_to_server(server);
 		}
 
-		public void sapphire_pin(SapphireServerPolicy serverPolicy, String region) throws RemoteException {
-			logger.info("Pinning Sapphire object " + serverPolicy.$__getKernelOID() + " to " + region);
-			InetSocketAddress server = null;
-			try {
-				System.out.println("Trying to get server from OMS.");
-				server = oms().getServerInRegion(region);
-				System.out.println("Successfully received server from OMS.");
-			} catch (RemoteException e) {
-				System.out.println("Could not contact oms.");
-				throw new RemoteException("Could not contact oms.");
-			}
-			sapphire_pin_to_server(serverPolicy, server);
-		}
-
         // This function is same as sapphire_pin but pining to the server instead of region
 		public void sapphire_pin_to_server(InetSocketAddress server) throws RemoteException {
 			logger.info("Pinning Sapphire object " + oid.toString() + " to " + server);
@@ -167,14 +203,41 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 			}
 		}
 
-        // This function is same as sapphire_pin but pining to the server instead of region
+        // pin first server policy to given kernel server.
 		public void sapphire_pin_to_server(SapphireServerPolicy serverPolicy, InetSocketAddress server) throws RemoteException {
+			ArrayList<SapphireServerPolicy> serverPoliciesToRemove = new ArrayList<SapphireServerPolicy>();
+			if (serverPolicy == null) {
+				throw new Error("No server policy to pin to the server: " + server);
+			}
+
+			if (serverPolicy.previousServerPolicy != null) {
+				System.out.println(" Found first server policy");
+				serverPolicy = serverPolicy.previousServerPolicy;
+				while (serverPolicy.nextServerPolicy != null) {
+					// First server policy will be removed after object was moved; therefore, not needed to be included in the removal list.
+					serverPolicy = serverPolicy.nextServerPolicy;
+					System.out.println(" Adding object to removal list for " + serverPolicy.$__getKernelOID());
+					serverPoliciesToRemove.add(serverPolicy);
+				}
+				serverPolicy = serverPolicy.previousServerPolicy;
+			}
+
 			logger.info("Pinning Sapphire object " + serverPolicy.$__getKernelOID() + " to " + server);
 			try {
 				kernel().moveKernelObjectToServer(server, serverPolicy.$__getKernelOID());
 			} catch (KernelObjectNotFoundException e) {
 				e.printStackTrace();
 				throw new Error("Could not find myself on this server!");
+			}
+
+			// Remove all of the associated objects with the first server policy.
+			for (SapphireServerPolicy serverPolicyToRemove : serverPoliciesToRemove) {
+				try {
+					kernel().removeObject(serverPolicyToRemove.$__getKernelOID());
+				} catch (KernelObjectNotFoundException e) {
+					e.printStackTrace();
+					throw new Error("Could not find object to remove in this server. Oid: " + serverPolicyToRemove.$__getKernelOID());
+				}
 			}
 		}
 
@@ -244,7 +307,7 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 		protected ArrayList<Object> params;
 		protected KernelOID oid;
 
-		private OMSServer oms() {
+		protected OMSServer oms() {
 			return GlobalKernelReferences.nodeServer.oms;
 		}
 

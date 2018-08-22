@@ -10,6 +10,8 @@ import java.util.logging.Logger;
 
 import sapphire.kernel.common.KernelOID;
 import sapphire.kernel.common.KernelObjectNotFoundException;
+import sapphire.kernel.common.KernelObjectStub;
+import sapphire.kernel.server.KernelObject;
 import sapphire.policy.SapphirePolicy;
 
 public class DHTPolicy2 extends SapphirePolicy {
@@ -100,32 +102,10 @@ public class DHTPolicy2 extends SapphirePolicy {
 		 */
 		public Object onRPC(String method, ArrayList<Object> params) throws Exception {
 			return super.onRPC(method, params);
-			/* We assume that the first param is the index */
-//			ArrayList<Object> applicationParams = getApplicationParam(params, 0);
-//			DHTServerPolicy responsibleNode = group.dhtGetResponsibleNode((String)applicationParams.get(0));
-//			return responsibleNode.forwardedRPC(method, params);
 		}
 
 		public Object forwardedRPC(String method, ArrayList<Object> params) throws Exception {
 			return super.onRPC(method, params);
-		}
-
-		/**
-		 * Find first application paramter from nested arraylist.
-		 * @return The first application parameter.
-		 */
-		private ArrayList<Object> getApplicationParam(ArrayList<Object> params, int nth) {
-			//String firstParam;
-			ArrayList<Object> currentParams = params;
-			while (currentParams != null && currentParams.size() == 2) {
-				if (params.get(1) instanceof ArrayList) {
-					currentParams = (ArrayList) params.get(1);
-				} else {
-					break;
-				}
-			}
-			//firstParam = (String)paramsToInspect.get(nth);
-			return currentParams;
 		}
 	}
 
@@ -177,11 +157,12 @@ public class DHTPolicy2 extends SapphirePolicy {
 				DHTNode newNode = new DHTNode(id, dhtServer);
 				nodes.put(id, newNode);
 
-				InetSocketAddress newServer = null;
+				InetSocketAddress newServerAddress = null;
 
 				for (int i = 1; i < regions.size(); i++) {
-					DHTServerPolicy replica = (DHTServerPolicy)dhtServer.sapphire_replicate(regions.get(i));
-					dhtServer.sapphire_pin(replica, regions.get(i));
+					newServerAddress = oms().getServerInRegion(regions.get(i));
+					DHTServerPolicy replica = (DHTServerPolicy)dhtServer.sapphire_replicate(server.getProcessedDMs(), newServerAddress);
+					dhtServer.sapphire_pin_to_server(replica, newServerAddress);
 				}
 				dhtServer.sapphire_pin(regions.get(0));
 			} catch (RemoteException e) {

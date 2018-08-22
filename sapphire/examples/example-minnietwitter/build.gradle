@@ -7,8 +7,8 @@ android {
 // projects. I will remove them eventually.
 //    compileSdkVersion project.ext.compileSdkVersion.toInteger()
 //    buildToolsVersion project.ext.buildToolsVersion
-    compileSdkVersion=27
-    buildToolsVersion="27.0.2"
+    compileSdkVersion = 27
+    buildToolsVersion = "27.0.2"
 
     lintOptions {
         checkReleaseBuilds false
@@ -41,4 +41,39 @@ android {
 dependencies {
     compile 'com.android.support:support-v4:27.0.2'
     compile project(':sapphire-core')
+}
+
+subprojects {
+    apply plugin: 'java-library'
+
+    dependencies {
+        compile project(':sapphire-core')
+    }
+
+    task copyClasses(type: Copy) {
+        from "$projectDir.parent/build/intermediates/classes/debug/"
+        into 'build/classes/java/main/'
+    }
+
+    // Task for Stub compilation
+    task compileMinnieTwitterStubs(type: JavaCompile) {
+        source = sourceSets.main.java.srcDirs
+        classpath = sourceSets.main.compileClasspath
+        destinationDir = sourceSets.main.output.classesDir
+        options.incremental = true
+    }
+
+    // Task for Stub generation
+    task genMinnieTwitterStubs(type: JavaExec) {
+        main = "sapphire.compiler.StubGenerator"
+        classpath = sourceSets.main.runtimeClasspath
+        def pkgName = 'sapphire.appexamples.minnietwitter.app'
+        def src = "$projectDir.parent/build/intermediates/classes/debug/sapphire/appexamples/minnietwitter/app/"
+        def dst = "$projectDir.parent/src/main/java/sapphire/appexamples/minnietwitter/app/stubs/"
+        args src, pkgName, dst
+    }
+    genMinnieTwitterStubs.mustRunAfter compileJava
+    genMinnieTwitterStubs.dependsOn copyClasses
+    compileMinnieTwitterStubs.dependsOn genMinnieTwitterStubs
+    jar.dependsOn compileMinnieTwitterStubs
 }

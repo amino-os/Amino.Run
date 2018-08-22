@@ -1,8 +1,8 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion=27
-    buildToolsVersion="27.0.2"
+    compileSdkVersion = 27
+    buildToolsVersion = "27.0.2"
 
     lintOptions {
         checkReleaseBuilds false
@@ -35,4 +35,40 @@ android {
 dependencies {
     compile 'com.android.support:support-v4:27.0.2'
     compile project(':sapphire-core')
+}
+
+subprojects {
+    apply plugin: 'java-library'
+
+    dependencies {
+        compile project(':sapphire-core')
+    }
+
+    task copyClasses(type: Copy) {
+        from "$projectDir.parent/build/intermediates/classes/debug/"
+        into 'build/classes/java/main/'
+    }
+
+
+    // Task for Stub compilation
+    task compileHanksTodoStubs(type: JavaCompile) {
+        source = sourceSets.main.java.srcDirs
+        classpath = sourceSets.main.compileClasspath
+        destinationDir = sourceSets.main.output.classesDir
+        options.incremental = true
+    }
+
+    // Task for Stub generation
+    task genHanksTodoStubs(type: JavaExec) {
+        main = "sapphire.compiler.StubGenerator"
+        classpath = sourceSets.main.runtimeClasspath
+        def pkgName = 'sapphire.appexamples.hankstodo.app'
+        def src = "$projectDir.parent/build/intermediates/classes/debug/sapphire/appexamples/hankstodo/app/"
+        def dst = "$projectDir.parent/src/main/java/sapphire/appexamples/hankstodo/app/stubs/"
+        args src, pkgName, dst
+    }
+    genHanksTodoStubs.mustRunAfter compileJava
+    genHanksTodoStubs.dependsOn copyClasses
+    compileHanksTodoStubs.dependsOn genHanksTodoStubs
+    jar.dependsOn compileHanksTodoStubs
 }

@@ -8,6 +8,7 @@ import sapphire.runtime.Sapphire;
 public class HelloWorld implements SapphireObject<AtLeastOnceRPCPolicy>, AppEntryPoint {
     private String world = "DCAP World";
 
+    public HelloWorld(){}
     public HelloWorld(String world) {
         this.world = world;
     }

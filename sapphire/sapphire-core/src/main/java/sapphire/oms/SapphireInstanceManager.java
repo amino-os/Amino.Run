@@ -3,6 +3,7 @@ package sapphire.oms;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Random;
+import java.util.UUID;
 import sapphire.common.SapphireObjectID;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireReplicaID;
@@ -21,7 +22,7 @@ public class SapphireInstanceManager {
      * @return Returns a new replica id
      */
     private SapphireReplicaID generateSapphireReplicaID() {
-        return new SapphireReplicaID(oid, oidGenerator.nextInt());
+        return new SapphireReplicaID(oid, UUID.randomUUID());
     }
 
     public SapphireInstanceManager(SapphireObjectID oid, EventHandler dispatcher) {

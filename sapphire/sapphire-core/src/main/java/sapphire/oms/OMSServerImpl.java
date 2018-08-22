@@ -247,7 +247,7 @@ public class OMSServerImpl implements OMSServer {
      */
     @Override
     public SapphireObjectID registerSapphireObject() throws RemoteException {
-        return objectManager.add(null);
+        return objectManager.addInstance(null);
     }
 
     /**
@@ -261,7 +261,7 @@ public class OMSServerImpl implements OMSServer {
     @Override
     public SapphireReplicaID registerSapphireReplica(SapphireObjectID sapphireObjId)
             throws RemoteException, SapphireObjectNotFoundException {
-        return objectManager.add(sapphireObjId, null);
+        return objectManager.addReplica(sapphireObjId, null);
     }
 
     /**
@@ -275,7 +275,7 @@ public class OMSServerImpl implements OMSServer {
     @Override
     public void setSapphireObjectDispatcher(SapphireObjectID sapphireObjId, EventHandler dispatcher)
             throws RemoteException, SapphireObjectNotFoundException {
-        objectManager.set(sapphireObjId, dispatcher);
+        objectManager.setInstanceDispatcher(sapphireObjId, dispatcher);
     }
 
     /**
@@ -289,7 +289,7 @@ public class OMSServerImpl implements OMSServer {
     @Override
     public void setSapphireReplicaDispatcher(SapphireReplicaID replicaId, EventHandler dispatcher)
             throws RemoteException, SapphireObjectNotFoundException {
-        objectManager.set(replicaId, dispatcher);
+        objectManager.setReplicaDispatcher(replicaId, dispatcher);
     }
 
     /**
@@ -303,7 +303,7 @@ public class OMSServerImpl implements OMSServer {
     @Override
     public EventHandler getSapphireObjectDispatcher(SapphireObjectID sapphireObjId)
             throws RemoteException, SapphireObjectNotFoundException {
-        return objectManager.get(sapphireObjId);
+        return objectManager.getInstanceDispatcher(sapphireObjId);
     }
 
     /**
@@ -317,6 +317,6 @@ public class OMSServerImpl implements OMSServer {
     @Override
     public EventHandler getSapphireReplicaDispatcher(SapphireReplicaID replicaId)
             throws RemoteException, SapphireObjectNotFoundException {
-        return objectManager.get(replicaId);
+        return objectManager.getReplicaDispatcher(replicaId);
     }
 }

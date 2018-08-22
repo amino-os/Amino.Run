@@ -1,12 +1,13 @@
 package sapphire.common;
 
 import java.io.Serializable;
+import java.util.UUID;
 
 public class SapphireReplicaID implements Serializable {
-    private SapphireObjectID oid;
-    private int rid;
+    private final SapphireObjectID oid;
+    private final UUID rid;
 
-    public SapphireReplicaID(SapphireObjectID oid, int rid) {
+    public SapphireReplicaID(SapphireObjectID oid, UUID rid) {
         this.oid = oid;
         this.rid = rid;
     }
@@ -15,20 +16,23 @@ public class SapphireReplicaID implements Serializable {
         return this.oid;
     }
 
-    public int getID() {
+    public UUID getID() {
         return this.rid;
     }
 
     @Override
-    public boolean equals(Object obj) {
-        final SapphireReplicaID other = (SapphireReplicaID) obj;
-        if (oid.getID() != other.getOID().getID() || rid != other.getID()) return false;
-        return true;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        SapphireReplicaID that = (SapphireReplicaID) o;
+
+        return rid.equals(that.rid);
     }
 
     @Override
     public int hashCode() {
-        return (oid.getID() << 16) | rid;
+        return rid.hashCode();
     }
 
     @Override

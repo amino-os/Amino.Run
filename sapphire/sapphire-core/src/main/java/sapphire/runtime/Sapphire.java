@@ -227,6 +227,17 @@ public class Sapphire {
         }
     }
 
+    /**
+     * Creates the group policy instance returns group policy object Stub
+     *
+     * @param policyClass
+     * @param sapphireObjId
+     * @return Returns group policy object stub
+     * @throws RemoteException
+     * @throws ClassNotFoundException
+     * @throws KernelObjectNotCreatedException
+     * @throws SapphireObjectNotFoundException
+     */
     public static SapphireGroupPolicy createGroupPolicy(
             Class<?> policyClass, SapphireObjectID sapphireObjId)
             throws RemoteException, ClassNotFoundException, KernelObjectNotCreatedException,

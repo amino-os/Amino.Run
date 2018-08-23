@@ -197,25 +197,7 @@ public class OMSServerImpl implements OMSServer {
     }
 
     /**
-     * Starts the app on one of the servers and returns the App Object Stub
-     *
-     * @throws RemoteException
-     */
-    /*@Override
-    public AppObjectStub getAppEntryPoint() throws RemoteException {
-        if (appEntryPoint != null) {
-            return appEntryPoint;
-        } else {
-            InetSocketAddress host =
-                    serverManager.getServerInRegion(serverManager.getRegions().get(0));
-            KernelServer server = serverManager.getServer(host);
-            appEntryPoint = server.startApp(appEntryClassName);
-            return appEntryPoint;
-        }
-    }*/
-
-    /**
-     * Create the sapphire object of given class
+     * Create the sapphire object of given class on one of the servers
      *
      * @param absoluteSapphireClassName
      * @param args
@@ -415,12 +397,16 @@ public class OMSServerImpl implements OMSServer {
     }
 
     /**
-     * Creates the group policy instance on the kernel server running within OMS and returns the
-     * group policy Object Stub
+     * Creates the group policy instance on the kernel server running within OMS and returns group
+     * policy object Stub
      *
+     * @param policyClass
+     * @param sapphireObjId
+     * @return Returns group policy object stub
      * @throws RemoteException
-     * @throws KernelObjectNotCreatedException
      * @throws ClassNotFoundException
+     * @throws KernelObjectNotCreatedException
+     * @throws SapphireObjectNotFoundException
      */
     @Override
     public SapphirePolicy.SapphireGroupPolicy createGroupPolicy(

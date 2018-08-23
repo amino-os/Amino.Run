@@ -5,7 +5,7 @@ import sapphire.common.AppObjectStub;
 import sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy;
 import sapphire.runtime.Sapphire;
 
-public class HelloWorld implements SapphireObject<AtLeastOnceRPCPolicy>, AppEntryPoint {
+public class HelloWorld implements SapphireObject<AtLeastOnceRPCPolicy> {
     private String world = "DCAP World";
 
     public HelloWorld(String world) {
@@ -14,10 +14,5 @@ public class HelloWorld implements SapphireObject<AtLeastOnceRPCPolicy>, AppEntr
 
     public String sayHello() {
         return "Hi " + this.world;
-    }
-
-    @Override
-    public AppObjectStub start() throws AppObjectNotCreatedException {
-        return (AppObjectStub) Sapphire.new_(HelloWorld.class);
     }
 }

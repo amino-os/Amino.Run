@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.UUID;
 import sapphire.common.AppObject;
 import sapphire.common.SapphireObjectNotFoundException;
+import sapphire.common.SapphireObjectReplicaNotFoundException;
 import sapphire.policy.SapphirePolicy.SapphireServerPolicy;
 import sapphire.policy.transaction.IllegalComponentException;
 import sapphire.policy.transaction.TransactionContext;
@@ -56,12 +57,14 @@ public abstract class DefaultSapphirePolicyUpcallImpl extends SapphirePolicyLibr
         }
         /* This function is added here just to generate the stub for this function in all DMs server policy */
         public void sapphire_pin(String region)
-                throws RemoteException, SapphireObjectNotFoundException {
+                throws RemoteException, SapphireObjectNotFoundException,
+                        SapphireObjectReplicaNotFoundException {
             super.sapphire_pin(region);
         }
         /* This function is added here just to generate the stub for this function in all DMs server policy */
         public void sapphire_pin_to_server(InetSocketAddress server)
-                throws RemoteException, SapphireObjectNotFoundException {
+                throws RemoteException, SapphireObjectNotFoundException,
+                        SapphireObjectReplicaNotFoundException {
             super.sapphire_pin_to_server(server);
         }
 

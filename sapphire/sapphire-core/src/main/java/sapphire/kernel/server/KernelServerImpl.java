@@ -14,6 +14,7 @@ import sapphire.common.AppObjectStub;
 import sapphire.common.SapphireObjectCreationException;
 import sapphire.common.SapphireObjectID;
 import sapphire.common.SapphireObjectNotFoundException;
+import sapphire.common.SapphireObjectReplicaNotFoundException;
 import sapphire.common.SapphireReplicaID;
 import sapphire.kernel.client.KernelClient;
 import sapphire.kernel.common.GlobalKernelReferences;
@@ -126,7 +127,8 @@ public class KernelServerImpl implements KernelServer {
      */
     public void copyKernelObject(KernelOID oid, KernelObject object)
             throws RemoteException, KernelObjectNotFoundException,
-                    KernelObjectStubNotCreatedException, SapphireObjectNotFoundException {
+                    KernelObjectStubNotCreatedException, SapphireObjectNotFoundException,
+                    SapphireObjectReplicaNotFoundException {
         /* Set the policy object handlers of new host */
         ArrayList<Object> policyObjList = new ArrayList<>();
         EventHandler policyHandler = new EventHandler(host, policyObjList);
@@ -198,7 +200,8 @@ public class KernelServerImpl implements KernelServer {
      * @throws KernelObjectNotFoundException
      */
     public void moveKernelObjectToServer(InetSocketAddress host, KernelOID oid)
-            throws RemoteException, KernelObjectNotFoundException, SapphireObjectNotFoundException {
+            throws RemoteException, KernelObjectNotFoundException, SapphireObjectNotFoundException,
+                    SapphireObjectReplicaNotFoundException {
         if (host.equals(this.host)) {
             return;
         }
@@ -243,6 +246,16 @@ public class KernelServerImpl implements KernelServer {
      */
     public void deleteKernelObject(KernelOID oid)
             throws RemoteException, KernelObjectNotFoundException {
+        KernelObject object = objectManager.lookupObject(oid);
+
+        if (object.getObject() instanceof SapphirePolicy.SapphireServerPolicy) {
+            /* De-initialize dynamic data of server policy object(i.e., timers, executors, sockets etc) */
+            ((SapphirePolicy.SapphireServerPolicy) object.getObject()).onDestroy();
+        } else if (object.getObject() instanceof SapphirePolicy.SapphireGroupPolicy) {
+            /* De-initialize dynamic data of group policy object(i.e., timers, executors, sockets etc) */
+            ((SapphirePolicy.SapphireGroupPolicy) object.getObject()).onDestroy();
+        }
+
         oms.unRegisterKernelObject(oid, host);
         objectManager.removeObject(oid);
     }

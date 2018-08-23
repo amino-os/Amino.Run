@@ -16,6 +16,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import sapphire.common.SapphireObjectNotFoundException;
+import sapphire.common.SapphireObjectReplicaNotFoundException;
 import sapphire.common.Utils;
 import sapphire.kernel.common.GlobalKernelReferences;
 import sapphire.kernel.common.KernelObjectNotFoundException;
@@ -212,6 +213,8 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultSapphirePolicy 
                 throw new Error("rmi operation not bound: " + e, e);
             } catch (SapphireObjectNotFoundException e) {
                 throw new Error("Failed to find sapphire object: " + e, e);
+            } catch (SapphireObjectReplicaNotFoundException e) {
+                throw new Error("Failed to find sapphire object replica: " + e, e);
             }
         }
 

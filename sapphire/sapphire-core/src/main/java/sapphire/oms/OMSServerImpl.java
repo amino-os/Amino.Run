@@ -1,8 +1,5 @@
 package sapphire.oms;
 
-import static sapphire.runtime.Sapphire.getPolicyStub;
-import static sapphire.runtime.Sapphire.initializeGroupPolicy;
-
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.InetSocketAddress;
@@ -25,19 +22,16 @@ import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
 import sapphire.common.SapphireReplicaID;
 import sapphire.compiler.GlobalStubConstants;
-import sapphire.kernel.common.GlobalKernelReferences;
 import sapphire.kernel.common.KernelOID;
-import sapphire.kernel.common.KernelObjectFactory;
 import sapphire.kernel.common.KernelObjectNotCreatedException;
 import sapphire.kernel.common.KernelObjectNotFoundException;
 import sapphire.kernel.common.KernelServerNotFoundException;
 import sapphire.kernel.common.ServerInfo;
 import sapphire.kernel.server.KernelServer;
 import sapphire.kernel.server.KernelServerImpl;
-import sapphire.policy.SapphirePolicy.SapphireClientPolicy;
-import sapphire.policy.SapphirePolicy.SapphireGroupPolicy;
-import sapphire.policy.SapphirePolicy.SapphireServerPolicy;
+import sapphire.policy.SapphirePolicy;
 import sapphire.runtime.EventHandler;
+import sapphire.runtime.Sapphire;
 
 /**
  * OMSServer for tracking objects in Sapphire
@@ -181,10 +175,6 @@ public class OMSServerImpl implements OMSServer {
                 objectManager.getSapphireInstanceById(replicaId.getOID());
         synchronized (instance) {
             handler = getSapphireReplicaDispatcher(replicaId);
-            if (handler == null) {
-                throw new SapphireObjectReplicaNotFoundException(
-                        "Failed to delete sapphire object replica.");
-            }
             unRegisterSapphireReplica(replicaId);
         }
 
@@ -258,7 +248,8 @@ public class OMSServerImpl implements OMSServer {
                             .getClass()
                             .getDeclaredField(GlobalStubConstants.APPSTUB_POLICY_CLIENT_FIELD_NAME);
             field.setAccessible(true);
-            SapphireClientPolicy clientPolicy = (SapphireClientPolicy) field.get(appObjStub);
+            SapphirePolicy.SapphireClientPolicy clientPolicy =
+                    (SapphirePolicy.SapphireClientPolicy) field.get(appObjStub);
             return clientPolicy.getGroup().getSapphireObjId();
         } catch (Exception e) {
             throw new SapphireObjectCreationException(
@@ -295,8 +286,8 @@ public class OMSServerImpl implements OMSServer {
             }
         }
 
-        SapphireServerPolicy serverPolicy =
-                (SapphireServerPolicy) policyHandler.getObjects().get(0);
+        SapphirePolicy.SapphireServerPolicy serverPolicy =
+                (SapphirePolicy.SapphireServerPolicy) policyHandler.getObjects().get(0);
         return (AppObjectStub) serverPolicy.sapphire_getAppObject().getObject();
     }
 
@@ -313,7 +304,7 @@ public class OMSServerImpl implements OMSServer {
     public void setSapphireObjectName(SapphireObjectID sapphireObjId, String sapphireObjName)
             throws RemoteException, SapphireObjectNotFoundException,
                     SapphireObjectNameModificationException {
-        objectManager.setName(sapphireObjId, sapphireObjName);
+        objectManager.setInstanceName(sapphireObjId, sapphireObjName);
     }
 
     /**
@@ -432,39 +423,11 @@ public class OMSServerImpl implements OMSServer {
      * @throws ClassNotFoundException
      */
     @Override
-    public SapphireGroupPolicy createGroupPolicy(
+    public SapphirePolicy.SapphireGroupPolicy createGroupPolicy(
             Class<?> policyClass, SapphireObjectID sapphireObjId)
             throws RemoteException, ClassNotFoundException, KernelObjectNotCreatedException,
                     SapphireObjectNotFoundException {
-        SapphireGroupPolicy groupPolicyStub = (SapphireGroupPolicy) getPolicyStub(policyClass);
-        try {
-            SapphireGroupPolicy groupPolicy = initializeGroupPolicy(groupPolicyStub);
-            groupPolicyStub.setSapphireObjId(sapphireObjId);
-            groupPolicy.setSapphireObjId(sapphireObjId);
-
-            EventHandler sapphireHandler =
-                    new EventHandler(
-                            GlobalKernelReferences.nodeServer.getLocalHost(),
-                            new ArrayList() {
-                                {
-                                    add(groupPolicyStub);
-                                }
-                            });
-
-            /* Register the handler for the sapphire object */
-            setSapphireObjectDispatcher(sapphireObjId, sapphireHandler);
-        } catch (KernelObjectNotFoundException e) {
-            logger.severe(
-                    "Failed to find the group kernel object created just before it. Exception info: "
-                            + e);
-            throw new KernelObjectNotCreatedException("Failed to find the kernel object", e);
-        } catch (SapphireObjectNotFoundException e) {
-            logger.warning("Failed to find sapphire object. Exception info: " + e);
-            KernelObjectFactory.delete(groupPolicyStub.$__getKernelOID());
-            throw e;
-        }
-
-        return groupPolicyStub;
+        return Sapphire.createGroupPolicy(policyClass, sapphireObjId);
     }
 
     public static void main(String args[]) {
@@ -557,7 +520,8 @@ public class OMSServerImpl implements OMSServer {
      */
     @Override
     public void setSapphireReplicaDispatcher(SapphireReplicaID replicaId, EventHandler dispatcher)
-            throws RemoteException, SapphireObjectNotFoundException {
+            throws RemoteException, SapphireObjectNotFoundException,
+                    SapphireObjectReplicaNotFoundException {
         objectManager.setReplicaDispatcher(replicaId, dispatcher);
     }
 
@@ -585,7 +549,8 @@ public class OMSServerImpl implements OMSServer {
      */
     @Override
     public EventHandler getSapphireReplicaDispatcher(SapphireReplicaID replicaId)
-            throws RemoteException, SapphireObjectNotFoundException {
+            throws RemoteException, SapphireObjectNotFoundException,
+                    SapphireObjectReplicaNotFoundException {
         return objectManager.getReplicaDispatcher(replicaId);
     }
 
@@ -598,7 +563,7 @@ public class OMSServerImpl implements OMSServer {
      */
     public void unRegisterSapphireObject(SapphireObjectID sapphireObjId)
             throws RemoteException, SapphireObjectNotFoundException {
-        objectManager.remove(sapphireObjId);
+        objectManager.removeInstance(sapphireObjId);
     }
 
     /**
@@ -610,6 +575,6 @@ public class OMSServerImpl implements OMSServer {
      */
     public void unRegisterSapphireReplica(SapphireReplicaID replicaId)
             throws RemoteException, SapphireObjectNotFoundException {
-        objectManager.remove(replicaId);
+        objectManager.removeReplica(replicaId);
     }
 }

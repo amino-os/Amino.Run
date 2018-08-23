@@ -223,6 +223,9 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
                 } catch (SapphireObjectNotFoundException e) {
                     throw new ScaleUpException(
                             "Failed to find sapphire object. Probably deleted.", e);
+                } catch (SapphireObjectReplicaNotFoundException e) {
+                    throw new ScaleUpException(
+                            "Failed to find replicate sapphire object. Probably deleted.", e);
                 }
                 ((KernelObjectStub) replica).$__updateHostname(fullKernelList.get(0));
             } else {

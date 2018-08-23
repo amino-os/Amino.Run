@@ -1,0 +1,38 @@
+syntax="proto3";
+
+package sapphire.kernel.runtime;
+
+option java_outer_classname = "Service";
+option java_multiple_files = true;
+option java_package = "sapphire.kernel.runtime";
+
+service RuntimeService {
+    rpc CreateChildSObj (CreateChildSObjRequest) returns (CreateChildSObjResponse) {}
+    rpc DeleteChildSObj (DeleteChildSObjRequest) returns (DeleteChildSObjResponse) {}
+}
+
+message DMInfo {
+    string clientPolicy = 1;
+    string serverPolicy = 2;
+    string groupPolicy = 3;
+}
+
+message CreateChildSObjRequest {
+    string sObjName = 1;
+    string  sObjParentSObjId = 2;
+    DMInfo sObjDMInfo = 3;
+    bytes  sObjReplicaObject = 4;
+}
+
+message CreateChildSObjResponse {
+    string sObjId = 1;
+    string sObjReplicaId = 2;
+}
+
+message DeleteChildSObjRequest {
+    string sObjId = 1;
+}
+
+message DeleteChildSObjResponse {
+    bool status = 1;
+}

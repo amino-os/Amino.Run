@@ -1,0 +1,13 @@
+syntax = "proto3";
+package hankstodo_app;
+
+
+option java_package = "hankstodo.app";
+
+message TodoListManager {
+   string sid = 1;
+}
+
+message newTodo {
+   string arg0 = 1;
+}

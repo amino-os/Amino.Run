@@ -183,7 +183,7 @@ public class Sapphire {
             throws RemoteException, SapphireObjectNotFoundException, ClassNotFoundException,
                     KernelObjectNotCreatedException, InstantiationException,
                     KernelObjectNotFoundException, IllegalAccessException {
-
+System.out.println("Class Name "+className+"Runtime type "+runtimeType);
         /* register sapphire object and a replica created on this kernel server */
         SapphireObjectID sapphireObjId =
                 GlobalKernelReferences.nodeServer.oms.registerSapphireObject();
@@ -238,8 +238,13 @@ public class Sapphire {
                                     constructorName,
                                     args);
         } else if (runtimeType.equalsIgnoreCase("go")) {
-            /* TODO: Call go runtime */
-        }
+  sapphireObjInfo=GlobalKernelReferences.nodeServer.getGrpcClientToGoRuntime().createSapphireReplica(className,
+          sapphireReplicaId,
+          parentSapphireObjId,
+          opaqueObject,
+          constructorName,
+          args);
+               }
 
         /* Create DM policy with info received from runtime */
         SapphireSoStub soStub =

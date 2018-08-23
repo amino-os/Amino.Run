@@ -37,8 +37,8 @@ public class AppObject extends ObjectHandler {
                         .getGrpcClientToJavaRuntime()
                         .rpcInvoke(getSapphireReplicaId(), method, params);
             } else if (getRuntime().equalsIgnoreCase("go")) {
-                // TODO: Need to call go runtime
-                return null;
+                return  GlobalKernelReferences.nodeServer.getGrpcClientToGoRuntime().rpcInvoke(getSapphireReplicaId(), method, params);
+
             } else {
                 return null;
             }

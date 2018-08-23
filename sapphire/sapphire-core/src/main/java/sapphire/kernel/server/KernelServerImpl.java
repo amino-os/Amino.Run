@@ -57,6 +57,7 @@ public class KernelServerImpl implements KernelServer {
     private KernelGrpcServer grpcServerToRuntime;
     private KernelGrpcServer grpcServerToApp;
     private KernelGrpcClient grpcClientToJavaRuntime;
+    private  KernelGrpcClient grpcClientTOGoRuntime;
 
     /** stub for the OMS */
     public static OMSServer oms;
@@ -128,10 +129,14 @@ public class KernelServerImpl implements KernelServer {
     public void setGrpcClientToJavaRuntime(KernelGrpcClient grpcClient) {
         grpcClientToJavaRuntime = grpcClient;
     }
+    public void setGrpcClientTOGoRuntime(KernelGrpcClient grpcClient){
+        grpcClientTOGoRuntime= grpcClient;
+    }
 
     public KernelGrpcClient getGrpcClientToJavaRuntime() {
         return grpcClientToJavaRuntime;
     }
+    public  KernelGrpcClient getGrpcClientToGoRuntime(){return  grpcClientTOGoRuntime;    }
 
     /** RPC INTERFACES * */
 
@@ -361,7 +366,7 @@ public class KernelServerImpl implements KernelServer {
                         .getGrpcClientToJavaRuntime()
                         .deleteSapphireReplica(sapphireReplicaId);
             } else if (serverPolicy.sapphire_getAppObject().getRuntime().equalsIgnoreCase("go")) {
-                // TODO: Need to call the go runtime
+                GlobalKernelReferences.nodeServer.getGrpcClientToGoRuntime().deleteSapphireReplica(sapphireReplicaId);
             }
         }
 
@@ -448,8 +453,10 @@ public class KernelServerImpl implements KernelServer {
                     ClassNotFoundException, KernelObjectNotCreatedException, InstantiationException,
                     IllegalAccessException, SapphireObjectCreationException {
 
+         String[] langInfo = className.split(":",0);
+
         try {
-            return createInnerSo(className, "java", dmConfig, parentSapphireObjId, objectStream);
+            return createInnerSo(langInfo[0], langInfo[1], dmConfig, parentSapphireObjId, objectStream);
         } catch (SapphireObjectNotFoundException e) {
             throw new SapphireObjectCreationException(
                     "Failed to create sapphire object : " + className + " : Trace : " + e);
@@ -573,6 +580,9 @@ public class KernelServerImpl implements KernelServer {
                         /* Start client for each runtime */
                         server.setGrpcClientToJavaRuntime(
                                 new KernelGrpcClient(args[6], Integer.parseInt(args[7])));
+                    }
+                    if (args.length>9){
+                        server.setGrpcClientTOGoRuntime(new KernelGrpcClient(args[8],Integer.parseInt(args[9])));
                     }
                 }
             }

@@ -15,7 +15,7 @@ from the .proto files generate the grpc stubs (Currentlu Proto file and stub are
 4) Build the hankstodo_create as mentioned below 
     root1@lenovo:~/Work/src/hankstodo/hankstodo_create$ go build 
   
-5) uild the hankstodo_attach as mentioned below 
+5) Build the hankstodo_attach as mentioned below 
    
     root1@lenovo:~/Work/src/hankstodo/hankstodo_attach$ go build 
 
@@ -38,7 +38,7 @@ from the .proto files generate the grpc stubs (Currentlu Proto file and stub are
    
    root1@lenovo:~/Work/src/hankstodo/hankstodo_create$./hankstodo_create -RMI-ip 127.0.0.1 -RMI-port 10003 -kernelclient-ip 127.0.0.1 -kernelclient-port 20003 
 
-8)  Run the hankstodo_attach  process with the  below command line arguments
+8) Run the hankstodo_attach  process with the  below command line arguments
    
    RMI-ip=  Kernel client RMI ip
    RMI-port= Kernel client RMI port 
@@ -47,6 +47,6 @@ from the .proto files generate the grpc stubs (Currentlu Proto file and stub are
    
    root1@lenovo:~/Work/src/hankstodo/hankstodo_attach$./hankstodo_attach -RMI-ip 127.0.0.1 -RMI-port 10003 -kernelclient-ip 127.0.0.1 -kernelclient-port  20003
 
-Todo : Runtime Sdk needs to seperated from sapphire_go_runtime
+ Todo : Runtime Sdk needs to seperated from sapphire_go_runtime
       
 

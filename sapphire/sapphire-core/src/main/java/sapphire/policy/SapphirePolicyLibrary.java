@@ -123,7 +123,7 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 			try {
 				// Reprocessed already processed DMs to create the replica server policies.
 				for (String DM : processedDMs) {
-					//TODO: Redundant code with below. 
+					//TODO: Redundant code with below.
 					Class<?> policyClass = Class.forName(DM);
 					String policyStubClassName = GlobalStubConstants.getPolicyPackageName() + "." + RMIUtil.getShortName(policyClass) + GlobalStubConstants.STUB_SUFFIX;
 

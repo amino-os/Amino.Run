@@ -29,9 +29,10 @@ public class TodoActivity {
             
             KernelServer nodeServer = new KernelServerImpl(new InetSocketAddress(args[2], Integer.parseInt(args[3])), new InetSocketAddress(args[0], Integer.parseInt(args[1])));
 
-			TodoList td1 = tlm.newTodoList("New List");
+			TodoList td1 = tlm.newTodoList("New List 1");
 			System.out.println("new to do list for 1");
 
+			// Add to-do items.
             td1.addToDo("1", "Do this 1.1");
 			System.out.println("do this 1.1");
             td1.addToDo("1", "Do this 1.2");
@@ -41,12 +42,12 @@ public class TodoActivity {
             td1.addToDo("2", "Do that 2.2");
 			System.out.println("do that 2.2");
 
-            TodoList testTd2 = tlm.getToDoList("2");
-            String testTdString2 = testTd2.getToDoString("2");
+			// Retrieve to-do items.
+            TodoList getTd1 = tlm.getToDoList("New List 1");
+            String testTdString2 = getTd1.getToDoString("2");
             System.out.println("Printing testTdString for 2: " + testTdString2);
 
-            TodoList testTd1 = tlm.getToDoList("1");
-            String testTdString1 = testTd1.getToDoString("1");
+            String testTdString1 = getTd1.getToDoString("1");
             System.out.println("Printing testTdString for 1: " + testTdString1);
 
             tlm.doSomething("do something");

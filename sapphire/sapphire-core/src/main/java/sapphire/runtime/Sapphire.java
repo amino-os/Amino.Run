@@ -205,8 +205,9 @@ public class Sapphire {
 		serverPolicy.setThisDM(DM);
 		processedDMs.add(DM);
 		serverPolicy.setProcessedDMs(processedDMs);
+		serverPolicyStub.setProcessedDMs(processedDMs);
 
-		groupPolicy.onCreate(serverPolicy);
+		groupPolicy.onCreate(serverPolicyStub);
 
 		if (nextDMs.size() != 0) {
 			previousServerPolicy = serverPolicy;

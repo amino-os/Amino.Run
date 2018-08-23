@@ -6,6 +6,7 @@ import sapphire.common.AppObjectStub;
 import sapphire.common.SapphireObjectCreationException;
 import sapphire.common.SapphireObjectID;
 import sapphire.common.SapphireObjectNotFoundException;
+import sapphire.common.SapphireObjectReplicaNotFoundException;
 import sapphire.common.SapphireReplicaID;
 import sapphire.kernel.common.KernelOID;
 import sapphire.kernel.common.KernelObjectMigratingException;
@@ -27,7 +28,8 @@ public interface KernelServer extends Remote {
 
     void copyKernelObject(KernelOID oid, KernelObject object)
             throws RemoteException, KernelObjectNotFoundException,
-                    KernelObjectStubNotCreatedException, SapphireObjectNotFoundException;
+                    KernelObjectStubNotCreatedException, SapphireObjectNotFoundException,
+                    SapphireObjectReplicaNotFoundException;
 
     // AppObjectStub startApp(String className) throws RemoteException;
 

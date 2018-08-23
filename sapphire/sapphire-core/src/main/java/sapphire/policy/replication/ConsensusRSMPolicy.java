@@ -10,6 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Logger;
 import sapphire.common.SapphireObjectNotFoundException;
+import sapphire.common.SapphireObjectReplicaNotFoundException;
 import sapphire.policy.DefaultSapphirePolicy;
 import sapphire.policy.util.consensus.raft.AlreadyVotedException;
 import sapphire.policy.util.consensus.raft.CandidateBehindException;
@@ -223,6 +224,8 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
                         "Could not create new group policy because the oms is not available.", e);
             } catch (SapphireObjectNotFoundException e) {
                 throw new Error("Failed to find sapphire object.", e);
+            } catch (SapphireObjectReplicaNotFoundException e) {
+                throw new Error("Failed to find sapphire object replica.", e);
             }
         }
     }

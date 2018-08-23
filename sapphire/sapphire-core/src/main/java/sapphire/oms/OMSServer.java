@@ -17,7 +17,7 @@ import sapphire.kernel.common.KernelObjectNotCreatedException;
 import sapphire.kernel.common.KernelObjectNotFoundException;
 import sapphire.kernel.common.KernelServerNotFoundException;
 import sapphire.kernel.common.ServerInfo;
-import sapphire.policy.SapphirePolicy.SapphireGroupPolicy;
+import sapphire.policy.SapphirePolicy;
 import sapphire.runtime.EventHandler;
 
 public interface OMSServer extends Remote {
@@ -52,7 +52,8 @@ public interface OMSServer extends Remote {
     void heartbeatKernelServer(ServerInfo srvinfo)
             throws RemoteException, NotBoundException, KernelServerNotFoundException;
 
-    SapphireGroupPolicy createGroupPolicy(Class<?> policyClass, SapphireObjectID sapphireObjId)
+    SapphirePolicy.SapphireGroupPolicy createGroupPolicy(
+            Class<?> policyClass, SapphireObjectID sapphireObjId)
             throws RemoteException, ClassNotFoundException, KernelObjectNotCreatedException,
                     SapphireObjectNotFoundException;
 
@@ -65,13 +66,15 @@ public interface OMSServer extends Remote {
             throws RemoteException, SapphireObjectNotFoundException;
 
     void setSapphireReplicaDispatcher(SapphireReplicaID replicaId, EventHandler dispatcher)
-            throws RemoteException, SapphireObjectNotFoundException;
+            throws RemoteException, SapphireObjectNotFoundException,
+                    SapphireObjectReplicaNotFoundException;
 
     EventHandler getSapphireObjectDispatcher(SapphireObjectID sapphireObjId)
             throws RemoteException, SapphireObjectNotFoundException;
 
     EventHandler getSapphireReplicaDispatcher(SapphireReplicaID replicaId)
-            throws RemoteException, SapphireObjectNotFoundException;
+            throws RemoteException, SapphireObjectNotFoundException,
+                    SapphireObjectReplicaNotFoundException;
 
     /* Called by the client */
     // AppObjectStub getAppEntryPoint() throws RemoteException;

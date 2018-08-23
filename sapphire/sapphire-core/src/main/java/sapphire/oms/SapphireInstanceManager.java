@@ -7,6 +7,7 @@ import java.util.Random;
 import java.util.UUID;
 import sapphire.common.SapphireObjectID;
 import sapphire.common.SapphireObjectNotFoundException;
+import sapphire.common.SapphireObjectReplicaNotFoundException;
 import sapphire.common.SapphireReplicaID;
 import sapphire.runtime.EventHandler;
 
@@ -61,8 +62,12 @@ public class SapphireInstanceManager {
      * @throws SapphireObjectNotFoundException
      */
     public EventHandler getReplicaDispatcher(SapphireReplicaID rid)
-            throws SapphireObjectNotFoundException {
+            throws SapphireObjectReplicaNotFoundException {
         EventHandler dispatcher = replicaDispatchers.get(rid);
+        if (dispatcher == null) {
+            throw new SapphireObjectReplicaNotFoundException(
+                    "Failed to find sapphire object replica dispatcher");
+        }
         return dispatcher;
     }
 
@@ -72,8 +77,14 @@ public class SapphireInstanceManager {
      * @param rid
      * @param dispatcher
      */
-    public void setReplicaDispatcher(SapphireReplicaID rid, EventHandler dispatcher) {
-        replicaDispatchers.put(rid, dispatcher);
+    public void setReplicaDispatcher(SapphireReplicaID rid, EventHandler dispatcher)
+            throws SapphireObjectReplicaNotFoundException {
+        if (replicaDispatchers.containsKey(rid)) {
+            replicaDispatchers.put(rid, dispatcher);
+        } else {
+            throw new SapphireObjectReplicaNotFoundException(
+                    "Failed to find sapphire object replica");
+        }
     }
 
     /**

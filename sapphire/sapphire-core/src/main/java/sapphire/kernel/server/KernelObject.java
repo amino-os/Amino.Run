@@ -26,7 +26,7 @@ public class KernelObject extends ObjectHandler {
 	}
 	
 	public Object invoke(String method, ArrayList<Object> params) throws Exception {
-		Object ret;
+		Object ret = null;
 		
 		if (coalesced) {
 			// Object has been migrated to the other kernel server.
@@ -39,6 +39,8 @@ public class KernelObject extends ObjectHandler {
 		// then we safely release the rpcCounter
 		try {
 			ret = super.invoke(method, params);
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 		finally {
 			rpcCounter.release();

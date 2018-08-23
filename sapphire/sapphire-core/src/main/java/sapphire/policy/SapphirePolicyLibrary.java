@@ -39,8 +39,8 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 		protected SapphireServerPolicy nextServerPolicy;
 		protected SapphireServerPolicy previousServerPolicy;
 		protected String thisDM;
-		protected List<String> nextDMs;
-		protected List<String> processedDMs;
+		protected List<String> nextDMs = new ArrayList<String>();
+		protected List<String> processedDMs = new ArrayList<String>();
 
 		private OMSServer oms() {
 			return GlobalKernelReferences.nodeServer.oms;
@@ -112,12 +112,18 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 			KernelObjectStub serverPolicyStub = null;
 			SapphireServerPolicy previousServerPolicy = null;
 			SapphireServerPolicy firstServerPolicy = null;
+			// TODO: Copy all objects and registeres at the new kernel server
+			// TODO: Instansitate complete server policy chain. (e.g., S3->S2->S1-> appobject).
+			// TODO: Make sure copied objects are linked together.
 
 			// Remove the last DM which is the DM this method is trying to replicate.
-			processedDMs.remove(processedDMs.size() - 1);
+			if (processedDMs.size() > 0) {
+				processedDMs.remove(processedDMs.size() - 1);
+			}
 			try {
 				// Reprocessed already processed DMs to create the replica server policies.
 				for (String DM : processedDMs) {
+					//TODO: Redundant code with below. 
 					Class<?> policyClass = Class.forName(DM);
 					String policyStubClassName = GlobalStubConstants.getPolicyPackageName() + "." + RMIUtil.getShortName(policyClass) + GlobalStubConstants.STUB_SUFFIX;
 

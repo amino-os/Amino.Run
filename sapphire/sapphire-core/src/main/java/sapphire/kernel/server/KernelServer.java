@@ -31,8 +31,6 @@ public interface KernelServer extends Remote {
                     KernelObjectStubNotCreatedException, SapphireObjectNotFoundException,
                     SapphireObjectReplicaNotFoundException;
 
-    // AppObjectStub startApp(String className) throws RemoteException;
-
     AppObjectStub createSapphireObject(String className, Object... args)
             throws RemoteException, SapphireObjectCreationException, ClassNotFoundException;
 

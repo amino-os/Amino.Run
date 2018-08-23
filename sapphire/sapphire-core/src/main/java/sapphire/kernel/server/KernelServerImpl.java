@@ -143,14 +143,17 @@ public class KernelServerImpl implements KernelServer {
                     serverPolicy.sapphire_getAppObject().getObject().getClass().getSuperclass();
             serverPolicy.onCreate(serverPolicy.getGroup(), c.getAnnotations());
         } else if (object.getObject() instanceof SapphirePolicy.SapphireGroupPolicy) {
-            // TODO: Do we need to handle group policy object migration ?
-            SapphirePolicy.SapphireGroupPolicy groupPolicy =
+            // TODO: Do we need to handle group policy object migration ? There is no mechanism to
+            // migrate group object currently though.
+            /*SapphirePolicy.SapphireGroupPolicy groupPolicy =
                     (SapphirePolicy.SapphireGroupPolicy) object.getObject();
             oms.setSapphireObjectDispatcher(
                     ((SapphirePolicy.SapphireGroupPolicy) object.getObject()).getSapphireObjId(),
                     policyHandler);
 
+            */
             /* Initialize dynamic data of group policy object(i.e., timers, executors, sockets etc) on new host */
+            /*
             ArrayList<SapphirePolicy.SapphireServerPolicy> servers = groupPolicy.getServers();
             if (!servers.isEmpty()) {
                 Class<?> c =
@@ -160,7 +163,7 @@ public class KernelServerImpl implements KernelServer {
                                 .getClass()
                                 .getSuperclass();
                 groupPolicy.onCreate(servers.get(0), c.getAnnotations());
-            }
+            }*/
         }
 
         objectManager.addObject(oid, object);
@@ -217,7 +220,7 @@ public class KernelServerImpl implements KernelServer {
             e.printStackTrace();
             throw new RemoteException("Could not contact destination server.");
         } catch (KernelObjectStubNotCreatedException e) {
-            throw new Error("Failed to create policy stub object on destination server. ", e);
+            throw new Error("Failed to create policy stub object on destination server.", e);
         }
 
         try {
@@ -230,8 +233,10 @@ public class KernelServerImpl implements KernelServer {
             /* De-initialize dynamic data of server policy object(i.e., timers, executors, sockets etc) */
             ((SapphirePolicy.SapphireServerPolicy) object.getObject()).onDestroy();
         } else if (object.getObject() instanceof SapphirePolicy.SapphireGroupPolicy) {
+            // TODO: Do we need to handle group policy object migration ? There is no mechanism to
+            // migrate group object currently though.
             /* De-initialize dynamic data of group policy object(i.e., timers, executors, sockets etc) */
-            ((SapphirePolicy.SapphireGroupPolicy) object.getObject()).onDestroy();
+            // ((SapphirePolicy.SapphireGroupPolicy) object.getObject()).onDestroy();
         }
 
         objectManager.removeObject(oid);
@@ -282,20 +287,6 @@ public class KernelServerImpl implements KernelServer {
     public KernelClient getKernelClient() {
         return client;
     }
-
-    /** Start the first server-side app object */
-    /*    @Override
-    public AppObjectStub startApp(String className) throws RemoteException {
-    	AppObjectStub appEntryPoint = null;
-    	try {
-    		AppEntryPoint entryPoint =  (AppEntryPoint) Class.forName(className).newInstance();
-               appEntryPoint = entryPoint.start();
-    	} catch (Exception e) {
-    		logger.severe("Could not start app");
-    		e.printStackTrace();
-    	}
-    	return appEntryPoint;
-    }*/
 
     /**
      * Create the sapphire object

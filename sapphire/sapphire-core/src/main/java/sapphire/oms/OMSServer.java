@@ -76,9 +76,6 @@ public interface OMSServer extends Remote {
             throws RemoteException, SapphireObjectNotFoundException,
                     SapphireObjectReplicaNotFoundException;
 
-    /* Called by the client */
-    // AppObjectStub getAppEntryPoint() throws RemoteException;
-
     SapphireObjectID createSapphireObject(String absoluteSapphireClassName, Object... args)
             throws RemoteException, SapphireObjectCreationException;
 

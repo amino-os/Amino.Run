@@ -101,6 +101,10 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
                 KernelObjectFactory.delete(serverPolicyStub.$__getKernelOID());
                 e.printStackTrace();
                 throw new Error("Could not find sapphire object on OMS");
+            } catch (SapphireObjectReplicaNotFoundException e) {
+                KernelObjectFactory.delete(serverPolicyStub.$__getKernelOID());
+                e.printStackTrace();
+                throw new Error("Could not find sapphire object replica on OMS");
             } catch (RemoteException e) {
                 KernelObjectFactory.delete(serverPolicyStub.$__getKernelOID());
                 e.printStackTrace();
@@ -115,7 +119,8 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
         }
 
         public void sapphire_pin(String region)
-                throws RemoteException, SapphireObjectNotFoundException {
+                throws RemoteException, SapphireObjectNotFoundException,
+                        SapphireObjectReplicaNotFoundException {
             logger.info("Pinning Sapphire object " + oid.toString() + " to " + region);
             InetSocketAddress server = null;
             try {
@@ -128,7 +133,8 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 
         // This function is same as sapphire_pin but pining to the server instead of region
         public void sapphire_pin_to_server(InetSocketAddress server)
-                throws RemoteException, SapphireObjectNotFoundException {
+                throws RemoteException, SapphireObjectNotFoundException,
+                        SapphireObjectReplicaNotFoundException {
             logger.info("Pinning Sapphire object " + oid.toString() + " to " + server);
             try {
                 kernel().moveKernelObjectToServer(server, oid);

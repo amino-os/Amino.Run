@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Logger;
 import sapphire.common.SapphireObjectNotFoundException;
+import sapphire.common.SapphireObjectReplicaNotFoundException;
 import sapphire.kernel.common.KernelObjectStub;
 import sapphire.policy.DefaultSapphirePolicy;
 
@@ -191,6 +192,8 @@ public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
                         "Could not create new group policy because the oms is not available.", e);
             } catch (SapphireObjectNotFoundException e) {
                 throw new Error("Failed to find sapphire object.", e);
+            } catch (SapphireObjectReplicaNotFoundException e) {
+                throw new Error("Failed to find sapphire object replica.", e);
             }
         }
     }

@@ -136,6 +136,8 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 				serverPolicy = (SapphireServerPolicy) kernel().getObject(serverPolicyStub.$__getKernelOID());
 				Sapphire.getAppStub(null, this.nextDMs, processedDMs, serverPolicy, serverPolicyStub, newHostName, null);
 
+				getGroup().addServer((SapphireServerPolicy) serverPolicyStub);
+
 				// Move to the first server policy in the chain (opposite end of app object).
 				while (serverPolicy.previousServerPolicy != null) {
 					serverPolicy = serverPolicy.previousServerPolicy;
@@ -174,15 +176,19 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 			SapphireServerPolicy serverPolicy = (SapphireServerPolicy) kernel().getObject(serverPolicyStub.$__getKernelOID());
 			serverPolicy.$__initialize(appObject);
 			serverPolicy.$__setKernelOID(serverPolicyStub.$__getKernelOID());
-			serverPolicy.onCreate(getGroup());
+			//serverPolicy.onCreate(getGroup());
+			//serverPolicy.onCreate(serverPolicy.getGroup());
 
 			// Connect links between two server policies with double links (previous and next).
-			SapphireServerPolicy processedServerPolicy = (SapphireServerPolicy) kernel().getObject(processedServerPolicyStub.$__getKernelOID());
-			serverPolicy.nextServerPolicy = processedServerPolicy;
-			if (processedServerPolicy != null) {
-				processedServerPolicy.previousServerPolicy = serverPolicy;
+			if (processedServerPolicyStub != null) {
+				SapphireServerPolicy processedServerPolicy = (SapphireServerPolicy) kernel().getObject(processedServerPolicyStub.$__getKernelOID());
+				serverPolicy.nextServerPolicy = processedServerPolicy;
+				if (processedServerPolicy != null) {
+					processedServerPolicy.previousServerPolicy = serverPolicy;
+				}
 			}
-			getGroup().addServer((SapphireServerPolicy) serverPolicyStub);
+
+			//getGroup().addServer((SapphireServerPolicy) serverPolicyStub);
 
 			return serverPolicyStub;
 		}

@@ -175,13 +175,17 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 			serverPolicy.$__initialize(appObject);
 			serverPolicy.$__setKernelOID(serverPolicyStub.$__getKernelOID());
 			serverPolicy.onCreate(getGroup());
+			//serverPolicy.onCreate(serverPolicy.getGroup());
 
 			// Connect links between two server policies with double links (previous and next).
-			SapphireServerPolicy processedServerPolicy = (SapphireServerPolicy) kernel().getObject(processedServerPolicyStub.$__getKernelOID());
-			serverPolicy.nextServerPolicy = processedServerPolicy;
-			if (processedServerPolicy != null) {
-				processedServerPolicy.previousServerPolicy = serverPolicy;
+			if (processedServerPolicyStub != null) {
+				SapphireServerPolicy processedServerPolicy = (SapphireServerPolicy) kernel().getObject(processedServerPolicyStub.$__getKernelOID());
+				serverPolicy.nextServerPolicy = processedServerPolicy;
+				if (processedServerPolicy != null) {
+					processedServerPolicy.previousServerPolicy = serverPolicy;
+				}
 			}
+
 			getGroup().addServer((SapphireServerPolicy) serverPolicyStub);
 
 			return serverPolicyStub;

@@ -7,6 +7,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -121,37 +122,10 @@ public class Sapphire {
 
 		/* Get the policy used by the Sapphire Object we need to create */
 		System.out.println("Processing DM chain for: " + DM);
-		Class<?> policy = getPolicy(DM);
-
-		/* Extract the policy component classes (server, client and group) */
-		Class<?>[] policyClasses = policy.getDeclaredClasses();
-
-		Class<?> sapphireServerPolicyClass = null;
-		Class<?> sapphireClientPolicyClass = null;
-		Class<?> sapphireGroupPolicyClass = null;
-
-		for (Class<?> c : policyClasses) {
-			if (SapphireServerPolicy.class.isAssignableFrom(c)) {
-				sapphireServerPolicyClass = c;
-				continue;
-			}
-			if (SapphireClientPolicy.class.isAssignableFrom(c)) {
-				sapphireClientPolicyClass = c;
-				continue;
-			}
-			if (SapphireGroupPolicy.class.isAssignableFrom(c)) {
-				sapphireGroupPolicyClass = c;
-				continue;
-			}
-		}
-
-			/* If no policies specified use the defaults */
-		if (sapphireServerPolicyClass == null)
-			sapphireServerPolicyClass = DefaultServerPolicy.class;
-		if (sapphireClientPolicyClass == null)
-			sapphireClientPolicyClass = DefaultClientPolicy.class;
-		if (sapphireGroupPolicyClass == null)
-			sapphireGroupPolicyClass = DefaultGroupPolicy.class;
+		HashMap<String, Class<?>> policyMap = getPolicyMap(DM);
+		Class<?> sapphireServerPolicyClass = policyMap.get("sapphireServerPolicyClass");
+		Class<?> sapphireClientPolicyClass = policyMap.get("sapphireClientPolicyClass");
+		Class<?> sapphireGroupPolicyClass = policyMap.get("sapphireGroupPolicyClass");
 
 			/* Create and the Kernel Object for the Group Policy and get the Group Policy Stub
 			Note that group policy does not need to update hostname because it only applies to
@@ -320,6 +294,45 @@ public class Sapphire {
 		//paramClassName = paramClassName.substring(0, index);
 
 		return Class.forName(paramClassName);
+	}
+
+	/**
+	 * Constructs a policy map for each client, server and group policy based on input policy name.
+	 * @param policyName
+	 * @return hash map for policies
+	 * @throws Exception
+	 */
+	public static HashMap<String, Class<?>> getPolicyMap(String policyName) throws Exception {
+		HashMap<String, Class<?>> policyMap = new HashMap<String, Class<?>>();
+		Class<?> policy = getPolicy(policyName);
+
+		/* Extract the policy component classes (server, client and group) */
+		Class<?>[] policyClasses = policy.getDeclaredClasses();
+
+		for (Class<?> c : policyClasses) {
+			if (SapphireServerPolicy.class.isAssignableFrom(c)) {
+				policyMap.put("sapphireServerPolicyClass", c);
+				continue;
+			}
+			if (SapphireClientPolicy.class.isAssignableFrom(c)) {
+				policyMap.put("sapphireClientPolicyClass", c);
+				continue;
+			}
+			if (SapphireGroupPolicy.class.isAssignableFrom(c)) {
+				policyMap.put("sapphireGroupPolicyClass", c);
+				continue;
+			}
+		}
+
+		/* If no policies specified use the defaults */
+		if (!policyMap.containsKey("sapphireServerPolicyClass"))
+			policyMap.put("sapphireServerPolicyClass", DefaultServerPolicy.class);
+		if (!policyMap.containsKey("sapphireClientPolicyClass"))
+			policyMap.put("sapphireClientPolicyClass", DefaultClientPolicy.class);
+		if (!policyMap.containsKey("sapphireGroupPolicyClass"))
+			policyMap.put("sapphireGroupPolicyClass", DefaultGroupPolicy.class);
+
+		return policyMap;
 	}
 
 	public static Class<?>[] getParamsClasses(Object[] params) throws ClassNotFoundException {

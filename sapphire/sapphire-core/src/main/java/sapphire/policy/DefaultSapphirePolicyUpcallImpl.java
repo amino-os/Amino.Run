@@ -75,8 +75,8 @@ public abstract class DefaultSapphirePolicyUpcallImpl extends SapphirePolicyLibr
 		public SapphireServerPolicy sapphire_replicate() {
 			return super.sapphire_replicate();
 		}
-		public SapphireServerPolicy sapphire_replicate(List<String> processedDMs, InetSocketAddress newServerAddress) {
-			return super.sapphire_replicate(processedDMs, newServerAddress);
+		public SapphireServerPolicy sapphire_replicate(List<String> processedDMs, InetSocketAddress newHostName) {
+			return super.sapphire_replicate(processedDMs, newHostName);
 		}
 
 		/* This function is added here just to generate the stub for this function in all DMs server policy */

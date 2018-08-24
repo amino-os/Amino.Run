@@ -8,7 +8,8 @@ import sapphire.policy.cache.CacheLeasePolicy;
 import sapphire.runtime.SapphireConfiguration;
 
 //@SapphireConfiguration(DMs = "sapphire.policy.DefaultSapphirePolicy,sapphire.policy.dht.DHTPolicy2")
-@SapphireConfiguration(DMs = "sapphire.policy.dht.DHTPolicy2,sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy")
+//@SapphireConfiguration(DMs = "sapphire.policy.dht.DHTPolicy2,sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy")
+@SapphireConfiguration(DMs = "sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy,sapphire.policy.dht.DHTPolicy2")
 //@SapphireConfiguration(DMs = "sapphire.policy.dht.DHTPolicy2,sapphire.policy.dht.DHTPolicy2")
 //@SapphireConfiguration(DMs = "sapphire.policy.DefaultSapphirePolicy,sapphire.policy.DefaultSapphirePolicy")
 public class TodoList implements SapphireObject {

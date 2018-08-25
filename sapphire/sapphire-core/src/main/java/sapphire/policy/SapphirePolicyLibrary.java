@@ -12,6 +12,7 @@ import org.apache.harmony.rmi.common.RMIUtil;
 import sapphire.common.AppObject;
 import sapphire.common.AppObjectStub;
 import sapphire.compiler.GlobalStubConstants;
+import sapphire.compiler.PolicyStub;
 import sapphire.kernel.common.GlobalKernelReferences;
 import sapphire.kernel.common.KernelOID;
 import sapphire.kernel.common.KernelObjectFactory;
@@ -41,7 +42,7 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 		protected SapphireServerPolicy previousServerPolicy;
 		protected String thisDM;
 		protected List<String> nextDMs = new ArrayList<String>();
-		protected List<String> processedDMs = new ArrayList<String>();
+		protected List<SapphirePolicyContainer> processedDMs = new ArrayList<SapphirePolicyContainer>();
 
 		private OMSServer oms() {
 			return GlobalKernelReferences.nodeServer.oms;
@@ -55,7 +56,7 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 		 * SAPPHIRE API FOR SERVER POLICIES
 		 */
 
-		public List<String> getProcessedDMs() {
+		public List<SapphirePolicyContainer> getProcessedDMs() {
 			return this.processedDMs;
 		}
 
@@ -67,7 +68,7 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 			this.nextDMs = nextDMs;
 		}
 
-		public void setProcessedDMs(List<String> processedDMs) {
+		public void setProcessedDMs(List<SapphirePolicyContainer> processedDMs) {
 			this.processedDMs = processedDMs;
 		}
 
@@ -109,7 +110,7 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 		 * Creates a replica of this server and registers it with the group.
 		 * TODO: entire server chain should be replicated and only the head server policy needs to be moved to the new server.
 		 */
-		public SapphireServerPolicy sapphire_replicate(List<String> processedDMs, InetSocketAddress newHostName) {
+		public SapphireServerPolicy sapphire_replicate(List<SapphirePolicyContainer> processedPolicies, InetSocketAddress newHostName) {
 			KernelObjectStub serverPolicyStub = null;
 			SapphireServerPolicy serverPolicy;
 
@@ -118,23 +119,23 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 			// TODO: Make sure copied objects are linked together.
 
 			// Remove the last DM which is the DM this method is trying to replicate.
-			if (processedDMs.size() > 0) {
-				processedDMs.remove(processedDMs.size() - 1);
+			if (processedPolicies.size() > 0) {
+				processedPolicies.remove(processedPolicies.size() - 1);
 			}
 			try {
 				// Reprocessed already processed DMs to create the replica server policies.
-				for (String DM : processedDMs) {
+				for (SapphirePolicyContainer processedPolicy : processedPolicies) {
 					//TODO: Redundant code with below.
-					Class<?> policyClass = Sapphire.getPolicyMap(DM).get("sapphireServerPolicyClass");
+					Class<?> policyClass = Sapphire.getPolicyMap(processedPolicy.policyName).get("sapphireServerPolicyClass");
 					String policyStubClassName = GlobalStubConstants.getPolicyPackageName() + "." + RMIUtil.getShortName(policyClass) + GlobalStubConstants.STUB_SUFFIX;
-					serverPolicyStub = createServerPolicy(policyStubClassName, newHostName, serverPolicyStub);
+					serverPolicyStub = createServerPolicy(policyStubClassName, newHostName, serverPolicyStub, processedPolicy.groupPolicy);
 				}
 
 				// Start creating server policies from this DM.
 				String policyStubClassName = GlobalStubConstants.getPolicyPackageName() + "." + RMIUtil.getShortName(this.getClass()) + GlobalStubConstants.STUB_SUFFIX;
-				serverPolicyStub = createServerPolicy(policyStubClassName, newHostName, serverPolicyStub);
+				serverPolicyStub = createServerPolicy(policyStubClassName, newHostName, serverPolicyStub, getGroup());
 				serverPolicy = (SapphireServerPolicy) kernel().getObject(serverPolicyStub.$__getKernelOID());
-				Sapphire.getAppStub(null, this.nextDMs, processedDMs, serverPolicy, serverPolicyStub, newHostName, null);
+				Sapphire.getAppStub(null, this.nextDMs, processedPolicies, serverPolicy, serverPolicyStub, newHostName, null);
 
 				getGroup().addServer((SapphireServerPolicy) serverPolicyStub);
 
@@ -168,7 +169,12 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 		 * @return
 		 * @throws Exception
 		 */
-		private KernelObjectStub createServerPolicy(String policyStubClassName, InetSocketAddress newHostName, KernelObjectStub processedServerPolicyStub) throws Exception {
+		private KernelObjectStub createServerPolicy(
+				String policyStubClassName,
+				InetSocketAddress newHostName,
+				KernelObjectStub processedServerPolicyStub,
+				SapphirePolicy.SapphireGroupPolicy groupPolicy)
+				throws Exception {
 			KernelObjectStub serverPolicyStub = KernelObjectFactory.create(policyStubClassName);
 			if (newHostName != null) {
 				serverPolicyStub.$__updateHostname(newHostName);
@@ -176,8 +182,8 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 			SapphireServerPolicy serverPolicy = (SapphireServerPolicy) kernel().getObject(serverPolicyStub.$__getKernelOID());
 			serverPolicy.$__initialize(appObject);
 			serverPolicy.$__setKernelOID(serverPolicyStub.$__getKernelOID());
-			//serverPolicy.onCreate(getGroup());
-			//serverPolicy.onCreate(serverPolicy.getGroup());
+			if (groupPolicy == null) groupPolicy = serverPolicy.getGroup();
+			serverPolicy.onCreate(groupPolicy);
 
 			// Connect links between two server policies with double links (previous and next).
 			if (processedServerPolicyStub != null) {

@@ -24,10 +24,10 @@ public interface SapphirePolicyUpcalls {
 		SapphireGroupPolicy getGroup();
 		Object onRPC(String method, ArrayList<Object> params) throws Exception;
 		void onMembershipChange();
-		List<String> getProcessedDMs();
+		List<SapphirePolicyContainer> getProcessedDMs();
 		void setThisDM(String thisDM);
 		void setNextDMs(List<String> DMChain);
-		void setProcessedDMs(List<String> setProcessedDMs);
+		void setProcessedDMs(List<SapphirePolicyContainer> setProcessedDMs);
 	}
 	
 	interface SapphireGroupPolicyUpcalls extends Serializable {

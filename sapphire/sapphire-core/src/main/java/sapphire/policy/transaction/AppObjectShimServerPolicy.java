@@ -3,6 +3,7 @@ package sapphire.policy.transaction;
 import sapphire.common.AppObject;
 import sapphire.common.Utils;
 import sapphire.policy.SapphirePolicy;
+import sapphire.policy.SapphirePolicyContainer;
 import sapphire.policy.SapphirePolicyUpcalls.SapphireServerPolicyUpcalls;
 import sapphire.policy.scalability.masterslave.MethodInvocationRequest;
 import sapphire.policy.scalability.masterslave.MethodInvocationResponse;
@@ -42,7 +43,7 @@ public class AppObjectShimServerPolicy implements SapphireServerPolicyUpcalls{
     }
 
     @Override
-    public List<String> getProcessedDMs() {
+    public List<SapphirePolicyContainer> getProcessedDMs() {
         //TODO (8/21/18) Implement to return processedDMs.
         return null;
     }
@@ -54,7 +55,7 @@ public class AppObjectShimServerPolicy implements SapphireServerPolicyUpcalls{
     public void setNextDMs(List<String> nextDMs) {}
 
     @Override
-    public void setProcessedDMs(List<String> setProcessedDMs) {}
+    public void setProcessedDMs(List<SapphirePolicyContainer> setProcessedDMs) {}
 
     /**
      * gets the app object referenced by the server policy

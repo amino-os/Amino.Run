@@ -34,6 +34,7 @@ import sapphire.policy.DefaultSapphirePolicy.DefaultServerPolicy;
 import sapphire.policy.SapphirePolicy.SapphireClientPolicy;
 import sapphire.policy.SapphirePolicy.SapphireGroupPolicy;
 import sapphire.policy.SapphirePolicy.SapphireServerPolicy;
+import sapphire.policy.SapphirePolicyContainer;
 import sapphire.policy.primitive.ImmutablePolicy;
 
 /**
@@ -66,7 +67,7 @@ public class Sapphire {
 			// Read annotation from this class.
 			Annotation[] annotations = appObjectClass.getAnnotations();
 			List<String> DMchain = new ArrayList<String>();
-			List<String> processedDMs = new ArrayList<String>();
+			List<SapphirePolicyContainer> processedDMs = new ArrayList<SapphirePolicyContainer>();
 
 			for (Annotation annotation : annotations) {
 				if (annotation instanceof SapphireConfiguration) {
@@ -109,7 +110,7 @@ public class Sapphire {
 	public static AppObjectStub getAppStub(
 			Class<?> appObjectClass,
 			List<String> DMchain,
-			List<String> processedDMs,
+			List<SapphirePolicyContainer> processedDMs,
 			SapphireServerPolicy previousServerPolicy,
 			KernelObjectStub previousServerPolicyStub,
 			InetSocketAddress hostname,
@@ -177,7 +178,7 @@ public class Sapphire {
 		serverPolicy.onCreate(groupPolicyStub);
 		serverPolicy.setNextDMs(nextDMs);
 		serverPolicy.setThisDM(DM);
-		processedDMs.add(DM);
+		processedDMs.add(new SapphirePolicyContainer(DM, groupPolicy));
 		serverPolicy.setProcessedDMs(processedDMs);
 		serverPolicyStub.setProcessedDMs(processedDMs);
 

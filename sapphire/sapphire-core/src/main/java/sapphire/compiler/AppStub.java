@@ -66,14 +66,14 @@ public final class AppStub extends Stub {
     @Override
     public String getStubConstructors() {
         StringBuilder buffer = new StringBuilder();
-        StringBuilder paramNames = new StringBuilder();
+        StringBuilder paramNames;
 
         Constructor<?>[] constructors = stubClass.getConstructors();
 
         for (Constructor<?> constructor : constructors) {
             buffer.append(indenter.indent() + "public " + stubName + " (");
             Class<?>[] params = constructor.getParameterTypes();
-
+            paramNames = new StringBuilder();
             for (int i = 0; i < params.length; i++) {
                 buffer.append(
                         ((i > 0) ? ", " : "")

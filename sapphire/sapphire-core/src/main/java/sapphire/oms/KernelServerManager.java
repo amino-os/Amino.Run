@@ -174,7 +174,6 @@ public class KernelServerManager {
 
     public InetSocketAddress getServerInRegion(String region) {
         ArrayList<InetSocketAddress> hosts = regions.get(region);
-        InetSocketAddress addr = regions.get(region).get(0);
         return hosts.get(new Random().nextInt(hosts.size()));
     }
 

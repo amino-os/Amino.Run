@@ -187,7 +187,7 @@ public class OMSServerImpl implements OMSServer {
 
         /* Delete the server policy object on the kernel server */
         try {
-            server.deleteSapphireReplicaHandler(replicaId, handler);
+            server.deleteSapphireReplicaHandler(handler);
         } catch (RemoteException e) {
             logger.warning(
                     "Kernel server " + handler.getHost() + " is not reachable. Exception: " + e);
@@ -364,7 +364,7 @@ public class OMSServerImpl implements OMSServer {
 
                 /* Delete the server policy object on the kernel server */
                 try {
-                    server.deleteSapphireReplicaHandler(replicaId, handler);
+                    server.deleteSapphireReplicaHandler(handler);
                 } catch (RemoteException e) {
                     logger.warning(
                             "Kernel server "
@@ -387,7 +387,7 @@ public class OMSServerImpl implements OMSServer {
 
         /* Delete the group policy object on the kernel server */
         try {
-            server.deleteSapphireObjectHandler(sapphireObjId, handler);
+            server.deleteSapphireObjectHandler(handler);
         } catch (RemoteException e) {
             logger.warning(
                     "Kernel server " + handler.getHost() + " is not reachable. Exception: " + e);

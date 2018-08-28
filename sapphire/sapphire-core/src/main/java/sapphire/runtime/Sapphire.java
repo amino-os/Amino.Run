@@ -176,30 +176,6 @@ public class Sapphire {
     }
 
     /**
-     * Delete the group policy object of sapphire object
-     *
-     * @param sapphireObjId
-     * @param handler
-     * @throws RemoteException
-     */
-    public static void deleteGroupPolicyObject(SapphireObjectID sapphireObjId, EventHandler handler)
-            throws RemoteException {
-        deletePolicyObjects(handler);
-    }
-
-    /**
-     * Delete the server policy objects of replica of sapphire object
-     *
-     * @param sapphireReplicaId
-     * @param handler
-     * @throws RemoteException
-     */
-    public static void deleteServerPolicyObject(
-            SapphireReplicaID sapphireReplicaId, EventHandler handler) throws RemoteException {
-        deletePolicyObjects(handler);
-    }
-
-    /**
      * Delete the registered policy objects
      *
      * @param handler

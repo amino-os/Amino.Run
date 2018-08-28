@@ -12,10 +12,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import sapphire.common.AppObjectStub;
 import sapphire.common.SapphireObjectCreationException;
-import sapphire.common.SapphireObjectID;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
-import sapphire.common.SapphireReplicaID;
 import sapphire.kernel.client.KernelClient;
 import sapphire.kernel.common.GlobalKernelReferences;
 import sapphire.kernel.common.KernelOID;
@@ -138,32 +136,11 @@ public class KernelServerImpl implements KernelServer {
                     (SapphirePolicy.SapphireServerPolicy) object.getObject();
             oms.setSapphireReplicaDispatcher(serverPolicy.getReplicaId(), policyHandler);
 
-            /* Initialize dynamic data of server policy object(i.e., timers, executors, sockets etc) on new host */
+            /* Initialize dynamic data of server policy object(i.e., timers, executors, sockets etc)
+            on new host */
             Class<?> c =
                     serverPolicy.sapphire_getAppObject().getObject().getClass().getSuperclass();
             serverPolicy.onCreate(serverPolicy.getGroup(), c.getAnnotations());
-        } else if (object.getObject() instanceof SapphirePolicy.SapphireGroupPolicy) {
-            // TODO: Do we need to handle group policy object migration ? There is no mechanism to
-            // migrate group object currently though.
-            /*SapphirePolicy.SapphireGroupPolicy groupPolicy =
-                    (SapphirePolicy.SapphireGroupPolicy) object.getObject();
-            oms.setSapphireObjectDispatcher(
-                    ((SapphirePolicy.SapphireGroupPolicy) object.getObject()).getSapphireObjId(),
-                    policyHandler);
-
-            */
-            /* Initialize dynamic data of group policy object(i.e., timers, executors, sockets etc) on new host */
-            /*
-            ArrayList<SapphirePolicy.SapphireServerPolicy> servers = groupPolicy.getServers();
-            if (!servers.isEmpty()) {
-                Class<?> c =
-                        servers.get(0)
-                                .sapphire_getAppObject()
-                                .getObject()
-                                .getClass()
-                                .getSuperclass();
-                groupPolicy.onCreate(servers.get(0), c.getAnnotations());
-            }*/
         }
 
         objectManager.addObject(oid, object);
@@ -232,11 +209,6 @@ public class KernelServerImpl implements KernelServer {
         if (object.getObject() instanceof SapphirePolicy.SapphireServerPolicy) {
             /* De-initialize dynamic data of server policy object(i.e., timers, executors, sockets etc) */
             ((SapphirePolicy.SapphireServerPolicy) object.getObject()).onDestroy();
-        } else if (object.getObject() instanceof SapphirePolicy.SapphireGroupPolicy) {
-            // TODO: Do we need to handle group policy object migration ? There is no mechanism to
-            // migrate group object currently though.
-            /* De-initialize dynamic data of group policy object(i.e., timers, executors, sockets etc) */
-            // ((SapphirePolicy.SapphireGroupPolicy) object.getObject()).onDestroy();
         }
 
         objectManager.removeObject(oid);
@@ -307,27 +279,23 @@ public class KernelServerImpl implements KernelServer {
     /**
      * Releases the registered sapphire group policy object of given sapphire object
      *
-     * @param sapphireObjId
      * @param handler
      * @throws RemoteException
      */
     @Override
-    public void deleteSapphireObjectHandler(SapphireObjectID sapphireObjId, EventHandler handler)
-            throws RemoteException {
-        Sapphire.deleteGroupPolicyObject(sapphireObjId, handler);
+    public void deleteSapphireObjectHandler(EventHandler handler) throws RemoteException {
+        Sapphire.deletePolicyObjects(handler);
     }
 
     /**
      * Releases the registered sapphire server policy object of given replica
      *
-     * @param sapphireReplicaId
      * @param handler
      * @throws RemoteException
      */
     @Override
-    public void deleteSapphireReplicaHandler(
-            SapphireReplicaID sapphireReplicaId, EventHandler handler) throws RemoteException {
-        Sapphire.deleteServerPolicyObject(sapphireReplicaId, handler);
+    public void deleteSapphireReplicaHandler(EventHandler handler) throws RemoteException {
+        Sapphire.deletePolicyObjects(handler);
     }
 
     public class MemoryStatThread extends Thread {

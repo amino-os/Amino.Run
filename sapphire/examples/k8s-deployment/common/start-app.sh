@@ -5,9 +5,8 @@
 # $2 = oms-service-name
 # $3 = oms-service-port
 
-source /dcap/common.inc
+source /root/dcap/common.inc
 
-check_java
 
 APP_ENTRY=$1
 
@@ -30,5 +29,5 @@ if [ -z $OMS_IP ]; then
 fi
 
 echo "Starting app $APP_ENTRY on $APP_IP:$APP_PORT, connecting to $OMS_SERVICE at $OMS_IP:$OMS_PORT .."
-java -cp "/dcap/jars/*" -Djava.rmi.server.useCodebaseOnly=false -Djava.security.policy=/dcap/client.policy $APP_ENTRY $OMS_IP $OMS_PORT $APP_IP $APP_PORT
+java -cp "/root/dcap/jars/*" -Djava.rmi.server.useCodebaseOnly=false -Djava.security.policy=/dcap/client.policy $APP_ENTRY $OMS_IP $OMS_PORT $APP_IP $APP_PORT
 

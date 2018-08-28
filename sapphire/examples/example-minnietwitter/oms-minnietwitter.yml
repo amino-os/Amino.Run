@@ -16,11 +16,11 @@ spec:
       serviceAccountName: oms-minnietwitter-sa
       containers:
       - name: oms-minnietwitter
-        image: huawei_paas/dcap-sapphire-minnietwitter:v0.1.0
+        image: preethi95/minnietwitter:new1
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 22346
-        command: ["/dcap/start-oms.sh"]
+        command: ["/root/dcap/start-oms.sh"]
         args: ["sapphire.appexamples.minnietwitter.cloud.MinnieTwitterStart"]
         securityContext:
           privileged: true # FOR DEBUG

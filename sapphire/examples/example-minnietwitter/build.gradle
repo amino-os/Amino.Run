@@ -1,4 +1,25 @@
-apply plugin: 'com.android.application'
+buildscript {
+    repositories {
+        jcenter()
+    }
+
+    dependencies {
+        classpath 'com.bmuschko:gradle-docker-plugin:2.6.5'
+    }
+}
+
+import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
+
+plugins {
+    id "de.qaware.cloud.deployer" version "0.9.2"
+}
+
+apply plugin: 'com.bmuschko.docker-remote-api'
+apply plugin: 'com.android.library'
+
+repositories {
+    mavenCentral()
+}
 
 android {
 // Terry: It is safe to delete the following two settings. But
@@ -18,7 +39,6 @@ android {
     }
 
     defaultConfig {
-        applicationId "com.example.minnietwitter"
         versionCode 1
         versionName "1.0"
         minSdkVersion 24
@@ -41,6 +61,56 @@ android {
 dependencies {
     compile 'com.android.support:support-v4:27.0.2'
     compile project(':sapphire-core')
+}
+
+task copyScripts(type: Copy){
+    mkdir "$projectDir/scripts/"
+    from "${projectDir}/../k8s-deployment/common/"
+    into "$projectDir/scripts/"
+}
+
+task copyJar(type: Copy) {
+    dependsOn copyScripts
+    mkdir "$projectDir/jars/"
+    from "${projectDir}/../../sapphire-core/build/libs/sapphire-core-1.0.0.jar"
+    from "${projectDir}/../../dependencies/apache.harmony/build/libs/apache.harmony-1.0.0.jar"
+    from "${projectDir}/../../dependencies/java.rmi/build/libs/java.rmi-1.0.0.jar"
+    from "${projectDir}/build/intermediates/bundles/debug/classes.jar"
+    into "$projectDir/jars/"
+}
+
+task buildMinnieDockerImage(type: DockerBuildImage) {
+    dependsOn copyJar
+    url = 'unix:///var/run/docker.sock'
+    inputDir = file('.')
+    tag = 'minnietwitter'
+}
+
+deployer {
+    kubernetes {
+        id = "kubernetes"
+        baseUrl = "http://127.0.0.1:32786/"
+        namespace = "default"
+        strategy = "UPDATE"
+        auth {
+            username = "admin"
+            password = "s3cr3t"
+        }
+        ssl {
+            trustAll = true
+        }
+        files = [file("oms-minnietwitter.yml"), file("kernelserver-minnietwitter.yml"), file("minnietwitter-app.yml")]
+    }
+}
+
+task tagImage (type: Exec){
+    dependsOn buildMinnieDockerImage
+    commandLine 'docker', 'tag',  "minnietwitter:latest", "preethi95/minnietwitter:new1"
+}
+
+task pushImage(type: Exec) {
+    dependsOn tagImage
+    commandLine 'docker', 'push', "preethi95/minnietwitter:new1"
 }
 
 subprojects {

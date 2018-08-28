@@ -16,11 +16,11 @@ spec:
       serviceAccountName: kernelserver-minnietwitter-sa
       containers:
       - name: kernelserver-minnietwitter
-        image: huawei_paas/dcap-sapphire-minnietwitter:v0.1.0
+        image: preethi95/minnietwitter:new1
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 22345
-        command: ["/dcap/start-kernelserver.sh"]
+        command: ["/root/dcap/start-kernelserver.sh"]
         args: ["oms-minnietwitter-svc", "22346"]
 ---
 apiVersion: v1

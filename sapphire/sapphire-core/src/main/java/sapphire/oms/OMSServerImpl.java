@@ -239,26 +239,84 @@ public class OMSServerImpl implements OMSServer {
         }
     }
 
+    /**
+     * Registers a sapphire object
+     *
+     * @return Returns sapphire object id
+     * @throws RemoteException
+     */
     @Override
-    public SapphireObjectID registerSapphireObject(EventHandler dispatcher) throws RemoteException {
-        return objectManager.add(dispatcher);
+    public SapphireObjectID registerSapphireObject() throws RemoteException {
+        return objectManager.addInstance(null);
     }
 
+    /**
+     * Register a sapphire replica of a given sapphire object
+     *
+     * @param sapphireObjId
+     * @return Return sapphire replica id
+     * @throws RemoteException
+     * @throws SapphireObjectNotFoundException
+     */
     @Override
-    public SapphireReplicaID registerSapphireReplica(SapphireObjectID oid, EventHandler dispatcher)
+    public SapphireReplicaID registerSapphireReplica(SapphireObjectID sapphireObjId)
             throws RemoteException, SapphireObjectNotFoundException {
-        return objectManager.add(oid, dispatcher);
+        return objectManager.addReplica(sapphireObjId, null);
     }
 
+    /**
+     * Sets the event handler of sapphire object
+     *
+     * @param sapphireObjId
+     * @param dispatcher
+     * @throws RemoteException
+     * @throws SapphireObjectNotFoundException
+     */
     @Override
-    public EventHandler getSapphireObjectDispatcher(SapphireObjectID oid)
+    public void setSapphireObjectDispatcher(SapphireObjectID sapphireObjId, EventHandler dispatcher)
             throws RemoteException, SapphireObjectNotFoundException {
-        return objectManager.get(oid);
+        objectManager.setInstanceDispatcher(sapphireObjId, dispatcher);
     }
 
+    /**
+     * Sets the event handler of sapphire replica
+     *
+     * @param replicaId
+     * @param dispatcher
+     * @throws RemoteException
+     * @throws SapphireObjectNotFoundException
+     */
     @Override
-    public EventHandler getSapphireReplicaDispatcher(SapphireReplicaID rid)
+    public void setSapphireReplicaDispatcher(SapphireReplicaID replicaId, EventHandler dispatcher)
             throws RemoteException, SapphireObjectNotFoundException {
-        return objectManager.get(rid);
+        objectManager.setReplicaDispatcher(replicaId, dispatcher);
+    }
+
+    /**
+     * Gets the event handler of sapphire object
+     *
+     * @param sapphireObjId
+     * @return
+     * @throws RemoteException
+     * @throws SapphireObjectNotFoundException
+     */
+    @Override
+    public EventHandler getSapphireObjectDispatcher(SapphireObjectID sapphireObjId)
+            throws RemoteException, SapphireObjectNotFoundException {
+        return objectManager.getInstanceDispatcher(sapphireObjId);
+    }
+
+    /**
+     * Gets the event handler of sapphire replica
+     *
+     * @param replicaId
+     * @return
+     * @throws RemoteException
+     * @throws SapphireObjectNotFoundException
+     */
+    @Override
+    public EventHandler getSapphireReplicaDispatcher(SapphireReplicaID replicaId)
+            throws RemoteException, SapphireObjectNotFoundException {
+        return objectManager.getReplicaDispatcher(replicaId);
     }
 }

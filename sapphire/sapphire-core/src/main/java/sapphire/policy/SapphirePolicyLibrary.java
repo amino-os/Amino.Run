@@ -7,6 +7,8 @@ import java.util.logging.Logger;
 import org.apache.harmony.rmi.common.RMIUtil;
 import sapphire.common.AppObject;
 import sapphire.common.AppObjectStub;
+import sapphire.common.SapphireObjectID;
+import sapphire.common.SapphireReplicaID;
 import sapphire.compiler.GlobalStubConstants;
 import sapphire.kernel.common.GlobalKernelReferences;
 import sapphire.kernel.common.KernelOID;
@@ -31,6 +33,8 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
             implements SapphireServerPolicyUpcalls {
         protected AppObject appObject;
         protected KernelOID oid;
+        protected SapphireReplicaID replicaId;
+
         static Logger logger = Logger.getLogger("sapphire.policy.SapphirePolicyLibrary");
 
         private OMSServer oms() {
@@ -170,6 +174,14 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
             return oid;
         }
 
+        public void setReplicaId(SapphireReplicaID rid) {
+            replicaId = rid;
+        }
+
+        public SapphireReplicaID getReplicaId() {
+            return replicaId;
+        }
+
         public InetSocketAddress sapphire_locate_kernel_object(KernelOID oid)
                 throws RemoteException {
             InetSocketAddress addr;
@@ -189,6 +201,7 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
         protected String appObjectClassName;
         protected ArrayList<Object> params;
         protected KernelOID oid;
+        protected SapphireObjectID sapphireObjId;
 
         private OMSServer oms() {
             return GlobalKernelReferences.nodeServer.oms;
@@ -220,6 +233,14 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 
         public KernelOID $__getKernelOID() {
             return this.oid;
+        }
+
+        public void setSapphireObjId(SapphireObjectID sapphireId) {
+            sapphireObjId = sapphireId;
+        }
+
+        public SapphireObjectID getSapphireObjId() {
+            return sapphireObjId;
         }
     }
 }

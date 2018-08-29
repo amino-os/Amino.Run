@@ -1,7 +1,6 @@
 package sapphire.runtime;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -35,7 +34,7 @@ import sapphire.policy.SapphirePolicy.SapphireClientPolicy;
 import sapphire.policy.SapphirePolicy.SapphireGroupPolicy;
 import sapphire.policy.SapphirePolicy.SapphireServerPolicy;
 import sapphire.policy.SapphirePolicyContainer;
-import sapphire.policy.primitive.ImmutablePolicy;
+import sapphire.policy.SapphirePolicyContainerImpl;
 
 /**
  * Used by the developer to create a Sapphire Object given
@@ -178,7 +177,7 @@ public class Sapphire {
 		serverPolicy.onCreate(groupPolicyStub);
 		serverPolicy.setNextDMs(nextDMs);
 		serverPolicy.setThisDM(DM);
-		processedDMs.add(new SapphirePolicyContainer(DM, groupPolicy));
+		processedDMs.add(new SapphirePolicyContainerImpl(DM, groupPolicy));
 		serverPolicy.setProcessedDMs(processedDMs);
 		serverPolicyStub.setProcessedDMs(processedDMs);
 

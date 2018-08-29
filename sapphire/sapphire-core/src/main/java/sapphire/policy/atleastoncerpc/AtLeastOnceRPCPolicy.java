@@ -1,5 +1,8 @@
 package sapphire.policy.atleastoncerpc;
 
+import sapphire.kernel.common.KernelOID;
+import sapphire.kernel.common.KernelObjectStub;
+import sapphire.kernel.server.KernelObject;
 import sapphire.policy.DefaultSapphirePolicy;
 
 import java.net.InetSocketAddress;
@@ -26,6 +29,7 @@ public class AtLeastOnceRPCPolicy extends DefaultSapphirePolicy {
         // for unit test use
         public void setTimeout(long timeoutMilliSeconds) {
             this.timeoutMilliSeconds = timeoutMilliSeconds;
+            System.out.println("Successfully set the timeout to : " + this.timeoutMilliSeconds);
         }
 
         private Object doOnRPC(String method, ArrayList<Object> params) throws Exception {
@@ -36,6 +40,7 @@ public class AtLeastOnceRPCPolicy extends DefaultSapphirePolicy {
             }
         }
 
+        // TODO (8/27/2018) Remove debugging statements after verification: count, println
         @Override
         public Object onRPC(String method, ArrayList<Object> params) throws Exception {
             FutureTask<?> timeoutTask = null;
@@ -44,27 +49,45 @@ public class AtLeastOnceRPCPolicy extends DefaultSapphirePolicy {
             final ArrayList<Object> params_ = params;
             count++;
             System.out.println("id: " + this.id + " atLeastOneRpc: " + this.count);
-            return clientPolicy.doOnRPC(method_, params_);
-//            timeoutTask = new FutureTask<Object>(new Callable<Object>() {
-//                @Override
-//                public Object call() throws Exception{
-//                    return clientPolicy.doOnRPC(method_, params_);
-//                }
-//            });
-//
-//            new Thread(timeoutTask).start();
-//            Object result = timeoutTask.get(this.timeoutMilliSeconds, TimeUnit.MILLISECONDS);
-//            return result;
+            timeoutTask = new FutureTask<Object>(new Callable<Object>() {
+                @Override
+                public Object call() throws Exception{
+                    System.out.println(getGroup().$__getKernelOID());
+                    return clientPolicy.doOnRPC(method_, params_);
+                }
+            });
+
+            new Thread(timeoutTask).start();
+            Object result = timeoutTask.get(this.timeoutMilliSeconds, TimeUnit.MILLISECONDS);
+            return result;
         }
     }
 
     public static class AtLeastOnceRPCServerPolicy extends DefaultServerPolicy {
         @Override
         public Object onRPC(String method, ArrayList<Object> params) throws Exception {
+            // TODO (8/27/2018): Remove this code block except onRPC after verification of reference to the same group policy.
+            int koid = this.getGroup().$__getKernelOID().getID();
+            System.out.println("OID of Group Policy this policy (AtLeastOnceRPCServerPolicy) refers to " + koid);
+
             // This is dummy method to verify DM chain correctly visits here.
             return super.onRPC(method, params);
         }
+
+        public void PrintDummyStr(String printThis) {
+            System.out.println("For debugging, print the input here: " + printThis);
+        }
     }
 
-    public static class AtLeastOnceRPCGroupPolicy extends DefaultGroupPolicy {}
+    // TODO (8/27/2018): Remove all methods and variables in group policy after verification.
+    public static class AtLeastOnceRPCGroupPolicy extends DefaultGroupPolicy {
+
+        @Override
+        public void onCreate(SapphireServerPolicy server) {
+            AtLeastOnceRPCServerPolicy serverPolicy = (AtLeastOnceRPCServerPolicy)server;
+            serverPolicy.PrintDummyStr("OnCreate at Group policy for AtLeastOneRPC");
+            KernelObjectStub stub = (KernelObjectStub) server;
+            System.out.println("At GroupPolicy. Hostname: " + stub.$__getHostname());
+        }
+    }
 }

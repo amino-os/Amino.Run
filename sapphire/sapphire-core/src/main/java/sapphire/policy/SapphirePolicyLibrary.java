@@ -23,6 +23,7 @@ import sapphire.kernel.server.KernelObject;
 import sapphire.kernel.server.KernelServerImpl;
 import sapphire.oms.OMSServer;
 import sapphire.policy.SapphirePolicy.SapphireServerPolicy;
+import sapphire.policy.primitive.ImmutablePolicy;
 import sapphire.runtime.Sapphire;
 
 public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
@@ -125,10 +126,9 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 			try {
 				// Reprocessed already processed DMs to create the replica server policies.
 				for (SapphirePolicyContainer processedPolicy : processedPolicies) {
-					//TODO: Redundant code with below.
-					Class<?> policyClass = Sapphire.getPolicyMap(processedPolicy.policyName).get("sapphireServerPolicyClass");
+					Class<?> policyClass = Sapphire.getPolicyMap(processedPolicy.GetPolicyName()).get("sapphireServerPolicyClass");
 					String policyStubClassName = GlobalStubConstants.getPolicyPackageName() + "." + RMIUtil.getShortName(policyClass) + GlobalStubConstants.STUB_SUFFIX;
-					serverPolicyStub = createServerPolicy(policyStubClassName, newHostName, serverPolicyStub, processedPolicy.groupPolicy);
+					serverPolicyStub = createServerPolicy(policyStubClassName, newHostName, serverPolicyStub, processedPolicy.GetGroupPolicy());
 				}
 
 				// Start creating server policies from this DM.

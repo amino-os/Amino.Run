@@ -2,6 +2,7 @@ package sapphire.policy.dht;
 
 import java.io.Serializable;
 import java.lang.reflect.Array;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -48,11 +49,11 @@ public class DHTPolicy2 extends SapphirePolicy {
 		 * params may be an application parameter or method name in case of multi-DM.
 		 */
 		public Object onRPC(String method, ArrayList<Object> params) throws Exception {
-			if (method.contains(sapphirePolicyStr)) {
-				// Call any server for executing server policy call which does not care about location of the node.
-				// E.g.,) sapphire_pin() or sapphire_replicate() which is called by group policy.
-				return getServer().onRPC(method, params);
-			}
+//			if (method.contains(sapphirePolicyStr)) {
+//				// Call any server for executing server policy call which does not care about location of the node.
+//				// E.g.,) sapphire_pin() or sapphire_replicate() which is called by group policy.
+//				return getServer().onRPC(method, params);
+//			}
 
 			// This code path is about calling method in application.
 			ArrayList<Object> applicationParams = getApplicationParam(params, 0);
@@ -65,16 +66,15 @@ public class DHTPolicy2 extends SapphirePolicy {
 		 * @return The first application parameter.
 		 */
 		private ArrayList<Object> getApplicationParam(ArrayList<Object> params, int nth) {
-			//String firstParam;
 			ArrayList<Object> currentParams = params;
 			while (currentParams != null && currentParams.size() == 2) {
-				if (params.get(1) instanceof ArrayList) {
-					currentParams = (ArrayList) params.get(1);
+				if (currentParams.get(1) instanceof ArrayList) {
+					currentParams = (ArrayList) currentParams.get(1);
 				} else {
 					break;
 				}
 			}
-			//firstParam = (String)paramsToInspect.get(nth);
+
 			return currentParams;
 		}
 	}

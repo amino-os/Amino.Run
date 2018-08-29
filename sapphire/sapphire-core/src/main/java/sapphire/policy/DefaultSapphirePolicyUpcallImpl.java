@@ -51,7 +51,7 @@ public abstract class DefaultSapphirePolicyUpcallImpl extends SapphirePolicyLibr
 
 			if (nextServerKernelObject == null) {
 				/* The default behavior is to just invoke the method on the Sapphire Object this Server Policy Object manages */
-				System.out.println("No next next policy. Invoking: " + method + " with " + sb);
+				System.out.println("No next policy. Invoking: " + method + " with " + sb);
 				return appObject.invoke(method, params);
 			} else {
 				System.out.println("invoking next server policy for " + method + " with " + sb);

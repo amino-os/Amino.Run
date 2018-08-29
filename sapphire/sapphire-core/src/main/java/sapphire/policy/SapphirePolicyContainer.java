@@ -1,14 +1,15 @@
 package sapphire.policy;
 
+import java.io.Serializable;
+
 /**
  * Contains Sapphire policies.
  */
-public class SapphirePolicyContainer extends DefaultSapphirePolicyUpcallImpl {
-	String policyName;
-	SapphirePolicy.SapphireGroupPolicy groupPolicy;
+public interface SapphirePolicyContainer extends Serializable {
+	String policyName = null;
+	SapphirePolicy.SapphireGroupPolicy groupPolicy = null;
 
-	public SapphirePolicyContainer(String policyName, SapphirePolicy.SapphireGroupPolicy groupPolicy) {
-		this.policyName = policyName;
-		this.groupPolicy = groupPolicy;
-	}
+	String GetPolicyName ();
+	SapphirePolicy.SapphireGroupPolicy GetGroupPolicy();
+
 }

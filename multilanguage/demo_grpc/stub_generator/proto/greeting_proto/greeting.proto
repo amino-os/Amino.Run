@@ -1,0 +1,28 @@
+syntax = "proto3";
+package greeting;
+
+message GenericGreetingSo {
+}
+
+message GenericGreetingSo_FibbonaciRequest {
+	int32 arg1 = 1;
+}
+
+message GenericGreetingSo_FibbonaciResponse {
+	string result1 = 1;
+}
+
+message GenericGreetingSo_HelloWorldRequest {
+	string arg1 = 1;
+	int32 arg2 = 2;
+}
+
+message GenericGreetingSo_HelloWorldResponse {
+	string result1 = 1;
+}
+
+service GreetingService {
+	rpc GenericGreetingSo_Fibbonaci (greeting.GenericGreetingSo_FibbonaciRequest) returns (greeting.GenericGreetingSo_FibbonaciResponse);
+	rpc GenericGreetingSo_HelloWorld (greeting.GenericGreetingSo_HelloWorldRequest) returns (greeting.GenericGreetingSo_HelloWorldResponse);
+}
+

@@ -1,0 +1,40 @@
+syntax="proto3";
+
+package algo_proto;
+
+option java_package= "sapphire.userApp.sapphireObject.Algo";
+// The request message containing the required parameters.
+message SortRequest {
+    repeated int32 arr =1;
+}
+
+// The response message containing the required parameters.
+message SortReply {
+    repeated int32 arr= 1;
+}
+
+// The request message containing the required parameters.
+message SearchRequest {
+    repeated int32 num = 1;
+    int32 key=2;
+}
+
+// The response message containing the required parameters.
+message SearchReply {
+    int32 ret = 1;
+}
+// The request message containing the required parameters.
+message FibbonaciRequest {
+    int32 num = 1;
+}
+
+// The response message containing the required parameters.
+message FibbonaciReply {
+    string ret = 1;
+}
+service Algo {
+	rpc Fibbonaci (FibbonaciRequest) returns (FibbonaciReply);
+	rpc Search (SearchRequest) returns (SearchReply);
+	rpc Sort (SortRequest) returns (SortReply);
+}
+

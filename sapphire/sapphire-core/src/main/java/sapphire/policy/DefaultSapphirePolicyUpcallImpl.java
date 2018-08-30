@@ -103,7 +103,8 @@ public abstract class DefaultSapphirePolicyUpcallImpl extends SapphirePolicyLibr
 			this.appObjectClassName = appObjectClassName;
 			this.params = params;
 		}
-//
+
+// TODO (8/29/2018) Implement or discard onRPC at Default Group policy.
 //		public Object onRPC(String method, ArrayList<Object> params) throws Exception {
 ////			return appObject.invoke(method, params);
 //

@@ -1,18 +1,12 @@
 package sapphire.policy.dht;
 
 import java.io.Serializable;
-import java.lang.reflect.Array;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.logging.Logger;
 
-import sapphire.kernel.common.KernelOID;
-import sapphire.kernel.common.KernelObjectNotFoundException;
-import sapphire.kernel.common.KernelObjectStub;
-import sapphire.kernel.server.KernelObject;
 import sapphire.policy.SapphirePolicy;
 
 public class DHTPolicy2 extends SapphirePolicy {
@@ -161,7 +155,7 @@ public class DHTPolicy2 extends SapphirePolicy {
 
 				for (int i = 1; i < regions.size(); i++) {
 					newServerAddress = oms().getServerInRegion(regions.get(i));
-					SapphireServerPolicy replica = dhtServer.sapphire_replicate(server.getProcessedDMs(), newServerAddress);
+					SapphireServerPolicy replica = dhtServer.sapphire_replicate(server.getProcessedPolicies(), newServerAddress);
 					dhtServer.sapphire_pin_to_server(replica, newServerAddress);
 				}
 				dhtServer.sapphire_pin(regions.get(0));

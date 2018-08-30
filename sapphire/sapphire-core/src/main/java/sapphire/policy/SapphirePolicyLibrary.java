@@ -35,14 +35,16 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 
 	public static abstract class SapphireServerPolicyLibrary implements SapphireServerPolicyUpcalls {
 		protected AppObject appObject;
+		protected AppObjectStub appObjectStub;
 		protected KernelOID oid;
 
 		static Logger logger = Logger.getLogger("sapphire.policy.SapphirePolicyLibrary");
 		protected KernelObject nextServerKernelObject;
 		protected SapphireServerPolicy nextServerPolicy;
 		protected SapphireServerPolicy previousServerPolicy;
-		protected String thisDM;
-		protected List<String> nextDMs = new ArrayList<String>();
+		// TODO (8/29/2018) Remove thisPolicyContainer if it is not necessary.
+		protected SapphirePolicyContainer thisPolicyContainer;
+		protected List<SapphirePolicyContainer> nextDMs = new ArrayList<SapphirePolicyContainer>();
 		protected List<SapphirePolicyContainer> processedDMs = new ArrayList<SapphirePolicyContainer>();
 
 		private OMSServer oms() {
@@ -57,26 +59,27 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 		 * SAPPHIRE API FOR SERVER POLICIES
 		 */
 
-		public List<SapphirePolicyContainer> getProcessedDMs() {
+		public List<SapphirePolicyContainer> getProcessedPolicies() {
 			return this.processedDMs;
 		}
 
-		public void setThisDM(String thisDM) {
-			this.thisDM = thisDM;
+		public void setThisPolicyContainer(SapphirePolicyContainer policyContainer) {
+			this.thisPolicyContainer = policyContainer;
 		}
 
-		public void setNextDMs(List<String> nextDMs) {
+		public void setNextDMs(List<SapphirePolicyContainer> nextDMs) {
 			this.nextDMs = nextDMs;
 		}
 
-		public void setProcessedDMs(List<SapphirePolicyContainer> processedDMs) {
+		public void setProcessedPolicies(List<SapphirePolicyContainer> processedDMs) {
 			this.processedDMs = processedDMs;
 		}
 
 		/**
-		 * Creates a replica of this server and registers it with the group
+		 * Creates a replica of this server and registers it with the group		 *
 		 */
 		// TODO: Also replicate the policy ??
+		// TODO (8/29/2018): Remove or edit for single policy case. This is not used by multiple policy scenario.
 		public SapphireServerPolicy sapphire_replicate() {
 			KernelObjectStub serverPolicyStub = null;
 			String policyStubClassName = GlobalStubConstants.getPolicyPackageName() + "." + RMIUtil.getShortName(this.getClass()) + GlobalStubConstants.STUB_SUFFIX;
@@ -88,7 +91,7 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 				serverPolicy.onCreate(getGroup());
 				getGroup().addServer((SapphireServerPolicy)serverPolicyStub);
 				//TODO (8/21/18): set processedDMs.
-				Sapphire.getAppStub(null, this.nextDMs, null, serverPolicy, serverPolicyStub, null, null);
+				Sapphire.createPolicy(null, null, null, null, serverPolicy, serverPolicyStub, null, null);
 			} catch (ClassNotFoundException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -109,39 +112,34 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 
 		/**
 		 * Creates a replica of this server and registers it with the group.
-		 * TODO: entire server chain should be replicated and only the head server policy needs to be moved to the new server.
 		 */
 		public SapphireServerPolicy sapphire_replicate(List<SapphirePolicyContainer> processedPolicies, InetSocketAddress newHostName) {
 			KernelObjectStub serverPolicyStub = null;
-			SapphireServerPolicy serverPolicy;
+			SapphireServerPolicy serverPolicy = null;
 
-			// TODO: Copy all objects and registeres at the new kernel server
-			// TODO: Instansitate complete server policy chain. (e.g., S3->S2->S1-> appobject).
-			// TODO: Make sure copied objects are linked together.
-
-			// Remove the last DM which is the DM this method is trying to replicate.
-			if (processedPolicies.size() > 0) {
-				processedPolicies.remove(processedPolicies.size() - 1);
-			}
+			// Construct list of policies that will come after this policy on the server side.
 			try {
-				// Reprocessed already processed DMs to create the replica server policies.
-				for (SapphirePolicyContainer processedPolicy : processedPolicies) {
-					Class<?> policyClass = Sapphire.getPolicyMap(processedPolicy.GetPolicyName()).get("sapphireServerPolicyClass");
-					String policyStubClassName = GlobalStubConstants.getPolicyPackageName() + "." + RMIUtil.getShortName(policyClass) + GlobalStubConstants.STUB_SUFFIX;
-					serverPolicyStub = createServerPolicy(policyStubClassName, newHostName, serverPolicyStub, processedPolicy.GetGroupPolicy());
+				// Find the appStub which only exists in the last server policy (first in client side).
+				SapphireServerPolicy lastServerPolicy = (SapphireServerPolicy)this;
+				while (lastServerPolicy.nextServerPolicy != null) {
+					lastServerPolicy = lastServerPolicy.nextServerPolicy;
 				}
 
-				// Start creating server policies from this DM.
-				String policyStubClassName = GlobalStubConstants.getPolicyPackageName() + "." + RMIUtil.getShortName(this.getClass()) + GlobalStubConstants.STUB_SUFFIX;
-				serverPolicyStub = createServerPolicy(policyStubClassName, newHostName, serverPolicyStub, getGroup());
-				serverPolicy = (SapphireServerPolicy) kernel().getObject(serverPolicyStub.$__getKernelOID());
-				Sapphire.getAppStub(null, this.nextDMs, processedPolicies, serverPolicy, serverPolicyStub, newHostName, null);
+				AppObject actualAppObject = lastServerPolicy.sapphire_getAppObject();
+				List<SapphirePolicyContainer> dummyProcessedPolicies = new ArrayList<SapphirePolicyContainer>();
+
+				List<SapphirePolicyContainer> policyList = Sapphire.createPolicy(null, actualAppObject, processedPolicies, dummyProcessedPolicies, null, null, newHostName, null);
+
+				// Last policy is this policy.
+				serverPolicy = policyList.get(policyList.size() - 1).getServerPolicy();
+				serverPolicyStub = policyList.get(policyList.size() - 1).getServerPolicyStub();
+
+				List<SapphirePolicyContainer> nextPolicyList = Sapphire.createPolicy(null, null, this.nextDMs, processedPolicies, serverPolicy, serverPolicyStub, newHostName, null);
 
 				getGroup().addServer((SapphireServerPolicy) serverPolicyStub);
 
-				// Move to the first server policy in the chain (opposite end of app object).
-				while (serverPolicy.previousServerPolicy != null) {
-					serverPolicy = serverPolicy.previousServerPolicy;
+				if (nextPolicyList != null && nextPolicyList.size() > 0) {
+					serverPolicy = nextPolicyList.get(nextPolicyList.size() - 1).getServerPolicy();
 				}
 			} catch (RemoteException e) {
 				throw new Error("Could not contact oms.");
@@ -170,6 +168,7 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 		 * @throws Exception
 		 */
 		private KernelObjectStub createServerPolicy(
+				AppObject appObject,
 				String policyStubClassName,
 				InetSocketAddress newHostName,
 				KernelObjectStub processedServerPolicyStub,
@@ -179,6 +178,7 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 			if (newHostName != null) {
 				serverPolicyStub.$__updateHostname(newHostName);
 			}
+
 			SapphireServerPolicy serverPolicy = (SapphireServerPolicy) kernel().getObject(serverPolicyStub.$__getKernelOID());
 			serverPolicy.$__initialize(appObject);
 			serverPolicy.$__setKernelOID(serverPolicyStub.$__getKernelOID());
@@ -201,6 +201,10 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 
 		public AppObject sapphire_getAppObject() {
 			return appObject;
+		}
+
+		public AppObjectStub sapphire_getAppObjectStub() {
+			return appObjectStub;
 		}
 
 		public void sapphire_pin(String region) throws RemoteException {
@@ -299,6 +303,10 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 		}
 		public void $__initialize(AppObject appObject) {
 			this.appObject = appObject;
+		}
+
+		public void $__initialize(AppObjectStub appObjectStub) {
+			this.appObjectStub = appObjectStub;
 		}
 
 		public void $__setKernelOID(KernelOID oid) {

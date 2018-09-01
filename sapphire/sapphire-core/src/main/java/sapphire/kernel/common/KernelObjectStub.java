@@ -14,4 +14,8 @@ public interface KernelObjectStub extends Serializable {
     public InetSocketAddress $__getHostname();
 
     public void $__updateHostname(InetSocketAddress hostname);
+
+    public int $__getLastSeenTick();
+
+    public void $__setLastSeenTick(int lastSeenTick);
 }

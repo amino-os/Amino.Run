@@ -215,6 +215,10 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
             }
             return addr;
         }
+
+        public void sapphire_update_status(boolean status) throws KernelObjectNotFoundException {
+            kernel().updateObjectStatus($__getKernelOID(), status);
+        }
     }
 
     public abstract static class SapphireGroupPolicyLibrary implements SapphireGroupPolicyUpcalls {

@@ -5,10 +5,10 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 
-import sapphire.app.SapphireObject;
+import sapphire.app.AbstractSapphireObject;
 import sapphire.policy.interfaces.dht.DHTKey;
 
-public class TagManager implements SapphireObject {
+public class TagManager extends AbstractSapphireObject {
 	Map<DHTKey, Tag> tags = new Hashtable<DHTKey, Tag>();
 	
 	public TagManager() {

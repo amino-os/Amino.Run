@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import sapphire.common.NotificationObject;
 import sapphire.policy.SapphirePolicy.SapphireGroupPolicy;
 import sapphire.policy.SapphirePolicy.SapphireServerPolicy;
 
@@ -46,5 +47,7 @@ public interface SapphirePolicyUpcalls {
         void onFailure(SapphireServerPolicy server) throws RemoteException;
 
         SapphireServerPolicy onRefRequest() throws RemoteException;
+
+        void onNotification(NotificationObject notificationObject) throws RemoteException;
     }
 }

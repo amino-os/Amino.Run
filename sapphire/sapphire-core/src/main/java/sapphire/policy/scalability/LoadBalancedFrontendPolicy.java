@@ -122,7 +122,6 @@ public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
      */
     public static class GroupPolicy extends DefaultSapphirePolicy.DefaultGroupPolicy {
         private static Logger logger = Logger.getLogger(GroupPolicy.class.getName());
-        private int replicaCount = STATIC_REPLICA_COUNT; // we can read from config or annotations
 
         @Override
         public void onCreate(SapphireServerPolicy server, Annotation[] annotations) {

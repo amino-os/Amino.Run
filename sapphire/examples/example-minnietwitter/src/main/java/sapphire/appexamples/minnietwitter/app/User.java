@@ -3,10 +3,10 @@ package sapphire.appexamples.minnietwitter.app;
 import java.util.ArrayList;
 import java.util.List;
 
-import sapphire.app.SapphireObject;
+import sapphire.app.AbstractSapphireObject;
 import static sapphire.runtime.Sapphire.*;
 
-public class User implements SapphireObject {
+public class User extends AbstractSapphireObject {
 	private Timeline timeline;
 	private UserInfo ui;
 	List<User> followers;

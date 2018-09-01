@@ -86,6 +86,7 @@ public class LoadBalancedFrontendPolicyTest implements Serializable {
             implements KernelObjectStub {
         KernelOID $__oid = null;
         InetSocketAddress $__hostname = null;
+        int $__lastSeenTick = 0;
 
         public Server_Stub(KernelOID oid) {
             this.oid = oid;
@@ -102,6 +103,14 @@ public class LoadBalancedFrontendPolicyTest implements Serializable {
 
         public void $__updateHostname(InetSocketAddress hostname) {
             this.$__hostname = hostname;
+        }
+
+        public int $__getLastSeenTick() {
+            return $__lastSeenTick;
+        }
+
+        public void $__setLastSeenTick(int lastSeenTick) {
+            this.$__lastSeenTick = lastSeenTick;
         }
     }
 

@@ -52,6 +52,7 @@ public class EventHandler implements Serializable {
     public EventHandler(InetSocketAddress hostAddr, ArrayList<Object> policies) {
         host = hostAddr;
         objects = policies;
+        fillMethodTable();
     }
 
     /**

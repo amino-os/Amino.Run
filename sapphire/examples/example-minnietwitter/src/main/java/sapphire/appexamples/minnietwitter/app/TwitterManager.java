@@ -1,9 +1,9 @@
 package sapphire.appexamples.minnietwitter.app;
 
-import sapphire.app.SapphireObject;
+import sapphire.app.AbstractSapphireObject;
 import static sapphire.runtime.Sapphire.*;
 
-public class TwitterManager implements SapphireObject {
+public class TwitterManager extends AbstractSapphireObject {
 	private UserManager userManager;
 	private TagManager tagManager;
 	
@@ -23,5 +23,10 @@ public class TwitterManager implements SapphireObject {
 	public void deInitialize() {
 		delete_(tagManager);
 		delete_(userManager);
+	}
+
+	@Override
+	public boolean getStatus() {
+		return true;
 	}
 }

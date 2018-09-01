@@ -1,6 +1,8 @@
 package sapphire.kernel.server;
 
 import java.lang.reflect.Constructor;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 import sapphire.kernel.common.KernelOID;
@@ -95,5 +97,14 @@ public class KernelObjectManager {
         // create new kernelobject
         KernelObject kernelObject = new KernelObject(obj);
         addObject(oid, kernelObject);
+    }
+
+    /**
+     * Gets the set view of local kernel objects
+     *
+     * @return Returns set of local kernel objects
+     */
+    public Set<Map.Entry<KernelOID, KernelObject>> getKernelObjects() {
+        return objects.entrySet();
     }
 }

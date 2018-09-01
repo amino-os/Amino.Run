@@ -54,7 +54,7 @@ public class Sapphire {
         try {
 
             /* Get the policy used by the Sapphire Object we need to create */
-            Class<?> policy = getPolicy(appObjectClass.getGenericInterfaces());
+            Class<?> policy = getPolicy(appObjectClass);
 
             /* Extract the policy component classes (server, client and group) */
             Class<?>[] policyClasses = policy.getDeclaredClasses();
@@ -259,8 +259,20 @@ public class Sapphire {
     }
 
     /* Returns the policy used by the Sapphire Object */
-    private static Class<?> getPolicy(Type[] genericInterfaces) throws Exception {
+    private static Class<?> getPolicy(Class<?> appObjectClass) throws Exception {
+        /* If the appclass extends AbstractSapphireObject<> */
+        Class<?> superClass = appObjectClass.getSuperclass();
+        if (superClass.getName().equals("sapphire.app.AbstractSapphireObject")) {
+            Type superType = appObjectClass.getGenericSuperclass();
+            if (superType instanceof ParameterizedType) {
+                return (Class<?>) ((ParameterizedType) (superType)).getActualTypeArguments()[0];
+            } else {
+                return DefaultSapphirePolicy.class;
+            }
+        }
 
+        /* If the appclass implements SapphireObject<> */
+        Type[] genericInterfaces = appObjectClass.getGenericInterfaces();
         for (Type t : genericInterfaces) {
             if (t instanceof ParameterizedType) {
                 ParameterizedType extInterfaceType = (ParameterizedType) t;
@@ -275,7 +287,8 @@ public class Sapphire {
         }
 
         // Shouldn't get here
-        throw new Exception("The Object doesn't implement the SapphireObject interface.");
+        throw new Exception(
+                "The Object neither extends AbstractSapphireObject class nor implement the SapphireObject interface.");
     }
 
     public static KernelObjectStub getPolicyStub(Class<?> policyClass, KernelOID oid)

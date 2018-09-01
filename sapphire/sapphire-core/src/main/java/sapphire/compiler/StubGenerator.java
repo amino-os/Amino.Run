@@ -6,6 +6,7 @@ import java.io.FileWriter;
 import java.lang.reflect.Modifier;
 import java.util.logging.Logger;
 import org.apache.harmony.rmi.common.RMIUtil;
+import sapphire.app.AbstractSapphireObject;
 import sapphire.app.SapphireObject;
 import sapphire.policy.SapphirePolicy;
 import sapphire.policy.SapphirePolicy.SapphireGroupPolicy;
@@ -99,6 +100,8 @@ public class StubGenerator {
                         StubGenerator.generateStub("policy", sapphireServerPolicyClass, destFolder);
                         StubGenerator.generateStub("policy", sapphireGroupPolicyClass, destFolder);
                     } else if (SapphireObject.class.isAssignableFrom(c))
+                        StubGenerator.generateStub("app", c, destFolder);
+                    else if (AbstractSapphireObject.class.isAssignableFrom(c))
                         StubGenerator.generateStub("app", c, destFolder);
                 } catch (Exception e) {
                     e.printStackTrace();

@@ -1,7 +1,6 @@
 package sapphire.appexamples.minnietwitter.app;
 
 import java.security.MessageDigest;
-import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Map;
 

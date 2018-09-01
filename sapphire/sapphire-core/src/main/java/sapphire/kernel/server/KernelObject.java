@@ -16,11 +16,21 @@ public class KernelObject extends ObjectHandler {
     private static final int MAX_CONCURRENT_RPCS = 100;
     private Boolean coalesced;
     private Semaphore rpcCounter;
+    public boolean status;
 
     public KernelObject(Object obj) {
         super(obj);
         coalesced = false;
+        status = true;
         rpcCounter = new Semaphore(MAX_CONCURRENT_RPCS, true);
+    }
+
+    public boolean isStatus() {
+        return status;
+    }
+
+    public void setStatus(boolean status) {
+        this.status = status;
     }
 
     public Object invoke(String method, ArrayList<Object> params) throws Exception {

@@ -7,6 +7,8 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.Set;
 import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -14,6 +16,7 @@ import sapphire.common.AppObjectStub;
 import sapphire.common.SapphireObjectCreationException;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
+import sapphire.common.SapphireStatusObject;
 import sapphire.kernel.client.KernelClient;
 import sapphire.kernel.common.GlobalKernelReferences;
 import sapphire.kernel.common.KernelOID;
@@ -243,6 +246,49 @@ public class KernelServerImpl implements KernelServer {
     }
 
     /**
+     * Updates the health status of kernel object
+     *
+     * @param oid
+     * @param status
+     * @throws KernelObjectNotFoundException
+     */
+    public void updateObjectStatus(KernelOID oid, boolean status)
+            throws KernelObjectNotFoundException {
+        KernelObject object = objectManager.lookupObject(oid);
+        object.setStatus(status);
+    }
+
+    /**
+     * Forms the list of status objects from its local kernel objects
+     *
+     * @return Returns list of status objects
+     */
+    public ArrayList<SapphireStatusObject> geStatusObjects() {
+        KernelObject kernelObject;
+        boolean status;
+        Set<Map.Entry<KernelOID, KernelObject>> set = objectManager.getKernelObjects();
+        ArrayList<SapphireStatusObject> statusObjects = new ArrayList();
+        for (Map.Entry<KernelOID, KernelObject> entry : set) {
+            if (entry.getValue().getObject() instanceof SapphirePolicy.SapphireServerPolicy) {
+                kernelObject = entry.getValue();
+                SapphirePolicy.SapphireGroupPolicy group =
+                        ((SapphirePolicy.SapphireServerPolicy) kernelObject.getObject()).getGroup();
+                if (group != null) {
+                    status = kernelObject.isStatus();
+                    statusObjects.add(
+                            new SapphireStatusObject(
+                                    group.getSapphireObjId(),
+                                    group.$__getKernelOID(),
+                                    entry.getKey(),
+                                    status));
+                }
+            }
+        }
+
+        return statusObjects;
+    }
+
+    /**
      * Get the local hostname
      *
      * @return IP address of host that this server is running on
@@ -318,10 +364,11 @@ public class KernelServerImpl implements KernelServer {
     }
 
     /** Send heartbeats to OMS. */
-    static void startheartbeat(ServerInfo srvinfo) {
+    static void startheartbeat(ServerInfo srvinfo, ArrayList<SapphireStatusObject> statusObjects) {
         logger.info("heartbeat KernelServer" + srvinfo);
         try {
-            oms.heartbeatKernelServer(srvinfo);
+            /* Update the status of policy objects too */
+            oms.heartbeatKernelServer(srvinfo, statusObjects);
         } catch (Exception e) {
             logger.severe("Cannot heartbeat KernelServer" + srvinfo);
             e.printStackTrace();
@@ -376,12 +423,11 @@ public class KernelServerImpl implements KernelServer {
                     new ResettableTimer(
                             new TimerTask() {
                                 public void run() {
-                                    startheartbeat(srvinfo);
+                                    startheartbeat(srvinfo, server.geStatusObjects());
                                 }
                             },
                             KS_HEARTBEAT_PERIOD);
 
-            oms.heartbeatKernelServer(srvinfo);
             ksHeartbeatSendTimer.start();
             /* Start a thread that print memory stats */
             server.getMemoryStatThread().start();

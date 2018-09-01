@@ -5,8 +5,12 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.UUID;
 import sapphire.common.AppObject;
+import sapphire.common.NotificationObject;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
+import sapphire.kernel.common.KernelOID;
+import sapphire.kernel.common.KernelObjectNotFoundException;
+import sapphire.kernel.common.KernelObjectStub;
 import sapphire.policy.SapphirePolicy.SapphireServerPolicy;
 import sapphire.policy.transaction.IllegalComponentException;
 import sapphire.policy.transaction.TransactionContext;
@@ -91,6 +95,46 @@ public abstract class DefaultSapphirePolicyUpcallImpl extends SapphirePolicyLibr
             return servers.get(0);
         }
 
-        public void onDestroy() {}
+        public void onDestroy() throws RemoteException {}
+
+        public void onNotification(NotificationObject notificationObject) throws RemoteException {}
+
+        protected SapphireServerPolicy addReplica(
+                SapphireServerPolicy replicaSource, InetSocketAddress dest)
+                throws RemoteException, SapphireObjectNotFoundException,
+                        SapphireObjectReplicaNotFoundException {
+            SapphireServerPolicy replica = replicaSource.sapphire_replicate();
+            try {
+                replica.sapphire_pin_to_server(dest);
+                ((KernelObjectStub) replica).$__updateHostname(dest);
+            } catch (Exception e) {
+                try {
+                    removeReplica(replica);
+                } catch (Exception innerException) {
+                }
+                throw e;
+            }
+            return replica;
+        }
+
+        protected void removeReplica(SapphireServerPolicy server)
+                throws RemoteException, SapphireObjectReplicaNotFoundException,
+                        SapphireObjectNotFoundException {
+            sapphire_deleteReplica(server);
+            removeServer(server);
+        }
+
+        protected SapphireServerPolicy getServer(KernelOID serverId)
+                throws RemoteException, KernelObjectNotFoundException {
+            ArrayList<SapphireServerPolicy> servers = getServers();
+            for (SapphireServerPolicy serverPolicyStub : servers) {
+                if (serverPolicyStub.$__getKernelOID().equals(serverId)) {
+                    return serverPolicyStub;
+                }
+            }
+
+            throw new KernelObjectNotFoundException(
+                    String.format("Kernel object %s not found", serverId));
+        }
     }
 }

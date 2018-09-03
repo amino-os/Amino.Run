@@ -80,7 +80,7 @@ public class Sapphire {
 			SapphireServerPolicy previousServerPolicy = null;
 			KernelObjectStub previousServerPolicyStub = null;
 
-			List<SapphirePolicyContainer> policyList = createPolicy(appObjectClass, null, DMchain, processedDMs, previousServerPolicy, previousServerPolicyStub, null, args);
+			List<SapphirePolicyContainer> policyList = createPolicy(appObjectClass, null, DMchain, processedDMs, previousServerPolicy, previousServerPolicyStub, args);
 
 			AppObjectStub appStub = policyList.get(0).getServerPolicy().sapphire_getAppObjectStub();
 			logger.info("Sapphire Object created: " + appObjectClass.getName());
@@ -110,7 +110,6 @@ public class Sapphire {
 			List<SapphirePolicyContainer> processedPolicies,
 			SapphireServerPolicy previousServerPolicy,
 			KernelObjectStub previousServerPolicyStub,
-			InetSocketAddress hostname,
 			Object[] args) throws Exception {
 		if (policyChain == null || policyChain.size() == 0) return null;
 		String policyName = policyChain.get(0).getPolicyName();
@@ -129,13 +128,13 @@ public class Sapphire {
 			individual server in multi-policy scenario */
 		SapphireGroupPolicy groupPolicyStub;
 		if (existingGroupPolicy == null) {
-			groupPolicyStub = (SapphireGroupPolicy) getPolicyStub(sapphireGroupPolicyClass, hostname);
+			groupPolicyStub = (SapphireGroupPolicy) getPolicyStub(sapphireGroupPolicyClass);
 		} else {
 			groupPolicyStub = existingGroupPolicy;
 		}
 
 			/* Create the Kernel Object for the Server Policy, and get the Server Policy Stub */
-		SapphireServerPolicy serverPolicyStub = (SapphireServerPolicy) getPolicyStub(sapphireServerPolicyClass, hostname);
+		SapphireServerPolicy serverPolicyStub = (SapphireServerPolicy) getPolicyStub(sapphireServerPolicyClass);
 
 			/* Create the Client Policy Object */
 		SapphireClientPolicy client = (SapphireClientPolicy) sapphireClientPolicyClass.newInstance();
@@ -152,7 +151,10 @@ public class Sapphire {
 
 		if (previousServerPolicy != null) {
 			// non-first DMs references already created object.
-			serverPolicyStub.$__initialize(previousServerPolicyStub.$__getAppObject());
+			//serverPolicyStub.$__initialize(previousServerPolicyStub.$__getAppObject());
+			serverPolicyStub.$__initialize(previousServerPolicy.sapphire_getAppObject());
+			serverPolicy.$__initialize(previousServerPolicy.sapphire_getAppObject());
+
 			KernelObject previousServerPolicyKernelObject = (KernelObject)GlobalKernelReferences.nodeServer.getKernelObject(previousServerPolicyStub.$__getKernelOID());
 			serverPolicy.setNextServerKernelObject(previousServerPolicyKernelObject);
 			serverPolicy.setNextServerPolicy(previousServerPolicy);
@@ -208,7 +210,7 @@ public class Sapphire {
 		policyContainer.setServerPolicyStub(previousServerPolicyStub);
 
 		if (nextPolicies.size() != 0) {
-			createPolicy(appObjectClass, appObject, nextPolicies, processedPolicies, previousServerPolicy, previousServerPolicyStub, hostname, args);
+			createPolicy(appObjectClass, appObject, nextPolicies, processedPolicies, previousServerPolicy, previousServerPolicyStub, args);
 		}
 
 		return processedPolicies;
@@ -251,14 +253,10 @@ public class Sapphire {
 		return Class.forName(policyClassName);
 	}
 
-	private static KernelObjectStub getPolicyStub(Class<?> policyClass, InetSocketAddress hostname)
+	private static KernelObjectStub getPolicyStub(Class<?> policyClass)
 			throws ClassNotFoundException, KernelObjectNotCreatedException {
 		String policyStubClassName = GlobalStubConstants.getPolicyPackageName() + "." + RMIUtil.getShortName(policyClass) + GlobalStubConstants.STUB_SUFFIX;
 		KernelObjectStub policyStub =  KernelObjectFactory.create(policyStubClassName);
-		if (hostname != null) {
-			// Hostname update only happens in multi-policy scenario.
-			policyStub.$__updateHostname(hostname);
-		}
 		return policyStub;
 	}
 

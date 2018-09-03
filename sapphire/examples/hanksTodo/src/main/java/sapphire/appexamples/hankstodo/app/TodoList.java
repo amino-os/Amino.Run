@@ -2,9 +2,13 @@ package sapphire.appexamples.hankstodo.app;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Hashtable;
+import java.util.Map;
 
 import sapphire.app.*;
 import sapphire.policy.cache.CacheLeasePolicy;
+import sapphire.policy.interfaces.dht.DHTInterface;
+import sapphire.policy.interfaces.dht.DHTKey;
 import sapphire.runtime.SapphireConfiguration;
 
 //@SapphireConfiguration(DMs = "sapphire.policy.DefaultSapphirePolicy,sapphire.policy.dht.DHTPolicy2")
@@ -12,7 +16,7 @@ import sapphire.runtime.SapphireConfiguration;
 @SapphireConfiguration(DMs = "sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy,sapphire.policy.dht.DHTPolicy2")
 //@SapphireConfiguration(DMs = "sapphire.policy.dht.DHTPolicy2,sapphire.policy.dht.DHTPolicy2")
 //@SapphireConfiguration(DMs = "sapphire.policy.DefaultSapphirePolicy,sapphire.policy.DefaultSapphirePolicy")
-public class TodoList implements SapphireObject {
+public class TodoList implements SapphireObject, DHTInterface {
 	ArrayList<String> toDos = new ArrayList<String>();
 	String id = "0";
 
@@ -48,4 +52,26 @@ public class TodoList implements SapphireObject {
 		sb.append("\n");
 		return sb.toString();
 	}
+
+	// Added for testing DHTPolicy. -->
+	Map<DHTKey, String> toDoItems = new Hashtable<DHTKey, String>();
+
+	public void addToDoItem (String id, String toDo) {
+		DHTKey newKey = new DHTKey(id);
+		String toDoItem = toDoItems.get(newKey);
+
+		if (toDoItem == null) {
+			toDoItems.put(newKey, toDo);
+		}
+		System.out.println("Adding new toDo item: " + toDo);
+	}
+	public String getToDoItem(String id) {
+		String toDo = toDoItems.get(new DHTKey(id));
+		return toDo;
+	}
+	@Override
+	public Map<DHTKey, ?> dhtGetData() {
+		return toDoItems;
+	}
+	//<-- End of changes for testing DHTPolicy.
 }

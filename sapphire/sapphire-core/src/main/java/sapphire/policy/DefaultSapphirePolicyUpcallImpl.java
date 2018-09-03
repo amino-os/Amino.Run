@@ -75,7 +75,7 @@ public abstract class DefaultSapphirePolicyUpcallImpl extends SapphirePolicyLibr
 		public SapphireServerPolicy sapphire_replicate() {
 			return super.sapphire_replicate();
 		}
-		public SapphireServerPolicy sapphire_replicate(List<SapphirePolicyContainer> processedDMs, InetSocketAddress newHostName) {
+		public SapphireServerPolicy sapphire_replicate(List<SapphirePolicyContainer> processedDMs) {
 			return super.sapphire_replicate(processedDMs);
 		}
 

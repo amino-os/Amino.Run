@@ -13,10 +13,9 @@ spec:
       labels:
         app: oms-minnietwitter
     spec:
-      serviceAccountName: oms-minnietwitter-sa
       containers:
       - name: oms-minnietwitter
-        image: preethi95/minnietwitter:new1
+        image: dcap/minnietwitter:latest
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 22346
@@ -27,12 +26,6 @@ spec:
           allowPrivilegeEscalation: true
           capabilities:
             add: ["NET_ADMIN", "SYS_TIME"]
----
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: oms-minnietwitter-sa
-  namespace: default
 ---
 apiVersion: v1
 kind: Service

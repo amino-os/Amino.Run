@@ -13,19 +13,12 @@ spec:
       labels:
         app: minnietwitter-app
     spec:
-      serviceAccountName: minnietwitter-app-sa
       containers:
       - name: minnietwitter-app
-        image: preethi95/minnietwitter:new1
+        image: dcap/minnietwitter:latest
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 22345
         command: ["/root/dcap/start-app.sh"]
         args: ["sapphire.appexamples.minnietwitter.device.generator.TwitterWorldGenerator", "oms-minnietwitter-svc", "22346"]
----
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: minnietwitter-app-sa
-  namespace: default
 

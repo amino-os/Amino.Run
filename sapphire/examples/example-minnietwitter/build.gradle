@@ -9,6 +9,9 @@ buildscript {
 }
 
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
+import com.bmuschko.gradle.docker.tasks.image.DockerTagImage
+import com.bmuschko.gradle.docker.tasks.image.DockerPushImage
+import com.bmuschko.gradle.docker.tasks.image.Dockerfile
 
 plugins {
     id "de.qaware.cloud.deployer" version "0.9.2"
@@ -69,48 +72,113 @@ task copyScripts(type: Copy){
     into "$projectDir/scripts/"
 }
 
-task copyJar(type: Copy) {
+task dockerfile(type: Dockerfile) {
     dependsOn copyScripts
-    mkdir "$projectDir/jars/"
-    from "${projectDir}/../../sapphire-core/build/libs/sapphire-core-1.0.0.jar"
-    from "${projectDir}/../../dependencies/apache.harmony/build/libs/apache.harmony-1.0.0.jar"
-    from "${projectDir}/../../dependencies/java.rmi/build/libs/java.rmi-1.0.0.jar"
-    from "${projectDir}/build/intermediates/bundles/debug/classes.jar"
-    into "$projectDir/jars/"
+    destFile = project.file('./Dockerfile')
+    from 'alpine:3.7'
+    label(['maintainer': 'vinay.kulkarni@huawei.com'])
+    runCommand  'apk --update add openjdk8-jre bind-tools'
+    copyFile './subprojects/build/libs/example-minnietwitter.jar', '/root/dcap/jars/'
+    copyFile './scripts/client.policy', '/root/dcap/'
+    copyFile './scripts/common.inc', '/root/dcap/'
+    copyFile './scripts/start-oms.sh', '/root/dcap/'
+    copyFile './scripts/start-kernelserver.sh', '/root/dcap/'
+    copyFile './scripts/start-app.sh', '/root/dcap/'
+    entryPoint 'tail', '-f', '/dev/null'
 }
 
 task buildMinnieDockerImage(type: DockerBuildImage) {
-    dependsOn copyJar
+    dependsOn dockerfile
     url = 'unix:///var/run/docker.sock'
     inputDir = file('.')
-    tag = 'minnietwitter'
+    tag = 'dcap/minnietwitter:latest'
+}
+
+task tagImage (type: DockerTagImage){
+    dependsOn buildMinnieDockerImage
+        repository = "dcap/minnietwitter"
+        tag = "latest"
+        targetImageId { buildMinnieDockerImage.getImageId() }
+}
+
+docker {
+    registryCredentials {
+        url = project.property('url')
+        username = project.property('repo.username')
+        password = project.property('repo.password')
+    }
+}
+
+task pushImage(type: DockerPushImage) {
+    dependsOn tagImage
+    imageName = "$docker.registryCredentials.username/minnietwitter"
+    tag = 'latest'
 }
 
 deployer {
     kubernetes {
-        id = "kubernetes"
-        baseUrl = "http://127.0.0.1:32786/"
-        namespace = "default"
-        strategy = "UPDATE"
+        id = project.property('omsId')
+        baseUrl = project.property('baseUrl')
+        namespace = project.property('namespace')
+        strategy = project.property('strategy')
         auth {
-            username = "admin"
-            password = "s3cr3t"
+            username = project.property('username')
+            password = project.property('password')
         }
         ssl {
             trustAll = true
         }
-        files = [file("oms-minnietwitter.yml"), file("kernelserver-minnietwitter.yml"), file("minnietwitter-app.yml")]
+        files = [file("oms-minnietwitter.yml")]
     }
 }
 
-task tagImage (type: Exec){
-    dependsOn buildMinnieDockerImage
-    commandLine 'docker', 'tag',  "minnietwitter:latest", "preethi95/minnietwitter:new1"
+deployer {
+    kubernetes {
+        id = project.property('kernelServerId')
+        baseUrl = project.property('baseUrl')
+        namespace = project.property('namespace')
+        strategy = project.property('strategy')
+        auth {
+            username = project.property('username')
+            password = project.property('password')
+        }
+        ssl {
+            trustAll = true
+        }
+        files = [file("kernelserver-minnietwitter.yml")]
+    }
 }
 
-task pushImage(type: Exec) {
-    dependsOn tagImage
-    commandLine 'docker', 'push', "preethi95/minnietwitter:new1"
+deployer {
+    kubernetes {
+        id = project.property('appId')
+        baseUrl = project.property('baseUrl')
+        namespace = project.property('namespace')
+        strategy = project.property('strategy')
+        auth {
+            username = project.property('username')
+            password = project.property('password')
+        }
+        ssl {
+            trustAll = true
+        }
+        files = [file("minnietwitter-app.yml")]
+    }
+}
+
+task deployOms(type: Exec){
+    dependsOn pushImage
+    commandLine '../../gradlew', 'deploy',"--environmentId=oms"
+}
+
+task deployKernelServer(type: Exec){
+    dependsOn deployOms
+    commandLine '../../gradlew', 'deploy',"--environmentId=kernelserver"
+}
+
+task deployApp(type: Exec){
+    dependsOn deployKernelServer
+    commandLine '../../gradlew', 'deploy',"--environmentId=app"
 }
 
 subprojects {
@@ -119,6 +187,18 @@ subprojects {
     dependencies {
         compile project(':sapphire-core')
     }
+
+    task fatJar(type: Jar) {
+        manifest {
+            attributes 'Implementation-Title': 'Gradle Uberjar',
+                    'Implementation-Version': '1.0',
+                    'Main-Class': 'sapphire.appexamples.minnietwitter.cloud.MinnieTwitterStart'
+        }
+        baseName = project.parent.name
+        from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+        with jar
+    }
+    build.finalizedBy(fatJar)
 
     task copyClasses(type: Copy) {
         from "$projectDir.parent/build/intermediates/classes/debug/"
@@ -145,5 +225,5 @@ subprojects {
     genMinnieTwitterStubs.mustRunAfter compileJava
     genMinnieTwitterStubs.dependsOn copyClasses
     compileMinnieTwitterStubs.dependsOn genMinnieTwitterStubs
-    jar.dependsOn compileMinnieTwitterStubs
+    fatJar.dependsOn compileMinnieTwitterStubs
 }

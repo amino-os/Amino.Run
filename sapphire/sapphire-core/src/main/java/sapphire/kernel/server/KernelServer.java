@@ -12,7 +12,6 @@ import sapphire.kernel.common.KernelObjectNotFoundException;
 import sapphire.kernel.common.KernelObjectStubNotCreatedException;
 import sapphire.kernel.common.KernelRPC;
 import sapphire.kernel.common.KernelRPCException;
-import sapphire.runtime.EventHandler;
 
 /**
  * Interface for the Sapphire Kernel Server
@@ -31,8 +30,4 @@ public interface KernelServer extends Remote {
 
     AppObjectStub createSapphireObject(String className, Object... args)
             throws RemoteException, SapphireObjectCreationException, ClassNotFoundException;
-
-    void deleteSapphireObjectHandler(EventHandler handler) throws RemoteException;
-
-    void deleteSapphireReplicaHandler(EventHandler handler) throws RemoteException;
 }

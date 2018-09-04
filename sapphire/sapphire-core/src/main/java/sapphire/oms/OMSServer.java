@@ -43,10 +43,6 @@ public interface OMSServer extends Remote {
 
     ArrayList<InetSocketAddress> getServersInRegion(String region) throws RemoteException;
 
-    boolean deleteSapphireObjectReplica(SapphireReplicaID replicaId)
-            throws RemoteException, SapphireObjectNotFoundException,
-                    SapphireObjectReplicaNotFoundException;
-
     void registerKernelServer(ServerInfo info) throws RemoteException, NotBoundException;
 
     void heartbeatKernelServer(ServerInfo srvinfo)
@@ -93,5 +89,11 @@ public interface OMSServer extends Remote {
                     SapphireObjectNameModificationException;
 
     boolean deleteSapphireObject(SapphireObjectID sapphireObjId)
+            throws RemoteException, SapphireObjectNotFoundException;
+
+    void unRegisterSapphireObject(SapphireObjectID sapphireObjId)
+            throws RemoteException, SapphireObjectNotFoundException;
+
+    void unRegisterSapphireReplica(SapphireReplicaID replicaId)
             throws RemoteException, SapphireObjectNotFoundException;
 }

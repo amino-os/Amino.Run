@@ -68,7 +68,11 @@ public abstract class DefaultSapphirePolicyUpcallImpl extends SapphirePolicyLibr
             super.sapphire_pin_to_server(server);
         }
 
-        public AppObject sapphire_getAppObject() {
+        public void sapphire_remove_replica() throws RemoteException {
+            super.sapphire_remove_replica();
+        }
+
+        public AppObject sapphire_getRemoteAppObject() throws RemoteException {
             return super.sapphire_getAppObject();
         }
 
@@ -91,6 +95,8 @@ public abstract class DefaultSapphirePolicyUpcallImpl extends SapphirePolicyLibr
             return servers.get(0);
         }
 
-        public void onDestroy() {}
+        public void onDestroy() throws RemoteException {
+            super.onDestroy();
+        }
     }
 }

@@ -1,6 +1,5 @@
 package sapphire.policy;
 
-import java.lang.annotation.Annotation;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.logging.Logger;
@@ -14,55 +13,15 @@ import sapphire.oms.OMSServer;
  * the Sapphire object to another Sapphire Kernel server when the number of RPC (RMI) is more than
  * 5.
  */
-public class ShiftPolicy extends SapphirePolicy {
+public class ShiftPolicy extends DefaultSapphirePolicy {
 
-    public static class ShiftClientPolicy extends DefaultSapphirePolicy.DefaultClientPolicy {
-        SapphireServerPolicy server = null;
-        SapphireGroupPolicy group = null;
-
-        @Override
-        public void onCreate(SapphireGroupPolicy group, Annotation[] annotations) {
-            this.group = group;
-        }
-
-        @Override
-        public void setServer(SapphireServerPolicy server) {
-            this.server = server;
-        }
-
-        @Override
-        public SapphireServerPolicy getServer() {
-            return server;
-        }
-
-        @Override
-        public SapphireGroupPolicy getGroup() {
-            return group;
-        }
-    }
+    public static class ShiftClientPolicy extends DefaultSapphirePolicy.DefaultClientPolicy {}
 
     public static class ShiftServerPolicy extends DefaultSapphirePolicy.DefaultServerPolicy {
         private static Logger logger = Logger.getLogger(SapphireServerPolicy.class.getName());
 
         private static int LOAD = 5;
         private static int shiftRPCLoad = 0;
-
-        private SapphireGroupPolicy group = null;
-
-        @Override
-        public void onCreate(SapphireGroupPolicy group, Annotation[] annotations) {
-            this.group = group;
-        }
-
-        @Override
-        public SapphireGroupPolicy getGroup() {
-            return group;
-        }
-
-        @Override
-        public void onMembershipChange() {
-            super.onMembershipChange();
-        }
 
         @Override
         public Object onRPC(String method, ArrayList<Object> params) throws Exception {

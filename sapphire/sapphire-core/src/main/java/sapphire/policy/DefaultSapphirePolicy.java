@@ -22,8 +22,11 @@ public class DefaultSapphirePolicy extends SapphirePolicy {
 
         @Override
         public void onCreate(SapphireGroupPolicy group, Annotation[] annotations) {
-            // TODO Auto-generated method stub
             this.group = (DefaultGroupPolicy) group;
+        }
+
+        public void onDestroy() {
+            super.onDestroy();
         }
     }
 
@@ -57,13 +60,19 @@ public class DefaultSapphirePolicy extends SapphirePolicy {
                 Collections.newSetFromMap(new ConcurrentHashMap<SapphireServerPolicy, Boolean>());
 
         @Override
-        public void addServer(SapphireServerPolicy server) throws RemoteException {
+        public synchronized void addServer(SapphireServerPolicy server) throws RemoteException {
+            if (servers == null) {
+                // TODO: Need to change it to proper exception
+                throw new RemoteException("Group object deleted");
+            }
             servers.add(server);
         }
 
         @Override
         public void removeServer(SapphireServerPolicy server) throws RemoteException {
-            servers.remove(server);
+            if (servers != null) {
+                servers.remove(server);
+            }
         }
 
         @Override
@@ -76,13 +85,22 @@ public class DefaultSapphirePolicy extends SapphirePolicy {
 
         @Override
         public ArrayList<SapphireServerPolicy> getServers() throws RemoteException {
+            if (servers == null) {
+                return new ArrayList<SapphireServerPolicy>();
+            }
             return new ArrayList<SapphireServerPolicy>(servers);
         }
 
         @Override
         public void onCreate(SapphireServerPolicy server, Annotation[] annotations)
                 throws RemoteException {
-            // TODO Auto-generated method stub
+            addServer(server);
+        }
+
+        @Override
+        public synchronized void onDestroy() throws RemoteException {
+            super.onDestroy();
+            servers = null;
         }
     }
 }

@@ -1,5 +1,7 @@
 package sapphire.oms;
 
+import static sapphire.compiler.GlobalStubConstants.POLICY_ONDESTROY_MTD_NAME_FORMAT;
+
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.InetSocketAddress;
@@ -10,7 +12,6 @@ import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Random;
 import java.util.logging.Logger;
 import org.json.JSONException;
@@ -61,6 +62,7 @@ public class OMSServerImpl implements OMSServer {
      */
     public KernelOID registerKernelObject(InetSocketAddress host) throws RemoteException {
         KernelOID oid = kernelObjectManager.register(host);
+        logger.info("Registering " + oid.toString() + " on host " + host.toString());
         return oid;
     }
 
@@ -157,46 +159,6 @@ public class OMSServerImpl implements OMSServer {
     }
 
     /**
-     * Deletes sapphire object replica of given replica id
-     *
-     * @param replicaId
-     * @return Returns true on success and false on failure
-     * @throws RemoteException
-     * @throws SapphireObjectNotFoundException
-     * @throws SapphireObjectReplicaNotFoundException
-     */
-    @Override
-    public boolean deleteSapphireObjectReplica(SapphireReplicaID replicaId)
-            throws RemoteException, SapphireObjectNotFoundException,
-                    SapphireObjectReplicaNotFoundException {
-        KernelServer server;
-        EventHandler handler;
-        SapphireInstanceManager instance =
-                objectManager.getSapphireInstanceById(replicaId.getOID());
-        synchronized (instance) {
-            handler = getSapphireReplicaDispatcher(replicaId);
-            unRegisterSapphireReplica(replicaId);
-        }
-
-        /* Get the kernel server stub */
-        server = serverManager.getServer(handler.getHost());
-        if (server == null) {
-            // Logged inside getServer call
-            return true;
-        }
-
-        /* Delete the server policy object on the kernel server */
-        try {
-            server.deleteSapphireReplicaHandler(handler);
-        } catch (RemoteException e) {
-            logger.warning(
-                    "Kernel server " + handler.getHost() + " is not reachable. Exception: " + e);
-        }
-
-        return true;
-    }
-
-    /**
      * Create the sapphire object of given class on one of the servers
      *
      * @param absoluteSapphireClassName
@@ -251,26 +213,22 @@ public class OMSServerImpl implements OMSServer {
     public AppObjectStub acquireSapphireObjectStub(SapphireObjectID sapphireObjId)
             throws RemoteException, SapphireObjectNotFoundException {
         EventHandler policyHandler = null;
-        SapphireInstanceManager instance = objectManager.getSapphireInstanceById(sapphireObjId);
+        EventHandler[] handlers = objectManager.getSapphireReplicasById(sapphireObjId);
 
         /* Instead of getting appobject always from the first replica handler, get it from a
         random replica and return it. It ensure that even if first replica handler is not reachable,
          acquire appobject will eventually succeed later if not in this call */
-        synchronized (instance) {
-            if (!instance.getReplicaMap().isEmpty()) {
-                Object[] handlers = instance.getReplicaMap().values().toArray();
-                Object randomHandler = handlers[new Random().nextInt(handlers.length)];
-                policyHandler = (EventHandler) randomHandler;
-            }
+        if (handlers.length != 0) {
+            policyHandler = handlers[new Random().nextInt(handlers.length)];
+        }
 
-            if (policyHandler == null) {
-                throw new SapphireObjectNotFoundException();
-            }
+        if (policyHandler == null) {
+            throw new SapphireObjectNotFoundException();
         }
 
         SapphirePolicy.SapphireServerPolicy serverPolicy =
                 (SapphirePolicy.SapphireServerPolicy) policyHandler.getObjects().get(0);
-        return (AppObjectStub) serverPolicy.sapphire_getAppObject().getObject();
+        return (AppObjectStub) serverPolicy.sapphire_getRemoteAppObject().getObject();
     }
 
     /**
@@ -300,12 +258,9 @@ public class OMSServerImpl implements OMSServer {
     @Override
     public AppObjectStub attachToSapphireObject(String sapphireObjName)
             throws RemoteException, SapphireObjectNotFoundException {
-        AppObjectStub appObjStub;
-        SapphireInstanceManager instance = objectManager.getSapphireInstanceByName(sapphireObjName);
-        synchronized (instance) {
-            appObjStub = acquireSapphireObjectStub(instance.getOid());
-            instance.incrRefCountAndGet();
-        }
+        SapphireObjectID sapphireObjId = objectManager.getSapphireInstanceIdByName(sapphireObjName);
+        AppObjectStub appObjStub = acquireSapphireObjectStub(sapphireObjId);
+        objectManager.incrRefCountAndGet(sapphireObjId);
         return appObjStub;
     }
 
@@ -320,8 +275,7 @@ public class OMSServerImpl implements OMSServer {
     @Override
     public boolean detachFromSapphireObject(String sapphireObjName)
             throws RemoteException, SapphireObjectNotFoundException {
-        SapphireInstanceManager instance = objectManager.getSapphireInstanceByName(sapphireObjName);
-        return deleteSapphireObject(instance.getOid());
+        return deleteSapphireObject(objectManager.getSapphireInstanceIdByName(sapphireObjName));
     }
 
     /**
@@ -335,62 +289,25 @@ public class OMSServerImpl implements OMSServer {
     @Override
     public boolean deleteSapphireObject(SapphireObjectID sapphireObjId)
             throws RemoteException, SapphireObjectNotFoundException {
-        KernelServer server;
-        Map<SapphireReplicaID, EventHandler> replicaMap;
-        EventHandler handler;
-        SapphireInstanceManager instance = objectManager.getSapphireInstanceById(sapphireObjId);
-        synchronized (instance) {
-            if (0 != instance.decrRefCountAndGet()) {
-                return true;
-            }
 
-            replicaMap = instance.getReplicaMap();
-
-            /* Get all the server policy handler and delete sapphire object replicas from respective
-            kernel servers */
-            for (Iterator<Map.Entry<SapphireReplicaID, EventHandler>> itr =
-                            replicaMap.entrySet().iterator();
-                    itr.hasNext(); ) {
-                Map.Entry<SapphireReplicaID, EventHandler> entry = itr.next();
-                SapphireReplicaID replicaId = entry.getKey();
-                handler = entry.getValue();
-
-                /* Get the kernel server stub */
-                server = serverManager.getServer(handler.getHost());
-                if (server == null) {
-                    // Logged inside getServer call
-                    continue;
-                }
-
-                /* Delete the server policy object on the kernel server */
-                try {
-                    server.deleteSapphireReplicaHandler(handler);
-                } catch (RemoteException e) {
-                    logger.warning(
-                            "Kernel server "
-                                    + handler.getHost()
-                                    + " is not reachable. Exception: "
-                                    + e);
-                }
-            }
-
-            handler = instance.getInstanceDispatcher();
-            unRegisterSapphireObject(sapphireObjId);
-        }
-
-        /* Get the kernel server stub for the deleting group policy object */
-        server = serverManager.getServer(handler.getHost());
-        if (server == null) {
-            // Logged inside getServer call
+        if (objectManager.decrRefCountAndGet(sapphireObjId) != 0) {
             return true;
         }
 
-        /* Delete the group policy object on the kernel server */
+        EventHandler handler = getSapphireObjectDispatcher(sapphireObjId);
+        if (handler == null) {
+            return false;
+        }
+
+        /* Invoke onDestroy method on group policy object */
         try {
-            server.deleteSapphireObjectHandler(handler);
-        } catch (RemoteException e) {
-            logger.warning(
-                    "Kernel server " + handler.getHost() + " is not reachable. Exception: " + e);
+            handler.invoke(
+                    String.format(
+                            POLICY_ONDESTROY_MTD_NAME_FORMAT,
+                            handler.getObjects().get(0).getClass().getName()),
+                    new ArrayList());
+        } catch (Exception e) {
+            logger.warning("Exception occurred : " + e);
         }
 
         return true;
@@ -503,6 +420,7 @@ public class OMSServerImpl implements OMSServer {
      * @param dispatcher
      * @throws RemoteException
      * @throws SapphireObjectNotFoundException
+     * @throws SapphireObjectReplicaNotFoundException
      */
     @Override
     public void setSapphireReplicaDispatcher(SapphireReplicaID replicaId, EventHandler dispatcher)

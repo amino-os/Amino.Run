@@ -135,9 +135,6 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
                 // delete this replica
                 try {
                     ((GroupPolicy) getGroup()).scaleDownReplica(this);
-                    synchronized (this) {
-                        timer.cancel();
-                    }
                 } catch (RemoteException e) {
                     e.printStackTrace();
                 } catch (ScaleDownException e) {
@@ -185,7 +182,7 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
         }
 
         @Override
-        public void onDestroy() {
+        public void onDestroy() throws RemoteException {
             super.onDestroy();
             timer.cancel();
         }
@@ -215,11 +212,9 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
             fullKernelList.removeAll(sappObjReplicatedKernelList);
 
             if (!fullKernelList.isEmpty()) {
-                /* create a replica on the first server in the list */
-                SapphireServerPolicy server = getServers().get(0);
-                SapphireServerPolicy replica = server.sapphire_replicate();
                 try {
-                    replica.sapphire_pin_to_server(fullKernelList.get(0));
+                    /* create a replica on the first server in the list */
+                    addReplica(getServers().get(0), fullKernelList.get(0));
                 } catch (SapphireObjectNotFoundException e) {
                     throw new ScaleUpException(
                             "Failed to find sapphire object. Probably deleted.", e);
@@ -227,7 +222,6 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
                     throw new ScaleUpException(
                             "Failed to find replicate sapphire object. Probably deleted.", e);
                 }
-                ((KernelObjectStub) replica).$__updateHostname(fullKernelList.get(0));
             } else {
                 throw new ScaleUpException(
                         "Replica cannot be created for this sapphire object. All kernel servers have its replica.");
@@ -253,8 +247,7 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
 
             if (serverToRemove != null) {
                 try {
-                    sapphire_deleteReplica(serverToRemove);
-                    removeServer(serverToRemove);
+                    removeReplica(serverToRemove);
                 } catch (SapphireObjectNotFoundException e) {
                     throw new ScaleDownException(
                             "Scale down failed. Sapphire object not found.", e);

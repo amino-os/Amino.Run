@@ -86,7 +86,7 @@ public class Sapphire {
             if (sapphireGroupPolicyClass == null)
                 sapphireGroupPolicyClass = DefaultGroupPolicy.class;
 
-            /* Register for a sapphire object Id */
+            /* Register for a sapphire object Id from OMS */
             SapphireObjectID sapphireObjId =
                     GlobalKernelReferences.nodeServer.oms.registerSapphireObject();
 
@@ -95,7 +95,7 @@ public class Sapphire {
                     GlobalKernelReferences.nodeServer.oms.createGroupPolicy(
                             sapphireGroupPolicyClass, sapphireObjId);
 
-            /* Register for a replica Id */
+            /* Register for a replica Id from OMS */
             SapphireReplicaID sapphireReplicaId =
                     GlobalKernelReferences.nodeServer.oms.registerSapphireReplica(sapphireObjId);
 
@@ -121,7 +121,7 @@ public class Sapphire {
                                 }
                             });
 
-            /* Register the handler for this replica */
+            /* Register the handler for this replica to OMS */
             GlobalKernelReferences.nodeServer.oms.setSapphireReplicaDispatcher(
                     sapphireReplicaId, replicaHandler);
 
@@ -156,6 +156,7 @@ public class Sapphire {
             throw new RuntimeException("Tried to delete invalid sapphire object");
         }
 
+        SapphireObjectID sapphireObjId = null;
         try {
             AppObjectStub appObjectStub = (AppObjectStub) stub;
             Field field =
@@ -164,42 +165,15 @@ public class Sapphire {
                             .getDeclaredField(GlobalStubConstants.APPSTUB_POLICY_CLIENT_FIELD_NAME);
             field.setAccessible(true);
             SapphireClientPolicy clientPolicy = (SapphireClientPolicy) field.get(appObjectStub);
-            GlobalKernelReferences.nodeServer.oms.deleteSapphireObject(
-                    clientPolicy.getGroup().getSapphireObjId());
+            sapphireObjId = clientPolicy.getGroup().getSapphireObjId();
+            GlobalKernelReferences.nodeServer.oms.deleteSapphireObject(sapphireObjId);
         } catch (NoSuchFieldException e) {
             throw new RuntimeException("Tried to delete invalid sapphire object.", e);
         } catch (SapphireObjectNotFoundException e) {
             /* Ignore it. It might have happened that sapphire object is already deleted and still hold reference */
+            logger.warning(String.format("%s is not found. Probably deleted.", sapphireObjId));
         } catch (Exception e) {
             throw new RuntimeException("Failed to delete sapphire object.", e);
-        }
-    }
-
-    /**
-     * Delete the registered policy objects
-     *
-     * @param handler
-     * @throws RemoteException
-     */
-    public static void deletePolicyObjects(EventHandler handler) throws RemoteException {
-        KernelOID oid;
-
-        for (Object policy : handler.getObjects()) {
-            if (policy instanceof SapphireServerPolicy) {
-                oid = ((SapphireServerPolicy) policy).$__getKernelOID();
-            } else if (policy instanceof SapphireGroupPolicy) {
-                oid = ((SapphireGroupPolicy) policy).$__getKernelOID();
-            } else {
-                logger.severe("unknown object instance");
-                continue;
-            }
-
-            if (oid == null) {
-                logger.severe("oid is null");
-                continue;
-            }
-
-            KernelObjectFactory.delete(((KernelObjectStub) policy).$__getKernelOID());
         }
     }
 

@@ -3,6 +3,7 @@ package sapphire.policy;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.logging.Logger;
 import org.apache.harmony.rmi.common.RMIUtil;
 import sapphire.common.AppObject;
@@ -69,6 +70,8 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
                                 kernel().getObject(serverPolicyStub.$__getKernelOID());
                 serverPolicy.$__initialize(appObject);
                 serverPolicy.$__setKernelOID(serverPolicyStub.$__getKernelOID());
+
+                /* Register the handler for this replica to OMS */
                 SapphireReplicaID replicaId =
                         oms().registerSapphireReplica(getGroup().getSapphireObjId());
                 serverPolicy.setReplicaId(replicaId);
@@ -106,7 +109,7 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
                 e.printStackTrace();
                 throw new Error("Could not find sapphire object replica on OMS");
             } catch (RemoteException e) {
-                KernelObjectFactory.delete(serverPolicyStub.$__getKernelOID());
+                sapphire_remove_replica();
                 e.printStackTrace();
                 throw new Error("Could not create a replica of " + appObject.getObject(), e);
             }
@@ -142,6 +145,16 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
                 e.printStackTrace();
                 throw new Error("Could not find myself on this server!");
             }
+        }
+
+        public void sapphire_remove_replica() throws RemoteException {
+            try {
+                oms().unRegisterSapphireReplica(getReplicaId());
+            } catch (SapphireObjectNotFoundException e) {
+                /* Sapphire object not found */
+                e.printStackTrace();
+            }
+            KernelObjectFactory.delete($__getKernelOID());
         }
 
         /*
@@ -267,10 +280,71 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
             return sapphireObjId;
         }
 
-        public void sapphire_deleteReplica(SapphireServerPolicy serverPolicy)
+        public SapphireServerPolicy addReplica(
+                SapphireServerPolicy replicaSource, InetSocketAddress dest)
                 throws RemoteException, SapphireObjectNotFoundException,
                         SapphireObjectReplicaNotFoundException {
-            oms().deleteSapphireObjectReplica(serverPolicy.getReplicaId());
+            SapphireServerPolicy replica = replicaSource.sapphire_replicate();
+            try {
+                replica.sapphire_pin_to_server(dest);
+                ((KernelObjectStub) replica).$__updateHostname(dest);
+            } catch (Exception e) {
+                try {
+                    removeReplica(replica);
+                } catch (Exception innerException) {
+                }
+                throw e;
+            }
+            return replica;
+        }
+
+        public void removeReplica(SapphireServerPolicy server)
+                throws RemoteException, SapphireObjectReplicaNotFoundException,
+                        SapphireObjectNotFoundException {
+            server.sapphire_remove_replica();
+            removeServer(server);
+        }
+
+        public SapphireServerPolicy getServer(KernelOID serverId)
+                throws RemoteException, KernelObjectNotFoundException {
+            ArrayList<SapphireServerPolicy> servers = getServers();
+            for (SapphireServerPolicy serverPolicyStub : servers) {
+                if (serverPolicyStub.$__getKernelOID().equals(serverId)) {
+                    return serverPolicyStub;
+                }
+            }
+
+            throw new KernelObjectNotFoundException(
+                    String.format("Kernel object %s not found", serverId));
+        }
+
+        public void onDestroy() throws RemoteException {
+            /* Delete all the servers */
+            ArrayList<SapphireServerPolicy> servers = getServers();
+            if (servers == null) {
+                return;
+            }
+
+            for (Iterator<SapphireServerPolicy> itr = servers.iterator(); itr.hasNext(); ) {
+                SapphireServerPolicy server = itr.next();
+                try {
+                    server.sapphire_remove_replica();
+                    itr.remove();
+                } catch (Exception e) {
+
+                }
+            }
+
+            // TODO: Need retry upon failures ??
+
+            try {
+                oms().unRegisterSapphireObject(getSapphireObjId());
+            } catch (SapphireObjectNotFoundException e) {
+                /* Sapphire object not found */
+                e.printStackTrace();
+            }
+
+            KernelObjectFactory.delete($__getKernelOID());
         }
     }
 }

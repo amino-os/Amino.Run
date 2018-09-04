@@ -41,7 +41,6 @@ public class SapphireObjectManager {
         SapphireObjectID oid = generateSapphireObjectID();
         SapphireInstanceManager instance = new SapphireInstanceManager(oid, dispatcher);
         sapphireObjects.put(oid, instance);
-        instance.incrRefCountAndGet();
         return oid;
     }
 
@@ -77,11 +76,10 @@ public class SapphireObjectManager {
         }
 
         synchronized (instance) {
-            if (0 == instance.getReferenceCount()) {
+            if (instance.getReferenceCount() == 0) {
                 /* Sapphire object could have been deleted in another thread */
                 throw new SapphireObjectNotFoundException("Sapphire object is deleted.");
             }
-
             return instance.addReplica(dispatcher);
         }
     }
@@ -133,7 +131,7 @@ public class SapphireObjectManager {
         }
 
         synchronized (instance) {
-            if (0 != instance.getReferenceCount()) {
+            if (instance.getReferenceCount() != 0) {
                 sapphireObjectsByName.put(name, instance);
                 instance.setName(name);
             }
@@ -152,7 +150,9 @@ public class SapphireObjectManager {
             throw new SapphireObjectNotFoundException("Not a valid Sapphire object id.");
         }
 
-        instance.removeReplica(replicaId);
+        synchronized (instance) {
+            instance.removeReplica(replicaId);
+        }
     }
 
     /**
@@ -170,11 +170,10 @@ public class SapphireObjectManager {
         }
 
         synchronized (instance) {
-            if (0 == instance.getReferenceCount()) {
+            if (instance.getReferenceCount() == 0) {
                 /* Sapphire object could have been deleted in another thread */
                 throw new SapphireObjectNotFoundException("Sapphire object is deleted.");
             }
-
             instance.setReplicaDispatcher(replicaId, dispatcher);
         }
     }
@@ -192,6 +191,7 @@ public class SapphireObjectManager {
         if (instance == null) {
             throw new SapphireObjectNotFoundException("Not a valid Sapphire object id.");
         }
+
         return instance.getInstanceDispatcher();
     }
 
@@ -208,40 +208,64 @@ public class SapphireObjectManager {
         if (instance == null) {
             throw new SapphireObjectNotFoundException("Not a valid Sapphire object id.");
         }
+
         return instance.getReplicaDispatcher(replicaId);
     }
 
     /**
-     * Get sapphire instance by name
+     * Get sapphire instance id by name
      *
      * @param sapphireObjName
      * @return
      * @throws SapphireObjectNotFoundException
      */
-    public SapphireInstanceManager getSapphireInstanceByName(String sapphireObjName)
+    public SapphireObjectID getSapphireInstanceIdByName(String sapphireObjName)
             throws SapphireObjectNotFoundException {
         SapphireInstanceManager instance = sapphireObjectsByName.get(sapphireObjName);
         if (instance == null) {
             throw new SapphireObjectNotFoundException("Not a valid Sapphire object id.");
         }
 
-        return instance;
+        return instance.getOid();
     }
 
     /**
-     * Get sapphire instance by id
+     * Get sapphire replicas by id
      *
      * @param oid
      * @return
      * @throws SapphireObjectNotFoundException
      */
-    public SapphireInstanceManager getSapphireInstanceById(SapphireObjectID oid)
+    public EventHandler[] getSapphireReplicasById(SapphireObjectID oid)
             throws SapphireObjectNotFoundException {
         SapphireInstanceManager instance = sapphireObjects.get(oid);
         if (instance == null) {
             throw new SapphireObjectNotFoundException("Not a valid Sapphire object id.");
         }
 
-        return instance;
+        return instance.getReplicas();
+    }
+
+    public int incrRefCountAndGet(SapphireObjectID sapphireObjId)
+            throws SapphireObjectNotFoundException {
+        SapphireInstanceManager instance = sapphireObjects.get(sapphireObjId);
+        if (instance == null) {
+            throw new SapphireObjectNotFoundException("Not a valid Sapphire object id.");
+        }
+        synchronized (instance) {
+            if (instance.getReferenceCount() == 0) {
+                throw new SapphireObjectNotFoundException("Sapphire object is deleted.");
+            }
+            return instance.incrRefCountAndGet();
+        }
+    }
+
+    public int decrRefCountAndGet(SapphireObjectID sapphireObjId)
+            throws SapphireObjectNotFoundException {
+        SapphireInstanceManager instance = sapphireObjects.get(sapphireObjId);
+        if (instance == null) {
+            throw new SapphireObjectNotFoundException("Not a valid Sapphire object id.");
+        }
+        return instance.decrRefCountAndGet();
     }
 }

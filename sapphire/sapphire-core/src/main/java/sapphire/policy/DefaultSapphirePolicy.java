@@ -116,13 +116,19 @@ public class DefaultSapphirePolicy extends SapphirePolicy {
                 Collections.newSetFromMap(new ConcurrentHashMap<SapphireServerPolicy, Boolean>());
 
         @Override
-        public void addServer(SapphireServerPolicy server) throws RemoteException {
+        public synchronized void addServer(SapphireServerPolicy server) throws RemoteException {
+            if (servers == null) {
+                // TODO: Need to change it to proper exception
+                throw new RemoteException("Group object deleted");
+            }
             servers.add(server);
         }
 
         @Override
         public void removeServer(SapphireServerPolicy server) throws RemoteException {
-            servers.remove(server);
+            if (servers != null) {
+                servers.remove(server);
+            }
         }
 
         @Override
@@ -135,6 +141,9 @@ public class DefaultSapphirePolicy extends SapphirePolicy {
 
         @Override
         public ArrayList<SapphireServerPolicy> getServers() throws RemoteException {
+            if (servers == null) {
+                return new ArrayList<SapphireServerPolicy>();
+            }
             return new ArrayList<SapphireServerPolicy>(servers);
         }
 
@@ -157,13 +166,13 @@ public class DefaultSapphirePolicy extends SapphirePolicy {
         }
 
         @Override
-        public void onDestroy() throws RemoteException {
+        public synchronized void onDestroy() throws RemoteException {
             super.onDestroy();
-            servers.clear();
             if (healthCheckTimer != null) {
                 healthCheckTimer.cancel();
                 healthCheckTimer = null;
             }
+            servers = null;
         }
 
         @Override

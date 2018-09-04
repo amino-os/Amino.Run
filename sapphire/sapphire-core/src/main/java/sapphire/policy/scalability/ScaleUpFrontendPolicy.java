@@ -135,9 +135,6 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
                 // delete this replica
                 try {
                     ((GroupPolicy) getGroup()).scaleDownReplica(this);
-                    synchronized (this) {
-                        timer.cancel();
-                    }
                 } catch (RemoteException e) {
                     e.printStackTrace();
                 } catch (ScaleDownException e) {

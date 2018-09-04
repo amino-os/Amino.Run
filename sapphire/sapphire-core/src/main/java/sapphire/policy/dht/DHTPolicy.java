@@ -13,44 +13,18 @@ import java.util.TreeSet;
 import java.util.logging.Logger;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
-import sapphire.policy.SapphirePolicy;
-import sapphire.policy.SapphirePolicy.SapphireClientPolicy;
+import sapphire.policy.DefaultSapphirePolicy;
 import sapphire.policy.SapphirePolicy.SapphireGroupPolicy;
 import sapphire.policy.SapphirePolicy.SapphireServerPolicy;
 import sapphire.policy.interfaces.dht.DHTInterface;
 import sapphire.policy.interfaces.dht.DHTKey;
 
-public class DHTPolicy extends SapphirePolicy {
-    public static class DHTClientPolicy extends SapphireClientPolicy {
+public class DHTPolicy extends DefaultSapphirePolicy {
+    public static class DHTClientPolicy extends DefaultClientPolicy {}
 
-        DHTServerPolicy server = null;
-        DHTGroupPolicy group = null;
-
-        @Override
-        public void onCreate(SapphireGroupPolicy group, Annotation[] annotations) {
-            this.group = (DHTGroupPolicy) group;
-        }
-
-        @Override
-        public void setServer(SapphireServerPolicy server) {
-            this.server = (DHTServerPolicy) server;
-        }
-
-        @Override
-        public SapphireServerPolicy getServer() {
-            return server;
-        }
-
-        @Override
-        public SapphireGroupPolicy getGroup() {
-            return group;
-        }
-    }
-
-    public static class DHTServerPolicy extends SapphireServerPolicy {
-        private static Logger logger = Logger.getLogger(SapphireServerPolicy.class.getName());
+    public static class DHTServerPolicy extends DefaultServerPolicy {
+        private static Logger logger = Logger.getLogger(DefaultServerPolicy.class.getName());
         private Map<DHTKey, Object> dhtData = null;
-        private DHTGroupPolicy group = null;
         private static Timer timer = new Timer();
         private Random delayGenerator = new Random();
         private DHTKey key;
@@ -74,7 +48,7 @@ public class DHTPolicy extends SapphirePolicy {
 
         @Override
         public void onCreate(SapphireGroupPolicy group, Annotation[] annotations) {
-            this.group = (DHTGroupPolicy) group;
+            super.onCreate(group, annotations);
             try {
                 dhtData =
                         castMap(
@@ -89,18 +63,11 @@ public class DHTPolicy extends SapphirePolicy {
         }
 
         @Override
-        public SapphireGroupPolicy getGroup() {
-            return group;
-        }
-
-        @Override
-        public void onMembershipChange() {}
-
-        @Override
         public Object onRPC(String method, ArrayList<Object> params) throws Exception {
             /* We assume that the first param is the index */
             DHTServerPolicy responsibleNode =
-                    group.dhtGetResponsibleNode(new DHTKey((String) params.get(0)));
+                    ((DHTGroupPolicy) getGroup())
+                            .dhtGetResponsibleNode(new DHTKey((String) params.get(0)));
             return responsibleNode.forwardedRPC(method, params);
         }
 
@@ -181,8 +148,8 @@ public class DHTPolicy extends SapphirePolicy {
         }
     }
 
-    public static class DHTGroupPolicy extends SapphireGroupPolicy {
-        private static Logger logger = Logger.getLogger(SapphireGroupPolicy.class.getName());
+    public static class DHTGroupPolicy extends DefaultGroupPolicy {
+        private static Logger logger = Logger.getLogger(DefaultGroupPolicy.class.getName());
         private TreeSet<DHTNode> nodes;
         private HashMap<String, DHTServerPolicy> servers;
         private Random dhtNodeIdGenerator;
@@ -217,19 +184,14 @@ public class DHTPolicy extends SapphirePolicy {
         }
 
         @Override
-        public void onCreate(SapphireServerPolicy server, Annotation[] annotations) {
+        public void onCreate(SapphireServerPolicy server, Annotation[] annotations)
+                throws RemoteException {
             nodes = new TreeSet<DHTNode>();
             dhtNodeIdGenerator = new Random();
-
+            super.onCreate(server, annotations);
             try {
                 ArrayList<String> regions = sapphire_getRegions();
-                // Add the first DHT node
-                DHTKey id =
-                        new DHTKey(Integer.toString(dhtNodeIdGenerator.nextInt(Integer.MAX_VALUE)));
                 DHTServerPolicy dhtServer = (DHTServerPolicy) server;
-                DHTNode newNode = new DHTNode(id, dhtServer);
-                nodes.add(newNode);
-                dhtServer.setKey(newNode.id);
 
                 for (int i = 1; i < regions.size(); i++) {
                     DHTServerPolicy replica = (DHTServerPolicy) dhtServer.sapphire_replicate();
@@ -262,7 +224,8 @@ public class DHTPolicy extends SapphirePolicy {
         }
 
         @Override
-        public void addServer(SapphireServerPolicy server) {
+        public void addServer(SapphireServerPolicy server) throws RemoteException {
+            super.addServer(server);
             DHTKey id = new DHTKey(Integer.toString(dhtNodeIdGenerator.nextInt(Integer.MAX_VALUE)));
             DHTServerPolicy dhtServer = (DHTServerPolicy) server;
             DHTNode newNode = new DHTNode(id, dhtServer);
@@ -271,18 +234,19 @@ public class DHTPolicy extends SapphirePolicy {
             // copy the necessary keys to this new node and remove them from the current one
             newNode.server.dhtClear();
             DHTNode predecessor = dhtGetPredecessor(newNode);
-            newNode.server.dhtGetKeys(predecessor.server, predecessor.id);
+            /* Avoiding dhtGetKeys for the first node. */
+            if ((nodes.size() != 1) && (newNode != predecessor)) {
+                newNode.server.dhtGetKeys(predecessor.server, predecessor.id);
+            }
             newNode.server.setKey(newNode.id);
             logger.info("NODES: " + nodes.toString());
         }
 
         @Override
-        public ArrayList<SapphireServerPolicy> getServers() {
-            return null;
+        public void removeServer(SapphireServerPolicy server) throws RemoteException {
+            super.removeServer(server);
+            // TODO: Need to cleanup nodes
         }
-
-        @Override
-        public void removeServer(SapphireServerPolicy server) {}
 
         @Override
         public void onFailure(SapphireServerPolicy server) {

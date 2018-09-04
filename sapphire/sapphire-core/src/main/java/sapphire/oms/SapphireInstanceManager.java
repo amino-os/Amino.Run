@@ -1,10 +1,11 @@
 package sapphire.oms;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 import sapphire.common.SapphireObjectID;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
@@ -15,7 +16,7 @@ public class SapphireInstanceManager {
 
     private SapphireObjectID oid;
     private String name;
-    private int referenceCount;
+    private AtomicInteger referenceCount;
     private EventHandler instanceDispatcher;
     private HashMap<SapphireReplicaID, EventHandler> replicaDispatchers;
     private Random oidGenerator;
@@ -34,6 +35,7 @@ public class SapphireInstanceManager {
         instanceDispatcher = dispatcher;
         replicaDispatchers = new HashMap<SapphireReplicaID, EventHandler>();
         oidGenerator = new Random(new Date().getTime());
+        referenceCount = new AtomicInteger(1);
     }
 
     /**
@@ -108,8 +110,14 @@ public class SapphireInstanceManager {
         replicaDispatchers.remove(replicaId);
     }
 
-    public Map<SapphireReplicaID, EventHandler> getReplicaMap() {
-        return replicaDispatchers;
+    /**
+     * Gets replica handlers of this sapphire instance
+     *
+     * @return Returns array of event handlers
+     */
+    public EventHandler[] getReplicas() {
+        Collection<EventHandler> values = replicaDispatchers.values();
+        return values.toArray(new EventHandler[values.size()]);
     }
 
     public void clear() {
@@ -129,14 +137,14 @@ public class SapphireInstanceManager {
     }
 
     public int incrRefCountAndGet() {
-        return ++referenceCount;
+        return referenceCount.incrementAndGet();
     }
 
     public int decrRefCountAndGet() {
-        return --referenceCount;
+        return referenceCount.decrementAndGet();
     }
 
     public int getReferenceCount() {
-        return referenceCount;
+        return referenceCount.get();
     }
 }

@@ -8,9 +8,6 @@ import sapphire.common.AppObject;
 import sapphire.common.NotificationObject;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
-import sapphire.kernel.common.KernelOID;
-import sapphire.kernel.common.KernelObjectNotFoundException;
-import sapphire.kernel.common.KernelObjectStub;
 import sapphire.policy.SapphirePolicy.SapphireServerPolicy;
 import sapphire.policy.transaction.IllegalComponentException;
 import sapphire.policy.transaction.TransactionContext;
@@ -72,7 +69,11 @@ public abstract class DefaultSapphirePolicyUpcallImpl extends SapphirePolicyLibr
             super.sapphire_pin_to_server(server);
         }
 
-        public AppObject sapphire_getAppObject() {
+        public void sapphire_remove_replica() throws RemoteException {
+            super.sapphire_remove_replica();
+        }
+
+        public AppObject sapphire_getRemoteAppObject() throws RemoteException {
             return super.sapphire_getAppObject();
         }
 
@@ -95,46 +96,10 @@ public abstract class DefaultSapphirePolicyUpcallImpl extends SapphirePolicyLibr
             return servers.get(0);
         }
 
-        public void onDestroy() throws RemoteException {}
+        public void onDestroy() throws RemoteException {
+            super.onDestroy();
+        }
 
         public void onNotification(NotificationObject notificationObject) throws RemoteException {}
-
-        protected SapphireServerPolicy addReplica(
-                SapphireServerPolicy replicaSource, InetSocketAddress dest)
-                throws RemoteException, SapphireObjectNotFoundException,
-                        SapphireObjectReplicaNotFoundException {
-            SapphireServerPolicy replica = replicaSource.sapphire_replicate();
-            try {
-                replica.sapphire_pin_to_server(dest);
-                ((KernelObjectStub) replica).$__updateHostname(dest);
-            } catch (Exception e) {
-                try {
-                    removeReplica(replica);
-                } catch (Exception innerException) {
-                }
-                throw e;
-            }
-            return replica;
-        }
-
-        protected void removeReplica(SapphireServerPolicy server)
-                throws RemoteException, SapphireObjectReplicaNotFoundException,
-                        SapphireObjectNotFoundException {
-            sapphire_deleteReplica(server);
-            removeServer(server);
-        }
-
-        protected SapphireServerPolicy getServer(KernelOID serverId)
-                throws RemoteException, KernelObjectNotFoundException {
-            ArrayList<SapphireServerPolicy> servers = getServers();
-            for (SapphireServerPolicy serverPolicyStub : servers) {
-                if (serverPolicyStub.$__getKernelOID().equals(serverId)) {
-                    return serverPolicyStub;
-                }
-            }
-
-            throw new KernelObjectNotFoundException(
-                    String.format("Kernel object %s not found", serverId));
-        }
     }
 }

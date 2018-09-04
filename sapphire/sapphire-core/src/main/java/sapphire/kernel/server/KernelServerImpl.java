@@ -231,9 +231,6 @@ public class KernelServerImpl implements KernelServer {
         if (object.getObject() instanceof SapphirePolicy.SapphireServerPolicy) {
             /* De-initialize dynamic data of server policy object(i.e., timers, executors, sockets etc) */
             ((SapphirePolicy.SapphireServerPolicy) object.getObject()).onDestroy();
-        } else if (object.getObject() instanceof SapphirePolicy.SapphireGroupPolicy) {
-            /* De-initialize dynamic data of group policy object(i.e., timers, executors, sockets etc) */
-            ((SapphirePolicy.SapphireGroupPolicy) object.getObject()).onDestroy();
         }
 
         oms.unRegisterKernelObject(oid, host);
@@ -320,28 +317,6 @@ public class KernelServerImpl implements KernelServer {
     public AppObjectStub createSapphireObject(String className, Object... args)
             throws RemoteException, SapphireObjectCreationException, ClassNotFoundException {
         return (AppObjectStub) Sapphire.new_(Class.forName(className), args);
-    }
-
-    /**
-     * Releases the registered sapphire group policy object of given sapphire object
-     *
-     * @param handler
-     * @throws RemoteException
-     */
-    @Override
-    public void deleteSapphireObjectHandler(EventHandler handler) throws RemoteException {
-        Sapphire.deletePolicyObjects(handler);
-    }
-
-    /**
-     * Releases the registered sapphire server policy object of given replica
-     *
-     * @param handler
-     * @throws RemoteException
-     */
-    @Override
-    public void deleteSapphireReplicaHandler(EventHandler handler) throws RemoteException {
-        Sapphire.deletePolicyObjects(handler);
     }
 
     public class MemoryStatThread extends Thread {

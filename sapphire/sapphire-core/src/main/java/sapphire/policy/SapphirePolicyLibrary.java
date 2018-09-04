@@ -4,6 +4,7 @@ import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -91,7 +92,7 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 				serverPolicy.onCreate(getGroup());
 				getGroup().addServer((SapphireServerPolicy)serverPolicyStub);
 				//TODO (8/21/18): set processedDMs.
-				Sapphire.createPolicy(null, null, null, null, serverPolicy, serverPolicyStub, null, null);
+				Sapphire.createPolicy(null, null, null, null, serverPolicy, serverPolicyStub,null);
 			} catch (ClassNotFoundException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -113,7 +114,7 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 		/**
 		 * Creates a replica of this server and registers it with the group.
 		 */
-		public SapphireServerPolicy sapphire_replicate(List<SapphirePolicyContainer> processedPolicies, InetSocketAddress newHostName) {
+		public SapphireServerPolicy sapphire_replicate(List<SapphirePolicyContainer> processedPolicies) {
 			KernelObjectStub serverPolicyStub = null;
 			SapphireServerPolicy serverPolicy = null;
 
@@ -128,13 +129,13 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 				AppObject actualAppObject = lastServerPolicy.sapphire_getAppObject();
 				List<SapphirePolicyContainer> dummyProcessedPolicies = new ArrayList<SapphirePolicyContainer>();
 
-				List<SapphirePolicyContainer> policyList = Sapphire.createPolicy(null, actualAppObject, processedPolicies, dummyProcessedPolicies, null, null, newHostName, null);
+				List<SapphirePolicyContainer> policyList = Sapphire.createPolicy(null, actualAppObject, processedPolicies, dummyProcessedPolicies, null, null, null);
 
 				// Last policy is this policy.
 				serverPolicy = policyList.get(policyList.size() - 1).getServerPolicy();
 				serverPolicyStub = policyList.get(policyList.size() - 1).getServerPolicyStub();
 
-				List<SapphirePolicyContainer> nextPolicyList = Sapphire.createPolicy(null, null, this.nextDMs, processedPolicies, serverPolicy, serverPolicyStub, newHostName, null);
+				List<SapphirePolicyContainer> nextPolicyList = Sapphire.createPolicy(null, null, this.nextDMs, processedPolicies, serverPolicy, serverPolicyStub,null);
 
 				getGroup().addServer((SapphireServerPolicy) serverPolicyStub);
 
@@ -167,7 +168,7 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 		 * @return
 		 * @throws Exception
 		 */
-		private KernelObjectStub createServerPolicy(
+		/*private KernelObjectStub createServerPolicy(
 				AppObject appObject,
 				String policyStubClassName,
 				InetSocketAddress newHostName,
@@ -197,7 +198,7 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 			//getGroup().addServer((SapphireServerPolicy) serverPolicyStub);
 
 			return serverPolicyStub;
-		}
+		}*/
 
 		public AppObject sapphire_getAppObject() {
 			return appObject;
@@ -246,6 +247,17 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 					serverPoliciesToRemove.add(serverPolicy);
 				}
 				serverPolicy = serverPolicy.previousServerPolicy;
+			}
+
+			// Before pinning the Sapphire Object replica, need to update the Hostname.
+			// Ignore the first Policy as it will be same as the current one for which replication is being performed.
+			List<SapphirePolicyContainer> processedDMList = serverPolicy.processedDMs.subList(1, serverPolicy.processedDMs.size());
+			Iterator<SapphirePolicyContainer> itr = processedDMList.iterator();
+			KernelObjectStub tempServerPolicyStub = null;
+			while(itr.hasNext()) {
+				tempServerPolicyStub = itr.next().getServerPolicyStub();
+				System.out.println("Updating hostname of serverPolicyStub: " + tempServerPolicyStub + " to server: " + server);
+				tempServerPolicyStub.$__updateHostname(server);
 			}
 
 			logger.info("Pinning Sapphire object " + serverPolicy.$__getKernelOID() + " to " + server);

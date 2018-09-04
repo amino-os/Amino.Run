@@ -2,6 +2,7 @@ package sapphire.policy.dht;
 
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
+import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -229,9 +230,13 @@ public class DHTPolicy extends SapphirePolicy {
 				nodes.add(newNode);
 				dhtServer.setKey(newNode.id);
 
+				InetSocketAddress newServerAddress = null;
 				for (int i = 1; i < regions.size(); i++) {
-					DHTServerPolicy replica = (DHTServerPolicy) dhtServer.sapphire_replicate();
-					replica.sapphire_pin(regions.get(i));
+					//DHTServerPolicy replica = (DHTServerPolicy) dhtServer.sapphire_replicate();
+					//replica.sapphire_pin(regions.get(i));
+					newServerAddress = oms().getServerInRegion(regions.get(i));
+					SapphireServerPolicy replica = dhtServer.sapphire_replicate(server.getProcessedPolicies());
+					dhtServer.sapphire_pin_to_server(replica, newServerAddress);
 				}
 				dhtServer.sapphire_pin(regions.get(0));
 

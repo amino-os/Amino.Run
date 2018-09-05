@@ -11,9 +11,15 @@ import sapphire.policy.interfaces.dht.DHTInterface;
 import sapphire.policy.interfaces.dht.DHTKey;
 import sapphire.runtime.SapphireConfiguration;
 
-//@SapphireConfiguration(DMs = "sapphire.policy.DefaultSapphirePolicy,sapphire.policy.dht.DHTPolicy2")
+// Verified that works:
+//@SapphireConfiguration(DMs = "sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy,sapphire.policy.dht.DHTPolicy2")
 //@SapphireConfiguration(DMs = "sapphire.policy.dht.DHTPolicy2,sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy")
-@SapphireConfiguration(DMs = "sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy,sapphire.policy.dht.DHTPolicy2")
+//@SapphireConfiguration(DMs = "sapphire.policy.dht.DHTPolicy2,sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy,sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy")
+//@SapphireConfiguration(DMs = "sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy,sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy,sapphire.policy.dht.DHTPolicy2")
+
+// To verify:
+@SapphireConfiguration(DMs = "sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy,sapphire.policy.dht.DHTPolicy2,sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy")
+//@SapphireConfiguration(DMs = "sapphire.policy.DefaultSapphirePolicy,sapphire.policy.dht.DHTPolicy2")
 //@SapphireConfiguration(DMs = "sapphire.policy.dht.DHTPolicy2,sapphire.policy.dht.DHTPolicy2")
 //@SapphireConfiguration(DMs = "sapphire.policy.DefaultSapphirePolicy,sapphire.policy.DefaultSapphirePolicy")
 public class TodoList implements SapphireObject, DHTInterface {
@@ -31,7 +37,7 @@ public class TodoList implements SapphireObject, DHTInterface {
 	 * @return
 	 */
 	public String addToDo(String id, String todo) {
-		System.out.println("id: " + id + " addToDo: " + todo);
+		System.out.println("TodoList>> id: " + id + " addToDo: " + todo);
 		toDos.add(todo);
 		return "OK!";
 	}

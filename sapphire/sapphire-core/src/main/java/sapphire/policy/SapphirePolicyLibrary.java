@@ -127,20 +127,20 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 				}
 
 				AppObject actualAppObject = lastServerPolicy.sapphire_getAppObject();
-				List<SapphirePolicyContainer> dummyProcessedPolicies = new ArrayList<SapphirePolicyContainer>();
+				List<SapphirePolicyContainer> policyList = new ArrayList<SapphirePolicyContainer>();
 
 				///////////////////////////
 				//TODO: remove after test:
 //				newHostName = this.getProcessedPolicies().get(0).getServerPolicyStub().$__getHostname();
 				///////////////////////////
 
-				List<SapphirePolicyContainer> policyList = Sapphire.createPolicy(null, actualAppObject, processedPolicies, dummyProcessedPolicies, null, null, null);
+				Sapphire.createPolicy(null, actualAppObject, processedPolicies, policyList, null, null, null);
 
 				// Last policy is this policy.
 				serverPolicy = policyList.get(policyList.size() - 1).getServerPolicy();
 				serverPolicyStub = policyList.get(policyList.size() - 1).getServerPolicyStub();
 
-				List<SapphirePolicyContainer> nextPolicyList = Sapphire.createPolicy(null, null, this.nextDMs, processedPolicies, serverPolicy, serverPolicyStub,null);
+				List<SapphirePolicyContainer> nextPolicyList = Sapphire.createPolicy(null, null, this.nextDMs, policyList, serverPolicy, serverPolicyStub,null);
 
 				getGroup().addServer((SapphireServerPolicy) serverPolicyStub);
 
@@ -221,7 +221,7 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 
 			// Before pinning the Sapphire Object replica, need to update the Hostname.
 			// Ignore the first Policy as it will be same as the current one for which replication is being performed.
-			List<SapphirePolicyContainer> processedDMList = serverPolicy.processedDMs.subList(1, serverPolicy.processedDMs.size());
+			List<SapphirePolicyContainer> processedDMList = serverPolicy.getProcessedPolicies().subList(1, serverPolicy.getProcessedPolicies().size());
 			Iterator<SapphirePolicyContainer> itr = processedDMList.iterator();
 			KernelObjectStub tempServerPolicyStub = null;
 			while(itr.hasNext()) {

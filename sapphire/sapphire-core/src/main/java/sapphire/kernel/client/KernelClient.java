@@ -106,7 +106,8 @@ public class KernelClient {
 	 */
 	public Object makeKernelRPC(KernelObjectStub stub, KernelRPC rpc) throws KernelObjectNotFoundException, Exception {
 		InetSocketAddress host = stub.$__getHostname();
-		logger.log(Level.FINE,"Making RPC to " + host.toString() + " RPC: " + rpc.toString());
+		//logger.log(Level.FINE,"Making RPC to " + host.toString() + " RPC: " + rpc.toString());
+//		System.out.println("Making RPC to " + host.toString() + " RPC: " + rpc.toString());
 
 		// Check whether this object is local.
 		KernelServer server;
@@ -120,7 +121,10 @@ public class KernelClient {
 		try {
 			return tryMakeKernelRPC(server, rpc);
 		} catch (KernelObjectNotFoundException e) {
-			return lookupAndTryMakeKernelRPC(stub, rpc);
+			String exceptionMsg = "Could not find Kernel object";
+			System.out.println(exceptionMsg);
+			throw new Exception(exceptionMsg);
+			//return lookupAndTryMakeKernelRPC(stub, rpc);
 		}
 	}
 		

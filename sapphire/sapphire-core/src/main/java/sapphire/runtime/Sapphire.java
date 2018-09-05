@@ -117,7 +117,7 @@ public class Sapphire {
 		AppObjectStub appStub = null;
 
 		/* Get the policy used by the Sapphire Object we need to create */
-		System.out.println("Processing DM chain for: " + policyName);
+//		System.out.println("Processing DM chain for: " + policyName);
 		HashMap<String, Class<?>> policyMap = getPolicyMap(policyName);
 		Class<?> sapphireServerPolicyClass = policyMap.get("sapphireServerPolicyClass");
 		Class<?> sapphireClientPolicyClass = policyMap.get("sapphireClientPolicyClass");
@@ -151,7 +151,6 @@ public class Sapphire {
 
 		if (previousServerPolicy != null) {
 			// non-first DMs references already created object.
-			//serverPolicyStub.$__initialize(previousServerPolicyStub.$__getAppObject());
 			serverPolicyStub.$__initialize(previousServerPolicy.sapphire_getAppObject());
 			serverPolicy.$__initialize(previousServerPolicy.sapphire_getAppObject());
 
@@ -205,12 +204,8 @@ public class Sapphire {
 		previousServerPolicy = serverPolicy;
 		previousServerPolicyStub = (KernelObjectStub)serverPolicyStub;
 
-		SapphirePolicyContainer policyContainer = new SapphirePolicyContainerImpl(policyName, groupPolicy);
-		policyContainer.setServerPolicy(previousServerPolicy);
-		policyContainer.setServerPolicyStub(previousServerPolicyStub);
-
 		if (nextPolicies.size() != 0) {
-			createPolicy(appObjectClass, appObject, nextPolicies, processedPolicies, previousServerPolicy, previousServerPolicyStub, args);
+			createPolicy(appObjectClass, null, nextPolicies, processedPolicies, previousServerPolicy, previousServerPolicyStub, args);
 		}
 
 		return processedPolicies;

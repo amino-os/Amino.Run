@@ -54,12 +54,12 @@ public class TodoActivity {
             TodoList getTd1 = tlm.getToDoList(ListName);
             String testTdString2 = getTd1.getToDoString("2");
             String expectedTdString2 = Do2_1 + " : " + Do2_2+ " : ";
-			System.out.println("Expected testTdString for 2: " + expectedTdString2);
+			System.out.println("Expect testTdString for 2: " + expectedTdString2);
 			System.out.println("Actual testTdString for 2: " + testTdString2);
 
             String testTdString1 = getTd1.getToDoString("1");
 			String expectedTdString1 = Do1_1 + " : " + Do1_2+ " : ";
-			System.out.println("Expected testTdString for 1: " + expectedTdString1);
+			System.out.println("Expect testTdString for 1: " + expectedTdString1);
 			System.out.println("Actual testTdString for 1: " + testTdString1);
 
             tlm.doSomething("do something");

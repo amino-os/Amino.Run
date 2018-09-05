@@ -28,7 +28,7 @@ public class TodoListManager implements SapphireObject {
 		if (t == null) {
 			t = (TodoList) new_(TodoList.class, id);
 			todoLists.put(id, t);
-			System.out.println("Created new list");
+			System.out.println("Created new Todo list");
 		} else {
 			System.out.println("ToDoList for ID: "+ id + " already exists.");
 		}

@@ -17,10 +17,12 @@ import sapphire.kernel.common.KernelOID;
 import sapphire.kernel.common.KernelObjectMigratingException;
 import sapphire.kernel.common.KernelObjectNotCreatedException;
 import sapphire.kernel.common.KernelObjectNotFoundException;
+import sapphire.kernel.common.KernelObjectStub;
 import sapphire.kernel.common.KernelRPC;
 import sapphire.kernel.common.KernelRPCException;
 import sapphire.kernel.common.ServerInfo;
 import sapphire.oms.OMSServer;
+import sapphire.policy.SapphirePolicy;
 
 /** 
  * Sapphire Kernel Server. Runs on every Sapphire node, knows how to talk to the OMS, handles RPCs and has a client for making RPCs.
@@ -219,8 +221,8 @@ public class KernelServerImpl implements KernelServer{
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
-				System.out.println("Total memory: " + Runtime.getRuntime().totalMemory() + " Bytes");
-				System.out.println("Free memory: " + Runtime.getRuntime().freeMemory() + " Bytes");
+//				System.out.println("Total memory: " + Runtime.getRuntime().totalMemory() + " Bytes");
+//				System.out.println("Free memory: " + Runtime.getRuntime().freeMemory() + " Bytes");
 			}
 		}
 	}

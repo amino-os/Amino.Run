@@ -48,11 +48,12 @@ public class AtLeastOnceRPCPolicy extends DefaultSapphirePolicy {
             final String method_ = method;
             final ArrayList<Object> params_ = params;
             count++;
-            System.out.println("id: " + this.id + " atLeastOneRpc: " + this.count);
+//            System.out.println("id: " + this.id + " atLeastOneRpc: " + this.count);
             timeoutTask = new FutureTask<Object>(new Callable<Object>() {
                 @Override
                 public Object call() throws Exception{
-                    System.out.println(getGroup().$__getKernelOID());
+                    System.out.println("Client) onRPC AtLeastOnceRPC");
+//                    System.out.println(getGroup().$__getKernelOID());
                     return clientPolicy.doOnRPC(method_, params_);
                 }
             });
@@ -67,15 +68,16 @@ public class AtLeastOnceRPCPolicy extends DefaultSapphirePolicy {
         @Override
         public Object onRPC(String method, ArrayList<Object> params) throws Exception {
             // TODO (8/27/2018): Remove this code block except onRPC after verification of reference to the same group policy.
-            int koid = this.getGroup().$__getKernelOID().getID();
-            System.out.println("OID of Group Policy this policy (AtLeastOnceRPCServerPolicy) refers to " + koid);
+            //int koid = this.getGroup().$__getKernelOID().getID();
+            //System.out.println("OID of Group Policy this policy (AtLeastOnceRPCServerPolicy) refers to " + koid);
+            System.out.println("Server) onRPC at AtLeastOnceRPC called");
 
             // This is dummy method to verify DM chain correctly visits here.
             return super.onRPC(method, params);
         }
 
         public void PrintDummyStr(String printThis) {
-            System.out.println("For debugging, print the input here: " + printThis);
+            System.out.println("PrintDummyStr: " + printThis);
         }
     }
 
@@ -85,9 +87,9 @@ public class AtLeastOnceRPCPolicy extends DefaultSapphirePolicy {
         @Override
         public void onCreate(SapphireServerPolicy server) {
             AtLeastOnceRPCServerPolicy serverPolicy = (AtLeastOnceRPCServerPolicy)server;
-            serverPolicy.PrintDummyStr("OnCreate at Group policy for AtLeastOneRPC");
+            serverPolicy.PrintDummyStr("PrintDummyStr: OnCreate at Group policy for AtLeastOneRPC");
             KernelObjectStub stub = (KernelObjectStub) server;
-            System.out.println("At GroupPolicy. Hostname: " + stub.$__getHostname());
+//            System.out.println("At GroupPolicy. Hostname: " + stub.$__getHostname());
         }
     }
 }

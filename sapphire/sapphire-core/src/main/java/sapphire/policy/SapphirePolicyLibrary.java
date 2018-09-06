@@ -127,20 +127,20 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 				}
 
 				AppObject actualAppObject = lastServerPolicy.sapphire_getAppObject();
-				List<SapphirePolicyContainer> policyList = new ArrayList<SapphirePolicyContainer>();
+				List<SapphirePolicyContainer> processedPolicesReplica = new ArrayList<SapphirePolicyContainer>();
 
 				///////////////////////////
 				//TODO: remove after test:
 //				newHostName = this.getProcessedPolicies().get(0).getServerPolicyStub().$__getHostname();
 				///////////////////////////
 
-				Sapphire.createPolicy(null, actualAppObject, processedPolicies, policyList, null, null, null);
+				Sapphire.createPolicy(null, actualAppObject, processedPolicies, processedPolicesReplica, null, null, null);
 
 				// Last policy is this policy.
-				serverPolicy = policyList.get(policyList.size() - 1).getServerPolicy();
-				serverPolicyStub = policyList.get(policyList.size() - 1).getServerPolicyStub();
+				serverPolicy = processedPolicesReplica.get(processedPolicesReplica.size() - 1).getServerPolicy();
+				serverPolicyStub = processedPolicesReplica.get(processedPolicesReplica.size() - 1).getServerPolicyStub();
 
-				List<SapphirePolicyContainer> nextPolicyList = Sapphire.createPolicy(null, null, this.nextDMs, policyList, serverPolicy, serverPolicyStub,null);
+				List<SapphirePolicyContainer> nextPolicyList = Sapphire.createPolicy(null, null, this.nextDMs, processedPolicesReplica, serverPolicy, serverPolicyStub,null);
 
 				getGroup().addServer((SapphireServerPolicy) serverPolicyStub);
 

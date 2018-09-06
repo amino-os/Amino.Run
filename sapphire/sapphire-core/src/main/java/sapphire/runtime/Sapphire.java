@@ -117,7 +117,6 @@ public class Sapphire {
 		AppObjectStub appStub = null;
 
 		/* Get the policy used by the Sapphire Object we need to create */
-//		System.out.println("Processing DM chain for: " + policyName);
 		HashMap<String, Class<?>> policyMap = getPolicyMap(policyName);
 		Class<?> sapphireServerPolicyClass = policyMap.get("sapphireServerPolicyClass");
 		Class<?> sapphireClientPolicyClass = policyMap.get("sapphireClientPolicyClass");
@@ -161,10 +160,7 @@ public class Sapphire {
 			/* Sets the first server policy which will be remotely called by client side stub.
 			This is needed for replication as it needs to copy the first server policy to other kernel server. */
 			previousServerPolicy.setPreviousServerPolicy(serverPolicy);
-
 			previousServerPolicyStub.$__setNextClientPolicy(client);
-			/* TODO: This is the first server policy (though it is the last in client policy order;
-			therefore, update object manager in the kernel server owns this to point to the head object. */
 		} else {
 			/* First DM needs to create an app stub.
 			Note that only the last one in the server side needs to point to app object
@@ -194,8 +190,10 @@ public class Sapphire {
 		processedPolicy.setServerPolicyStub((KernelObjectStub)serverPolicyStub);
 		processedPolicies.add(processedPolicy);
 
-		serverPolicy.setProcessedPolicies(processedPolicies);
-		serverPolicyStub.setProcessedPolicies(processedPolicies);
+		// Create a copy to set processed policies up to this point.
+		List<SapphirePolicyContainer> processedPoliciesSoFar = new ArrayList<SapphirePolicyContainer>(processedPolicies);
+		serverPolicy.setProcessedPolicies(processedPoliciesSoFar);
+		serverPolicyStub.setProcessedPolicies(processedPoliciesSoFar);
 
 		if (existingGroupPolicy == null) {
 			groupPolicy.onCreate(serverPolicyStub);

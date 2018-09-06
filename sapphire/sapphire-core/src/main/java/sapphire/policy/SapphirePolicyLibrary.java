@@ -197,7 +197,7 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 			}
 		}
 
-		// pin first server policy to given kernel server.
+		// Pin First server policy and inturn the associated KernelObjects to the given kernel server.
 		public void sapphire_pin_to_server(SapphireServerPolicy serverPolicy, InetSocketAddress server) throws RemoteException {
 			List<SapphireServerPolicy> serverPoliciesToRemove = new ArrayList<SapphireServerPolicy>();
 
@@ -205,24 +205,27 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 				throw new Error("No server policy to pin to the server: " + server);
 			}
 
+			// Ensure that we are inturn handling the first Server Policy.
 			while (serverPolicy.previousServerPolicy != null) {
 				serverPolicy = serverPolicy.previousServerPolicy;
 			}
-
 			SapphireServerPolicy firstServerPolicy = serverPolicy;
 
+			// Create a list of associated ServerPolicies which needs to be explicitly removed from the local KernelServer.
+			// These associated ServerPolicy KernelObjects will be moved to the new Server when the first KernelObject is moved.
+			// But have to be explicitly removed from the local KernelServer. The new KernelServer address need to be
+			// registered with the OMS explicitly for these associated KernelObjects.
 			while (serverPolicy.nextServerPolicy != null) {
-				// First server policy will be removed after object was moved; therefore, not needed to be included in the removal list.
+				// First server policy will be removed when the object is moved; therefore, not needed to be included in the removal list.
 				serverPolicy = serverPolicy.nextServerPolicy;
-				System.out.println(" Adding object to removal list for " + serverPolicy.$__getKernelOID());
+				System.out.println("Adding object to removal list for: " + serverPolicy.$__getKernelOID());
 				serverPoliciesToRemove.add(serverPolicy);
 			}
 			serverPolicy = firstServerPolicy;
 
-			// Before pinning the Sapphire Object replica, need to update the Hostname.
-			// Ignore the first Policy as it will be same as the current one for which replication is being performed.
-			List<SapphirePolicyContainer> processedDMList = serverPolicy.getProcessedPolicies().subList(1, serverPolicy.getProcessedPolicies().size());
-			Iterator<SapphirePolicyContainer> itr = processedDMList.iterator();
+			// Before pinning the Sapphire Object replica to the provided KernelServer, need to update the Hostname.
+			List<SapphirePolicyContainer> processedPolicyList = serverPolicy.getProcessedPolicies();
+			Iterator<SapphirePolicyContainer> itr = processedPolicyList.iterator();
 			KernelObjectStub tempServerPolicyStub = null;
 			while(itr.hasNext()) {
 				tempServerPolicyStub = itr.next().getServerPolicyStub();
@@ -238,9 +241,12 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 				throw new Error("Could not find myself on this server!");
 			}
 
-			// Remove all of the associated objects with the first server policy.
+			// Register the moved associated KernelObjects to OMS with the new KernelServer address.
+			// Remove the moved associated KernelObjects from the local KernelServer.
 			for (SapphireServerPolicy serverPolicyToRemove : serverPoliciesToRemove) {
 				try {
+					System.out.println("Registering the new KS host for Sapphire object: " + serverPolicyToRemove.$__getKernelOID() + " to: " + server);
+					oms().registerKernelObject(serverPolicyToRemove.$__getKernelOID(), server);
 					kernel().removeObject(serverPolicyToRemove.$__getKernelOID());
 				} catch (KernelObjectNotFoundException e) {
 					e.printStackTrace();

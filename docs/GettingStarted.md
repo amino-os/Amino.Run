@@ -15,7 +15,7 @@
 
 # Quick Start
 ### Install Android SDK and Android Studio
-* Follow [instructions](https://developer.android.com/studio/) to install Android SDK and Anroid Studio
+* Follow [instructions](https://developer.android.com/studio/) to install Android SDK and Anroid Studio. More details can be found at [here](https://wiki.appcelerator.org/display/guides2/Installing+the+Android+SDK#InstallingtheAndroidSDK-InstallingAndroidSDKToolsonmacOS).
 * Android SDK and Android Studio are *not* required by Sapphire. But many Sapphire demo applications are android applications. We recommend install Android SDK and Android Studio.
 
 ### Add Android Properties

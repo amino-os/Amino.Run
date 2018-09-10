@@ -22,11 +22,12 @@ public class TodoActivity {
 			registry = LocateRegistry.getRegistry(args[0],Integer.parseInt(args[1]));
 			OMSServer server = (OMSServer) registry.lookup("SapphireOMS");
 			System.out.println(server);
+
+			KernelServer nodeServer = new KernelServerImpl(new InetSocketAddress(args[2], Integer.parseInt(args[3])), new InetSocketAddress(args[0], Integer.parseInt(args[1])));
+
 			SapphireObjectID sapphireObjId = server.createSapphireObject("sapphire.appexamples.hankstodo.app.TodoListManager");
 			TodoListManager tlm = (TodoListManager)server.acquireSapphireObjectStub(sapphireObjId);
             System.out.println("Received tlm: " + tlm);
-            
-            KernelServer nodeServer = new KernelServerImpl(new InetSocketAddress(args[2], Integer.parseInt(args[3])), new InetSocketAddress(args[0], Integer.parseInt(args[1])));
             
 			TodoList tl = tlm.newTodoList("Hanks");	
 			System.out.println("Received tl1: " + tl);

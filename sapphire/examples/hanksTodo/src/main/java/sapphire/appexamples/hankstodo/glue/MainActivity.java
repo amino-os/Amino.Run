@@ -11,12 +11,15 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import java.net.InetSocketAddress;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
 import sapphire.appexamples.hankstodo.app.TodoList;
 import sapphire.appexamples.hankstodo.app.TodoListManager;
 import sapphire.common.SapphireObjectID;
+import sapphire.kernel.server.KernelServer;
+import sapphire.kernel.server.KernelServerImpl;
 import sapphire.oms.OMSServer;
 
 public class MainActivity extends Activity {
@@ -32,16 +35,18 @@ public class MainActivity extends Activity {
     private class AccessRemoteObject extends AsyncTask<String, Void, String>{
     	protected String doInBackground(String... params) {
     		String response = null;
+			String [] hostAddress = { "192.168.10.68", "22346", "10.0.2.15", "22345" };
     		Registry registry;
     		try {
-    			registry = LocateRegistry.getRegistry("128.208.4.114");
+    			registry = LocateRegistry.getRegistry(hostAddress[0], Integer.parseInt(hostAddress[1]));
     			OMSServer server = (OMSServer) registry.lookup("SapphireOMS");
     			System.out.println(server);
+
+				KernelServer nodeServer = new KernelServerImpl(new InetSocketAddress(hostAddress[2], Integer.parseInt(hostAddress[3])), new InetSocketAddress(hostAddress[0], Integer.parseInt(hostAddress[1])));
+
 		        SapphireObjectID sapphireObjId = server.createSapphireObject("sapphire.appexamples.hankstodo.app.TodoListManager");
 		        TodoListManager tlm = (TodoListManager)server.acquireSapphireObjectStub(sapphireObjId);
                 System.out.println("Received tlm: " + tlm);
-                
-                //KernelServer nodeServer = new KernelServerImpl("10.0.2.15");
                 
                 runOnUiThread(new Runnable() {
                     public void run() {

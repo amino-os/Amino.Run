@@ -6,6 +6,7 @@ import java.rmi.registry.Registry;
 import org.junit.Assert;
 import org.junit.Test;
 import sapphire.appexamples.helloworld.HelloWorld;
+import sapphire.common.SapphireObjectID;
 import sapphire.kernel.server.KernelServer;
 import sapphire.kernel.server.KernelServerImpl;
 import sapphire.oms.OMSServer;
@@ -21,15 +22,16 @@ public class KernelIntegrationTestHelloWorld {
             String ip = "127.0.0.1";
             String[] appHost = new String[] {ip, "22346", "10.0.2.15", "22344"};
 
-            OMSServerImpl.main(
-                    new String[] {ip, "22346", "sapphire.appexamples.helloworld.HelloWorld"});
+            OMSServerImpl.main(new String[] {ip, "22346"});
 
             KernelServerImpl.main(new String[] {ip, "22345", ip, "22346"});
 
             Registry registry = LocateRegistry.getRegistry(ip, Integer.parseInt("22346"));
             OMSServer server = (OMSServer) registry.lookup("SapphireOMS");
 
-            HelloWorld helloWorld = (HelloWorld) server.getAppEntryPoint();
+            SapphireObjectID sapphireObjId =
+                    server.createSapphireObject("sapphire.appexamples.helloworld.HelloWorld");
+            HelloWorld helloWorld = (HelloWorld) server.acquireSapphireObjectStub(sapphireObjId);
 
             KernelServer appKernel =
                     new KernelServerImpl(

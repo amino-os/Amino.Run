@@ -1,4 +1,4 @@
-package sapphire.policy.scalability;
+package sapphire.oms;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.anyInt;
@@ -10,21 +10,14 @@ import static sapphire.common.SapphireUtils.addHost;
 import static sapphire.common.SapphireUtils.deleteSapphireObject;
 import static sapphire.common.SapphireUtils.dummyRegistry;
 import static sapphire.common.SapphireUtils.getHostOnOmsKernelServerManager;
+import static sapphire.common.SapphireUtils.getOmsSapphireInstance;
 import static sapphire.common.SapphireUtils.startSpiedKernelServer;
 import static sapphire.common.SapphireUtils.startSpiedOms;
 import static sapphire.common.UtilsTest.extractFieldValueOnInstance;
 
 import java.net.InetSocketAddress;
 import java.rmi.registry.LocateRegistry;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.FutureTask;
-import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -47,13 +40,10 @@ import sapphire.kernel.server.KernelObject;
 import sapphire.kernel.server.KernelObjectManager;
 import sapphire.kernel.server.KernelServer;
 import sapphire.kernel.server.KernelServerImpl;
-import sapphire.oms.OMSServer;
-import sapphire.oms.OMSServerImpl;
 import sapphire.policy.DefaultSapphirePolicy;
-import sapphire.policy.SapphirePolicy;
 import sapphire.runtime.Sapphire;
 
-/** ScaleupFrontend DM test cases */
+/** OMS API test cases */
 
 /** Created by Venugopal Reddy K 00900280 on 16/4/18. */
 @RunWith(PowerMockRunner.class)
@@ -64,7 +54,7 @@ import sapphire.runtime.Sapphire;
     LocateRegistry.class,
     SapphireUtils.class
 })
-public class ScaleUpFrontendPolicyTest {
+public class OMSTest {
     DefaultSapphirePolicy.DefaultClientPolicy client;
     DefaultSapphirePolicy.DefaultServerPolicy server1;
     DefaultSapphirePolicy.DefaultServerPolicy server2;
@@ -76,7 +66,7 @@ public class ScaleUpFrontendPolicyTest {
 
     @Rule public ExpectedException thrown = ExpectedException.none();
 
-    public static class Group_Stub extends ScaleUpFrontendPolicy.GroupPolicy
+    public static class Group_Stub extends DefaultSapphirePolicy.DefaultGroupPolicy
             implements KernelObjectStub {
         sapphire.kernel.common.KernelOID $__oid = null;
         java.net.InetSocketAddress $__hostname = null;
@@ -107,13 +97,14 @@ public class ScaleUpFrontendPolicyTest {
         }
     }
 
-    public static class Server_Stub extends ScaleUpFrontendPolicy.ServerPolicy
+    public static class Server_Stub extends DefaultSapphirePolicy.DefaultServerPolicy
             implements KernelObjectStub {
         KernelOID $__oid = null;
         InetSocketAddress $__hostname = null;
         int $__lastSeenTick = 0;
 
         public Server_Stub(KernelOID oid) {
+            this.oid = oid;
             this.$__oid = oid;
         }
 
@@ -275,8 +266,13 @@ public class ScaleUpFrontendPolicyTest {
                 });
 
         SapphireObjectID sapphireObjId = spiedOms.createSapphireObject("sapphire.app.SO");
+
+        /* Since every call in UT is direct call, returned stub is the one on server side. We can do test case
+        verifications on this object */
         so = (SO_Stub) spiedOms.acquireSapphireObjectStub(sapphireObjId);
-        client = spy(new ScaleUpFrontendPolicy.ClientPolicy());
+
+        /* Client init and SO stub init on app client side */
+        client = spy(new DefaultSapphirePolicy.DefaultClientPolicy());
         client.setServer(server1);
         client.onCreate(group, null);
         soStub = new SO_Stub();
@@ -284,60 +280,48 @@ public class ScaleUpFrontendPolicyTest {
     }
 
     @Test
-    public void clientTest() throws Exception {
-        String methodName = "public java.lang.Integer sapphire.app.SO.getI()";
-        ArrayList<Object> params = new ArrayList<Object>();
+    public void acquireSapphireObjectStubSuccessTest() throws Exception {
+        /* Since every call in UT is direct call, returned stub is the one on server side */
+        SO_Stub actualSo = (SO_Stub) spiedOms.acquireSapphireObjectStub(group.getSapphireObjId());
+        assertEquals(
+                1, getOmsSapphireInstance(spiedOms, group.getSapphireObjId()).getReferenceCount());
 
-        AtomicInteger syncCtrCurr =
-                (AtomicInteger) extractFieldValueOnInstance(this.client, "replicaListSyncCtr");
-        assertEquals(0, syncCtrCurr.get());
-        assertEquals(null, extractFieldValueOnInstance(this.client, "replicaList"));
+        /* setI on the client side stub */
+        soStub.setI(new Integer(10));
 
-        this.client.onRPC(methodName, params);
-        syncCtrCurr =
-                (AtomicInteger) extractFieldValueOnInstance(this.client, "replicaListSyncCtr");
-        assertEquals(1, syncCtrCurr.get());
-
-        ArrayList<SapphirePolicy.SapphireServerPolicy> replicas =
-                (ArrayList<SapphirePolicy.SapphireServerPolicy>)
-                        extractFieldValueOnInstance(this.client, "replicaList");
-        ArrayList<SapphirePolicy.SapphireServerPolicy> expected = this.group.getServers();
-        Assert.assertArrayEquals(replicas.toArray(), expected.toArray());
+        /* Verify if value is set on the SO */
+        assertEquals(new Integer(10), so.getI());
     }
 
     @Test
-    public void serverScaleUpTest() throws Exception {
-        final String methodName = "public java.lang.Integer sapphire.app.SO.getI()";
-        final ArrayList<Object> params = new ArrayList<Object>();
-        Integer max = (Integer) extractFieldValueOnInstance(this.server1, "maxConcurrentReq");
+    public void attachAndDetactSapphireObjectSuccessTest() throws Exception {
+        spiedOms.setSapphireObjectName(group.getSapphireObjId(), "MySapphireObject");
 
-        List<FutureTask<Object>> taskList = new ArrayList<FutureTask<Object>>();
-        for (int i = 0; i < 2 * max + 1; i++) {
-            FutureTask<Object> task =
-                    new FutureTask<Object>(
-                            new Callable<Object>() {
-                                @Override
-                                public Object call() throws Exception {
-                                    Object test = new String("test");
-                                    try {
-                                        test = client.onRPC(methodName, params);
-                                    } catch (ServerOverLoadException e) {
-                                    }
-                                    return test;
-                                }
-                            });
-            taskList.add(task);
-        }
+        /* Since every call in UT is direct call, returned stub is the one on server side */
+        SO_Stub actualSo = (SO_Stub) spiedOms.attachToSapphireObject("MySapphireObject");
 
-        // Run tasks in parallel
-        ExecutorService executor = Executors.newFixedThreadPool(taskList.size());
-        for (FutureTask<Object> t : taskList) {
-            executor.execute(t);
-        }
+        /* Create client and init it for client side operations */
+        DefaultSapphirePolicy.DefaultClientPolicy client1 =
+                spy(new DefaultSapphirePolicy.DefaultClientPolicy());
+        client1.setServer(server1);
+        client1.onCreate(group, null);
+        SO_Stub testStub = new SO_Stub();
+        testStub.$__initialize(client);
 
-        for (int i = 0; i < taskList.size(); i++) {
-            Object ret = taskList.get(i).get();
-        }
+        /* Reference count must become 2. Once user created it and other attached to it */
+        assertEquals(
+                2, getOmsSapphireInstance(spiedOms, group.getSapphireObjId()).getReferenceCount());
+
+        /* setI on the client side stub */
+        testStub.setI(new Integer(100));
+
+        /* Verify if value is set on the SO */
+        assertEquals(new Integer(100), so.getI());
+
+        /* Reference count must become 1(decrement by 1) upon detach */
+        spiedOms.detachFromSapphireObject("MySapphireObject");
+        assertEquals(
+                1, getOmsSapphireInstance(spiedOms, group.getSapphireObjId()).getReferenceCount());
     }
 
     @After

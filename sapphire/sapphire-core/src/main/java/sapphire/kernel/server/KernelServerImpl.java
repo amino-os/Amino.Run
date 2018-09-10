@@ -127,13 +127,18 @@ public class KernelServerImpl implements KernelServer {
             throws RemoteException, KernelObjectNotFoundException,
                     KernelObjectStubNotCreatedException, SapphireObjectNotFoundException,
                     SapphireObjectReplicaNotFoundException {
-        /* Set the policy object handlers of new host */
-        ArrayList<Object> policyObjList = new ArrayList<>();
-        EventHandler policyHandler = new EventHandler(host, policyObjList);
-        policyObjList.add(Sapphire.getPolicyStub(object.getObject().getClass(), oid));
         if (object.getObject() instanceof SapphirePolicy.SapphireServerPolicy) {
+            /* Set the policy object handlers of new host */
             SapphirePolicy.SapphireServerPolicy serverPolicy =
                     (SapphirePolicy.SapphireServerPolicy) object.getObject();
+            SapphirePolicy.SapphireServerPolicy serverPolicyStub =
+                    (SapphirePolicy.SapphireServerPolicy)
+                            Sapphire.getPolicyStub(serverPolicy.getClass(), oid);
+            ArrayList<Object> policyObjList = new ArrayList<>();
+            EventHandler policyHandler = new EventHandler(host, policyObjList);
+            policyObjList.add(serverPolicyStub);
+
+            serverPolicyStub.setReplicaId(serverPolicy.getReplicaId());
             oms.setSapphireReplicaDispatcher(serverPolicy.getReplicaId(), policyHandler);
 
             /* Initialize dynamic data of server policy object(i.e., timers, executors, sockets etc)

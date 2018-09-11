@@ -93,7 +93,9 @@ public class Sapphire {
             /* Create the Kernel Object for the Group Policy and get the Group Policy Stub from OMS */
             SapphireGroupPolicy groupPolicyStub =
                     GlobalKernelReferences.nodeServer.oms.createGroupPolicy(
-                            sapphireGroupPolicyClass, sapphireObjId);
+                            sapphireGroupPolicyClass,
+                            sapphireObjId,
+                            appObjectClass.getAnnotations());
 
             /* Register for a replica Id from OMS */
             SapphireReplicaID sapphireReplicaId =
@@ -189,7 +191,7 @@ public class Sapphire {
      * @throws SapphireObjectNotFoundException
      */
     public static SapphireGroupPolicy createGroupPolicy(
-            Class<?> policyClass, SapphireObjectID sapphireObjId)
+            Class<?> policyClass, SapphireObjectID sapphireObjId, Annotation[] appConfigAnnotation)
             throws RemoteException, ClassNotFoundException, KernelObjectNotCreatedException,
                     SapphireObjectNotFoundException {
         SapphireGroupPolicy groupPolicyStub = (SapphireGroupPolicy) getPolicyStub(policyClass);
@@ -197,6 +199,7 @@ public class Sapphire {
             SapphireGroupPolicy groupPolicy = initializeGroupPolicy(groupPolicyStub);
             groupPolicyStub.setSapphireObjId(sapphireObjId);
             groupPolicy.setSapphireObjId(sapphireObjId);
+            groupPolicy.setAppConfigAnnotation(appConfigAnnotation);
 
             EventHandler sapphireHandler =
                     new EventHandler(

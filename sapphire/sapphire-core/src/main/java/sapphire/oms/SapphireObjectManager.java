@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import sapphire.common.AppObjectStub;
 import sapphire.common.SapphireObjectID;
 import sapphire.common.SapphireObjectNameModificationException;
 import sapphire.common.SapphireObjectNotFoundException;
@@ -58,6 +59,22 @@ public class SapphireObjectManager {
             throw new SapphireObjectNotFoundException("Not a valid Sapphire object id.");
         }
         instance.setInstanceDispatcher(dispatcher);
+    }
+
+    /**
+     * Set the object stub of sapphire object
+     *
+     * @param sapphireObjId
+     * @param objectStub
+     * @throws SapphireObjectNotFoundException
+     */
+    public void setInstanceObjectStub(SapphireObjectID sapphireObjId, AppObjectStub objectStub)
+            throws SapphireObjectNotFoundException {
+        SapphireInstanceManager instance = sapphireObjects.get(sapphireObjId);
+        if (instance == null) {
+            throw new SapphireObjectNotFoundException("Not a valid Sapphire object id.");
+        }
+        instance.setInstanceObjectStub(objectStub);
     }
 
     /**
@@ -193,6 +210,23 @@ public class SapphireObjectManager {
         }
 
         return instance.getInstanceDispatcher();
+    }
+
+    /**
+     * Get the object stub of sapphire object
+     *
+     * @param sapphireObjId
+     * @return
+     * @throws SapphireObjectNotFoundException
+     */
+    public AppObjectStub getInstanceObjectStub(SapphireObjectID sapphireObjId)
+            throws SapphireObjectNotFoundException {
+        SapphireInstanceManager instance = sapphireObjects.get(sapphireObjId);
+        if (instance == null) {
+            throw new SapphireObjectNotFoundException("Not a valid Sapphire object id.");
+        }
+
+        return instance.getInstanceObjectStub();
     }
 
     /**

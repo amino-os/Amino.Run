@@ -266,28 +266,21 @@ public class OMSTest {
                 });
 
         SapphireObjectID sapphireObjId = spiedOms.createSapphireObject("sapphire.app.SO");
-
-        /* Since every call in UT is direct call, returned stub is the one on server side. We can do test case
-        verifications on this object */
-        so = (SO_Stub) spiedOms.acquireSapphireObjectStub(sapphireObjId);
-
-        /* Client init and SO stub init on app client side */
-        client = spy(new DefaultSapphirePolicy.DefaultClientPolicy());
-        client.setServer(server1);
-        client.onCreate(group, null);
-        soStub = new SO_Stub();
-        soStub.$__initialize(client);
+        soStub = (SO_Stub) spiedOms.acquireSapphireObjectStub(sapphireObjId);
+        client =
+                (DefaultSapphirePolicy.DefaultClientPolicy)
+                        extractFieldValueOnInstance(soStub, "$__client");
+        so = ((SO) (server1.sapphire_getAppObject().getObject()));
     }
 
     @Test
     public void acquireSapphireObjectStubSuccessTest() throws Exception {
-        /* Since every call in UT is direct call, returned stub is the one on server side */
-        SO_Stub actualSo = (SO_Stub) spiedOms.acquireSapphireObjectStub(group.getSapphireObjId());
+        SO_Stub appObjstub = (SO_Stub) spiedOms.acquireSapphireObjectStub(group.getSapphireObjId());
         assertEquals(
                 1, getOmsSapphireInstance(spiedOms, group.getSapphireObjId()).getReferenceCount());
 
         /* setI on the client side stub */
-        soStub.setI(new Integer(10));
+        appObjstub.setI(new Integer(10));
 
         /* Verify if value is set on the SO */
         assertEquals(new Integer(10), so.getI());
@@ -297,23 +290,14 @@ public class OMSTest {
     public void attachAndDetactSapphireObjectSuccessTest() throws Exception {
         spiedOms.setSapphireObjectName(group.getSapphireObjId(), "MySapphireObject");
 
-        /* Since every call in UT is direct call, returned stub is the one on server side */
-        SO_Stub actualSo = (SO_Stub) spiedOms.attachToSapphireObject("MySapphireObject");
-
-        /* Create client and init it for client side operations */
-        DefaultSapphirePolicy.DefaultClientPolicy client1 =
-                spy(new DefaultSapphirePolicy.DefaultClientPolicy());
-        client1.setServer(server1);
-        client1.onCreate(group, null);
-        SO_Stub testStub = new SO_Stub();
-        testStub.$__initialize(client);
+        SO_Stub appObjstub = (SO_Stub) spiedOms.attachToSapphireObject("MySapphireObject");
 
         /* Reference count must become 2. Once user created it and other attached to it */
         assertEquals(
                 2, getOmsSapphireInstance(spiedOms, group.getSapphireObjId()).getReferenceCount());
 
         /* setI on the client side stub */
-        testStub.setI(new Integer(100));
+        appObjstub.setI(new Integer(100));
 
         /* Verify if value is set on the SO */
         assertEquals(new Integer(100), so.getI());

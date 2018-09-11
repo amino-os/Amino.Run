@@ -1,5 +1,6 @@
 package sapphire.policy;
 
+import java.lang.annotation.Annotation;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -88,6 +89,10 @@ public abstract class DefaultSapphirePolicyUpcallImpl extends SapphirePolicyLibr
         public void $__initialize(String appObjectClassName, ArrayList<Object> params) {
             this.appObjectClassName = appObjectClassName;
             this.params = params;
+        }
+
+        public Annotation[] getAppConfigAnnotation() {
+            return super.getAppConfigAnnotation();
         }
 
         public SapphireServerPolicy onRefRequest() throws RemoteException {

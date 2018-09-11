@@ -1,5 +1,6 @@
 package sapphire.oms;
 
+import java.lang.annotation.Annotation;
 import java.net.InetSocketAddress;
 import java.rmi.NotBoundException;
 import java.rmi.Remote;
@@ -49,7 +50,7 @@ public interface OMSServer extends Remote {
             throws RemoteException, NotBoundException, KernelServerNotFoundException;
 
     SapphirePolicy.SapphireGroupPolicy createGroupPolicy(
-            Class<?> policyClass, SapphireObjectID sapphireObjId)
+            Class<?> policyClass, SapphireObjectID sapphireObjId, Annotation[] appConfigAnnotation)
             throws RemoteException, ClassNotFoundException, KernelObjectNotCreatedException,
                     SapphireObjectNotFoundException;
 

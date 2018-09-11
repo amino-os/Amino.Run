@@ -27,6 +27,7 @@ import java.rmi.registry.LocateRegistry;
 import java.util.ArrayList;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -58,6 +59,7 @@ import sapphire.policy.util.consensus.raft.LeaderException;
 import sapphire.runtime.Sapphire;
 
 /** Created by terryz on 4/9/18. */
+@Ignore
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({
     KernelServerImpl.class,

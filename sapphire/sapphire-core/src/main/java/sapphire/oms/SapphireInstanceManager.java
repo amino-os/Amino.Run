@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
+import sapphire.common.AppObjectStub;
 import sapphire.common.SapphireObjectID;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
@@ -18,6 +19,7 @@ public class SapphireInstanceManager {
     private String name;
     private AtomicInteger referenceCount;
     private EventHandler instanceDispatcher;
+    private AppObjectStub objectStub;
     private HashMap<SapphireReplicaID, EventHandler> replicaDispatchers;
     private Random oidGenerator;
 
@@ -54,6 +56,24 @@ public class SapphireInstanceManager {
      */
     public void setInstanceDispatcher(EventHandler dispatcher) {
         instanceDispatcher = dispatcher;
+    }
+
+    /**
+     * Gets the object stub of this sapphire instance
+     *
+     * @return Returns object stub
+     */
+    public AppObjectStub getInstanceObjectStub() {
+        return objectStub;
+    }
+
+    /**
+     * Sets the object stub of this sapphire instance
+     *
+     * @param objStub
+     */
+    public void setInstanceObjectStub(AppObjectStub objStub) {
+        objectStub = objStub;
     }
 
     /**

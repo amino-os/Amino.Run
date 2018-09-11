@@ -1,5 +1,6 @@
 package sapphire.policy;
 
+import java.lang.annotation.Annotation;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -233,6 +234,7 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
     public abstract static class SapphireGroupPolicyLibrary implements SapphireGroupPolicyUpcalls {
         protected String appObjectClassName;
         protected ArrayList<Object> params;
+        protected Annotation[] appConfigAnnotation;
         protected KernelOID oid;
         protected SapphireObjectID sapphireObjId;
 
@@ -266,6 +268,14 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 
         public KernelOID $__getKernelOID() {
             return this.oid;
+        }
+
+        public void setAppConfigAnnotation(Annotation[] appConfigAnnotation) {
+            this.appConfigAnnotation = appConfigAnnotation;
+        }
+
+        public Annotation[] getAppConfigAnnotation() {
+            return appConfigAnnotation;
         }
 
         public void setSapphireObjId(SapphireObjectID sapphireId) {

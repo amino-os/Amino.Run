@@ -26,6 +26,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -56,6 +57,7 @@ import sapphire.runtime.Sapphire;
 /** ScaleupFrontend DM test cases */
 
 /** Created by Venugopal Reddy K 00900280 on 16/4/18. */
+@Ignore
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({
     KernelServerImpl.class,

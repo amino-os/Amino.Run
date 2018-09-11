@@ -30,6 +30,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -57,6 +58,7 @@ import sapphire.policy.DefaultSapphirePolicy;
 import sapphire.runtime.Sapphire;
 
 /** Created by Vishwajeet on 2/4/18. */
+@Ignore
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({
     KernelServerImpl.class,

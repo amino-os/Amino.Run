@@ -3,6 +3,7 @@ package sapphire.oms;
 import static sapphire.compiler.GlobalStubConstants.POLICY_ONDESTROY_MTD_NAME_FORMAT;
 
 import java.io.IOException;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.net.InetSocketAddress;
 import java.rmi.NotBoundException;
@@ -159,6 +160,24 @@ public class OMSServerImpl implements OMSServer {
     }
 
     /**
+     * Extracts sapphire client policy from app object stub
+     *
+     * @param appObjStub
+     * @return Returns sapphire client policy
+     * @throws NoSuchFieldException
+     * @throws IllegalAccessException
+     */
+    private SapphirePolicy.SapphireClientPolicy extractClientPolicy(AppObjectStub appObjStub)
+            throws NoSuchFieldException, IllegalAccessException {
+        Field field =
+                appObjStub
+                        .getClass()
+                        .getDeclaredField(GlobalStubConstants.APPSTUB_POLICY_CLIENT_FIELD_NAME);
+        field.setAccessible(true);
+        return (SapphirePolicy.SapphireClientPolicy) field.get(appObjStub);
+    }
+
+    /**
      * Create the sapphire object of given class on one of the servers
      *
      * @param absoluteSapphireClassName
@@ -187,13 +206,9 @@ public class OMSServerImpl implements OMSServer {
         /* Invoke create sapphire object on the kernel server */
         try {
             AppObjectStub appObjStub = server.createSapphireObject(absoluteSapphireClassName, args);
-            Field field =
-                    appObjStub
-                            .getClass()
-                            .getDeclaredField(GlobalStubConstants.APPSTUB_POLICY_CLIENT_FIELD_NAME);
-            field.setAccessible(true);
-            SapphirePolicy.SapphireClientPolicy clientPolicy =
-                    (SapphirePolicy.SapphireClientPolicy) field.get(appObjStub);
+            SapphirePolicy.SapphireClientPolicy clientPolicy = extractClientPolicy(appObjStub);
+            objectManager.setInstanceObjectStub(
+                    clientPolicy.getGroup().getSapphireObjId(), appObjStub);
             return clientPolicy.getGroup().getSapphireObjId();
         } catch (Exception e) {
             throw new SapphireObjectCreationException(
@@ -223,12 +238,30 @@ public class OMSServerImpl implements OMSServer {
         }
 
         if (policyHandler == null) {
-            throw new SapphireObjectNotFoundException();
+            throw new SapphireObjectNotFoundException("Failed to get sapphire object.");
         }
 
-        SapphirePolicy.SapphireServerPolicy serverPolicy =
-                (SapphirePolicy.SapphireServerPolicy) policyHandler.getObjects().get(0);
-        return (AppObjectStub) serverPolicy.sapphire_getRemoteAppObject().getObject();
+        AppObjectStub appObjStub = null;
+        try {
+            AppObjectStub localObjStub = objectManager.getInstanceObjectStub(sapphireObjId);
+            SapphirePolicy.SapphireClientPolicy clientPolicy = extractClientPolicy(localObjStub);
+            SapphirePolicy.SapphireServerPolicy serverPolicy =
+                    (SapphirePolicy.SapphireServerPolicy) policyHandler.getObjects().get(0);
+            appObjStub = (AppObjectStub) serverPolicy.sapphire_getRemoteAppObject().getObject();
+            appObjStub = (AppObjectStub) appObjStub.$__clone();
+            appObjStub.$__initialize(false);
+            SapphirePolicy.SapphireClientPolicy client = clientPolicy.getClass().newInstance();
+            client.onCreate(
+                    clientPolicy.getGroup(), clientPolicy.getGroup().getAppConfigAnnotation());
+            client.setServer(serverPolicy);
+            appObjStub.$__initialize(client);
+        } catch (Exception e) {
+            logger.warning("Exception occurred : " + e);
+            throw new SapphireObjectNotFoundException(
+                    "Failed to get object. Exception occurred.", e);
+        }
+
+        return appObjStub;
     }
 
     /**
@@ -327,10 +360,10 @@ public class OMSServerImpl implements OMSServer {
      */
     @Override
     public SapphirePolicy.SapphireGroupPolicy createGroupPolicy(
-            Class<?> policyClass, SapphireObjectID sapphireObjId)
+            Class<?> policyClass, SapphireObjectID sapphireObjId, Annotation[] appConfigAnnotation)
             throws RemoteException, ClassNotFoundException, KernelObjectNotCreatedException,
                     SapphireObjectNotFoundException {
-        return Sapphire.createGroupPolicy(policyClass, sapphireObjId);
+        return Sapphire.createGroupPolicy(policyClass, sapphireObjId, appConfigAnnotation);
     }
 
     public static void main(String args[]) {

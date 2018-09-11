@@ -44,6 +44,18 @@ subprojects {
         compile project(':sapphire-core')
     }
 
+    task fatJar(type: Jar) {
+        manifest {
+            attributes 'Implementation-Title': 'Gradle Uberjar',
+                    'Implementation-Version': '1.0',
+                    'Main-Class': 'sapphire.appexamples.hankstodo.cloud.TodoStart'
+        }
+        baseName = project.parent.name
+        from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+        with jar
+    }
+    build.finalizedBy(fatJar)
+
     task copyClasses(type: Copy) {
         from "$projectDir.parent/build/intermediates/classes/debug/"
         into 'build/classes/java/main/'
@@ -70,5 +82,24 @@ subprojects {
     genHanksTodoStubs.mustRunAfter compileJava
     genHanksTodoStubs.dependsOn copyClasses
     compileHanksTodoStubs.dependsOn genHanksTodoStubs
-    jar.dependsOn compileHanksTodoStubs
+    fatJar.dependsOn compileHanksTodoStubs
+
+    task runHanksTodoOms(type: JavaExec) {
+        dependsOn fatJar
+        classpath = sourceSets.main.runtimeClasspath
+        main = 'sapphire.oms.OMSServerImpl'
+        args project.property('omsIp'), project.property('omsPort'), project.property('appClassName')
+    }
+
+    task runHanksTodoKernelServer(type: JavaExec) {
+        classpath = sourceSets.main.runtimeClasspath
+        main = 'sapphire.kernel.server.KernelServerImpl'
+        args project.property('kernelServerIp'), project.property('kernelServerPort'), project.property('omsIp'), project.property('omsPort')
+    }
+
+    task runHanksTodoApp(type: JavaExec) {
+        classpath = sourceSets.main.runtimeClasspath
+        main = 'sapphire.appexamples.hankstodo.device.TodoActivity'
+        args project.property('omsIp'), project.property('omsPort'), project.property('kernelIpAndroid'), project.property('kernelServerPort')
+    }
 }

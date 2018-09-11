@@ -18,7 +18,7 @@ plugins {
 }
 
 apply plugin: 'com.bmuschko.docker-remote-api'
-apply plugin: 'com.android.library'
+apply plugin: 'com.android.application'
 
 repositories {
     mavenCentral()
@@ -42,6 +42,7 @@ android {
     }
 
     defaultConfig {
+    	applicationId "com.example.minnietwitter"
         versionCode 1
         versionName "1.0"
         minSdkVersion 24

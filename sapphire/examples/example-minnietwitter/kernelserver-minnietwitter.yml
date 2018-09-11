@@ -1,0 +1,23 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: kernelserver-minnietwitter-deploy
+  namespace: default
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: kernelserver-minnietwitter
+  template:
+    metadata:
+      labels:
+        app: kernelserver-minnietwitter
+    spec:
+      containers:
+      - name: kernelserver-minnietwitter
+        image: dcap/minnietwitter:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 22345
+        command: ["/root/dcap/start-kernelserver.sh"]
+        args: ["oms-minnietwitter-svc", "22346"]

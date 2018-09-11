@@ -1,0 +1,24 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: minnietwitter-app-deploy
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: minnietwitter-app
+  template:
+    metadata:
+      labels:
+        app: minnietwitter-app
+    spec:
+      containers:
+      - name: minnietwitter-app
+        image: dcap/minnietwitter:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 22345
+        command: ["/root/dcap/start-app.sh"]
+        args: ["sapphire.appexamples.minnietwitter.device.generator.TwitterWorldGenerator", "oms-minnietwitter-svc", "22346"]
+

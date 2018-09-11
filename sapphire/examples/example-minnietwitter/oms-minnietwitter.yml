@@ -1,0 +1,40 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: oms-minnietwitter-deploy
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: oms-minnietwitter
+  template:
+    metadata:
+      labels:
+        app: oms-minnietwitter
+    spec:
+      containers:
+      - name: oms-minnietwitter
+        image: dcap/minnietwitter:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 22346
+        command: ["/root/dcap/start-oms.sh"]
+        args: ["sapphire.appexamples.minnietwitter.cloud.MinnieTwitterStart"]
+        securityContext:
+          privileged: true # FOR DEBUG
+          allowPrivilegeEscalation: true
+          capabilities:
+            add: ["NET_ADMIN", "SYS_TIME"]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: oms-minnietwitter-svc
+spec:
+  ports:
+  - port: 22346
+    targetPort: 22346
+    protocol: TCP
+  selector:
+    app: oms-minnietwitter

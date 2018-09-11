@@ -149,10 +149,8 @@ public class DHTPolicy2 extends SapphirePolicy {
 				DHTNode newNode = new DHTNode(id, dhtServer);
 				nodes.put(id, newNode);
 
-				InetSocketAddress newServerAddress = null;
-
 				for (int i = 1; i < regions.size(); i++) {
-					newServerAddress = oms().getServerInRegion(regions.get(i));
+					InetSocketAddress newServerAddress = oms().getServerInRegion(regions.get(i));
 					SapphireServerPolicy replica = dhtServer.sapphire_replicate(server.getProcessedPolicies());
 					dhtServer.sapphire_pin_to_server(replica, newServerAddress);
 				}

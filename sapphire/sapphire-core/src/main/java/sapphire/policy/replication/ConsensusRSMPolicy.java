@@ -2,6 +2,7 @@ package sapphire.policy.replication;
 
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
+import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
@@ -10,6 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Logger;
 import sapphire.policy.DefaultSapphirePolicy;
+import sapphire.policy.dht.DHTPolicy2;
 import sapphire.policy.util.consensus.raft.AlreadyVotedException;
 import sapphire.policy.util.consensus.raft.CandidateBehindException;
 import sapphire.policy.util.consensus.raft.InvalidLogIndex;
@@ -191,11 +193,15 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
                 // Register the first replica, which has already been created.
                 ServerPolicy consensusServer = (ServerPolicy) server;
                 addServer(consensusServer);
+                ConsensusRSMPolicy.ServerPolicy defaultServer = (ConsensusRSMPolicy.ServerPolicy) server;
+
                 // Create additional replicas, one per region. TODO:  Create N-1 replicas on
                 // different servers in the same zone.
                 for (int i = 1; i < regions.size(); i++) {
-                    ServerPolicy replica = (ServerPolicy) consensusServer.sapphire_replicate();
-                    replica.sapphire_pin(regions.get(i));
+                    InetSocketAddress newServerAddress = oms().getServerInRegion(regions.get(i));
+                    ServerPolicy replica = (ServerPolicy) consensusServer.sapphire_replicate(server.getProcessedPolicies());
+                    defaultServer.sapphire_pin_to_server(replica, newServerAddress);
+//                    replica.sapphire_pin(regions.get(i));
                     replica.initializeRaftServer();
                 }
                 consensusServer.sapphire_pin(regions.get(0));

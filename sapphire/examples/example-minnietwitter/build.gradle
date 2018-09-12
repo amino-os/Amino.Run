@@ -227,4 +227,23 @@ subprojects {
     genMinnieTwitterStubs.dependsOn copyClasses
     compileMinnieTwitterStubs.dependsOn genMinnieTwitterStubs
     fatJar.dependsOn compileMinnieTwitterStubs
+
+    task runMinnieTwitterOms(type: JavaExec) {
+        dependsOn fatJar
+        classpath = sourceSets.main.runtimeClasspath
+        main = 'sapphire.oms.OMSServerImpl'
+        args project.property('omsIp'), project.property('omsPort'), project.property('appClassName')
+    }
+
+    task runMinnieTwitterKernelServer(type: JavaExec) {
+        classpath = sourceSets.main.runtimeClasspath
+        main = 'sapphire.kernel.server.KernelServerImpl'
+        args project.property('kernelServerIp'), project.property('kernelServerPort'), project.property('omsIp'), project.property('omsPort')
+    }
+
+    task runMinnieTwitterApp(type: JavaExec) {
+        classpath = sourceSets.main.runtimeClasspath
+        main = 'sapphire.appexamples.minnietwitter.device.generator.TwitterWorldGenerator'
+        args project.property('omsIp'), project.property('omsPort'), project.property('kernelIpAndroid'), project.property('kernelServerPort')
+    }
 }

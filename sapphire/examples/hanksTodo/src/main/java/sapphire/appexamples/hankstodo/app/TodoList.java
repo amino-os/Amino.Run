@@ -22,9 +22,11 @@ import sapphire.runtime.SapphireConfiguration;
 
 
 // To verify:
-@SapphireConfiguration(DMs = "sapphire.policy.dht.ExplicitReplicationPolicy,sapphire.policy.dht.ExplicitReplicationPolicy,sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy")
+//@SapphireConfiguration(DMs = "sapphire.policy.dht.ExplicitReplicationPolicy,sapphire.policy.dht.ExplicitReplicationPolicy,sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy")
 //@SapphireConfiguration(DMs = "sapphire.policy.DefaultSapphirePolicy")
 //@SapphireConfiguration(DMs = "sapphire.policy.dht.DHTPolicy2")
+//@SapphireConfiguration(DMs = "sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy,sapphire.policy.dht.DHTPolicy2,sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy")
+@SapphireConfiguration(DMs = "sapphire.policy.replication.ConsensusRSMPolicy")
 //@SapphireConfiguration(DMs = "sapphire.policy.DefaultSapphirePolicy,sapphire.policy.dht.DHTPolicy2")
 //@SapphireConfiguration(DMs = "sapphire.policy.dht.DHTPolicy2,sapphire.policy.dht.DHTPolicy2")
 //@SapphireConfiguration(DMs = "sapphire.policy.DefaultSapphirePolicy,sapphire.policy.DefaultSapphirePolicy")

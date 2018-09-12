@@ -248,7 +248,6 @@ public class OMSServerImpl implements OMSServer {
             SapphirePolicy.SapphireServerPolicy serverPolicy =
                     (SapphirePolicy.SapphireServerPolicy) policyHandler.getObjects().get(0);
             appObjStub = (AppObjectStub) serverPolicy.sapphire_getRemoteAppObject().getObject();
-            appObjStub = (AppObjectStub) appObjStub.$__clone();
             appObjStub.$__initialize(false);
             SapphirePolicy.SapphireClientPolicy client = clientPolicy.getClass().newInstance();
             client.onCreate(

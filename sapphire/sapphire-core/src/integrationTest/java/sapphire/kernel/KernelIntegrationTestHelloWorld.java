@@ -4,6 +4,7 @@ import java.net.InetSocketAddress;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import sapphire.appexamples.helloworld.HelloWorld;
 import sapphire.common.SapphireObjectID;
@@ -15,6 +16,7 @@ import sapphire.oms.OMSServerImpl;
 /** Tests the SO creation process in Kernel Server and OMS. */
 public class KernelIntegrationTestHelloWorld {
 
+    @Ignore
     @Test
     public void testSOCreation() {
 

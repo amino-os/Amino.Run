@@ -302,7 +302,7 @@ public class Sapphire {
         return serverPolicy;
     }
 
-    private static AppObjectStub getAppStub(
+    public static AppObjectStub getAppStub(
             Class<?> appObjectClass, SapphireServerPolicy serverPolicy, Object[] args)
             throws Exception {
         String appStubClassName =
@@ -313,7 +313,7 @@ public class Sapphire {
         return extractAppStub(serverPolicy.$__initialize(Class.forName(appStubClassName), args));
     }
 
-    private static AppObjectStub extractAppStub(AppObjectStub appObject) throws Exception {
+    public static AppObjectStub extractAppStub(AppObjectStub appObject) throws Exception {
         // Return shallow copy of the kernel object
         AppObjectStub obj = (AppObjectStub) appObject.$__clone();
 

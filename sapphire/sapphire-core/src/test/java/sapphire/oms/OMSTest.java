@@ -7,6 +7,8 @@ import static sapphire.common.UtilsTest.extractFieldValueOnInstance;
 
 import java.net.InetSocketAddress;
 import java.rmi.registry.LocateRegistry;
+import java.util.List;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -152,6 +154,18 @@ public class OMSTest extends BaseTest {
         spiedOms.detachFromSapphireObject("MySapphireObject");
         assertEquals(
                 1, getOmsSapphireInstance(spiedOms, group.getSapphireObjId()).getReferenceCount());
+    }
+
+    @Test  public void getServerTest()throws  Exception{
+        List<InetSocketAddress> servers=   spiedOms.getServers();
+
+        /* Reference count must become 3 (Since three kernel server are added )  */
+        assertEquals(new Integer(3),new Integer(servers.size()));
+    }
+
+    @Test public void mainTest() throws Exception{
+
+        OMSServerImpl.main(new String[]{"127.0.01","10005"});
     }
 
     @After

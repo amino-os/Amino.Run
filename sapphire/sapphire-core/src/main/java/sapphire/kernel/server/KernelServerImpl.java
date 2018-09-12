@@ -6,6 +6,7 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -22,7 +23,10 @@ import sapphire.kernel.common.KernelRPC;
 import sapphire.kernel.common.KernelRPCException;
 import sapphire.kernel.common.ServerInfo;
 import sapphire.oms.OMSServer;
+import sapphire.policy.DefaultSapphirePolicyUpcallImpl;
 import sapphire.policy.SapphirePolicy;
+import sapphire.policy.SapphirePolicyContainer;
+import sapphire.policy.SapphirePolicyLibrary.*;
 
 /** 
  * Sapphire Kernel Server. Runs on every Sapphire node, knows how to talk to the OMS, handles RPCs and has a client for making RPCs.
@@ -107,7 +111,18 @@ public class KernelServerImpl implements KernelServer{
 	 */
 	public void copyKernelObject(KernelOID oid, KernelObject object) throws RemoteException, KernelObjectNotFoundException {
 		System.out.println("Adding object " + oid + " to this server at " + host.getAddress() + ":" + host.getPort());
-		objectManager.addObject(oid, object);
+
+		// to add KOs of in-chained server policy to local object manager
+		Serializable realObj = object.getObject();
+		if (realObj instanceof SapphireServerPolicyLibrary) {
+			SapphireServerPolicyLibrary outmostSP = (SapphireServerPolicyLibrary)realObj;
+			for (SapphirePolicyContainer spContainer: outmostSP.getProcessedPolicies()) {
+				SapphireServerPolicyLibrary sp = spContainer.getServerPolicy();
+				KernelOID koid = sp.$__getKernelOID();
+				this.objectManager.addObject(koid, new KernelObject(sp));
+			}
+		}
+
 		object.uncoalesce();
 	}
 	

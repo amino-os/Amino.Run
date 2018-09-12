@@ -89,7 +89,7 @@ public class ExplicitMigrationPolicy extends DefaultSapphirePolicy {
             }
 
             if (!localAddress.equals(destinationAddr)) {
-                localKernel.moveKernelObjectToServer(destinationAddr, this.oid);
+                sapphire_pin_to_server(this, destinationAddr);
             }
 
             logger.info("Successfully performed Explicit Migration of object from " + localAddress + " to " + destinationAddr);

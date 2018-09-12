@@ -24,6 +24,8 @@ public class TodoActivity {
 		String Do1_2 = "Do this 1.2";
 		String Do2_1 = "Do that 2.1";
 		String Do2_2 = "Do that 2.2";
+		String Do3_1 = "Do three 3.1";
+		String Do3_2 = "Do three 3.2";
 
 		Registry registry;
 		AndroidLoggingHandler.reset(new AndroidLoggingHandler());
@@ -40,29 +42,40 @@ public class TodoActivity {
 			TodoList td1 = tlm.newTodoList(ListName);
 			System.out.println("new to do list for 1");
 
-			// Add to-do items.
-            td1.addToDo("1", Do1_1);
-			System.out.println(Do1_1);
-            td1.addToDo("1", Do1_2);
-			System.out.println(Do1_2);
-            td1.addToDo("2", Do2_1);
-			System.out.println(Do2_1);
-            td1.addToDo("2", Do2_2);
-			System.out.println(Do2_2);
+			for (int i=0; i<10; i++) {
+				// Add to-do items.
+				td1.addToDo("1", Do1_1+"<"+i+">");
+//				System.out.println(Do1_1);
+				td1.addToDo("1", Do1_2+"<"+i+">");
+//				System.out.println(Do1_2);
+				td1.addToDo("2", Do2_1+"<"+i+">");
+//				System.out.println(Do2_1);
+				td1.addToDo("2", Do2_2+"<"+i+">");
+//				System.out.println(Do2_2);
+				td1.addToDo("3", Do3_1+"<"+i+">");
+//				System.out.println(Do3_1);
+				td1.addToDo("3", Do3_2+"<"+i+">");
+				System.out.println(Do3_2);
 
-			// Retrieve to-do items.
-            TodoList getTd1 = tlm.getToDoList(ListName);
-            String testTdString2 = getTd1.getToDoString("2");
-            String expectedTdString2 = Do2_1 + " : " + Do2_2+ " : ";
-			System.out.println("Expect testTdString for 2: " + expectedTdString2);
-			System.out.println("Actual testTdString for 2: " + testTdString2);
+				// Retrieve to-do items.
+				TodoList getTd1 = tlm.getToDoList(ListName);
+				String testTdString2 = getTd1.getToDoString("2");
+				String expectedTdString2 = Do2_1 + " : " + Do2_2 + " : ";
+//				System.out.println("Expect testTdString for 2: " + expectedTdString2);
+				System.out.println("Actual testTdString for 2: " + testTdString2);
 
-            String testTdString1 = getTd1.getToDoString("1");
-			String expectedTdString1 = Do1_1 + " : " + Do1_2+ " : ";
-			System.out.println("Expect testTdString for 1: " + expectedTdString1);
-			System.out.println("Actual testTdString for 1: " + testTdString1);
+				String testTdString1 = getTd1.getToDoString("1");
+				String expectedTdString1 = Do1_1 + " : " + Do1_2 + " : ";
+//				System.out.println("Expect testTdString for 1: " + expectedTdString1);
+				System.out.println("Actual testTdString for 1: " + testTdString1);
 
-            tlm.doSomething("do something");
+				String testTdString3 = getTd1.getToDoString("3");
+				String expectedTdString3 = Do3_1 + " : " + Do3_2 + " : ";
+//				System.out.println("Expect testTdString for 3: " + expectedTdString3);
+				System.out.println("Actual testTdString for 3: " + testTdString3);
+			}
+
+            tlm.doSomething("Testing completed.");
 
 			// Added for testing DHTPolicy -->
 			/*td1.addToDoItem("11", Do1_1);

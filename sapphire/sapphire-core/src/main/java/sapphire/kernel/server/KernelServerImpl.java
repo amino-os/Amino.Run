@@ -202,7 +202,8 @@ public class KernelServerImpl implements KernelServer {
             e.printStackTrace();
             throw new RemoteException("Could not contact destination server.");
         } catch (KernelObjectStubNotCreatedException e) {
-            throw new Error("Failed to create policy stub object on destination server.", e);
+            throw new RemoteException(
+                    "Failed to create policy stub object on destination server.", e);
         }
 
         try {

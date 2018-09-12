@@ -172,7 +172,23 @@ public class KernelServerManager {
         }
     }
 
-    public InetSocketAddress getServerInRegion(String region) {
+    /**
+     * Gets the first server in the region
+     *
+     * @param region
+     * @return
+     */
+    public InetSocketAddress getFirstServerInRegion(String region) {
+        return regions.get(region).get(0);
+    }
+
+    /**
+     * Gets the random server in the given region
+     *
+     * @param region
+     * @return
+     */
+    public InetSocketAddress getRandomServerInRegion(String region) {
         ArrayList<InetSocketAddress> hosts = regions.get(region);
         return hosts.get(new Random().nextInt(hosts.size()));
     }

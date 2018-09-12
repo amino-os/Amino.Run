@@ -144,7 +144,7 @@ public class OMSServerImpl implements OMSServer {
      */
     @Override
     public InetSocketAddress getServerInRegion(String region) throws RemoteException {
-        return serverManager.getServerInRegion(region);
+        return serverManager.getFirstServerInRegion(region);
     }
 
     /**
@@ -190,7 +190,8 @@ public class OMSServerImpl implements OMSServer {
     public SapphireObjectID createSapphireObject(String absoluteSapphireClassName, Object... args)
             throws RemoteException, SapphireObjectCreationException {
         /* Get a random server in the first region */
-        InetSocketAddress host = serverManager.getServerInRegion(serverManager.getRegions().get(0));
+        InetSocketAddress host =
+                serverManager.getRandomServerInRegion(serverManager.getRegions().get(0));
         if (host == null) {
             throw new SapphireObjectCreationException(
                     "Failed to create sapphire object. Kernel server is not available in the region");
@@ -328,6 +329,7 @@ public class OMSServerImpl implements OMSServer {
 
         EventHandler handler = getSapphireObjectDispatcher(sapphireObjId);
         if (handler == null) {
+            logger.warning("Sapphire object handler is null");
             return false;
         }
 

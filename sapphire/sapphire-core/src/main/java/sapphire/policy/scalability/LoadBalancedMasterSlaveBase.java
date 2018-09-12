@@ -212,9 +212,9 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultSapphirePolicy 
             } catch (NotBoundException e) {
                 throw new Error("rmi operation not bound: " + e, e);
             } catch (SapphireObjectNotFoundException e) {
-                throw new Error("Failed to find sapphire object: " + e, e);
+                throw new RuntimeException("Failed to find sapphire object: " + e, e);
             } catch (SapphireObjectReplicaNotFoundException e) {
-                throw new Error("Failed to find sapphire object replica: " + e, e);
+                throw new RuntimeException("Failed to find sapphire object replica: " + e, e);
             }
         }
 

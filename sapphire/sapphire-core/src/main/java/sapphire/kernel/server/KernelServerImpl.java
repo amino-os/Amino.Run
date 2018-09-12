@@ -111,7 +111,6 @@ public class KernelServerImpl implements KernelServer{
 	 */
 	public void copyKernelObject(KernelOID oid, KernelObject object) throws RemoteException, KernelObjectNotFoundException {
 		System.out.println("Adding object " + oid + " to this server at " + host.getAddress() + ":" + host.getPort());
-		objectManager.addObject(oid, object);
 
 		// to add KOs of in-chained server policy to local object manager
 		Serializable realObj = object.getObject();
@@ -120,10 +119,7 @@ public class KernelServerImpl implements KernelServer{
 			for (SapphirePolicyContainer spContainer: outmostSP.getProcessedPolicies()) {
 				SapphireServerPolicyLibrary sp = spContainer.getServerPolicy();
 				KernelOID koid = sp.$__getKernelOID();
-				if (koid != oid) {	// except for the outmost which had already been added
-					// assuming no oid collision
-					this.objectManager.addObject(koid, new KernelObject(sp));
-				}
+				this.objectManager.addObject(koid, new KernelObject(sp));
 			}
 		}
 

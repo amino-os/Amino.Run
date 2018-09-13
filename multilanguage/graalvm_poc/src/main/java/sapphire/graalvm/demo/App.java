@@ -1,6 +1,6 @@
-package poc;
+package sapphire.graalvm.demo;
 
-import poc.*;
+import sapphire.graalvm.demo.*;
 
 public class App {
     // The purpose of this POC is to demonstrate that

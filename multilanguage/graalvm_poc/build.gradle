@@ -17,3 +17,11 @@ compileJava.options.forkOptions.executable = project.hasProperty('javacPath') ? 
 task jdkVersion {
     println JavaVersion.current()
 }
+
+task runApp(type: JavaExec) {
+    main = "sapphire.graalvm.demo.App"
+    classpath = sourceSets.main.runtimeClasspath
+    systemProperties = [
+        JS_HOME: System.getProperty('JS_HOME', './src/main/js/')
+    ]
+}

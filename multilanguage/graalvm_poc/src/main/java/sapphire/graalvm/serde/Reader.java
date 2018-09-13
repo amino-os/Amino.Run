@@ -82,7 +82,7 @@ public class Reader {
 			if(s.equals("__proto__")) { //TODO: for some reason can't serialize js inheritance chain
 				continue;
 			}
-			System.out.println("Reading member " + s);
+			System.out.println("Reading member, id is " + s);
 			Value member = readHelper();
 			if(member != null) {
 				out.putMember(s, member);

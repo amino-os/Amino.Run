@@ -252,7 +252,7 @@ public class KernelServerImpl implements KernelServer {
 
     /** Send heartbeats to OMS. */
     static void startheartbeat(ServerInfo srvinfo) {
-        logger.info("heartbeat KernelServer" + srvinfo);
+        logger.fine("heartbeat KernelServer" + srvinfo);
         try {
             oms.heartbeatKernelServer(srvinfo);
         } catch (Exception e) {

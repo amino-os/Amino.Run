@@ -145,7 +145,7 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 				getGroup().addServer((SapphireServerPolicy) serverPolicyStub);
 
 				if (nextPolicyList != null && nextPolicyList.size() > 0) {
-					serverPolicy = nextPolicyList.get(nextPolicyList.size() - 1).getServerPolicy();
+					serverPolicyStub = nextPolicyList.get(nextPolicyList.size() - 1).getServerPolicyStub();
 				}
 			} catch (RemoteException e) {
 				throw new Error("Could not contact oms.");
@@ -164,7 +164,7 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 				e.printStackTrace();
 				throw new Error("Unknown exception occurred!");
 			}
-			return serverPolicy;
+			return (SapphireServerPolicy) serverPolicyStub;
 		}
 
 		public AppObject sapphire_getAppObject() {

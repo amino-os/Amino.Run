@@ -1,4 +1,4 @@
-package poc;
+package sapphire.graalvm.demo;
 
 // This is a stub file for javascript College class.
 // This file is hand coded at present. Eventually it

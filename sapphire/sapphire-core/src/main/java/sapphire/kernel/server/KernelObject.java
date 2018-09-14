@@ -41,6 +41,9 @@ public class KernelObject extends ObjectHandler {
 			ret = super.invoke(method, params);
 		} catch (Exception e) {
 			e.printStackTrace();
+			// Throwing the Exception again so that the same is returned to the client.
+			// The client need to take appropriate action based on the Exception.
+			throw e;
 		}
 		finally {
 			rpcCounter.release();

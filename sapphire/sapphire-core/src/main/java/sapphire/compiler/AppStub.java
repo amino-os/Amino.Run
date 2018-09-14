@@ -4,6 +4,7 @@ package sapphire.compiler;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.Iterator;
 import java.util.TreeSet;
 
 import org.apache.harmony.rmi.common.RMIUtil;
@@ -57,7 +58,7 @@ public final class AppStub extends Stub {
 	@Override
 	public String getStubFields() {
 		StringBuilder buffer = new StringBuilder();
-		buffer.append(indenter.indent() + "sapphire.policy.SapphirePolicy.SapphireClientPolicy $__client = null;" + EOLN);
+		buffer.append(indenter.indent() + "sapphire.policy.SapphirePolicy.SapphireClientPolicy " + GlobalStubConstants.APPSTUB_POLICY_CLIENT_FIELD_NAME + " = null;" + EOLN);
 		buffer.append(indenter.indent() + "boolean $__directInvocation = false;" + EOLN);
 		buffer.append(indenter.indent() + "AppObject appObject = null;" + EOLN);
 		return buffer.toString();
@@ -95,7 +96,7 @@ public final class AppStub extends Stub {
 
 		/* The $__initialize function */
 		buffer.append(indenter.indent() + "public void $__initialize(sapphire.policy.SapphirePolicy.SapphireClientPolicy client) {" + EOLN);
-		buffer.append(indenter.tIncrease() + "$__client = client;" + EOLN);
+		buffer.append(indenter.tIncrease() + GlobalStubConstants.APPSTUB_POLICY_CLIENT_FIELD_NAME + " = client;" + EOLN);
 		buffer.append(indenter.indent() + "}" + EOLN + EOLN);
 
 		/* The $__initialize function for directInvocation */
@@ -129,6 +130,7 @@ public final class AppStub extends Stub {
 	public String getMethodContent(MethodStub m) {
 		StringBuilder buffer = new StringBuilder("");
 
+		int tabWidth = 1;
 		// Construct list of comma separated params & the ArrayList of params
 		StringBuilder cListParams = new StringBuilder("(");
 		StringBuilder listParams = new StringBuilder("");
@@ -141,27 +143,40 @@ public final class AppStub extends Stub {
 
 		// Check if direct invocation
 		buffer.append(indenter.indent() + "java.lang.Object $__result = null;" + EOLN);
-		buffer.append(indenter.indent() + "try {" + EOLN);
-		buffer.append(indenter.tIncrease() + "if ($__directInvocation)" + EOLN);
+		buffer.append(indenter.indent() + "if ($__directInvocation) {" + EOLN);
+		buffer.append(indenter.tIncrease(tabWidth) + "try {" + EOLN);
 		if (!m.retType.getSimpleName().equals("void"))
-			buffer.append(indenter.tIncrease(2) + "$__result = super." + m.name + cListParams.toString() + ";" + EOLN);
+			buffer.append(indenter.tIncrease(tabWidth + 1) + "$__result = super." + m.name + cListParams.toString() + ";" + EOLN);
 		else
-			buffer.append(indenter.tIncrease(2) + "super." + m.name + cListParams.toString() + ";" + EOLN);
-		buffer.append(indenter.tIncrease() + "else {" + EOLN);
-		buffer.append(indenter.tIncrease(2) + "java.util.ArrayList<Object> $__params = new java.util.ArrayList<Object>();" + EOLN); //$NON-NLS-1$
-		buffer.append(indenter.tIncrease(2) + "String $__method = \"" + m.genericName + "\";" + EOLN); //$NON-NLS-1$
-		buffer.append(listParams.toString()); //$NON-NLS-1$
-		buffer.append(indenter.tIncrease(2) + "$__result = $__client.onRPC($__method, $__params);" + EOLN);
-		buffer.append(indenter.tIncrease() + "}" + EOLN);
-		buffer.append(indenter.indent() + "} catch (Exception e) {" + EOLN); //$NON-NLS-1$ //$NON-NLS-2$
-		buffer.append(indenter.tIncrease() + "e.printStackTrace();" + EOLN); //$NON-NLS-1$
-		buffer.append(indenter.indent() + "}" + EOLN); //$NON-NLS-1$
-		if (!m.retType.getSimpleName().equals("void")) {
-			buffer.append(indenter.indent() + "return " //$NON-NLS-1$
+			buffer.append(indenter.tIncrease(tabWidth + 1) + "super." + m.name + cListParams.toString() + ";" + EOLN);
+			buffer.append(indenter.tIncrease(tabWidth) + "} catch (java.lang.Exception e) {" + EOLN + indenter.tIncrease(tabWidth + 1) + "throw new sapphire.common.AppExceptionWrapper(e);" + EOLN + indenter.tIncrease(tabWidth) + '}' + EOLN);buffer.append(indenter.indent() + "} else {" + EOLN); // $NON-NLS-1$
+			buffer.append(indenter.tIncrease(tabWidth) + "java.util.ArrayList<Object> $__params = new java.util.ArrayList<Object>();" + EOLN); //$NON-NLS-1$
+			buffer.append(indenter.tIncrease(tabWidth) + "String $__method = \"" + m.genericName + "\";" + EOLN); //$NON-NLS-1$
+			buffer.append(listParams.toString()); //$NON-NLS-1$
+			buffer.append(indenter.tIncrease(tabWidth) + "try {" + EOLN); // $NON-NLS-1$
+			buffer.append(indenter.tIncrease(tabWidth + 1) + "$__result = " + GlobalStubConstants.APPSTUB_POLICY_CLIENT_FIELD_NAME + ".onRPC($__method, $__params);" + EOLN); // $NON-NLS-1$
+			buffer.append(indenter.tIncrease(tabWidth) + "} catch (sapphire.common.AppExceptionWrapper e) {" + EOLN + indenter.tIncrease(tabWidth + 1) + "Exception ex = e.getException();" + EOLN);
+			buffer.append(indenter.tIncrease(tabWidth + 1));
+			for (Iterator i = m.catches.iterator(); i.hasNext(); ) {
+				Class clz = (Class) i.next();
+				buffer.append("if (ex instanceof " + clz.getName() + ") {" + EOLN + indenter.tIncrease(tabWidth + 2) + "throw (" + clz.getName() + ")ex;" + EOLN);
+				if (i.hasNext()) {
+					buffer.append(indenter.tIncrease(tabWidth + 1) + "} else ");
+				}
+			}
+
+			buffer.append(
+                indenter.tIncrease(tabWidth + 1) + "} else {" + EOLN //$NON-NLS-1$
+                        + indenter.tIncrease(tabWidth + 2) + "throw new java.lang.RuntimeException(ex);" + EOLN + indenter.tIncrease(tabWidth + 1) + '}' + EOLN);
+			buffer.append(indenter.tIncrease(tabWidth) + "} catch (java.lang.Exception e) {" + EOLN //$NON-NLS-1$
+                        + indenter.tIncrease(tabWidth + 1) + "throw new java.lang.RuntimeException(e);" + EOLN //$NON-NLS-1$
+                        + indenter.tIncrease(tabWidth) + "}" + EOLN); //$NON-NLS-1$
+			buffer.append(indenter.indent() + "}" + EOLN); //$NON-NLS-1$
+			if (!m.retType.getSimpleName().equals("void")) {
+				buffer.append(indenter.indent() + "return " //$NON-NLS-1$
 					+ RmicUtil.getReturnObjectString(m.retType, "$__result")
 					+ ';' + EOLN);
-		}
+			}
 		return buffer.toString();
-
 	}
 }

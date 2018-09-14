@@ -2,6 +2,7 @@ package sapphire.compiler;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.Iterator;
 import java.util.TreeSet;
 
 import org.apache.harmony.rmi.compiler.RmicUtil;
@@ -182,15 +183,34 @@ public class PolicyStub extends Stub {
 
         // Write return statement.
         buffer.append(indenter.indent() + "java.lang.Object $__result = null;" + EOLN);
-        buffer.append(indenter.indent() + "try {" + EOLN);
-        buffer.append(indenter.tIncrease() + "$__result = $__makeKernelRPC($__method, $__params);" + EOLN); //$NON-NLS-1$ //$NON-NLS-2$
-        buffer.append(indenter.indent() + "} catch (Exception e) {" + EOLN); //$NON-NLS-1$ //$NON-NLS-2$
-        buffer.append(indenter.tIncrease() + "e.printStackTrace();" + EOLN); //$NON-NLS-1$
-        buffer.append(indenter.indent() + "}" + EOLN); //$NON-NLS-1$
+        /* If method do not throw generic exception. Catch all the exceptions in the stub and rethrow
+        them based on exceptions method is allowed to throw. Runtime exceptions are thrown to app
+        as is. And rest of the exceptions are wrapped into runtime exceptions and thrown to app */
+        if (!m.exceptions.contains(Exception.class)) {
+            /* Append try catch block for this case */
+			buffer.append(indenter.indent() + "try {" + EOLN);
+			buffer.append(indenter.tIncrease() + "$__result = $__makeKernelRPC($__method, $__params);" + EOLN); //$NON-NLS-1$ //$NON-NLS-2$
+
+        } else {
+            buffer.append(indenter.indent() + "$__result = $__makeKernelRPC($__method, $__params);" + EOLN); //$NON-NLS-1$ //$NON-NLS-2$
+        }
+
+        if (!m.exceptions.contains(Exception.class)) {
+            for (Iterator i = m.catches.iterator(); i.hasNext(); ) {
+                Class clz = (Class) i.next();
+                buffer.append(indenter.indent() + "} catch (" //$NON-NLS-1$
+                                + clz.getName() + " e) {" + EOLN //$NON-NLS-1$
+                                + indenter.tIncrease() + "throw e;" + EOLN); //$NON-NLS-1$
+            }
+
+            buffer.append(indenter.indent() + "} catch (java.lang.Exception e) {" + EOLN //$NON-NLS-1$
+                            + indenter.tIncrease() + "throw new java.lang.RuntimeException(e);" //$NON-NLS-1$
+                            + EOLN //$NON-NLS-1$
+                            + indenter.indent() + '}' + EOLN);
+        }
         if (!m.retType.getSimpleName().equals("void")) {
-        	buffer.append(indenter.indent() + "return " //$NON-NLS-1$
-        			+ RmicUtil.getReturnObjectString(m.retType, "$__result")
-                    + ';' + EOLN);
+			buffer.append(indenter.indent() + "return " //$NON-NLS-1$
+				+ RmicUtil.getReturnObjectString(m.retType, "$__result") + ';' + EOLN);
         }
         return buffer.toString();
     }

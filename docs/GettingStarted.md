@@ -102,3 +102,5 @@ export BINTRAY_API_KEY="<bintray_api_key>"
 # Android Studio Setup
 
 ### Enable GraalVM SDK
+To enbale GraalVM in Android Studio, you need to 1) add Graal SDK and 2) manually add `jre/lib/boot/graal-sdk.jar` in SDK classpath. Otherwise, Android Studio will not be able to resolve polyglot data types. 
+![add_graalvm_sdk](images/Add_GraalVM_SDK.png)

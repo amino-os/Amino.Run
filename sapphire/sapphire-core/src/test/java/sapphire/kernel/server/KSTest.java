@@ -1,19 +1,18 @@
-package sapphire.oms;
+package sapphire.kernel.server;
 
-import static org.junit.Assert.assertEquals;
-import static sapphire.common.SapphireUtils.deleteSapphireObject;
-import static sapphire.common.SapphireUtils.getOmsSapphireInstance;
+import static org.powermock.api.mockito.PowerMockito.mock;
 import static sapphire.common.UtilsTest.extractFieldValueOnInstance;
 
+import java.lang.reflect.Field;
 import java.net.InetSocketAddress;
 import java.rmi.registry.LocateRegistry;
-import java.util.List;
-import org.junit.After;
+import java.util.ArrayList;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import sapphire.app.SO;
@@ -25,13 +24,14 @@ import sapphire.common.SapphireUtils;
 import sapphire.kernel.common.KernelOID;
 import sapphire.kernel.common.KernelObjectFactory;
 import sapphire.kernel.common.KernelObjectStub;
-import sapphire.kernel.server.KernelServerImpl;
+import sapphire.kernel.common.KernelRPC;
+import sapphire.kernel.common.KernelRPCException;
+import sapphire.kernel.common.ServerInfo;
 import sapphire.policy.DefaultSapphirePolicy;
+import sapphire.policy.util.ResettableTimer;
 import sapphire.runtime.Sapphire;
 
-/** OMS API test cases */
-
-/** Created by Venugopal Reddy K 00900280 on 16/4/18. */
+/** Created by Vishwajeet on 11/9/18. */
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({
     KernelServerImpl.class,
@@ -40,7 +40,7 @@ import sapphire.runtime.Sapphire;
     LocateRegistry.class,
     SapphireUtils.class
 })
-public class OMSTest extends BaseTest {
+public class KSTest extends BaseTest {
     @Rule public ExpectedException thrown = ExpectedException.none();
 
     public static class DefaultSO extends SO implements SapphireObject {}
@@ -112,7 +112,7 @@ public class OMSTest extends BaseTest {
     public void setUp() throws Exception {
         super.setUp(Server_Stub.class, Group_Stub.class);
         SapphireObjectID sapphireObjId =
-                spiedOms.createSapphireObject("sapphire.oms.OMSTest$DefaultSO");
+                spiedOms.createSapphireObject("sapphire.kernel.server.KSTest$DefaultSO");
         soStub = (SO_Stub) spiedOms.acquireSapphireObjectStub(sapphireObjId);
         client =
                 (DefaultSapphirePolicy.DefaultClientPolicy)
@@ -121,56 +121,19 @@ public class OMSTest extends BaseTest {
     }
 
     @Test
-    public void acquireSapphireObjectStubSuccessTest() throws Exception {
-        SO_Stub appObjstub = (SO_Stub) spiedOms.acquireSapphireObjectStub(group.getSapphireObjId());
-        assertEquals(
-                1, getOmsSapphireInstance(spiedOms, group.getSapphireObjId()).getReferenceCount());
-
-        /* setI on the client side stub */
-        appObjstub.setI(new Integer(10));
-
-        /* Verify if value is set on the SO */
-        assertEquals(new Integer(10), so.getI());
+    public void testHeartbeat() throws Exception {
+        Field field = PowerMockito.field(KernelServerImpl.class, "ksHeartbeatSendTimer");
+        field.set(KernelServerImpl.class, mock(ResettableTimer.class));
+        ServerInfo srvinfo = new ServerInfo(new InetSocketAddress("127.0.0.1", 10001), "IND");
+        KernelServerImpl.startheartbeat(srvinfo);
     }
 
     @Test
-    public void attachAndDetactSapphireObjectSuccessTest() throws Exception {
-        spiedOms.setSapphireObjectName(group.getSapphireObjId(), "MySapphireObject");
-
-        SO_Stub appObjstub = (SO_Stub) spiedOms.attachToSapphireObject("MySapphireObject");
-
-        /* Reference count must become 2. Once user created it and other attached to it */
-        assertEquals(
-                2, getOmsSapphireInstance(spiedOms, group.getSapphireObjId()).getReferenceCount());
-
-        /* setI on the client side stub */
-        appObjstub.setI(new Integer(100));
-
-        /* Verify if value is set on the SO */
-        assertEquals(new Integer(100), so.getI());
-
-        /* Reference count must become 1(decrement by 1) upon detach */
-        spiedOms.detachFromSapphireObject("MySapphireObject");
-        assertEquals(
-                1, getOmsSapphireInstance(spiedOms, group.getSapphireObjId()).getReferenceCount());
-    }
-
-    @Test
-    public void getServerTest() throws Exception {
-        List<InetSocketAddress> servers = spiedOms.getServers();
-
-        /* Reference count must become 3 (Since three kernel server are added )  */
-        assertEquals(new Integer(3), new Integer(servers.size()));
-    }
-
-    @Test
-    public void mainTest() throws Exception {
-
-        OMSServerImpl.main(new String[] {"127.0.0.1", "10005"});
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        deleteSapphireObject(spiedOms, group.getSapphireObjId());
+    public void testMakeKernelRPC() throws Exception {
+        String method = "public java.lang.Integer sapphire.app.SO.getI()";
+        ArrayList<Object> params = new ArrayList<Object>();
+        KernelRPC rpc = new KernelRPC(server1.$__getKernelOID(), method, params);
+        thrown.expect(KernelRPCException.class);
+        spiedKs1.makeKernelRPC(rpc);
     }
 }

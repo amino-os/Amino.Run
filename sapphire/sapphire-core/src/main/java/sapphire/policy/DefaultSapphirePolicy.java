@@ -53,8 +53,7 @@ public class DefaultSapphirePolicy extends SapphirePolicy {
 	}
 	
 	public static class DefaultGroupPolicy extends SapphireGroupPolicy {
-		private Set<SapphireServerPolicy> servers = Collections.newSetFromMap(
-                new ConcurrentHashMap<SapphireServerPolicy, Boolean>());
+		private ArrayList<SapphireServerPolicy> servers = new ArrayList<SapphireServerPolicy>();
 
 		@Override
 		public void addServer(SapphireServerPolicy server) {

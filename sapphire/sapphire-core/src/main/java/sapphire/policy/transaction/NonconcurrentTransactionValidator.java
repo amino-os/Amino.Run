@@ -3,6 +3,7 @@ package sapphire.policy.transaction;
 import sapphire.common.AppObject;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Set;
 import java.util.UUID;
@@ -13,7 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * commit invalidates the unfinished ones.
  */
 public class NonconcurrentTransactionValidator implements TransactionValidator, Serializable{
-    private Set<UUID> promised = Collections.newSetFromMap(new ConcurrentHashMap<UUID, Boolean>());
+    private ArrayList<UUID> promised = new ArrayList<UUID>();
     private AppObject master;
     private SandboxProvider sandboxProvider;
 

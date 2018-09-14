@@ -6,17 +6,12 @@ repositories {
 }
 
 dependencies {
-    testCompile group: 'junit', name: 'junit', version: '4.12'
+    testCompile 'junit:junit:4.12'
 }
-
-compileJava.options.fork = true
 
 // !!!Please set javacPath in gradle.properties before building!!! 
+compileJava.options.fork = true
 compileJava.options.forkOptions.executable = project.hasProperty('javacPath') ? project.property('javacPath') : System.getenv('JDK_HOME') 
-
-task jdkVersion {
-    println JavaVersion.current()
-}
 
 task runApp(type: JavaExec) {
     main = "sapphire.graalvm.demo.App"

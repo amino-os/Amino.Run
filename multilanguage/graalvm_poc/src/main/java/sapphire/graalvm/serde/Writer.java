@@ -4,7 +4,7 @@ import org.graalvm.polyglot.*;
 import java.io.*;
 import java.util.*;
 
-public class Writer {
+public class Writer implements AutoCloseable {
 
 	//TODO: should do identity better than toString
 	private Map<String, Integer> seenCache;
@@ -77,6 +77,7 @@ public class Writer {
 		//check named members
 		if(v.hasMembers()) {
 			List<String> keys = TypesDB.getMembers(typeindex);
+			System.out.println("found members: " + keys);
 			//System.out.println("writing " + keys.size() + " members");
 			for(String k : keys) {
 				if(k.equals("__proto__")) { //TODO hard coded for js
@@ -88,8 +89,10 @@ public class Writer {
 		}
 	}
 
-	public void close() throws Exception {
-		out.close();
-		out = null;
+	public void close() throws IOException {
+        if (out != null) {
+            out.close();
+            out = null;
+        }
 	}
 }

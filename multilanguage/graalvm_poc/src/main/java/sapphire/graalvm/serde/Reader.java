@@ -5,7 +5,7 @@ import java.io.*;
 import java.util.*;
 
 
-public class Reader {
+public class Reader implements AutoCloseable {
 
 	private DataInputStream in;
 	private Context c;

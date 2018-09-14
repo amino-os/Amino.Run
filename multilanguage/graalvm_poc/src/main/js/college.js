@@ -1,35 +1,43 @@
-function Student(id, name) {
-    this.id = id;
-    this.name = name;
-}
+class Student {
+    /**
+     * Every class must have a default constructor.
+     * Deserailizer relies on the default constructor
+     * to create instance.
+     */
+    constructor() {
+        this.id = 0;
+        this.name = "";
+    }
 
-Student.prototype.setId = function(id) {
-    this.id = id;
-}
+    setId(id) {
+        this.id = id;
+    }
 
-Student.prototype.setName = function(name) {
-    this.name = name;
-}
+    setName(name) {
+        this.name = name;
+    }
 
- Student.prototype.getId = function() {
-     return this.id;
- }
+    getId() {
+        return this.id;
+    }
 
- Student.prototype.getName =function() {
-     return this.name;
- }
+    getName() {
+        return this.name;
+    }
 
-Student.prototype.constructor = function () {
-    return new Student();
+    toString() {
+        return this.id + ":" + this.name;
+    }
 }
 
 class College {
-    constructor(name) {
-        this.name = name;
+    constructor() {
+        this.name = "";
         this.students = [];
-        this.students.constructor = function constructor() {
-            return [];
-        }
+    }
+
+    setName(name) {
+        this.name = name;
     }
 
     getName() {
@@ -42,6 +50,10 @@ class College {
 
     getStudents() {
         return this.students;
+    }
+
+    toString() {
+        return this.name + this.students;
     }
 }
 

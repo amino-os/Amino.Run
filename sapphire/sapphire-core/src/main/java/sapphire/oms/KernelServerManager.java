@@ -103,7 +103,7 @@ public class KernelServerManager {
 
     public void heartbeatKernelServer(ServerInfo srvinfo)
             throws RemoteException, NotBoundException, KernelServerNotFoundException {
-        logger.info(
+        logger.fine(
                 "heartbeat from KernelServer: "
                         + srvinfo.getHost().toString()
                         + " in region "

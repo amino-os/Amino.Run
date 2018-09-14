@@ -50,21 +50,20 @@ group = project.property('mavenGroupId')
 version =  project.property('mavenVersion')
 
 // Task for Policy Stub Generation:
-// 1. Run `gradlew genPolicyStubs` to generate policy stub files
-// 2. Run `gradlew cleanGenPolicyStubs` to delete stub files
-task genPolicyStubs(type: PolicyStubGenerationTask) {
-    group 'Stub'
-    description 'Generates sub classes for Sapphire policies'
+// Run `gradlew genStubs` to generate policy stub files
+task genStubs(type: JavaExec) {
+    main = "sapphire.compiler.StubGenerator"
+    classpath = sourceSets.main.runtimeClasspath
+    def pkgName = 'sapphire.policy'
+    def src = "$buildDir/classes/java/main/sapphire/policy/"
+    def dst = "$projectDir/src/main/java/sapphire/policy/stubs/"
+    args src, pkgName, dst
+}
 
-    pkgName 'sapphire.policy'
-
-    def src = new File("$buildDir/classes/java/main/sapphire/policy/")
-    srcDir src
-    inputs.dir src
-
-    def dst = new File("$projectDir/src/main/java/sapphire/policy/stubs/")
-    dstDir dst 
-    outputs.dir dst
+task delStubs(type: Delete) {
+    delete fileTree("$projectDir/src/main/java/sapphire/policy/stubs") {
+        include '**/*_Stub.java'
+    }
 }
 
 // Task for stub compilation
@@ -75,9 +74,10 @@ task compileStubs(type: JavaCompile) {
     options.incremental = true
 }
 
-genPolicyStubs.mustRunAfter compileJava
-compileStubs.dependsOn genPolicyStubs
-tasks.googleJavaFormat.mustRunAfter genPolicyStubs
+genStubs.mustRunAfter delStubs
+genStubs.mustRunAfter compileJava
+compileStubs.dependsOn genStubs
+tasks.googleJavaFormat.mustRunAfter genStubs
 check.dependsOn tasks.googleJavaFormat
 jar.dependsOn compileStubs
 

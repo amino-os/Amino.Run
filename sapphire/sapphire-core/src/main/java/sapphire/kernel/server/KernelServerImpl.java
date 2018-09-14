@@ -121,6 +121,8 @@ public class KernelServerImpl implements KernelServer{
 				KernelOID koid = sp.$__getKernelOID();
 				this.objectManager.addObject(koid, new KernelObject(sp));
 			}
+		} else {
+			this.objectManager.addObject(oid, object);
 		}
 
 		object.uncoalesce();

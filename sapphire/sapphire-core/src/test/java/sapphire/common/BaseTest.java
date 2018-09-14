@@ -49,6 +49,10 @@ public class BaseTest {
     protected SO_Stub soStub;
     protected SO so;
     protected OMSServer spiedOms;
+    protected KernelServer spiedKs1;
+    protected KernelServer spiedKs2;
+    protected KernelServer spiedKs3;
+
     protected boolean serversInSameRegion = true;
 
     public void setUp(Class<?> serverClass, Class<?> groupClass) throws Exception {
@@ -71,11 +75,11 @@ public class BaseTest {
             regions = new String[] {"IND", "CHN", "USA"};
         }
         // create a spied kernel server instance
-        KernelServerImpl spiedKs1 = startSpiedKernelServer(spiedOms, kernelPort1, regions[0]);
-        KernelServerImpl spiedKs2 = startSpiedKernelServer(spiedOms, kernelPort2, regions[1]);
-        KernelServerImpl spiedKs3 = startSpiedKernelServer(spiedOms, kernelPort3, regions[2]);
+        spiedKs1 = startSpiedKernelServer(spiedOms, kernelPort1, regions[0]);
+        spiedKs2 = startSpiedKernelServer(spiedOms, kernelPort2, regions[1]);
+        spiedKs3 = startSpiedKernelServer(spiedOms, kernelPort3, regions[2]);
         // Set this instance of kernel server as local kernel server
-        GlobalKernelReferences.nodeServer = spiedKs1;
+        GlobalKernelReferences.nodeServer = (KernelServerImpl) spiedKs1;
 
         /* Add all the hosts to the kernel client of local kernel server instance so that every call
         becomes local invocation */

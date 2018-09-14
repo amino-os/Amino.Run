@@ -107,6 +107,10 @@ public class ServerTest {
         assert (server.getState() == Server.State.FOLLOWER);
     }
 
+    public static RemoteRaftServer getCurrentLeader(Server server) throws java.lang.Exception {
+        return server.getCurrentLeader();
+    }
+
     @Test
     public void become() throws Exception {
         raftServer[0].start();

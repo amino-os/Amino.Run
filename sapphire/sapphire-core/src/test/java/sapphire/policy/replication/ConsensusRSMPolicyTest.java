@@ -8,6 +8,7 @@ import static org.mockito.Mockito.verify;
 import static org.powermock.api.mockito.PowerMockito.when;
 import static sapphire.common.SapphireUtils.deleteSapphireObject;
 import static sapphire.common.UtilsTest.extractFieldValueOnInstance;
+import static sapphire.policy.util.consensus.raft.ServerTest.getCurrentLeader;
 import static sapphire.policy.util.consensus.raft.ServerTest.makeFollower;
 import static sapphire.policy.util.consensus.raft.ServerTest.makeLeader;
 
@@ -39,6 +40,7 @@ import sapphire.kernel.server.KernelServerImpl;
 import sapphire.policy.DefaultSapphirePolicy;
 import sapphire.policy.SapphirePolicy;
 import sapphire.policy.util.consensus.raft.LeaderException;
+import sapphire.policy.util.consensus.raft.RemoteRaftServer;
 import sapphire.runtime.Sapphire;
 
 /** Created by terryz on 4/9/18. */
@@ -139,6 +141,7 @@ public class ConsensusRSMPolicyTest extends BaseTest {
         this.server1 = (ConsensusRSMPolicy.ServerPolicy) servers.get(0);
         this.server2 = (ConsensusRSMPolicy.ServerPolicy) servers.get(1);
         this.server3 = (ConsensusRSMPolicy.ServerPolicy) servers.get(2);
+        this.client.setServer(this.server1);
 
         /* Make server3 as raft leader */
         raftServer1 =
@@ -153,6 +156,21 @@ public class ConsensusRSMPolicyTest extends BaseTest {
         makeFollower(raftServer1);
         makeFollower(raftServer2);
         makeLeader(raftServer3);
+
+        RemoteRaftServer leaderViewOfRaftServer1 = getCurrentLeader(raftServer1);
+        while (leaderViewOfRaftServer1 == null) {
+            sleep(100);
+            leaderViewOfRaftServer1 = getCurrentLeader(raftServer1);
+        }
+
+        RemoteRaftServer leaderViewOfRaftServer2 = getCurrentLeader(raftServer2);
+        while (leaderViewOfRaftServer2 == null) {
+            sleep(100);
+            leaderViewOfRaftServer2 = getCurrentLeader(raftServer2);
+        }
+
+        assert (leaderViewOfRaftServer1 == this.server3);
+        assert (leaderViewOfRaftServer2 == this.server3);
     }
 
     @Test
@@ -213,6 +231,7 @@ public class ConsensusRSMPolicyTest extends BaseTest {
     public void onRPCWithLeader() throws Exception {
         String method = "public java.lang.Integer sapphire.app.SO.getI()";
         ArrayList<Object> params = new ArrayList<Object>();
+        sleep(1000);
         client.onRPC(method, params);
     }
 

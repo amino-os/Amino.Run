@@ -99,3 +99,6 @@ export BINTRAY_API_KEY="<bintray_api_key>"
 > ./gradlew jar
 ```
 
+# Android Studio Setup
+
+### Enable GraalVM SDK

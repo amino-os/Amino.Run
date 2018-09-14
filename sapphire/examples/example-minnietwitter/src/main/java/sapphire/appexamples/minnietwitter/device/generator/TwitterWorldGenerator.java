@@ -14,9 +14,11 @@ import sapphire.appexamples.minnietwitter.app.Tweet;
 import sapphire.appexamples.minnietwitter.app.TwitterManager;
 import sapphire.appexamples.minnietwitter.app.UserManager;
 import sapphire.appexamples.minnietwitter.app.User;
+import sapphire.common.SapphireObjectID;
 import sapphire.kernel.server.KernelServer;
 import sapphire.kernel.server.KernelServerImpl;
 import sapphire.oms.OMSServer;
+import sapphire.runtime.EventHandler;
 
 public class TwitterWorldGenerator {
 	static final int EVENTS_PER_USER = 100;
@@ -85,7 +87,23 @@ public class TwitterWorldGenerator {
 			KernelServer nodeServer = new KernelServerImpl(new InetSocketAddress(args[2], Integer.parseInt(args[3])), new InetSocketAddress(args[0], Integer.parseInt(args[1])));
 
             /* Get Twitter and User Manager */
-			TwitterManager tm = (TwitterManager) server.getAppEntryPoint();
+			SapphireObjectID sapphireObjId = server.createSapphireObject("sapphire.appexamples.minnietwitter.app.TwitterManager");
+			TwitterManager tm = (TwitterManager)server.acquireSapphireObjectStub(sapphireObjId);
+
+			/* To set a name to sapphire object. It is required to set the name if the object has to be shared */
+			server.setSapphireObjectName(sapphireObjId, "MyTwitterManager");
+
+			/* Attach to sapphire object is to get reference to shared sapphire object. Generally it
+			is not done in the same thread which creates sapphire object. In this example,
+			Twitter manager sapphire object is created just above in same thread. Below attach call
+			has no significance. It is just used to show the usage of API. */
+			TwitterManager tmAttached = (TwitterManager)server.attachToSapphireObject("MyTwitterManager");
+
+			/* Detach from the shared sapphire object. It is necessary to explicitly call detach to
+			un-reference the sapphire object. This call is not required here if attach call was not
+			made above */
+			server.detachFromSapphireObject("MyTwitterManager");
+
 			UserManager userManager = tm.getUserManager();
 			TagManager tagManager = tm.getTagManager();
 
@@ -114,6 +132,11 @@ public class TwitterWorldGenerator {
 			}
 
 			System.out.println("Done populating!");
+
+			/* Explicit deletion from app */
+			userManager.deleteUser("user" + 0);
+			tm.deInitialize();
+			server.deleteSapphireObject(sapphireObjId);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -130,7 +153,8 @@ public class TwitterWorldGenerator {
 			KernelServer nodeServer = new KernelServerImpl(new InetSocketAddress(args[2], Integer.parseInt(args[3])), new InetSocketAddress(args[0], Integer.parseInt(args[1])));
 
             /* Get Twitter and User Manager */
-			TwitterManager tm = (TwitterManager) server.getAppEntryPoint();
+			SapphireObjectID sapphireObjId = server.createSapphireObject("sapphire.appexamples.minnietwitter.app.TwitterManager", new Object[0]);
+			TwitterManager tm = (TwitterManager)server.acquireSapphireObjectStub(sapphireObjId);
 			UserManager userManager = tm.getUserManager();
 			TagManager tagManager = tm.getTagManager();
 

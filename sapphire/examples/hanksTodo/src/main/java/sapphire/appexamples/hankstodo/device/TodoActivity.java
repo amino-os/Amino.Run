@@ -6,6 +6,7 @@ import java.rmi.registry.Registry;
 
 import sapphire.appexamples.hankstodo.app.TodoList;
 import sapphire.appexamples.hankstodo.app.TodoListManager;
+import sapphire.common.SapphireObjectID;
 import sapphire.kernel.server.KernelServer;
 import sapphire.kernel.server.KernelServerImpl;
 import sapphire.oms.OMSServer;
@@ -21,10 +22,12 @@ public class TodoActivity {
 			registry = LocateRegistry.getRegistry(args[0],Integer.parseInt(args[1]));
 			OMSServer server = (OMSServer) registry.lookup("SapphireOMS");
 			System.out.println(server);
-			TodoListManager tlm = (TodoListManager) server.getAppEntryPoint();
+
+			KernelServer nodeServer = new KernelServerImpl(new InetSocketAddress(args[2], Integer.parseInt(args[3])), new InetSocketAddress(args[0], Integer.parseInt(args[1])));
+
+			SapphireObjectID sapphireObjId = server.createSapphireObject("sapphire.appexamples.hankstodo.app.TodoListManager");
+			TodoListManager tlm = (TodoListManager)server.acquireSapphireObjectStub(sapphireObjId);
             System.out.println("Received tlm: " + tlm);
-            
-            KernelServer nodeServer = new KernelServerImpl(new InetSocketAddress(args[2], Integer.parseInt(args[3])), new InetSocketAddress(args[0], Integer.parseInt(args[1])));
             
 			TodoList tl = tlm.newTodoList("Hanks");	
 			System.out.println("Received tl1: " + tl);

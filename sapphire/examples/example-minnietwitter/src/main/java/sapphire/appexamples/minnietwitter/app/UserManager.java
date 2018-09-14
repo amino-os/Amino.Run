@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Map;
 
-import sapphire.app.AppObjectNotCreatedException;
 import sapphire.app.SapphireObject;
 import static sapphire.runtime.Sapphire.*;
 import sapphire.policy.dht.DHTPolicy;
@@ -21,7 +20,7 @@ public class UserManager implements SapphireObject<DHTPolicy>, DHTInterface {
 		this.users = new Hashtable<DHTKey, User>();
 	}
 
-	public User addUser(String username, String passwd) throws AppObjectNotCreatedException {
+	public User addUser(String username, String passwd) {
 
 		User user = (User) new_(User.class, new UserInfo(username, passwd), tm);
 		user.initialize(user);
@@ -29,6 +28,12 @@ public class UserManager implements SapphireObject<DHTPolicy>, DHTInterface {
 
 		System.out.println("Created user: " + username);
 		return user;
+	}
+
+	public void deleteUser(String username) {
+		User user = users.remove(new DHTKey(username));
+		user.deInitialize();
+		delete_(user);
 	}
 
 	public User getUser(String username) {

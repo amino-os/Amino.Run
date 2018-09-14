@@ -1,9 +1,13 @@
 package sapphire.policy;
 
+import java.lang.annotation.Annotation;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.UUID;
+import sapphire.common.AppObject;
+import sapphire.common.SapphireObjectNotFoundException;
+import sapphire.common.SapphireObjectReplicaNotFoundException;
 import sapphire.policy.SapphirePolicy.SapphireServerPolicy;
 import sapphire.policy.transaction.IllegalComponentException;
 import sapphire.policy.transaction.TransactionContext;
@@ -49,17 +53,31 @@ public abstract class DefaultSapphirePolicyUpcallImpl extends SapphirePolicyLibr
             return appObject.invoke(method, params);
         }
         /* This function is added here just to generate the stub for this function in all DMs server policy */
-        public SapphireServerPolicy sapphire_replicate() {
+        public SapphireServerPolicy sapphire_replicate() throws RemoteException {
             return super.sapphire_replicate();
         }
         /* This function is added here just to generate the stub for this function in all DMs server policy */
-        public void sapphire_pin(String region) throws RemoteException {
+        public void sapphire_pin(String region)
+                throws RemoteException, SapphireObjectNotFoundException,
+                        SapphireObjectReplicaNotFoundException {
             super.sapphire_pin(region);
         }
         /* This function is added here just to generate the stub for this function in all DMs server policy */
-        public void sapphire_pin_to_server(InetSocketAddress server) throws RemoteException {
+        public void sapphire_pin_to_server(InetSocketAddress server)
+                throws RemoteException, SapphireObjectNotFoundException,
+                        SapphireObjectReplicaNotFoundException {
             super.sapphire_pin_to_server(server);
         }
+
+        public void sapphire_remove_replica() throws RemoteException {
+            super.sapphire_remove_replica();
+        }
+
+        public AppObject sapphire_getRemoteAppObject() throws RemoteException {
+            return super.sapphire_getAppObject();
+        }
+
+        public void onDestroy() {}
     }
 
     public abstract static class DefaultSapphireGroupPolicyUpcallImpl
@@ -73,9 +91,17 @@ public abstract class DefaultSapphirePolicyUpcallImpl extends SapphirePolicyLibr
             this.params = params;
         }
 
+        public Annotation[] getAppConfigAnnotation() {
+            return super.getAppConfigAnnotation();
+        }
+
         public SapphireServerPolicy onRefRequest() throws RemoteException {
             ArrayList<SapphireServerPolicy> servers = getServers();
             return servers.get(0);
+        }
+
+        public void onDestroy() throws RemoteException {
+            super.onDestroy();
         }
     }
 }

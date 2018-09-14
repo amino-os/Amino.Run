@@ -13,7 +13,8 @@ import java.util.ArrayList;
 import java.util.TimerTask;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
-import sapphire.kernel.common.KernelObjectNotFoundException;
+import sapphire.common.SapphireObjectNotFoundException;
+import sapphire.common.SapphireObjectReplicaNotFoundException;
 import sapphire.kernel.common.KernelObjectStub;
 import sapphire.policy.util.ResettableTimer;
 
@@ -54,29 +55,6 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
         private Semaphore replicaCreateLimiter;
         private transient volatile ResettableTimer timer; // Timer for limiting
 
-        private void startServerTimer() {
-            /* Double checked locking */
-            if (null == timer) {
-                synchronized (this) {
-                    if (null == timer) {
-                        timer =
-                                new ResettableTimer(
-                                        new TimerTask() {
-                                            public void run() {
-                                                replicaCreateLimiter.release(
-                                                        replicaCount
-                                                                - replicaCreateLimiter
-                                                                        .availablePermits());
-                                                scaleDown();
-                                            }
-                                        },
-                                        replicationRateInMs);
-                        timer.start();
-                    }
-                }
-            }
-        }
-
         @Override
         public void onCreate(SapphireGroupPolicy group, Annotation[] annotations) {
             Annotation[] lbConfigAnnotations = annotations;
@@ -94,16 +72,29 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
             }
 
             replicaCreateLimiter = new Semaphore(replicaCount, true);
+
+            timer =
+                    new ResettableTimer(
+                            new TimerTask() {
+                                public void run() {
+                                    replicaCreateLimiter.release(
+                                            replicaCount - replicaCreateLimiter.availablePermits());
+                                    scaleDown();
+                                }
+                            },
+                            replicationRateInMs);
+            timer.start();
+        }
+
+        @Override
+        public void onDestroy() {
+            super.onDestroy();
+            timer.cancel();
         }
 
         @Override
         public Object onRPC(String method, ArrayList<Object> params) throws Exception {
             try {
-                /* Check and start the timer. Currently, sapphire library do not provide
-                the support for dynamic data initialization of DM upon migration of kernel objects.
-                Need to remove check and start timer call here when sapphire supports dynamic data
-                initialization */
-                startServerTimer();
                 return super.onRPC(method, params);
             } catch (ServerOverLoadException e) {
                 if (!replicaCreateLimiter.tryAcquire()) {
@@ -144,16 +135,10 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
                 // delete this replica
                 try {
                     ((GroupPolicy) getGroup()).scaleDownReplica(this);
-                    sapphire_deleteKernelObject();
-                    synchronized (this) {
-                        timer.cancel();
-                    }
                 } catch (RemoteException e) {
                     e.printStackTrace();
                 } catch (ScaleDownException e) {
                     e.printStackTrace();
-                } catch (KernelObjectNotFoundException e) {
-                    throw new Error("Kernel Object is not found", e);
                 }
             }
         }
@@ -164,28 +149,6 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
         private int replicaCount = 1; // 1 replica in n milliseconds
         private Semaphore replicaCreateLimiter;
         private transient ResettableTimer timer; // Timer for limiting
-
-        private void startGroupTimer() {
-            /* Double checked locking */
-            if (null == timer) {
-                synchronized (this) {
-                    if (null == timer) {
-                        timer =
-                                new ResettableTimer(
-                                        new TimerTask() {
-                                            public void run() {
-                                                replicaCreateLimiter.release(
-                                                        replicaCount
-                                                                - replicaCreateLimiter
-                                                                        .availablePermits());
-                                            }
-                                        },
-                                        replicationRateInMs);
-                        timer.start();
-                    }
-                }
-            }
-        }
 
         @Override
         public void onCreate(SapphireServerPolicy server, Annotation[] annotations) {
@@ -206,10 +169,22 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
                 replicaCreateLimiter = new Semaphore(replicaCount, true);
             }
 
-            /* Check and start the group timer. Currently, sapphire library do not provide the support
-            for dynamic data initialization of DM upon migration of kernel objects. Need to remove
-            check and start timer call here when sapphire supports dynamic data initialization */
-            startGroupTimer();
+            timer =
+                    new ResettableTimer(
+                            new TimerTask() {
+                                public void run() {
+                                    replicaCreateLimiter.release(
+                                            replicaCount - replicaCreateLimiter.availablePermits());
+                                }
+                            },
+                            replicationRateInMs);
+            timer.start();
+        }
+
+        @Override
+        public void onDestroy() throws RemoteException {
+            super.onDestroy();
+            timer.cancel();
         }
 
         public synchronized void scaleUpReplica(String region)
@@ -237,11 +212,16 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
             fullKernelList.removeAll(sappObjReplicatedKernelList);
 
             if (!fullKernelList.isEmpty()) {
-                /* create a replica on the first server in the list */
-                SapphireServerPolicy server = getServers().get(0);
-                SapphireServerPolicy replica = server.sapphire_replicate();
-                replica.sapphire_pin_to_server(fullKernelList.get(0));
-                ((KernelObjectStub) replica).$__updateHostname(fullKernelList.get(0));
+                try {
+                    /* create a replica on the first server in the list */
+                    addReplica(getServers().get(0), fullKernelList.get(0));
+                } catch (SapphireObjectNotFoundException e) {
+                    throw new ScaleUpException(
+                            "Failed to find sapphire object. Probably deleted.", e);
+                } catch (SapphireObjectReplicaNotFoundException e) {
+                    throw new ScaleUpException(
+                            "Failed to find replicate sapphire object. Probably deleted.", e);
+                }
             } else {
                 throw new ScaleUpException(
                         "Replica cannot be created for this sapphire object. All kernel servers have its replica.");
@@ -257,10 +237,23 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
                         "Cannot scale down. Current replica count is " + serverList.size());
             }
 
+            SapphireServerPolicy serverToRemove = null;
             for (SapphireServerPolicy serverPolicyStub : serverList) {
                 if (serverPolicyStub.$__getKernelOID().equals(server.$__getKernelOID())) {
-                    removeServer(serverPolicyStub);
+                    serverToRemove = serverPolicyStub;
                     break;
+                }
+            }
+
+            if (serverToRemove != null) {
+                try {
+                    removeReplica(serverToRemove);
+                } catch (SapphireObjectNotFoundException e) {
+                    throw new ScaleDownException(
+                            "Scale down failed. Sapphire object not found.", e);
+                } catch (SapphireObjectReplicaNotFoundException e) {
+                    throw new ScaleDownException(
+                            "Scale down failed. Sapphire object not found.", e);
                 }
             }
         }

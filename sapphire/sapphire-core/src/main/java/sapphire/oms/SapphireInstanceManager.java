@@ -1,18 +1,25 @@
 package sapphire.oms;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Random;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
+import sapphire.common.AppObjectStub;
 import sapphire.common.SapphireObjectID;
 import sapphire.common.SapphireObjectNotFoundException;
+import sapphire.common.SapphireObjectReplicaNotFoundException;
 import sapphire.common.SapphireReplicaID;
 import sapphire.runtime.EventHandler;
 
 public class SapphireInstanceManager {
 
     private SapphireObjectID oid;
+    private String name;
+    private AtomicInteger referenceCount;
     private EventHandler instanceDispatcher;
+    private AppObjectStub objectStub;
     private HashMap<SapphireReplicaID, EventHandler> replicaDispatchers;
     private Random oidGenerator;
 
@@ -30,6 +37,7 @@ public class SapphireInstanceManager {
         instanceDispatcher = dispatcher;
         replicaDispatchers = new HashMap<SapphireReplicaID, EventHandler>();
         oidGenerator = new Random(new Date().getTime());
+        referenceCount = new AtomicInteger(1);
     }
 
     /**
@@ -51,6 +59,24 @@ public class SapphireInstanceManager {
     }
 
     /**
+     * Gets the object stub of this sapphire instance
+     *
+     * @return Returns object stub
+     */
+    public AppObjectStub getInstanceObjectStub() {
+        return objectStub;
+    }
+
+    /**
+     * Sets the object stub of this sapphire instance
+     *
+     * @param objStub
+     */
+    public void setInstanceObjectStub(AppObjectStub objStub) {
+        objectStub = objStub;
+    }
+
+    /**
      * Gets the event handler for the given replica of this sapphire instance
      *
      * @param rid
@@ -58,8 +84,12 @@ public class SapphireInstanceManager {
      * @throws SapphireObjectNotFoundException
      */
     public EventHandler getReplicaDispatcher(SapphireReplicaID rid)
-            throws SapphireObjectNotFoundException {
+            throws SapphireObjectReplicaNotFoundException {
         EventHandler dispatcher = replicaDispatchers.get(rid);
+        if (dispatcher == null) {
+            throw new SapphireObjectReplicaNotFoundException(
+                    "Failed to find sapphire object replica dispatcher");
+        }
         return dispatcher;
     }
 
@@ -69,8 +99,14 @@ public class SapphireInstanceManager {
      * @param rid
      * @param dispatcher
      */
-    public void setReplicaDispatcher(SapphireReplicaID rid, EventHandler dispatcher) {
-        replicaDispatchers.put(rid, dispatcher);
+    public void setReplicaDispatcher(SapphireReplicaID rid, EventHandler dispatcher)
+            throws SapphireObjectReplicaNotFoundException {
+        if (replicaDispatchers.containsKey(rid)) {
+            replicaDispatchers.put(rid, dispatcher);
+        } else {
+            throw new SapphireObjectReplicaNotFoundException(
+                    "Failed to find sapphire object replica");
+        }
     }
 
     /**
@@ -83,5 +119,52 @@ public class SapphireInstanceManager {
         SapphireReplicaID rid = generateSapphireReplicaID();
         replicaDispatchers.put(rid, dispatcher);
         return rid;
+    }
+
+    /**
+     * Removes the replica from this sapphire instance
+     *
+     * @param replicaId
+     */
+    public void removeReplica(SapphireReplicaID replicaId) {
+        replicaDispatchers.remove(replicaId);
+    }
+
+    /**
+     * Gets replica handlers of this sapphire instance
+     *
+     * @return Returns array of event handlers
+     */
+    public EventHandler[] getReplicas() {
+        Collection<EventHandler> values = replicaDispatchers.values();
+        return values.toArray(new EventHandler[values.size()]);
+    }
+
+    public void clear() {
+        replicaDispatchers.clear();
+    }
+
+    public SapphireObjectID getOid() {
+        return oid;
+    }
+
+    public void setName(String sapphireObjName) {
+        name = sapphireObjName;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public int incrRefCountAndGet() {
+        return referenceCount.incrementAndGet();
+    }
+
+    public int decrRefCountAndGet() {
+        return referenceCount.decrementAndGet();
+    }
+
+    public int getReferenceCount() {
+        return referenceCount.get();
     }
 }

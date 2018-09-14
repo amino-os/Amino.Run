@@ -8,11 +8,14 @@ import java.rmi.registry.Registry;
 import java.util.Hashtable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import sapphire.common.SapphireObjectNotFoundException;
+import sapphire.common.SapphireObjectReplicaNotFoundException;
 import sapphire.kernel.common.GlobalKernelReferences;
 import sapphire.kernel.common.KernelOID;
 import sapphire.kernel.common.KernelObjectMigratingException;
 import sapphire.kernel.common.KernelObjectNotFoundException;
 import sapphire.kernel.common.KernelObjectStub;
+import sapphire.kernel.common.KernelObjectStubNotCreatedException;
 import sapphire.kernel.common.KernelRPC;
 import sapphire.kernel.common.KernelRPCException;
 import sapphire.kernel.server.KernelObject;
@@ -143,7 +146,9 @@ public class KernelClient {
     }
 
     public void copyObjectToServer(InetSocketAddress host, KernelOID oid, KernelObject object)
-            throws RemoteException, KernelObjectNotFoundException {
+            throws RemoteException, KernelObjectNotFoundException,
+                    KernelObjectStubNotCreatedException, SapphireObjectNotFoundException,
+                    SapphireObjectReplicaNotFoundException {
         getServer(host).copyKernelObject(oid, object);
     }
 }

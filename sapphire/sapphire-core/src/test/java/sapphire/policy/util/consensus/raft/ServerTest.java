@@ -95,6 +95,22 @@ public class ServerTest {
         raftServer[0].start();
     }
 
+    public static void makeLeader(Server server) throws java.lang.Exception {
+        server.become(Server.State.CANDIDATE, Server.State.FOLLOWER);
+        assert (server.getState() == Server.State.CANDIDATE);
+        server.become(Server.State.LEADER, Server.State.CANDIDATE);
+        assert (server.getState() == Server.State.LEADER);
+    }
+
+    public static void makeFollower(Server server) throws java.lang.Exception {
+        server.become(Server.State.FOLLOWER, server.getState());
+        assert (server.getState() == Server.State.FOLLOWER);
+    }
+
+    public static RemoteRaftServer getCurrentLeader(Server server) throws java.lang.Exception {
+        return server.getCurrentLeader();
+    }
+
     @Test
     public void become() throws Exception {
         raftServer[0].start();

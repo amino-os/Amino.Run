@@ -29,6 +29,10 @@ public class Timeline implements SapphireObject<ShiftPolicy> {
 		this.timelineStub = timelineStub;
 	}
 
+	public void deInitialize() {
+		this.timelineStub = null;
+	}
+
 	public void tweet(String text) {
 		Tweet t = new Tweet(timelineStub, text, userName, currentId);
 		TweetContainer tc = new TweetContainer(t, tm);

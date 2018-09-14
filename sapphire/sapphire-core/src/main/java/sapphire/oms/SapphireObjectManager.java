@@ -1,16 +1,20 @@
 package sapphire.oms;
 
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Random;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import sapphire.common.AppObjectStub;
 import sapphire.common.SapphireObjectID;
+import sapphire.common.SapphireObjectNameModificationException;
 import sapphire.common.SapphireObjectNotFoundException;
+import sapphire.common.SapphireObjectReplicaNotFoundException;
 import sapphire.common.SapphireReplicaID;
 import sapphire.runtime.EventHandler;
 
 public class SapphireObjectManager {
-    private HashMap<SapphireObjectID, SapphireInstanceManager> sapphireObjects;
+    private ConcurrentHashMap<SapphireObjectID, SapphireInstanceManager> sapphireObjects;
+    private ConcurrentHashMap<String, SapphireInstanceManager> sapphireObjectsByName;
     private Random oidGenerator;
 
     /**
@@ -23,7 +27,8 @@ public class SapphireObjectManager {
     }
 
     public SapphireObjectManager() {
-        sapphireObjects = new HashMap<SapphireObjectID, SapphireInstanceManager>();
+        sapphireObjects = new ConcurrentHashMap<SapphireObjectID, SapphireInstanceManager>();
+        sapphireObjectsByName = new ConcurrentHashMap<String, SapphireInstanceManager>();
         oidGenerator = new Random(new Date().getTime());
     }
 
@@ -57,6 +62,22 @@ public class SapphireObjectManager {
     }
 
     /**
+     * Set the object stub of sapphire object
+     *
+     * @param sapphireObjId
+     * @param objectStub
+     * @throws SapphireObjectNotFoundException
+     */
+    public void setInstanceObjectStub(SapphireObjectID sapphireObjId, AppObjectStub objectStub)
+            throws SapphireObjectNotFoundException {
+        SapphireInstanceManager instance = sapphireObjects.get(sapphireObjId);
+        if (instance == null) {
+            throw new SapphireObjectNotFoundException("Not a valid Sapphire object id.");
+        }
+        instance.setInstanceObjectStub(objectStub);
+    }
+
+    /**
      * Adds a sapphire replica of given sapphire object
      *
      * @param sapphireObjId
@@ -70,7 +91,85 @@ public class SapphireObjectManager {
         if (instance == null) {
             throw new SapphireObjectNotFoundException("Not a valid Sapphire object id.");
         }
-        return instance.addReplica(dispatcher);
+
+        synchronized (instance) {
+            if (instance.getReferenceCount() == 0) {
+                /* Sapphire object could have been deleted in another thread */
+                throw new SapphireObjectNotFoundException("Sapphire object is deleted.");
+            }
+            return instance.addReplica(dispatcher);
+        }
+    }
+
+    /**
+     * Removes the sapphire object
+     *
+     * @param sapphireObjId
+     * @throws SapphireObjectNotFoundException
+     */
+    public void removeInstance(SapphireObjectID sapphireObjId)
+            throws SapphireObjectNotFoundException {
+        SapphireInstanceManager instance = sapphireObjects.get(sapphireObjId);
+        if (instance == null) {
+            throw new SapphireObjectNotFoundException("Not a valid Sapphire object id.");
+        }
+
+        instance.clear();
+        if (instance.getName() != null) {
+            sapphireObjectsByName.remove(instance.getName());
+        }
+        sapphireObjects.remove(sapphireObjId);
+    }
+
+    /**
+     * Sets the name to sapphire object
+     *
+     * @param sapphireObjId
+     * @param name
+     * @throws SapphireObjectNotFoundException
+     */
+    public void setInstanceName(SapphireObjectID sapphireObjId, String name)
+            throws SapphireObjectNotFoundException, SapphireObjectNameModificationException {
+        SapphireInstanceManager instance = sapphireObjects.get(sapphireObjId);
+        if (instance == null) {
+            throw new SapphireObjectNotFoundException("Not a valid Sapphire object id.");
+        }
+
+        /* Object name is not allowed to change once set. Because reference count are updated based
+        on attachByName and detachByName. And name change would affect it */
+        if (instance.getName() != null) {
+            throw new SapphireObjectNameModificationException(sapphireObjId, instance.getName());
+        }
+
+        /* This name is already used for some other sapphire object */
+        SapphireInstanceManager otherInstance = sapphireObjectsByName.get(name);
+        if (otherInstance != null) {
+            throw new SapphireObjectNameModificationException(otherInstance.getOid(), name);
+        }
+
+        synchronized (instance) {
+            if (instance.getReferenceCount() != 0) {
+                sapphireObjectsByName.put(name, instance);
+                instance.setName(name);
+            }
+        }
+    }
+
+    /**
+     * Removes the replica of sapphire object
+     *
+     * @param replicaId
+     * @throws SapphireObjectNotFoundException
+     */
+    public void removeReplica(SapphireReplicaID replicaId) throws SapphireObjectNotFoundException {
+        SapphireInstanceManager instance = sapphireObjects.get(replicaId.getOID());
+        if (instance == null) {
+            throw new SapphireObjectNotFoundException("Not a valid Sapphire object id.");
+        }
+
+        synchronized (instance) {
+            instance.removeReplica(replicaId);
+        }
     }
 
     /**
@@ -81,13 +180,19 @@ public class SapphireObjectManager {
      * @throws SapphireObjectNotFoundException
      */
     public void setReplicaDispatcher(SapphireReplicaID replicaId, EventHandler dispatcher)
-            throws SapphireObjectNotFoundException {
+            throws SapphireObjectNotFoundException, SapphireObjectReplicaNotFoundException {
         SapphireInstanceManager instance = sapphireObjects.get(replicaId.getOID());
         if (instance == null) {
             throw new SapphireObjectNotFoundException("Not a valid Sapphire object id.");
         }
 
-        instance.setReplicaDispatcher(replicaId, dispatcher);
+        synchronized (instance) {
+            if (instance.getReferenceCount() == 0) {
+                /* Sapphire object could have been deleted in another thread */
+                throw new SapphireObjectNotFoundException("Sapphire object is deleted.");
+            }
+            instance.setReplicaDispatcher(replicaId, dispatcher);
+        }
     }
 
     /**
@@ -103,7 +208,25 @@ public class SapphireObjectManager {
         if (instance == null) {
             throw new SapphireObjectNotFoundException("Not a valid Sapphire object id.");
         }
+
         return instance.getInstanceDispatcher();
+    }
+
+    /**
+     * Get the object stub of sapphire object
+     *
+     * @param sapphireObjId
+     * @return
+     * @throws SapphireObjectNotFoundException
+     */
+    public AppObjectStub getInstanceObjectStub(SapphireObjectID sapphireObjId)
+            throws SapphireObjectNotFoundException {
+        SapphireInstanceManager instance = sapphireObjects.get(sapphireObjId);
+        if (instance == null) {
+            throw new SapphireObjectNotFoundException("Not a valid Sapphire object id.");
+        }
+
+        return instance.getInstanceObjectStub();
     }
 
     /**
@@ -114,11 +237,69 @@ public class SapphireObjectManager {
      * @throws SapphireObjectNotFoundException
      */
     public EventHandler getReplicaDispatcher(SapphireReplicaID replicaId)
-            throws SapphireObjectNotFoundException {
+            throws SapphireObjectNotFoundException, SapphireObjectReplicaNotFoundException {
         SapphireInstanceManager instance = sapphireObjects.get(replicaId.getOID());
         if (instance == null) {
             throw new SapphireObjectNotFoundException("Not a valid Sapphire object id.");
         }
+
         return instance.getReplicaDispatcher(replicaId);
+    }
+
+    /**
+     * Get sapphire instance id by name
+     *
+     * @param sapphireObjName
+     * @return
+     * @throws SapphireObjectNotFoundException
+     */
+    public SapphireObjectID getSapphireInstanceIdByName(String sapphireObjName)
+            throws SapphireObjectNotFoundException {
+        SapphireInstanceManager instance = sapphireObjectsByName.get(sapphireObjName);
+        if (instance == null) {
+            throw new SapphireObjectNotFoundException("Not a valid Sapphire object id.");
+        }
+
+        return instance.getOid();
+    }
+
+    /**
+     * Get sapphire replicas by id
+     *
+     * @param oid
+     * @return
+     * @throws SapphireObjectNotFoundException
+     */
+    public EventHandler[] getSapphireReplicasById(SapphireObjectID oid)
+            throws SapphireObjectNotFoundException {
+        SapphireInstanceManager instance = sapphireObjects.get(oid);
+        if (instance == null) {
+            throw new SapphireObjectNotFoundException("Not a valid Sapphire object id.");
+        }
+
+        return instance.getReplicas();
+    }
+
+    public int incrRefCountAndGet(SapphireObjectID sapphireObjId)
+            throws SapphireObjectNotFoundException {
+        SapphireInstanceManager instance = sapphireObjects.get(sapphireObjId);
+        if (instance == null) {
+            throw new SapphireObjectNotFoundException("Not a valid Sapphire object id.");
+        }
+        synchronized (instance) {
+            if (instance.getReferenceCount() == 0) {
+                throw new SapphireObjectNotFoundException("Sapphire object is deleted.");
+            }
+            return instance.incrRefCountAndGet();
+        }
+    }
+
+    public int decrRefCountAndGet(SapphireObjectID sapphireObjId)
+            throws SapphireObjectNotFoundException {
+        SapphireInstanceManager instance = sapphireObjects.get(sapphireObjId);
+        if (instance == null) {
+            throw new SapphireObjectNotFoundException("Not a valid Sapphire object id.");
+        }
+        return instance.decrRefCountAndGet();
     }
 }

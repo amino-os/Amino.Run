@@ -7,11 +7,13 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.ArrayList;
+import java.util.Random;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.JSONException;
+import sapphire.kernel.common.GlobalKernelReferences;
 import sapphire.kernel.common.KernelServerNotFoundException;
 import sapphire.kernel.common.ServerInfo;
 import sapphire.kernel.server.KernelServer;
@@ -150,6 +152,10 @@ public class KernelServerManager {
     }
 
     public KernelServer getServer(InetSocketAddress address) {
+        if (address.equals(GlobalKernelReferences.nodeServer.getLocalHost())) {
+            return GlobalKernelReferences.nodeServer;
+        }
+
         if (servers.containsKey(address)) {
             return servers.get(address);
         } else {
@@ -166,8 +172,25 @@ public class KernelServerManager {
         }
     }
 
-    public InetSocketAddress getServerInRegion(String region) {
+    /**
+     * Gets the first server in the region
+     *
+     * @param region
+     * @return
+     */
+    public InetSocketAddress getFirstServerInRegion(String region) {
         return regions.get(region).get(0);
+    }
+
+    /**
+     * Gets the random server in the given region
+     *
+     * @param region
+     * @return
+     */
+    public InetSocketAddress getRandomServerInRegion(String region) {
+        ArrayList<InetSocketAddress> hosts = regions.get(region);
+        return hosts.get(new Random().nextInt(hosts.size()));
     }
 
     /**

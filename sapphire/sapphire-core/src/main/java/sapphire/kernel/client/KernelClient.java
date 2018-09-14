@@ -13,6 +13,8 @@ import sapphire.kernel.common.KernelOID;
 import sapphire.kernel.common.KernelObjectMigratingException;
 import sapphire.kernel.common.KernelObjectNotFoundException;
 import sapphire.kernel.common.KernelObjectStub;
+import java.lang.reflect.InvocationTargetException;
+import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.kernel.common.KernelRPC;
 import sapphire.kernel.common.KernelRPCException;
 import sapphire.kernel.server.KernelObject;
@@ -68,7 +70,20 @@ public class KernelClient {
 		try {
 			ret = server.makeKernelRPC(rpc);
 		} catch (KernelRPCException e) {
-			throw e.getException();
+			if (!(e.getException() instanceof InvocationTargetException)) {
+				/* Not an invocation exception */
+				throw e.getException();
+			}
+
+			/* Invocation target exception wraps exception thrown by an invoked method or constructor */
+			/* If invocation exception is with any exception,including runtime, app exceptions, unwrap it
+			and throw. Else it is invocation exception with error. Throw the invocation exception as is */
+			Throwable cause = e.getException().getCause();
+			if (cause instanceof InvocationTargetException) {
+				cause = cause.getCause();
+			}
+
+			throw (cause instanceof Exception) ? ((Exception) cause) : e.getException();
 		} catch (KernelObjectMigratingException e) {
 			Thread.sleep(100);
 			throw new KernelObjectNotFoundException("Kernel object was migrating. Try again later.");
@@ -106,8 +121,7 @@ public class KernelClient {
 	 */
 	public Object makeKernelRPC(KernelObjectStub stub, KernelRPC rpc) throws KernelObjectNotFoundException, Exception {
 		InetSocketAddress host = stub.$__getHostname();
-		//logger.log(Level.FINE,"Making RPC to " + host.toString() + " RPC: " + rpc.toString());
-//		System.out.println("Making RPC to " + host.toString() + " RPC: " + rpc.toString());
+		logger.log(Level.FINE, "Making RPC to " + host.toString() + " RPC: " + rpc.toString());
 
 		// Check whether this object is local.
 		KernelServer server;

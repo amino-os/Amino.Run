@@ -200,14 +200,13 @@ public abstract class Stub implements RmicConstants {
 			exceptions.addAll(Arrays.asList(exceptionsArray));
 
 			// Create list of exceptions to be caught.
-			catches = new ClassList(true);    
-
-			// Add standard exceptions to make sure they are first in the list.
-			catches.add(RuntimeException.class);
-			catches.add(RemoteException.class);
+			catches = new ClassList(false);
 
 			// Add declared thrown exceptions.
 			catches.addAll(exceptions);
+			/* Add the runtime exception at the end such that all the more specific exceptions of
+			   runtime are added before it */
+			catches.add(RuntimeException.class);
 		}
 
 		/**

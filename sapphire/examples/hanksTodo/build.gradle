@@ -88,7 +88,7 @@ subprojects {
         dependsOn fatJar
         classpath = sourceSets.main.runtimeClasspath
         main = 'sapphire.oms.OMSServerImpl'
-        args project.property('omsIp'), project.property('omsPort'), project.property('appClassName')
+        args project.property('omsIp'), project.property('omsPort')
     }
 
     task runHanksTodoKernelServer(type: JavaExec) {

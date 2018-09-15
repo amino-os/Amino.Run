@@ -27,10 +27,23 @@ genAppStubs.mustRunAfter compileJava
 compileStubs.dependsOn genAppStubs
 jar.dependsOn compileStubs
 
+task runHelloWorldOms(type: JavaExec) {
+    dependsOn jar
+    classpath = sourceSets.main.runtimeClasspath
+    main = 'sapphire.oms.OMSServerImpl'
+    args project.property('omsIp'), project.property('omsPort')
+}
+
+task runHelloWorldKernelServer(type: JavaExec) {
+    classpath = sourceSets.main.runtimeClasspath
+    main = 'sapphire.kernel.server.KernelServerImpl'
+    args project.property('kernelServerIp'), project.property('kernelServerPort'), project.property('omsIp'), project.property('omsPort')
+}
+
 // Task for run HelloWorld demo app
 // Usage: gradlew runHelloWorld -PW=DisneyWorld
 task runHelloWorld(type: JavaExec) {
     main = "sapphire.appexamples.helloworld.HelloWorldMain"
     classpath = sourceSets.main.runtimeClasspath
-    args project.hasProperty('W') ? project.property('W') : "DCAP World"
+    args project.property('omsIp'), project.property('omsPort'), project.property('kernelIpAndroid'), project.property('kernelServerPort'), project.hasProperty('W') ? project.property('W') : "DCAP World"
 }

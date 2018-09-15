@@ -24,15 +24,19 @@ public class HelloWorldMain {
         }
 
         try {
-            KernelServer nodeServer = new KernelServerImpl(new InetSocketAddress(args[0], Integer.parseInt(args[1])), new InetSocketAddress(args[2], Integer.parseInt(args[3])));
-            Registry registry = LocateRegistry.getRegistry(args[2], Integer.parseInt(args[3]));
+            Registry registry = LocateRegistry.getRegistry(args[0], Integer.parseInt(args[1]));
             OMSServer server = (OMSServer) registry.lookup("SapphireOMS");
+
+            KernelServer nodeServer = new KernelServerImpl(new InetSocketAddress(args[2], Integer.parseInt(args[3])), new InetSocketAddress(args[0], Integer.parseInt(args[1])));
+
             SapphireObjectID sapphireObjId =
                     server.createSapphireObject("sapphire.appexamples.helloworld.HelloWorld", world);
             HelloWorld helloWorld = (HelloWorld) server.acquireSapphireObjectStub(sapphireObjId);
             System.out.println(helloWorld.sayHello());
+
+            server.deleteSapphireObject(sapphireObjId);
         } catch (Exception e) {
-        e.printStackTrace();
+            e.printStackTrace();
         }
     }
 }

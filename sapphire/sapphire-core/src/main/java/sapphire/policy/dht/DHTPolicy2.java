@@ -47,7 +47,12 @@ public class DHTPolicy2 extends SapphirePolicy {
 			System.out.println("Client) onRPC DHTPolicy2");
 
 			ArrayList<Object> applicationParams = getApplicationParam(params, 0);
-			DHTServerPolicy responsibleNode = group.dhtGetResponsibleNode((String)applicationParams.get(0));
+			DHTServerPolicy responsibleNode;
+			if (applicationParams != null && applicationParams.size() > 0) {
+				responsibleNode = group.dhtGetResponsibleNode((String) applicationParams.get(0));
+			} else {
+				responsibleNode = group.dhtGetResponsibleNode("1");
+			}
 			return responsibleNode.forwardedRPC(method, params);
 		}
 
@@ -137,6 +142,7 @@ public class DHTPolicy2 extends SapphirePolicy {
 		@Override
 		public void onCreate(SapphireServerPolicy server) {
 			nodes = new HashMap<String, DHTNode>();
+			System.out.println("Group.onCreat at DHTPolicy2");
 
 			try {
 				ArrayList<String> regions = sapphire_getRegions();

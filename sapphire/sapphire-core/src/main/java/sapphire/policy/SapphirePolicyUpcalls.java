@@ -25,7 +25,6 @@ public interface SapphirePolicyUpcalls {
 		Object onRPC(String method, ArrayList<Object> params) throws Exception;
 		void onMembershipChange();
 		List<SapphirePolicyContainer> getProcessedPolicies();
-		void setThisPolicyContainer(SapphirePolicyContainer policyContainer);
 		void setNextDMs(List<SapphirePolicyContainer> DMChain);
 		void setProcessedPolicies(List<SapphirePolicyContainer> setProcessedDMs);
 	}

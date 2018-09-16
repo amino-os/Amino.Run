@@ -71,6 +71,13 @@ public abstract class DefaultSapphirePolicyUpcallImpl extends SapphirePolicyLibr
 			this.previousServerPolicy = sapphireServerPolicy;
 		}
 
+		public SapphireServerPolicy getPreviousServerPolicy() {
+			return this.previousServerPolicy;
+		}
+		public SapphireServerPolicy getNextServerPolicy() {
+			return this.nextServerPolicy;
+		}
+
 		/* This function is added here just to generate the stub for this function in all DMs server policy */
 		public SapphireServerPolicy sapphire_replicate() {
 			return super.sapphire_replicate();

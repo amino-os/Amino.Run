@@ -40,25 +40,18 @@ public class TodoActivity {
             System.out.println("Received tlm: " + tlm);
             
             KernelServer nodeServer = new KernelServerImpl(new InetSocketAddress(args[2], Integer.parseInt(args[3])), new InetSocketAddress(args[0], Integer.parseInt(args[1])));
-
 			TodoList td1 = tlm.newTodoList(ListName);
-			sleep(10000);   // Added for ConsensusRSM testing.
+//			sleep(7000);   // Added for ConsensusRSM testing.
 			System.out.println("new to do list for 1");
 
-			for (int i=0; i<10; i++) {
+			for (int i=0; i<1; i++) {
 				// Add to-do items.
 				td1.addToDo("1", Do1_1+"<"+i+">");
-//				System.out.println(Do1_1);
 				td1.addToDo("1", Do1_2+"<"+i+">");
-//				System.out.println(Do1_2);
 				td1.addToDo("2", Do2_1+"<"+i+">");
-//				System.out.println(Do2_1);
 				td1.addToDo("2", Do2_2+"<"+i+">");
-//				System.out.println(Do2_2);
-				td1.addToDo("3", Do3_1+"<"+i+">");
-//				System.out.println(Do3_1);
-				td1.addToDo("3", Do3_2+"<"+i+">");
-				System.out.println(Do3_2);
+//				td1.addToDo("3", Do3_1+"<"+i+">");
+//				td1.addToDo("3", Do3_2+"<"+i+">");
 
 				// Retrieve to-do items.
 				TodoList getTd1 = tlm.getToDoList(ListName);
@@ -72,10 +65,10 @@ public class TodoActivity {
 //				System.out.println("Expect testTdString for 1: " + expectedTdString1);
 				System.out.println("Actual testTdString for 1: " + testTdString1);
 
-				String testTdString3 = getTd1.getToDoString("3");
-				String expectedTdString3 = Do3_1 + " : " + Do3_2 + " : ";
+//				String testTdString3 = getTd1.getToDoString("3");
+//				String expectedTdString3 = Do3_1 + " : " + Do3_2 + " : ";
 //				System.out.println("Expect testTdString for 3: " + expectedTdString3);
-				System.out.println("Actual testTdString for 3: " + testTdString3);
+//				System.out.println("Actual testTdString for 3: " + testTdString3);
 			}
 
             tlm.doSomething("Testing completed.");

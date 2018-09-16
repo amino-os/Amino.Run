@@ -3,6 +3,7 @@ package sapphire.policy.dht;
 import org.apache.harmony.rmi.common.EclipseJavaCompiler;
 
 import java.io.Serializable;
+import java.lang.reflect.Array;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -53,8 +54,13 @@ public class ExplicitReplicationPolicy extends SapphirePolicy {
 			// This code path is about calling method in application.
 			System.out.println("Client) onRPC ExplicitReplicationPolicy");
 
-			ExplicitReplicationServerPolicy responsibleNode = group.getRandomResponsibleNode();
-			return responsibleNode.onRPC(method, params);
+			ArrayList<SapphireServerPolicy> allServers = group.getServers();
+			Object ret = null;
+			for (SapphireServerPolicy server: allServers) {
+				ret = server.onRPC(method, params);
+			}
+
+			return ret;
 		}
 	}
 
@@ -89,7 +95,7 @@ public class ExplicitReplicationPolicy extends SapphirePolicy {
 		private static Logger logger = Logger.getLogger(SapphireGroupPolicy.class.getName());
 		private HashMap<Integer, ReplicationNode> nodes;
 		private int totalMembers = 2;
-		private int kernelServerBeginIdForExplicitReplication = 2; // replication chain will be put on from the third kernel server.
+		private int kernelServerBeginIdForExplicitReplication = 1; // replication chain will be put on from the third kernel server.
 		private int id = 0;
 		private int membersAdded = 0;
 
@@ -106,7 +112,7 @@ public class ExplicitReplicationPolicy extends SapphirePolicy {
 		@Override
 		public void onCreate(SapphireServerPolicy server) {
 			nodes = new HashMap<Integer, ReplicationNode>();
-
+System.out.println("Group.onCreate at ReplicationPolicy");
 			try {
 				ArrayList<String> regions = sapphire_getRegions();
 

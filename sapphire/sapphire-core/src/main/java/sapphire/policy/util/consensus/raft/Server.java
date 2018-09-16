@@ -281,7 +281,7 @@ public class Server
             if (lastLogIndex >= this.lastLogIndex()
                     && (localLogSize == 0
                             || lastLogTerm >= pState.log().get(this.lastLogIndex()).term)) {
-                logger.info(
+                System.out.println(
                         String.format("%s decided to vote for %s", pState.myServerID, candidate));
                 pState.setVotedFor(candidate, pState.getVotedFor());
                 return currentTerm; // Vote for her!
@@ -411,7 +411,7 @@ public class Server
              * • Upon election: send initial empty AppendEntries RPCs (heartbeat) to each server;
              * repeat during idle periods to prevent election timeouts (§5.2)
              */
-            logger.info(pState.myServerID + ": Start being a leader.");
+            System.out.println(pState.myServerID + ": Start being a leader.");
             vState.setState(
                     Server.State.LEADER,
                     vState.getState()); // It doesn't matter what we were before.
@@ -450,7 +450,7 @@ public class Server
 
         /** Stop being a leader. */
         void stop() {
-            logger.info(pState.myServerID + ": Stop being a leader.");
+            System.out.println(pState.myServerID + ": Stop being a leader.");
             leaderHeartbeatSendTimer.cancel(); // Stop sending heartbeats.
             appendEntriesThreadPool.shutdownNow();
             appendEntriesThreadPool = null;
@@ -754,7 +754,7 @@ public class Server
              * AppendEntries RPC from current leader or granting vote to candidate: - convert to
              * candidate
              */
-            logger.info(pState.myServerID + ": Start being a follower.");
+            System.out.println(pState.myServerID + ": Start being a follower.");
             vState.setState(
                     State.FOLLOWER, vState.getState()); // Doesn't matter what we were before.
 
@@ -818,7 +818,7 @@ public class Server
              * AppendEntries RPC received from new leader: convert to follower - If election timeout
              * elapses: start new election
              */
-            logger.info(pState.myServerID + ": Start being a candidate.");
+            System.out.println(pState.myServerID + ": Start being a candidate.");
             vState.setState(
                     State.CANDIDATE, vState.getState()); // Doesn't matter what we were before.
 
@@ -867,7 +867,7 @@ public class Server
 
         /** Stop being a candidate. */
         void stop() {
-            logger.info(pState.myServerID + ": Stop being a candidate.");
+            System.out.println(pState.myServerID + ": Stop being a candidate.");
             this.leaderElectionTimer.cancel();
             if (voteRequestThreadPool != null) {
                 voteRequestThreadPool.shutdownNow();
@@ -884,7 +884,7 @@ public class Server
             RemoteRaftServer server = getServer(serverID);
             boolean voteGranted = true;
             try {
-                logger.info("Sending vote request to server " + serverID);
+                System.out.println("Sending vote request to server " + serverID);
                 server.requestVote(
                         pState.getCurrentTerm(), pState.myServerID, lastLogIndex(), lastLogTerm());
 
@@ -897,7 +897,7 @@ public class Server
                         || (!currentTerm.equals(pState.getCurrentTerm()))) {
                     // Not a valid/useful grant
                     voteGranted = false;
-                    logger.info(
+                    System.out.println(
                             String.format(
                                     "%s While waiting in blocking call, state transitioned from CANDIDATE to %s, old term : %d and current term : %d",
                                     pState.myServerID,
@@ -965,7 +965,7 @@ public class Server
                             blocking call */
                             if ((vState.getState() != State.CANDIDATE)
                                     || (!currentTerm.equals(pState.getCurrentTerm()))) {
-                                logger.info(
+                                System.out.println(
                                         String.format(
                                                 "%s While waiting in blocking call, state transitioned from CANDIDATE to %s, old term : %d and current term : %d",
                                                 pState.myServerID,

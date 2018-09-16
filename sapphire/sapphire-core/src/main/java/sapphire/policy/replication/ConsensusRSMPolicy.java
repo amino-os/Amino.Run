@@ -42,6 +42,7 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
             Object ret = null;
 
             try {
+                System.out.println("Client) onRPC Consensus for " + method);
                 ret = getServer().onRPC(method, params);
             } catch (LeaderException e) {
 
@@ -175,6 +176,7 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
 
         @Override
         public Object onRPC(String method, ArrayList<Object> params) throws Exception {
+            System.out.println("Server) onRPC at Consensus for " + method);
             return raftServer.applyToStateMachine(
                     new RPC(
                             method,

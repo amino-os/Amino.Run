@@ -182,8 +182,6 @@ public class Sapphire {
 
 		serverPolicy.onCreate(groupPolicyStub);
 		serverPolicy.setNextDMs(nextPoliciesToCreate);
-		SapphirePolicyContainer newSapphirePolicyContainer = new SapphirePolicyContainerImpl(policyName, groupPolicy);
-		serverPolicy.setThisPolicyContainer(newSapphirePolicyContainer);
 
 		SapphirePolicyContainer processedPolicy = new SapphirePolicyContainerImpl(policyName, groupPolicy);
 		processedPolicy.setServerPolicy(serverPolicy);

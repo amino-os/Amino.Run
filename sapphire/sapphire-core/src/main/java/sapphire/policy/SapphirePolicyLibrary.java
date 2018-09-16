@@ -64,10 +64,6 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 			return this.processedDMs;
 		}
 
-		public void setThisPolicyContainer(SapphirePolicyContainer policyContainer) {
-			this.thisPolicyContainer = policyContainer;
-		}
-
 		public void setNextDMs(List<SapphirePolicyContainer> nextDMs) {
 			this.nextDMs = nextDMs;
 		}
@@ -122,31 +118,28 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 			try {
 				// Find the appStub which only exists in the last server policy (first in client side).
 				SapphireServerPolicy lastServerPolicy = (SapphireServerPolicy)this;
-				while (lastServerPolicy.nextServerPolicy != null) {
-					lastServerPolicy = lastServerPolicy.nextServerPolicy;
+				while (lastServerPolicy.getNextServerPolicy() != null) {
+					lastServerPolicy = lastServerPolicy.getNextServerPolicy();
 				}
 
 				AppObject actualAppObject = lastServerPolicy.sapphire_getAppObject();
+
+				// Create a new replica chain from already created policies before this policy and this policy.
 				List<SapphirePolicyContainer> processedPolicesReplica = new ArrayList<SapphirePolicyContainer>();
-
-				///////////////////////////
-				//TODO: remove after test:
-//				newHostName = this.getProcessedPolicies().get(0).getServerPolicyStub().$__getHostname();
-				///////////////////////////
-
 				Sapphire.createPolicy(null, actualAppObject, processedPolicies, processedPolicesReplica, null, null, null);
 
-				// Last policy is this policy.
+				// Last policy in the returned chain is replica of this policy.
 				serverPolicy = processedPolicesReplica.get(processedPolicesReplica.size() - 1).getServerPolicy();
 				serverPolicyStub = processedPolicesReplica.get(processedPolicesReplica.size() - 1).getServerPolicyStub();
 
+				// Complete the chain by creating new instances of server policies and stub that should be created after this policy.
 				List<SapphirePolicyContainer> nextPolicyList = Sapphire.createPolicy(null, null, this.nextDMs, processedPolicesReplica, serverPolicy, serverPolicyStub,null);
 
 				getGroup().addServer((SapphireServerPolicy) serverPolicyStub);
 
-				if (nextPolicyList != null && nextPolicyList.size() > 0) {
-					serverPolicyStub = nextPolicyList.get(nextPolicyList.size() - 1).getServerPolicyStub();
-				}
+//				if (nextPolicyList != null && nextPolicyList.size() > 0) {
+//					serverPolicyStub = nextPolicyList.get(nextPolicyList.size() - 1).getServerPolicyStub();
+//				}
 			} catch (RemoteException e) {
 				throw new Error("Could not contact oms.");
 			} catch (ClassNotFoundException e) {
@@ -206,8 +199,8 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 			}
 
 			// Ensure that we are inturn handling the first Server Policy.
-			while (serverPolicy.previousServerPolicy != null) {
-				serverPolicy = serverPolicy.previousServerPolicy;
+			while (serverPolicy.getPreviousServerPolicy() != null) {
+				serverPolicy = serverPolicy.getPreviousServerPolicy();
 			}
 			SapphireServerPolicy firstServerPolicy = serverPolicy;
 
@@ -215,10 +208,11 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 			// These associated ServerPolicy KernelObjects will be moved to the new Server when the first KernelObject is moved.
 			// But have to be explicitly removed from the local KernelServer. The new KernelServer address need to be
 			// registered with the OMS explicitly for these associated KernelObjects.
-			while (serverPolicy.nextServerPolicy != null) {
+			System.out.println("Objected to be moved: " + serverPolicy.$__getKernelOID());
+			while (serverPolicy.getNextServerPolicy() != null) {
 				// First server policy will be removed when the object is moved; therefore, not needed to be included in the removal list.
-				serverPolicy = serverPolicy.nextServerPolicy;
-				System.out.println("Adding object to removal list for: " + serverPolicy.$__getKernelOID());
+				serverPolicy = serverPolicy.getNextServerPolicy();
+				System.out.println("Objected to be moved: " + serverPolicy.$__getKernelOID());
 				serverPoliciesToRemove.add(serverPolicy);
 			}
 			serverPolicy = firstServerPolicy;
@@ -229,11 +223,11 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 			KernelObjectStub tempServerPolicyStub = null;
 			while(itr.hasNext()) {
 				tempServerPolicyStub = itr.next().getServerPolicyStub();
-				System.out.println("Updating hostname of serverPolicyStub: " + tempServerPolicyStub + " to server: " + server);
+//				System.out.println("Updating hostname of serverPolicyStub: " + tempServerPolicyStub + " to server: " + server);
 				tempServerPolicyStub.$__updateHostname(server);
 			}
 
-			logger.info("Pinning Sapphire object " + serverPolicy.$__getKernelOID() + " to " + server);
+			System.out.println("(Starting) Pinning Sapphire object " + serverPolicy.$__getKernelOID() + " to " + server);
 			try {
 				kernel().moveKernelObjectToServer(server, serverPolicy.$__getKernelOID());
 			} catch (KernelObjectNotFoundException e) {
@@ -245,7 +239,6 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 			// Remove the moved associated KernelObjects from the local KernelServer.
 			for (SapphireServerPolicy serverPolicyToRemove : serverPoliciesToRemove) {
 				try {
-					System.out.println("Registering the new KS host for Sapphire object: " + serverPolicyToRemove.$__getKernelOID() + " to: " + server);
 					oms().registerKernelObject(serverPolicyToRemove.$__getKernelOID(), server);
 					kernel().removeObject(serverPolicyToRemove.$__getKernelOID());
 				} catch (KernelObjectNotFoundException e) {
@@ -253,6 +246,8 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 					throw new Error("Could not find object to remove in this server. Oid: " + serverPolicyToRemove.$__getKernelOID());
 				}
 			}
+			System.out.println("(Complete) Pinning Sapphire object " + serverPolicy.$__getKernelOID() + " to " + server);
+
 		}
 
 		/*

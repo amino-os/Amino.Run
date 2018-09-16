@@ -49,9 +49,6 @@ public class AppObjectShimServerPolicy implements SapphireServerPolicyUpcalls{
     }
 
     @Override
-    public void setThisPolicyContainer(SapphirePolicyContainer policyContainer) {}
-
-    @Override
     public void setNextDMs(List<SapphirePolicyContainer> nextDMs) {}
 
     @Override

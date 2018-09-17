@@ -46,7 +46,7 @@ public class DHTPolicy2 extends SapphirePolicy {
 			// This code path is about calling method in application.
 			System.out.println("Client) onRPC DHTPolicy2");
 
-			ArrayList<Object> applicationParams = getApplicationParam(params, 0);
+			ArrayList<Object> applicationParams = getApplicationParam(method, params);
 			DHTServerPolicy responsibleNode;
 			if (applicationParams != null && applicationParams.size() > 0) {
 				responsibleNode = group.dhtGetResponsibleNode((String) applicationParams.get(0));
@@ -60,16 +60,18 @@ public class DHTPolicy2 extends SapphirePolicy {
 		 * Find first application paramter from nested arraylist.
 		 * @return The first application parameter.
 		 */
-		private ArrayList<Object> getApplicationParam(ArrayList<Object> params, int nth) {
+		private ArrayList<Object> getApplicationParam(String methodName, ArrayList<Object> params) {
 			ArrayList<Object> currentParams = params;
 			while (currentParams != null && currentParams.size() == 2) {
 				if (currentParams.get(1) instanceof ArrayList) {
 					currentParams = (ArrayList) currentParams.get(1);
+					methodName = (String) currentParams.get(0);
 				} else {
 					break;
 				}
 			}
 
+			if (methodName.contains("sapphire.policy")) return null;
 			return currentParams;
 		}
 	}

@@ -42,7 +42,7 @@ public class LoadBalancedMasterSlaveSyncPolicy extends LoadBalancedMasterSlaveBa
      * Server side policy
      */
     // TODO (Terry): Move annotation onto Sapphire object
-    @RuntimeSpec(replicas=2)
+    @RuntimeSpec(replicas=1)
     public static class ServerPolicy extends ServerBase {
         private transient Logger logger;
         private transient Committer commitExecutor;

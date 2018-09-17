@@ -48,17 +48,22 @@ public class AtLeastOnceRPCPolicy extends DefaultSapphirePolicy {
             final String method_ = method;
             final ArrayList<Object> params_ = params;
             count++;
-            timeoutTask = new FutureTask<Object>(new Callable<Object>() {
-                @Override
-                public Object call() throws Exception{
-                    System.out.println("Client) onRPC AtLeastOnceRPC");
-                    return clientPolicy.doOnRPC(method_, params_);
-                }
-            });
 
-            new Thread(timeoutTask).start();
-            Object result = timeoutTask.get(this.timeoutMilliSeconds, TimeUnit.MILLISECONDS);
-            return result;
+            System.out.println("Client) onRPC AtLeastOnceRPC");
+            return clientPolicy.doOnRPC(method_, params_);
+
+//
+//            timeoutTask = new FutureTask<Object>(new Callable<Object>() {
+//                @Override
+//                public Object call() throws Exception{
+//                    System.out.println("Client) onRPC AtLeastOnceRPC");
+//                    return clientPolicy.doOnRPC(method_, params_);
+//                }
+//            });
+//
+//            new Thread(timeoutTask).start();
+//            Object result = timeoutTask.get(this.timeoutMilliSeconds, TimeUnit.MILLISECONDS);
+//            return result;
         }
     }
 

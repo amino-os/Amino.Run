@@ -2,6 +2,7 @@ package sapphire.policy.replication;
 
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -52,7 +53,22 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
 
                 setServer((ServerPolicy) e.getLeader());
                 ret = ((ServerPolicy) e.getLeader()).onRPC(method, params);
-            } catch (RemoteException e) {
+            }
+            // Added for handling Multi-DM scenarios where LeaderException
+            // can be nested inside InvocationTargetException.
+            catch (InvocationTargetException e) {
+                // Check whether the received InvocationTargetException is
+                // LeaderException which needs to be handled.
+                if (e.getTargetException() instanceof LeaderException) {
+                    LeaderException le = (LeaderException) e.getTargetException();
+                    if (null == le.getLeader()) {
+                        throw new RemoteException("Raft leader is not elected");
+                    }
+                    setServer((ServerPolicy) le.getLeader());
+                    ret = ((ServerPolicy) le.getLeader()).onRPC(method, params);
+                }
+            }
+            catch (RemoteException e) {
                 /* Get servers from the group and find a responding server */
                 boolean serverFound = false;
                 ArrayList<SapphireServerPolicy> servers = getGroup().getServers();

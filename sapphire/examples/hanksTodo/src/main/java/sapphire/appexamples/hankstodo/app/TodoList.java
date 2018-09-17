@@ -24,7 +24,13 @@ import sapphire.runtime.SapphireConfiguration;
 //@SapphireConfiguration(DMs = "sapphire.policy.dht.ExplicitReplicationPolicy,sapphire.policy.dht.ExplicitReplicationPolicy,sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy")
 //@SapphireConfiguration(DMs = "sapphire.policy.DefaultSapphirePolicy")
 //@SapphireConfiguration(DMs = "sapphire.policy.dht.DHTPolicy2")
-@SapphireConfiguration(DMs = "sapphire.policy.replication.ConsensusRSMPolicy")
+//@SapphireConfiguration(DMs = "sapphire.policy.replication.ConsensusRSMPolicy")
+//@SapphireConfiguration(DMs = "sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy, sapphire.policy.replication.ConsensusRSMPolicy") // Works fine.
+//@SapphireConfiguration(DMs = "sapphire.policy.replication.ConsensusRSMPolicy, sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy") // Works fine.
+//@SapphireConfiguration(DMs = "sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy, sapphire.policy.replication.ConsensusRSMPolicy, sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy") // Works fine.
+@SapphireConfiguration(DMs = "sapphire.policy.replication.ConsensusRSMPolicy, sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy, sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy") // Works fine.
+//@SapphireConfiguration(DMs = "sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy, sapphire.policy.replication.ConsensusRSMPolicy, sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy, sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy")
+//@SapphireConfiguration(DMs = "sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy, sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy, sapphire.policy.replication.ConsensusRSMPolicy") // Works fine.
 //@SapphireConfiguration(DMs = "sapphire.policy.replication.ConsensusRSMPolicy,sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy")
 //@SapphireConfiguration(DMs = "sapphire.policy.scalability.LoadBalancedMasterSlaveSyncPolicy,sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy")
 

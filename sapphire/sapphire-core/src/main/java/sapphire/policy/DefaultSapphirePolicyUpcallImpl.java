@@ -59,24 +59,6 @@ public abstract class DefaultSapphirePolicyUpcallImpl extends SapphirePolicyLibr
 			}
 		}
 
-		public void setNextServerKernelObject(KernelObject sapphireServerPolicy) {
-			this.nextServerKernelObject = sapphireServerPolicy;
-		}
-
-		public void setNextServerPolicy(SapphireServerPolicy sapphireServerPolicy) {
-			this.nextServerPolicy = sapphireServerPolicy;
-		}
-
-		public void setPreviousServerPolicy(SapphireServerPolicy sapphireServerPolicy) {
-			this.previousServerPolicy = sapphireServerPolicy;
-		}
-
-		public SapphireServerPolicy getPreviousServerPolicy() {
-			return this.previousServerPolicy;
-		}
-		public SapphireServerPolicy getNextServerPolicy() {
-			return this.nextServerPolicy;
-		}
 
 		/* This function is added here just to generate the stub for this function in all DMs server policy */
 		public SapphireServerPolicy sapphire_replicate() {

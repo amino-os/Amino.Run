@@ -142,7 +142,7 @@ public class DHTPolicy2 extends SapphirePolicy {
 		@Override
 		public void onCreate(SapphireServerPolicy server) {
 			nodes = new HashMap<String, DHTNode>();
-			System.out.println("Group.onCreat at DHTPolicy2");
+			System.out.println("Group.onCreate at DHTPolicy2");
 
 			try {
 				ArrayList<String> regions = sapphire_getRegions();

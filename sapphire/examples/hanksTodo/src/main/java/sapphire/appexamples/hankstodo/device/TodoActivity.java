@@ -41,7 +41,7 @@ public class TodoActivity {
             
             KernelServer nodeServer = new KernelServerImpl(new InetSocketAddress(args[2], Integer.parseInt(args[3])), new InetSocketAddress(args[0], Integer.parseInt(args[1])));
 			TodoList td1 = tlm.newTodoList(ListName);
-//			sleep(7000);   // Added for ConsensusRSM testing.
+			sleep(7000);   // Added for ConsensusRSM testing.
 			System.out.println("new to do list for 1");
 
 			for (int i=0; i<1; i++) {

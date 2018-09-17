@@ -186,6 +186,7 @@ public class Sapphire {
 		SapphirePolicyContainer processedPolicy = new SapphirePolicyContainerImpl(policyName, groupPolicy);
 		processedPolicy.setServerPolicy(serverPolicy);
 		processedPolicy.setServerPolicyStub((KernelObjectStub)serverPolicyStub);
+		processedPolicy.setKernelOID(serverPolicy.$__getKernelOID());
 		processedPolicies.add(processedPolicy);
 
 		// Create a copy to set processed policies up to this point.
@@ -203,6 +204,15 @@ public class Sapphire {
 		if (nextPoliciesToCreate.size() != 0) {
 			createPolicy(appObjectClass, null, nextPoliciesToCreate, processedPolicies, previousServerPolicy, previousServerPolicyStub, args);
 		}
+
+		String ko = "";
+		if (ko != null) {
+			for (SapphirePolicyContainer policyContainer : processedPolicies) {
+				ko += String.valueOf(policyContainer.getKernelOID()) + ",";
+			}
+		}
+
+		System.out.println("OID from processed polices at " + policyName + " : " + ko);
 
 		return processedPolicies;
 	}

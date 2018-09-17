@@ -1,5 +1,6 @@
 package sapphire.policy;
 
+import sapphire.kernel.common.KernelOID;
 import sapphire.kernel.common.KernelObjectStub;
 
 /**
@@ -10,12 +11,15 @@ public class SapphirePolicyContainerImpl implements SapphirePolicyContainer {
 	private SapphirePolicy.SapphireGroupPolicy groupPolicy;
 	private SapphirePolicy.SapphireServerPolicy serverPolicy;
 	private KernelObjectStub serverPolicyStub;
+	private int oid;
 
 	public SapphirePolicyContainerImpl(String policyName, SapphirePolicy.SapphireGroupPolicy groupPolicy) {
 		this.policyName = policyName;
 		this.groupPolicy = groupPolicy;
 	}
 
+	public int getKernelOID() { return oid; }
+	public void setKernelOID(KernelOID kernelOID) { this.oid = kernelOID.getID(); }
 	public String getPolicyName () {
 		return this.policyName;
 	}

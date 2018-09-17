@@ -46,29 +46,33 @@ public class TodoActivity {
 
 			for (int i=0; i<1; i++) {
 				// Add to-do items.
-				td1.addToDo("1", Do1_1+"<"+i+">");
-				td1.addToDo("1", Do1_2+"<"+i+">");
-				td1.addToDo("2", Do2_1+"<"+i+">");
-				td1.addToDo("2", Do2_2+"<"+i+">");
-//				td1.addToDo("3", Do3_1+"<"+i+">");
-//				td1.addToDo("3", Do3_2+"<"+i+">");
+				System.out.println("Adding to do 1.1");
+				td1.addToDo(1, Do1_1+"<"+i+">");
+				System.out.println("Adding to do 1.2");
+				td1.addToDo(1, Do1_2+"<"+i+">");
+				System.out.println("Adding to do 2.1");
+				td1.addToDo(2, Do2_1+"<"+i+">");
+				System.out.println("Adding to do 2.2");
+				td1.addToDo(2, Do2_2+"<"+i+">");
+				td1.addToDo(3, Do3_1+"<"+i+">");
+				td1.addToDo(3, Do3_2+"<"+i+">");
 
 				// Retrieve to-do items.
 				TodoList getTd1 = tlm.getToDoList(ListName);
-				String testTdString2 = getTd1.getToDoString("2");
+				String testTdString2 = getTd1.getToDoString(2);
 				String expectedTdString2 = Do2_1 + " : " + Do2_2 + " : ";
 //				System.out.println("Expect testTdString for 2: " + expectedTdString2);
 				System.out.println("Actual testTdString for 2: " + testTdString2);
 
-				String testTdString1 = getTd1.getToDoString("1");
+				String testTdString1 = getTd1.getToDoString(1);
 				String expectedTdString1 = Do1_1 + " : " + Do1_2 + " : ";
 //				System.out.println("Expect testTdString for 1: " + expectedTdString1);
 				System.out.println("Actual testTdString for 1: " + testTdString1);
 
-//				String testTdString3 = getTd1.getToDoString("3");
+				String testTdString3 = getTd1.getToDoString(3);
 //				String expectedTdString3 = Do3_1 + " : " + Do3_2 + " : ";
 //				System.out.println("Expect testTdString for 3: " + expectedTdString3);
-//				System.out.println("Actual testTdString for 3: " + testTdString3);
+				System.out.println("Actual testTdString for 3: " + testTdString3);
 			}
 
             tlm.doSomething("Testing completed.");

@@ -24,6 +24,9 @@ public class DefaultSapphirePolicy extends SapphirePolicy {
 			// TODO Auto-generated method stub
 			this.group = (DefaultGroupPolicy) group;
 		}
+
+		@Override
+		public void initialize() {}
 	}
 	
 	public static class DefaultClientPolicy extends SapphireClientPolicy {

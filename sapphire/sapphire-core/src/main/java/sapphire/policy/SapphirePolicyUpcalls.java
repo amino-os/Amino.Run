@@ -21,6 +21,7 @@ public interface SapphirePolicyUpcalls {
 	
 	interface SapphireServerPolicyUpcalls extends Serializable {
 		void onCreate(SapphireGroupPolicy group);
+		void initialize();
 		SapphireGroupPolicy getGroup();
 		Object onRPC(String method, ArrayList<Object> params) throws Exception;
 		void onMembershipChange();

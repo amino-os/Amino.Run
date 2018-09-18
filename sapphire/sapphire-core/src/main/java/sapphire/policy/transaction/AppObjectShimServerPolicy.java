@@ -24,6 +24,9 @@ public class AppObjectShimServerPolicy implements SapphireServerPolicyUpcalls{
     }
 
     @Override
+    public void initialize() {}
+
+    @Override
     public SapphirePolicy.SapphireGroupPolicy getGroup() {
         return null;
     }

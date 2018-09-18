@@ -46,12 +46,12 @@ public class DHTPolicy2 extends SapphirePolicy {
 			// This code path is about calling method in application.
 			System.out.println("Client) onRPC DHTPolicy2");
 
-			ArrayList<Object> applicationParams = getApplicationParam(params, 0);
+			ArrayList<Object> applicationParams = getApplicationParam(method, params);
 			DHTServerPolicy responsibleNode;
 			if (applicationParams != null && applicationParams.size() > 0) {
-				responsibleNode = group.dhtGetResponsibleNode((String) applicationParams.get(0));
+				responsibleNode = group.dhtGetResponsibleNode(Integer.parseInt(applicationParams.get(0).toString()));
 			} else {
-				responsibleNode = group.dhtGetResponsibleNode("1");
+				responsibleNode = (DHTServerPolicy)group.getServers().get(0);
 			}
 			return responsibleNode.forwardedRPC(method, params);
 		}
@@ -60,16 +60,20 @@ public class DHTPolicy2 extends SapphirePolicy {
 		 * Find first application paramter from nested arraylist.
 		 * @return The first application parameter.
 		 */
-		private ArrayList<Object> getApplicationParam(ArrayList<Object> params, int nth) {
+		private ArrayList<Object> getApplicationParam(String methodName, ArrayList<Object> params) {
 			ArrayList<Object> currentParams = params;
 			while (currentParams != null && currentParams.size() == 2) {
 				if (currentParams.get(1) instanceof ArrayList) {
 					currentParams = (ArrayList) currentParams.get(1);
+					methodName = (String) currentParams.get(0);
 				} else {
 					break;
 				}
 			}
 
+			if (methodName.contains(sapphirePolicyStr)) {
+				return null;
+			}
 			return currentParams;
 		}
 	}
@@ -82,6 +86,9 @@ public class DHTPolicy2 extends SapphirePolicy {
 		public void onCreate(SapphireGroupPolicy group) {
 			this.group = (DHTGroupPolicy) group;
 		}
+
+        @Override
+        public void initialize() {}
 
 		@Override
 		public SapphireGroupPolicy getGroup() {
@@ -108,40 +115,22 @@ public class DHTPolicy2 extends SapphirePolicy {
 
 	public static class DHTGroupPolicy extends SapphireGroupPolicy {
 		private static Logger logger = Logger.getLogger(SapphireGroupPolicy.class.getName());
-		private HashMap<String, DHTNode> nodes;
+		private HashMap<Integer, DHTNode> nodes;
 		private int groupSize = 0;
 
-		private class DHTNode implements Comparable<DHTNode>, Serializable {
-			public String id;
+		private class DHTNode implements Serializable {
+			public int id;
 			public DHTServerPolicy server;
 
-			public DHTNode(String id, DHTServerPolicy server) {
+			public DHTNode(int id, DHTServerPolicy server) {
 				this.id = id;
 				this.server = server;
-			}
-
-			@Override
-			public boolean equals(Object other) {
-				DHTNode o = (DHTNode) other;
-				if (o == null)
-					return false;
-				if (o.id.compareTo(id) == 0)
-					return true;
-				return false;
-			}
-
-			@Override
-			/**
-			 * @throws NullPointerException if another is null
-			 */
-			public int compareTo(DHTNode another) {
-				return another.id.compareTo(this.id);
 			}
 		}
 
 		@Override
 		public void onCreate(SapphireServerPolicy server) {
-			nodes = new HashMap<String, DHTNode>();
+			nodes = new HashMap<Integer, DHTNode>();
 			System.out.println("Group.onCreate at DHTPolicy2");
 
 			try {
@@ -149,7 +138,7 @@ public class DHTPolicy2 extends SapphirePolicy {
 
 				// Add the first DHT node
 				groupSize++;
-				String id = Integer.toString(groupSize);
+				int id = groupSize;
 				DHTServerPolicy dhtServer = (DHTServerPolicy) server;
 
 				DHTNode newNode = new DHTNode(id, dhtServer);
@@ -171,7 +160,7 @@ public class DHTPolicy2 extends SapphirePolicy {
 		@Override
 		public void addServer(SapphireServerPolicy server) {
 			groupSize++;
-			String id = Integer.toString(groupSize);
+			int id = groupSize;
 			try {
 				DHTServerPolicy dhtServer = (DHTServerPolicy) server;
 				DHTNode newNode = new DHTNode(id, dhtServer);
@@ -187,7 +176,7 @@ public class DHTPolicy2 extends SapphirePolicy {
 		@Override
 		public ArrayList<SapphireServerPolicy> getServers() {
 			ArrayList servers  = new ArrayList<SapphireServerPolicy> ();
-			for (String id: nodes.keySet()) {
+			for (int id: nodes.keySet()) {
 				servers.add(nodes.get(id).server);
 			}
 
@@ -212,7 +201,8 @@ public class DHTPolicy2 extends SapphirePolicy {
 		/**
 		 * TODO: key is literally from the input value currently. It should be hashed key.
 		 */
-		public DHTServerPolicy dhtGetResponsibleNode(String key) {
+		public DHTServerPolicy dhtGetResponsibleNode(int key) {
+            key = key % groupSize + 1;
 			if (nodes.containsKey(key)) {
 				DHTServerPolicy server = nodes.get(key).server;
 				logger.info("Retrieved the server for key " + key);

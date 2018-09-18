@@ -192,7 +192,10 @@ public class CacheLeasePolicy extends SapphirePolicy {
 			// TODO Auto-generated method stub
 			this.group = (CacheLeaseGroupPolicy) group;
 		}
-		
+
+		@Override
+		public void initialize() {}
+
 		@Override
 		public SapphireGroupPolicy getGroup() {
 			return group;

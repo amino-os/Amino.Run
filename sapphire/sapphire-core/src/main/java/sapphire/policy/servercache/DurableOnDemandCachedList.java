@@ -64,6 +64,9 @@ public class DurableOnDemandCachedList extends SapphirePolicy {
 		}
 
 		@Override
+		public void initialize() {}
+
+		@Override
 		public SapphireGroupPolicy getGroup() {
 			return group;
 		}

@@ -40,20 +40,20 @@ public class Writer implements AutoCloseable {
 		//value type switch
 		short typeindex = 0;
 		if(v.isBoolean()) {
-			System.out.println("found boolean: " + v);
+			System.out.println("found boolean: " + v + " metaobjectname:" + v.getMetaObject());
 			out.writeShort(TypesDB.Types.BOOLEAN.ordinal());
 			out.writeBoolean(v.asBoolean());
 		} else if(v.isNativePointer()) {
 			throw new IllegalArgumentException("native pointer not supported");
 		} else if(v.isNull()) {
-			System.out.println("found null");
+			System.out.println("found null" + " metaobjectname:" + v.getMetaObject());
 			out.writeShort(TypesDB.Types.NULL.ordinal());
 		} else if(v.isNumber()) {
-			System.out.println("found number (assuming int): " + v);
+			System.out.println("found number (assuming int): " + v + " metaobjectname:" + v.getMetaObject());
 			out.writeShort(TypesDB.Types.NUMBER.ordinal());
 			out.writeInt(v.asInt());
 		} else if(v.isString()) {
-			System.out.println("found string: " + v);
+			System.out.println("found string: " + v + " metaobjectname:" + v.getMetaObject());
 			out.writeShort(TypesDB.Types.STRING.ordinal());
 			out.writeUTF(v.asString());
 		} else { //isComplex

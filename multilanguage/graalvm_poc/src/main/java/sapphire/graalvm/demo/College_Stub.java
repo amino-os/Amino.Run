@@ -30,9 +30,9 @@ public class College_Stub {
         Value v0 = polyglot.eval(Source.newBuilder("js", new File(jsHome + "/college.js")).build());
 
         college = polyglot.eval("js", "new College(\"MichaelCollege\")");
-        TypesDB.register(college);
-        TypesDB.register(polyglot.eval("js", "new Student()"));
-        TypesDB.register(college.getMember("students"));
+        //TypesDB.register(college);
+        //TypesDB.register(polyglot.eval("js", "new Student()"));
+        //TypesDB.register(college.getMember("students"));
     }
 
     public String getName() throws Exception {
@@ -43,16 +43,17 @@ public class College_Stub {
         // 3. Descerialize bytes into GraalVM Value object
 
         Value v = college.getMember("getName").execute();
+        System.out.println("getName "+v);
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        sapphire.graalvm.serde.Writer writer = new sapphire.graalvm.serde.Writer(out);
-        writer.write(v);
+        sapphire.graalvm.serde.Serializer ser = new sapphire.graalvm.serde.Serializer(out, "js");
+        ser.serialize(v);
 
-        sapphire.graalvm.serde.Reader r = new sapphire.graalvm.serde.Reader(
+        sapphire.graalvm.serde.Deserializer de = new sapphire.graalvm.serde.Deserializer(
                 new ByteArrayInputStream(out.toByteArray()),
                 polyglot);
-        Value name = r.read();
-        System.out.println("getName returns " + r);
+        Value name = de.deserialize();
+        System.out.println("getName returns " + name);
         return name.asString();
     }
 
@@ -69,13 +70,13 @@ public class College_Stub {
         clientStudent.getMember("setName").execute(name);
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        sapphire.graalvm.serde.Writer writer = new sapphire.graalvm.serde.Writer(out);
-        writer.write(clientStudent);
+        sapphire.graalvm.serde.Serializer ser = new sapphire.graalvm.serde.Serializer(out, "js");
+        ser.serialize(clientStudent);
 
-        sapphire.graalvm.serde.Reader r = new sapphire.graalvm.serde.Reader(
+        sapphire.graalvm.serde.Deserializer de = new sapphire.graalvm.serde.Deserializer(
                 new ByteArrayInputStream(out.toByteArray()),
                 polyglot);
-        Value serverStudent = r.read();
+        Value serverStudent = de.deserialize();
 
         college.getMember("addStudent").execute(serverStudent);
     }
@@ -88,13 +89,13 @@ public class College_Stub {
         Value serverStudents = college.getMember("getStudents").execute();
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        sapphire.graalvm.serde.Writer writer = new sapphire.graalvm.serde.Writer(out);
-        writer.write(serverStudents);
+        sapphire.graalvm.serde.Serializer ser = new sapphire.graalvm.serde.Serializer(out, "js");
+        ser.serialize(serverStudents);
 
-        sapphire.graalvm.serde.Reader r = new sapphire.graalvm.serde.Reader(
+        sapphire.graalvm.serde.Deserializer de = new sapphire.graalvm.serde.Deserializer(
                 new ByteArrayInputStream(out.toByteArray()),
                 polyglot);
-        Value clientStudents = r.read();
+        Value clientStudents = de.deserialize();
 
         System.out.println("Students is proxy object " + clientStudents.isProxyObject());
         System.out.println("Students is host object " + clientStudents.isHostObject());

@@ -6,7 +6,7 @@ class Student {
      */
     constructor() {
         this.id = 0;
-        this.name = "";
+        this.name = "defaultstudent";
     }
 
     setId(id) {
@@ -32,7 +32,7 @@ class Student {
 
 class College {
     constructor() {
-        this.name = "";
+        this.name = "defaultcollege";
         this.students = [];
     }
 

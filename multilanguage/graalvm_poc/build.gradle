@@ -10,7 +10,7 @@ dependencies {
 }
 
 // !!!Please set javacPath in gradle.properties before building!!! 
-compileJava.options.fork = true
+compileJava.options.fork = false
 compileJava.options.forkOptions.executable = project.hasProperty('javacPath') ? project.property('javacPath') : System.getenv('JDK_HOME') 
 
 task runApp(type: JavaExec) {

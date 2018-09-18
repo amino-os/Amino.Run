@@ -8,6 +8,7 @@ import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.ObjectOutputStream;
 import java.util.List;
 import java.util.Map;
 
@@ -19,6 +20,7 @@ public class WriterTest {
                     "this.id = 0;" +
                     "this.name = \"\";" +
                     "this.buddies = [];" +
+                    "this.birthDate = new Date();" +
                     "}" +
                     "setId(id) {" +
                     "this.id = id;" +
@@ -71,6 +73,7 @@ public class WriterTest {
 
         byte[] data = serialize(student);
         Value clone = deserialize(data);
+        System.out.println(clone.getMember("birthDate"));
         Assert.assertEquals(studentId, clone.getMember("id").asInt());
         Assert.assertEquals(studentName, clone.getMember("name").asString());
 
@@ -93,6 +96,14 @@ public class WriterTest {
     private Value deserialize(byte[] data) throws Exception {
         try (Reader r = new Reader(new ByteArrayInputStream(data), polyglotCtx)) {
             return r.read();
+        }
+    }
+
+    private byte[] serialize(TypesDB typesDB) throws Exception {
+        try (ByteArrayOutputStream bout = new ByteArrayOutputStream();
+        ObjectOutputStream out = new ObjectOutputStream(bout);) {
+            out.writeObject(typesDB);
+            return bout.toByteArray();
         }
     }
 }

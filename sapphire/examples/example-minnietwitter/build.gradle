@@ -23,10 +23,10 @@ task genAppStubs(type: JavaExec) {
 }
 
 clean.doFirst {
-    delete fileTree("$projectDir/src/main/java/sapphire/appexamples/minnietwitter/app/stubs") {
+    delete fileTree("$projectDir/src/main/java/sapphire/appexamples/minnietwitter/stubs") {
         include '**/*_Stub.java'
     }
-    println "Deleted $projectDir/src/main/java/sapphire/appexamples/minnietwitter/app/stubs"
+    println "Deleted $projectDir/src/main/java/sapphire/appexamples/minnietwitter/stubs"
 }
 
 genAppStubs.mustRunAfter compileJava

@@ -12,6 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Logger;
 import sapphire.policy.DefaultSapphirePolicy;
+import sapphire.policy.SapphirePolicy;
 import sapphire.policy.dht.DHTPolicy2;
 import sapphire.policy.util.consensus.raft.AlreadyVotedException;
 import sapphire.policy.util.consensus.raft.CandidateBehindException;
@@ -43,10 +44,9 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
             Object ret = null;
 
             try {
-                System.out.println("Client) onRPC Consensus for " + method);
+                System.out.println("Client) onRPC Consensus");
                 ret = getServer().onRPC(method, params);
             } catch (LeaderException e) {
-
                 if (null == e.getLeader()) {
                     throw new RemoteException("Raft leader is not elected");
                 }
@@ -118,6 +118,11 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
 
         public UUID getRaftServerId() {
             return raftServer.getMyServerID();
+        }
+
+        @Override
+        public void initialize() {
+            this.initializeRaftServer();
         }
 
         @Override
@@ -208,6 +213,7 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
         public void onCreate(SapphireServerPolicy server) {
             try {
                 ArrayList<String> regions = sapphire_getRegions();
+
                 // Register the first replica, which has already been created.
                 ServerPolicy consensusServer = (ServerPolicy) server;
                 addServer(consensusServer);
@@ -219,11 +225,10 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
                     InetSocketAddress newServerAddress = oms().getServerInRegion(regions.get(i));
                     ServerPolicy replica = (ServerPolicy) consensusServer.sapphire_replicate(server.getProcessedPolicies());
                     defaultServer.sapphire_pin_to_server(replica, newServerAddress);
-//                    replica.sapphire_pin(regions.get(i));
-                    replica.initializeRaftServer();
                 }
                 consensusServer.sapphire_pin(regions.get(0));
-                consensusServer.initializeRaftServer();
+                consensusServer.initialize();
+
                 // Tell all the servers about one another
                 ConcurrentHashMap<UUID, ServerPolicy> allServers =
                         new ConcurrentHashMap<UUID, ServerPolicy>();

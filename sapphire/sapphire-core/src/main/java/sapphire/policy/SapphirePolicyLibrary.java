@@ -222,10 +222,6 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
                 throw new RemoteException("No server policy to pin to the server: " + server);
             }
 
-//			if (serverPolicy == null) {
-//				throw new Error("No server policy to pin to the server: " + server);
-//			}
-
 			// Ensure that we are inturn handling the first Server Policy.
 			while (serverPolicy.getPreviousServerPolicy() != null) {
 				serverPolicy = serverPolicy.getPreviousServerPolicy();
@@ -236,11 +232,9 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 			// These associated ServerPolicy KernelObjects will be moved to the new Server when the first KernelObject is moved.
 			// But have to be explicitly removed from the local KernelServer. The new KernelServer address need to be
 			// registered with the OMS explicitly for these associated KernelObjects.
-			System.out.println("Objects to be moved: " + serverPolicy.$__getKernelOID());
 			while (serverPolicy.getNextServerPolicy() != null) {
 				// First server policy will be removed when the object is moved; therefore, not needed to be included in the removal list.
 				serverPolicy = serverPolicy.getNextServerPolicy();
-				System.out.println("Objects to be moved: " + serverPolicy.$__getKernelOID());
 				serverPoliciesToRemove.add(serverPolicy);
 			}
 			serverPolicy = firstServerPolicy;
@@ -251,7 +245,6 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 			KernelObjectStub tempServerPolicyStub = null;
 			while(itr.hasNext()) {
 				tempServerPolicyStub = itr.next().getServerPolicyStub();
-//				System.out.println("Updating hostname of serverPolicyStub: " + tempServerPolicyStub + " to server: " + server);
 				tempServerPolicyStub.$__updateHostname(server);
 			}
 
@@ -275,7 +268,6 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 				}
 			}
 			System.out.println("(Complete) Pinning Sapphire object " + serverPolicy.$__getKernelOID() + " to " + server);
-
 		}
 
 		/*

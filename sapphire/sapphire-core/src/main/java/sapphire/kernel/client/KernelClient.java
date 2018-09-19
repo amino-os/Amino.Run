@@ -135,10 +135,7 @@ public class KernelClient {
 		try {
 			return tryMakeKernelRPC(server, rpc);
 		} catch (KernelObjectNotFoundException e) {
-			String exceptionMsg = "Could not find Kernel object";
-			System.out.println(exceptionMsg);
-			throw new Exception(exceptionMsg);
-			//return lookupAndTryMakeKernelRPC(stub, rpc);
+			return lookupAndTryMakeKernelRPC(stub, rpc);
 		}
 	}
 		

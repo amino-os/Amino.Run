@@ -18,25 +18,26 @@ import sapphire.runtime.SapphireConfiguration;
 //@SapphireConfiguration(DMs = "sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy,sapphire.policy.dht.DHTPolicy2,sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy")
 //@SapphireConfiguration(DMs = "sapphire.policy.dht.DHTPolicy2,sapphire.policy.dht.ExplicitReplicationPolicy,sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy")
 //@SapphireConfiguration(DMs = "sapphire.policy.dht.ExplicitReplicationPolicy,sapphire.policy.dht.DHTPolicy2,sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy")
-
-
-// To verify:
+//@SapphireConfiguration(DMs = "sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy, sapphire.policy.replication.ConsensusRSMPolicy") // Works fine.
+//@SapphireConfiguration(DMs = "sapphire.policy.replication.ConsensusRSMPolicy, sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy") // Works fine.
+//@SapphireConfiguration(DMs = "sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy, sapphire.policy.replication.ConsensusRSMPolicy, sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy") // Works fine.
+//@SapphireConfiguration(DMs = "sapphire.policy.replication.ConsensusRSMPolicy, sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy, sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy") // Works fine.
+//@SapphireConfiguration(DMs = "sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy, sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy, sapphire.policy.replication.ConsensusRSMPolicy") // Works fine.
+//@SapphireConfiguration(DMs = "sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy, sapphire.policy.replication.ConsensusRSMPolicy, sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy, sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy")
 //@SapphireConfiguration(DMs = "sapphire.policy.dht.ExplicitReplicationPolicy,sapphire.policy.dht.ExplicitReplicationPolicy,sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy")
 //@SapphireConfiguration(DMs = "sapphire.policy.DefaultSapphirePolicy")
 //@SapphireConfiguration(DMs = "sapphire.policy.dht.DHTPolicy2")
 //@SapphireConfiguration(DMs = "sapphire.policy.replication.ConsensusRSMPolicy")
-//@SapphireConfiguration(DMs = "sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy, sapphire.policy.replication.ConsensusRSMPolicy") // Works fine.
-//@SapphireConfiguration(DMs = "sapphire.policy.replication.ConsensusRSMPolicy, sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy") // Works fine.
-//@SapphireConfiguration(DMs = "sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy, sapphire.policy.replication.ConsensusRSMPolicy, sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy") // Works fine.
-@SapphireConfiguration(DMs = "sapphire.policy.replication.ConsensusRSMPolicy, sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy, sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy") // Works fine.
-//@SapphireConfiguration(DMs = "sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy, sapphire.policy.replication.ConsensusRSMPolicy, sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy, sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy")
-//@SapphireConfiguration(DMs = "sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy, sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy, sapphire.policy.replication.ConsensusRSMPolicy") // Works fine.
 //@SapphireConfiguration(DMs = "sapphire.policy.replication.ConsensusRSMPolicy,sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy")
+
+
+// To verify:
 //@SapphireConfiguration(DMs = "sapphire.policy.scalability.LoadBalancedMasterSlaveSyncPolicy,sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy")
 
 //@SapphireConfiguration(DMs = "sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy,sapphire.policy.replication.ConsensusRSMPolicy,sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy")
 
-//@SapphireConfiguration(DMs = "sapphire.policy.replication.ConsensusRSMPolicy,sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy,sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy")
+//@SapphireConfiguration(DMs = "sapphire.policy.replication.ConsensusRSMPolicy,sapphire.policy.dht.DHTPolicy2")
+@SapphireConfiguration(DMs = "sapphire.policy.dht.DHTPolicy2,sapphire.policy.replication.ConsensusRSMPolicy")
 //@SapphireConfiguration(DMs = "sapphire.policy.DefaultSapphirePolicy,sapphire.policy.dht.DHTPolicy2")
 //@SapphireConfiguration(DMs = "sapphire.policy.dht.DHTPolicy2,sapphire.policy.dht.DHTPolicy2")
 //@SapphireConfiguration(DMs = "sapphire.policy.DefaultSapphirePolicy,sapphire.policy.DefaultSapphirePolicy")
@@ -54,7 +55,7 @@ public class TodoList implements SapphireObject, DHTInterface {
 	 * @param id
 	 * @return
 	 */
-	public String addToDo(String id, String todo) {
+	public String addToDo(int id, String todo) {
 		System.out.println("TodoList>> id: " + id + " addToDo: " + todo);
 		toDos.add(todo);
 		return "OK!";
@@ -65,7 +66,7 @@ public class TodoList implements SapphireObject, DHTInterface {
 	 * @param id
 	 * @return
 	 */
-	public String getToDoString(String id) {
+	public String getToDoString(int id) {
 		StringBuilder sb = new StringBuilder();
 
 		for (String toDo: toDos) {
@@ -79,20 +80,20 @@ public class TodoList implements SapphireObject, DHTInterface {
 
 	// Added for testing DHTPolicy. -->
 	Map<DHTKey, String> toDoItems = new Hashtable<DHTKey, String>();
-
-	public void addToDoItem (String id, String toDo) {
-		DHTKey newKey = new DHTKey(id);
-		String toDoItem = toDoItems.get(newKey);
-
-		if (toDoItem == null) {
-			toDoItems.put(newKey, toDo);
-		}
-		System.out.println("Adding new toDo item: " + toDo);
-	}
-	public String getToDoItem(String id) {
-		String toDo = toDoItems.get(new DHTKey(id));
-		return toDo;
-	}
+//
+//	public void addToDoItem (int id, String toDo) {
+//		DHTKey newKey = new DHTKey(id);
+//		String toDoItem = toDoItems.get(newKey);
+//
+//		if (toDoItem == null) {
+//			toDoItems.put(newKey, toDo);
+//		}
+//		System.out.println("Adding new toDo item: " + toDo);
+//	}
+//	public String getToDoItem(String id) {
+//		String toDo = toDoItems.get(new DHTKey(id));
+//		return toDo;
+//	}
 	@Override
 	public Map<DHTKey, ?> dhtGetData() {
 		return toDoItems;

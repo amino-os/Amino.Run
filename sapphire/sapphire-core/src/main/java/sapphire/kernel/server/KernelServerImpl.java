@@ -23,10 +23,13 @@ import sapphire.kernel.common.KernelRPC;
 import sapphire.kernel.common.KernelRPCException;
 import sapphire.kernel.common.ServerInfo;
 import sapphire.oms.OMSServer;
+import sapphire.policy.DefaultSapphirePolicy;
 import sapphire.policy.DefaultSapphirePolicyUpcallImpl;
 import sapphire.policy.SapphirePolicy;
 import sapphire.policy.SapphirePolicyContainer;
 import sapphire.policy.SapphirePolicyLibrary.*;
+import sapphire.policy.dht.DHTPolicy2;
+import sapphire.policy.replication.ConsensusRSMPolicy;
 
 /** 
  * Sapphire Kernel Server. Runs on every Sapphire node, knows how to talk to the OMS, handles RPCs and has a client for making RPCs.
@@ -109,7 +112,7 @@ public class KernelServerImpl implements KernelServer{
 	 * @param oid the kernel object id
 	 * @param object the kernel object to be stored on this server
 	 */
-	public void copyKernelObject(KernelOID oid, KernelObject object) throws RemoteException, KernelObjectNotFoundException {
+	public void copyKernelObject(KernelOID oid, KernelObject object) throws RemoteException {
 		System.out.println("Adding object " + oid + " to this server at " + host.getAddress() + ":" + host.getPort());
 
 		// to add KOs of in-chained server policy to local object manager
@@ -120,9 +123,20 @@ public class KernelServerImpl implements KernelServer{
 				SapphireServerPolicyLibrary sp = spContainer.getServerPolicy();
 				KernelOID koid = sp.$__getKernelOID();
 				this.objectManager.addObject(koid, new KernelObject(sp));
+				System.out.println("Added " + koid.getID() + " as SapphireServerPolicyLibrary");
+
+				try {
+					sp.initialize();
+				} catch (Exception e) {
+					e.printStackTrace();
+					String exceptionMsg = "Initialization failed at copyKernelObject for KernelObject(" + koid.getID() + ").  " +
+							"Host: " + host.getAddress() + ":" + host.getPort();
+					throw new RemoteException(exceptionMsg);
+				}
 			}
 		} else {
 			this.objectManager.addObject(oid, object);
+			System.out.println("Added " + oid.getID() + " as unknown type");
 		}
 
 		object.uncoalesce();
@@ -238,8 +252,8 @@ public class KernelServerImpl implements KernelServer{
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
-//				System.out.println("Total memory: " + Runtime.getRuntime().totalMemory() + " Bytes");
-//				System.out.println("Free memory: " + Runtime.getRuntime().freeMemory() + " Bytes");
+				System.out.println("Total memory: " + Runtime.getRuntime().totalMemory() + " Bytes");
+				System.out.println("Free memory: " + Runtime.getRuntime().freeMemory() + " Bytes");
 			}
 		}
 	}

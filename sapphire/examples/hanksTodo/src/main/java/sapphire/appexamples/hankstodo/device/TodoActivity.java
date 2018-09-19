@@ -40,7 +40,8 @@ public class TodoActivity {
             System.out.println("Received tlm: " + tlm);
             
             KernelServer nodeServer = new KernelServerImpl(new InetSocketAddress(args[2], Integer.parseInt(args[3])), new InetSocketAddress(args[0], Integer.parseInt(args[1])));
-			TodoList td1 = tlm.newTodoList(ListName);
+
+            TodoList td1 = tlm.newTodoList(ListName);
 			sleep(10000);   // Added for ConsensusRSM testing.
 			System.out.println("new to do list for 1");
 
@@ -76,29 +77,6 @@ public class TodoActivity {
 			}
 
             tlm.doSomething("Testing completed.");
-
-			// Added for testing DHTPolicy -->
-			/*td1.addToDoItem("11", Do1_1);
-			System.out.println(Do1_1);
-			td1.addToDoItem("12", Do1_2);
-			System.out.println(Do1_2);
-			td1.addToDoItem("21", Do2_1);
-			System.out.println(Do2_1);
-			td1.addToDoItem("22", Do2_2);
-			System.out.println(Do2_2);
-
-			TodoList getTd1 = tlm.getToDoList(ListName);
-			String expectedTdString2 = Do2_1 + " : " + Do2_2;
-			String actualTdString2 = getTd1.getToDoItem("21") + " : " + getTd1.getToDoItem("22");
-			System.out.println("Expected testTdString for 2: " + expectedTdString2);
-			System.out.println("Actual testTdString for 2: " + actualTdString2);
-
-			System.out.println();
-			String expectedTdString1 = Do1_1 + " : " + Do1_2+ " : ";
-			String actualTdString1 = getTd1.getToDoItem("11") + " : " + getTd1.getToDoItem("12");
-			System.out.println("Expected testTdString for 1: " + expectedTdString1);
-			System.out.println("Actual testTdString for 1: " + actualTdString1);*/
-			// <--End of changes for DHTPolicy
 
 		} catch (Exception e) {
 			// TODO Auto-generated catch block

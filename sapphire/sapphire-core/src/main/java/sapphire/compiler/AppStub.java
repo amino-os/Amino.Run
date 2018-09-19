@@ -44,6 +44,15 @@ public final class AppStub extends Stub {
     }
 
     @Override
+    public String getImportStatement() {
+        return "import "
+                + GlobalStubConstants.getImportAppObjectPackageName()
+                + ";"
+                + EOLN
+                + EOLN; //$NON-NLS-1$
+    }
+
+    @Override
     public String getStubClassDeclaration() {
         StringBuilder buffer = new StringBuilder("");
         buffer.append("public final class " + stubName + " extends " + className + " implements ");
@@ -62,20 +71,21 @@ public final class AppStub extends Stub {
                         + " = null;"
                         + EOLN);
         buffer.append(indenter.indent() + "boolean $__directInvocation = false;" + EOLN);
+        buffer.append(indenter.indent() + "AppObject appObject = null;" + EOLN);
         return buffer.toString();
     }
 
     @Override
     public String getStubConstructors() {
         StringBuilder buffer = new StringBuilder();
-        StringBuilder paramNames;
+        StringBuilder paramNames = new StringBuilder();
 
         Constructor<?>[] constructors = stubClass.getConstructors();
 
         for (Constructor<?> constructor : constructors) {
             buffer.append(indenter.indent() + "public " + stubName + " (");
             Class<?>[] params = constructor.getParameterTypes();
-            paramNames = new StringBuilder();
+
             for (int i = 0; i < params.length; i++) {
                 buffer.append(
                         ((i > 0) ? ", " : "")
@@ -116,6 +126,17 @@ public final class AppStub extends Stub {
         buffer.append(indenter.tIncrease() + "$__directInvocation = directInvocation;" + EOLN);
         buffer.append(indenter.indent() + "}" + EOLN + EOLN);
 
+        /* The $__initialize function to set with new AppObject */
+        buffer.append(
+                indenter.indent() + "public void $__initialize(AppObject appObject) {" + EOLN);
+        buffer.append(indenter.tIncrease() + "this.appObject = appObject;" + EOLN);
+        buffer.append(indenter.indent() + "}" + EOLN + EOLN);
+
+        /* The $__initialize function to set with new AppObject */
+        buffer.append(indenter.indent() + "public AppObject $__getAppObject() {" + EOLN);
+        buffer.append(indenter.tIncrease() + "return this.appObject;" + EOLN);
+        buffer.append(indenter.indent() + "}" + EOLN + EOLN);
+
         /* Implement the $__clone() method */
         buffer.append(
                 indenter.indent()
@@ -142,8 +163,6 @@ public final class AppStub extends Stub {
     public String getMethodContent(MethodStub m) {
         StringBuilder buffer = new StringBuilder("");
 
-        buffer.append(indenter.indent() + "java.lang.Object $__result = null;" + EOLN);
-
         int tabWidth = 1;
 
         // Construct list of comma separated params & the ArrayList of params
@@ -162,6 +181,7 @@ public final class AppStub extends Stub {
         cListParams.append(")");
 
         // Check if direct invocation
+        buffer.append(indenter.indent() + "java.lang.Object $__result = null;" + EOLN);
         buffer.append(indenter.indent() + "if ($__directInvocation) {" + EOLN);
 
         buffer.append(indenter.tIncrease(tabWidth) + "try {" + EOLN);

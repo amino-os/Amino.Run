@@ -5,10 +5,12 @@ import java.util.ArrayList;
 import sapphire.common.AppObject;
 import sapphire.common.Utils;
 import sapphire.policy.SapphirePolicy;
+import sapphire.policy.SapphirePolicyContainer;
 import sapphire.policy.SapphirePolicyUpcalls.SapphireServerPolicyUpcalls;
 import sapphire.policy.scalability.masterslave.MethodInvocationRequest;
 import sapphire.policy.scalability.masterslave.MethodInvocationResponse;
 
+import java.util.List;
 /** server policy that directly works on the deep-cloned copy of an AppObject */
 public class AppObjectShimServerPolicy implements SapphireServerPolicyUpcalls {
     private AppObject appObject;
@@ -17,6 +19,9 @@ public class AppObjectShimServerPolicy implements SapphireServerPolicyUpcalls {
     @Override
     public void onCreate(SapphirePolicy.SapphireGroupPolicy group, Annotation[] annotations) {}
 
+	@Override
+    public void initialize() {}
+	
     @Override
     public void onDestroy() {}
 
@@ -37,6 +42,17 @@ public class AppObjectShimServerPolicy implements SapphireServerPolicyUpcalls {
     @Override
     public void onMembershipChange() {}
 
+    @Override
+    public List<SapphirePolicyContainer> getProcessedPolicies() {
+        //TODO (8/21/18) Implement to return processedDMs.
+        return null;
+    }
+
+    @Override
+    public void setNextDMs(List<SapphirePolicyContainer> nextDMs) {}
+
+    @Override
+    public void setProcessedPolicies(List<SapphirePolicyContainer> setProcessedDMs) {}
     /**
      * gets the app object referenced by the server policy
      *

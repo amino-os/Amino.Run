@@ -57,6 +57,8 @@ public abstract class Stub implements RmicConstants {
         return (getStubHeader()
                 + getPackageStatement()
                 + EOLN //$NON-NLS-1$
+                + getImportStatement()
+                + EOLN
                 + getStubClassDeclaration()
                 + indenter.hIncrease()
                 + getStubFields()
@@ -105,6 +107,8 @@ public abstract class Stub implements RmicConstants {
     public abstract TreeSet<MethodStub> getMethods();
 
     public abstract String getPackageStatement();
+
+    public abstract String getImportStatement();
 
     public abstract String getStubClassDeclaration();
 

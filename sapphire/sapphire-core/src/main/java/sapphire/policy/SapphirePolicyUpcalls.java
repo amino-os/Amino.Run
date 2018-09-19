@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.List;
 import sapphire.policy.SapphirePolicy.SapphireGroupPolicy;
 import sapphire.policy.SapphirePolicy.SapphireServerPolicy;
 
@@ -22,7 +23,7 @@ public interface SapphirePolicyUpcalls {
 
     interface SapphireServerPolicyUpcalls extends Serializable {
         void onCreate(SapphireGroupPolicy group, Annotation[] annotations);
-
+		void initialize();
         void onDestroy();
 
         SapphireGroupPolicy getGroup();
@@ -30,6 +31,9 @@ public interface SapphirePolicyUpcalls {
         Object onRPC(String method, ArrayList<Object> params) throws Exception;
 
         void onMembershipChange();
+		List<SapphirePolicyContainer> getProcessedPolicies();
+		void setNextDMs(List<SapphirePolicyContainer> DMChain);
+		void setProcessedPolicies(List<SapphirePolicyContainer> setProcessedDMs);
     }
 
     interface SapphireGroupPolicyUpcalls extends Serializable {

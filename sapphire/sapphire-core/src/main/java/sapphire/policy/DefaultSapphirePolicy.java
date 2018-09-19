@@ -25,6 +25,9 @@ public class DefaultSapphirePolicy extends SapphirePolicy {
             this.group = (DefaultGroupPolicy) group;
         }
 
+		@Override
+		public void initialize() {}
+		
         public void onDestroy() {
             super.onDestroy();
         }
@@ -56,8 +59,7 @@ public class DefaultSapphirePolicy extends SapphirePolicy {
     }
 
     public static class DefaultGroupPolicy extends SapphireGroupPolicy {
-        private Set<SapphireServerPolicy> servers =
-                Collections.newSetFromMap(new ConcurrentHashMap<SapphireServerPolicy, Boolean>());
+		private ArrayList<SapphireServerPolicy> servers = new ArrayList<SapphireServerPolicy>();
 
         @Override
         public synchronized void addServer(SapphireServerPolicy server) throws RemoteException {

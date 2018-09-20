@@ -8,8 +8,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /** DCAP transaction participant manager */
 public class TwoPCParticipantManager implements TwoPCParticipants, Serializable {
-    private Set participants =
-            Collections.newSetFromMap(new ConcurrentHashMap<SapphireClientPolicy, Boolean>());
+    private ArrayList<SapphireClientPolicy> participants = new ArrayList<SapphireClientPolicy>();
 
     @Override
     public void register(SapphireClientPolicy cohort) {

@@ -2,6 +2,8 @@ package sapphire.policy.replication;
 
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
+import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,6 +44,7 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
             Object ret = null;
 
             try {
+                System.out.println("Client) onRPC Consensus");
                 ret = getServer().onRPC(method, params);
             } catch (LeaderException e) {
 
@@ -51,7 +54,22 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
 
                 setServer((ServerPolicy) e.getLeader());
                 ret = ((ServerPolicy) e.getLeader()).onRPC(method, params);
-            } catch (RemoteException e) {
+            }
+            // Added for handling Multi-DM scenarios where LeaderException
+            // can be nested inside InvocationTargetException.
+            catch (InvocationTargetException e) {
+                // Check whether the received InvocationTargetException is
+                // LeaderException which needs to be handled.
+                if (e.getTargetException() instanceof LeaderException) {
+                    LeaderException le = (LeaderException) e.getTargetException();
+                    if (null == le.getLeader()) {
+                        throw new RemoteException("Raft leader is not elected");
+                    }
+                    setServer((ServerPolicy) le.getLeader());
+                    ret = ((ServerPolicy) le.getLeader()).onRPC(method, params);
+                }
+            }
+            catch (RemoteException e) {
                 /* Get servers from the group and find a responding server */
                 boolean serverFound = false;
                 ArrayList<SapphireServerPolicy> servers = getGroup().getServers();
@@ -101,6 +119,11 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
 
         public UUID getRaftServerId() {
             return raftServer.getMyServerID();
+        }
+
+        @Override
+        public void initialize() {
+            this.initializeRaftServer();
         }
 
         @Override
@@ -165,7 +188,7 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
         // ensure snapshot operation and apply operation are synchronized.
         public Object apply(Object operation) throws Exception {
             RPC rpc = (RPC) operation;
-            logger.info(String.format("Applying %s(%s)", rpc.method, rpc.params));
+            logger.fine(String.format("Applying %s(%s)", rpc.method, rpc.params));
             if (rpc.params == null) {
                 rpc.params = new ArrayList<Object>();
             }
@@ -175,6 +198,7 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
 
         @Override
         public Object onRPC(String method, ArrayList<Object> params) throws Exception {
+            System.out.println("Server) onRPC at Consensus for " + method);
             return raftServer.applyToStateMachine(
                     new RPC(
                             method,
@@ -196,12 +220,13 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
                 // Create additional replicas, one per region. TODO:  Create N-1 replicas on
                 // different servers in the same zone.
                 for (int i = 1; i < regions.size(); i++) {
-                    ServerPolicy replica = (ServerPolicy) consensusServer.sapphire_replicate();
-                    replica.sapphire_pin(regions.get(i));
-                    replica.initializeRaftServer();
+                    InetSocketAddress newServerAddress = oms().getServerInRegion(regions.get(i));
+                    ServerPolicy replica = (ServerPolicy) consensusServer.sapphire_replicate(server.getProcessedPolicies());
+                    consensusServer.sapphire_pin_to_server(replica, newServerAddress);
                 }
                 consensusServer.sapphire_pin(regions.get(0));
-                consensusServer.initializeRaftServer();
+                consensusServer.initialize();
+
                 // Tell all the servers about one another
                 ConcurrentHashMap<UUID, ServerPolicy> allServers =
                         new ConcurrentHashMap<UUID, ServerPolicy>();

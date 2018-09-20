@@ -29,7 +29,6 @@ import sapphire.policy.SapphirePolicy;
 import sapphire.policy.SapphirePolicyContainer;
 import sapphire.policy.SapphirePolicyLibrary.*;
 import sapphire.policy.dht.DHTPolicy2;
-import sapphire.policy.replication.ConsensusRSMPolicy;
 
 /** 
  * Sapphire Kernel Server. Runs on every Sapphire node, knows how to talk to the OMS, handles RPCs and has a client for making RPCs.
@@ -115,6 +114,8 @@ public class KernelServerImpl implements KernelServer{
 	public void copyKernelObject(KernelOID oid, KernelObject object) throws RemoteException {
 		System.out.println("Adding object " + oid + " to this server at " + host.getAddress() + ":" + host.getPort());
 
+		this.objectManager.addObject(oid, object);
+
 		// to add KOs of in-chained server policy to local object manager
 		Serializable realObj = object.getObject();
 		if (realObj instanceof SapphireServerPolicyLibrary) {
@@ -122,6 +123,11 @@ public class KernelServerImpl implements KernelServer{
 			for (SapphirePolicyContainer spContainer: outmostSP.getProcessedPolicies()) {
 				SapphireServerPolicyLibrary sp = spContainer.getServerPolicy();
 				KernelOID koid = sp.$__getKernelOID();
+
+				if (oid == koid) {
+					continue;
+				}
+
 				this.objectManager.addObject(koid, new KernelObject(sp));
 				System.out.println("Added " + koid.getID() + " as SapphireServerPolicyLibrary");
 
@@ -134,6 +140,8 @@ public class KernelServerImpl implements KernelServer{
 					throw new RemoteException(exceptionMsg);
 				}
 			}
+
+			outmostSP.initialize();
 		} else {
 			this.objectManager.addObject(oid, object);
 			System.out.println("Added " + oid.getID() + " as unknown type");

@@ -205,13 +205,15 @@ public class Sapphire {
             SapphireServerPolicy previousServerPolicy,
             KernelObjectStub previousServerPolicyStub,
             Object[] args) throws Exception {
+
         if (policyChain == null || policyChain.size() == 0) return null;
         String policyName = policyChain.get(0).getPolicyName();
         SapphireGroupPolicy existingGroupPolicy = policyChain.get(0).getGroupPolicy();
         AppObjectStub appStub = null;
         // TODO: Policy configuration based on annotations need to be read and passed.
         // TODO: Currently the annotations are passes as null to the Policy OnCreate calls.
-        Annotation[] annotations = null;
+
+        Annotation[] annotations = appObjectClass.getAnnotations();
 
         /* Get the policy used by the Sapphire Object we need to create */
         HashMap<String, Class<?>> policyMap = getPolicyMap(policyName);
@@ -219,15 +221,28 @@ public class Sapphire {
         Class<?> sapphireClientPolicyClass = policyMap.get("sapphireClientPolicyClass");
         Class<?> sapphireGroupPolicyClass = policyMap.get("sapphireGroupPolicyClass");
 
-			/* Create and the Kernel Object for the Group Policy and get the Group Policy Stub
-			Note that group policy does not need to update hostname because it only applies to
-			individual server in multi-policy scenario */
+        /* Register for a sapphire object Id from OMS */
+        SapphireObjectID sapphireObjId =
+                GlobalKernelReferences.nodeServer.oms.registerSapphireObject();
+
+		/* Create and the Kernel Object for the Group Policy and get the Group Policy Stub
+		   Note that group policy does not need to update hostname because it only applies to
+		   individual server in multi-policy scenario */
         SapphireGroupPolicy groupPolicyStub;
         if (existingGroupPolicy == null) {
-            groupPolicyStub = (SapphireGroupPolicy) getPolicyStub(sapphireGroupPolicyClass);
+            //groupPolicyStub = (SapphireGroupPolicy) getPolicyStub(sapphireGroupPolicyClass);
+            /* Create the Kernel Object for the Group Policy and get the Group Policy Stub from OMS */
+            groupPolicyStub = GlobalKernelReferences.nodeServer.oms.createGroupPolicy(
+                    sapphireGroupPolicyClass,
+                    sapphireObjId,
+                    appObjectClass.getAnnotations());
         } else {
             groupPolicyStub = existingGroupPolicy;
         }
+
+        /* Register for a replica Id from OMS */
+        SapphireReplicaID sapphireReplicaId =
+                GlobalKernelReferences.nodeServer.oms.registerSapphireReplica(sapphireObjId);
 
         /* Create the Kernel Object for the Server Policy, and get the Server Policy Stub */
         SapphireServerPolicy serverPolicyStub = (SapphireServerPolicy) getPolicyStub(sapphireServerPolicyClass);
@@ -236,10 +251,26 @@ public class Sapphire {
         SapphireClientPolicy client = (SapphireClientPolicy) sapphireClientPolicyClass.newInstance();
 
         /* Initialize the group policy and return a local pointer to the object itself */
-        SapphireGroupPolicy groupPolicy = (existingGroupPolicy == null) ? initializeGroupPolicy(groupPolicyStub) : existingGroupPolicy;
+        //SapphireGroupPolicy groupPolicy = (existingGroupPolicy == null) ? initializeGroupPolicy(groupPolicyStub) : existingGroupPolicy;
+        //SapphireGroupPolicy groupPolicy = (SapphireGroupPolicy)groupPolicyStub;
 
         /* Initialize the server policy and return a local pointer to the object itself */
         SapphireServerPolicy serverPolicy = initializeServerPolicy(serverPolicyStub);
+        serverPolicyStub.setReplicaId(sapphireReplicaId);
+        serverPolicy.setReplicaId(sapphireReplicaId);
+
+        EventHandler replicaHandler =
+                new EventHandler(
+                        GlobalKernelReferences.nodeServer.getLocalHost(),
+                        new ArrayList() {
+                            {
+                                add(serverPolicyStub);
+                            }
+                        });
+
+        /* Register the handler for this replica to OMS */
+        GlobalKernelReferences.nodeServer.oms.setSapphireReplicaDispatcher(
+                sapphireReplicaId, replicaHandler);
 
         /* Link everything together */
         client.setServer(serverPolicyStub);
@@ -280,7 +311,8 @@ public class Sapphire {
         serverPolicy.onCreate(groupPolicyStub, annotations);
         serverPolicy.setNextDMs(nextPoliciesToCreate);
 
-        SapphirePolicyContainer processedPolicy = new SapphirePolicyContainerImpl(policyName, groupPolicy);
+        //SapphirePolicyContainer processedPolicy = new SapphirePolicyContainerImpl(policyName, groupPolicy);
+        SapphirePolicyContainer processedPolicy = new SapphirePolicyContainerImpl(policyName, groupPolicyStub);
         processedPolicy.setServerPolicy(serverPolicy);
         processedPolicy.setServerPolicyStub((KernelObjectStub)serverPolicyStub);
         processedPolicy.setKernelOID(serverPolicy.$__getKernelOID());
@@ -292,7 +324,8 @@ public class Sapphire {
         serverPolicyStub.setProcessedPolicies(processedPoliciesSoFar);
 
         if (existingGroupPolicy == null) {
-            groupPolicy.onCreate(serverPolicyStub, annotations);
+            //groupPolicy.onCreate(serverPolicyStub, annotations);
+            groupPolicyStub.onCreate(serverPolicyStub, annotations);
         }
 
         previousServerPolicy = serverPolicy;

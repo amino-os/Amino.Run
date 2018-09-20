@@ -136,13 +136,22 @@ public class KernelServerImpl implements KernelServer {
 		if (realObj instanceof SapphireServerPolicyLibrary) {
 			SapphireServerPolicyLibrary outmostSP = (SapphireServerPolicyLibrary)realObj;
 			for (SapphirePolicyContainer spContainer: outmostSP.getProcessedPolicies()) {
-				SapphireServerPolicyLibrary sp = spContainer.getServerPolicy();
-				KernelOID koid = sp.$__getKernelOID();
-				this.objectManager.addObject(koid, new KernelObject(sp));
+				SapphireServerPolicyLibrary serverPolicy = spContainer.getServerPolicy();
+
+				// Added for setting the ReplicaId and registering handler for this replica to OMS.
+                SapphirePolicy.SapphireServerPolicy serverPolicyStub = (SapphirePolicy.SapphireServerPolicy)spContainer.getServerPolicyStub();
+                ArrayList<Object> policyObjList = new ArrayList<>();
+                EventHandler policyHandler = new EventHandler(host, policyObjList);
+                policyObjList.add(serverPolicyStub);
+                serverPolicyStub.setReplicaId(serverPolicy.getReplicaId());
+                oms.setSapphireReplicaDispatcher(serverPolicy.getReplicaId(), policyHandler);
+
+				KernelOID koid = serverPolicy.$__getKernelOID();
+				this.objectManager.addObject(koid, new KernelObject(serverPolicy));
 				System.out.println("Added " + koid.getID() + " as SapphireServerPolicyLibrary");
 
 				try {
-					sp.initialize();
+					serverPolicy.initialize();
 				} catch (Exception e) {
 					e.printStackTrace();
 					String exceptionMsg = "Initialization failed at copyKernelObject for KernelObject(" + koid.getID() + ").  " +

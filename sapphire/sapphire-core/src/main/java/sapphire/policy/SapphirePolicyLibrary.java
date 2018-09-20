@@ -124,10 +124,10 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
                   for example getClass() gives as class sapphire.appexamples.hankstodo.app.stubs.TodoListManager_Stub
                   getClass().getSuperclass() gives as class sapphire.appexamples.hankstodo.app.TodoListManager
                 */
-                Class c = sapphire_getAppObject().getObject().getClass().getSuperclass();
-                serverPolicy.onCreate(getGroup(), c.getAnnotations());
+                Class appObjectClass = sapphire_getAppObject().getObject().getClass().getSuperclass();
+                serverPolicy.onCreate(getGroup(), appObjectClass.getAnnotations());
                 getGroup().addServer((SapphireServerPolicy) serverPolicyStub);
-				Sapphire.createPolicy(null, null, null, null, serverPolicy, serverPolicyStub,null);
+				Sapphire.createPolicy(appObjectClass, null, null, null, serverPolicy, serverPolicyStub,null);
             } catch (ClassNotFoundException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
@@ -171,19 +171,20 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 				// Find the appStub which only exists in the last server policy (first in client side).
 				SapphireServerPolicy lastServerPolicy = (SapphireServerPolicy)this;
 
+                Class appObjectClass = sapphire_getAppObject().getObject().getClass().getSuperclass();
 				AppObject actualAppObject = lastServerPolicy.sapphire_getAppObject();
 				if (actualAppObject == null) throw new Exception("Could not find AppObject");
 
 				// Create a new replica chain from already created policies before this policy and this policy.
 				List<SapphirePolicyContainer> processedPolicesReplica = new ArrayList<SapphirePolicyContainer>();
-				Sapphire.createPolicy(null, actualAppObject, processedPolicies, processedPolicesReplica, null, null, null);
+				Sapphire.createPolicy(appObjectClass, actualAppObject, processedPolicies, processedPolicesReplica, null, null, null);
 
 				// Last policy in the returned chain is replica of this policy.
 				serverPolicy = processedPolicesReplica.get(processedPolicesReplica.size() - 1).getServerPolicy();
 				serverPolicyStub = processedPolicesReplica.get(processedPolicesReplica.size() - 1).getServerPolicyStub();
 
 				// Complete the chain by creating new instances of server policies and stub that should be created after this policy.
-				List<SapphirePolicyContainer> nextPolicyList = Sapphire.createPolicy(null, null, this.nextDMs, processedPolicesReplica, serverPolicy, serverPolicyStub,null);
+				List<SapphirePolicyContainer> nextPolicyList = Sapphire.createPolicy(appObjectClass, null, this.nextDMs, processedPolicesReplica, serverPolicy, serverPolicyStub,null);
 
 				String ko = "";
 				if (nextPolicyList != null) {

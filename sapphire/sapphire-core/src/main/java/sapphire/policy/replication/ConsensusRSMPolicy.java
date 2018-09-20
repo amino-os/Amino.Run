@@ -68,8 +68,7 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
                     setServer((ServerPolicy) le.getLeader());
                     ret = ((ServerPolicy) le.getLeader()).onRPC(method, params);
                 }
-            }
-            catch (RemoteException e) {
+            } catch (RemoteException e) {
                 /* Get servers from the group and find a responding server */
                 boolean serverFound = false;
                 ArrayList<SapphireServerPolicy> servers = getGroup().getServers();
@@ -221,7 +220,10 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
                 // different servers in the same zone.
                 for (int i = 1; i < regions.size(); i++) {
                     InetSocketAddress newServerAddress = oms().getServerInRegion(regions.get(i));
-                    ServerPolicy replica = (ServerPolicy) consensusServer.sapphire_replicate(server.getProcessedPolicies());
+                    ServerPolicy replica =
+                            (ServerPolicy)
+                                    consensusServer.sapphire_replicate(
+                                            server.getProcessedPolicies());
                     consensusServer.sapphire_pin_to_server(replica, newServerAddress);
                 }
                 consensusServer.sapphire_pin(regions.get(0));

@@ -23,7 +23,9 @@ public interface SapphirePolicyUpcalls {
 
     interface SapphireServerPolicyUpcalls extends Serializable {
         void onCreate(SapphireGroupPolicy group, Annotation[] annotations);
-		void initialize();
+
+        void initialize();
+
         void onDestroy();
 
         SapphireGroupPolicy getGroup();
@@ -31,9 +33,12 @@ public interface SapphirePolicyUpcalls {
         Object onRPC(String method, ArrayList<Object> params) throws Exception;
 
         void onMembershipChange();
-		List<SapphirePolicyContainer> getProcessedPolicies();
-		void setNextDMs(List<SapphirePolicyContainer> DMChain);
-		void setProcessedPolicies(List<SapphirePolicyContainer> setProcessedDMs);
+
+        List<SapphirePolicyContainer> getProcessedPolicies();
+
+        void setNextDMs(List<SapphirePolicyContainer> DMChain);
+
+        void setProcessedPolicies(List<SapphirePolicyContainer> setProcessedDMs);
     }
 
     interface SapphireGroupPolicyUpcalls extends Serializable {

@@ -203,9 +203,9 @@ public class CacheLeasePolicy extends SapphirePolicy {
         }
 
         @Override
-		public void initialize() {}
+        public void initialize() {}
 
-		@Override
+        @Override
         public SapphireGroupPolicy getGroup() {
             return group;
         }

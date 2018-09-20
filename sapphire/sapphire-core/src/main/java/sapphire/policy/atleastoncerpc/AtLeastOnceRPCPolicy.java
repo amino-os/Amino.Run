@@ -1,13 +1,10 @@
 package sapphire.policy.atleastoncerpc;
 
-import sapphire.kernel.common.KernelObjectStub;
-
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Random;
-import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
-import java.util.concurrent.TimeUnit;
+import sapphire.kernel.common.KernelObjectStub;
 import sapphire.policy.DefaultSapphirePolicy;
 
 // AtLeastOnceRPC: automatically retry RPCs for bounded amount of time
@@ -33,8 +30,8 @@ public class AtLeastOnceRPCPolicy extends DefaultSapphirePolicy {
         private Object doOnRPC(String method, ArrayList<Object> params) throws Exception {
             try {
                 return super.onRPC(method, params);
-            }catch(Exception e) {
-                //return this.onRPC(method, params);
+            } catch (Exception e) {
+                // return this.onRPC(method, params);
                 // Added for propogating the Exception to the ClientStub,
                 // in the case of Multi-DM chain scenarios.
                 throw e;
@@ -53,27 +50,30 @@ public class AtLeastOnceRPCPolicy extends DefaultSapphirePolicy {
             System.out.println("Client) onRPC AtLeastOnceRPC");
             return clientPolicy.doOnRPC(method_, params_);
 
-//
-//            timeoutTask = new FutureTask<Object>(new Callable<Object>() {
-//                @Override
-//                public Object call() throws Exception{
-//                    System.out.println("Client) onRPC AtLeastOnceRPC");
-//                    return clientPolicy.doOnRPC(method_, params_);
-//                }
-//            });
-//
-//            new Thread(timeoutTask).start();
-//            Object result = timeoutTask.get(this.timeoutMilliSeconds, TimeUnit.MILLISECONDS);
-//            return result;
+            //
+            //            timeoutTask = new FutureTask<Object>(new Callable<Object>() {
+            //                @Override
+            //                public Object call() throws Exception{
+            //                    System.out.println("Client) onRPC AtLeastOnceRPC");
+            //                    return clientPolicy.doOnRPC(method_, params_);
+            //                }
+            //            });
+            //
+            //            new Thread(timeoutTask).start();
+            //            Object result = timeoutTask.get(this.timeoutMilliSeconds,
+            // TimeUnit.MILLISECONDS);
+            //            return result;
         }
     }
 
     public static class AtLeastOnceRPCServerPolicy extends DefaultServerPolicy {
         @Override
         public Object onRPC(String method, ArrayList<Object> params) throws Exception {
-            // TODO (8/27/2018): Remove this code block except onRPC after verification of reference to the same group policy.
-            //int koid = this.getGroup().$__getKernelOID().getID();
-            //System.out.println("OID of Group Policy this policy (AtLeastOnceRPCServerPolicy) refers to " + koid);
+            // TODO (8/27/2018): Remove this code block except onRPC after verification of reference
+            // to the same group policy.
+            // int koid = this.getGroup().$__getKernelOID().getID();
+            // System.out.println("OID of Group Policy this policy (AtLeastOnceRPCServerPolicy)
+            // refers to " + koid);
             System.out.println("Server) onRPC at AtLeastOnceRPC called");
 
             // This is dummy method to verify DM chain correctly visits here.
@@ -90,10 +90,10 @@ public class AtLeastOnceRPCPolicy extends DefaultSapphirePolicy {
 
         @Override
         public void onCreate(SapphireServerPolicy server, Annotation[] annotations) {
-            AtLeastOnceRPCServerPolicy serverPolicy = (AtLeastOnceRPCServerPolicy)server;
+            AtLeastOnceRPCServerPolicy serverPolicy = (AtLeastOnceRPCServerPolicy) server;
             serverPolicy.PrintDummyStr("PrintDummyStr: OnCreate at Group policy for AtLeastOneRPC");
             KernelObjectStub stub = (KernelObjectStub) server;
-//            System.out.println("At GroupPolicy. Hostname: " + stub.$__getHostname());
+            //            System.out.println("At GroupPolicy. Hostname: " + stub.$__getHostname());
         }
     }
 }

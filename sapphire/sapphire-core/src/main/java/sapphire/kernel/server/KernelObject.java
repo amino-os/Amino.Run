@@ -24,11 +24,12 @@ public class KernelObject extends ObjectHandler {
     }
 
     public Object invoke(String method, ArrayList<Object> params) throws Exception {
-		Object ret = null;
+        Object ret = null;
 
         if (coalesced) {
-			// Object has been migrated to the other kernel server.
-			throw new KernelObjectMigratingException("Object in this kernel server was migrated and is no longer valid.");
+            // Object has been migrated to the other kernel server.
+            throw new KernelObjectMigratingException(
+                    "Object in this kernel server was migrated and is no longer valid.");
         }
 
         rpcCounter.acquire();
@@ -37,12 +38,12 @@ public class KernelObject extends ObjectHandler {
         // then we safely release the rpcCounter
         try {
             ret = super.invoke(method, params);
-		} catch (Exception e) {
-			//e.printStackTrace();
-			// Throwing the Exception again so that the same is returned to the client.
-			// The client need to take appropriate action based on the Exception.
-			throw e;
-		} finally {
+        } catch (Exception e) {
+            // e.printStackTrace();
+            // Throwing the Exception again so that the same is returned to the client.
+            // The client need to take appropriate action based on the Exception.
+            throw e;
+        } finally {
             rpcCounter.release();
         }
 

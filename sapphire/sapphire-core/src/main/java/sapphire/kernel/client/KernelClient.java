@@ -149,7 +149,14 @@ public class KernelClient {
             throws RemoteException, KernelObjectNotFoundException,
                     KernelObjectStubNotCreatedException, SapphireObjectNotFoundException,
                     SapphireObjectReplicaNotFoundException {
-        logger.log(Level.FINE, "Copying object " + oid.toString() +  "to server: " + host.getAddress() + ":" + host.getPort());
+        logger.log(
+                Level.FINE,
+                "Copying object "
+                        + oid.toString()
+                        + "to server: "
+                        + host.getAddress()
+                        + ":"
+                        + host.getPort());
         getServer(host).copyKernelObject(oid, object);
     }
 }

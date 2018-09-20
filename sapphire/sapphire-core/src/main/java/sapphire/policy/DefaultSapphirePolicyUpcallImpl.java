@@ -50,24 +50,25 @@ public abstract class DefaultSapphirePolicyUpcallImpl extends SapphirePolicyLibr
     public abstract static class DefaultSapphireServerPolicyUpcallImpl
             extends SapphireServerPolicyLibrary {
         public Object onRPC(String method, ArrayList<Object> params) throws Exception {
-			StringBuilder sb = new StringBuilder();
-			for (Object param : params) {
-				sb.append(param.toString() + ",");
-			}
-			if (nextServerKernelObject == null) {
-				/* The default behavior is to just invoke the method on the Sapphire Object this Server Policy Object manages */
-				return appObject.invoke(method, params);
-			} else {
-				return nextServerKernelObject.invoke(method, params);
-			}
-		}
+            StringBuilder sb = new StringBuilder();
+            for (Object param : params) {
+                sb.append(param.toString() + ",");
+            }
+            if (nextServerKernelObject == null) {
+                /* The default behavior is to just invoke the method on the Sapphire Object this Server Policy Object manages */
+                return appObject.invoke(method, params);
+            } else {
+                return nextServerKernelObject.invoke(method, params);
+            }
+        }
         /* This function is added here just to generate the stub for this function in all DMs server policy */
         public SapphireServerPolicy sapphire_replicate() throws RemoteException {
             return super.sapphire_replicate();
         }
-		public SapphireServerPolicy sapphire_replicate(List<SapphirePolicyContainer> processedDMs) {
-			return super.sapphire_replicate(processedDMs);
-		}
+
+        public SapphireServerPolicy sapphire_replicate(List<SapphirePolicyContainer> processedDMs) {
+            return super.sapphire_replicate(processedDMs);
+        }
         /* This function is added here just to generate the stub for this function in all DMs server policy */
         public void sapphire_pin(String region)
                 throws RemoteException, SapphireObjectNotFoundException,
@@ -81,10 +82,13 @@ public abstract class DefaultSapphirePolicyUpcallImpl extends SapphirePolicyLibr
             super.sapphire_pin_to_server(server);
         }
 
-		/* This function is added here just to generate the stub for this function in all DMs server policy */
-		public void sapphire_pin_to_server(SapphireServerPolicy sapphireServerPolicy, InetSocketAddress server) throws RemoteException {
-			super.sapphire_pin_to_server(sapphireServerPolicy, server);
-		}
+        /* This function is added here just to generate the stub for this function in all DMs server policy */
+        public void sapphire_pin_to_server(
+                SapphireServerPolicy sapphireServerPolicy, InetSocketAddress server)
+                throws RemoteException {
+            super.sapphire_pin_to_server(sapphireServerPolicy, server);
+        }
+
         public void sapphire_remove_replica() throws RemoteException {
             super.sapphire_remove_replica();
         }

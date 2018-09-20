@@ -4,7 +4,6 @@ import static sapphire.policy.SapphirePolicy.SapphireClientPolicy;
 
 import java.io.Serializable;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 /** DCAP transaction participant manager */
 public class TwoPCParticipantManager implements TwoPCParticipants, Serializable {

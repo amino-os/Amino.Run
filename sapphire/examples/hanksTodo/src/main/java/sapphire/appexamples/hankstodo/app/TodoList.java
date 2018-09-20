@@ -11,7 +11,10 @@ import sapphire.policy.interfaces.dht.DHTInterface;
 import sapphire.policy.interfaces.dht.DHTKey;
 import sapphire.runtime.SapphireConfiguration;
 
-@SapphireConfiguration(DMs = "sapphire.policy.dht.DHTPolicy2,sapphire.policy.replication.ConsensusRSMPolicy")
+//@SapphireConfiguration(DMs = "sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy, sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy")
+@SapphireConfiguration(DMs = "sapphire.policy.dht.DHTPolicy2,sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy")
+//@SapphireConfiguration(DMs = "sapphire.policy.dht.DHTPolicy2,sapphire.policy.replication.ConsensusRSMPolicy")
+
 public class TodoList implements SapphireObject, DHTInterface {
 	ArrayList<String> toDos = new ArrayList<String>();
 	String id = "0";

@@ -23,34 +23,34 @@ import sapphire.policy.interfaces.dht.DHTKey;
 public class DHTPolicy extends DefaultSapphirePolicy {
     public static class DHTClientPolicy extends DefaultClientPolicy {
 
-		DHTServerPolicy server = null;
-		DHTGroupPolicy group = null;
+        DHTServerPolicy server = null;
+        DHTGroupPolicy group = null;
 
-		@Override
-		public void onCreate(SapphireGroupPolicy group, Annotation[] annotations) {
-			this.group = (DHTGroupPolicy) group;
-		}
+        @Override
+        public void onCreate(SapphireGroupPolicy group, Annotation[] annotations) {
+            this.group = (DHTGroupPolicy) group;
+        }
 
-		@Override
-		public void setServer(SapphireServerPolicy server) {
-			this.server = (DHTServerPolicy) server;
-		}
+        @Override
+        public void setServer(SapphireServerPolicy server) {
+            this.server = (DHTServerPolicy) server;
+        }
 
-		@Override
-		public SapphireServerPolicy getServer() {
-			return server;
-		}
+        @Override
+        public SapphireServerPolicy getServer() {
+            return server;
+        }
 
-		@Override
-		public SapphireGroupPolicy getGroup() {
-			return group;
-		}
-	}
+        @Override
+        public SapphireGroupPolicy getGroup() {
+            return group;
+        }
+    }
 
     public static class DHTServerPolicy extends DefaultServerPolicy {
-		private static Logger logger = Logger.getLogger(SapphireServerPolicy.class.getName());
+        private static Logger logger = Logger.getLogger(SapphireServerPolicy.class.getName());
         private Map<DHTKey, Object> dhtData = null;
-		private DHTGroupPolicy group = null;
+        private DHTGroupPolicy group = null;
         private static Timer timer = new Timer();
         private Random delayGenerator = new Random();
         private DHTKey key;
@@ -75,7 +75,7 @@ public class DHTPolicy extends DefaultSapphirePolicy {
         @Override
         public void onCreate(SapphireGroupPolicy group, Annotation[] annotations) {
             this.group = (DHTGroupPolicy) group;
-			super.onCreate(group, annotations);
+            super.onCreate(group, annotations);
             try {
                 dhtData =
                         castMap(
@@ -89,19 +89,19 @@ public class DHTPolicy extends DefaultSapphirePolicy {
             }
         }
 
-		@Override
-		public void initialize() {}
+        @Override
+        public void initialize() {}
 
-		@Override
-		public SapphireGroupPolicy getGroup() {
-			return group;
-		}
+        @Override
+        public SapphireGroupPolicy getGroup() {
+            return group;
+        }
 
-		@Override
-		public void onMembershipChange() {}
+        @Override
+        public void onMembershipChange() {}
 
-		@Override
-		public Object onRPC(String method, ArrayList<Object> params) throws Exception {
+        @Override
+        public Object onRPC(String method, ArrayList<Object> params) throws Exception {
             /* We assume that the first param is the index */
             DHTServerPolicy responsibleNode =
                     ((DHTGroupPolicy) getGroup())
@@ -229,20 +229,21 @@ public class DHTPolicy extends DefaultSapphirePolicy {
             super.onCreate(server, annotations);
             try {
                 ArrayList<String> regions = sapphire_getRegions();
-				DHTKey id =
-						new DHTKey(Integer.toString(dhtNodeIdGenerator.nextInt(Integer.MAX_VALUE)));
+                DHTKey id =
+                        new DHTKey(Integer.toString(dhtNodeIdGenerator.nextInt(Integer.MAX_VALUE)));
                 DHTServerPolicy dhtServer = (DHTServerPolicy) server;
-				DHTNode newNode = new DHTNode(id, dhtServer);
-				nodes.add(newNode);
-				dhtServer.setKey(newNode.id);
+                DHTNode newNode = new DHTNode(id, dhtServer);
+                nodes.add(newNode);
+                dhtServer.setKey(newNode.id);
 
-				InetSocketAddress newServerAddress = null;
-				for (int i = 1; i < regions.size(); i++) {
-					//DHTServerPolicy replica = (DHTServerPolicy) dhtServer.sapphire_replicate();
-					//replica.sapphire_pin(regions.get(i));
-					newServerAddress = oms().getServerInRegion(regions.get(i));
-					SapphireServerPolicy replica = dhtServer.sapphire_replicate(server.getProcessedPolicies());
-					dhtServer.sapphire_pin_to_server(replica, newServerAddress);
+                InetSocketAddress newServerAddress = null;
+                for (int i = 1; i < regions.size(); i++) {
+                    // DHTServerPolicy replica = (DHTServerPolicy) dhtServer.sapphire_replicate();
+                    // replica.sapphire_pin(regions.get(i));
+                    newServerAddress = oms().getServerInRegion(regions.get(i));
+                    SapphireServerPolicy replica =
+                            dhtServer.sapphire_replicate(server.getProcessedPolicies());
+                    dhtServer.sapphire_pin_to_server(replica, newServerAddress);
                 }
                 dhtServer.sapphire_pin(regions.get(0));
 
@@ -295,11 +296,11 @@ public class DHTPolicy extends DefaultSapphirePolicy {
             // TODO: Need to cleanup nodes
         }
 
-		@Override
-		public ArrayList<SapphireServerPolicy> getServers() {
-			return null;
-		}
-		
+        @Override
+        public ArrayList<SapphireServerPolicy> getServers() {
+            return null;
+        }
+
         @Override
         public void onFailure(SapphireServerPolicy server) {
             // TODO

@@ -2,6 +2,7 @@ package sapphire.policy.transaction;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
+import java.util.List;
 import sapphire.common.AppObject;
 import sapphire.common.Utils;
 import sapphire.policy.SapphirePolicy;
@@ -10,7 +11,6 @@ import sapphire.policy.SapphirePolicyUpcalls.SapphireServerPolicyUpcalls;
 import sapphire.policy.scalability.masterslave.MethodInvocationRequest;
 import sapphire.policy.scalability.masterslave.MethodInvocationResponse;
 
-import java.util.List;
 /** server policy that directly works on the deep-cloned copy of an AppObject */
 public class AppObjectShimServerPolicy implements SapphireServerPolicyUpcalls {
     private AppObject appObject;
@@ -19,9 +19,9 @@ public class AppObjectShimServerPolicy implements SapphireServerPolicyUpcalls {
     @Override
     public void onCreate(SapphirePolicy.SapphireGroupPolicy group, Annotation[] annotations) {}
 
-	@Override
+    @Override
     public void initialize() {}
-	
+
     @Override
     public void onDestroy() {}
 
@@ -44,7 +44,7 @@ public class AppObjectShimServerPolicy implements SapphireServerPolicyUpcalls {
 
     @Override
     public List<SapphirePolicyContainer> getProcessedPolicies() {
-        //TODO (8/21/18) Implement to return processedDMs.
+        // TODO (8/21/18) Implement to return processedDMs.
         return null;
     }
 

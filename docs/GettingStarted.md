@@ -25,7 +25,8 @@ $ brew cask install android-ndk
 
 ### Accept Android SDK License
 ```shell
-/usr/local/share/android-sdk/tools/bin/sdkmanager --licenses
+// on Mac
+$ /usr/local/share/android-sdk/tools/bin/sdkmanager --licenses
 ```
 
 ### Add Android Properties

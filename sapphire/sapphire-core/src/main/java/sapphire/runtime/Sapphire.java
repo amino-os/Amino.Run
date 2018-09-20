@@ -113,7 +113,7 @@ public class Sapphire {
 			Object[] args) throws Exception {
 		if (policyChain == null || policyChain.size() == 0) return null;
 		String policyName = policyChain.get(0).getPolicyName();
-		SapphireGroupPolicy existingGroupPolicy = policyChain.get(0).getGroupPolicy();
+		SapphireGroupPolicy existingGroupPolicy = policyChain.get(0).getGroupPolicyStub();
 		AppObjectStub appStub = null;
 
 		/* Get the policy used by the Sapphire Object we need to create */
@@ -183,7 +183,7 @@ public class Sapphire {
 		serverPolicy.onCreate(groupPolicyStub);
 		serverPolicy.setNextDMs(nextPoliciesToCreate);
 
-		SapphirePolicyContainer processedPolicy = new SapphirePolicyContainerImpl(policyName, groupPolicy);
+		SapphirePolicyContainer processedPolicy = new SapphirePolicyContainerImpl(policyName, groupPolicyStub);
 		processedPolicy.setServerPolicy(serverPolicy);
 		processedPolicy.setServerPolicyStub((KernelObjectStub)serverPolicyStub);
 		processedPolicy.setKernelOID(serverPolicy.$__getKernelOID());

@@ -1,4 +1,4 @@
-package sapphire.appexamples.hankstodo.app;
+package sapphire.appexamples.hankstodo;
 
 import java.util.Hashtable;
 import java.util.Map;

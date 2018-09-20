@@ -1,4 +1,4 @@
-package sapphire.appexamples.hankstodo.app;
+package sapphire.appexamples.hankstodo;
 
 import java.io.Serializable;
 import java.util.ArrayList;

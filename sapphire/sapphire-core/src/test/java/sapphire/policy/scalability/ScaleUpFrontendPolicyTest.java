@@ -23,7 +23,6 @@ import org.junit.runner.RunWith;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import sapphire.app.SO;
-import sapphire.app.SapphireObject;
 import sapphire.app.stubs.SO_Stub;
 import sapphire.common.AppObject;
 import sapphire.common.BaseTest;
@@ -36,6 +35,7 @@ import sapphire.kernel.server.KernelServerImpl;
 import sapphire.policy.DefaultSapphirePolicy;
 import sapphire.policy.SapphirePolicy;
 import sapphire.runtime.Sapphire;
+import sapphire.runtime.SapphireConfiguration;
 
 /** ScaleupFrontend DM test cases */
 
@@ -57,7 +57,8 @@ public class ScaleUpFrontendPolicyTest extends BaseTest {
                     @LoadBalancedFrontendPolicy.LoadBalancedFrontendPolicyConfigAnnotation(
                             maxconcurrentReq = 2,
                             replicacount = 2))
-    public static class ScaleUpSO extends SO implements SapphireObject<ScaleUpFrontendPolicy> {}
+    @SapphireConfiguration(DMs = "sapphire.policy.scalability.ScaleUpFrontendPolicy")
+    public static class ScaleUpSO extends SO {}
 
     public static class Group_Stub extends ScaleUpFrontendPolicy.GroupPolicy
             implements KernelObjectStub {

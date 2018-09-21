@@ -50,9 +50,11 @@ public abstract class DefaultSapphirePolicyUpcallImpl extends SapphirePolicyLibr
     public abstract static class DefaultSapphireServerPolicyUpcallImpl
             extends SapphireServerPolicyLibrary {
         public Object onRPC(String method, ArrayList<Object> params) throws Exception {
-            StringBuilder sb = new StringBuilder();
-            for (Object param : params) {
-                sb.append(param.toString() + ",");
+            if (params != null) {
+                StringBuilder sb = new StringBuilder();
+                for (Object param : params) {
+                    sb.append(param.toString() + ",");
+                }
             }
             if (nextServerKernelObject == null) {
                 /* The default behavior is to just invoke the method on the Sapphire Object this Server Policy Object manages */

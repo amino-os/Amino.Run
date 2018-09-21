@@ -1,6 +1,9 @@
 package sapphire.app;
 
 /** Created by Venugopal Reddy K on 6/9/18. */
+import sapphire.runtime.SapphireConfiguration;
+
+@SapphireConfiguration(DMs = "sapphire.policy.DefaultSapphirePolicy")
 public class SO {
     public Integer i = 1;
 

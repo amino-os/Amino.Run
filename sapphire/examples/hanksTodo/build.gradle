@@ -14,7 +14,7 @@ task compileStubs(type: JavaCompile) {
 }
 
 // Task for app stub generation
-task genhanksTodoAppStubs(type: JavaExec) {
+task genStubs(type: JavaExec) {
     main = "sapphire.compiler.StubGenerator"
     classpath = sourceSets.main.runtimeClasspath
     def pkgName = 'sapphire.appexamples.hankstodo'
@@ -23,26 +23,35 @@ task genhanksTodoAppStubs(type: JavaExec) {
     args src, pkgName, dst
 }
 
-genhanksTodoAppStubs.mustRunAfter compileJava
-compileStubs.dependsOn genhanksTodoAppStubs
+clean.doFirst {
+    delete fileTree("$projectDir/src/main/java/sapphire/appexamples/hankstodo/stubs") {
+        include '**/*_Stub.java'
+    }
+    println "Deleted $projectDir/src/main/java/sapphire/appexamples/hankstodo/stubs"
+}
+
+genStubs.mustRunAfter compileJava
+compileStubs.dependsOn genStubs
 jar.dependsOn compileStubs
 
-task runHanksTodoOms(type: JavaExec) {
+// Start OMS with "gradlew runoms"
+task runoms(type: JavaExec) {
     dependsOn jar
     classpath = sourceSets.main.runtimeClasspath
     main = 'sapphire.oms.OMSServerImpl'
     args project.property('omsIp'), project.property('omsPort')
 }
 
-task runHanksTodoKernelServer(type: JavaExec) {
+// Start kernel server with "gradlew runks"
+task runks(type: JavaExec) {
     classpath = sourceSets.main.runtimeClasspath
     main = 'sapphire.kernel.server.KernelServerImpl'
     args project.property('kernelServerIp'), project.property('kernelServerPort'), project.property('omsIp'), project.property('omsPort')
 }
 
 // Task for run hanksTodoApp demo app
-// Usage: gradlew runHanksTodoApp -PW=DisneyWorld
-task runHanksTodoApp(type: JavaExec) {
+// Usage: gradlew runapp -PW=DisneyWorld
+task runapp(type: JavaExec) {
     main = "sapphire.appexamples.hankstodo.hanskTododMain"
     classpath = sourceSets.main.runtimeClasspath
     args project.property('omsIp'), project.property('omsPort'), project.property('kernelIpAndroid'), project.property('kernelServerPort')

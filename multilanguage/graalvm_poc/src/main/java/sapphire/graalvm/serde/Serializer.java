@@ -76,13 +76,15 @@ public class Serializer implements AutoCloseable {
 		} else { //isComplex
 			System.out.println("found non-primitive, " + " canExecute " + v.canExecute() + " " + v);
 			out.writeInt(GraalType.OBJECT.ordinal());
-			String className = v.getMetaObject().getMember("className").asString();
+			//String className = v.getMetaObject().getMember("className").asString();
+			String className = getClassName(v);
 			System.out.println("^^^^class name is " + className);
 			out.writeUTF(className);
 
 			//check named members
 			if (v.hasMembers()) {
-				List<String> keys = new ArrayList<>(v.getMemberKeys());
+				//List<String> keys = new ArrayList<>(v.getMemberKeys());
+				List<String> keys = getMemberVariables(v);
 				System.out.println("found members: " + keys);
 				//System.out.println("writing " + keys.size() + " members");
 				for (String k : keys) {
@@ -90,11 +92,47 @@ public class Serializer implements AutoCloseable {
 						continue;
 					}
 					System.out.println("key: " + k + " value: " + v.getMember(k));
-					serializeHelper(v.getMember(k));
+					serializeHelper(getInstanceVariable(v, k));
 				}
 			}
 		}
 	}
+
+	private Value getInstanceVariable(Value v, String s){
+        switch ( lang ){
+            case "ruby":
+                s = s.replaceAll(":","");
+                return v.getMember("instance_variable_get").execute(s);
+            case "js":
+                return v.getMember(s);
+        }
+        return null;
+    }
+
+	private String getClassName(Value v){
+	    switch ( lang ){
+	        case "ruby":
+	            return v.getMetaObject().getMember("name").execute().asString();
+            case "js":
+                return v.getMetaObject().getMember("className").asString();
+        }
+        return "INVALID_LANG";
+    }
+
+    private List<String> getMemberVariables(Value v){
+        switch ( lang ){
+            case "ruby":
+                Value instVars = v.getMember("instance_variables").execute();
+                List<String> varSte = new ArrayList<String>();
+                for ( int i = 0; i < instVars.getArraySize(); i++){
+                   varSte.add(instVars.getArrayElement(i).toString());
+                }
+                return varSte;
+            case "js":
+                return new ArrayList<>(v.getMemberKeys());
+        }
+        return new ArrayList<>();
+    }
 
 	public void close() throws IOException {
         if (out != null) {

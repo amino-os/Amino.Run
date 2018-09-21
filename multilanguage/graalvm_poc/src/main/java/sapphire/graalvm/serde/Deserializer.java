@@ -71,9 +71,11 @@ public class Deserializer implements AutoCloseable {
 			case OBJECT:
 				String className = in.readUTF();
 				System.out.println("Got object, class name is " + className);
-				out = c.eval(lang, String.format("new %s()", className));
+				//out = c.eval(lang, String.format("new %s()", className));
+				out = c.eval(lang, className).newInstance();
 
-				for(String key : out.getMemberKeys()) {
+				//for(String key : out.getMemberKeys()) {
+				for(String key : getMemberVariables(out)) {
 					//System.out.println("now reading in " + s);
 					if(key.equals("__proto__")) { //TODO: for some reason can't serialize js inheritance chain
 						continue;
@@ -81,7 +83,8 @@ public class Deserializer implements AutoCloseable {
 					System.out.println("Reading member, id is " + key);
 					Value member = deserializeHelper();
 					if(member != null) {
-						out.putMember(key, member);
+                        setInstanceVariable(out,member,key);
+						//out.putMember(key, member);
 					}
 				}
 				break;
@@ -91,6 +94,38 @@ public class Deserializer implements AutoCloseable {
 		seenCache.put(seenCache.size(), out);
 		return out;
 	}
+
+	private List<String> getMemberVariables(Value v){
+		switch ( lang ){
+			case "ruby":
+				Value instVars = v.getMember("instance_variables").execute();
+				List<String> varStr = new ArrayList<String>();
+				for ( int i = 0; i < instVars.getArraySize(); i++){
+                    varStr.add(instVars.getArrayElement(i).toString());
+				}
+				return varStr;
+			case "js":
+				return new ArrayList<>(v.getMemberKeys());
+		}
+		return new ArrayList<>();
+	}
+
+    private void setInstanceVariable(Value out, Value member, String key){
+        if(member == null || out == null) {
+           return;
+        }
+        switch ( lang ){
+            case "ruby":
+                key = key.replaceAll(":","");
+                out.getMember("instance_variable_set").execute(key, member);
+                return;
+            case "js":
+                out.putMember(key, member);
+                return;
+        }
+
+        return;
+    }
 
 	public void close() throws Exception {
 		in.close();

@@ -79,11 +79,6 @@ public class DefaultSapphirePolicy extends SapphirePolicy {
         public void onFailure(SapphireServerPolicy server) throws RemoteException {}
 
         @Override
-        public SapphireServerPolicy onRefRequest() throws RemoteException {
-            return null;
-        }
-
-        @Override
         public ArrayList<SapphireServerPolicy> getServers() throws RemoteException {
             if (servers == null) {
                 return new ArrayList<SapphireServerPolicy>();

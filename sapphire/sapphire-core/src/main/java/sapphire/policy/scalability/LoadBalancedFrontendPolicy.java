@@ -14,7 +14,6 @@ import java.util.concurrent.Semaphore;
 import java.util.logging.Logger;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
-import sapphire.kernel.common.KernelObjectStub;
 import sapphire.policy.DefaultSapphirePolicy;
 
 /**
@@ -83,9 +82,7 @@ public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
         public void onCreate(SapphireGroupPolicy group, Annotation[] annotations) {
             super.onCreate(group, annotations);
             LoadBalancedFrontendPolicyConfigAnnotation annotation =
-                    (LoadBalancedFrontendPolicyConfigAnnotation)
-                            getAnnotation(
-                                    annotations, LoadBalancedFrontendPolicyConfigAnnotation.class);
+                    getAnnotation(annotations, LoadBalancedFrontendPolicyConfigAnnotation.class);
             if (annotation != null) {
                 this.maxConcurrentReq = annotation.maxconcurrentReq();
             }
@@ -125,11 +122,11 @@ public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
         private int replicaCount = STATIC_REPLICA_COUNT; // we can read from config or annotations
 
         @Override
-        public void onCreate(SapphireServerPolicy server, Annotation[] annotations) {
+        public void onCreate(SapphireServerPolicy server, Annotation[] annotations)
+                throws RemoteException {
+            super.onCreate(server, annotations);
             LoadBalancedFrontendPolicyConfigAnnotation annotation =
-                    (LoadBalancedFrontendPolicyConfigAnnotation)
-                            getAnnotation(
-                                    annotations, LoadBalancedFrontendPolicyConfigAnnotation.class);
+                    getAnnotation(annotations, LoadBalancedFrontendPolicyConfigAnnotation.class);
 
             if (annotation != null) {
                 this.replicaCount = annotation.replicacount();
@@ -142,9 +139,6 @@ public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
             being created. Loop through all the kernel servers and replicate the
             sapphire objects on them based on the static replica count */
             try {
-
-                // Initialize and consider this server
-                addServer(server);
 
                 /* Find the current region and the kernel server on which this first instance of
                 sapphire object is being created. And try to replicate the
@@ -164,7 +158,7 @@ public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
                     for (count = 0; count < numnodes && count < replicaCount - 1; count++) {
                         ServerPolicy replica = (ServerPolicy) server.sapphire_replicate();
                         replica.sapphire_pin_to_server(kernelServers.get(count));
-                        ((KernelObjectStub) replica).$__updateHostname(kernelServers.get(count));
+                        updateReplicaHostName(replica, kernelServers.get(count));
                     }
                 }
 

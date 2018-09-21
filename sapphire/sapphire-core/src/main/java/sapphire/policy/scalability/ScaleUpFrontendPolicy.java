@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.TimerTask;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Logger;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
 import sapphire.kernel.common.KernelObjectStub;
@@ -50,6 +51,7 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
     }
 
     public static class ServerPolicy extends LoadBalancedFrontendPolicy.ServerPolicy {
+        private static Logger logger = Logger.getLogger(ServerPolicy.class.getName());
         private int replicationRateInMs = REPLICA_CREATE_MIN_TIME_IN_MSEC; // for n milliseconds
         private int replicaCount = 1; // 1 replica in n milliseconds
         private Semaphore replicaCreateLimiter;
@@ -59,8 +61,7 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
         public void onCreate(SapphireGroupPolicy group, Annotation[] annotations) {
             Annotation[] lbConfigAnnotations = annotations;
             ScaleUpFrontendPolicyConfigAnnotation annotation =
-                    (ScaleUpFrontendPolicyConfigAnnotation)
-                            getAnnotation(annotations, ScaleUpFrontendPolicyConfigAnnotation.class);
+                    getAnnotation(annotations, ScaleUpFrontendPolicyConfigAnnotation.class);
             if (annotation != null && null != annotation.loadbalanceConfig()) {
                 lbConfigAnnotations = new Annotation[] {annotation.loadbalanceConfig()};
             }
@@ -98,8 +99,9 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
                 return super.onRPC(method, params);
             } catch (ServerOverLoadException e) {
                 if (!replicaCreateLimiter.tryAcquire()) {
+                    logger.warning("Replica creation rate exceeded for this sapphire object.");
                     throw new ScaleUpException(
-                            "Replica creation rate exceeded for this sapphire object");
+                            "Replica creation rate exceeded for this sapphire object.");
                 }
 
                 ((GroupPolicy) getGroup()).scaleUpReplica(sapphire_getRegion());
@@ -135,10 +137,8 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
                 // delete this replica
                 try {
                     ((GroupPolicy) getGroup()).scaleDownReplica(this);
-                } catch (RemoteException e) {
-                    e.printStackTrace();
-                } catch (ScaleDownException e) {
-                    e.printStackTrace();
+                } catch (Exception e) {
+                    logger.warning("Replica scale down failed. Will try later.");
                 }
             }
         }
@@ -151,11 +151,11 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
         private transient ResettableTimer timer; // Timer for limiting
 
         @Override
-        public void onCreate(SapphireServerPolicy server, Annotation[] annotations) {
+        public void onCreate(SapphireServerPolicy server, Annotation[] annotations)
+                throws RemoteException {
             Annotation[] lbConfigAnnotations = annotations;
             ScaleUpFrontendPolicyConfigAnnotation annotation =
-                    (ScaleUpFrontendPolicyConfigAnnotation)
-                            getAnnotation(annotations, ScaleUpFrontendPolicyConfigAnnotation.class);
+                    getAnnotation(annotations, ScaleUpFrontendPolicyConfigAnnotation.class);
             if (annotation != null && null != annotation.loadbalanceConfig()) {
                 lbConfigAnnotations = new Annotation[] {annotation.loadbalanceConfig()};
             }
@@ -187,8 +187,7 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
             timer.cancel();
         }
 
-        public synchronized void scaleUpReplica(String region)
-                throws ScaleUpException, RemoteException {
+        public void scaleUpReplica(String region) throws ScaleUpException, RemoteException {
             if (!replicaCreateLimiter.tryAcquire()) {
                 throw new ScaleUpException(
                         "Replica creation rate exceeded for this sapphire object.");
@@ -204,7 +203,8 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
             /* Get the list of servers on which replicas already exist */
             ArrayList<InetSocketAddress> sappObjReplicatedKernelList =
                     new ArrayList<InetSocketAddress>();
-            for (SapphireServerPolicy tmp : getServers()) {
+            ArrayList<SapphireServerPolicy> servers = getServers();
+            for (SapphireServerPolicy tmp : servers) {
                 sappObjReplicatedKernelList.add(((KernelObjectStub) tmp).$__getHostname());
             }
 
@@ -214,7 +214,7 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
             if (!fullKernelList.isEmpty()) {
                 try {
                     /* create a replica on the first server in the list */
-                    addReplica(getServers().get(0), fullKernelList.get(0));
+                    addReplica(servers.get(0), fullKernelList.get(0));
                 } catch (SapphireObjectNotFoundException e) {
                     throw new ScaleUpException(
                             "Failed to find sapphire object. Probably deleted.", e);
@@ -254,6 +254,8 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
                 } catch (SapphireObjectReplicaNotFoundException e) {
                     throw new ScaleDownException(
                             "Scale down failed. Sapphire object not found.", e);
+                } catch (RuntimeException e) {
+                    throw new ScaleDownException("Scale down failed. Replica deletion failed.", e);
                 }
             }
         }

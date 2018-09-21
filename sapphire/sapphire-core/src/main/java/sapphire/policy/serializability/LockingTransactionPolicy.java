@@ -44,7 +44,7 @@ public class LockingTransactionPolicy extends CacheLeasePolicy {
                         throw new Exception("Transaction timed out.  Transaction rolled back.");
                     }
                 } else { // Outside of transactions, we invoke against the server
-                    return server.onRPC(method, params);
+                    return getServer().onRPC(method, params);
                 }
             }
         }

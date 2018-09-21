@@ -130,6 +130,7 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
         @Override
         public void onCreate(SapphireGroupPolicy group, Annotation[] annotations) {
             super.onCreate(group, annotations);
+            raftServer = new sapphire.policy.util.consensus.raft.Server(this);
         }
 
         /**
@@ -139,11 +140,6 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
          * this.raftServer.addServer(consensusServer.getRaftServer().getMyServerID(),
          * consensusServer.getRaftServer()); } }
          */
-
-        /** Initialize the local RAFT Server instance. */
-        public void initializeRaftServer() {
-            raftServer = new sapphire.policy.util.consensus.raft.Server(this);
-        }
 
         /**
          * Initialize the RAFT protocol with the specified set of servers.
@@ -180,6 +176,14 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
                             method,
                             params)); // first commit it to the logs of a consensus of replicas.
         }
+
+        @Override
+        public void onDestroy() {
+            super.onDestroy();
+            if (raftServer != null) {
+                raftServer.stop();
+            }
+        }
     }
 
     // TODO: Group policy needs to be Serializable
@@ -187,21 +191,22 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
         private static Logger logger = Logger.getLogger(GroupPolicy.class.getName());
 
         @Override
-        public void onCreate(SapphireServerPolicy server, Annotation[] annotations) {
+        public void onCreate(SapphireServerPolicy server, Annotation[] annotations)
+                throws RemoteException {
+            super.onCreate(server, annotations);
             try {
                 ArrayList<String> regions = sapphire_getRegions();
                 // Register the first replica, which has already been created.
                 ServerPolicy consensusServer = (ServerPolicy) server;
-                addServer(consensusServer);
+
                 // Create additional replicas, one per region. TODO:  Create N-1 replicas on
                 // different servers in the same zone.
                 for (int i = 1; i < regions.size(); i++) {
                     ServerPolicy replica = (ServerPolicy) consensusServer.sapphire_replicate();
                     replica.sapphire_pin(regions.get(i));
-                    replica.initializeRaftServer();
                 }
                 consensusServer.sapphire_pin(regions.get(0));
-                consensusServer.initializeRaftServer();
+
                 // Tell all the servers about one another
                 ConcurrentHashMap<UUID, ServerPolicy> allServers =
                         new ConcurrentHashMap<UUID, ServerPolicy>();

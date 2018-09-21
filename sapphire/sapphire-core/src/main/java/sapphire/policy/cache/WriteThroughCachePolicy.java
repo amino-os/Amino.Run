@@ -18,25 +18,19 @@ import sapphire.policy.DefaultSapphirePolicy;
 public class WriteThroughCachePolicy extends DefaultSapphirePolicy {
 
     public static class ClientPolicy extends DefaultClientPolicy {
-        private ServerPolicy server;
         // TODO: Add a timeout for cachedObject
         private AppObject cachedObject = null;
-
-        @Override
-        public void setServer(SapphireServerPolicy server) {
-            this.server = (ServerPolicy) server;
-        }
 
         @Override
         public Object onRPC(String method, ArrayList<Object> params) throws Exception {
             Object ret = null;
 
             if (isMethodMutable(method, params)) {
-                ret = server.onRPC(method, params);
-                cachedObject = server.getObject();
+                ret = getServer().onRPC(method, params);
+                cachedObject = ((ServerPolicy) getServer()).getObject();
             } else {
                 if (cachedObject == null) {
-                    cachedObject = server.getObject();
+                    cachedObject = ((ServerPolicy) getServer()).getObject();
                 }
 
                 ret = cachedObject.invoke(method, params);

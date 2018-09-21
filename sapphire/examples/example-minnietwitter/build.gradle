@@ -1,249 +1,46 @@
-buildscript {
-    repositories {
-        jcenter()
-    }
-
-    dependencies {
-        classpath 'com.bmuschko:gradle-docker-plugin:2.6.5'
-    }
-}
-
-import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
-import com.bmuschko.gradle.docker.tasks.image.DockerTagImage
-import com.bmuschko.gradle.docker.tasks.image.DockerPushImage
-import com.bmuschko.gradle.docker.tasks.image.Dockerfile
-
-plugins {
-    id "de.qaware.cloud.deployer" version "0.9.2"
-}
-
-apply plugin: 'com.bmuschko.docker-remote-api'
-apply plugin: 'com.android.application'
-
-repositories {
-    mavenCentral()
-}
-
-android {
-// Terry: It is safe to delete the following two settings. But
-// I would like to keep them here as comment temporarily to 
-// remind myself that it used to take parameters from parent
-// projects. I will remove them eventually.
-//    compileSdkVersion project.ext.compileSdkVersion.toInteger()
-//    buildToolsVersion project.ext.buildToolsVersion
-    compileSdkVersion = 27
-    buildToolsVersion = "27.0.2"
-
-    lintOptions {
-        checkReleaseBuilds false
-        // Or, if you prefer, you can continue to check for errors in release builds,
-        // but continue the build even when errors are found:
-        abortOnError false
-    }
-
-    defaultConfig {
-    	applicationId "com.example.minnietwitter"
-        versionCode 1
-        versionName "1.0"
-        minSdkVersion 24
-        targetSdkVersion 27
-    }
-
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
-        }
-    }
-
-    dexOptions {
-        preDexLibraries = false
-        additionalParameters = ["--core-library"]
-    }
-}
+apply plugin: 'java-library'
 
 dependencies {
-    compile 'com.android.support:support-v4:27.0.2'
     compile project(':sapphire-core')
 }
 
-task copyScripts(type: Copy){
-    mkdir "$projectDir/scripts/"
-    from "${projectDir}/../k8s-deployment/common/"
-    into "$projectDir/scripts/"
+// Task for Stub compilation
+task compileStubs(type: JavaCompile) {
+    source = sourceSets.main.java.srcDirs
+    classpath = sourceSets.main.compileClasspath
+    destinationDir = sourceSets.main.output.classesDir
+    options.incremental = true
 }
 
-task dockerfile(type: Dockerfile) {
-    dependsOn copyScripts
-    destFile = project.file('./Dockerfile')
-    from 'alpine:3.7'
-    label(['maintainer': 'vinay.kulkarni@huawei.com'])
-    runCommand  'apk --update add openjdk8-jre bind-tools'
-    copyFile './subprojects/build/libs/example-minnietwitter.jar', '/root/dcap/jars/'
-    copyFile './scripts/client.policy', '/root/dcap/'
-    copyFile './scripts/common.inc', '/root/dcap/'
-    copyFile './scripts/start-oms.sh', '/root/dcap/'
-    copyFile './scripts/start-kernelserver.sh', '/root/dcap/'
-    copyFile './scripts/start-app.sh', '/root/dcap/'
-    entryPoint 'tail', '-f', '/dev/null'
+// Task for app stub generation
+task genAppStubs(type: JavaExec) {
+    main = "sapphire.compiler.StubGenerator"
+    classpath = sourceSets.main.runtimeClasspath
+    def pkgName = 'sapphire.appexamples.minnietwitter'
+    def src = "$buildDir/classes/java/main/sapphire/appexamples/minnietwitter/"
+    def dst = "src/main/java/sapphire/appexamples/minnietwitter/stubs/"
+    args src, pkgName, dst
 }
 
-task buildMinnieDockerImage(type: DockerBuildImage) {
-    dependsOn dockerfile
-    url = 'unix:///var/run/docker.sock'
-    inputDir = file('.')
-    tag = 'dcap/minnietwitter:latest'
+genAppStubs.mustRunAfter compileJava
+compileStubs.dependsOn genAppStubs
+jar.dependsOn compileStubs
+
+task runMinnieTwitterOms(type: JavaExec) {
+    dependsOn jar
+    classpath = sourceSets.main.runtimeClasspath
+    main = 'sapphire.oms.OMSServerImpl'
+    args project.property('omsIp'), project.property('omsPort')
 }
 
-task tagImage (type: DockerTagImage){
-    dependsOn buildMinnieDockerImage
-        repository = "dcap/minnietwitter"
-        tag = "latest"
-        targetImageId { buildMinnieDockerImage.getImageId() }
+task runMinnieTwitterKernelServer(type: JavaExec) {
+    classpath = sourceSets.main.runtimeClasspath
+    main = 'sapphire.kernel.server.KernelServerImpl'
+    args project.property('kernelServerIp'), project.property('kernelServerPort'), project.property('omsIp'), project.property('omsPort')
 }
 
-docker {
-    registryCredentials {
-        url = project.property('url')
-        username = project.property('repo.username')
-        password = project.property('repo.password')
-    }
-}
-
-task pushImage(type: DockerPushImage) {
-    dependsOn tagImage
-    imageName = "$docker.registryCredentials.username/minnietwitter"
-    tag = 'latest'
-}
-
-deployer {
-    kubernetes {
-        id = project.property('omsId')
-        baseUrl = project.property('baseUrl')
-        namespace = project.property('namespace')
-        strategy = project.property('strategy')
-        auth {
-            username = project.property('username')
-            password = project.property('password')
-        }
-        ssl {
-            trustAll = true
-        }
-        files = [file("oms-minnietwitter.yml")]
-    }
-}
-
-deployer {
-    kubernetes {
-        id = project.property('kernelServerId')
-        baseUrl = project.property('baseUrl')
-        namespace = project.property('namespace')
-        strategy = project.property('strategy')
-        auth {
-            username = project.property('username')
-            password = project.property('password')
-        }
-        ssl {
-            trustAll = true
-        }
-        files = [file("kernelserver-minnietwitter.yml")]
-    }
-}
-
-deployer {
-    kubernetes {
-        id = project.property('appId')
-        baseUrl = project.property('baseUrl')
-        namespace = project.property('namespace')
-        strategy = project.property('strategy')
-        auth {
-            username = project.property('username')
-            password = project.property('password')
-        }
-        ssl {
-            trustAll = true
-        }
-        files = [file("minnietwitter-app.yml")]
-    }
-}
-
-task deployOms(type: Exec){
-    dependsOn pushImage
-    commandLine '../../gradlew', 'deploy',"--environmentId=oms"
-}
-
-task deployKernelServer(type: Exec){
-    dependsOn deployOms
-    commandLine '../../gradlew', 'deploy',"--environmentId=kernelserver"
-}
-
-task deployApp(type: Exec){
-    dependsOn deployKernelServer
-    commandLine '../../gradlew', 'deploy',"--environmentId=app"
-}
-
-subprojects {
-    apply plugin: 'java-library'
-
-    dependencies {
-        compile project(':sapphire-core')
-    }
-
-    task fatJar(type: Jar) {
-        manifest {
-            attributes 'Implementation-Title': 'Gradle Uberjar',
-                    'Implementation-Version': '1.0',
-                    'Main-Class': 'sapphire.appexamples.minnietwitter.cloud.MinnieTwitterStart'
-        }
-        baseName = project.parent.name
-        from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
-        with jar
-    }
-    build.finalizedBy(fatJar)
-
-    task copyClasses(type: Copy) {
-        from "$projectDir.parent/build/intermediates/classes/debug/"
-        into 'build/classes/java/main/'
-    }
-
-    // Task for Stub compilation
-    task compileMinnieTwitterStubs(type: JavaCompile) {
-        source = sourceSets.main.java.srcDirs
-        classpath = sourceSets.main.compileClasspath
-        destinationDir = sourceSets.main.output.classesDir
-        options.incremental = true
-    }
-
-    // Task for Stub generation
-    task genMinnieTwitterStubs(type: JavaExec) {
-        main = "sapphire.compiler.StubGenerator"
-        classpath = sourceSets.main.runtimeClasspath
-        def pkgName = 'sapphire.appexamples.minnietwitter.app'
-        def src = "$projectDir.parent/build/intermediates/classes/debug/sapphire/appexamples/minnietwitter/app/"
-        def dst = "$projectDir.parent/src/main/java/sapphire/appexamples/minnietwitter/app/stubs/"
-        args src, pkgName, dst
-    }
-    genMinnieTwitterStubs.mustRunAfter compileJava
-    genMinnieTwitterStubs.dependsOn copyClasses
-    compileMinnieTwitterStubs.dependsOn genMinnieTwitterStubs
-    fatJar.dependsOn compileMinnieTwitterStubs
-
-    task runMinnieTwitterOms(type: JavaExec) {
-        dependsOn fatJar
-        classpath = sourceSets.main.runtimeClasspath
-        main = 'sapphire.oms.OMSServerImpl'
-        args project.property('omsIp'), project.property('omsPort')
-    }
-
-    task runMinnieTwitterKernelServer(type: JavaExec) {
-        classpath = sourceSets.main.runtimeClasspath
-        main = 'sapphire.kernel.server.KernelServerImpl'
-        args project.property('kernelServerIp'), project.property('kernelServerPort'), project.property('omsIp'), project.property('omsPort')
-    }
-
-    task runMinnieTwitterApp(type: JavaExec) {
-        classpath = sourceSets.main.runtimeClasspath
-        main = 'sapphire.appexamples.minnietwitter.device.generator.TwitterWorldGenerator'
-        args project.property('omsIp'), project.property('omsPort'), project.property('kernelIpAndroid'), project.property('kernelServerPort')
-    }
+task runMinnieTwitter(type: JavaExec) {
+    main = "sapphire.appexamples.minnietwitter.MinnieTwitterMain"
+    classpath = sourceSets.main.runtimeClasspath
+    args project.property('omsIp'), project.property('omsPort'), project.property('kernelIpAndroid'), project.property('kernelServerPort')
 }

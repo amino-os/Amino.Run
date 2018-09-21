@@ -12,6 +12,12 @@ import sapphire.oms.OMSServer;
 public class hanskTododMain {
 
     public static void main(String[] args) {
+
+        if (args.length < 4) {
+            System.out.println("Incorrect arguments to the program");
+            System.out.println("<host-ip> <host-port> <oms ip> <oms-port>");
+            return;
+        }
         Registry registry;
         try {
             registry = LocateRegistry.getRegistry(args[0],Integer.parseInt(args[1]));
@@ -20,7 +26,7 @@ public class hanskTododMain {
 
             KernelServer nodeServer = new KernelServerImpl(new InetSocketAddress(args[2], Integer.parseInt(args[3])), new InetSocketAddress(args[0], Integer.parseInt(args[1])));
 
-            SapphireObjectID sapphireObjId = omsserver.createSapphireObject("sapphire.appexamples.hankstodo.app.TodoListManager");
+            SapphireObjectID sapphireObjId = omsserver.createSapphireObject("sapphire.appexamples.hankstodo.TodoListManager");
             TodoListManager tlm = (TodoListManager)omsserver.acquireSapphireObjectStub(sapphireObjId);
             System.out.println("Received tlm: " + tlm);
 

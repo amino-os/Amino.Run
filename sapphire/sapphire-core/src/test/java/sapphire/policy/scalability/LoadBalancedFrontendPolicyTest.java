@@ -1,14 +1,11 @@
 package sapphire.policy.scalability;
 
 import static org.junit.Assert.assertNotEquals;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static sapphire.common.SapphireUtils.deleteSapphireObject;
 import static sapphire.common.UtilsTest.extractFieldValueOnInstance;
-import static sapphire.common.UtilsTest.setFieldValueOnInstance;
 
-import java.lang.annotation.Annotation;
 import java.net.InetSocketAddress;
 import java.rmi.registry.LocateRegistry;
 import java.util.ArrayList;
@@ -18,6 +15,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -48,11 +46,12 @@ import sapphire.runtime.Sapphire;
     SapphireUtils.class
 })
 public class LoadBalancedFrontendPolicyTest extends BaseTest {
+    private static final int NUM_OF_REPLICAS = 3;
     int exceptionExpected = 0;
 
     @LoadBalancedFrontendPolicy.LoadBalancedFrontendPolicyConfigAnnotation(
             maxconcurrentReq = 2,
-            replicacount = 2)
+            replicacount = NUM_OF_REPLICAS)
     public static class LoadBalanceSO extends SO
             implements SapphireObject<LoadBalancedFrontendPolicy> {}
 
@@ -116,6 +115,8 @@ public class LoadBalancedFrontendPolicyTest extends BaseTest {
         public void $__setLastSeenTick(int lastSeenTick) {
             this.$__lastSeenTick = lastSeenTick;
         }
+
+        public void sapphire_pin_to_server(InetSocketAddress dst) {}
     }
 
     @Rule public ExpectedException thrown = ExpectedException.none();
@@ -191,19 +192,11 @@ public class LoadBalancedFrontendPolicyTest extends BaseTest {
         assertNotEquals("Passed", 0, exceptionExpected);
     }
 
-    /**
-     * If the created number of replicas is lesser than the configured number of replicas, it throws
-     * an error.
-     */
     @Test
-    public void testStaticReplicaCount() throws Exception {
-        LoadBalancedFrontendPolicy.GroupPolicy group1;
-        group1 = spy(LoadBalancedFrontendPolicy.GroupPolicy.class);
-
-        // Expecting error message- Configured replicas count: 5, created replica count : 2
-        thrown.expectMessage("Configured replicas count: 5, created replica count : 2");
-        setFieldValueOnInstance(group1, "replicaCount", 5);
-        group1.onCreate(this.server1, new Annotation[] {});
+    public void testReplicaCount() throws Exception {
+        // Ensure that correct number of replicas has been
+        // created for LoadBalanceSO during Setup.
+        Assert.assertEquals(NUM_OF_REPLICAS, this.group.getServers().size());
     }
 
     @After

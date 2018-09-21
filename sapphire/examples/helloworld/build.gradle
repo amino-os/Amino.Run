@@ -49,9 +49,11 @@ task runks(type: JavaExec) {
 }
 
 // Task for run HelloWorld demo app
-// Usage: gradlew runapp -PW=DisneyWorld
+// Usage: gradlew runapp -PW=DisneyWorld -Ptimes=1
 task runapp(type: JavaExec) {
     main = "sapphire.appexamples.helloworld.HelloWorldMain"
     classpath = sourceSets.main.runtimeClasspath
-    args project.property('omsIp'), project.property('omsPort'), project.property('kernelIpAndroid'), project.property('kernelServerPort'), project.hasProperty('W') ? project.property('W') : "DCAP World"
+    ext.word = project.hasProperty('W') ? project.property('W') : "DCAP World"
+    ext.cnt = project.hasProperty('times') ? project.property('times') : 1
+    args project.property('omsIp'), project.property('omsPort'), project.property('kernelIpAndroid'), project.property('kernelServerPort'), ext.word, ext.cnt
 }

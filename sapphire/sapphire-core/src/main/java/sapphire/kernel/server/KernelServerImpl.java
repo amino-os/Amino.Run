@@ -329,7 +329,7 @@ public class KernelServerImpl implements KernelServer {
             omsHost = new InetSocketAddress(args[2], Integer.parseInt(args[3]));
         } catch (NumberFormatException e) {
             System.out.println("Incorrect arguments to the kernel server");
-            System.out.println("[host ip] [host port] [oms ip] [oms port]");
+            System.out.println("[host ip] [host port] [oms ip] [oms port] [region]");
             return;
         }
 

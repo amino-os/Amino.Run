@@ -8,12 +8,15 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.net.InetSocketAddress;
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Logger;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
+import sapphire.kernel.common.GlobalKernelReferences;
 import sapphire.kernel.common.KernelObjectStub;
 import sapphire.policy.DefaultSapphirePolicy;
 
@@ -83,9 +86,7 @@ public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
         public void onCreate(SapphireGroupPolicy group, Annotation[] annotations) {
             super.onCreate(group, annotations);
             LoadBalancedFrontendPolicyConfigAnnotation annotation =
-                    (LoadBalancedFrontendPolicyConfigAnnotation)
-                            getAnnotation(
-                                    annotations, LoadBalancedFrontendPolicyConfigAnnotation.class);
+                    getAnnotation(annotations, LoadBalancedFrontendPolicyConfigAnnotation.class);
             if (annotation != null) {
                 this.maxConcurrentReq = annotation.maxconcurrentReq();
             }
@@ -127,65 +128,47 @@ public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
         @Override
         public void onCreate(SapphireServerPolicy server, Annotation[] annotations) {
             LoadBalancedFrontendPolicyConfigAnnotation annotation =
-                    (LoadBalancedFrontendPolicyConfigAnnotation)
-                            getAnnotation(
-                                    annotations, LoadBalancedFrontendPolicyConfigAnnotation.class);
+                    getAnnotation(annotations, LoadBalancedFrontendPolicyConfigAnnotation.class);
 
             if (annotation != null) {
                 this.replicaCount = annotation.replicacount();
             }
-            int count =
-                    0; // count is compared below < STATIC_REPLICAS-1 excluding the present server
-            int numnodes = 0; // num of nodes/servers in the selected region
 
             /* Creation of group happens when the first instance of sapphire object is
             being created. Loop through all the kernel servers and replicate the
             sapphire objects on them based on the static replica count */
             try {
-
                 // Initialize and consider this server
                 addServer(server);
 
-                /* Find the current region and the kernel server on which this first instance of
-                sapphire object is being created. And try to replicate the
-                sapphire objects in the same region(excluding this kernel server) */
-                String region = server.sapphire_getRegion();
+                List<InetSocketAddress> kernelServers =
+                        GlobalKernelReferences.nodeServer.oms.getServers();
+                if (kernelServers == null || kernelServers.size() == 0) {
+                    throw new IllegalStateException("Cannot find any kernel server.");
+                }
+
+                if (kernelServers.size() < replicaCount) {
+                    logger.warning(
+                            String.format(
+                                    "The number of kernel servers (%d) is less than "
+                                            + "the number of replicas (%d). We have to allocate multiple replicas "
+                                            + "to one kernel server.",
+                                    kernelServers.size(), replicaCount));
+                }
+
                 InetSocketAddress addr =
                         server.sapphire_locate_kernel_object(server.$__getKernelOID());
-
-                ArrayList<InetSocketAddress> kernelServers = sapphire_getServersInRegion(region);
-
-                /* Create the replicas on different kernelServers belongs to same region*/
-                if (kernelServers != null) {
-
-                    kernelServers.remove(addr);
-                    numnodes = kernelServers.size();
-
-                    for (count = 0; count < numnodes && count < replicaCount - 1; count++) {
-                        ServerPolicy replica = (ServerPolicy) server.sapphire_replicate();
-                        replica.sapphire_pin_to_server(kernelServers.get(count));
-                        ((KernelObjectStub) replica).$__updateHostname(kernelServers.get(count));
-                    }
+                int startingIndex = kernelServers.indexOf(addr) + 1;
+                for (int i = 0; i < replicaCount - 1; i++) {
+                    ServerPolicy replica = (ServerPolicy) server.sapphire_replicate();
+                    InetSocketAddress dst =
+                            kernelServers.get((startingIndex + i) % kernelServers.size());
+                    replica.sapphire_pin_to_server(dst);
+                    ((KernelObjectStub) replica).$__updateHostname(dst);
                 }
-
-                /* If the replicas created are less than the number of replicas configured,
-                log a warning message */
-                if (count != replicaCount - 1) {
-                    logger.severe(
-                            "Configured replicas count: "
-                                    + replicaCount
-                                    + ", created replica count : "
-                                    + count
-                                    + "insufficient servers in region "
-                                    + numnodes
-                                    + "to create required replicas");
-                    throw new Error(
-                            "Configured replicas count: "
-                                    + replicaCount
-                                    + ", created replica count : "
-                                    + count);
-                }
-
+            } catch (NotBoundException e) {
+                throw new Error(
+                        "Could not create new group policy because the oms is not available.", e);
             } catch (RemoteException e) {
                 logger.severe("Received RemoteException may be oms is down ");
                 throw new Error(

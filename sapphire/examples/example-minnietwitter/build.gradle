@@ -22,24 +22,31 @@ task genAppStubs(type: JavaExec) {
     args src, pkgName, dst
 }
 
+clean.doFirst {
+    delete fileTree("$projectDir/src/main/java/sapphire/appexamples/minnietwitter/app/stubs") {
+        include '**/*_Stub.java'
+    }
+    println "Deleted $projectDir/src/main/java/sapphire/appexamples/minnietwitter/app/stubs"
+}
+
 genAppStubs.mustRunAfter compileJava
 compileStubs.dependsOn genAppStubs
 jar.dependsOn compileStubs
 
-task runMinnieTwitterOms(type: JavaExec) {
+task runoms(type: JavaExec) {
     dependsOn jar
     classpath = sourceSets.main.runtimeClasspath
     main = 'sapphire.oms.OMSServerImpl'
     args project.property('omsIp'), project.property('omsPort')
 }
 
-task runMinnieTwitterKernelServer(type: JavaExec) {
+task runks(type: JavaExec) {
     classpath = sourceSets.main.runtimeClasspath
     main = 'sapphire.kernel.server.KernelServerImpl'
     args project.property('kernelServerIp'), project.property('kernelServerPort'), project.property('omsIp'), project.property('omsPort')
 }
 
-task runMinnieTwitter(type: JavaExec) {
+task runapp(type: JavaExec) {
     main = "sapphire.appexamples.minnietwitter.MinnieTwitterMain"
     classpath = sourceSets.main.runtimeClasspath
     args project.property('omsIp'), project.property('omsPort'), project.property('kernelIpAndroid'), project.property('kernelServerPort')

@@ -8,14 +8,14 @@ import sapphire.kernel.common.KernelObjectStub;
  */
 public class SapphirePolicyContainerImpl implements SapphirePolicyContainer {
 	private String policyName;
-	private SapphirePolicy.SapphireGroupPolicy groupPolicy;
+	private SapphirePolicy.SapphireGroupPolicy groupPolicyStub;
 	private SapphirePolicy.SapphireServerPolicy serverPolicy;
 	private KernelObjectStub serverPolicyStub;
 	private int oid;
 
-	public SapphirePolicyContainerImpl(String policyName, SapphirePolicy.SapphireGroupPolicy groupPolicy) {
+	public SapphirePolicyContainerImpl(String policyName, SapphirePolicy.SapphireGroupPolicy groupPolicyStub) {
 		this.policyName = policyName;
-		this.groupPolicy = groupPolicy;
+		this.groupPolicyStub = groupPolicyStub;
 	}
 
 	public int getKernelOID() { return oid; }
@@ -24,8 +24,8 @@ public class SapphirePolicyContainerImpl implements SapphirePolicyContainer {
 		return this.policyName;
 	}
 
-	public SapphirePolicy.SapphireGroupPolicy getGroupPolicy() {
-		return this.groupPolicy;
+	public SapphirePolicy.SapphireGroupPolicy getGroupPolicyStub() {
+		return this.groupPolicyStub;
 	}
 	public SapphirePolicy.SapphireServerPolicy getServerPolicy() {
 		return this.serverPolicy;

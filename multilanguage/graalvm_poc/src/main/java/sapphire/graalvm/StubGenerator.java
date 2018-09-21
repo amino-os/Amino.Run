@@ -22,7 +22,7 @@ public class StubGenerator {
         String[] supportedLangs = { "js", "python", "ruby" };
         Context polyglot = Context.newBuilder(supportedLangs).allowAllAccess(true).build();
         String jsHome = System.getProperty("JS_HOME");
-        jsHome = "/Users/haibinxie/Code/DCAP_Sapphire_Fork/DCAP-Sapphire/multilanguage/graalvm_poc/src/main/js";
+        //jsHome = "/Users/haibinxie/Code/DCAP_Sapphire_Fork/DCAP-Sapphire/multilanguage/graalvm_poc/src/main/js";
 
         Value v = polyglot.eval(Source.newBuilder("js", new File(jsHome + "/college.js")).build());
         Value v1 = polyglot.eval("js", "new College()");

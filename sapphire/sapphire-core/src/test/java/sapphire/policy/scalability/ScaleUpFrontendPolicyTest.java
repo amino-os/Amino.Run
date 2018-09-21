@@ -25,6 +25,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import sapphire.app.SO;
 import sapphire.app.SapphireObject;
 import sapphire.app.stubs.SO_Stub;
+import sapphire.common.AppObject;
 import sapphire.common.BaseTest;
 import sapphire.common.SapphireObjectID;
 import sapphire.common.SapphireUtils;
@@ -63,6 +64,8 @@ public class ScaleUpFrontendPolicyTest extends BaseTest {
         sapphire.kernel.common.KernelOID $__oid = null;
         java.net.InetSocketAddress $__hostname = null;
         int $__lastSeenTick = 0;
+        AppObject $__appObject = null;
+        SapphirePolicy.SapphireClientPolicy $__nextClientPolicy = null;
 
         public Group_Stub(sapphire.kernel.common.KernelOID oid) {
             this.$__oid = oid;
@@ -87,6 +90,14 @@ public class ScaleUpFrontendPolicyTest extends BaseTest {
         public void $__setLastSeenTick(int lastSeenTick) {
             this.$__lastSeenTick = lastSeenTick;
         }
+
+        public AppObject $__getAppObject() {
+            return $__appObject;
+        }
+
+        public void $__setNextClientPolicy(SapphirePolicy.SapphireClientPolicy clientPolicy) {
+            $__nextClientPolicy = clientPolicy;
+        }
     }
 
     public static class Server_Stub extends ScaleUpFrontendPolicy.ServerPolicy
@@ -94,6 +105,8 @@ public class ScaleUpFrontendPolicyTest extends BaseTest {
         KernelOID $__oid = null;
         InetSocketAddress $__hostname = null;
         int $__lastSeenTick = 0;
+        AppObject $__appObject = null;
+        SapphirePolicy.SapphireClientPolicy $__nextClientPolicy = null;
 
         public Server_Stub(KernelOID oid) {
             this.$__oid = oid;
@@ -117,6 +130,14 @@ public class ScaleUpFrontendPolicyTest extends BaseTest {
 
         public void $__setLastSeenTick(int lastSeenTick) {
             this.$__lastSeenTick = lastSeenTick;
+        }
+
+        public AppObject $__getAppObject() {
+            return $__appObject;
+        }
+
+        public void $__setNextClientPolicy(SapphirePolicy.SapphireClientPolicy clientPolicy) {
+            $__nextClientPolicy = clientPolicy;
         }
     }
 

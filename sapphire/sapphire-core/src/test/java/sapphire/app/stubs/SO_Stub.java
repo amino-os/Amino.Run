@@ -1,6 +1,7 @@
 package sapphire.app.stubs;
 
 import sapphire.app.SO;
+import sapphire.common.AppObject;
 import sapphire.policy.SapphirePolicy;
 
 /** Created by Venugopal Reddy K on 6/9/18. */
@@ -8,6 +9,7 @@ public class SO_Stub extends SO implements sapphire.common.AppObjectStub {
 
     sapphire.policy.SapphirePolicy.SapphireClientPolicy $__client = null;
     boolean $__directInvocation = false;
+    AppObject $__appObject = null;
 
     public SO_Stub() {
         super();
@@ -26,6 +28,16 @@ public class SO_Stub extends SO implements sapphire.common.AppObjectStub {
     @Override
     public Object $__clone() throws CloneNotSupportedException {
         return super.clone();
+    }
+
+    @Override
+    public void $__initialize(AppObject appObject) {
+        $__appObject = appObject;
+    }
+
+    @Override
+    public AppObject $__getAppObject() {
+        return $__appObject;
     }
 
     // Implementation of getI()

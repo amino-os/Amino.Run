@@ -15,7 +15,6 @@ public class StubGenerator {
     private static final Logger LOGGER = Logger.getLogger(StubGenerator.class.getName());
 
     public static void generateStub(String stubType, Class<?> c, String destFolder) {
-        LOGGER.info("Generating stub for: " + c.getName());
 
         Stub s;
         try {
@@ -121,7 +120,12 @@ public class StubGenerator {
 
     /* TODO: Support for multiple packages for app stubs; right now you must run this for each app package that contains a SapphireObject */
     public static void main(String args[]) {
-        generateStubs(args[0], args[1], args[2]);
+        String src = args[0];
+        String pkg = args[1];
+        String dst = args[2];
+        generateStubs(src, pkg, dst);
+        LOGGER.info(
+                String.format("Generated stubs. src: %s, package: %s, dst: %s", src, pkg, dst));
         System.exit(0);
     }
 }

@@ -60,10 +60,11 @@ task genStubs(type: JavaExec) {
     args src, pkgName, dst
 }
 
-task delStubs(type: Delete) {
+clean.doFirst {
     delete fileTree("$projectDir/src/main/java/sapphire/policy/stubs") {
         include '**/*_Stub.java'
     }
+    println "Deleted $projectDir/src/main/java/sapphire/policy/stubs"
 }
 
 // Task for stub compilation
@@ -74,7 +75,6 @@ task compileStubs(type: JavaCompile) {
     options.incremental = true
 }
 
-genStubs.mustRunAfter delStubs
 genStubs.mustRunAfter compileJava
 compileStubs.dependsOn genStubs
 tasks.googleJavaFormat.mustRunAfter genStubs

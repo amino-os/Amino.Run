@@ -14,6 +14,9 @@
 
 
 # Quick Start
+### Download GraalVM 
+* Download GraalVM from https://www.graalvm.org/downloads/
+
 ### Install Android SDK and Android Studio
 * Follow [instructions](https://developer.android.com/studio/) to install Android SDK and Anroid Studio. More details can be found at [here](https://wiki.appcelerator.org/display/guides2/Installing+the+Android+SDK#InstallingtheAndroidSDK-InstallingAndroidSDKToolsonmacOS).
 * Android SDK and Android Studio are *not* required by Sapphire. But many Sapphire demo applications are android applications. We recommend install Android SDK and Android Studio.
@@ -41,10 +44,13 @@ EOF
 ### Checking out Sapphire
 ```shell
 # checkout sapphire
-> git clone https://github.com/Huawei-PaaS/DCAP-Sapphire
+$ git clone https://github.com/Huawei-PaaS/DCAP-Sapphire
 
 # set path to gradlew
-> export PATH=$PATH:<path to gradlew>
+$ export PATH=$PATH:<path to gradlew>
+
+# set GraalVM JDK location
+$ set org.gradle.java.home in DCAP-Sapphire/sapphire/gradle.properties 
 ```
 
 ### List Sapphire Projects

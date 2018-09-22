@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import sapphire.app.SapphireObject;
-import sapphire.policy.interfaces.dht.DHTKey;
+import sapphire.policy.dht.DHTKey;
 
 public class TagManager implements SapphireObject {
     Map<DHTKey, Tag> tags = new Hashtable<DHTKey, Tag>();

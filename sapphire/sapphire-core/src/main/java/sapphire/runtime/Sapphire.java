@@ -102,7 +102,7 @@ public class Sapphire {
                     GlobalKernelReferences.nodeServer.oms.registerSapphireReplica(sapphireObjId);
 
             /* Create the Kernel Object for the Server Policy, and get the Server Policy Stub */
-            SapphireServerPolicy serverPolicyStub =
+            final SapphireServerPolicy serverPolicyStub =
                     (SapphireServerPolicy) getPolicyStub(sapphireServerPolicyClass);
 
             /* Create the Client Policy Object */

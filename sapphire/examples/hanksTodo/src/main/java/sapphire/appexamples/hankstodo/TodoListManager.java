@@ -6,10 +6,9 @@ import java.util.Map;
 import sapphire.app.SapphireObject;
 import static sapphire.runtime.Sapphire.*;
 import sapphire.policy.dht.DHTPolicy;
-import sapphire.policy.interfaces.dht.DHTInterface;
-import sapphire.policy.interfaces.dht.DHTKey;
+import sapphire.policy.dht.DHTKey;
 
-public class TodoListManager implements SapphireObject<DHTPolicy>, DHTInterface {
+public class TodoListManager implements SapphireObject<DHTPolicy> {
     Map<DHTKey, TodoList> todoLists = new Hashtable<DHTKey, TodoList>();
 
 	public TodoList newTodoList(String name) {
@@ -21,11 +20,5 @@ public class TodoListManager implements SapphireObject<DHTPolicy>, DHTInterface 
 		System.out.println("Created new list");
 		System.out.println("This managers lists" + todoLists.toString());
 		return t;
-	}
-
-	@Override
-	public Map<DHTKey, ?> dhtGetData() {
-		// TODO Auto-generated method stub
-		return todoLists;
 	}
 }

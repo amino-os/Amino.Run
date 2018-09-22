@@ -32,7 +32,7 @@ public class DHTPolicy extends DefaultSapphirePolicy {
         public Object onRPC(String method, ArrayList<Object> params) throws Exception {
             DHTKey key = new DHTKey((String) params.get(0));
             if (dhtChord == null) {
-                dhtChord = ((DHTGroupPolicy)getGroup()).getChord();
+                dhtChord = ((DHTGroupPolicy) getGroup()).getChord();
             }
 
             DHTNode node = dhtChord.getResponsibleNode(key);

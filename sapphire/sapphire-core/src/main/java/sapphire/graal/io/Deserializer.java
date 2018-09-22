@@ -78,7 +78,7 @@ public class Deserializer implements AutoCloseable {
                     // System.out.println("now reading in " + s);
                     if (key.equals(
                             "__proto__")) { // TODO: for some reason can't serialize js inheritance
-                                            // chain
+                        // chain
                         continue;
                     }
                     System.out.println("Reading member, id is " + key);

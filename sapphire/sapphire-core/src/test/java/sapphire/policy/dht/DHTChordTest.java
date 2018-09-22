@@ -64,13 +64,13 @@ public class DHTChordTest {
     public void testSerializeChord() throws Exception {
         DHTChord chord = new DHTChord();
         byte[] bytes = serialize(chord);
-        DHTChord clone = (DHTChord)deserizlize(bytes);
+        DHTChord clone = (DHTChord) deserizlize(bytes);
         System.out.println(clone);
     }
 
     private byte[] serialize(Object obj) throws Exception {
         try (ByteArrayOutputStream bout = new ByteArrayOutputStream();
-             ObjectOutputStream out = new ObjectOutputStream(bout)) {
+                ObjectOutputStream out = new ObjectOutputStream(bout)) {
             out.writeObject(obj);
             return bout.toByteArray();
         }
@@ -78,7 +78,7 @@ public class DHTChordTest {
 
     private Object deserizlize(byte[] bytes) throws Exception {
         try (ByteArrayInputStream bin = new ByteArrayInputStream(bytes);
-             ObjectInputStream in = new ObjectInputStream(bin)) {
+                ObjectInputStream in = new ObjectInputStream(bin)) {
             return in.readObject();
         }
     }

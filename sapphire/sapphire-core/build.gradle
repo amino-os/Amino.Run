@@ -1,5 +1,3 @@
-import dcap.sapphire.gradle.PolicyStubGenerationTask
-
 plugins {
     // Google Java Format Plugin:
     // 1. Run `gradlew goJF` to format source codes
@@ -75,10 +73,12 @@ task compileStubs(type: JavaCompile) {
     options.incremental = true
 }
 
+genStubs.mustRunAfter clean
 genStubs.mustRunAfter compileJava
 compileStubs.dependsOn genStubs
 tasks.googleJavaFormat.mustRunAfter genStubs
 check.dependsOn tasks.googleJavaFormat
+compileJava.dependsOn clean
 jar.dependsOn compileStubs
 
 task integTest(type: Test) {

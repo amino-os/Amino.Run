@@ -30,7 +30,7 @@ public class SapphirePolicyContainerImpl implements SapphirePolicyContainer {
     }
 
     public SapphirePolicy.SapphireGroupPolicy getGroupPolicyStub() {
-        return this.groupPolicy;
+        return this.getGroupPolicyStub;
     }
 
     public SapphirePolicy.SapphireServerPolicy getServerPolicy() {

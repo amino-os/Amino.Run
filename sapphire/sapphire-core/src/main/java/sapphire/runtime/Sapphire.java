@@ -119,7 +119,7 @@ public class Sapphire {
 
         if (policyChain == null || policyChain.size() == 0) return null;
         String policyName = policyChain.get(0).getPolicyName();
-        SapphireGroupPolicy existingGroupPolicy = policyChain.get(0).getGroupPolicy();
+        SapphireGroupPolicy existingGroupPolicy = policyChain.get(0).getGroupPolicyStub();
         AppObjectStub appStub = null;
 
         /* Get the annotations added for the Application class. */
@@ -228,7 +228,7 @@ public class Sapphire {
         serverPolicy.setNextDMs(nextPoliciesToCreate);
 
         SapphirePolicyContainer processedPolicy =
-                new SapphirePolicyContainerImpl(policyName, groupPolicy);
+                new SapphirePolicyContainerImpl(policyName, groupPolicyStub);
         processedPolicy.setServerPolicy(serverPolicy);
         processedPolicy.setServerPolicyStub((KernelObjectStub) serverPolicyStub);
         processedPolicy.setKernelOID(serverPolicy.$__getKernelOID());
@@ -259,10 +259,8 @@ public class Sapphire {
         }
 
         String ko = "";
-        if (ko != null) {
-            for (SapphirePolicyContainer policyContainer : processedPolicies) {
-                ko += String.valueOf(policyContainer.getKernelOID()) + ",";
-            }
+        for (SapphirePolicyContainer policyContainer : processedPolicies) {
+            ko += String.valueOf(policyContainer.getKernelOID()) + ",";
         }
 
         logger.log(Level.INFO, "OID from processed polices at " + policyName + " : " + ko);

@@ -6,15 +6,15 @@ import sapphire.kernel.common.KernelObjectStub;
 /** Contains Sapphire policies. */
 public class SapphirePolicyContainerImpl implements SapphirePolicyContainer {
     private String policyName;
-    private SapphirePolicy.SapphireGroupPolicy groupPolicy;
+    private SapphirePolicy.SapphireGroupPolicy getGroupPolicyStub;
     private SapphirePolicy.SapphireServerPolicy serverPolicy;
     private KernelObjectStub serverPolicyStub;
     private int oid;
 
     public SapphirePolicyContainerImpl(
-            String policyName, SapphirePolicy.SapphireGroupPolicy groupPolicy) {
+            String policyName, SapphirePolicy.SapphireGroupPolicy getGroupPolicyStub) {
         this.policyName = policyName;
-        this.groupPolicy = groupPolicy;
+        this.getGroupPolicyStub = getGroupPolicyStub;
     }
 
     public int getKernelOID() {
@@ -29,8 +29,8 @@ public class SapphirePolicyContainerImpl implements SapphirePolicyContainer {
         return this.policyName;
     }
 
-    public SapphirePolicy.SapphireGroupPolicy getGroupPolicy() {
-        return this.groupPolicy;
+    public SapphirePolicy.SapphireGroupPolicy getGroupPolicyStub() {
+        return this.getGroupPolicyStub;
     }
 
     public SapphirePolicy.SapphireServerPolicy getServerPolicy() {

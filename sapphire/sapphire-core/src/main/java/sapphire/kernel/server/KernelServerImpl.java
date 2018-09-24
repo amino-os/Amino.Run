@@ -129,7 +129,6 @@ public class KernelServerImpl implements KernelServer {
             throws RemoteException, KernelObjectNotFoundException,
                     KernelObjectStubNotCreatedException, SapphireObjectNotFoundException,
                     SapphireObjectReplicaNotFoundException {
-
         logger.log(
                 Level.INFO,
                 "Adding object "
@@ -139,11 +138,17 @@ public class KernelServerImpl implements KernelServer {
                         + ":"
                         + host.getPort());
 
+
+        this.objectManager.addObject(oid, object);
+
         // to add KOs of in-chained server policy to local object manager
         Serializable realObj = object.getObject();
+
         if (realObj instanceof SapphireServerPolicyLibrary) {
-            SapphireServerPolicyLibrary outmostSP = (SapphireServerPolicyLibrary) realObj;
-            for (SapphirePolicyContainer spContainer : outmostSP.getProcessedPolicies()) {
+            SapphireServerPolicyLibrary firstServerPolicy = (SapphireServerPolicyLibrary) realObj;
+
+            for (SapphirePolicyContainer spContainer : firstServerPolicy.getProcessedPolicies()) {
+                // Add Server Policy object in the same order as client side has created.
                 SapphireServerPolicyLibrary serverPolicy = spContainer.getServerPolicy();
 
                 // Added for setting the ReplicaId and registering handler for this replica to OMS.
@@ -156,7 +161,15 @@ public class KernelServerImpl implements KernelServer {
                 oms.setSapphireReplicaDispatcher(serverPolicy.getReplicaId(), policyHandler);
 
                 KernelOID koid = serverPolicy.$__getKernelOID();
-                this.objectManager.addObject(koid, new KernelObject(serverPolicy));
+                if (oid == koid) {
+                    // This is added anyway after loop.
+                    continue;
+                }
+
+                KernelObject newko = new KernelObject(serverPolicy);
+
+                this.objectManager.addObject(koid, newko);
+                newko.uncoalesce();
                 logger.log(Level.INFO, "Added " + koid.getID() + " as SapphireServerPolicyLibrary");
 
                 try {
@@ -173,6 +186,21 @@ public class KernelServerImpl implements KernelServer {
                                     + host.getPort();
                     throw new RemoteException(exceptionMsg);
                 }
+            }
+
+            try {
+                firstServerPolicy.initialize();
+            } catch (Exception e) {
+                e.printStackTrace();
+                String exceptionMsg =
+                        "Initialization for first server policy failed at copyKernelObject for KernelObject("
+                                + oid.getID()
+                                + ").  "
+                                + "Host: "
+                                + host.getAddress()
+                                + ":"
+                                + host.getPort();
+                throw new RemoteException(exceptionMsg);
             }
         } else {
             this.objectManager.addObject(oid, object);

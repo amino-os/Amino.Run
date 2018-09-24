@@ -16,7 +16,7 @@ public interface SapphirePolicyContainer extends Serializable {
 
     String getPolicyName();
 
-    SapphirePolicy.SapphireGroupPolicy getGroupPolicy();
+    SapphirePolicy.SapphireGroupPolicy getGroupPolicyStub();
 
     SapphirePolicy.SapphireServerPolicy getServerPolicy();
 

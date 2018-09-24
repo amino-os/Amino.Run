@@ -259,10 +259,8 @@ public class Sapphire {
         }
 
         String ko = "";
-        if (ko != null) {
-            for (SapphirePolicyContainer policyContainer : processedPolicies) {
-                ko += String.valueOf(policyContainer.getKernelOID()) + ",";
-            }
+        for (SapphirePolicyContainer policyContainer : processedPolicies) {
+            ko += String.valueOf(policyContainer.getKernelOID()) + ",";
         }
 
         logger.log(Level.INFO, "OID from processed polices at " + policyName + " : " + ko);

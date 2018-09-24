@@ -42,17 +42,6 @@ public class AppObjectShimServerPolicy implements SapphireServerPolicyUpcalls {
     @Override
     public void onMembershipChange() {}
 
-    @Override
-    public List<SapphirePolicyContainer> getProcessedPolicies() {
-        // TODO (8/21/18) Implement to return processedDMs.
-        return null;
-    }
-
-    @Override
-    public void setNextDMs(List<SapphirePolicyContainer> nextDMs) {}
-
-    @Override
-    public void setProcessedPolicies(List<SapphirePolicyContainer> setProcessedDMs) {}
     /**
      * gets the app object referenced by the server policy
      *

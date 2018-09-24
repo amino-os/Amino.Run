@@ -7,14 +7,13 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
-import org.apache.harmony.rmi.common.RMIUtil;
+
 import sapphire.common.AppObject;
 import sapphire.common.AppObjectStub;
 import sapphire.common.SapphireObjectID;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
 import sapphire.common.SapphireReplicaID;
-import sapphire.compiler.GlobalStubConstants;
 import sapphire.kernel.common.GlobalKernelReferences;
 import sapphire.kernel.common.KernelOID;
 import sapphire.kernel.common.KernelObjectFactory;
@@ -25,7 +24,6 @@ import sapphire.kernel.server.KernelObject;
 import sapphire.kernel.server.KernelServerImpl;
 import sapphire.oms.OMSServer;
 import sapphire.policy.SapphirePolicy.SapphireServerPolicy;
-import sapphire.runtime.EventHandler;
 import sapphire.runtime.Sapphire;
 
 public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
@@ -47,8 +45,8 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
         protected KernelObject nextServerKernelObject;
         protected SapphireServerPolicy nextServerPolicy;
         protected SapphireServerPolicy previousServerPolicy;
-        protected List<SapphirePolicyContainer> nextDMs = new ArrayList<SapphirePolicyContainer>();
-        protected List<SapphirePolicyContainer> processedDMs =
+        protected List<SapphirePolicyContainer> nextPolocies = new ArrayList<SapphirePolicyContainer>();
+        protected List<SapphirePolicyContainer> processedPolicies =
                 new ArrayList<SapphirePolicyContainer>();
 
         private OMSServer oms() {
@@ -63,7 +61,7 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
          * SAPPHIRE API FOR SERVER POLICIES
          */
         public List<SapphirePolicyContainer> getProcessedPolicies() {
-            return this.processedDMs;
+            return this.processedPolicies;
         }
 
         public SapphireServerPolicy getPreviousServerPolicy() {
@@ -86,12 +84,12 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
             this.previousServerPolicy = sapphireServerPolicy;
         }
 
-        public void setNextDMs(List<SapphirePolicyContainer> nextDMs) {
-            this.nextDMs = nextDMs;
+        public void setNextPolicies(List<SapphirePolicyContainer> nextPolicies) {
+            this.nextPolocies = nextPolicies;
         }
 
-        public void setProcessedPolicies(List<SapphirePolicyContainer> processedDMs) {
-            this.processedDMs = processedDMs;
+        public void setProcessedPolicies(List<SapphirePolicyContainer> processedPolicies) {
+            this.processedPolicies = processedPolicies;
         }
 
         /** Creates a replica of this server and registers it with the group. */
@@ -113,25 +111,25 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 
                 // Create a new replica chain from already created policies before this policy and
                 // this policy.
-                List<SapphirePolicyContainer> processedPolicesReplica =
+                List<SapphirePolicyContainer> processedPoliciesReplica =
                         new ArrayList<SapphirePolicyContainer>();
                 Sapphire.createPolicy(
                         appObjectClass,
                         actualAppObject,
                         processedPolicies,
-                        processedPolicesReplica,
+                        processedPoliciesReplica,
                         null,
                         null,
                         null);
 
                 // Last policy in the returned chain is replica of this policy.
                 serverPolicy =
-                        processedPolicesReplica
-                                .get(processedPolicesReplica.size() - 1)
+                        processedPoliciesReplica
+                                .get(processedPoliciesReplica.size() - 1)
                                 .getServerPolicy();
                 serverPolicyStub =
-                        processedPolicesReplica
-                                .get(processedPolicesReplica.size() - 1)
+                        processedPoliciesReplica
+                                .get(processedPoliciesReplica.size() - 1)
                                 .getServerPolicyStub();
 
                 // Complete the chain by creating new instances of server policies and stub that
@@ -140,8 +138,8 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
                         Sapphire.createPolicy(
                                 appObjectClass,
                                 null,
-                                this.nextDMs,
-                                processedPolicesReplica,
+                                this.nextPolocies,
+                                processedPoliciesReplica,
                                 serverPolicy,
                                 serverPolicyStub,
                                 null);

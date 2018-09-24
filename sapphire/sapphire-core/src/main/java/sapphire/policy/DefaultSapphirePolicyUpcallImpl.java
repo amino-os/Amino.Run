@@ -63,11 +63,6 @@ public abstract class DefaultSapphirePolicyUpcallImpl extends SapphirePolicyLibr
                 return nextServerKernelObject.invoke(method, params);
             }
         }
-        
-        /* This function is added here just to generate the stub for this function in all DMs server policy */
-        public SapphireServerPolicy sapphire_replicate() throws RemoteException {
-            return super.sapphire_replicate();
-        }
 
         public SapphireServerPolicy sapphire_replicate(List<SapphirePolicyContainer> processedDMs) throws RemoteException  {
             return super.sapphire_replicate(processedDMs);

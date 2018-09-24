@@ -238,8 +238,6 @@ public class DHTPolicy extends DefaultSapphirePolicy {
 
                 InetSocketAddress newServerAddress = null;
                 for (int i = 1; i < regions.size(); i++) {
-                    // DHTServerPolicy replica = (DHTServerPolicy) dhtServer.sapphire_replicate();
-                    // replica.sapphire_pin(regions.get(i));
                     newServerAddress = oms().getServerInRegion(regions.get(i));
                     SapphireServerPolicy replica =
                             dhtServer.sapphire_replicate(server.getProcessedPolicies());

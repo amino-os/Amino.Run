@@ -93,76 +93,6 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
         public void setProcessedPolicies(List<SapphirePolicyContainer> processedDMs) {
             this.processedDMs = processedDMs;
         }
-        /** Creates a replica of this server and registers it with the group */
-        // TODO: Also replicate the policy ??
-        // TODO (2018-9-18, Sungwook): Remove this once other policies are updated to use sapphire_replication(processedPolicies).
-        public SapphireServerPolicy sapphire_replicate() throws RemoteException {
-            KernelObjectStub serverPolicyStub = null;
-            String policyStubClassName =
-                    GlobalStubConstants.getPolicyPackageName()
-                            + "."
-                            + RMIUtil.getShortName(this.getClass())
-                            + GlobalStubConstants.STUB_SUFFIX;
-            try {
-                serverPolicyStub =
-                        (KernelObjectStub) KernelObjectFactory.create(policyStubClassName);
-                SapphireServerPolicy serverPolicy =
-                        (SapphireServerPolicy)
-                                kernel().getObject(serverPolicyStub.$__getKernelOID());
-                serverPolicy.$__initialize(appObject);
-                serverPolicy.$__setKernelOID(serverPolicyStub.$__getKernelOID());
-
-                /* Register the handler for this replica to OMS */
-                SapphireReplicaID replicaId =
-                        oms().registerSapphireReplica(getGroup().getSapphireObjId());
-                serverPolicy.setReplicaId(replicaId);
-                ((SapphireServerPolicy) serverPolicyStub).setReplicaId(replicaId);
-                ArrayList<Object> policyObjList = new ArrayList();
-                policyObjList.add(serverPolicyStub);
-                EventHandler replicaHandler =
-                        new EventHandler(
-                                GlobalKernelReferences.nodeServer.getLocalHost(), policyObjList);
-                oms().setSapphireReplicaDispatcher(replicaId, replicaHandler);
-                /* Here getClass() gives the Applications Object Stub class so we should use getSuperclass to get the actual Application class
-                  for example getClass() gives as class sapphire.appexamples.hankstodo.app.stubs.TodoListManager_Stub
-                  getClass().getSuperclass() gives as class sapphire.appexamples.hankstodo.app.TodoListManager
-                */
-                Class appObjectClass =
-                        sapphire_getAppObject().getObject().getClass().getSuperclass();
-                serverPolicy.onCreate(getGroup(), appObjectClass.getAnnotations());
-                getGroup().addServer((SapphireServerPolicy) serverPolicyStub);
-                Sapphire.createPolicy(
-                        appObjectClass, null, null, null, serverPolicy, serverPolicyStub, null);
-            } catch (ClassNotFoundException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-                throw new Error("Could not find the class for replication!");
-            } catch (KernelObjectNotCreatedException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-                throw new Error("Could not create a replica!");
-            } catch (KernelObjectNotFoundException e) {
-                e.printStackTrace();
-                throw new Error("Could not find object to replicate!");
-            } catch (SapphireObjectNotFoundException e) {
-                KernelObjectFactory.delete(serverPolicyStub.$__getKernelOID());
-                e.printStackTrace();
-                throw new Error("Could not find sapphire object on OMS");
-            } catch (SapphireObjectReplicaNotFoundException e) {
-                KernelObjectFactory.delete(serverPolicyStub.$__getKernelOID());
-                e.printStackTrace();
-                throw new Error("Could not find sapphire object replica on OMS");
-            } catch (RemoteException e) {
-                sapphire_remove_replica();
-                e.printStackTrace();
-                throw new Error("Could not create a replica of " + appObject.getObject(), e);
-            } catch (Exception e) {
-                e.printStackTrace();
-                throw new Error("Unknown exception occurred!");
-            }
-
-            return (SapphireServerPolicy) serverPolicyStub;
-        }
 
         /** Creates a replica of this server and registers it with the group. */
         public SapphireServerPolicy sapphire_replicate(
@@ -534,7 +464,7 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
                 SapphireServerPolicy replicaSource, InetSocketAddress dest)
                 throws RemoteException, SapphireObjectNotFoundException,
                         SapphireObjectReplicaNotFoundException {
-            SapphireServerPolicy replica = replicaSource.sapphire_replicate();
+            SapphireServerPolicy replica = replicaSource.sapphire_replicate(replicaSource.getProcessedPolicies());
             try {
                 replica.sapphire_pin_to_server(dest);
                 ((KernelObjectStub) replica).$__updateHostname(dest);

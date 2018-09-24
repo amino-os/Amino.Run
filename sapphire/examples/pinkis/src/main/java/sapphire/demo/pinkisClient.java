@@ -7,6 +7,7 @@ import sapphire.kernel.server.KernelServer;
 import sapphire.kernel.server.KernelServerImpl;
 import sapphire.oms.OMSServer;
 
+import java.io.Serializable;
 import java.net.InetSocketAddress;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -39,7 +40,7 @@ public class pinkisClient {
         }
 
         server.set("foo", "bar");
-        String value = server.get("foo");
+        Serializable value = server.get("foo");
         System.out.println("expecting: bar; got: " + value);
     }
 }

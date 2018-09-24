@@ -1,0 +1,56 @@
+apply plugin: 'java-library'
+
+dependencies {
+    compile project(':sapphire-core')
+}
+
+// Task for app stub generation
+task genStubs(type: JavaExec) {
+    main = "sapphire.compiler.StubGenerator"
+    classpath = sourceSets.main.runtimeClasspath
+    def pkgName = 'sapphire.demo'
+    def src = "$buildDir/classes/java/main/sapphire/demo/"
+    def dst = "src/main/java/sapphire/demo/stubs/"
+    args src, pkgName, dst
+}
+
+task compileStubs(type: JavaCompile) {
+    source = sourceSets.main.java.srcDirs
+    classpath = sourceSets.main.compileClasspath
+    destinationDir = sourceSets.main.output.classesDir
+    options.incremental = true
+}
+
+clean.doFirst {
+    delete fileTree("$projectDir/src/main/java/sapphire/demo/stubs") {
+        include '**/*_Stub.java'
+    }
+    println "Deleted the generated stubs"
+}
+
+genStubs.mustRunAfter compileJava
+compileStubs.dependsOn genStubs
+jar.dependsOn compileStubs
+
+// task to start OMS
+task runoms(type: JavaExec) {
+    dependsOn jar
+    classpath = sourceSets.main.runtimeClasspath
+    main = 'sapphire.oms.OMSServerImpl'
+    args project.property('omsIp'), project.property('omsPort')
+}
+
+// task to start kernel server (hosting the SO)
+task runks(type: JavaExec) {
+    classpath = sourceSets.main.runtimeClasspath
+    main = 'sapphire.kernel.server.KernelServerImpl'
+    args project.property('kernelServerIp'), project.property('kernelServerPort'), project.property('omsIp'), project.property('omsPort')
+}
+
+// Task for run hanksTodoApp demo app
+// Usage: gradlew runapp -PW=DisneyWorld
+task runapp(type: JavaExec) {
+    main = "sapphire.demo.pinkisClient"
+    classpath = sourceSets.main.runtimeClasspath
+    args project.property('omsIp'), project.property('omsPort')
+}

@@ -118,6 +118,11 @@ export BINTRAY_API_KEY="<bintray_api_key>"
 
 # Android Studio Setup
 
+### IntelliJ 
+* Use *Open* to open Sapphire project. *Import* may not work properly.
+
+![import_sapphire](images/ImportSapphireInIntelliJ.png)
+
 ### Enable GraalVM SDK
 To enbale GraalVM in Android Studio, you need to 
 * add Graal SDK and 

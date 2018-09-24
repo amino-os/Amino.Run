@@ -95,6 +95,7 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
         }
         /** Creates a replica of this server and registers it with the group */
         // TODO: Also replicate the policy ??
+        // TODO (2018-9-18, Sungwook): Remove this once other policies are updated to use sapphire_replication(processedPolicies).
         public SapphireServerPolicy sapphire_replicate() throws RemoteException {
             KernelObjectStub serverPolicyStub = null;
             String policyStubClassName =
@@ -165,7 +166,7 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 
         /** Creates a replica of this server and registers it with the group. */
         public SapphireServerPolicy sapphire_replicate(
-                List<SapphirePolicyContainer> processedPolicies) {
+                List<SapphirePolicyContainer> processedPolicies) throws RemoteException {
             KernelObjectStub serverPolicyStub = null;
             SapphireServerPolicy serverPolicy = null;
 
@@ -223,8 +224,6 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
                 }
                 System.out.println("OID from sapphire_replicate: " + ko);
                 getGroup().addServer((SapphireServerPolicy) serverPolicyStub);
-            } catch (RemoteException e) {
-                throw new Error("Could not contact oms.");
             } catch (ClassNotFoundException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
@@ -236,10 +235,23 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
             } catch (KernelObjectNotFoundException e) {
                 e.printStackTrace();
                 throw new Error("Could not find object to replicate!");
+            } catch (SapphireObjectNotFoundException e) {
+                KernelObjectFactory.delete(serverPolicyStub.$__getKernelOID());
+                e.printStackTrace();
+                throw new Error("Could not find sapphire object on OMS");
+            } catch (SapphireObjectReplicaNotFoundException e) {
+                KernelObjectFactory.delete(serverPolicyStub.$__getKernelOID());
+                e.printStackTrace();
+                throw new Error("Could not find sapphire object replica on OMS");
+            } catch (RemoteException e) {
+                sapphire_remove_replica(processedPolicies);
+                e.printStackTrace();
+                throw new Error("Could not create a replica of " + appObject.getObject(), e);
             } catch (Exception e) {
                 e.printStackTrace();
                 throw new Error("Unknown exception occurred!");
             }
+
             return (SapphireServerPolicy) serverPolicyStub;
         }
 
@@ -366,6 +378,19 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
         public void sapphire_remove_replica() throws RemoteException {
             try {
                 oms().unRegisterSapphireReplica(getReplicaId());
+            } catch (SapphireObjectNotFoundException e) {
+                /* Sapphire object not found */
+                e.printStackTrace();
+            }
+            KernelObjectFactory.delete($__getKernelOID());
+        }
+
+        public void sapphire_remove_replica(List<SapphirePolicyContainer> processedPolicies) throws RemoteException {
+            try {
+                for (SapphirePolicyContainer policyContainer : processedPolicies) {
+                    SapphireServerPolicy sp = policyContainer.getServerPolicy();
+                    oms().unRegisterSapphireReplica(sp.getReplicaId());
+                }
             } catch (SapphireObjectNotFoundException e) {
                 /* Sapphire object not found */
                 e.printStackTrace();

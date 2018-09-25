@@ -138,7 +138,6 @@ public class KernelServerImpl implements KernelServer {
                         + ":"
                         + host.getPort());
 
-
         this.objectManager.addObject(oid, object);
 
         // to add KOs of in-chained server policy to local object manager

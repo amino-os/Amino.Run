@@ -135,6 +135,16 @@ public class LoadBalancedMasterSlaveSyncPolicy extends LoadBalancedMasterSlaveBa
         }
 
         @Override
+        public void onDestroy() {
+            super.onDestroy();
+            try {
+                finalize();
+            } catch (Throwable throwable) {
+                throwable.printStackTrace();
+            }
+        }
+
+        @Override
         protected void finalize() throws Throwable {
             if (commitExecutor != null) {
                 commitExecutor.close();

@@ -21,4 +21,11 @@ public class TodoListManager implements SapphireObject<DHTPolicy> {
 		System.out.println("This managers lists" + todoLists.toString());
 		return t;
 	}
+
+	public void deleteTodoList(String name) {
+		TodoList t = todoLists.remove(new DHTKey(name));
+		if (t != null) {
+			delete_(t);
+		}
+	}
 }

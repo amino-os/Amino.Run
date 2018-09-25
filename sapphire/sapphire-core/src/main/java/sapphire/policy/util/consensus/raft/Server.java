@@ -81,6 +81,10 @@ public class Server
         this.become(State.FOLLOWER, vState.getState());
     }
 
+    public void stop() {
+        this.become(State.NONE, vState.getState());
+    }
+
     /**
      * Transition to a new state if current state is preconditionState, i.e. optimistic concurrency.
      *

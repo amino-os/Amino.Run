@@ -200,6 +200,10 @@ public class KernelServerManager {
      * @return list of kernel server host addresses in the given region otherwise null
      */
     public ArrayList<InetSocketAddress> getServersInRegion(String region) {
-        return regions.get(region);
+        ArrayList<InetSocketAddress> servers = regions.get(region);
+        if (servers == null) {
+            return null;
+        }
+        return new ArrayList<>(servers);
     }
 }

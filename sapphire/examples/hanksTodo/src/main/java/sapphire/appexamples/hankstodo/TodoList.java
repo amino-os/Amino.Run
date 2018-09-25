@@ -1,6 +1,5 @@
 package sapphire.appexamples.hankstodo;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 
 import sapphire.app.*;

@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.lang.annotation.Annotation;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -14,14 +13,14 @@ import java.util.logging.Logger;
 import sapphire.common.AppObject;
 import sapphire.common.SapphireObjectNotAvailableException;
 import sapphire.kernel.common.KernelObjectNotFoundException;
-import sapphire.policy.SapphirePolicy;
+import sapphire.policy.DefaultSapphirePolicy;
 
 /**
  * A caching policy between the mobile device and the server that uses leases for writing.
  *
  * @author iyzhang
  */
-public class CacheLeasePolicy extends SapphirePolicy {
+public class CacheLeasePolicy extends DefaultSapphirePolicy {
     public static final long DEFAULT_LEASE_PERIOD = 10 * 1000; // milliseconds
     /** stick in some buffer to account for differences in time * */
     static final int LEASE_BUFFER =
@@ -70,32 +69,10 @@ public class CacheLeasePolicy extends SapphirePolicy {
      *
      * @author iyzhang
      */
-    public static class CacheLeaseClientPolicy extends SapphireClientPolicy {
-        protected CacheLeaseServerPolicy server;
-        private CacheLeaseGroupPolicy group;
+    public static class CacheLeaseClientPolicy extends DefaultClientPolicy {
         protected UUID lease = CacheLease.NO_LEASE;
         protected Date leaseTimeout;
         protected AppObject cachedObject = null;
-
-        @Override
-        public void onCreate(SapphireGroupPolicy group, Annotation[] annotations) {
-            this.group = (CacheLeaseGroupPolicy) group;
-        }
-
-        @Override
-        public SapphireGroupPolicy getGroup() {
-            return group;
-        }
-
-        @Override
-        public SapphireServerPolicy getServer() {
-            return server;
-        }
-
-        @Override
-        public void setServer(SapphireServerPolicy server) {
-            this.server = (CacheLeaseServerPolicy) server;
-        }
 
         protected Boolean leaseStillValid() {
             System.out.println("Lease: " + lease.toString());
@@ -113,7 +90,7 @@ public class CacheLeasePolicy extends SapphirePolicy {
         }
 
         protected void sync() {
-            server.syncObject(lease, cachedObject.getObject());
+            ((CacheLeaseServerPolicy) getServer()).syncObject(lease, cachedObject.getObject());
         }
 
         @Override
@@ -133,9 +110,10 @@ public class CacheLeasePolicy extends SapphirePolicy {
             try {
                 CacheLease cachelease = null;
                 if (!lease.equals(CacheLease.NO_LEASE)) {
-                    cachelease = server.getLease(lease, timeoutMillisec);
+                    cachelease =
+                            ((CacheLeaseServerPolicy) getServer()).getLease(lease, timeoutMillisec);
                 } else {
-                    cachelease = server.getLease(timeoutMillisec);
+                    cachelease = ((CacheLeaseServerPolicy) getServer()).getLease(timeoutMillisec);
                 }
 
                 if (cachelease == null) {
@@ -159,7 +137,7 @@ public class CacheLeasePolicy extends SapphirePolicy {
 
         protected void releaseCurrentLease() throws Exception {
             try {
-                server.releaseLease(lease);
+                ((CacheLeaseServerPolicy) getServer()).releaseLease(lease);
             } finally {
                 lease = CacheLease.NO_LEASE;
                 leaseTimeout = new Date(0L); // The beginning of time.
@@ -168,13 +146,13 @@ public class CacheLeasePolicy extends SapphirePolicy {
         }
 
         protected void writeObject(ObjectOutputStream out) throws IOException {
-            out.writeObject(server);
-            out.writeObject(group);
+            // out.writeObject(server);
+            // out.writeObject(group);
         }
 
         protected void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-            server = (CacheLeaseServerPolicy) in.readObject();
-            group = (CacheLeaseGroupPolicy) in.readObject();
+            // server = (CacheLeaseServerPolicy) in.readObject();
+            // group = (CacheLeaseGroupPolicy) in.readObject();
             lease = CacheLease.NO_LEASE;
             cachedObject = null;
         }
@@ -185,26 +163,14 @@ public class CacheLeasePolicy extends SapphirePolicy {
      *
      * @author iyzhang
      */
-    public static class CacheLeaseServerPolicy extends SapphireServerPolicy {
+    public static class CacheLeaseServerPolicy extends DefaultServerPolicy {
         private static Logger logger =
-                Logger.getLogger("sapphire.policy.DHTPolicy.CacheLeaseServerPolicy");
+                Logger.getLogger("sapphire.policy.cache.CacheLeasePolicy.CacheLeaseServerPolicy");
         private UUID lease;
         private Date leaseTimeout;
-        private CacheLeaseGroupPolicy group;
 
         public CacheLeaseServerPolicy() {
             lease = CacheLease.NO_LEASE;
-        }
-
-        @Override
-        public void onCreate(SapphireGroupPolicy group, Annotation[] annotations) {
-            // TODO Auto-generated method stub
-            this.group = (CacheLeaseGroupPolicy) group;
-        }
-
-        @Override
-        public SapphireGroupPolicy getGroup() {
-            return group;
         }
 
         private Date generateTimeout() {
@@ -269,7 +235,7 @@ public class CacheLeasePolicy extends SapphirePolicy {
         }
 
         public void releaseLease(UUID lease) throws Exception {
-            if (this.lease == lease) {
+            if (this.lease.equals(lease)) {
                 this.lease = CacheLease.NO_LEASE;
                 this.leaseTimeout = new Date(0L);
             } else {
@@ -298,35 +264,5 @@ public class CacheLeasePolicy extends SapphirePolicy {
      *
      * @author iyzhang
      */
-    public static class CacheLeaseGroupPolicy extends SapphireGroupPolicy {
-        CacheLeaseServerPolicy server;
-
-        @Override
-        public void addServer(SapphireServerPolicy server) {
-            this.server = (CacheLeaseServerPolicy) server;
-        }
-
-        @Override
-        public void onFailure(SapphireServerPolicy server) {}
-
-        @Override
-        public void removeServer(SapphireServerPolicy server) {}
-
-        @Override
-        public SapphireServerPolicy onRefRequest() {
-            return server;
-        }
-
-        @Override
-        public ArrayList<SapphireServerPolicy> getServers() {
-            // TODO Auto-generated method stub
-            return null;
-        }
-
-        @Override
-        public void onCreate(SapphireServerPolicy server, Annotation[] annotations) {
-            // TODO Auto-generated method stub
-            addServer(server);
-        }
-    }
+    public static class CacheLeaseGroupPolicy extends DefaultGroupPolicy {}
 }

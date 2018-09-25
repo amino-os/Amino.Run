@@ -286,14 +286,14 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
             return sapphireObjId;
         }
 
-        public SapphireServerPolicy addReplica(
+        protected SapphireServerPolicy addReplica(
                 SapphireServerPolicy replicaSource, InetSocketAddress dest)
                 throws RemoteException, SapphireObjectNotFoundException,
                         SapphireObjectReplicaNotFoundException {
             SapphireServerPolicy replica = replicaSource.sapphire_replicate();
             try {
                 replica.sapphire_pin_to_server(dest);
-                ((KernelObjectStub) replica).$__updateHostname(dest);
+                updateReplicaHostName(replica, dest);
             } catch (Exception e) {
                 try {
                     removeReplica(replica);
@@ -304,11 +304,28 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
             return replica;
         }
 
-        public void removeReplica(SapphireServerPolicy server)
+        protected void removeReplica(SapphireServerPolicy server)
                 throws RemoteException, SapphireObjectReplicaNotFoundException,
                         SapphireObjectNotFoundException {
             server.sapphire_remove_replica();
             removeServer(server);
+        }
+
+        protected void updateReplicaHostName(
+                SapphireServerPolicy serverPolicy, InetSocketAddress host) throws RemoteException {
+            ArrayList<SapphireServerPolicy> servers = getServers();
+            if (servers == null) {
+                return;
+            }
+
+            for (Iterator<SapphireServerPolicy> itr = servers.iterator(); itr.hasNext(); ) {
+                SapphireServerPolicy server = itr.next();
+                if (server.$__getKernelOID().equals(serverPolicy.$__getKernelOID())) {
+                    ((KernelObjectStub) server).$__updateHostname(host);
+                    ((KernelObjectStub) serverPolicy).$__updateHostname(host);
+                    break;
+                }
+            }
         }
 
         public void onDestroy() throws RemoteException {

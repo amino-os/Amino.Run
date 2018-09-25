@@ -20,7 +20,6 @@ import sapphire.common.SapphireObjectReplicaNotFoundException;
 import sapphire.common.Utils;
 import sapphire.kernel.common.GlobalKernelReferences;
 import sapphire.kernel.common.KernelObjectNotFoundException;
-import sapphire.kernel.common.KernelObjectStub;
 import sapphire.policy.DefaultSapphirePolicy;
 import sapphire.policy.scalability.masterslave.Lock;
 import sapphire.policy.scalability.masterslave.MethodInvocationRequest;
@@ -163,13 +162,12 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultSapphirePolicy 
         private Lock masterLock;
 
         @Override
-        public void onCreate(SapphireServerPolicy server, Annotation[] annotations) {
+        public void onCreate(SapphireServerPolicy server, Annotation[] annotations)
+                throws RemoteException {
             logger = Logger.getLogger(this.getClass().getName());
-
+            super.onCreate(server, annotations);
             RuntimeSpec spec = Utils.getRuntimeSpec(server.getClass());
             try {
-
-                this.addServer(server);
 
                 ArrayList<InetSocketAddress> servers =
                         GlobalKernelReferences.nodeServer.oms.getServers();
@@ -189,7 +187,7 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultSapphirePolicy 
 
                 ServerBase s = (ServerBase) server;
                 s.sapphire_pin_to_server(dest);
-                ((KernelObjectStub) s).$__updateHostname(dest);
+                updateReplicaHostName(s, dest);
                 unavailable.add(dest);
                 s.start();
                 logger.info("created master on " + dest);
@@ -198,7 +196,7 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultSapphirePolicy 
                     dest = getAvailable(servers, unavailable);
                     ServerBase replica = (ServerBase) s.sapphire_replicate();
                     replica.sapphire_pin_to_server(dest);
-                    ((KernelObjectStub) replica).$__updateHostname(dest);
+                    updateReplicaHostName(replica, dest);
                     removeServer(replica);
                     addServer(replica);
                     replica.start();

@@ -48,6 +48,10 @@ public class hanskTododMain {
             System.out.println(tl3.addToDo("Second todo"));
             System.out.println(tl3.addToDo("Third todo"));
 
+            tlm.deleteTodoList("Hanks");
+            tlm.deleteTodoList("AAA");
+            tlm.deleteTodoList("HHH");
+            omsserver.deleteSapphireObject(sapphireObjId);
         } catch (Exception e) {
             // TODO Auto-generated catch block
             System.out.println("Exception Received : " + e);

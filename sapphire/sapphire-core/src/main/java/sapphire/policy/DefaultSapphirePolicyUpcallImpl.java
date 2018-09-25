@@ -77,6 +77,10 @@ public abstract class DefaultSapphirePolicyUpcallImpl extends SapphirePolicyLibr
             return super.sapphire_getAppObject();
         }
 
+        public String sapphire_getRegion() {
+            return super.sapphire_getRegion();
+        }
+
         public void onDestroy() {}
     }
 

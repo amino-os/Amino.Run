@@ -212,6 +212,7 @@ public class OMSServerImpl implements OMSServer {
                     clientPolicy.getGroup().getSapphireObjId(), appObjStub);
             return clientPolicy.getGroup().getSapphireObjId();
         } catch (Exception e) {
+            e.printStackTrace();
             throw new SapphireObjectCreationException(
                     "Failed to create sapphire object. Exception occurred at kernel server.", e);
         }

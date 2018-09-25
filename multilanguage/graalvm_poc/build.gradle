@@ -37,3 +37,11 @@ task runAppRuby(type: JavaExec) {
            RUBY_HOME: System.getProperty('RUBY_HOME', './src/main/ruby/')
     ]
 }
+
+task runRubyClient(type: Exec) {
+    executable "ruby"
+    args "--jvm", "--polyglot", "--jvm.classpath=${project.projectDir}/build/classes/java/main/",
+            "${project.projectDir}/src/main/ruby/app/app.rb"
+
+    environment  RUBY_HOME: './src/main/ruby/'
+}

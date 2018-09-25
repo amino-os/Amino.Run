@@ -55,8 +55,10 @@ public class Sapphire {
         try {
             // Read annotation from this class.
             Annotation[] annotations = appObjectClass.getAnnotations();
-            List<SapphirePolicyContainer> policyNameChain = new ArrayList<SapphirePolicyContainer>();
-            List<SapphirePolicyContainer> processedPolicies = new ArrayList<SapphirePolicyContainer>();
+            List<SapphirePolicyContainer> policyNameChain =
+                    new ArrayList<SapphirePolicyContainer>();
+            List<SapphirePolicyContainer> processedPolicies =
+                    new ArrayList<SapphirePolicyContainer>();
 
             for (Annotation annotation : annotations) {
                 if (annotation instanceof SapphireConfiguration) {
@@ -64,7 +66,8 @@ public class Sapphire {
                     for (String policyAnnotation : policyAnnotations) {
                         String[] policyNames = policyAnnotation.split(",");
                         for (String policyName : policyNames) {
-                            policyNameChain.add(new SapphirePolicyContainerImpl(policyName.trim(), null));
+                            policyNameChain.add(
+                                    new SapphirePolicyContainerImpl(policyName.trim(), null));
                         }
                     }
                 }
@@ -223,7 +226,8 @@ public class Sapphire {
 
         // Note that subList is non serializable; hence, the new list creation.
         List<SapphirePolicyContainer> nextPoliciesToCreate =
-                new ArrayList<SapphirePolicyContainer>(policyNameChain.subList(1, policyNameChain.size()));
+                new ArrayList<SapphirePolicyContainer>(
+                        policyNameChain.subList(1, policyNameChain.size()));
 
         serverPolicy.onCreate(groupPolicyStub, annotations);
         serverPolicy.setNextPolicies(nextPoliciesToCreate);

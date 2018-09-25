@@ -2,7 +2,6 @@ package sapphire.policy.dht;
 
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Array;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -77,7 +76,7 @@ public class DHTPolicy2 extends DefaultSapphirePolicy {
                 }
             }
 
-            if (firstParam instanceof String && ((String)firstParam).contains(sapphirePolicyStr)) {
+            if (firstParam instanceof String && ((String) firstParam).contains(sapphirePolicyStr)) {
                 return null;
             }
             return currentParams;

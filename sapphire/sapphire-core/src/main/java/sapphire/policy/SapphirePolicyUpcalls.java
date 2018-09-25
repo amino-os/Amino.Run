@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
-import java.util.List;
 import sapphire.policy.SapphirePolicy.SapphireGroupPolicy;
 import sapphire.policy.SapphirePolicy.SapphireServerPolicy;
 

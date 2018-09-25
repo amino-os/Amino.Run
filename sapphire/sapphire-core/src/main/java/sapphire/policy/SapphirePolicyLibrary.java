@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
-
 import sapphire.common.AppObject;
 import sapphire.common.AppObjectStub;
 import sapphire.common.SapphireObjectID;
@@ -45,7 +44,8 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
         protected KernelObject nextServerKernelObject;
         protected SapphireServerPolicy nextServerPolicy;
         protected SapphireServerPolicy previousServerPolicy;
-        protected List<SapphirePolicyContainer> nextPolocies = new ArrayList<SapphirePolicyContainer>();
+        protected List<SapphirePolicyContainer> nextPolocies =
+                new ArrayList<SapphirePolicyContainer>();
         protected List<SapphirePolicyContainer> processedPolicies =
                 new ArrayList<SapphirePolicyContainer>();
 
@@ -313,7 +313,8 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
             KernelObjectFactory.delete($__getKernelOID());
         }
 
-        public void sapphire_remove_replica(List<SapphirePolicyContainer> processedPolicies) throws RemoteException {
+        public void sapphire_remove_replica(List<SapphirePolicyContainer> processedPolicies)
+                throws RemoteException {
             try {
                 for (SapphirePolicyContainer policyContainer : processedPolicies) {
                     SapphireServerPolicy sp = policyContainer.getServerPolicy();
@@ -462,7 +463,8 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
                 SapphireServerPolicy replicaSource, InetSocketAddress dest)
                 throws RemoteException, SapphireObjectNotFoundException,
                         SapphireObjectReplicaNotFoundException {
-            SapphireServerPolicy replica = replicaSource.sapphire_replicate(replicaSource.getProcessedPolicies());
+            SapphireServerPolicy replica =
+                    replicaSource.sapphire_replicate(replicaSource.getProcessedPolicies());
             try {
                 replica.sapphire_pin_to_server(dest);
                 ((KernelObjectStub) replica).$__updateHostname(dest);

@@ -1,19 +1,17 @@
 package sapphire.appexamples.hankstodo.app;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Map;
 
 import sapphire.app.*;
-import sapphire.policy.cache.CacheLeasePolicy;
 import sapphire.policy.interfaces.dht.DHTInterface;
 import sapphire.policy.interfaces.dht.DHTKey;
 import sapphire.runtime.SapphireConfiguration;
 
-//@SapphireConfiguration(DMs = "sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy, sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy")
-@SapphireConfiguration(DMs = "sapphire.policy.dht.DHTPolicy2,sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy")
-//@SapphireConfiguration(DMs = "sapphire.policy.dht.DHTPolicy2,sapphire.policy.replication.ConsensusRSMPolicy")
+//@SapphireConfiguration(Policies = "sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy, sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy")
+@SapphireConfiguration(Policies = "sapphire.policy.dht.DHTPolicy2,sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy")
+//@SapphireConfiguration(Policies = "sapphire.policy.dht.DHTPolicy2,sapphire.policy.replication.ConsensusRSMPolicy")
 
 public class TodoList implements SapphireObject, DHTInterface {
 	ArrayList<String> toDos = new ArrayList<String>();

@@ -27,7 +27,7 @@ public abstract class CheckpointPolicyBase extends DefaultSapphirePolicy {
          * Save a checkpoint of the object to disk
          *
          * @throws Exception TODO: Instead of interacting with OS directly in DM, it is better to
-         *     delegate the work to Kernel server. DMs should interacts with kernel server and
+         *     delegate the work to Kernel server. Policies should interacts with kernel server and
          *     kernel server should interacts with OS. this decoupling allows us to add more
          *     functionality in kernel server e.g. 1. Garbage Collection: Kernel server may keep all
          *     checkpoint files under one dedicated directory, and kernel server may have background

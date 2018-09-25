@@ -5,13 +5,10 @@ import java.util.Map;
 
 import sapphire.app.SapphireObject;
 import static sapphire.runtime.Sapphire.*;
-import sapphire.policy.dht.DHTPolicy;
-import sapphire.policy.interfaces.dht.DHTInterface;
-import sapphire.policy.interfaces.dht.DHTKey;
+
 import sapphire.runtime.SapphireConfiguration;
 
-//@SapphireConfiguration(DMs = "sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy,sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy,sapphire.policy.mobility.explicitmigration.ExplicitMigrationPolicy")
-@SapphireConfiguration(DMs = "sapphire.policy.DefaultSapphirePolicy")
+@SapphireConfiguration(Policies = "sapphire.policy.DefaultSapphirePolicy")
 public class TodoListManager implements SapphireObject {
     Map<String, TodoList> todoLists = new Hashtable<String, TodoList>();
 

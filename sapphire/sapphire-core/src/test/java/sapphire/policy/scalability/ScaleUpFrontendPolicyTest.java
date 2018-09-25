@@ -57,7 +57,7 @@ public class ScaleUpFrontendPolicyTest extends BaseTest {
                     @LoadBalancedFrontendPolicy.LoadBalancedFrontendPolicyConfigAnnotation(
                             maxconcurrentReq = 2,
                             replicacount = 2))
-    @SapphireConfiguration(DMs = "sapphire.policy.scalability.ScaleUpFrontendPolicy")
+    @SapphireConfiguration(Policies = "sapphire.policy.scalability.ScaleUpFrontendPolicy")
     public static class ScaleUpSO extends SO {}
 
     public static class Group_Stub extends ScaleUpFrontendPolicy.GroupPolicy

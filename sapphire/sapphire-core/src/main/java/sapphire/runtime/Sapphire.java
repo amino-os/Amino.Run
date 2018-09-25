@@ -55,16 +55,16 @@ public class Sapphire {
         try {
             // Read annotation from this class.
             Annotation[] annotations = appObjectClass.getAnnotations();
-            List<SapphirePolicyContainer> DMchain = new ArrayList<SapphirePolicyContainer>();
-            List<SapphirePolicyContainer> processedDMs = new ArrayList<SapphirePolicyContainer>();
+            List<SapphirePolicyContainer> policyNameChain = new ArrayList<SapphirePolicyContainer>();
+            List<SapphirePolicyContainer> processedPolicies = new ArrayList<SapphirePolicyContainer>();
 
             for (Annotation annotation : annotations) {
                 if (annotation instanceof SapphireConfiguration) {
-                    String[] DMannotations = ((SapphireConfiguration) annotation).DMs();
-                    for (String DMannotation : DMannotations) {
-                        String[] DMs = DMannotation.split(",");
-                        for (String DM : DMs) {
-                            DMchain.add(new SapphirePolicyContainerImpl(DM.trim(), null));
+                    String[] policyAnnotations = ((SapphireConfiguration) annotation).Policies();
+                    for (String policyAnnotation : policyAnnotations) {
+                        String[] policyNames = policyAnnotation.split(",");
+                        for (String policyName : policyNames) {
+                            policyNameChain.add(new SapphirePolicyContainerImpl(policyName.trim(), null));
                         }
                     }
                 }
@@ -77,8 +77,8 @@ public class Sapphire {
                     createPolicy(
                             appObjectClass,
                             null,
-                            DMchain,
-                            processedDMs,
+                            policyNameChain,
+                            processedPolicies,
                             previousServerPolicy,
                             previousServerPolicyStub,
                             args);
@@ -88,6 +88,7 @@ public class Sapphire {
             return appStub;
         } catch (Exception e) {
             e.printStackTrace();
+            // TODO: Need to cleanup all the allocated resources
             return null;
             // throw new AppObjectNotCreatedException();
         }
@@ -99,7 +100,7 @@ public class Sapphire {
      *
      * @param appObjectClass
      * @param appObject
-     * @param policyChain
+     * @param policyNameChain
      * @param processedPolicies
      * @param previousServerPolicy
      * @param previousServerPolicyStub
@@ -110,16 +111,16 @@ public class Sapphire {
     public static List<SapphirePolicyContainer> createPolicy(
             Class<?> appObjectClass,
             AppObject appObject,
-            List<SapphirePolicyContainer> policyChain,
+            List<SapphirePolicyContainer> policyNameChain,
             List<SapphirePolicyContainer> processedPolicies,
             SapphireServerPolicy previousServerPolicy,
             KernelObjectStub previousServerPolicyStub,
             Object[] args)
             throws Exception {
 
-        if (policyChain == null || policyChain.size() == 0) return null;
-        String policyName = policyChain.get(0).getPolicyName();
-        SapphireGroupPolicy existingGroupPolicy = policyChain.get(0).getGroupPolicyStub();
+        if (policyNameChain == null || policyNameChain.size() == 0) return null;
+        String policyName = policyNameChain.get(0).getPolicyName();
+        SapphireGroupPolicy existingGroupPolicy = policyNameChain.get(0).getGroupPolicyStub();
         AppObjectStub appStub = null;
 
         /* Get the annotations added for the Application class. */
@@ -188,7 +189,7 @@ public class Sapphire {
         client.onCreate(groupPolicyStub, annotations);
 
         if (previousServerPolicy != null) {
-            // non-first DMs references already created object.
+            // non-first Policies references already created object.
             serverPolicyStub.$__initialize(previousServerPolicy.sapphire_getAppObject());
             serverPolicy.$__initialize(previousServerPolicy.sapphire_getAppObject());
 
@@ -222,10 +223,10 @@ public class Sapphire {
 
         // Note that subList is non serializable; hence, the new list creation.
         List<SapphirePolicyContainer> nextPoliciesToCreate =
-                new ArrayList<SapphirePolicyContainer>(policyChain.subList(1, policyChain.size()));
+                new ArrayList<SapphirePolicyContainer>(policyNameChain.subList(1, policyNameChain.size()));
 
         serverPolicy.onCreate(groupPolicyStub, annotations);
-        serverPolicy.setNextDMs(nextPoliciesToCreate);
+        serverPolicy.setNextPolicies(nextPoliciesToCreate);
 
         SapphirePolicyContainer processedPolicy =
                 new SapphirePolicyContainerImpl(policyName, groupPolicyStub);
@@ -263,7 +264,7 @@ public class Sapphire {
             ko += String.valueOf(policyContainer.getKernelOID()) + ",";
         }
 
-        logger.log(Level.INFO, "OID from processed polices at " + policyName + " : " + ko);
+        logger.log(Level.INFO, "OID from processed policies at " + policyName + " : " + ko);
 
         return processedPolicies;
     }

@@ -58,7 +58,7 @@ public class ConsensusRSMPolicyTest extends BaseTest {
     sapphire.policy.util.consensus.raft.Server raftServer2;
     sapphire.policy.util.consensus.raft.Server raftServer3;
 
-    @SapphireConfiguration(DMs = "sapphire.policy.replication.ConsensusRSMPolicy")
+    @SapphireConfiguration(Policies = "sapphire.policy.replication.ConsensusRSMPolicy")
     public static class ConsensusSO extends SO {}
 
     public static class Group_Stub extends ConsensusRSMPolicy.GroupPolicy

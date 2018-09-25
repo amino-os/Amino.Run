@@ -1,4 +1,5 @@
 // Sapphire
+rootProject.name = 'sapphire'
 include ':sapphire-core'
 
 // Sapphire's Dependencies

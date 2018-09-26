@@ -263,20 +263,12 @@ public class KernelServerImpl implements KernelServer {
         return client;
     }
 
-    /**
-     * Create the sapphire object
-     *
-     * @param className
-     * @param args
-     * @return
-     * @throws RemoteException
-     * @throws SapphireObjectCreationException
-     * @throws ClassNotFoundException
-     */
     @Override
-    public AppObjectStub createSapphireObject(String className, Object... args)
+    public AppObjectStub createSapphireObject(String sapphireObjectSpec, Object... args)
             throws RemoteException, SapphireObjectCreationException, ClassNotFoundException {
-        return (AppObjectStub) Sapphire.new_(Class.forName(className), args);
+
+        // TODO(multi-lang): Pass sapphireObjectSpec to Sapphire.new_
+        return (AppObjectStub) Sapphire.new_(Class.forName(sapphireObjectSpec), args);
     }
 
     public class MemoryStatThread extends Thread {

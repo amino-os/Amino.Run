@@ -28,6 +28,16 @@ public interface KernelServer extends Remote {
                     KernelObjectStubNotCreatedException, SapphireObjectNotFoundException,
                     SapphireObjectReplicaNotFoundException;
 
-    AppObjectStub createSapphireObject(String className, Object... args)
+    /**
+     * Create sapphire object in kernel server
+     *
+     * @param sapphireObjectSpec sapphire object specification in YAML.
+     * @param args parameters to sapphire object constructor
+     * @return
+     * @throws RemoteException
+     * @throws SapphireObjectCreationException
+     * @throws ClassNotFoundException
+     */
+    AppObjectStub createSapphireObject(String sapphireObjectSpec, Object... args)
             throws RemoteException, SapphireObjectCreationException, ClassNotFoundException;
 }

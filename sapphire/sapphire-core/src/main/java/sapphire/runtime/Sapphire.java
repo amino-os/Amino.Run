@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 import org.apache.harmony.rmi.common.RMIUtil;
 import sapphire.app.SapphireObject;
 import sapphire.common.AppObjectStub;
+import sapphire.common.Language;
 import sapphire.common.SapphireObjectID;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireReplicaID;
@@ -55,7 +56,6 @@ public class Sapphire {
         try {
             return new_(Class.forName(className), args);
         } catch (Exception ex) {
-            ex.printStackTrace();
             logger.log(
                     Level.SEVERE,
                     String.format("Failed to get class %s, %s", className, ex.toString()));
@@ -71,9 +71,9 @@ public class Sapphire {
             Annotation[] annotations = null;
 
             // TODO: Get the information from OMS.
-            boolean isJavaClass = true;
+            Language language = Language.JAVA;
 
-            if (isJavaClass) {
+            if (language == Language.JAVA) {
                 /* Get the policy used by the Sapphire Object we need to create */
                 Class<?> policy = getPolicy(appObjectClass.getGenericInterfaces());
 
@@ -158,8 +158,8 @@ public class Sapphire {
             AppObjectStub appStub = null;
             // Note: keep this function call without parameter change so legacy test would not fail.
             // Test would fail if we call getAppStub(appObjectClass, true, serverPolicy, args);
-            if (isJavaClass) appStub = getAppStub(appObjectClass, serverPolicy, args);
-            else appStub = getAppStub(appObjectClass, false, serverPolicy, args);
+            if (language == Language.JAVA) appStub = getAppStub(appObjectClass, serverPolicy, args);
+            else appStub = getAppStub(appObjectClass, language, serverPolicy, args);
 
             /* Link everything together */
             client.setServer(serverPolicyStub);
@@ -334,7 +334,7 @@ public class Sapphire {
 
     public static AppObjectStub getAppStub(
             Class<?> appObjectClass,
-            boolean isJavaClass,
+            Language language,
             SapphireServerPolicy serverPolicy,
             Object[] args)
             throws Exception {
@@ -344,19 +344,19 @@ public class Sapphire {
                         + RMIUtil.getShortName(appObjectClass)
                         + GlobalStubConstants.STUB_SUFFIX;
 
-        if (isJavaClass) {
+        if (language == Language.JAVA) {
             AppObjectStub appStub =
                     serverPolicy.$__initialize(Class.forName(appStubClassName), args);
             return extractAppStub(appStub);
         } else {
-            return serverPolicy.$__initialize(appStubClassName, false, args);
+            return serverPolicy.$__initialize(appStubClassName, Language.JAVA, args);
         }
     }
 
     public static AppObjectStub getAppStub(
             Class<?> appObjectClass, SapphireServerPolicy serverPolicy, Object[] args)
             throws Exception {
-        return getAppStub(appObjectClass, true, serverPolicy, args);
+        return getAppStub(appObjectClass, Language.JAVA, serverPolicy, args);
     }
 
     public static AppObjectStub extractAppStub(AppObjectStub appObject) throws Exception {

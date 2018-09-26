@@ -11,6 +11,7 @@ import org.apache.harmony.rmi.common.RMIUtil;
 import org.graalvm.polyglot.*;
 import sapphire.common.AppObject;
 import sapphire.common.AppObjectStub;
+import sapphire.common.Language;
 import sapphire.common.SapphireObjectID;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
@@ -176,12 +177,12 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
          */
         // TODO: not final (stub overrides it)
         public AppObjectStub $__initialize(Class<?> appObjectStubClass, Object[] params) {
-            return $__initialize(appObjectStubClass, true, params);
+            return $__initialize(appObjectStubClass, Language.JAVA, params);
         }
 
-        public AppObjectStub $__initialize(String className, boolean isJavaClass, Object[] params) {
+        public AppObjectStub $__initialize(String className, Language language, Object[] params) {
             try {
-                return $__initialize(Class.forName(className), isJavaClass, params);
+                return $__initialize(Class.forName(className), language, params);
             } catch (Exception ex) {
                 ex.printStackTrace();
                 logger.log(Level.SEVERE, ex.toString());
@@ -190,7 +191,7 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
         }
 
         public AppObjectStub $__initialize(
-                Class<?> appObjectStubClass, boolean isJavaClass, Object[] params) {
+                Class<?> appObjectStubClass, Language language, Object[] params) {
             AppObjectStub actualAppObject =
                     null; // The Actual App Object, managed by an AppObject Handler
             try {
@@ -204,11 +205,10 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
                                             .newInstance(params);
                 } else actualAppObject = (AppObjectStub) appObjectStubClass.newInstance();
 
-                if (isJavaClass) {
+                if (language == Language.JAVA) {
                     actualAppObject.$__initialize(true);
                     appObject = new AppObject(actualAppObject);
                 } else {
-                    String language = "js";
                     String className =
                             appObjectStubClass
                                     .getCanonicalName()
@@ -218,7 +218,7 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
                             String.format(
                                     "Try to create app object, language %s, className %s",
                                     language, className));
-                    appObject = new AppObject(c.eval(language, className).newInstance());
+                    appObject = new AppObject(c.eval(language.toString(), className).newInstance());
                 }
             } catch (Exception e) {
                 e.printStackTrace();

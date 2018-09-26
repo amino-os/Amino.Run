@@ -3,13 +3,14 @@ package sapphire.policy.dht;
 import static org.mockito.Mockito.spy;
 import static org.powermock.api.mockito.PowerMockito.when;
 
-import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import sapphire.app.DMSpec;
 import sapphire.kernel.server.KernelServerImpl;
 import sapphire.oms.OMSServer;
 import sapphire.oms.OMSServerImpl;
@@ -55,12 +56,21 @@ public class DHTPolicyTest {
         Assert.assertEquals(requests.length, cnt);
     }
 
+    @Test
+    public void testConfig() {
+        DHTPolicy.Config config = new DHTPolicy.Config();
+        config.setNumOfShards(3);
+
+        DHTPolicy.Config clone = (DHTPolicy.Config) config.fromDMSpec(config.toDMSpec());
+        Assert.assertEquals(config, clone);
+    }
+
     private static class ServerPolicy extends DHTPolicy.DHTServerPolicy {
-        private SapphirePolicy.SapphireGroupPolicy group;
         List<Object> requests = new ArrayList<>();
 
         @Override
-        public void onCreate(SapphirePolicy.SapphireGroupPolicy group, Annotation[] annotations) {
+        public void onCreate(
+                SapphirePolicy.SapphireGroupPolicy group, Map<String, DMSpec> dmSpecMap) {
             this.group = group;
         }
 

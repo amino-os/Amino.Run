@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Objects;
 import org.yaml.snakeyaml.Yaml;
 
+/** Deployment Manager Specification. */
 public final class DMSpec {
     private String name;
     private Map<String, String> properties;
@@ -23,6 +24,14 @@ public final class DMSpec {
 
     public void setProperties(Map<String, String> properties) {
         this.properties = properties;
+    }
+
+    public String getProperty(String name) {
+        if (properties == null) {
+            return null;
+        }
+
+        return properties.get(name);
     }
 
     public void addProperty(String name, String value) {

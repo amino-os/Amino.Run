@@ -1,5 +1,7 @@
 package sapphire.common;
 
+import static sapphire.policy.SapphirePolicyUpcalls.SapphirePolicyConfig;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -9,10 +11,15 @@ import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import sapphire.app.DMSpec;
 import sapphire.runtime.annotations.Immutable;
 import sapphire.runtime.annotations.RuntimeSpec;
 
@@ -201,6 +208,95 @@ public class Utils {
                 if (annotation.annotationType() == annotationType) {
                     return (A) annotation;
                 }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Converts Java annotation to DMSpec map
+     *
+     * @param annotations an annotation array
+     * @return DMSpec map
+     * @deprecated This method is deprecated. Please use {@link SapphirePolicyConfig} to configure
+     * sapphire policies.
+     */
+    public static Map<String, DMSpec> toDMSpec(Annotation[] annotations) throws Exception {
+        Map<String, DMSpec> dmSpecMap = new TreeMap<>();
+        for (Annotation a : annotations) {
+            List<DMSpec> dms = toDMSpec(a);
+            for (DMSpec s : dms) {
+                dmSpecMap.put(s.getName(), s);
+            }
+        }
+
+        return dmSpecMap;
+    }
+
+    /**
+     * Internal helper method to convert annotation to DMSpec list.
+     *
+     * @param annotation
+     * @return DMSpec list
+     * @throws Exception
+     */
+    private static List<DMSpec> toDMSpec(Annotation annotation) throws Exception {
+        List<DMSpec> dms = new ArrayList<>();
+        Class<? extends Annotation> type = annotation.annotationType();
+
+        DMSpec spec = new DMSpec();
+        spec.setName(type.getSimpleName());
+        dms.add(spec);
+
+        for (Method method : type.getDeclaredMethods()) {
+            method.setAccessible(true);
+            Object value = method.invoke(annotation, (Object[]) null);
+            spec.addProperty(method.getName(), value.toString());
+            if (value instanceof Annotation) {
+                List<DMSpec> list = toDMSpec((Annotation) value);
+                for (DMSpec s : list) {
+                    dms.add(s);
+                }
+            }
+        }
+
+        return dms;
+    }
+
+    /**
+     * Converts {@link SapphirePolicyConfig} to {@link DMSpec}
+     *
+     * @param config
+     * @return
+     * @throws Exception
+     */
+    public static DMSpec toDMSpec(SapphirePolicyConfig config) throws Exception {
+        Class<? extends SapphirePolicyConfig> clazz = config.getClass();
+        DMSpec spec = new DMSpec();
+        spec.setName(clazz.getEnclosingClass().getName());
+        Field[] fields = clazz.getDeclaredFields();
+        for (Field f : fields) {
+            f.setAccessible(true);
+            spec.addProperty(f.getName(), String.valueOf(f.get(config)));
+        }
+        return spec;
+    }
+
+    /**
+     * Converts {@link DMSpec} to {@link SapphirePolicyConfig}
+     *
+     * @param spec
+     * @return
+     * @throws Exception
+     */
+    public static SapphirePolicyConfig toConfig(DMSpec spec) throws Exception {
+        String className = spec.getName();
+        Class<?> clazz = Class.forName(className);
+        for (Class<?> c : clazz.getDeclaredClasses()) {
+            if (SapphirePolicyConfig.class.isAssignableFrom(c)) {
+                SapphirePolicyConfig config = (SapphirePolicyConfig) c.newInstance();
+                return config.fromDMSpec(spec);
             }
         }
 

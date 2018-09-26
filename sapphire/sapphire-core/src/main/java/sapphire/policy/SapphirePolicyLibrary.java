@@ -5,8 +5,14 @@ import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.harmony.rmi.common.RMIUtil;
+import org.graalvm.polyglot.Context;
+import sapphire.app.DMSpec;
+import sapphire.app.Language;
+import sapphire.app.SapphireObjectSpec;
 import sapphire.common.AppObject;
 import sapphire.common.AppObjectStub;
 import sapphire.common.SapphireObjectID;
@@ -39,6 +45,9 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
         protected AppObject appObject;
         protected KernelOID oid;
         protected SapphireReplicaID replicaId;
+        protected Context context;
+        protected Map<String, DMSpec> dmSpecMap;
+        protected SapphirePolicy.SapphireGroupPolicy group;
 
         static Logger logger = Logger.getLogger("sapphire.policy.SapphirePolicyLibrary");
 
@@ -53,6 +62,17 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
         /*
          * SAPPHIRE API FOR SERVER POLICIES
          */
+
+        @Override
+        public void onCreate(
+                SapphirePolicy.SapphireGroupPolicy group, Map<String, DMSpec> dmSpecMap) {
+            this.group = group;
+            this.dmSpecMap = dmSpecMap;
+        }
+
+        public Map<String, DMSpec> getDMSpecMap() {
+            return this.dmSpecMap;
+        }
 
         /** Creates a replica of this server and registers it with the group */
         // TODO: Also replicate the policy ??
@@ -88,7 +108,8 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
                   getClass().getSuperclass() gives as class sapphire.appexamples.hankstodo.app.TodoListManager
                 */
                 Class c = sapphire_getAppObject().getObject().getClass().getSuperclass();
-                serverPolicy.onCreate(getGroup(), c.getAnnotations());
+                //                serverPolicy.onCreate(getGroup(), c.getAnnotations());
+                serverPolicy.onCreate(getGroup(), dmSpecMap);
                 getGroup().addServer((SapphireServerPolicy) serverPolicyStub);
             } catch (ClassNotFoundException e) {
                 // TODO Auto-generated catch block
@@ -164,30 +185,47 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
         /**
          * Internal function used to initialize the App Object
          *
-         * @param appObjectClassName
+         * @param spec
          * @param params
          */
         // TODO: not final (stub overrides it)
-        public AppObjectStub $__initialize(Class<?> appObjectStubClass, Object[] params) {
-            AppObjectStub actualAppObject =
-                    null; // The Actual App Object, managed by an AppObject Handler
+        public AppObjectStub $__initialize(SapphireObjectSpec spec, Object[] params) {
+            logger.info(String.format("Creating app object '%s' with parameters %s", spec, params));
+
+            AppObjectStub actualAppObject = null;
             try {
-                // Construct the list of classes of the arguments as Class[]
-                if (params != null) {
-                    Class<?>[] argClasses = Sapphire.getParamsClasses(params);
-                    actualAppObject =
-                            (AppObjectStub)
-                                    appObjectStubClass
-                                            .getConstructor(argClasses)
-                                            .newInstance(params);
-                } else actualAppObject = (AppObjectStub) appObjectStubClass.newInstance();
+                if (spec.getLang() == Language.java) {
+                    Class<?> appObjectClass = Class.forName(spec.getJavaClassName());
+                    String appStubClassName =
+                            GlobalStubConstants.getAppPackageName(
+                                            RMIUtil.getPackageName(appObjectClass))
+                                    + "."
+                                    + RMIUtil.getShortName(appObjectClass)
+                                    + GlobalStubConstants.STUB_SUFFIX;
 
-                actualAppObject.$__initialize(true);
+                    Class<?> appObjectStubClass = Class.forName(appStubClassName);
+                    // Construct the list of classes of the arguments as Class[]
+                    if (params != null) {
+                        Class<?>[] argClasses = Sapphire.getParamsClasses(params);
+                        actualAppObject =
+                                (AppObjectStub)
+                                        appObjectStubClass
+                                                .getConstructor(argClasses)
+                                                .newInstance(params);
 
-                // Create the App Object
-                appObject = new AppObject(actualAppObject);
+                    } else {
+                        actualAppObject = (AppObjectStub) appObjectStubClass.newInstance();
+                    }
+                    actualAppObject.$__initialize(true);
+                    appObject = new AppObject(actualAppObject);
+                } else {
+                    appObject =
+                            new AppObject(
+                                    context.eval(spec.getLang().name(), spec.getConstructorName())
+                                            .newInstance(params));
+                }
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.log(Level.SEVERE, "Failed to initialize server policy", e);
             }
             return actualAppObject;
         }

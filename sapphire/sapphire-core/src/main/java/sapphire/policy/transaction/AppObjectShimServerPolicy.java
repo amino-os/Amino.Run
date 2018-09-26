@@ -1,7 +1,8 @@
 package sapphire.policy.transaction;
 
-import java.lang.annotation.Annotation;
 import java.util.ArrayList;
+import java.util.Map;
+import sapphire.app.DMSpec;
 import sapphire.common.AppObject;
 import sapphire.common.Utils;
 import sapphire.policy.SapphirePolicy;
@@ -15,7 +16,7 @@ public class AppObjectShimServerPolicy implements SapphireServerPolicyUpcalls {
     private AppObject originMaster;
 
     @Override
-    public void onCreate(SapphirePolicy.SapphireGroupPolicy group, Annotation[] annotations) {}
+    public void onCreate(SapphirePolicy.SapphireGroupPolicy group, Map<String, DMSpec> dmSpecMap) {}
 
     @Override
     public void onDestroy() {}

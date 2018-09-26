@@ -9,14 +9,68 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Random;
 import java.util.logging.Logger;
+import sapphire.app.DMSpec;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
 import sapphire.policy.DefaultSapphirePolicy;
 
 public class DHTPolicy extends DefaultSapphirePolicy {
-    static final int DEFAULT_NUM_OF_SHARDS = 3;
+    private static final int DEFAULT_NUM_OF_SHARDS = 3;
+
+    public static class Config implements SapphirePolicyConfig {
+        private int numOfShards = DEFAULT_NUM_OF_SHARDS;
+
+        public int getNumOfShards() {
+            return numOfShards;
+        }
+
+        public void setNumOfShards(int numOfShards) {
+            this.numOfShards = numOfShards;
+        }
+
+        @Override
+        public DMSpec toDMSpec() {
+            DMSpec spec = new DMSpec();
+            spec.setName(DHTPolicy.class.getName());
+            spec.addProperty("numOfShards", String.valueOf(numOfShards));
+            return spec;
+        }
+
+        @Override
+        public SapphirePolicyConfig fromDMSpec(DMSpec spec) {
+            if (!DHTPolicy.class.getName().equals(spec.getName())) {
+                throw new IllegalArgumentException(
+                        String.format(
+                                "DM %s is not able to process spec %s",
+                                DHTPolicy.class.getName(), spec));
+            }
+
+            Config config = new Config();
+            Map<String, String> properties = spec.getProperties();
+            if (properties != null) {
+                config.setNumOfShards(Integer.parseInt(properties.get("numOfShards")));
+            }
+
+            return config;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Config config = (Config) o;
+            return numOfShards == config.numOfShards;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(numOfShards);
+        }
+    }
 
     @Retention(RetentionPolicy.RUNTIME)
     @Target({ElementType.TYPE})

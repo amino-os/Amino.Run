@@ -3,9 +3,10 @@ package sapphire.policy.scalability;
 import static sapphire.policy.scalability.masterslave.MethodInvocationResponse.ReturnCode.REDIRECT;
 
 import java.io.Serializable;
-import java.lang.annotation.Annotation;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import sapphire.app.DMSpec;
 import sapphire.policy.scalability.masterslave.Committer;
 import sapphire.policy.scalability.masterslave.Configuration;
 import sapphire.policy.scalability.masterslave.Context;
@@ -46,8 +47,8 @@ public class LoadBalancedMasterSlaveSyncPolicy extends LoadBalancedMasterSlaveBa
         private transient Processor processor;
 
         @Override
-        public void onCreate(SapphireGroupPolicy group, Annotation[] annotations) {
-            super.onCreate(group, annotations);
+        public void onCreate(SapphireGroupPolicy group, Map<String, DMSpec> dmSpecMap) {
+            super.onCreate(group, dmSpecMap);
         }
 
         @Override

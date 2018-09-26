@@ -10,10 +10,12 @@ import java.lang.annotation.Target;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.TimerTask;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
+import sapphire.app.DMSpec;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
 import sapphire.kernel.common.KernelObjectStub;
@@ -58,18 +60,29 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
         private transient volatile ResettableTimer timer; // Timer for limiting
 
         @Override
-        public void onCreate(SapphireGroupPolicy group, Annotation[] annotations) {
-            Annotation[] lbConfigAnnotations = annotations;
-            ScaleUpFrontendPolicyConfigAnnotation annotation =
-                    getAnnotation(annotations, ScaleUpFrontendPolicyConfigAnnotation.class);
-            if (annotation != null && null != annotation.loadbalanceConfig()) {
-                lbConfigAnnotations = new Annotation[] {annotation.loadbalanceConfig()};
-            }
+        public void onCreate(SapphireGroupPolicy group, Map<String, DMSpec> dmSpecMap) {
+            super.onCreate(group, dmSpecMap);
+            //            Annotation[] lbConfigAnnotations = annotations;
+            //            ScaleUpFrontendPolicyConfigAnnotation annotation =
+            //                    getAnnotation(annotations,
+            // ScaleUpFrontendPolicyConfigAnnotation.class);
+            //            if (annotation != null && null != annotation.loadbalanceConfig()) {
+            //                lbConfigAnnotations = new Annotation[]
+            // {annotation.loadbalanceConfig()};
+            //            }
 
-            super.onCreate(group, lbConfigAnnotations);
+            //            super.onCreate(group, lbConfigAnnotations);
 
-            if (annotation != null) {
-                replicationRateInMs = annotation.replicationRateInMs();
+            //            if (annotation != null) {
+            //                replicationRateInMs = annotation.replicationRateInMs();
+            //            }
+
+            DMSpec spec =
+                    dmSpecMap.get(ScaleUpFrontendPolicyConfigAnnotation.class.getSimpleName());
+            if (spec != null) {
+                if (spec.getProperty("replicationRateInMs") != null) {
+                    replicationRateInMs = Integer.parseInt(spec.getProperty("replicationRateInMs"));
+                }
             }
 
             replicaCreateLimiter = new Semaphore(replicaCount, true);

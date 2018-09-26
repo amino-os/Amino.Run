@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import sapphire.app.Language;
+import sapphire.app.SapphireObjectSpec;
 import sapphire.common.AppObjectStub;
 import sapphire.common.SapphireObjectCreationException;
 import sapphire.common.SapphireObjectNotFoundException;
@@ -141,11 +143,7 @@ public class KernelServerImpl implements KernelServer {
             serverPolicyStub.setReplicaId(serverPolicy.getReplicaId());
             oms.setSapphireReplicaDispatcher(serverPolicy.getReplicaId(), policyHandler);
 
-            /* Initialize dynamic data of server policy object(i.e., timers, executors, sockets etc)
-            on new host */
-            Class<?> c =
-                    serverPolicy.sapphire_getAppObject().getObject().getClass().getSuperclass();
-            serverPolicy.onCreate(serverPolicy.getGroup(), c.getAnnotations());
+            serverPolicy.onCreate(serverPolicy.getGroup(), serverPolicy.getDMSpecMap());
         }
 
         objectManager.addObject(oid, object);
@@ -264,11 +262,16 @@ public class KernelServerImpl implements KernelServer {
     }
 
     @Override
-    public AppObjectStub createSapphireObject(String sapphireObjectSpec, Object... args)
+    public AppObjectStub createSapphireObject(String soSpecYaml, Object... args)
             throws RemoteException, SapphireObjectCreationException, ClassNotFoundException {
 
-        // TODO(multi-lang): Pass sapphireObjectSpec to Sapphire.new_
-        return (AppObjectStub) Sapphire.new_(Class.forName(sapphireObjectSpec), args);
+        SapphireObjectSpec spec = SapphireObjectSpec.fromYaml(soSpecYaml);
+        if (spec.getLang() == Language.java) {
+            Class<?> appObjectClass = Class.forName(spec.getJavaClassName());
+            return (AppObjectStub) Sapphire.new_(appObjectClass, args);
+        } else {
+            return (AppObjectStub) Sapphire.new_(spec, args);
+        }
     }
 
     public class MemoryStatThread extends Thread {

@@ -44,8 +44,6 @@ public class OMSServerImpl implements OMSServer {
     private static Logger logger = Logger.getLogger("sapphire.oms.OMSServerImpl");
 
     private GlobalKernelObjectManager kernelObjectManager;
-    private AppObjectStub appEntryPoint = null;
-    private String appEntryClassName;
     private KernelServerManager serverManager;
     private SapphireObjectManager objectManager;
 

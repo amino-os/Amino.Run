@@ -6,12 +6,10 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.harmony.rmi.common.RMIUtil;
 import sapphire.app.SapphireObject;
 import sapphire.common.AppObjectStub;
-import sapphire.common.Language;
 import sapphire.common.SapphireObjectID;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireReplicaID;
@@ -52,68 +50,41 @@ public class Sapphire {
      * @throws IllegalAccessException
      * @throws KernelObjectNotCreatedException
      */
-    public static Object new_(String className, Object... args) {
-        try {
-            return new_(Class.forName(className), args);
-        } catch (Exception ex) {
-            logger.log(
-                    Level.SEVERE,
-                    String.format("Failed to get class %s, %s", className, ex.toString()));
-            return null;
-        }
-    }
-
     public static Object new_(Class<?> appObjectClass, Object... args) {
         try {
+
+            /* Get the policy used by the Sapphire Object we need to create */
+            Class<?> policy = getPolicy(appObjectClass.getGenericInterfaces());
+
+            /* Extract the policy component classes (server, client and group) */
+            Class<?>[] policyClasses = policy.getDeclaredClasses();
+
             Class<?> sapphireServerPolicyClass = null;
             Class<?> sapphireClientPolicyClass = null;
             Class<?> sapphireGroupPolicyClass = null;
-            Annotation[] annotations = null;
 
-            // TODO: Get the information from OMS.
-            Language language = Language.JAVA;
-
-            if (language == Language.JAVA) {
-                /* Get the policy used by the Sapphire Object we need to create */
-                Class<?> policy = getPolicy(appObjectClass.getGenericInterfaces());
-
-                /* Extract the policy component classes (server, client and group) */
-                Class<?>[] policyClasses = policy.getDeclaredClasses();
-
-                for (Class<?> c : policyClasses) {
-                    if (SapphireServerPolicy.class.isAssignableFrom(c)) {
-                        sapphireServerPolicyClass = c;
-                        continue;
-                    }
-                    if (SapphireClientPolicy.class.isAssignableFrom(c)) {
-                        sapphireClientPolicyClass = c;
-                        continue;
-                    }
-                    if (SapphireGroupPolicy.class.isAssignableFrom(c)) {
-                        sapphireGroupPolicyClass = c;
-                        continue;
-                    }
+            for (Class<?> c : policyClasses) {
+                if (SapphireServerPolicy.class.isAssignableFrom(c)) {
+                    sapphireServerPolicyClass = c;
+                    continue;
                 }
-
-                /* If no policies specified use the defaults */
-                if (sapphireServerPolicyClass == null)
-                    sapphireServerPolicyClass = DefaultServerPolicy.class;
-                if (sapphireClientPolicyClass == null)
-                    sapphireClientPolicyClass = DefaultClientPolicy.class;
-                if (sapphireGroupPolicyClass == null)
-                    sapphireGroupPolicyClass = DefaultGroupPolicy.class;
-
-                annotations = appObjectClass.getAnnotations();
-            } else // non java class, we will use graalVM to handle it
-            {
-                // TODO: get the class from configuration file.
-                sapphireServerPolicyClass = DefaultServerPolicy.class;
-                sapphireClientPolicyClass = DefaultClientPolicy.class;
-                sapphireGroupPolicyClass = DefaultGroupPolicy.class;
-
-                // TODO: Get annotations from OMS.
-                annotations = new Annotation[0];
+                if (SapphireClientPolicy.class.isAssignableFrom(c)) {
+                    sapphireClientPolicyClass = c;
+                    continue;
+                }
+                if (SapphireGroupPolicy.class.isAssignableFrom(c)) {
+                    sapphireGroupPolicyClass = c;
+                    continue;
+                }
             }
+
+            /* If no policies specified use the defaults */
+            if (sapphireServerPolicyClass == null)
+                sapphireServerPolicyClass = DefaultServerPolicy.class;
+            if (sapphireClientPolicyClass == null)
+                sapphireClientPolicyClass = DefaultClientPolicy.class;
+            if (sapphireGroupPolicyClass == null)
+                sapphireGroupPolicyClass = DefaultGroupPolicy.class;
 
             /* Register for a sapphire object Id from OMS */
             SapphireObjectID sapphireObjId =
@@ -122,7 +93,9 @@ public class Sapphire {
             /* Create the Kernel Object for the Group Policy and get the Group Policy Stub from OMS */
             SapphireGroupPolicy groupPolicyStub =
                     GlobalKernelReferences.nodeServer.oms.createGroupPolicy(
-                            sapphireGroupPolicyClass, sapphireObjId, annotations);
+                            sapphireGroupPolicyClass,
+                            sapphireObjId,
+                            appObjectClass.getAnnotations());
 
             /* Register for a replica Id from OMS */
             SapphireReplicaID sapphireReplicaId =
@@ -155,13 +128,10 @@ public class Sapphire {
                     sapphireReplicaId, replicaHandler);
 
             /* Create the App Object and return the App Stub */
-            AppObjectStub appStub = null;
-            // Note: keep this function call without parameter change so legacy test would not fail.
-            // Test would fail if we call getAppStub(appObjectClass, true, serverPolicy, args);
-            if (language == Language.JAVA) appStub = getAppStub(appObjectClass, serverPolicy, args);
-            else appStub = getAppStub(appObjectClass, language, serverPolicy, args);
+            AppObjectStub appStub = getAppStub(appObjectClass, serverPolicy, args);
 
             /* Link everything together */
+            Annotation[] annotations = appObjectClass.getAnnotations();
             client.setServer(serverPolicyStub);
             client.onCreate(groupPolicyStub, annotations);
             appStub.$__initialize(client);
@@ -333,30 +303,14 @@ public class Sapphire {
     }
 
     public static AppObjectStub getAppStub(
-            Class<?> appObjectClass,
-            Language language,
-            SapphireServerPolicy serverPolicy,
-            Object[] args)
+            Class<?> appObjectClass, SapphireServerPolicy serverPolicy, Object[] args)
             throws Exception {
         String appStubClassName =
                 GlobalStubConstants.getAppPackageName(RMIUtil.getPackageName(appObjectClass))
                         + "."
                         + RMIUtil.getShortName(appObjectClass)
                         + GlobalStubConstants.STUB_SUFFIX;
-
-        if (language == Language.JAVA) {
-            AppObjectStub appStub =
-                    serverPolicy.$__initialize(Class.forName(appStubClassName), args);
-            return extractAppStub(appStub);
-        } else {
-            return serverPolicy.$__initialize(appStubClassName, Language.JAVA, args);
-        }
-    }
-
-    public static AppObjectStub getAppStub(
-            Class<?> appObjectClass, SapphireServerPolicy serverPolicy, Object[] args)
-            throws Exception {
-        return getAppStub(appObjectClass, Language.JAVA, serverPolicy, args);
+        return extractAppStub(serverPolicy.$__initialize(Class.forName(appStubClassName), args));
     }
 
     public static AppObjectStub extractAppStub(AppObjectStub appObject) throws Exception {

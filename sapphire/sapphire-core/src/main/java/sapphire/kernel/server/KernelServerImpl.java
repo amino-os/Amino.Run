@@ -276,7 +276,7 @@ public class KernelServerImpl implements KernelServer {
     @Override
     public AppObjectStub createSapphireObject(String className, Object... args)
             throws RemoteException, SapphireObjectCreationException, ClassNotFoundException {
-        return (AppObjectStub) Sapphire.new_(className, args);
+        return (AppObjectStub) Sapphire.new_(Class.forName(className), args);
     }
 
     public class MemoryStatThread extends Thread {

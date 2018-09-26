@@ -180,14 +180,14 @@ public class OMSServerImpl implements OMSServer {
     /**
      * Create the sapphire object of given class on one of the servers
      *
-     * @param absoluteSapphireClassName
-     * @param args
+     * @param sapphireObjectSpec sapphire object specification in YAML
+     * @param args parameters to sapphire object constructor
      * @return Returns sapphire object id
      * @throws RemoteException
      * @throws SapphireObjectCreationException
      */
     @Override
-    public SapphireObjectID createSapphireObject(String absoluteSapphireClassName, Object... args)
+    public SapphireObjectID createSapphireObject(String sapphireObjectSpec, Object... args)
             throws RemoteException, SapphireObjectCreationException {
         /* Get a random server in the first region */
         InetSocketAddress host =
@@ -204,9 +204,12 @@ public class OMSServerImpl implements OMSServer {
                     "Failed to create sapphire object. Kernel server not found.");
         }
 
+        // TODO(multi-lang): Store spec together with object ID in objectManager
+        // SapphireObjectSpec spec = SapphireObjectSpec.fromYaml(sapphireObjectSpec);
+
         /* Invoke create sapphire object on the kernel server */
         try {
-            AppObjectStub appObjStub = server.createSapphireObject(absoluteSapphireClassName, args);
+            AppObjectStub appObjStub = server.createSapphireObject(sapphireObjectSpec, args);
             SapphirePolicy.SapphireClientPolicy clientPolicy = extractClientPolicy(appObjStub);
             objectManager.setInstanceObjectStub(
                     clientPolicy.getGroup().getSapphireObjId(), appObjStub);

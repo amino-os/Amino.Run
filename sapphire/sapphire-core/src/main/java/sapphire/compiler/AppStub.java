@@ -45,11 +45,7 @@ public final class AppStub extends Stub {
 
     @Override
     public String getImportStatement() {
-        return "import "
-                + GlobalStubConstants.getImportAppObjectPackageName()
-                + ";"
-                + EOLN
-                + EOLN; //$NON-NLS-1$
+        return "";
     }
 
     @Override
@@ -71,7 +67,6 @@ public final class AppStub extends Stub {
                         + " = null;"
                         + EOLN);
         buffer.append(indenter.indent() + "boolean $__directInvocation = false;" + EOLN);
-        buffer.append(indenter.indent() + "AppObject appObject = null;" + EOLN);
         return buffer.toString();
     }
 
@@ -124,17 +119,6 @@ public final class AppStub extends Stub {
         buffer.append(
                 indenter.indent() + "public void $__initialize(boolean directInvocation) {" + EOLN);
         buffer.append(indenter.tIncrease() + "$__directInvocation = directInvocation;" + EOLN);
-        buffer.append(indenter.indent() + "}" + EOLN + EOLN);
-
-        /* The $__initialize function to set with new AppObject */
-        buffer.append(
-                indenter.indent() + "public void $__initialize(AppObject appObject) {" + EOLN);
-        buffer.append(indenter.tIncrease() + "this.appObject = appObject;" + EOLN);
-        buffer.append(indenter.indent() + "}" + EOLN + EOLN);
-
-        /* The $__initialize function to set with new AppObject */
-        buffer.append(indenter.indent() + "public AppObject $__getAppObject() {" + EOLN);
-        buffer.append(indenter.tIncrease() + "return this.appObject;" + EOLN);
         buffer.append(indenter.indent() + "}" + EOLN + EOLN);
 
         /* Implement the $__clone() method */

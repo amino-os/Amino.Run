@@ -29,7 +29,7 @@ public class TodoActivity {
 		String Do3_2 = "Do three 3.2";
 
 		Registry registry;
-		AndroidLoggingHandler.reset(new AndroidLoggingHandler());
+
 		java.util.logging.Logger.getLogger("my.category").setLevel(Level.FINEST);
 		try {
 			registry = LocateRegistry.getRegistry(args[0],Integer.parseInt(args[1]));

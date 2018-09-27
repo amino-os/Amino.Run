@@ -156,17 +156,6 @@ public class PolicyStub extends Stub {
                         + EOLN
                         + EOLN);
 
-        /* Implementation for getAppObject */
-        buffer.append(indenter.indent() + "public AppObject $__getAppObject() {" + EOLN);
-        buffer.append(
-                indenter.tIncrease()
-                        + "return this.appObject;"
-                        + EOLN
-                        + indenter.indent()
-                        + "}"
-                        + EOLN
-                        + EOLN);
-
         /* Implementation for makeRPC */
         buffer.append(
                 indenter.indent()

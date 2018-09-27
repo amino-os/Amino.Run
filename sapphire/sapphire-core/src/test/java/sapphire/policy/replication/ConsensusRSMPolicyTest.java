@@ -85,18 +85,6 @@ public class ConsensusRSMPolicyTest extends BaseTest {
             this.$__hostname = hostname;
         }
 
-        public int $__getLastSeenTick() {
-            return $__lastSeenTick;
-        }
-
-        public void $__setLastSeenTick(int lastSeenTick) {
-            this.$__lastSeenTick = lastSeenTick;
-        }
-
-        public AppObject $__getAppObject() {
-            return $__appObject;
-        }
-
         public void $__setNextClientPolicy(SapphirePolicy.SapphireClientPolicy clientPolicy) {
             $__nextClientPolicy = clientPolicy;
         }
@@ -124,18 +112,6 @@ public class ConsensusRSMPolicyTest extends BaseTest {
 
         public void $__updateHostname(InetSocketAddress hostname) {
             this.$__hostname = hostname;
-        }
-
-        public int $__getLastSeenTick() {
-            return $__lastSeenTick;
-        }
-
-        public void $__setLastSeenTick(int lastSeenTick) {
-            this.$__lastSeenTick = lastSeenTick;
-        }
-
-        public AppObject $__getAppObject() {
-            return $__appObject;
         }
 
         public void $__setNextClientPolicy(SapphirePolicy.SapphireClientPolicy clientPolicy) {

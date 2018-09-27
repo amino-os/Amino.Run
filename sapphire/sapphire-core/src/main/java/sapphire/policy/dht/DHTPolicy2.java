@@ -7,8 +7,6 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.logging.Logger;
-import sapphire.common.SapphireObjectNotFoundException;
-import sapphire.common.SapphireObjectReplicaNotFoundException;
 import sapphire.policy.DefaultSapphirePolicy;
 
 public class DHTPolicy2 extends DefaultSapphirePolicy {
@@ -147,22 +145,22 @@ public class DHTPolicy2 extends DefaultSapphirePolicy {
                 DHTNode newNode = new DHTNode(id, dhtServer);
                 nodes.put(id, newNode);
 
-                for (int i = 1; i < regions.size(); i++) {
+                for (int i = 0; i < regions.size(); i++) {
                     InetSocketAddress newServerAddress = oms().getServerInRegion(regions.get(i));
                     SapphireServerPolicy replica =
                             dhtServer.sapphire_replicate(server.getProcessedPolicies());
                     dhtServer.sapphire_pin_to_server(replica, newServerAddress);
                 }
-                dhtServer.sapphire_pin(regions.get(0));
+                // dhtServer.sapphire_pin(regions.get(0));
             } catch (RemoteException e) {
                 e.printStackTrace();
                 throw new Error(
                         "Could not create new group policy because the oms is not available.");
-            } catch (SapphireObjectNotFoundException e) {
-                throw new Error("Failed to find sapphire object.", e);
-            } catch (SapphireObjectReplicaNotFoundException e) {
-                throw new Error("Failed to find sapphire object replica.", e);
-            }
+            } /*catch (SapphireObjectNotFoundException e) {
+                  throw new Error("Failed to find sapphire object.", e);
+              } catch (SapphireObjectReplicaNotFoundException e) {
+                  throw new Error("Failed to find sapphire object replica.", e);
+              }*/
         }
 
         @Override

@@ -156,6 +156,8 @@ public class KSTest extends BaseTest {
         ArrayList<Object> params = new ArrayList<Object>();
         KernelRPC rpc = new KernelRPC(server1.$__getKernelOID(), method, params);
         thrown.expect(KernelRPCException.class);
-        spiedKs1.makeKernelRPC(rpc);
+        // Modified the KernelRPC call from spiedKs1 to spiedKs3 as the local
+        // KernelServer has been changed to KS3, as part of Multi-DM implementation.
+        spiedKs3.makeKernelRPC(rpc);
     }
 }

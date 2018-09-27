@@ -79,12 +79,14 @@ public class BaseTest {
         spiedKs2 = startSpiedKernelServer(spiedOms, kernelPort2, regions[1]);
         spiedKs3 = startSpiedKernelServer(spiedOms, kernelPort3, regions[2]);
         // Set this instance of kernel server as local kernel server
-        GlobalKernelReferences.nodeServer = (KernelServerImpl) spiedKs1;
+        // Setting spiedKs3 as the local KernelServer, as KS3 maps to the first one with port 10001.
+        // Modified the local KernelServer from KS1 to KS3 as part of Multi-DM implementation.
+        GlobalKernelReferences.nodeServer = (KernelServerImpl) spiedKs3;
 
         /* Add all the hosts to the kernel client of local kernel server instance so that every call
         becomes local invocation */
         addHost(spiedKs2);
-        addHost(spiedKs3);
+        addHost(spiedKs1);
 
         // Stub static kernel object factory methods
         mockStatic(

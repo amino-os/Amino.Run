@@ -43,7 +43,8 @@ public class SapphireMultiDMTest extends MultiDMBaseTest {
 
     @Rule public ExpectedException thrown = ExpectedException.none();
 
-    @SapphireConfiguration(Policies = "sapphire.policy.dht.DHTPolicy2, sapphire.policy.DefaultSapphirePolicy")
+    @SapphireConfiguration(
+            Policies = "sapphire.policy.dht.DHTPolicy2, sapphire.policy.DefaultSapphirePolicy")
     public static class DefaultSO extends SO {}
 
     public static class DefaultGroup_Stub extends DefaultSapphirePolicy.DefaultGroupPolicy

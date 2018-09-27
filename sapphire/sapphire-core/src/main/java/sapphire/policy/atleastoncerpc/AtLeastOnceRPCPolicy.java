@@ -27,7 +27,7 @@ public class AtLeastOnceRPCPolicy extends DefaultSapphirePolicy {
                 return this.onRPC(method, params);
                 // Added for propogating the Exception to the ClientStub,
                 // in the case of Multi-DM chain scenarios.
-                //throw e;
+                // throw e;
             }
         }
 

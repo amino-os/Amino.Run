@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
+import sapphire.app.Language;
+import sapphire.app.SapphireObjectSpec;
 import sapphire.common.SapphireObjectID;
 import sapphire.kernel.server.KernelServer;
 import sapphire.kernel.server.KernelServerImpl;
@@ -80,7 +82,12 @@ public class MinnieTwitterMain {
             KernelServer nodeServer = new KernelServerImpl(new InetSocketAddress(args[2], Integer.parseInt(args[3])), new InetSocketAddress(args[0], Integer.parseInt(args[1])));
 
             /* Get Twitter and User Manager */
-            SapphireObjectID sapphireObjId = server.createSapphireObject("sapphire.appexamples.minnietwitter.TwitterManager");
+            SapphireObjectSpec spec = SapphireObjectSpec.newBuilder()
+                                        .setLang(Language.java)
+                                        .setJavaClassName("sapphire.appexamples.minnietwitter.TwitterManager")
+                                        .create();
+
+            SapphireObjectID sapphireObjId = server.createSapphireObject(spec.toString());
             TwitterManager tm = (TwitterManager)server.acquireSapphireObjectStub(sapphireObjId);
 
             /* To set a name to sapphire object. It is required to set the name if the object has to be shared */

@@ -3,7 +3,9 @@ package sapphire.policy.mobility.explicitmigration;
 import java.lang.annotation.Annotation;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.logging.Logger;
+import sapphire.app.DMSpec;
 import sapphire.common.Utils;
 import sapphire.kernel.common.GlobalKernelReferences;
 import sapphire.kernel.common.KernelObjectMigratingException;
@@ -75,13 +77,13 @@ public class ExplicitMigrationPolicy extends DefaultSapphirePolicy {
         private String migrateObjectMethodName = "migrateObject";
 
         @Override
-        public void onCreate(SapphireGroupPolicy group, Annotation[] annotations) {
-            super.onCreate(group, annotations);
+        public void onCreate(SapphireGroupPolicy group, Map<String, DMSpec> dmSpecMap) {
+            super.onCreate(group, dmSpecMap);
 
-            ExplicitMigrationPolicySpec spec =
-                    Utils.getAnnotation(annotations, ExplicitMigrationPolicySpec.class);
+            // TODO(multi-lang): Remove ExplicitMigrationPolicySpec annotation completely
+            DMSpec spec = dmSpecMap.get(ExplicitMigrationPolicySpec.class.getSimpleName());
             if (spec != null) {
-                migrateObjectMethodName = spec.migrateObjectMethodName();
+                migrateObjectMethodName = spec.getProperty("migrateObjectMethodName");
             }
         }
 

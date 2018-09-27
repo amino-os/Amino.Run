@@ -26,8 +26,10 @@ import org.junit.runner.RunWith;
 import org.mockito.Matchers;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
+import sapphire.app.Language;
 import sapphire.app.SO;
 import sapphire.app.SapphireObject;
+import sapphire.app.SapphireObjectSpec;
 import sapphire.app.stubs.SO_Stub;
 import sapphire.common.BaseTest;
 import sapphire.common.SapphireObjectID;
@@ -125,10 +127,11 @@ public class ConsensusRSMPolicyTest extends BaseTest {
     public void setUp() throws Exception {
         this.serversInSameRegion = false;
         super.setUp(Server_Stub.class, Group_Stub.class);
+        SapphireObjectSpec spec = new SapphireObjectSpec();
+        spec.setLang(Language.java);
+        spec.setJavaClassName("sapphire.policy.replication.ConsensusRSMPolicyTest$ConsensusSO");
 
-        SapphireObjectID sapphireObjId =
-                spiedOms.createSapphireObject(
-                        "sapphire.policy.replication.ConsensusRSMPolicyTest$ConsensusSO");
+        SapphireObjectID sapphireObjId = spiedOms.createSapphireObject(spec.toString());
         soStub = (SO_Stub) spiedOms.acquireSapphireObjectStub(sapphireObjId);
         client =
                 (DefaultSapphirePolicy.DefaultClientPolicy)

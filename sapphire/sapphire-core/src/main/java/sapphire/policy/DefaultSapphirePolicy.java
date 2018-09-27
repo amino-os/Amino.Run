@@ -4,14 +4,14 @@ import java.lang.annotation.Annotation;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import sapphire.app.DMSpec;
 
 public class DefaultSapphirePolicy extends SapphirePolicy {
 
     public static class DefaultServerPolicy extends SapphireServerPolicy {
-        private DefaultGroupPolicy group;
-
         @Override
         public SapphireGroupPolicy getGroup() {
             return group;
@@ -21,8 +21,8 @@ public class DefaultSapphirePolicy extends SapphirePolicy {
         public void onMembershipChange() {}
 
         @Override
-        public void onCreate(SapphireGroupPolicy group, Annotation[] annotations) {
-            this.group = (DefaultGroupPolicy) group;
+        public void onCreate(SapphireGroupPolicy group, Map<String, DMSpec> dmSpecMap) {
+            super.onCreate(group, dmSpecMap);
         }
 
         public void onDestroy() {

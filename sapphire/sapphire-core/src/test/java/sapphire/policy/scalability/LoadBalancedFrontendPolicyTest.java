@@ -17,16 +17,15 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
+import sapphire.app.Language;
 import sapphire.app.SO;
 import sapphire.app.SapphireObject;
+import sapphire.app.SapphireObjectSpec;
 import sapphire.app.stubs.SO_Stub;
 import sapphire.common.BaseTest;
 import sapphire.common.SapphireObjectID;
@@ -123,9 +122,12 @@ public class LoadBalancedFrontendPolicyTest extends BaseTest {
     @Before
     public void setUp() throws Exception {
         super.setUp(Server_Stub.class, Group_Stub.class);
-        SapphireObjectID sapphireObjId =
-                spiedOms.createSapphireObject(
-                        "sapphire.policy.scalability.LoadBalancedFrontendPolicyTest$LoadBalanceSO");
+        SapphireObjectSpec spec = new SapphireObjectSpec();
+        spec.setLang(Language.java);
+        spec.setJavaClassName(
+                "sapphire.policy.scalability.LoadBalancedFrontendPolicyTest$LoadBalanceSO");
+
+        SapphireObjectID sapphireObjId = spiedOms.createSapphireObject(spec.toString());
         soStub = (SO_Stub) spiedOms.acquireSapphireObjectStub(sapphireObjId);
         client =
                 (DefaultSapphirePolicy.DefaultClientPolicy)
@@ -204,6 +206,17 @@ public class LoadBalancedFrontendPolicyTest extends BaseTest {
         thrown.expectMessage("Configured replicas count: 5, created replica count : 2");
         setFieldValueOnInstance(group1, "replicaCount", 5);
         group1.onCreate(this.server1, new Annotation[] {});
+    }
+
+    @Test
+    public void testConfig() {
+        LoadBalancedFrontendPolicy.Config config = new LoadBalancedFrontendPolicy.Config();
+        config.setReplicaCount(3);
+        config.setMaxConcurrentReq(300);
+
+        LoadBalancedFrontendPolicy.Config clone =
+                (LoadBalancedFrontendPolicy.Config) config.fromDMSpec(config.toDMSpec());
+        Assert.assertEquals(config, clone);
     }
 
     @After

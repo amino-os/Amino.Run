@@ -2,37 +2,32 @@ package sapphire.app;
 
 import org.junit.Assert;
 import org.junit.Test;
+import sapphire.common.Utils;
+import sapphire.policy.scalability.LoadBalancedFrontendPolicy;
 
 public class SapphireObjectSpecTest {
 
     @Test
-    public void testToYamlFromYaml() {
-        SapphireObjectSpec spec = new SapphireObjectSpec();
-        spec.setLang(SapphireObjectSpec.Language.JS);
-        spec.setName("com.org.College");
-        spec.setSourceFileLocation("src/main/js/college.rb");
-        spec.setConstructorName("college");
+    public void testToYamlFromYaml() throws Exception {
+        LoadBalancedFrontendPolicy.Config config = new LoadBalancedFrontendPolicy.Config();
+        config.setMaxConcurrentReq(200);
+        config.setReplicaCount(30);
 
-        DMSpec dm1 = new DMSpec();
-        dm1.setName("DHT");
-        dm1.addProperty("numOfReplicas", "5");
+        SapphireObjectSpec soSpec =
+                SapphireObjectSpec.newBuilder()
+                        .setLang(Language.js)
+                        .setName("com.org.College")
+                        .setSourceFileLocation("src/main/js/college.js")
+                        .setConstructorName("college")
+                        .addDM(Utils.toDMSpec(config))
+                        .create();
 
-        DMSpec dm2 = new DMSpec();
-        dm1.setName("MasterSlave");
-        dm1.addProperty("numOfReplicas", "2");
+        SapphireObjectSpec soSpecClone = SapphireObjectSpec.fromYaml(soSpec.toString());
+        Assert.assertEquals(soSpec, soSpecClone);
 
-        spec.addDM(dm1);
-        spec.addDM(dm2);
-
-        System.out.println(spec);
-        SapphireObjectSpec clone = SapphireObjectSpec.fromYaml(spec.toString());
-        Assert.assertEquals(spec, clone);
-    }
-
-    @Test
-    public void testFromYaml() {
-        String yamlStr =
-                "{constructorName: college, javaClassName: null, "
-                        + "lang: JS, name: com.org.College, sourceFileLocation: src/main/js/college.rb}";
+        DMSpec dmSpec = soSpecClone.getDmList().get(0);
+        LoadBalancedFrontendPolicy.Config configClone =
+                (LoadBalancedFrontendPolicy.Config) Utils.toConfig(dmSpec);
+        Assert.assertEquals(config, configClone);
     }
 }

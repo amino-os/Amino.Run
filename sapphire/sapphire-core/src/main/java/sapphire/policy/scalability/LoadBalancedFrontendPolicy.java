@@ -10,8 +10,11 @@ import java.lang.annotation.Target;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Logger;
+import sapphire.app.DMSpec;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
 import sapphire.policy.DefaultSapphirePolicy;
@@ -21,10 +24,75 @@ import sapphire.policy.DefaultSapphirePolicy;
  * consistency
  */
 public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
+    public static final int STATIC_REPLICA_COUNT = 2;
+    public static final int MAX_CONCURRENT_REQUESTS = 2000;
 
-    static final int STATIC_REPLICA_COUNT = 2;
-    static final int MAX_CONCURRENT_REQUESTS = 2000;
+    /** Configurations for LoadBalancedFrontendPolicy */
+    public static class Config implements SapphirePolicyConfig {
+        private int maxConcurrentReq = MAX_CONCURRENT_REQUESTS;
+        private int replicaCount = STATIC_REPLICA_COUNT;
 
+        public int getMaxConcurrentReq() {
+            return maxConcurrentReq;
+        }
+
+        public void setMaxConcurrentReq(int maxConcurrentReq) {
+            this.maxConcurrentReq = maxConcurrentReq;
+        }
+
+        public int getReplicaCount() {
+            return replicaCount;
+        }
+
+        public void setReplicaCount(int replicaCount) {
+            this.replicaCount = replicaCount;
+        }
+
+        @Override
+        public DMSpec toDMSpec() {
+            DMSpec spec = new DMSpec();
+            // Use fully qualified class name!
+            spec.setName(LoadBalancedFrontendPolicy.class.getName());
+            spec.addProperty("maxConcurrentReq", String.valueOf(maxConcurrentReq));
+            spec.addProperty("replicaCount", String.valueOf(replicaCount));
+            return spec;
+        }
+
+        @Override
+        public SapphirePolicyConfig fromDMSpec(DMSpec spec) {
+            if (!LoadBalancedFrontendPolicy.class.getName().equals(spec.getName())) {
+                throw new IllegalArgumentException(
+                        String.format(
+                                "DM %s is not able to process spec %s",
+                                LoadBalancedFrontendPolicy.class.getName(), spec));
+            }
+
+            Config config = new Config();
+            Map<String, String> properties = spec.getProperties();
+            if (properties != null) {
+                config.setReplicaCount(Integer.parseInt(properties.get("replicaCount")));
+                config.setMaxConcurrentReq(Integer.parseInt(properties.get("maxConcurrentReq")));
+            }
+
+            return config;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Config config = (Config) o;
+            return maxConcurrentReq == config.maxConcurrentReq
+                    && replicaCount == config.replicaCount;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(maxConcurrentReq, replicaCount);
+        }
+    }
+
+    // TODO(multi-lang): Remove this annotation
     @Retention(RetentionPolicy.RUNTIME)
     @Target({ElementType.TYPE})
     public @interface LoadBalancedFrontendPolicyConfigAnnotation {
@@ -79,13 +147,30 @@ public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
         protected Semaphore limiter;
 
         @Override
-        public void onCreate(SapphireGroupPolicy group, Annotation[] annotations) {
-            super.onCreate(group, annotations);
-            LoadBalancedFrontendPolicyConfigAnnotation annotation =
-                    getAnnotation(annotations, LoadBalancedFrontendPolicyConfigAnnotation.class);
-            if (annotation != null) {
-                this.maxConcurrentReq = annotation.maxconcurrentReq();
+        public void onCreate(SapphireGroupPolicy group, Map<String, DMSpec> dmSpecMap) {
+            super.onCreate(group, dmSpecMap);
+
+            //            LoadBalancedFrontendPolicyConfigAnnotation annotation =
+            //                    getAnnotation(annotations,
+            // LoadBalancedFrontendPolicyConfigAnnotation.class);
+            //            if (annotation != null) {
+            //                this.maxConcurrentReq = annotation.maxconcurrentReq();
+            //            }
+            //            if (this.limiter == null) {
+            //                this.limiter = new Semaphore(this.maxConcurrentReq, true);
+            //            }
+
+            // TODO(multi-lang): Remove LoadBalancedFrontendPolicyConfigAnnotation
+            DMSpec spec =
+                    dmSpecMap.get(
+                            ScaleUpFrontendPolicy.LoadBalancedFrontendPolicyConfigAnnotation.class
+                                    .getSimpleName());
+            if (spec != null) {
+                if (spec.getProperty("maxconcurrentReq") != null) {
+                    this.maxConcurrentReq = Integer.valueOf(spec.getProperty("maxconcurrentReq"));
+                }
             }
+
             if (this.limiter == null) {
                 this.limiter = new Semaphore(this.maxConcurrentReq, true);
             }

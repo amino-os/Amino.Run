@@ -7,11 +7,14 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Map;
 import org.junit.Assert;
 import org.junit.Test;
+import sapphire.app.DMSpec;
 import sapphire.kernel.common.KernelOID;
 import sapphire.kernel.common.KernelRPC;
 import sapphire.policy.mobility.explicitmigration.ExplicitMigrationPolicySpec;
+import sapphire.policy.scalability.LoadBalancedFrontendPolicy;
 import sapphire.policy.scalability.masterslave.LogEntry;
 import sapphire.policy.scalability.masterslave.MethodInvocationRequest;
 import sapphire.runtime.annotations.Immutable;
@@ -192,6 +195,41 @@ public class UtilsTest {
         Assert.assertEquals(3, spec.replicas());
 
         Assert.assertNull(Utils.getAnnotation(annotations, ExplicitMigrationPolicySpec.class));
+    }
+
+    @Test
+    public void testFromAnnotationToDMSpec() throws Exception {
+        Map<String, DMSpec> dmSpecMap = Utils.toDMSpec(Clazz.class.getAnnotations());
+        DMSpec spec = dmSpecMap.get("RuntimeSpec");
+        Assert.assertNotNull(spec);
+        Assert.assertEquals(3, Integer.parseInt(spec.getProperty("replicas")));
+    }
+
+    @Test
+    public void testConversionBetweenConfigAndDMSpec() throws Exception {
+        int maxReq = 100;
+        int replicas = 30;
+        LoadBalancedFrontendPolicy.Config config = new LoadBalancedFrontendPolicy.Config();
+        config.setMaxConcurrentReq(maxReq);
+        config.setReplicaCount(replicas);
+
+        DMSpec spec = Utils.toDMSpec(config);
+        LoadBalancedFrontendPolicy.Config clone =
+                (LoadBalancedFrontendPolicy.Config) Utils.toConfig(spec);
+        Assert.assertEquals(config, clone);
+    }
+
+    @Test
+    public void testReturnDefaultConfig() throws Exception {
+        DMSpec spec = new DMSpec();
+        spec.setName(LoadBalancedFrontendPolicy.class.getName());
+        LoadBalancedFrontendPolicy.Config config =
+                (LoadBalancedFrontendPolicy.Config) Utils.toConfig(spec);
+        Assert.assertNotNull(config);
+        Assert.assertEquals(
+                LoadBalancedFrontendPolicy.MAX_CONCURRENT_REQUESTS, config.getMaxConcurrentReq());
+        Assert.assertEquals(
+                LoadBalancedFrontendPolicy.STATIC_REPLICA_COUNT, config.getReplicaCount());
     }
 
     @RuntimeSpec(replicas = 3)

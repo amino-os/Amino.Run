@@ -18,6 +18,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import sapphire.app.SO;
 import sapphire.app.SapphireObject;
 import sapphire.app.stubs.SO_Stub;
+import sapphire.common.AppObject;
 import sapphire.common.BaseTest;
 import sapphire.common.SapphireObjectID;
 import sapphire.common.SapphireUtils;
@@ -28,17 +29,18 @@ import sapphire.kernel.common.KernelRPC;
 import sapphire.kernel.common.KernelRPCException;
 import sapphire.kernel.common.ServerInfo;
 import sapphire.policy.DefaultSapphirePolicy;
+import sapphire.policy.SapphirePolicy;
 import sapphire.policy.util.ResettableTimer;
 import sapphire.runtime.Sapphire;
 
 /** Created by Vishwajeet on 11/9/18. */
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({
-    KernelServerImpl.class,
-    Sapphire.class,
-    KernelObjectFactory.class,
-    LocateRegistry.class,
-    SapphireUtils.class
+        KernelServerImpl.class,
+        Sapphire.class,
+        KernelObjectFactory.class,
+        LocateRegistry.class,
+        SapphireUtils.class
 })
 public class KSTest extends BaseTest {
     @Rule public ExpectedException thrown = ExpectedException.none();
@@ -50,6 +52,8 @@ public class KSTest extends BaseTest {
         sapphire.kernel.common.KernelOID $__oid = null;
         java.net.InetSocketAddress $__hostname = null;
         int $__lastSeenTick = 0;
+        AppObject $__appObject = null;
+        SapphirePolicy.SapphireClientPolicy $__nextClientPolicy = null;
 
         public Group_Stub(sapphire.kernel.common.KernelOID oid) {
             this.$__oid = oid;
@@ -74,6 +78,14 @@ public class KSTest extends BaseTest {
         public void $__setLastSeenTick(int lastSeenTick) {
             this.$__lastSeenTick = lastSeenTick;
         }
+
+        public AppObject $__getAppObject() {
+            return $__appObject;
+        }
+
+        public void $__setNextClientPolicy(SapphirePolicy.SapphireClientPolicy clientPolicy) {
+            $__nextClientPolicy = clientPolicy;
+        }
     }
 
     public static class Server_Stub extends DefaultSapphirePolicy.DefaultServerPolicy
@@ -81,6 +93,8 @@ public class KSTest extends BaseTest {
         KernelOID $__oid = null;
         InetSocketAddress $__hostname = null;
         int $__lastSeenTick = 0;
+        AppObject $__appObject = null;
+        SapphirePolicy.SapphireClientPolicy $__nextClientPolicy = null;
 
         public Server_Stub(KernelOID oid) {
             this.oid = oid;
@@ -105,6 +119,14 @@ public class KSTest extends BaseTest {
 
         public void $__setLastSeenTick(int lastSeenTick) {
             this.$__lastSeenTick = lastSeenTick;
+        }
+
+        public AppObject $__getAppObject() {
+            return $__appObject;
+        }
+
+        public void $__setNextClientPolicy(SapphirePolicy.SapphireClientPolicy clientPolicy) {
+            $__nextClientPolicy = clientPolicy;
         }
     }
 

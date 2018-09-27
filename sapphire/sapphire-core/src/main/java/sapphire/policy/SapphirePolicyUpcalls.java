@@ -23,6 +23,8 @@ public interface SapphirePolicyUpcalls {
     interface SapphireServerPolicyUpcalls extends Serializable {
         void onCreate(SapphireGroupPolicy group, Annotation[] annotations);
 
+        void initialize();
+
         void onDestroy();
 
         SapphireGroupPolicy getGroup();

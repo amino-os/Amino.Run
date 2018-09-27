@@ -7,6 +7,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Random;
@@ -65,9 +66,12 @@ public class DHTPolicy extends DefaultSapphirePolicy {
                 DHTServerPolicy dhtServer = (DHTServerPolicy) server;
 
                 // Create replicas based on annotation
+                InetSocketAddress newServerAddress = null;
                 for (int i = 1; i < numOfShards; i++) {
-                    DHTServerPolicy replica = (DHTServerPolicy) dhtServer.sapphire_replicate();
-                    replica.sapphire_pin(regions.get(i % regions.size()));
+                    newServerAddress = oms().getServerInRegion(regions.get(i));
+                    SapphireServerPolicy replica =
+                            dhtServer.sapphire_replicate(server.getProcessedPolicies());
+                    dhtServer.sapphire_pin_to_server(replica, newServerAddress);
                 }
                 dhtServer.sapphire_pin(regions.get(0));
             } catch (RemoteException e) {

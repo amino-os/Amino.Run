@@ -194,7 +194,7 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultSapphirePolicy 
 
                 for (int i = 0; i < spec.replicas() - 1; i++) {
                     dest = getAvailable(servers, unavailable);
-                    ServerBase replica = (ServerBase) s.sapphire_replicate();
+                    ServerBase replica = (ServerBase) s.sapphire_replicate(s.getProcessedPolicies());
                     replica.sapphire_pin_to_server(dest);
                     updateReplicaHostName(replica, dest);
                     removeServer(replica);

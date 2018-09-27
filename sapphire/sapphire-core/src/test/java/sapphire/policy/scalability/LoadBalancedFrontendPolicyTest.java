@@ -26,8 +26,8 @@ import org.junit.runner.RunWith;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import sapphire.app.SO;
-import sapphire.app.SapphireObject;
 import sapphire.app.stubs.SO_Stub;
+import sapphire.common.AppObject;
 import sapphire.common.BaseTest;
 import sapphire.common.SapphireObjectID;
 import sapphire.common.SapphireUtils;
@@ -36,16 +36,18 @@ import sapphire.kernel.common.KernelObjectFactory;
 import sapphire.kernel.common.KernelObjectStub;
 import sapphire.kernel.server.KernelServerImpl;
 import sapphire.policy.DefaultSapphirePolicy;
+import sapphire.policy.SapphirePolicy;
 import sapphire.runtime.Sapphire;
+import sapphire.runtime.SapphireConfiguration;
 
 /** Created by Vishwajeet on 2/4/18. */
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({
-    KernelServerImpl.class,
-    Sapphire.class,
-    KernelObjectFactory.class,
-    LocateRegistry.class,
-    SapphireUtils.class
+        KernelServerImpl.class,
+        Sapphire.class,
+        KernelObjectFactory.class,
+        LocateRegistry.class,
+        SapphireUtils.class
 })
 public class LoadBalancedFrontendPolicyTest extends BaseTest {
     int exceptionExpected = 0;
@@ -53,14 +55,16 @@ public class LoadBalancedFrontendPolicyTest extends BaseTest {
     @LoadBalancedFrontendPolicy.LoadBalancedFrontendPolicyConfigAnnotation(
             maxconcurrentReq = 2,
             replicacount = 2)
-    public static class LoadBalanceSO extends SO
-            implements SapphireObject<LoadBalancedFrontendPolicy> {}
+    @SapphireConfiguration(Policies = "sapphire.policy.scalability.LoadBalancedFrontendPolicy")
+    public static class LoadBalanceSO extends SO {}
 
     public static class Group_Stub extends LoadBalancedFrontendPolicy.GroupPolicy
             implements KernelObjectStub {
         sapphire.kernel.common.KernelOID $__oid = null;
         java.net.InetSocketAddress $__hostname = null;
         int $__lastSeenTick = 0;
+        AppObject $__appObject = null;
+        SapphirePolicy.SapphireClientPolicy $__nextClientPolicy = null;
 
         public Group_Stub(sapphire.kernel.common.KernelOID oid) {
             this.$__oid = oid;
@@ -85,6 +89,14 @@ public class LoadBalancedFrontendPolicyTest extends BaseTest {
         public void $__setLastSeenTick(int lastSeenTick) {
             this.$__lastSeenTick = lastSeenTick;
         }
+
+        public AppObject $__getAppObject() {
+            return $__appObject;
+        }
+
+        public void $__setNextClientPolicy(SapphirePolicy.SapphireClientPolicy clientPolicy) {
+            $__nextClientPolicy = clientPolicy;
+        }
     }
 
     public static class Server_Stub extends LoadBalancedFrontendPolicy.ServerPolicy
@@ -92,6 +104,8 @@ public class LoadBalancedFrontendPolicyTest extends BaseTest {
         KernelOID $__oid = null;
         InetSocketAddress $__hostname = null;
         int $__lastSeenTick = 0;
+        AppObject $__appObject = null;
+        SapphirePolicy.SapphireClientPolicy $__nextClientPolicy = null;
 
         public Server_Stub(KernelOID oid) {
             this.$__oid = oid;
@@ -115,6 +129,14 @@ public class LoadBalancedFrontendPolicyTest extends BaseTest {
 
         public void $__setLastSeenTick(int lastSeenTick) {
             this.$__lastSeenTick = lastSeenTick;
+        }
+
+        public AppObject $__getAppObject() {
+            return $__appObject;
+        }
+
+        public void $__setNextClientPolicy(SapphirePolicy.SapphireClientPolicy clientPolicy) {
+            $__nextClientPolicy = clientPolicy;
         }
     }
 

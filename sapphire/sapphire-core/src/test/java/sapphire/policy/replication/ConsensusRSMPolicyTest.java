@@ -27,8 +27,8 @@ import org.mockito.Matchers;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import sapphire.app.SO;
-import sapphire.app.SapphireObject;
 import sapphire.app.stubs.SO_Stub;
+import sapphire.common.AppObject;
 import sapphire.common.BaseTest;
 import sapphire.common.SapphireObjectID;
 import sapphire.common.SapphireUtils;
@@ -42,28 +42,32 @@ import sapphire.policy.SapphirePolicy;
 import sapphire.policy.util.consensus.raft.LeaderException;
 import sapphire.policy.util.consensus.raft.RemoteRaftServer;
 import sapphire.runtime.Sapphire;
+import sapphire.runtime.SapphireConfiguration;
 
 /** Created by terryz on 4/9/18. */
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({
-    KernelServerImpl.class,
-    Sapphire.class,
-    KernelObjectFactory.class,
-    LocateRegistry.class,
-    SapphireUtils.class
+        KernelServerImpl.class,
+        Sapphire.class,
+        KernelObjectFactory.class,
+        LocateRegistry.class,
+        SapphireUtils.class
 })
 public class ConsensusRSMPolicyTest extends BaseTest {
     sapphire.policy.util.consensus.raft.Server raftServer1;
     sapphire.policy.util.consensus.raft.Server raftServer2;
     sapphire.policy.util.consensus.raft.Server raftServer3;
 
-    public static class ConsensusSO extends SO implements SapphireObject<ConsensusRSMPolicy> {}
+    @SapphireConfiguration(Policies = "sapphire.policy.replication.ConsensusRSMPolicy")
+    public static class ConsensusSO extends SO {}
 
     public static class Group_Stub extends ConsensusRSMPolicy.GroupPolicy
             implements KernelObjectStub {
         sapphire.kernel.common.KernelOID $__oid = null;
         java.net.InetSocketAddress $__hostname = null;
         int $__lastSeenTick = 0;
+        AppObject $__appObject = null;
+        SapphirePolicy.SapphireClientPolicy $__nextClientPolicy = null;
 
         public Group_Stub(sapphire.kernel.common.KernelOID oid) {
             this.$__oid = oid;
@@ -88,6 +92,14 @@ public class ConsensusRSMPolicyTest extends BaseTest {
         public void $__setLastSeenTick(int lastSeenTick) {
             this.$__lastSeenTick = lastSeenTick;
         }
+
+        public AppObject $__getAppObject() {
+            return $__appObject;
+        }
+
+        public void $__setNextClientPolicy(SapphirePolicy.SapphireClientPolicy clientPolicy) {
+            $__nextClientPolicy = clientPolicy;
+        }
     }
 
     public static class Server_Stub extends ConsensusRSMPolicy.ServerPolicy
@@ -95,6 +107,8 @@ public class ConsensusRSMPolicyTest extends BaseTest {
         KernelOID $__oid = null;
         InetSocketAddress $__hostname = null;
         int $__lastSeenTick = 0;
+        AppObject $__appObject = null;
+        SapphirePolicy.SapphireClientPolicy $__nextClientPolicy = null;
 
         public Server_Stub(KernelOID oid) {
             this.$__oid = oid;
@@ -118,6 +132,14 @@ public class ConsensusRSMPolicyTest extends BaseTest {
 
         public void $__setLastSeenTick(int lastSeenTick) {
             this.$__lastSeenTick = lastSeenTick;
+        }
+
+        public AppObject $__getAppObject() {
+            return $__appObject;
+        }
+
+        public void $__setNextClientPolicy(SapphirePolicy.SapphireClientPolicy clientPolicy) {
+            $__nextClientPolicy = clientPolicy;
         }
     }
 
@@ -290,8 +312,8 @@ public class ConsensusRSMPolicyTest extends BaseTest {
         ArrayList<Object> params = new ArrayList<Object>();
         doThrow(RemoteException.class).when(this.server1).onRPC(method, params);
         doThrow(
-                        new LeaderException(
-                                "LeaderException", (ConsensusRSMPolicy.ServerPolicy) this.server3))
+                new LeaderException(
+                        "LeaderException", (ConsensusRSMPolicy.ServerPolicy) this.server3))
                 .when(this.server2)
                 .onRPC(method, params);
         this.client.onRPC(method, params);

@@ -2,8 +2,8 @@ package sapphire.compiler;
 
 public class GlobalStubConstants {
     public static final String POLICY_STUB_PACKAGE = "sapphire.policy.stubs";
-    public static final String APPOBJECT_PACKAGE = "sapphire.common.AppObject";
-    public static final String POLICY_PACKAGE = "sapphire.policy.SapphirePolicy";
+    public static final String APPOBJECT_CLASS = "sapphire.common.AppObject";
+    public static final String POLICY_CLASS = "sapphire.policy.SapphirePolicy";
     public static final String STUB_SUFFIX = "_Stub";
     public static final String STUB_PACKAGE_PART = "stubs";
     public static final String APPSTUB_POLICY_CLIENT_FIELD_NAME = "$__client";
@@ -15,11 +15,11 @@ public class GlobalStubConstants {
     }
 
     public static String getImportAppObjectPackageName() {
-        return APPOBJECT_PACKAGE;
+        return APPOBJECT_CLASS;
     }
 
     public static String getImportPolicyPackageName() {
-        return POLICY_PACKAGE;
+        return POLICY_CLASS;
     }
 
     public static String getPolicyPackageName() {

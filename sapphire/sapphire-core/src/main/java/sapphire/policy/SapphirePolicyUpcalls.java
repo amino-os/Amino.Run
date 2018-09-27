@@ -21,6 +21,7 @@ public interface SapphirePolicyUpcalls {
 
         /**
          * Parse the given {@link DMSpec} and returns a new {@link SapphirePolicyConfig} instance.
+         *
          * @param spec {@link DMSpec}
          * @return a new {@link SapphirePolicyConfig} instance
          */

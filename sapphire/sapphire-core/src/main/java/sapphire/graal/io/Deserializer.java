@@ -3,27 +3,36 @@ package sapphire.graal.io;
 import java.io.*;
 import java.util.*;
 import org.graalvm.polyglot.*;
+import sapphire.app.Language;
 
 public class Deserializer implements AutoCloseable {
 
     private DataInputStream in;
     private Context c;
     public Map<Integer, Value> seenCache = new HashMap<Integer, Value>();
-    private String lang;
+    private Language lang;
 
-    public Deserializer(InputStream in, Context c) {
+    public Deserializer(InputStream in, Context c) throws IOException {
         this.in = new DataInputStream(in);
-        this.c = c;
+
+        if (c == null) this.c = Context.create();
+        else this.c = c;
     }
 
-    public Value deserialize() throws Exception {
+    // If client does not specify language during serialization, we should set the language here.
+    public void setLanguage(Language language) {
+        lang = language;
+    }
+
+    public Value deserialize() throws IOException {
         seenCache = new HashMap<Integer, Value>();
-        lang = in.readUTF();
+        Language language = Language.valueOf(in.readUTF());
+        if (language != Language.unspecified) lang = language;
         System.out.println(String.format("lang is %s", lang));
         return deserializeHelper();
     }
 
-    public Value deserializeHelper() throws Exception {
+    public Value deserializeHelper() throws IOException {
         Value out = null;
 
         GraalType type = GraalType.values()[in.readInt()];
@@ -60,7 +69,7 @@ public class Deserializer implements AutoCloseable {
                 long arraylength = in.readLong();
                 if (arraylength != 0) {
                     // System.out.println("array of length " + arraylength);
-                    out = c.eval(lang, String.format("[]"));
+                    out = c.eval(lang.toString(), String.format("[]"));
                 }
                 for (int j = 0; j < arraylength; j++) {
                     out.setArrayElement(j, deserializeHelper());
@@ -71,7 +80,7 @@ public class Deserializer implements AutoCloseable {
                 String className = in.readUTF();
                 System.out.println("Got object, class name is " + className);
                 // out = c.eval(lang, String.format("new %s()", className));
-                out = c.eval(lang, className).newInstance();
+                out = c.eval(lang.toString(), className).newInstance();
 
                 // for(String key : out.getMemberKeys()) {
                 for (String key : getMemberVariables(out)) {
@@ -90,8 +99,7 @@ public class Deserializer implements AutoCloseable {
                 }
                 break;
             default:
-                throw new IllegalArgumentException(
-                        "we should never get here, unknown type " + type);
+                throw new IOException("we should never get here, unknown type " + type);
         }
         seenCache.put(seenCache.size(), out);
         return out;
@@ -99,14 +107,14 @@ public class Deserializer implements AutoCloseable {
 
     private List<String> getMemberVariables(Value v) {
         switch (lang) {
-            case "ruby":
+            case ruby:
                 Value instVars = v.getMember("instance_variables").execute();
                 List<String> varStr = new ArrayList<String>();
                 for (int i = 0; i < instVars.getArraySize(); i++) {
                     varStr.add(instVars.getArrayElement(i).toString());
                 }
                 return varStr;
-            case "js":
+            case js:
                 return new ArrayList<>(v.getMemberKeys());
         }
         return new ArrayList<>();
@@ -117,11 +125,11 @@ public class Deserializer implements AutoCloseable {
             return;
         }
         switch (lang) {
-            case "ruby":
+            case ruby:
                 key = key.replaceAll(":", "");
                 out.getMember("instance_variable_set").execute(key, member);
                 return;
-            case "js":
+            case js:
                 out.putMember(key, member);
                 return;
         }

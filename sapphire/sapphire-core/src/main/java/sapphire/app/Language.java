@@ -11,5 +11,10 @@ public enum Language {
     ruby,
     python,
     js,
-    R
+    R,
+    // this used during serialization, serialization does not have to specify language, if
+    // it's not specified we need to explicitly give during deserialization.
+    // the goal is to make client call unaware of language, server can figure out language
+    // with OID.
+    unspecified
 }

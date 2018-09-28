@@ -3,6 +3,7 @@ package sapphire.graal.io;
 import java.io.*;
 import java.util.*;
 import org.graalvm.polyglot.*;
+import sapphire.app.Language;
 
 // DUPLICATE represents duplicate objects that has been serialized once.
 enum GraalType {
@@ -21,23 +22,22 @@ public class Serializer implements AutoCloseable {
     private Map<String, Integer> seenCache;
     private int seenInd;
     private DataOutputStream out;
-    private String lang;
+    private Language lang;
 
-    public Serializer(OutputStream os, String l) {
+    public Serializer(OutputStream os, Language language) {
         out = new DataOutputStream(os);
-        lang = l;
+        lang = language;
     }
 
-    public void serialize(Value v) throws Exception {
-        System.out.println("******************start serialize: " + v);
+    public void serialize(Value v) throws IOException {
         seenInd = 0;
         seenCache = new HashMap<String, Integer>();
-        out.writeUTF(lang);
+        out.writeUTF(lang.toString());
         serializeHelper(v);
     }
 
     // TODO narrow exception
-    private void serializeHelper(Value v) throws Exception {
+    private void serializeHelper(Value v) throws IOException {
         // if (v.canExecute()) return;
 
         // check if value cached
@@ -105,10 +105,10 @@ public class Serializer implements AutoCloseable {
 
     private Value getInstanceVariable(Value v, String s) {
         switch (lang) {
-            case "ruby":
+            case ruby:
                 s = s.replaceAll(":", "");
                 return v.getMember("instance_variable_get").execute(s);
-            case "js":
+            case js:
                 return v.getMember(s);
         }
         return null;
@@ -116,9 +116,9 @@ public class Serializer implements AutoCloseable {
 
     private String getClassName(Value v) {
         switch (lang) {
-            case "ruby":
+            case ruby:
                 return v.getMetaObject().getMember("name").execute().asString();
-            case "js":
+            case js:
                 return v.getMetaObject().getMember("className").asString();
         }
         return "INVALID_LANG";
@@ -126,14 +126,14 @@ public class Serializer implements AutoCloseable {
 
     private List<String> getMemberVariables(Value v) {
         switch (lang) {
-            case "ruby":
+            case ruby:
                 Value instVars = v.getMember("instance_variables").execute();
                 List<String> varSte = new ArrayList<String>();
                 for (int i = 0; i < instVars.getArraySize(); i++) {
                     varSte.add(instVars.getArrayElement(i).toString());
                 }
                 return varSte;
-            case "js":
+            case js:
                 return new ArrayList<>(v.getMemberKeys());
         }
         return new ArrayList<>();

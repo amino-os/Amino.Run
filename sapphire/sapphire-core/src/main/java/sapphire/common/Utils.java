@@ -220,7 +220,7 @@ public class Utils {
      * @param annotations an annotation array
      * @return DMSpec map
      * @deprecated This method is deprecated. Please use {@link SapphirePolicyConfig} to configure
-     * sapphire policies.
+     *     sapphire policies.
      */
     public static Map<String, DMSpec> toDMSpec(Annotation[] annotations) throws Exception {
         Map<String, DMSpec> dmSpecMap = new TreeMap<>();

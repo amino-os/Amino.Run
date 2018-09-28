@@ -8,16 +8,20 @@ import static sapphire.common.SapphireUtils.deleteSapphireObject;
 import static sapphire.common.UtilsTest.extractFieldValueOnInstance;
 import static sapphire.common.UtilsTest.setFieldValueOnInstance;
 
-import java.lang.annotation.Annotation;
 import java.net.InetSocketAddress;
 import java.rmi.registry.LocateRegistry;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
-import org.junit.*;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.powermock.core.classloader.annotations.PrepareForTest;
@@ -49,9 +53,6 @@ import sapphire.runtime.Sapphire;
 public class LoadBalancedFrontendPolicyTest extends BaseTest {
     int exceptionExpected = 0;
 
-    @LoadBalancedFrontendPolicy.LoadBalancedFrontendPolicyConfigAnnotation(
-            maxconcurrentReq = 2,
-            replicacount = 2)
     public static class LoadBalanceSO extends SO
             implements SapphireObject<LoadBalancedFrontendPolicy> {}
 
@@ -123,6 +124,10 @@ public class LoadBalancedFrontendPolicyTest extends BaseTest {
     public void setUp() throws Exception {
         super.setUp(Server_Stub.class, Group_Stub.class);
         SapphireObjectSpec spec = new SapphireObjectSpec();
+        LoadBalancedFrontendPolicy.Config config = new LoadBalancedFrontendPolicy.Config();
+        config.setMaxConcurrentReq(2);
+        config.setReplicaCount(2);
+        spec.addDM(config.toDMSpec());
         spec.setLang(Language.java);
         spec.setJavaClassName(
                 "sapphire.policy.scalability.LoadBalancedFrontendPolicyTest$LoadBalanceSO");
@@ -205,7 +210,7 @@ public class LoadBalancedFrontendPolicyTest extends BaseTest {
         // Expecting error message- Configured replicas count: 5, created replica count : 2
         thrown.expectMessage("Configured replicas count: 5, created replica count : 2");
         setFieldValueOnInstance(group1, "replicaCount", 5);
-        group1.onCreate(this.server1, new Annotation[] {});
+        group1.onCreate(this.server1, new HashMap<>());
     }
 
     @Test

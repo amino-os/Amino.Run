@@ -1,12 +1,5 @@
 package sapphire.policy.scalability;
 
-import static sapphire.common.Utils.getAnnotation;
-
-import java.lang.annotation.Annotation;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -27,14 +20,6 @@ import sapphire.policy.util.ResettableTimer;
  */
 public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
     static final int REPLICA_CREATE_MIN_TIME_IN_MSEC = 100;
-
-    @Retention(RetentionPolicy.RUNTIME)
-    @Target({ElementType.TYPE})
-    public @interface ScaleUpFrontendPolicyConfigAnnotation {
-        int replicationRateInMs() default REPLICA_CREATE_MIN_TIME_IN_MSEC;
-
-        LoadBalancedFrontendPolicyConfigAnnotation loadbalanceConfig();
-    }
 
     public static class ClientPolicy extends LoadBalancedFrontendPolicy.ClientPolicy {
         private final AtomicInteger replicaListSyncCtr = new AtomicInteger();
@@ -62,25 +47,10 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
         @Override
         public void onCreate(SapphireGroupPolicy group, Map<String, DMSpec> dmSpecMap) {
             super.onCreate(group, dmSpecMap);
-            //            Annotation[] lbConfigAnnotations = annotations;
-            //            ScaleUpFrontendPolicyConfigAnnotation annotation =
-            //                    getAnnotation(annotations,
-            // ScaleUpFrontendPolicyConfigAnnotation.class);
-            //            if (annotation != null && null != annotation.loadbalanceConfig()) {
-            //                lbConfigAnnotations = new Annotation[]
-            // {annotation.loadbalanceConfig()};
-            //            }
 
-            //            super.onCreate(group, lbConfigAnnotations);
-
-            //            if (annotation != null) {
-            //                replicationRateInMs = annotation.replicationRateInMs();
-            //            }
-
-            DMSpec spec =
-                    dmSpecMap.get(ScaleUpFrontendPolicyConfigAnnotation.class.getSimpleName());
-            if (spec != null) {
-                if (spec.getProperty("replicationRateInMs") != null) {
+            if (dmSpecMap != null) {
+                DMSpec spec = dmSpecMap.get(ScaleUpFrontendPolicy.class.getName());
+                if ((spec != null) && (spec.getProperty("replicationRateInMs") != null)) {
                     replicationRateInMs = Integer.parseInt(spec.getProperty("replicationRateInMs"));
                 }
             }
@@ -164,20 +134,17 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
         private transient ResettableTimer timer; // Timer for limiting
 
         @Override
-        public void onCreate(SapphireServerPolicy server, Annotation[] annotations)
+        public void onCreate(SapphireServerPolicy server, Map<String, DMSpec> dmSpecMap)
                 throws RemoteException {
-            Annotation[] lbConfigAnnotations = annotations;
-            ScaleUpFrontendPolicyConfigAnnotation annotation =
-                    getAnnotation(annotations, ScaleUpFrontendPolicyConfigAnnotation.class);
-            if (annotation != null && null != annotation.loadbalanceConfig()) {
-                lbConfigAnnotations = new Annotation[] {annotation.loadbalanceConfig()};
-            }
 
-            super.onCreate(server, lbConfigAnnotations);
-
-            if (annotation != null) {
-                replicationRateInMs = annotation.replicationRateInMs();
+            if (dmSpecMap != null) {
+                DMSpec spec = dmSpecMap.get(ScaleUpFrontendPolicy.class.getName());
+                if ((spec != null) && (spec.getProperty("replicationRateInMs") != null)) {
+                    replicationRateInMs = Integer.parseInt(spec.getProperty("replicationRateInMs"));
+                }
             }
+            super.onCreate(server, dmSpecMap);
+
             if (replicaCreateLimiter == null) {
                 replicaCreateLimiter = new Semaphore(replicaCount, true);
             }

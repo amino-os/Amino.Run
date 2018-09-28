@@ -27,7 +27,9 @@ public class KernelObject extends ObjectHandler {
         Object ret;
 
         if (coalesced) {
-            throw new KernelObjectMigratingException();
+            // Object has been migrated to the other kernel server.
+            throw new KernelObjectMigratingException(
+                    "Object in this kernel server was migrated and is no longer valid.");
         }
 
         rpcCounter.acquire();
@@ -36,6 +38,11 @@ public class KernelObject extends ObjectHandler {
         // then we safely release the rpcCounter
         try {
             ret = super.invoke(method, params);
+        } catch (Exception e) {
+             e.printStackTrace();
+            // Throwing the exception again so that the same exception is returned to the client.
+            // The client is expected to take appropriate action based on this exception.
+            throw e;
         } finally {
             rpcCounter.release();
         }

@@ -134,7 +134,9 @@ public class KernelServerImpl implements KernelServer {
                 "Adding object "
                         + oid);
 
+        // TODO (9/27/2018, Sungwook): Move uncoalesce logic to separate loop at the end of code.
         this.objectManager.addObject(oid, object);
+        object.uncoalesce();
 
         // To add Kernel Object to local object manager
         Serializable realObj = object.getObject();
@@ -157,7 +159,6 @@ public class KernelServerImpl implements KernelServer {
 
                 KernelOID koid = serverPolicy.$__getKernelOID();
                 if (oid == koid) {
-                    // This is added anyway after loop.
                     continue;
                 }
 
@@ -174,12 +175,10 @@ public class KernelServerImpl implements KernelServer {
                     String exceptionMsg =
                             "Initialization failed at copyKernelObject for KernelObject("
                                     + koid.getID()
-                                    + ").  "
-                                    + "Host: "
-                                    + host.getAddress()
-                                    + ":"
-                                    + host.getPort();
-                    throw new RemoteException(exceptionMsg);
+                                    + ").  ";
+                    logger.severe(exceptionMsg);
+
+                    throw new RemoteException(e.getMessage());
                 }
             }
 
@@ -189,21 +188,17 @@ public class KernelServerImpl implements KernelServer {
             } catch (Exception e) {
                 e.printStackTrace();
                 String exceptionMsg =
-                        "Initialization for first server policy failed at copyKernelObject for KernelObject("
-                                + oid.getID()
-                                + ").  "
-                                + "Host: "
-                                + host.getAddress()
-                                + ":"
-                                + host.getPort();
-                throw new RemoteException(exceptionMsg);
+                        String.format(
+                                "Initialization for first server policy failed at copyKernelObject for KernelObject(%d)",
+                                oid.getID());
+
+                logger.severe(exceptionMsg);
+
+                throw new RemoteException(e.getMessage());
             }
         } else {
-            this.objectManager.addObject(oid, object);
-            logger.log(Level.INFO, "Added " + oid.getID() + " as unknown type");
+            logger.log(Level.WARNING, "Added " + oid.getID() + " as unknown type.");
         }
-
-        object.uncoalesce();
     }
 
     /** LOCAL INTERFACES * */

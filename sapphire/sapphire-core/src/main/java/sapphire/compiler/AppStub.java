@@ -44,6 +44,11 @@ public final class AppStub extends Stub {
     }
 
     @Override
+    public String getImportStatement() {
+        return "";
+    }
+
+    @Override
     public String getStubClassDeclaration() {
         StringBuilder buffer = new StringBuilder("");
         buffer.append("public final class " + stubName + " extends " + className + " implements ");

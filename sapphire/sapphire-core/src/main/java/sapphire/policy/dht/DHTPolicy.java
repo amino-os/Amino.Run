@@ -1,8 +1,5 @@
 package sapphire.policy.dht;
 
-import static sapphire.common.Utils.getAnnotation;
-
-import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -16,6 +13,7 @@ import java.util.logging.Logger;
 import sapphire.app.DMSpec;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
+import sapphire.common.Utils;
 import sapphire.policy.DefaultSapphirePolicy;
 
 public class DHTPolicy extends DefaultSapphirePolicy {
@@ -104,14 +102,21 @@ public class DHTPolicy extends DefaultSapphirePolicy {
         private Random generator = new Random(System.currentTimeMillis());
 
         @Override
-        public void onCreate(SapphireServerPolicy server, Annotation[] annotations)
+        public void onCreate(SapphireServerPolicy server, Map<String, DMSpec> dmSpecMap)
                 throws RemoteException {
             dhtChord = new DHTChord();
-            super.onCreate(server, annotations);
+            super.onCreate(server, dmSpecMap);
 
-            DHTConfigure annotation = getAnnotation(annotations, DHTConfigure.class);
-            if (annotation != null) {
-                this.numOfShards = annotation.numOfShards();
+            DMSpec dmSpec = Utils.getDMSpec(dmSpecMap, DHTPolicy.class.getName());
+            if (dmSpec != null) {
+                try {
+                    Config config = (Config) Utils.toConfig(dmSpec);
+                    if (config != null) {
+                        this.numOfShards = config.getNumOfShards();
+                    }
+                } catch (Exception e) {
+                    logger.info("Failed to get shards value, using default value");
+                }
             }
 
             try {

@@ -20,6 +20,7 @@ import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import sapphire.app.DMSpec;
+import sapphire.app.SapphireObjectSpec;
 import sapphire.runtime.annotations.Immutable;
 import sapphire.runtime.annotations.RuntimeSpec;
 
@@ -215,12 +216,32 @@ public class Utils {
     }
 
     /**
+     * Returns the annotation of specified type from the given annotations
+     *
+     * @param dmSpec
+     * @param dmName
+     * @return
+     */
+    public static <A extends Annotation> DMSpec getDMSpec(
+            Map<String, DMSpec> dmSpec, String dmName) {
+        if (dmSpec != null) {
+            for (DMSpec spec : dmSpec.values()) {
+                if (spec.getName() == dmName) {
+                    return spec;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Converts Java annotation to DMSpec map
      *
      * @param annotations an annotation array
      * @return DMSpec map
      * @deprecated This method is deprecated. Please use {@link SapphirePolicyConfig} to configure
-     * sapphire policies.
+     *     sapphire policies.
      */
     public static Map<String, DMSpec> toDMSpec(Annotation[] annotations) throws Exception {
         Map<String, DMSpec> dmSpecMap = new TreeMap<>();
@@ -229,6 +250,23 @@ public class Utils {
             for (DMSpec s : dms) {
                 dmSpecMap.put(s.getName(), s);
             }
+        }
+
+        return dmSpecMap;
+    }
+
+    /**
+     * Converts SapphireObjectSpec to DMSpec map
+     *
+     * @param spec a SapphireObjectSpec object
+     * @return DMSpec map
+     * @deprecated This method is deprecated. Please use {@link SapphirePolicyConfig} to configure
+     *     sapphire policies.
+     */
+    public static Map<String, DMSpec> toDMSpec(SapphireObjectSpec spec) {
+        Map<String, DMSpec> dmSpecMap = new TreeMap<>();
+        for (DMSpec s : spec.getDmList()) {
+            dmSpecMap.put(s.getName(), s);
         }
 
         return dmSpecMap;

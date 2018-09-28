@@ -1,8 +1,5 @@
 package sapphire.policy.scalability;
 
-import static sapphire.common.Utils.getAnnotation;
-
-import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -11,6 +8,7 @@ import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TimerTask;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -18,6 +16,7 @@ import java.util.logging.Logger;
 import sapphire.app.DMSpec;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
+import sapphire.common.Utils;
 import sapphire.kernel.common.KernelObjectStub;
 import sapphire.policy.util.ResettableTimer;
 
@@ -34,6 +33,69 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
         int replicationRateInMs() default REPLICA_CREATE_MIN_TIME_IN_MSEC;
 
         LoadBalancedFrontendPolicyConfigAnnotation loadbalanceConfig();
+    }
+
+    public static class Config implements SapphirePolicyConfig {
+        private int replicationRateInMs = REPLICA_CREATE_MIN_TIME_IN_MSEC; // for n milliseconds
+        private int replicaCount = 1; // 1 replica in n milliseconds
+
+        public int getReplicaRate() {
+            return replicationRateInMs;
+        }
+
+        public int getReplicaCount() {
+            return replicaCount;
+        }
+
+        public void setReplicaRate(int replicationRateInMs) {
+            this.replicationRateInMs = replicationRateInMs;
+        }
+
+        public void setReplicaCount(int replicaCount) {
+            this.replicaCount = replicaCount;
+        }
+
+        @Override
+        public DMSpec toDMSpec() {
+            DMSpec spec = new DMSpec();
+            spec.setName(ScaleUpFrontendPolicy.class.getName());
+            spec.addProperty("replicationRateInMs", String.valueOf(replicationRateInMs));
+            spec.addProperty("replicaCount", String.valueOf(replicaCount));
+            return spec;
+        }
+
+        @Override
+        public SapphirePolicyConfig fromDMSpec(DMSpec spec) {
+            if (!ScaleUpFrontendPolicy.class.getName().equals(spec.getName())) {
+                throw new IllegalArgumentException(
+                        String.format(
+                                "DM %s is not able to process spec %s",
+                                ScaleUpFrontendPolicy.class.getName(), spec));
+            }
+
+            Config config = new Config();
+            Map<String, String> properties = spec.getProperties();
+            if (properties != null) {
+                config.setReplicaRate(Integer.parseInt(properties.get("replicationRateInMs")));
+                config.setReplicaCount(Integer.parseInt(properties.get("replicaCount")));
+            }
+
+            return config;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Config config = (Config) o;
+            return (replicationRateInMs == config.replicationRateInMs)
+                    && (replicaCount == config.replicaCount);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(replicationRateInMs, replicaCount);
+        }
     }
 
     public static class ClientPolicy extends LoadBalancedFrontendPolicy.ClientPolicy {
@@ -77,8 +139,7 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
             //                replicationRateInMs = annotation.replicationRateInMs();
             //            }
 
-            DMSpec spec =
-                    dmSpecMap.get(ScaleUpFrontendPolicyConfigAnnotation.class.getSimpleName());
+            DMSpec spec = dmSpecMap.get(ScaleUpFrontendPolicy.class.getName());
             if (spec != null) {
                 if (spec.getProperty("replicationRateInMs") != null) {
                     replicationRateInMs = Integer.parseInt(spec.getProperty("replicationRateInMs"));
@@ -162,21 +223,31 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
         private int replicaCount = 1; // 1 replica in n milliseconds
         private Semaphore replicaCreateLimiter;
         private transient ResettableTimer timer; // Timer for limiting
+        private static Logger logger = Logger.getLogger(GroupPolicy.class.getName());
 
         @Override
-        public void onCreate(SapphireServerPolicy server, Annotation[] annotations)
+        public void onCreate(SapphireServerPolicy server, Map<String, DMSpec> dmSpecMap)
                 throws RemoteException {
-            Annotation[] lbConfigAnnotations = annotations;
-            ScaleUpFrontendPolicyConfigAnnotation annotation =
-                    getAnnotation(annotations, ScaleUpFrontendPolicyConfigAnnotation.class);
-            if (annotation != null && null != annotation.loadbalanceConfig()) {
-                lbConfigAnnotations = new Annotation[] {annotation.loadbalanceConfig()};
-            }
+            // Annotation[] lbConfigAnnotations = annotations;
+            // ScaleUpFrontendPolicyConfigAnnotation annotation =
+            //        getAnnotation(annotations, ScaleUpFrontendPolicyConfigAnnotation.class);
 
-            super.onCreate(server, lbConfigAnnotations);
+            // if (annotation != null && null != annotation.loadbalanceConfig()) {
+            //    lbConfigAnnotations = new Annotation[] {annotation.loadbalanceConfig()};
+            // }
 
-            if (annotation != null) {
-                replicationRateInMs = annotation.replicationRateInMs();
+            super.onCreate(server, dmSpecMap);
+
+            DMSpec dmSpec = Utils.getDMSpec(dmSpecMap, ScaleUpFrontendPolicy.class.getName());
+            if (dmSpec != null) {
+                try {
+                    Config config = (Config) Utils.toConfig(dmSpec);
+                    if (config != null) {
+                        replicationRateInMs = config.getReplicaRate();
+                    }
+                } catch (Exception e) {
+                    logger.info("Failed to get replica rate, using default value");
+                }
             }
             if (replicaCreateLimiter == null) {
                 replicaCreateLimiter = new Semaphore(replicaCount, true);

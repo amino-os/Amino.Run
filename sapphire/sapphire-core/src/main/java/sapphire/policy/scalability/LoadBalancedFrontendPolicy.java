@@ -1,8 +1,5 @@
 package sapphire.policy.scalability;
 
-import static sapphire.common.Utils.getAnnotation;
-
-import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -17,6 +14,7 @@ import java.util.logging.Logger;
 import sapphire.app.DMSpec;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
+import sapphire.common.Utils;
 import sapphire.policy.DefaultSapphirePolicy;
 
 /**
@@ -207,14 +205,20 @@ public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
         private int replicaCount = STATIC_REPLICA_COUNT; // we can read from config or annotations
 
         @Override
-        public void onCreate(SapphireServerPolicy server, Annotation[] annotations)
+        public void onCreate(SapphireServerPolicy server, Map<String, DMSpec> dmSpec)
                 throws RemoteException {
-            super.onCreate(server, annotations);
-            LoadBalancedFrontendPolicyConfigAnnotation annotation =
-                    getAnnotation(annotations, LoadBalancedFrontendPolicyConfigAnnotation.class);
+            super.onCreate(server, dmSpec);
 
-            if (annotation != null) {
-                this.replicaCount = annotation.replicacount();
+            DMSpec spec = Utils.getDMSpec(dmSpec, LoadBalancedFrontendPolicy.class.getName());
+            if (spec != null) {
+                try {
+                    Config config = (Config) Utils.toConfig(spec);
+                    if (config != null) {
+                        this.replicaCount = config.getReplicaCount();
+                    }
+                } catch (Exception e) {
+                    logger.info("Failed to get replica count , using default value");
+                }
             }
             int count =
                     0; // count is compared below < STATIC_REPLICAS-1 excluding the present server

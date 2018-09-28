@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.Objects;
 import java.util.logging.Logger;
-import sapphire.app.DMSpec;
 import sapphire.kernel.common.GlobalKernelReferences;
 import sapphire.kernel.common.KernelObjectMigratingException;
 import sapphire.kernel.server.KernelServerImpl;
@@ -30,60 +29,28 @@ public class ExplicitMigrationPolicy extends DefaultSapphirePolicy {
         private int minWaitIntervalInMillis = MINWAITINTERVALINMILLIS;
         private String migrateObjectMethodName = MIGRATEOBJECTMETHODNAME;
 
-        public int getretryTimeout() {
+        public int getretryTimeoutInMillis() {
             return retryTimeoutInMillis;
         }
 
-        public void setretryTimeout(int retryTimeoutInMillis) {
+        public void setRetryTimeoutInMillis(int retryTimeoutInMillis) {
             this.retryTimeoutInMillis = retryTimeoutInMillis;
         }
 
-        public int getminWaitInterval() {
+        public int getMinWaitIntervalInMillis() {
             return minWaitIntervalInMillis;
         }
 
-        public void setminWaitInterval(int minWaitInterval) {
+        public void setMinWaitIntervalInMillis(int minWaitInterval) {
             this.minWaitIntervalInMillis = minWaitInterval;
         }
 
-        public String getmigrateObjectMethodName() {
+        public String getMigrateObjectMethodName() {
             return migrateObjectMethodName;
         }
 
-        public void setmigrateObjectMethodName(String methodName) {
+        public void setMigrateObjectMethodName(String methodName) {
             this.migrateObjectMethodName = methodName;
-        }
-
-        @Override
-        public DMSpec toDMSpec() {
-            DMSpec spec = new DMSpec();
-            // Use fully qualified class name!
-            spec.setName(ExplicitMigrationPolicy.class.getName());
-            spec.addProperty("minWaitIntervalInMillis", String.valueOf(minWaitIntervalInMillis));
-            spec.addProperty("retryTimeoutInMillis", String.valueOf(retryTimeoutInMillis));
-            spec.addProperty("migrateObjectMethodName", String.valueOf(migrateObjectMethodName));
-            return spec;
-        }
-
-        @Override
-        public SapphirePolicyConfig fromDMSpec(DMSpec spec) {
-            if (!ExplicitMigrationPolicy.class.getName().equals(spec.getName())) {
-                throw new IllegalArgumentException(
-                        String.format(
-                                "DM %s is not able to process spec %s",
-                                ExplicitMigrationPolicy.class.getName(), spec));
-            }
-
-            ExplicitMigrationPolicy.Config config = new ExplicitMigrationPolicy.Config();
-            Map<String, String> properties = spec.getProperties();
-            if (properties != null) {
-                config.setretryTimeout(Integer.parseInt(properties.get("retryTimeoutInMillis")));
-                config.setminWaitInterval(
-                        Integer.parseInt(properties.get("minWaitIntervalInMillis")));
-                config.setmigrateObjectMethodName((properties.get("migrateObjectMethodName")));
-            }
-
-            return config;
         }
 
         @Override
@@ -112,19 +79,16 @@ public class ExplicitMigrationPolicy extends DefaultSapphirePolicy {
         private long minWaitIntervalInMillis = MINWAITINTERVALINMILLIS;
 
         @Override
-        public void onCreate(SapphireGroupPolicy group, Map<String, DMSpec> dmSpecMap) {
-            super.onCreate(group, dmSpecMap);
+        public void onCreate(
+                SapphireGroupPolicy group, Map<String, SapphirePolicyConfig> configMap) {
+            super.onCreate(group, configMap);
 
-            if (dmSpecMap != null) {
-
-                DMSpec spec = dmSpecMap.get(ExplicitMigrationPolicy.class.getName());
-                if ((spec != null) && (spec.getProperty("retryTimeoutInMillis") != null)) {
-                    this.retryTimeoutInMillis =
-                            Integer.valueOf(spec.getProperty("retryTimeoutInMillis"));
-                }
-                if ((spec != null) && (spec.getProperty("minWaitIntervalInMillis") != null)) {
-                    this.minWaitIntervalInMillis =
-                            Integer.valueOf(spec.getProperty("minWaitIntervalInMillis"));
+            if (configMap != null) {
+                SapphirePolicyConfig config =
+                        configMap.get(ExplicitMigrationPolicy.Config.class.getName());
+                if (config != null) {
+                    this.retryTimeoutInMillis = ((Config) config).getretryTimeoutInMillis();
+                    this.minWaitIntervalInMillis = ((Config) config).getMinWaitIntervalInMillis();
                 }
             }
         }
@@ -164,13 +128,14 @@ public class ExplicitMigrationPolicy extends DefaultSapphirePolicy {
         private String migrateObjectMethodName = MIGRATEOBJECTMETHODNAME;
 
         @Override
-        public void onCreate(SapphireGroupPolicy group, Map<String, DMSpec> dmSpecMap) {
-            super.onCreate(group, dmSpecMap);
+        public void onCreate(
+                SapphireGroupPolicy group, Map<String, SapphirePolicyConfig> configMap) {
+            super.onCreate(group, configMap);
 
-            // TODO(multi-lang): Remove ExplicitMigrationPolicySpec annotation completely
-            DMSpec spec = dmSpecMap.get(ExplicitMigrationPolicy.class.getName());
-            if (spec != null) {
-                migrateObjectMethodName = spec.getProperty("migrateObjectMethodName");
+            SapphirePolicyConfig config =
+                    configMap.get(ExplicitMigrationPolicy.Config.class.getName());
+            if (config != null) {
+                migrateObjectMethodName = ((Config) config).getMigrateObjectMethodName();
             }
         }
 

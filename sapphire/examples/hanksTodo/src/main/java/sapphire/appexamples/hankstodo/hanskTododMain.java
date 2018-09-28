@@ -4,6 +4,7 @@ import java.net.InetSocketAddress;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
+import sapphire.app.DMSpec;
 import sapphire.app.Language;
 import sapphire.app.SapphireObjectSpec;
 import sapphire.common.SapphireObjectID;
@@ -35,7 +36,10 @@ public class hanskTododMain {
             SapphireObjectSpec spec = SapphireObjectSpec.newBuilder()
                                             .setLang(Language.java)
                                             .setJavaClassName("sapphire.appexamples.hankstodo.TodoListManager")
-                                            .addDM(config.toDMSpec())
+                                            .addDMSpec(DMSpec.newBuilder()
+                                                    .setName(DHTPolicy.class.getName())
+                                                    .addConfig(config)
+                                                    .create())
                                             .create();
 
             SapphireObjectID sapphireObjId = omsserver.createSapphireObject(spec.toString());

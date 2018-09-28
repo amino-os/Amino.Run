@@ -10,7 +10,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
 import java.util.logging.Logger;
-import sapphire.app.DMSpec;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
 import sapphire.policy.DefaultSapphirePolicy;
@@ -18,6 +17,7 @@ import sapphire.policy.DefaultSapphirePolicy;
 public class DHTPolicy extends DefaultSapphirePolicy {
     private static final int DEFAULT_NUM_OF_SHARDS = 3;
 
+    /** Configuration for DHT Policy. */
     public static class Config implements SapphirePolicyConfig {
         private int numOfShards = DEFAULT_NUM_OF_SHARDS;
 
@@ -27,32 +27,6 @@ public class DHTPolicy extends DefaultSapphirePolicy {
 
         public void setNumOfShards(int numOfShards) {
             this.numOfShards = numOfShards;
-        }
-
-        @Override
-        public DMSpec toDMSpec() {
-            DMSpec spec = new DMSpec();
-            spec.setName(DHTPolicy.class.getName());
-            spec.addProperty("numOfShards", String.valueOf(numOfShards));
-            return spec;
-        }
-
-        @Override
-        public SapphirePolicyConfig fromDMSpec(DMSpec spec) {
-            if (!DHTPolicy.class.getName().equals(spec.getName())) {
-                throw new IllegalArgumentException(
-                        String.format(
-                                "DM %s is not able to process spec %s",
-                                DHTPolicy.class.getName(), spec));
-            }
-
-            Config config = new Config();
-            Map<String, String> properties = spec.getProperties();
-            if (properties != null) {
-                config.setNumOfShards(Integer.parseInt(properties.get("numOfShards")));
-            }
-
-            return config;
         }
 
         @Override
@@ -69,6 +43,7 @@ public class DHTPolicy extends DefaultSapphirePolicy {
         }
     }
 
+    // TODO(multi-lang): Delete Annotations
     @Retention(RetentionPolicy.RUNTIME)
     @Target({ElementType.TYPE})
     public @interface DHTConfigure {
@@ -101,15 +76,16 @@ public class DHTPolicy extends DefaultSapphirePolicy {
         private Random generator = new Random(System.currentTimeMillis());
 
         @Override
-        public void onCreate(SapphireServerPolicy server, Map<String, DMSpec> dmSpecMap)
+        public void onCreate(
+                SapphireServerPolicy server, Map<String, SapphirePolicyConfig> configMap)
                 throws RemoteException {
             dhtChord = new DHTChord();
-            super.onCreate(server, dmSpecMap);
+            super.onCreate(server, configMap);
 
-            if (dmSpecMap != null) {
-                DMSpec spec = dmSpecMap.get(DHTPolicy.class.getSimpleName());
-                if ((spec != null) && (spec.getProperty("numOfShards") != null)) {
-                    this.numOfShards = Integer.parseInt(spec.getProperty("numOfShards"));
+            if (configMap != null) {
+                SapphirePolicyConfig config = configMap.get(DHTPolicy.Config.class.getName());
+                if (config != null) {
+                    this.numOfShards = ((Config) config).getNumOfShards();
                 }
             }
 

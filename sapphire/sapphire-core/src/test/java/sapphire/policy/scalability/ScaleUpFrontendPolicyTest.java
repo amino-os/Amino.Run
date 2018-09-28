@@ -22,10 +22,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
-import sapphire.app.Language;
-import sapphire.app.SO;
-import sapphire.app.SapphireObject;
-import sapphire.app.SapphireObjectSpec;
+import sapphire.app.*;
 import sapphire.app.stubs.SO_Stub;
 import sapphire.common.BaseTest;
 import sapphire.common.SapphireObjectID;
@@ -119,15 +116,26 @@ public class ScaleUpFrontendPolicyTest extends BaseTest {
     @Before
     public void setUp() throws Exception {
         super.setUp(Server_Stub.class, Group_Stub.class);
-        SapphireObjectSpec spec = new SapphireObjectSpec();
 
-        ScaleUpFrontendPolicy.Config config = new ScaleUpFrontendPolicy.Config();
-        config.setMaxConcurrentReq(2);
-        config.setReplicaCount(2);
-        spec.addDM(config.toDMSpec());
+        ScaleUpFrontendPolicy.Config scaleConfig = new ScaleUpFrontendPolicy.Config();
+        scaleConfig.setReplicationRateInMs(400);
 
-        spec.setLang(Language.java);
-        spec.setJavaClassName("sapphire.policy.scalability.ScaleUpFrontendPolicyTest$ScaleUpSO");
+        LoadBalancedFrontendPolicy.Config lbConfig = new LoadBalancedFrontendPolicy.Config();
+        lbConfig.setMaxConcurrentReq(3);
+        lbConfig.setReplicaCount(3);
+
+        SapphireObjectSpec spec =
+                SapphireObjectSpec.newBuilder()
+                        .setLang(Language.java)
+                        .setJavaClassName(
+                                "sapphire.policy.scalability.ScaleUpFrontendPolicyTest$ScaleUpSO")
+                        .addDMSpec(
+                                DMSpec.newBuilder()
+                                        .setName(ScaleUpFrontendPolicy.class.getName())
+                                        .addConfig(scaleConfig)
+                                        .addConfig(lbConfig)
+                                        .create())
+                        .create();
 
         SapphireObjectID sapphireObjId = spiedOms.createSapphireObject(spec.toString());
         soStub = (SO_Stub) spiedOms.acquireSapphireObjectStub(sapphireObjId);

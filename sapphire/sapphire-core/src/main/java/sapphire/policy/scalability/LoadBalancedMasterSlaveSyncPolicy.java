@@ -6,7 +6,6 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import sapphire.app.DMSpec;
 import sapphire.policy.scalability.masterslave.Committer;
 import sapphire.policy.scalability.masterslave.Configuration;
 import sapphire.policy.scalability.masterslave.Context;
@@ -47,8 +46,9 @@ public class LoadBalancedMasterSlaveSyncPolicy extends LoadBalancedMasterSlaveBa
         private transient Processor processor;
 
         @Override
-        public void onCreate(SapphireGroupPolicy group, Map<String, DMSpec> dmSpecMap) {
-            super.onCreate(group, dmSpecMap);
+        public void onCreate(
+                SapphireGroupPolicy group, Map<String, SapphirePolicyConfig> configMap) {
+            super.onCreate(group, configMap);
         }
 
         @Override

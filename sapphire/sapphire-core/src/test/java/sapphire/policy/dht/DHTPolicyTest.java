@@ -10,11 +10,11 @@ import java.util.Map;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import sapphire.app.DMSpec;
 import sapphire.kernel.server.KernelServerImpl;
 import sapphire.oms.OMSServer;
 import sapphire.oms.OMSServerImpl;
 import sapphire.policy.SapphirePolicy;
+import sapphire.policy.SapphirePolicyUpcalls;
 
 public class DHTPolicyTest {
     private OMSServer oms;
@@ -56,21 +56,13 @@ public class DHTPolicyTest {
         Assert.assertEquals(requests.length, cnt);
     }
 
-    @Test
-    public void testConfig() {
-        DHTPolicy.Config config = new DHTPolicy.Config();
-        config.setNumOfShards(3);
-
-        DHTPolicy.Config clone = (DHTPolicy.Config) config.fromDMSpec(config.toDMSpec());
-        Assert.assertEquals(config, clone);
-    }
-
     private static class ServerPolicy extends DHTPolicy.DHTServerPolicy {
         List<Object> requests = new ArrayList<>();
 
         @Override
         public void onCreate(
-                SapphirePolicy.SapphireGroupPolicy group, Map<String, DMSpec> dmSpecMap) {
+                SapphirePolicy.SapphireGroupPolicy group,
+                Map<String, SapphirePolicyUpcalls.SapphirePolicyConfig> configMap) {
             this.group = group;
         }
 

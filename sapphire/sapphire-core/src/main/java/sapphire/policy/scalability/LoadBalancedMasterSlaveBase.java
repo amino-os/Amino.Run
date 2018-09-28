@@ -15,7 +15,6 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import sapphire.app.DMSpec;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
 import sapphire.common.Utils;
@@ -163,10 +162,11 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultSapphirePolicy 
         private Lock masterLock;
 
         @Override
-        public void onCreate(SapphireServerPolicy server, Map<String, DMSpec> dmSpecMap)
+        public void onCreate(
+                SapphireServerPolicy server, Map<String, SapphirePolicyConfig> configMap)
                 throws RemoteException {
             logger = Logger.getLogger(this.getClass().getName());
-            super.onCreate(server, dmSpecMap);
+            super.onCreate(server, configMap);
             RuntimeSpec spec = Utils.getRuntimeSpec(server.getClass());
             try {
 

@@ -2,16 +2,26 @@ package sapphire.app;
 
 import org.junit.Assert;
 import org.junit.Test;
-import sapphire.common.Utils;
 import sapphire.policy.scalability.LoadBalancedFrontendPolicy;
+import sapphire.policy.scalability.ScaleUpFrontendPolicy;
 
 public class SapphireObjectSpecTest {
 
     @Test
-    public void testToYamlFromYaml() throws Exception {
-        LoadBalancedFrontendPolicy.Config config = new LoadBalancedFrontendPolicy.Config();
-        config.setMaxConcurrentReq(200);
-        config.setReplicaCount(30);
+    public void testToYamlFromYaml() {
+        ScaleUpFrontendPolicy.Config scaleUpConfig = new ScaleUpFrontendPolicy.Config();
+        scaleUpConfig.setReplicationRateInMs(100);
+
+        LoadBalancedFrontendPolicy.Config lbConfig = new LoadBalancedFrontendPolicy.Config();
+        lbConfig.setMaxConcurrentReq(200);
+        lbConfig.setReplicaCount(30);
+
+        DMSpec dmSpec =
+                DMSpec.newBuilder()
+                        .setName(ScaleUpFrontendPolicy.class.getName())
+                        .addConfig(scaleUpConfig)
+                        .addConfig(lbConfig)
+                        .create();
 
         SapphireObjectSpec soSpec =
                 SapphireObjectSpec.newBuilder()
@@ -19,15 +29,28 @@ public class SapphireObjectSpecTest {
                         .setName("com.org.College")
                         .setSourceFileLocation("src/main/js/college.js")
                         .setConstructorName("college")
-                        .addDM(Utils.toDMSpec(config))
+                        .addDMSpec(dmSpec)
                         .create();
+
+        System.out.println(soSpec.toString());
 
         SapphireObjectSpec soSpecClone = SapphireObjectSpec.fromYaml(soSpec.toString());
         Assert.assertEquals(soSpec, soSpecClone);
 
-        DMSpec dmSpec = soSpecClone.getDmList().get(0);
-        LoadBalancedFrontendPolicy.Config configClone =
-                (LoadBalancedFrontendPolicy.Config) Utils.toConfig(dmSpec);
-        Assert.assertEquals(config, configClone);
+        for (DMSpec ds : soSpecClone.getDmList()) {
+            ScaleUpFrontendPolicy.Config scaleUpConfigClone =
+                    (ScaleUpFrontendPolicy.Config) ds.getConfigs().get(0);
+            Assert.assertEquals(scaleUpConfig, scaleUpConfigClone);
+            LoadBalancedFrontendPolicy.Config lbConfigClone =
+                    (LoadBalancedFrontendPolicy.Config) ds.getConfigs().get(1);
+            Assert.assertEquals(lbConfig, lbConfigClone);
+        }
+    }
+
+    @Test
+    public void testSerializeEmptySpec() {
+        SapphireObjectSpec spec = SapphireObjectSpec.newBuilder().create();
+        SapphireObjectSpec clone = SapphireObjectSpec.fromYaml(spec.toString());
+        Assert.assertEquals(spec, clone);
     }
 }

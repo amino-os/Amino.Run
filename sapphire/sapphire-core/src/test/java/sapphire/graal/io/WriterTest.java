@@ -9,6 +9,7 @@ import org.graalvm.polyglot.Value;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import sapphire.app.Language;
 
 public class WriterTest {
     private Context polyglotCtx;
@@ -69,7 +70,7 @@ public class WriterTest {
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
 
-        Serializer ser = new Serializer(out, "js");
+        Serializer ser = new Serializer(out, Language.js);
         Value clone = null;
 
         try {

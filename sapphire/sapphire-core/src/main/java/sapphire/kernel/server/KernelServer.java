@@ -33,7 +33,7 @@ public interface KernelServer extends Remote {
      *
      * @param sapphireObjectSpec sapphire object specification in YAML.
      * @param args parameters to sapphire object constructor
-     * @return
+     * @return sapphire object stub
      * @throws RemoteException
      * @throws SapphireObjectCreationException
      * @throws ClassNotFoundException

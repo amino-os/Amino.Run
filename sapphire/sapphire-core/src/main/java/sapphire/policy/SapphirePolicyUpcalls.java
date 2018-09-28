@@ -4,38 +4,29 @@ import java.io.Serializable;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Map;
-import sapphire.app.DMSpec;
 import sapphire.policy.SapphirePolicy.SapphireGroupPolicy;
 import sapphire.policy.SapphirePolicy.SapphireServerPolicy;
 
 public interface SapphirePolicyUpcalls {
     /**
-     * Each sapphire policy can optionally define a Config class. This config class has to implement
-     * {@link SapphirePolicyConfig} interface. This config class allows programmers to pass some
-     * configurations into the sapphire policy.
+     * Interface for sapphire policy configuration.
+     *
+     * <p>Each sapphire policy can optionally define a Config class to allow programmers to pass
+     * configurations to the sapphire policy. All Config classes should implement this interface.
      */
-    interface SapphirePolicyConfig extends Serializable {
-        /** @return {@link DMSpec} */
-        DMSpec toDMSpec();
+    interface SapphirePolicyConfig extends Serializable {}
 
-        /**
-         * Parse the given {@link DMSpec} and returns a new {@link SapphirePolicyConfig} instance.
-         *
-         * @param spec {@link DMSpec}
-         * @return a new {@link SapphirePolicyConfig} instance
-         */
-        SapphirePolicyConfig fromDMSpec(DMSpec spec);
-    }
-
+    /** Interface for client policy */
     interface SapphireClientPolicyUpcalls extends Serializable {
         /**
          * Initialize client policy.
          *
          * @param group the group policy
-         * @param dmSpecMap the map that contains all DM specification. The key is the DM name. The
-         *     value is the DM specification.
+         * @param configMap the map that contains sapphire policy configurations. The key is the
+         *     class name of the configuration and the value is a {@link SapphirePolicyConfig}
+         *     instance.
          */
-        void onCreate(SapphireGroupPolicy group, Map<String, DMSpec> dmSpecMap);
+        void onCreate(SapphireGroupPolicy group, Map<String, SapphirePolicyConfig> configMap);
 
         void setServer(SapphireServerPolicy server);
 
@@ -51,10 +42,10 @@ public interface SapphirePolicyUpcalls {
          * Initialize server policy.
          *
          * @param group the group policy that manages this server policy
-         * @param dmSpecMap the map that contains all DM specification. The key is the DM name. The
-         *     value is the DM specification.
+         * @param configMap the map that contains sapphire policy configurations. The key is the
+         *     class name of the configuration and the value is a
          */
-        void onCreate(SapphireGroupPolicy group, Map<String, DMSpec> dmSpecMap);
+        void onCreate(SapphireGroupPolicy group, Map<String, SapphirePolicyConfig> configMap);
 
         void onDestroy();
 
@@ -70,10 +61,11 @@ public interface SapphirePolicyUpcalls {
          * Initialize g porouplicy.
          *
          * @param server the server policy that is managed by the group policy
-         * @param dmSpecMap the map that contains all DM specification. The key is the DM name. The
-         *     value is the DM specification.
+         * @param configMap the map that contains sapphire policy configurations. The key is the
+         *     class name of the configuration, and the value is a {@link SapphirePolicyConfig}
+         *     instance.
          */
-        void onCreate(SapphireServerPolicy server, Map<String, DMSpec> dmSpecMap)
+        void onCreate(SapphireServerPolicy server, Map<String, SapphirePolicyConfig> configMap)
                 throws RemoteException;
 
         void addServer(SapphireServerPolicy server) throws RemoteException;

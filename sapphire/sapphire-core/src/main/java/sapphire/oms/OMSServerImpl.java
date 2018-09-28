@@ -1,6 +1,7 @@
 package sapphire.oms;
 
 import static sapphire.compiler.GlobalStubConstants.POLICY_ONDESTROY_MTD_NAME_FORMAT;
+import static sapphire.policy.SapphirePolicyUpcalls.SapphirePolicyConfig;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -16,7 +17,6 @@ import java.util.Map;
 import java.util.Random;
 import java.util.logging.Logger;
 import org.json.JSONException;
-import sapphire.app.DMSpec;
 import sapphire.common.AppObjectStub;
 import sapphire.common.SapphireObjectCreationException;
 import sapphire.common.SapphireObjectID;
@@ -365,10 +365,12 @@ public class OMSServerImpl implements OMSServer {
      */
     @Override
     public SapphirePolicy.SapphireGroupPolicy createGroupPolicy(
-            Class<?> policyClass, SapphireObjectID sapphireObjId, Map<String, DMSpec> dmSpecMap)
+            Class<?> policyClass,
+            SapphireObjectID sapphireObjId,
+            Map<String, SapphirePolicyConfig> configMap)
             throws RemoteException, ClassNotFoundException, KernelObjectNotCreatedException,
                     SapphireObjectNotFoundException {
-        return Sapphire.createGroupPolicy(policyClass, sapphireObjId, dmSpecMap);
+        return Sapphire.createGroupPolicy(policyClass, sapphireObjId, configMap);
     }
 
     public static void main(String args[]) {

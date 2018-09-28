@@ -6,7 +6,6 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import sapphire.app.DMSpec;
 
 public class DefaultSapphirePolicy extends SapphirePolicy {
 
@@ -20,8 +19,9 @@ public class DefaultSapphirePolicy extends SapphirePolicy {
         public void onMembershipChange() {}
 
         @Override
-        public void onCreate(SapphireGroupPolicy group, Map<String, DMSpec> dmSpecMap) {
-            super.onCreate(group, dmSpecMap);
+        public void onCreate(
+                SapphireGroupPolicy group, Map<String, SapphirePolicyConfig> configMap) {
+            super.onCreate(group, configMap);
         }
 
         public void onDestroy() {
@@ -49,7 +49,8 @@ public class DefaultSapphirePolicy extends SapphirePolicy {
         }
 
         @Override
-        public void onCreate(SapphireGroupPolicy group, Map<String, DMSpec> dmSpecMap) {
+        public void onCreate(
+                SapphireGroupPolicy group, Map<String, SapphirePolicyConfig> configMap) {
             this.group = (DefaultGroupPolicy) group;
         }
     }
@@ -86,7 +87,8 @@ public class DefaultSapphirePolicy extends SapphirePolicy {
         }
 
         @Override
-        public void onCreate(SapphireServerPolicy server, Map<String, DMSpec> dmSpecMap)
+        public void onCreate(
+                SapphireServerPolicy server, Map<String, SapphirePolicyConfig> configMap)
                 throws RemoteException {
             addServer(server);
         }

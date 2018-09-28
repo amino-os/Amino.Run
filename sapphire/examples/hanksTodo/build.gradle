@@ -51,7 +51,7 @@ task runks(type: JavaExec) {
 // Task for run hanksTodoApp demo app
 // Usage: gradlew runapp -PW=DisneyWorld
 task runapp(type: JavaExec) {
-    main = "sapphire.appexamples.hankstodo.hanskTododMain"
+    main = "sapphire.appexamples.hankstodo.hanksTodoMain"
     classpath = sourceSets.main.runtimeClasspath
     args project.property('omsIp'), project.property('omsPort'), project.property('kernelIpAndroid'), project.property('kernelServerPort')
 }

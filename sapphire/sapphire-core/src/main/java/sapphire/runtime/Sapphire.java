@@ -318,7 +318,7 @@ public class Sapphire {
     public static SapphireGroupPolicy createGroupPolicy(
             Class<?> policyClass, SapphireObjectID sapphireObjId, Annotation[] appConfigAnnotation)
             throws RemoteException, ClassNotFoundException, KernelObjectNotCreatedException,
-            SapphireObjectNotFoundException {
+                    SapphireObjectNotFoundException {
         SapphireGroupPolicy groupPolicyStub = (SapphireGroupPolicy) getPolicyStub(policyClass);
         try {
             SapphireGroupPolicy groupPolicy = initializeGroupPolicy(groupPolicyStub);

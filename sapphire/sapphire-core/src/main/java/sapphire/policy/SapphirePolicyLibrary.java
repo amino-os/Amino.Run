@@ -205,7 +205,8 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
         }
 
         // This function is same as sapphire_pin but pining to the server instead of region
-        // TODO (2018-9-26, Sungwook), Remove this method after updating all policies to use below method.
+        // TODO (2018-9-26, Sungwook), Remove this method after updating all policies to use below
+        // method.
         public void sapphire_pin_to_server(InetSocketAddress server)
                 throws RemoteException, SapphireObjectNotFoundException,
                         SapphireObjectReplicaNotFoundException {
@@ -219,8 +220,8 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
         }
 
         /*
-         Pin server policies in the chain.
-          */
+        Pin server policies in the chain.
+         */
         public void sapphire_pin_to_server(
                 SapphireServerPolicy serverPolicyStub, InetSocketAddress server)
                 throws RemoteException, SapphireObjectNotFoundException,
@@ -248,15 +249,14 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
             /**
              * Create a list of associated ServerPolicies which needs to be explicitly removed from
              * the local KernelServer. These associated ServerPolicy KernelObjects will be moved to
-             * the new Server when the first KernelObject is moved.
-             * The remaining KernelObject in the local KernelServer should be explicitly removed
-             * The new KernelServer address needs to be registered with the OMS explicitly for
-             * these associated KernelObjects.
+             * the new Server when the first KernelObject is moved. The remaining KernelObject in
+             * the local KernelServer should be explicitly removed The new KernelServer address
+             * needs to be registered with the OMS explicitly for these associated KernelObjects.
              */
-
             while (serverPolicy.getNextServerPolicy() != null) {
                 // First server policy will be removed when the object is moved; therefore, not
                 // needed to be included in the removal list.
+                // TODO(2018-9-28, Sungwook): Removal logic should be in the same place; therefore, move the logic to  kernelserver.moveKernelObjectToServer()
                 serverPolicy = serverPolicy.getNextServerPolicy();
                 serverPoliciesToRemove.add(serverPolicy);
             }
@@ -292,10 +292,11 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 
             // Register the moved associated KernelObjects to OMS with the new KernelServer address.
             // Then, remove the associated KernelObjects from the local KernelServer.
+            // TODO(2018-9-28, Sungwook): Removal logic should be in the same place; therefore, move the logic to  kernelserver.moveKernelObjectToServer()
             for (SapphireServerPolicy serverPolicyToRemove : serverPoliciesToRemove) {
                 try {
                     oms().registerKernelObject(serverPolicyToRemove.$__getKernelOID(), server);
-                    kernel().deleteKernelObject(serverPolicyToRemove.$__getKernelOID());
+                    kernel().removeObject(serverPolicyToRemove.$__getKernelOID());
                 } catch (KernelObjectNotFoundException e) {
                     e.printStackTrace();
                     throw new Error(

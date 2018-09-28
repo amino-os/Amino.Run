@@ -86,7 +86,7 @@ public abstract class DefaultSapphirePolicyUpcallImpl extends SapphirePolicyLibr
         public void sapphire_pin_to_server(
                 SapphireServerPolicy sapphireServerPolicy, InetSocketAddress server)
                 throws RemoteException, SapphireObjectNotFoundException,
-                SapphireObjectReplicaNotFoundException {
+                        SapphireObjectReplicaNotFoundException {
             super.sapphire_pin_to_server(sapphireServerPolicy, server);
         }
 

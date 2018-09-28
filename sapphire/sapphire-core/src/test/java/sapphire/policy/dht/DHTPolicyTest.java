@@ -72,7 +72,8 @@ public class DHTPolicyTest {
         }
 
         @Override
-        public SapphirePolicy.SapphireServerPolicy sapphire_replicate(List<SapphirePolicyContainer> processedPolicies) {
+        public SapphirePolicy.SapphireServerPolicy sapphire_replicate(
+                List<SapphirePolicyContainer> processedPolicies) {
             return new ServerPolicy();
         }
 

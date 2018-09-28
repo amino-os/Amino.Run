@@ -36,11 +36,11 @@ import sapphire.runtime.Sapphire;
 /** Created by Vishwajeet on 11/9/18. */
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({
-        KernelServerImpl.class,
-        Sapphire.class,
-        KernelObjectFactory.class,
-        LocateRegistry.class,
-        SapphireUtils.class
+    KernelServerImpl.class,
+    Sapphire.class,
+    KernelObjectFactory.class,
+    LocateRegistry.class,
+    SapphireUtils.class
 })
 public class KSTest extends BaseTest {
     @Rule public ExpectedException thrown = ExpectedException.none();

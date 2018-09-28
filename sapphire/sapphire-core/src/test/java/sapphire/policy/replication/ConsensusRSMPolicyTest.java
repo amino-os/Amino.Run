@@ -47,11 +47,11 @@ import sapphire.runtime.SapphireConfiguration;
 /** Created by terryz on 4/9/18. */
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({
-        KernelServerImpl.class,
-        Sapphire.class,
-        KernelObjectFactory.class,
-        LocateRegistry.class,
-        SapphireUtils.class
+    KernelServerImpl.class,
+    Sapphire.class,
+    KernelObjectFactory.class,
+    LocateRegistry.class,
+    SapphireUtils.class
 })
 public class ConsensusRSMPolicyTest extends BaseTest {
     sapphire.policy.util.consensus.raft.Server raftServer1;
@@ -312,8 +312,8 @@ public class ConsensusRSMPolicyTest extends BaseTest {
         ArrayList<Object> params = new ArrayList<Object>();
         doThrow(RemoteException.class).when(this.server1).onRPC(method, params);
         doThrow(
-                new LeaderException(
-                        "LeaderException", (ConsensusRSMPolicy.ServerPolicy) this.server3))
+                        new LeaderException(
+                                "LeaderException", (ConsensusRSMPolicy.ServerPolicy) this.server3))
                 .when(this.server2)
                 .onRPC(method, params);
         this.client.onRPC(method, params);

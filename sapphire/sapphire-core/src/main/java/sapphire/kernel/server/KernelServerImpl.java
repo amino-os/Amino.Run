@@ -97,7 +97,7 @@ public class KernelServerImpl implements KernelServer {
     @Override
     public Object makeKernelRPC(KernelRPC rpc)
             throws RemoteException, KernelObjectNotFoundException, KernelObjectMigratingException,
-            KernelRPCException {
+                    KernelRPCException {
         KernelObject object = null;
         object = objectManager.lookupObject(rpc.getOID());
 
@@ -127,12 +127,9 @@ public class KernelServerImpl implements KernelServer {
      */
     public void copyKernelObject(KernelOID oid, KernelObject object)
             throws RemoteException, KernelObjectNotFoundException,
-            KernelObjectStubNotCreatedException, SapphireObjectNotFoundException,
-            SapphireObjectReplicaNotFoundException {
-        logger.log(
-                Level.INFO,
-                "Adding object "
-                        + oid);
+                    KernelObjectStubNotCreatedException, SapphireObjectNotFoundException,
+                    SapphireObjectReplicaNotFoundException {
+        logger.log(Level.INFO, "Adding object " + oid);
 
         // TODO (9/27/2018, Sungwook): Move uncoalesce logic to separate loop at the end of code.
         this.objectManager.addObject(oid, object);
@@ -182,7 +179,8 @@ public class KernelServerImpl implements KernelServer {
                 }
             }
 
-            // First server policy is initialized at the end as the order is executed backwards from app object.
+            // First server policy is initialized at the end as the order is executed backwards from
+            // app object.
             try {
                 firstServerPolicy.initialize();
             } catch (Exception e) {
@@ -235,7 +233,7 @@ public class KernelServerImpl implements KernelServer {
      */
     public void moveKernelObjectToServer(InetSocketAddress host, KernelOID oid)
             throws RemoteException, KernelObjectNotFoundException, SapphireObjectNotFoundException,
-            SapphireObjectReplicaNotFoundException {
+                    SapphireObjectReplicaNotFoundException {
         if (host.equals(this.host)) {
             return;
         }

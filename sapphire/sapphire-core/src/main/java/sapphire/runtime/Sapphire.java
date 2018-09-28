@@ -6,6 +6,8 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -52,7 +54,7 @@ public class Sapphire {
         try {
             if (spec.getLang() == Language.java) {
                 Class<?> appObjectClass = Class.forName(spec.getJavaClassName());
-                return new_(appObjectClass, args);
+                return new_(appObjectClass, spec, args);
             }
 
         } catch (ClassNotFoundException e) {
@@ -75,6 +77,25 @@ public class Sapphire {
      * @return The App Object Stub
      * @deprecated please use {@link Sapphire#new_(SapphireObjectSpec, Object...)}
      */
+    public static Object new_(Class<?> appObjectClass, SapphireObjectSpec spec, Object... args) {
+        try {
+            Class<?> policy = getPolicy(appObjectClass.getGenericInterfaces());
+            PolicyComponents pc = getPolicyComponents(policy);
+
+            List<DMSpec> list = spec.getDmList();
+            Map<String, DMSpec> dmSpecMap = new HashMap<String, DMSpec>();
+            int j = 0;
+            for (j = 0; (list != null) && j < (list.size()); j++) {
+                dmSpecMap.put(list.get(j).getName(), list.get(j));
+            }
+
+            return newHelper_(appObjectClass, args, pc, null, dmSpecMap);
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Failed to create sapphire object:", e);
+            return null;
+        }
+    }
+    // TODO This is forbackword compatability need to change all applications
     public static Object new_(Class<?> appObjectClass, Object... args) {
         try {
             Class<?> policy = getPolicy(appObjectClass.getGenericInterfaces());
@@ -116,7 +137,7 @@ public class Sapphire {
         /* Create the Kernel Object for the Group Policy and get the Group Policy Stub from OMS */
         SapphireGroupPolicy groupPolicyStub =
                 GlobalKernelReferences.nodeServer.oms.createGroupPolicy(
-                        pc.groupPolicyClass, sapphireObjId, appObjectClass.getAnnotations());
+                        pc.groupPolicyClass, sapphireObjId, dmSpecMap);
 
         /* Register for a replica Id from OMS */
         SapphireReplicaID sapphireReplicaId =
@@ -155,10 +176,10 @@ public class Sapphire {
 
         /* Link everything together */
         client.setServer(serverPolicyStub);
-        client.onCreate(groupPolicyStub, annotations);
+        client.onCreate(groupPolicyStub, dmSpecMap);
         appStub.$__initialize(client);
         serverPolicy.onCreate(groupPolicyStub, dmSpecMap);
-        groupPolicyStub.onCreate(serverPolicyStub, annotations);
+        groupPolicyStub.onCreate(serverPolicyStub, dmSpecMap);
 
         logger.info("Sapphire Object created: " + appObjectClass.getName());
         return appStub;
@@ -228,7 +249,7 @@ public class Sapphire {
      * @throws SapphireObjectNotFoundException
      */
     public static SapphireGroupPolicy createGroupPolicy(
-            Class<?> policyClass, SapphireObjectID sapphireObjId, Annotation[] appConfigAnnotation)
+            Class<?> policyClass, SapphireObjectID sapphireObjId, Map<String, DMSpec> dmSpecMap)
             throws RemoteException, ClassNotFoundException, KernelObjectNotCreatedException,
                     SapphireObjectNotFoundException {
         SapphireGroupPolicy groupPolicyStub = (SapphireGroupPolicy) getPolicyStub(policyClass);
@@ -236,7 +257,7 @@ public class Sapphire {
             SapphireGroupPolicy groupPolicy = initializeGroupPolicy(groupPolicyStub);
             groupPolicyStub.setSapphireObjId(sapphireObjId);
             groupPolicy.setSapphireObjId(sapphireObjId);
-            groupPolicy.setAppConfigAnnotation(appConfigAnnotation);
+            groupPolicy.setAppConfigAnnotation(dmSpecMap);
 
             EventHandler sapphireHandler =
                     new EventHandler(

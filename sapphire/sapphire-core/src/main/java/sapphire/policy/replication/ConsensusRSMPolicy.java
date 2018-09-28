@@ -1,7 +1,6 @@
 package sapphire.policy.replication;
 
 import java.io.Serializable;
-import java.lang.annotation.Annotation;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
@@ -193,9 +192,9 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
         private static Logger logger = Logger.getLogger(GroupPolicy.class.getName());
 
         @Override
-        public void onCreate(SapphireServerPolicy server, Annotation[] annotations)
+        public void onCreate(SapphireServerPolicy server, Map<String, DMSpec> dmSpecMap)
                 throws RemoteException {
-            super.onCreate(server, annotations);
+            super.onCreate(server, dmSpecMap);
             try {
                 ArrayList<String> regions = sapphire_getRegions();
                 // Register the first replica, which has already been created.

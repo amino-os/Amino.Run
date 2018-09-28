@@ -30,7 +30,6 @@ public class Serializer implements AutoCloseable {
     }
 
     public void serialize(Value v) throws IOException {
-        System.out.println("******************start serialize: " + v);
         seenInd = 0;
         seenCache = new HashMap<String, Integer>();
         out.writeUTF(lang.toString());

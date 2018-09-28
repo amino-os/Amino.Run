@@ -19,15 +19,10 @@ public class Deserializer implements AutoCloseable {
         else this.c = c;
     }
 
-    // If client does not specify language during serialization, we should set the language here.
-    public void setLanguage(Language language) {
-        lang = language;
-    }
-
     public Value deserialize() throws IOException {
         seenCache = new HashMap<Integer, Value>();
-        Language language = Language.valueOf(in.readUTF());
-        if (language != Language.unspecified) lang = language;
+        lang = Language.valueOf(in.readUTF());
+
         System.out.println(String.format("lang is %s", lang));
         return deserializeHelper();
     }

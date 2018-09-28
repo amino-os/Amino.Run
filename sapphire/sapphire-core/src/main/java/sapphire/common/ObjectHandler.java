@@ -46,7 +46,7 @@ public class ObjectHandler implements Serializable {
         }
     }
 
-    public boolean IsGraalObject() {
+    private boolean IsGraalObject() {
         return lang != Language.java;
     }
 
@@ -92,10 +92,6 @@ public class ObjectHandler implements Serializable {
             for (Object p : params) {
                 ByteArrayInputStream in = new ByteArrayInputStream((byte[]) p);
                 sapphire.graal.io.Deserializer deserializer = new Deserializer(in, c);
-
-                // TODO: we should get language accordingly. We know language we create this graal
-                // object, we can save it.
-                deserializer.setLanguage(sapphire.app.Language.js);
                 objs.add(deserializer.deserialize());
             }
             return v.getMember(method).execute(objs.toArray());

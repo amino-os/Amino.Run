@@ -17,16 +17,21 @@ public class KernelRPC implements Serializable {
     private String method;
     private ArrayList<Object> params;
 
-    public KernelRPC(KernelOID oid, String method, ArrayList<Object> params) throws Exception {
+    public KernelRPC(KernelOID oid, String method, ArrayList<Object> params) {
         this.oid = oid;
         this.method = method;
+        this.params = params;
+    }
 
-        if (params.size() > 0
-                && org.graalvm.polyglot.Value.class.isAssignableFrom(params.get(0).getClass())) {
-
+    public KernelRPC(KernelOID oid, Language language, String method, ArrayList<Object> params)
+            throws Exception {
+        this.oid = oid;
+        this.method = method;
+        if (language != Language.java) {
             for (Object p : params) {
                 ByteArrayOutputStream out = new ByteArrayOutputStream();
-                sapphire.graal.io.Serializer serializer = new Serializer(out, Language.unspecified);
+                sapphire.graal.io.Serializer serializer =
+                        new Serializer(out, (Language) params.get(0));
                 serializer.serialize((Value) p);
                 this.params.add(out.toByteArray());
             }

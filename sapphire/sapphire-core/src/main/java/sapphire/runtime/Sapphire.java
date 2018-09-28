@@ -54,8 +54,15 @@ public class Sapphire {
                 Class<?> appObjectClass = Class.forName(spec.getJavaClassName());
                 return new_(appObjectClass, args);
             }
-
+            Class<?> policy = getPolicy(spec);
+            PolicyComponents pc = getPolicyComponents(policy);
+            Map<String, DMSpec> dmSpecMap = Utils.toDMSpec(spec);
+            // TODO: remove annotations. currenly passed null
+            return newHelper_(spec, args, pc, dmSpecMap);
         } catch (ClassNotFoundException e) {
+            logger.log(
+                    Level.SEVERE, String.format("Failed to create sapphire object '%s'", spec), e);
+        } catch (Exception e) {
             logger.log(
                     Level.SEVERE, String.format("Failed to create sapphire object '%s'", spec), e);
         }
@@ -94,10 +101,84 @@ public class Sapphire {
      * <p>// TODO(multi-lang): Remove annotations from parameter list. // We pass in both
      * annotations and DMSpec temporarily to make // existing codes happy.
      *
+     * @param spec
+     * @param args
+     * @param pc
+     * @param dmSpecMap
+     * @return
+     * @throws Exception
+     */
+    private static Object newHelper_(
+            SapphireObjectSpec spec,
+            Object[] args,
+            PolicyComponents pc,
+            // Annotation[] annotations,
+            Map<String, DMSpec> dmSpecMap)
+            throws Exception {
+        /* Register for a sapphire object Id from OMS */
+        SapphireObjectID sapphireObjId =
+                GlobalKernelReferences.nodeServer.oms.registerSapphireObject();
+
+        /* Create the Kernel Object for the Group Policy and get the Group Policy Stub from OMS */
+        SapphireGroupPolicy groupPolicyStub =
+                GlobalKernelReferences.nodeServer.oms.createGroupPolicy(
+                        pc.groupPolicyClass, sapphireObjId, dmSpecMap);
+
+        /* Register for a replica Id from OMS */
+        SapphireReplicaID sapphireReplicaId =
+                GlobalKernelReferences.nodeServer.oms.registerSapphireReplica(sapphireObjId);
+
+        /* Create the Kernel Object for the Server Policy, and get the Server Policy Stub */
+        final SapphireServerPolicy serverPolicyStub =
+                (SapphireServerPolicy) getPolicyStub(pc.serverPolicyClass);
+
+        /* Create the Client Policy Object */
+        SapphireClientPolicy client = (SapphireClientPolicy) pc.clientPolicyClass.newInstance();
+
+        /* Initialize the server policy and return a local pointer to the object itself */
+        SapphireServerPolicy serverPolicy = initializeServerPolicy(serverPolicyStub);
+        serverPolicyStub.setReplicaId(sapphireReplicaId);
+        serverPolicy.setReplicaId(sapphireReplicaId);
+
+        EventHandler replicaHandler =
+                new EventHandler(
+                        GlobalKernelReferences.nodeServer.getLocalHost(),
+                        new ArrayList() {
+                            {
+                                add(serverPolicyStub);
+                            }
+                        });
+
+        /* Register the handler for this replica to OMS */
+        GlobalKernelReferences.nodeServer.oms.setSapphireReplicaDispatcher(
+                sapphireReplicaId, replicaHandler);
+
+        /* Create the App Object and return the App Stub */
+        //        SapphireObjectSpec spec = new SapphireObjectSpec();
+        //        spec.setLang(Language.java);
+        //        spec.setJavaClassName(appObjectClass.getCanonicalName());
+        AppObjectStub appStub = getAppStub(spec, serverPolicy, args);
+
+        /* Link everything together */
+        client.setServer(serverPolicyStub);
+        client.onCreate(groupPolicyStub, dmSpecMap);
+        appStub.$__initialize(client);
+        serverPolicy.onCreate(groupPolicyStub, dmSpecMap);
+        groupPolicyStub.onCreate(serverPolicyStub, dmSpecMap);
+
+        logger.info("Sapphire Object created: " + spec.getName());
+        return appStub;
+    }
+
+    /**
+     * An internal helper method for sapphire object creation.
+     *
+     * <p>// TODO(multi-lang): Remove annotations from parameter list. // We pass in both
+     * annotations and DMSpec temporarily to make // existing codes happy.
+     *
      * @param appObjectClass
      * @param args
      * @param pc
-     * @param annotations
      * @param dmSpecMap
      * @return
      * @throws Exception
@@ -116,7 +197,7 @@ public class Sapphire {
         /* Create the Kernel Object for the Group Policy and get the Group Policy Stub from OMS */
         SapphireGroupPolicy groupPolicyStub =
                 GlobalKernelReferences.nodeServer.oms.createGroupPolicy(
-                        pc.groupPolicyClass, sapphireObjId, appObjectClass.getAnnotations());
+                        pc.groupPolicyClass, sapphireObjId, dmSpecMap);
 
         /* Register for a replica Id from OMS */
         SapphireReplicaID sapphireReplicaId =
@@ -155,10 +236,10 @@ public class Sapphire {
 
         /* Link everything together */
         client.setServer(serverPolicyStub);
-        client.onCreate(groupPolicyStub, annotations);
+        client.onCreate(groupPolicyStub, dmSpecMap);
         appStub.$__initialize(client);
         serverPolicy.onCreate(groupPolicyStub, dmSpecMap);
-        groupPolicyStub.onCreate(serverPolicyStub, annotations);
+        groupPolicyStub.onCreate(serverPolicyStub, dmSpecMap);
 
         logger.info("Sapphire Object created: " + appObjectClass.getName());
         return appStub;
@@ -228,7 +309,7 @@ public class Sapphire {
      * @throws SapphireObjectNotFoundException
      */
     public static SapphireGroupPolicy createGroupPolicy(
-            Class<?> policyClass, SapphireObjectID sapphireObjId, Annotation[] appConfigAnnotation)
+            Class<?> policyClass, SapphireObjectID sapphireObjId, Map<String, DMSpec> dmSpecMap)
             throws RemoteException, ClassNotFoundException, KernelObjectNotCreatedException,
                     SapphireObjectNotFoundException {
         SapphireGroupPolicy groupPolicyStub = (SapphireGroupPolicy) getPolicyStub(policyClass);
@@ -236,7 +317,7 @@ public class Sapphire {
             SapphireGroupPolicy groupPolicy = initializeGroupPolicy(groupPolicyStub);
             groupPolicyStub.setSapphireObjId(sapphireObjId);
             groupPolicy.setSapphireObjId(sapphireObjId);
-            groupPolicy.setAppConfigAnnotation(appConfigAnnotation);
+            groupPolicy.setAppConfigAnnotation(dmSpecMap);
 
             EventHandler sapphireHandler =
                     new EventHandler(
@@ -290,6 +371,18 @@ public class Sapphire {
 
         // Shouldn't get here
         throw new Exception("The Object doesn't implement the SapphireObject interface.");
+    }
+
+    /* Returns the policy used by the Sapphire Object from SapphireObjectSpec*/
+    private static Class<?> getPolicy(SapphireObjectSpec spec) throws Exception {
+        for (DMSpec dmSpec : spec.getDmList()) {
+            // TODO: Add multiple DMs when multi DM supported
+            return Class.forName(dmSpec.getName());
+        }
+
+        return DefaultSapphirePolicy.class;
+        //// Shouldn't get here
+        // throw new Exception("The SapphireObjectSpec doesn't  the SapphireObject interface.");
     }
 
     public static KernelObjectStub getPolicyStub(Class<?> policyClass, KernelOID oid)

@@ -1,7 +1,6 @@
 package sapphire.policy;
 
 import java.io.Serializable;
-import java.lang.annotation.Annotation;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Map;
@@ -21,6 +20,7 @@ public interface SapphirePolicyUpcalls {
 
         /**
          * Parse the given {@link DMSpec} and returns a new {@link SapphirePolicyConfig} instance.
+         *
          * @param spec {@link DMSpec}
          * @return a new {@link SapphirePolicyConfig} instance
          */
@@ -29,7 +29,7 @@ public interface SapphirePolicyUpcalls {
 
     interface SapphireClientPolicyUpcalls extends Serializable {
         // TODO(multi-lang): replace annotations with Map<String, DMSpec>
-        void onCreate(SapphireGroupPolicy group, Annotation[] annotations);
+        void onCreate(SapphireGroupPolicy group, Map<String, DMSpec> dmSpecMap);
 
         void setServer(SapphireServerPolicy server);
 
@@ -60,8 +60,8 @@ public interface SapphirePolicyUpcalls {
     }
 
     interface SapphireGroupPolicyUpcalls extends Serializable {
-        // TODO(multi-lang): replace annotations with Map<String, DMSpec>
-        void onCreate(SapphireServerPolicy server, Annotation[] annotations) throws RemoteException;
+        void onCreate(SapphireServerPolicy server, Map<String, DMSpec> dmSpecMap)
+                throws RemoteException;
 
         void addServer(SapphireServerPolicy server) throws RemoteException;
 

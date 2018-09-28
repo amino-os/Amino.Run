@@ -14,6 +14,7 @@ import sapphire.kernel.server.KernelServerImpl;
 import sapphire.oms.OMSServer;
 import sapphire.oms.OMSServerImpl;
 import sapphire.policy.SapphirePolicy;
+import sapphire.policy.SapphirePolicyContainer;
 
 public class DHTPolicyTest {
     private OMSServer oms;
@@ -71,7 +72,7 @@ public class DHTPolicyTest {
         }
 
         @Override
-        public SapphirePolicy.SapphireServerPolicy sapphire_replicate() {
+        public SapphirePolicy.SapphireServerPolicy sapphire_replicate(List<SapphirePolicyContainer> processedPolicies) {
             return new ServerPolicy();
         }
 

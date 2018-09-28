@@ -30,16 +30,6 @@ public class SO_Stub extends SO implements sapphire.common.AppObjectStub {
         return super.clone();
     }
 
-    @Override
-    public void $__initialize(AppObject appObject) {
-        $__appObject = appObject;
-    }
-
-    @Override
-    public AppObject $__getAppObject() {
-        return $__appObject;
-    }
-
     // Implementation of getI()
     public Integer getI() {
         java.lang.Object $__result = null;

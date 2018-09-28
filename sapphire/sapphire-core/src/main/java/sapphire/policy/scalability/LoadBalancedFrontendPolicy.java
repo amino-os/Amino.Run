@@ -1,12 +1,5 @@
 package sapphire.policy.scalability;
 
-import static sapphire.common.Utils.getAnnotation;
-
-import java.lang.annotation.Annotation;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -92,14 +85,14 @@ public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
         }
     }
 
-    // TODO(multi-lang): Remove this annotation
-    @Retention(RetentionPolicy.RUNTIME)
+    /* @Retention(RetentionPolicy.RUNTIME)
     @Target({ElementType.TYPE})
     public @interface LoadBalancedFrontendPolicyConfigAnnotation {
-        int maxconcurrentReq() default MAX_CONCURRENT_REQUESTS;
+        int maxConcurrentReq() default MAX_CONCURRENT_REQUESTS;
 
-        int replicacount() default STATIC_REPLICA_COUNT;
+        int replicaCount() default STATIC_REPLICA_COUNT;
     }
+    */
 
     /**
      * LoadBalancedFrontend client policy. The client will LoadBalance among the Sapphire Server
@@ -142,32 +135,17 @@ public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
      */
     public static class ServerPolicy extends DefaultSapphirePolicy.DefaultServerPolicy {
         private static Logger logger = Logger.getLogger(ServerPolicy.class.getName());
-        protected int maxConcurrentReq =
-                MAX_CONCURRENT_REQUESTS; // we can read from default config or annotations
+        // we can read from default config or annotations
+        protected int maxConcurrentReq = MAX_CONCURRENT_REQUESTS;
         protected Semaphore limiter;
 
         @Override
         public void onCreate(SapphireGroupPolicy group, Map<String, DMSpec> dmSpecMap) {
             super.onCreate(group, dmSpecMap);
-
-            //            LoadBalancedFrontendPolicyConfigAnnotation annotation =
-            //                    getAnnotation(annotations,
-            // LoadBalancedFrontendPolicyConfigAnnotation.class);
-            //            if (annotation != null) {
-            //                this.maxConcurrentReq = annotation.maxconcurrentReq();
-            //            }
-            //            if (this.limiter == null) {
-            //                this.limiter = new Semaphore(this.maxConcurrentReq, true);
-            //            }
-
-            // TODO(multi-lang): Remove LoadBalancedFrontendPolicyConfigAnnotation
-            DMSpec spec =
-                    dmSpecMap.get(
-                            ScaleUpFrontendPolicy.LoadBalancedFrontendPolicyConfigAnnotation.class
-                                    .getSimpleName());
-            if (spec != null) {
-                if (spec.getProperty("maxconcurrentReq") != null) {
-                    this.maxConcurrentReq = Integer.valueOf(spec.getProperty("maxconcurrentReq"));
+            if (dmSpecMap != null) {
+                DMSpec spec = dmSpecMap.get(LoadBalancedFrontendPolicy.class.getName());
+                if ((spec != null) && (spec.getProperty("maxConcurrentReq") != null)) {
+                    this.maxConcurrentReq = Integer.valueOf(spec.getProperty("maxConcurrentReq"));
                 }
             }
 
@@ -207,17 +185,20 @@ public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
         private int replicaCount = STATIC_REPLICA_COUNT; // we can read from config or annotations
 
         @Override
-        public void onCreate(SapphireServerPolicy server, Annotation[] annotations)
+        public void onCreate(SapphireServerPolicy server, Map<String, DMSpec> dmSpecMap)
                 throws RemoteException {
-            super.onCreate(server, annotations);
-            LoadBalancedFrontendPolicyConfigAnnotation annotation =
-                    getAnnotation(annotations, LoadBalancedFrontendPolicyConfigAnnotation.class);
+            super.onCreate(server, dmSpecMap);
 
-            if (annotation != null) {
-                this.replicaCount = annotation.replicacount();
+            if (dmSpecMap != null) {
+                DMSpec spec = dmSpecMap.get(LoadBalancedFrontendPolicy.class.getName());
+                if (spec != null) {
+                    if (spec.getProperty("replicaCount") != null) {
+                        this.replicaCount = Integer.valueOf(spec.getProperty("replicaCount"));
+                    }
+                }
             }
-            int count =
-                    0; // count is compared below < STATIC_REPLICAS-1 excluding the present server
+            // count is compared below < STATIC_REPLICAS-1 excluding the present server
+            int count = 0;
             int numnodes = 0; // num of nodes/servers in the selected region
 
             /* Creation of group happens when the first instance of sapphire object is

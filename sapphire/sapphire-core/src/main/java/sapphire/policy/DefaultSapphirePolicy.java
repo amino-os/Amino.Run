@@ -1,6 +1,5 @@
 package sapphire.policy;
 
-import java.lang.annotation.Annotation;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -50,7 +49,7 @@ public class DefaultSapphirePolicy extends SapphirePolicy {
         }
 
         @Override
-        public void onCreate(SapphireGroupPolicy group, Annotation[] annotations) {
+        public void onCreate(SapphireGroupPolicy group, Map<String, DMSpec> dmSpecMap) {
             this.group = (DefaultGroupPolicy) group;
         }
     }
@@ -87,7 +86,7 @@ public class DefaultSapphirePolicy extends SapphirePolicy {
         }
 
         @Override
-        public void onCreate(SapphireServerPolicy server, Annotation[] annotations)
+        public void onCreate(SapphireServerPolicy server, Map<String, DMSpec> dmSpecMap)
                 throws RemoteException {
             addServer(server);
         }

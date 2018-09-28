@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import sapphire.app.Language;
 import sapphire.app.SapphireObjectSpec;
 import sapphire.common.AppObjectStub;
 import sapphire.common.SapphireObjectCreationException;
@@ -266,12 +265,7 @@ public class KernelServerImpl implements KernelServer {
             throws RemoteException, SapphireObjectCreationException, ClassNotFoundException {
 
         SapphireObjectSpec spec = SapphireObjectSpec.fromYaml(soSpecYaml);
-        if (spec.getLang() == Language.java) {
-            Class<?> appObjectClass = Class.forName(spec.getJavaClassName());
-            return (AppObjectStub) Sapphire.new_(appObjectClass, args);
-        } else {
-            return (AppObjectStub) Sapphire.new_(spec, args);
-        }
+        return (AppObjectStub) Sapphire.new_(spec, args);
     }
 
     public class MemoryStatThread extends Thread {

@@ -52,12 +52,6 @@ import sapphire.runtime.Sapphire;
 public class ScaleUpFrontendPolicyTest extends BaseTest {
     @Rule public ExpectedException thrown = ExpectedException.none();
 
-    @ScaleUpFrontendPolicy.ScaleUpFrontendPolicyConfigAnnotation(
-            replicationRateInMs = 20,
-            loadbalanceConfig =
-                    @LoadBalancedFrontendPolicy.LoadBalancedFrontendPolicyConfigAnnotation(
-                            maxconcurrentReq = 2,
-                            replicacount = 2))
     public static class ScaleUpSO extends SO implements SapphireObject<ScaleUpFrontendPolicy> {}
 
     public static class Group_Stub extends ScaleUpFrontendPolicy.GroupPolicy
@@ -126,6 +120,12 @@ public class ScaleUpFrontendPolicyTest extends BaseTest {
     public void setUp() throws Exception {
         super.setUp(Server_Stub.class, Group_Stub.class);
         SapphireObjectSpec spec = new SapphireObjectSpec();
+
+        ScaleUpFrontendPolicy.Config config = new ScaleUpFrontendPolicy.Config();
+        config.setMaxConcurrentReq(2);
+        config.setReplicaCount(2);
+        spec.addDM(config.toDMSpec());
+
         spec.setLang(Language.java);
         spec.setJavaClassName("sapphire.policy.scalability.ScaleUpFrontendPolicyTest$ScaleUpSO");
 

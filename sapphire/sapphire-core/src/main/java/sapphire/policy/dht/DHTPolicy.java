@@ -1,8 +1,5 @@
 package sapphire.policy.dht;
 
-import static sapphire.common.Utils.getAnnotation;
-
-import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -104,14 +101,16 @@ public class DHTPolicy extends DefaultSapphirePolicy {
         private Random generator = new Random(System.currentTimeMillis());
 
         @Override
-        public void onCreate(SapphireServerPolicy server, Annotation[] annotations)
+        public void onCreate(SapphireServerPolicy server, Map<String, DMSpec> dmSpecMap)
                 throws RemoteException {
             dhtChord = new DHTChord();
-            super.onCreate(server, annotations);
+            super.onCreate(server, dmSpecMap);
 
-            DHTConfigure annotation = getAnnotation(annotations, DHTConfigure.class);
-            if (annotation != null) {
-                this.numOfShards = annotation.numOfShards();
+            if (dmSpecMap != null) {
+                DMSpec spec = dmSpecMap.get(DHTPolicy.class.getSimpleName());
+                if ((spec != null) && (spec.getProperty("numOfShards") != null)) {
+                    this.numOfShards = Integer.parseInt(spec.getProperty("numOfShards"));
+                }
             }
 
             try {

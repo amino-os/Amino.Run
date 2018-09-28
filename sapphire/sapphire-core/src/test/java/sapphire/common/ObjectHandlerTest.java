@@ -13,7 +13,6 @@ public class ObjectHandlerTest {
         Context c = Context.create();
         Value v = c.eval("js", "[1,42,3]");
         ObjectHandler objHandler = new ObjectHandler(v);
-        objHandler.SetGraalContext(c);
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         ObjectOutputStream oos = new ObjectOutputStream(byteArrayOutputStream);
         oos.writeObject(objHandler);

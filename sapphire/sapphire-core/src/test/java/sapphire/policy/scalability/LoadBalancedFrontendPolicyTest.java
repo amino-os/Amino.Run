@@ -43,11 +43,11 @@ import sapphire.runtime.SapphireConfiguration;
 /** Created by Vishwajeet on 2/4/18. */
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({
-    KernelServerImpl.class,
-    Sapphire.class,
-    KernelObjectFactory.class,
-    LocateRegistry.class,
-    SapphireUtils.class
+        KernelServerImpl.class,
+        Sapphire.class,
+        KernelObjectFactory.class,
+        LocateRegistry.class,
+        SapphireUtils.class
 })
 public class LoadBalancedFrontendPolicyTest extends BaseTest {
     int exceptionExpected = 0;
@@ -63,7 +63,7 @@ public class LoadBalancedFrontendPolicyTest extends BaseTest {
         sapphire.kernel.common.KernelOID $__oid = null;
         java.net.InetSocketAddress $__hostname = null;
         int $__lastSeenTick = 0;
-        AppObject $__appObject = null;
+        AppObject appObject = null;
         SapphirePolicy.SapphireClientPolicy $__nextClientPolicy = null;
 
         public Group_Stub(sapphire.kernel.common.KernelOID oid) {
@@ -80,18 +80,6 @@ public class LoadBalancedFrontendPolicyTest extends BaseTest {
 
         public void $__updateHostname(java.net.InetSocketAddress hostname) {
             this.$__hostname = hostname;
-        }
-
-        public int $__getLastSeenTick() {
-            return $__lastSeenTick;
-        }
-
-        public void $__setLastSeenTick(int lastSeenTick) {
-            this.$__lastSeenTick = lastSeenTick;
-        }
-
-        public AppObject $__getAppObject() {
-            return $__appObject;
         }
 
         public void $__setNextClientPolicy(SapphirePolicy.SapphireClientPolicy clientPolicy) {
@@ -121,18 +109,6 @@ public class LoadBalancedFrontendPolicyTest extends BaseTest {
 
         public void $__updateHostname(InetSocketAddress hostname) {
             this.$__hostname = hostname;
-        }
-
-        public int $__getLastSeenTick() {
-            return $__lastSeenTick;
-        }
-
-        public void $__setLastSeenTick(int lastSeenTick) {
-            this.$__lastSeenTick = lastSeenTick;
-        }
-
-        public AppObject $__getAppObject() {
-            return $__appObject;
         }
 
         public void $__setNextClientPolicy(SapphirePolicy.SapphireClientPolicy clientPolicy) {

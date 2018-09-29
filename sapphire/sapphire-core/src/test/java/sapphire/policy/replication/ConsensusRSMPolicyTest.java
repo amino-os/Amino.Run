@@ -47,11 +47,11 @@ import sapphire.runtime.SapphireConfiguration;
 /** Created by terryz on 4/9/18. */
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({
-    KernelServerImpl.class,
-    Sapphire.class,
-    KernelObjectFactory.class,
-    LocateRegistry.class,
-    SapphireUtils.class
+        KernelServerImpl.class,
+        Sapphire.class,
+        KernelObjectFactory.class,
+        LocateRegistry.class,
+        SapphireUtils.class
 })
 public class ConsensusRSMPolicyTest extends BaseTest {
     sapphire.policy.util.consensus.raft.Server raftServer1;
@@ -85,18 +85,6 @@ public class ConsensusRSMPolicyTest extends BaseTest {
             this.$__hostname = hostname;
         }
 
-        public int $__getLastSeenTick() {
-            return $__lastSeenTick;
-        }
-
-        public void $__setLastSeenTick(int lastSeenTick) {
-            this.$__lastSeenTick = lastSeenTick;
-        }
-
-        public AppObject $__getAppObject() {
-            return $__appObject;
-        }
-
         public void $__setNextClientPolicy(SapphirePolicy.SapphireClientPolicy clientPolicy) {
             $__nextClientPolicy = clientPolicy;
         }
@@ -124,18 +112,6 @@ public class ConsensusRSMPolicyTest extends BaseTest {
 
         public void $__updateHostname(InetSocketAddress hostname) {
             this.$__hostname = hostname;
-        }
-
-        public int $__getLastSeenTick() {
-            return $__lastSeenTick;
-        }
-
-        public void $__setLastSeenTick(int lastSeenTick) {
-            this.$__lastSeenTick = lastSeenTick;
-        }
-
-        public AppObject $__getAppObject() {
-            return $__appObject;
         }
 
         public void $__setNextClientPolicy(SapphirePolicy.SapphireClientPolicy clientPolicy) {
@@ -312,8 +288,8 @@ public class ConsensusRSMPolicyTest extends BaseTest {
         ArrayList<Object> params = new ArrayList<Object>();
         doThrow(RemoteException.class).when(this.server1).onRPC(method, params);
         doThrow(
-                        new LeaderException(
-                                "LeaderException", (ConsensusRSMPolicy.ServerPolicy) this.server3))
+                new LeaderException(
+                        "LeaderException", (ConsensusRSMPolicy.ServerPolicy) this.server3))
                 .when(this.server2)
                 .onRPC(method, params);
         this.client.onRPC(method, params);

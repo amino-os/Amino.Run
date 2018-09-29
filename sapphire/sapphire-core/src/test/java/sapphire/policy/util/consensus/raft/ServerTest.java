@@ -6,7 +6,6 @@ import static org.mockito.Mockito.spy;
 import static sapphire.common.UtilsTest.extractFieldValueOnInstance;
 import static sapphire.policy.util.consensus.raft.Server.State.FOLLOWER;
 
-import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -23,7 +22,6 @@ import sapphire.policy.replication.ConsensusRSMPolicy;
 /** Created by quinton on 3/16/18. */
 public class ServerTest {
     final int SERVER_COUNT = 3;
-    SapphirePolicy.SapphireGroupPolicy groupPolicy = mock(ConsensusRSMPolicy.GroupPolicy.class);
     SapphirePolicy.SapphireServerPolicy[] serverPolicy =
             new SapphirePolicy.SapphireServerPolicy[SERVER_COUNT];
     Server raftServer[] = new Server[SERVER_COUNT];
@@ -34,11 +32,9 @@ public class ServerTest {
         appObject = mock(AppObject.class);
 
         for (int i = 0; i < SERVER_COUNT; i++) {
-
             serverPolicy[i] = spy(ConsensusRSMPolicy.ServerPolicy.class);
             serverPolicy[i].$__initialize(appObject);
-            ((ConsensusRSMPolicy.ServerPolicy) serverPolicy[i])
-                    .onCreate(groupPolicy, new Annotation[] {});
+            ((ConsensusRSMPolicy.ServerPolicy) serverPolicy[i]).initializeRaftServer();
             try {
                 raftServer[i] =
                         (Server) (extractFieldValueOnInstance(this.serverPolicy[i], "raftServer"));

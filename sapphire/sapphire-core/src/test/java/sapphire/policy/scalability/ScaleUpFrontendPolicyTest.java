@@ -42,11 +42,11 @@ import sapphire.runtime.SapphireConfiguration;
 /** Created by Venugopal Reddy K 00900280 on 16/4/18. */
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({
-    KernelServerImpl.class,
-    Sapphire.class,
-    KernelObjectFactory.class,
-    LocateRegistry.class,
-    SapphireUtils.class
+        KernelServerImpl.class,
+        Sapphire.class,
+        KernelObjectFactory.class,
+        LocateRegistry.class,
+        SapphireUtils.class
 })
 public class ScaleUpFrontendPolicyTest extends BaseTest {
     @Rule public ExpectedException thrown = ExpectedException.none();
@@ -54,9 +54,9 @@ public class ScaleUpFrontendPolicyTest extends BaseTest {
     @ScaleUpFrontendPolicy.ScaleUpFrontendPolicyConfigAnnotation(
             replicationRateInMs = 20,
             loadbalanceConfig =
-                    @LoadBalancedFrontendPolicy.LoadBalancedFrontendPolicyConfigAnnotation(
-                            maxconcurrentReq = 2,
-                            replicacount = 2))
+            @LoadBalancedFrontendPolicy.LoadBalancedFrontendPolicyConfigAnnotation(
+                    maxconcurrentReq = 2,
+                    replicacount = 2))
     @SapphireConfiguration(Policies = "sapphire.policy.scalability.ScaleUpFrontendPolicy")
     public static class ScaleUpSO extends SO {}
 
@@ -64,8 +64,6 @@ public class ScaleUpFrontendPolicyTest extends BaseTest {
             implements KernelObjectStub {
         sapphire.kernel.common.KernelOID $__oid = null;
         java.net.InetSocketAddress $__hostname = null;
-        int $__lastSeenTick = 0;
-        AppObject $__appObject = null;
         SapphirePolicy.SapphireClientPolicy $__nextClientPolicy = null;
 
         public Group_Stub(sapphire.kernel.common.KernelOID oid) {
@@ -84,18 +82,6 @@ public class ScaleUpFrontendPolicyTest extends BaseTest {
             this.$__hostname = hostname;
         }
 
-        public int $__getLastSeenTick() {
-            return $__lastSeenTick;
-        }
-
-        public void $__setLastSeenTick(int lastSeenTick) {
-            this.$__lastSeenTick = lastSeenTick;
-        }
-
-        public AppObject $__getAppObject() {
-            return $__appObject;
-        }
-
         public void $__setNextClientPolicy(SapphirePolicy.SapphireClientPolicy clientPolicy) {
             $__nextClientPolicy = clientPolicy;
         }
@@ -105,8 +91,7 @@ public class ScaleUpFrontendPolicyTest extends BaseTest {
             implements KernelObjectStub {
         KernelOID $__oid = null;
         InetSocketAddress $__hostname = null;
-        int $__lastSeenTick = 0;
-        AppObject $__appObject = null;
+        AppObject appObject = null;
         SapphirePolicy.SapphireClientPolicy $__nextClientPolicy = null;
 
         public Server_Stub(KernelOID oid) {
@@ -123,18 +108,6 @@ public class ScaleUpFrontendPolicyTest extends BaseTest {
 
         public void $__updateHostname(InetSocketAddress hostname) {
             this.$__hostname = hostname;
-        }
-
-        public int $__getLastSeenTick() {
-            return $__lastSeenTick;
-        }
-
-        public void $__setLastSeenTick(int lastSeenTick) {
-            this.$__lastSeenTick = lastSeenTick;
-        }
-
-        public AppObject $__getAppObject() {
-            return $__appObject;
         }
 
         public void $__setNextClientPolicy(SapphirePolicy.SapphireClientPolicy clientPolicy) {

@@ -36,11 +36,11 @@ import sapphire.runtime.Sapphire;
 /** Created by Venugopal Reddy K 00900280 on 16/4/18. */
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({
-    KernelServerImpl.class,
-    Sapphire.class,
-    KernelObjectFactory.class,
-    LocateRegistry.class,
-    SapphireUtils.class
+        KernelServerImpl.class,
+        Sapphire.class,
+        KernelObjectFactory.class,
+        LocateRegistry.class,
+        SapphireUtils.class
 })
 public class OMSTest extends BaseTest {
     @Rule public ExpectedException thrown = ExpectedException.none();
@@ -51,8 +51,7 @@ public class OMSTest extends BaseTest {
             implements KernelObjectStub {
         sapphire.kernel.common.KernelOID $__oid = null;
         java.net.InetSocketAddress $__hostname = null;
-        int $__lastSeenTick = 0;
-        AppObject $__appObject = null;
+        AppObject appObject = null;
         SapphirePolicy.SapphireClientPolicy $__nextClientPolicy = null;
 
         public Group_Stub(sapphire.kernel.common.KernelOID oid) {
@@ -71,20 +70,12 @@ public class OMSTest extends BaseTest {
             this.$__hostname = hostname;
         }
 
-        public int $__getLastSeenTick() {
-            return $__lastSeenTick;
-        }
-
-        public void $__setLastSeenTick(int lastSeenTick) {
-            this.$__lastSeenTick = lastSeenTick;
+        public void $__setNextClientPolicy(SapphirePolicy.SapphireClientPolicy clientPolicy) {
+            $__nextClientPolicy = clientPolicy;
         }
 
         public AppObject $__getAppObject() {
-            return $__appObject;
-        }
-
-        public void $__setNextClientPolicy(SapphirePolicy.SapphireClientPolicy clientPolicy) {
-            $__nextClientPolicy = clientPolicy;
+            return this.appObject;
         }
     }
 
@@ -92,8 +83,7 @@ public class OMSTest extends BaseTest {
             implements KernelObjectStub {
         KernelOID $__oid = null;
         InetSocketAddress $__hostname = null;
-        int $__lastSeenTick = 0;
-        AppObject $__appObject = null;
+        AppObject appObject = null;
         SapphirePolicy.SapphireClientPolicy $__nextClientPolicy = null;
 
         public Server_Stub(KernelOID oid) {
@@ -113,20 +103,12 @@ public class OMSTest extends BaseTest {
             this.$__hostname = hostname;
         }
 
-        public int $__getLastSeenTick() {
-            return $__lastSeenTick;
-        }
-
-        public void $__setLastSeenTick(int lastSeenTick) {
-            this.$__lastSeenTick = lastSeenTick;
+        public void $__setNextClientPolicy(SapphirePolicy.SapphireClientPolicy clientPolicy) {
+            $__nextClientPolicy = clientPolicy;
         }
 
         public AppObject $__getAppObject() {
-            return $__appObject;
-        }
-
-        public void $__setNextClientPolicy(SapphirePolicy.SapphireClientPolicy clientPolicy) {
-            $__nextClientPolicy = clientPolicy;
+            return this.appObject;
         }
     }
 

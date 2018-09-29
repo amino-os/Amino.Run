@@ -7,20 +7,18 @@ import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.powermock.api.mockito.PowerMockito.when;
 import static sapphire.common.SapphireUtils.addHost;
 import static sapphire.common.SapphireUtils.dummyRegistry;
-import static sapphire.common.SapphireUtils.getHostOnOmsKernelServerManager;
 import static sapphire.common.SapphireUtils.startSpiedKernelServer;
 import static sapphire.common.SapphireUtils.startSpiedOms;
 import static sapphire.common.UtilsTest.extractFieldValueOnInstance;
 
-import java.net.InetSocketAddress;
 import java.rmi.registry.LocateRegistry;
+import java.util.HashMap;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.powermock.api.mockito.PowerMockito;
 import sapphire.app.SO;
 import sapphire.app.stubs.SO_Stub;
 import sapphire.kernel.common.GlobalKernelReferences;
-import sapphire.kernel.common.KernelOID;
 import sapphire.kernel.common.KernelObjectFactory;
 import sapphire.kernel.common.KernelObjectStub;
 import sapphire.kernel.server.KernelObject;
@@ -34,13 +32,13 @@ import sapphire.policy.SapphirePolicy;
 import sapphire.runtime.Sapphire;
 
 /**
- * This is the base test class with a setup to create a spied instance of oms, 3 kernel servers. And
- * has the necessary mocking of few methods in creating/deleting/replicating sapphire object flow.
- * TestCase files can inherit this class and make their setup simple.
+ * This is Base Test class for Multi-DM Unit testing, with a setup to create a spied instance of oms
+ * and 3 kernel servers. This Class has necessary mocking needed for few methods in the code flow
+ * for creating/deleting/replicating sapphire objects. TestCase files can inherit this class for
+ * testing MultiDM scenarios.
  */
+public class MultiPolicyChainBaseTest {
 
-/** Created by Venugopal Reddy K on 12/9/18. */
-public class BaseTest {
     protected DefaultSapphirePolicy.DefaultClientPolicy client;
     protected DefaultSapphirePolicy.DefaultServerPolicy server1;
     protected DefaultSapphirePolicy.DefaultServerPolicy server2;
@@ -55,7 +53,8 @@ public class BaseTest {
 
     protected boolean serversInSameRegion = true;
 
-    public void setUp(Class<?> serverClass, Class<?> groupClass) throws Exception {
+    public void setUpMultiDM(HashMap<String, Class> groupMap, HashMap<String, Class> serverMap)
+            throws Exception {
         PowerMockito.mockStatic(LocateRegistry.class);
         when(LocateRegistry.getRegistry(anyString(), anyInt())).thenReturn(dummyRegistry);
 
@@ -78,9 +77,9 @@ public class BaseTest {
         spiedKs1 = startSpiedKernelServer(spiedOms, kernelPort1, regions[0]);
         spiedKs2 = startSpiedKernelServer(spiedOms, kernelPort2, regions[1]);
         spiedKs3 = startSpiedKernelServer(spiedOms, kernelPort3, regions[2]);
+
         // Set this instance of kernel server as local kernel server
         // Setting spiedKs3 as the local KernelServer, as KS3 maps to the first one with port 10001.
-        // Modified the local KernelServer from KS1 to KS3 as part of Multi-DM implementation.
         GlobalKernelReferences.nodeServer = (KernelServerImpl) spiedKs3;
 
         /* Add all the hosts to the kernel client of local kernel server instance so that every call
@@ -96,40 +95,26 @@ public class BaseTest {
 
                     @Override
                     public Object answer(InvocationOnMock invocation) throws Throwable {
+
                         if (invocation.getMethod().getName().equals("createStub")) {
-                            Class<?> policy = (Class) invocation.getArguments()[0];
+                            /*Class<?> policy = (Class) invocation.getArguments()[0];
                             if (policy.getName().contains("Server")) {
-                                invocation.getArguments()[0] = serverClass;
+                                //invocation.getArguments()[0] = serverClass;
                             } else {
                                 assert (policy.getName().contains("Group"));
-                                invocation.getArguments()[0] = groupClass;
-                            }
-
+                                //invocation.getArguments()[0] = groupClass;
+                            }*/
                             return invocation.callRealMethod();
-                        } else if (!(invocation.getMethod().getName().equals("create"))) {
-                            assert (invocation.getMethod().getName().equals("delete"));
-                            KernelOID oid = (KernelOID) invocation.getArguments()[0];
-                            InetSocketAddress host = spiedOms.lookupKernelObject(oid);
-
-                            KernelServer ks = null;
-                            if (host.toString().contains(String.valueOf(kernelPort1))) {
-                                ks = spiedKs1;
-                            } else if (host.toString().contains(String.valueOf(kernelPort2))) {
-                                ks = spiedKs2;
-                            } else if (host.toString().contains(String.valueOf(kernelPort3))) {
-                                ks = spiedKs3;
-                            }
-
-                            KernelServerImpl temp = GlobalKernelReferences.nodeServer;
-                            GlobalKernelReferences.nodeServer = (KernelServerImpl) ks;
-                            Object ret = invocation.callRealMethod();
-                            GlobalKernelReferences.nodeServer = temp;
-                            return ret;
                         }
 
                         KernelObjectStub stub = null;
                         KernelObjectStub spiedStub = null;
                         String policyObjectName = (String) invocation.getArguments()[0];
+                        String temp[] = policyObjectName.split("\\$")[0].split("\\.");
+                        String policyName = temp[temp.length - 1];
+                        Class<?> groupClass = groupMap.get(policyName);
+                        Class<?> serverClass = serverMap.get(policyName);
+
                         if (policyObjectName.contains("Server")) {
                             invocation.getArguments()[0] = serverClass.getName();
                             ++i;
@@ -199,16 +184,7 @@ public class BaseTest {
                                     serverPolicy.$__initialize(
                                             Class.forName(appStubClassName), args));
                         }
-                        if (!(invocation.getMethod().getName().equals("getPolicyStub")))
-                            return invocation.callRealMethod();
 
-                        if (invocation.getArguments().length == 2) {
-                            KernelOID oid = (KernelOID) invocation.getArguments()[1];
-                            KernelServer ks =
-                                    getHostOnOmsKernelServerManager(
-                                            spiedOms, spiedOms.lookupKernelObject(oid));
-                            return ((KernelServerImpl) ks).getObject(oid);
-                        }
                         return invocation.callRealMethod();
                     }
                 });

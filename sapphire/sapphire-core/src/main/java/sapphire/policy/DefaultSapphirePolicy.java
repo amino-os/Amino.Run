@@ -68,7 +68,7 @@ public class DefaultSapphirePolicy extends SapphirePolicy {
         }
 
         @Override
-        public void removeServer(SapphireServerPolicy server) throws RemoteException {
+        public synchronized void removeServer(SapphireServerPolicy server) throws RemoteException {
             if (servers != null) {
                 servers.remove(server);
             }

@@ -4,21 +4,35 @@ import static org.mockito.Mockito.spy;
 import static org.powermock.api.mockito.PowerMockito.when;
 
 import java.lang.annotation.Annotation;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.net.InetSocketAddress;
+import java.rmi.registry.LocateRegistry;
+import java.util.*;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
+import sapphire.common.MultiPolicyChainBaseTest;
+import sapphire.common.SapphireUtils;
+import sapphire.kernel.common.KernelOID;
+import sapphire.kernel.common.KernelObjectFactory;
+import sapphire.kernel.common.ServerInfo;
 import sapphire.kernel.server.KernelServerImpl;
 import sapphire.oms.OMSServer;
 import sapphire.oms.OMSServerImpl;
 import sapphire.policy.SapphirePolicy;
 import sapphire.policy.SapphirePolicyContainer;
+import sapphire.runtime.Sapphire;
+import sapphire.runtime.SapphireMultiPolicyChainTest;
 
 public class DHTPolicyTest {
     private OMSServer oms;
     private ServerPolicy[] servers = new ServerPolicy[3];
+    private InetSocketAddress address1 = new InetSocketAddress("127.0.0.1", 30001);
+    private InetSocketAddress address2 = new InetSocketAddress("127.0.0.1", 30002);
+    private InetSocketAddress address3 = new InetSocketAddress("127.0.0.1", 30003);
     private Object[] requests = new Object[] {"r1", "r2", "r3", "r4", "r5"};
 
     @Before
@@ -27,11 +41,17 @@ public class DHTPolicyTest {
             servers[i] = new ServerPolicy();
         }
 
-        ArrayList<String> regions = new ArrayList<>(Arrays.asList("region-1", "region-2"));
+        ArrayList<String> regions = new ArrayList<>(Arrays.asList("region-1", "region-2", "region-3"));
         oms = spy(OMSServerImpl.class);
         KernelServerImpl.oms = oms;
+        oms.registerKernelServer(new ServerInfo(address1, "region-1"));
+        oms.registerKernelServer(new ServerInfo(address2, "region-2"));
+        oms.registerKernelServer(new ServerInfo(address2, "region-3"));
 
         when(oms.getRegions()).thenReturn(regions);
+        when(oms.getServerInRegion("region-1")).thenReturn(address1);
+        when(oms.getServerInRegion("region-2")).thenReturn(address2);
+        when(oms.getServerInRegion("region-3")).thenReturn(address3);
     }
 
     @Test
@@ -61,6 +81,12 @@ public class DHTPolicyTest {
         List<Object> requests = new ArrayList<>();
 
         @Override
+        public KernelOID $__getKernelOID() {
+            int oid = new Random().nextInt();
+            return new KernelOID(oid);
+        }
+
+        @Override
         public void onCreate(SapphirePolicy.SapphireGroupPolicy group, Annotation[] annotations) {
             this.group = group;
         }
@@ -79,5 +105,12 @@ public class DHTPolicyTest {
 
         @Override
         public void sapphire_pin(String region) {}
+
+        @Override
+        public void sapphire_pin_to_server(InetSocketAddress server) {}
+
+        @Override
+        public void sapphire_pin_to_server(
+                SapphirePolicy.SapphireServerPolicy sapphireServerPolicy, InetSocketAddress server) {}
     }
 }

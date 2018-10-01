@@ -47,8 +47,7 @@ task runks(type: JavaExec) {
     args project.property('kernelServerIp'), project.property('kernelServerPort'), project.property('omsIp'), project.property('omsPort')
 }
 
-// Task for run hanksTodoApp demo app
-// Usage: gradlew runapp -PW=DisneyWorld
+// task for run client
 task runapp(type: JavaExec) {
     main = "sapphire.demo.pinkisClient"
     classpath = sourceSets.main.runtimeClasspath

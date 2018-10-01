@@ -62,13 +62,13 @@ public class HanksTodoMain {
                 // Retrieve to-do items.
                 TodoList getTd1 = tlm.getToDoList(ListName);
                 String testTdString2 = getTd1.getToDoString(2);
-                String expectedTdString2 = String.format("%s<%d> : %s<%d> : ", Do2_1, i, Do2_2, i);
+                String expectedTdString2 = String.format("%s<%d> : %s<%d> : %s<%d> : %s<%d> : ", Do1_1, i, Do1_2, i, Do2_1, i, Do2_2, i);
 				System.out.println("Expect testTdString for 2: " + expectedTdString2);
                 System.out.println("Actual testTdString for 2: " + testTdString2);
 
                 String testTdString1 = getTd1.getToDoString(1);
-                String expectedTdString1 = String.format("%s<%d> : %s<%d> : ", Do2_1, i, Do2_2, i);
-				System.out.println("Expect testTdString for 1: " + expectedTdString1);
+                String expectedTdString1 = String.format("%s<%d> : %s<%d> : %s<%d> : %s<%d> : ", Do1_1, i, Do1_2, i, Do2_1, i, Do2_2, i);
+                System.out.println("Expect testTdString for 1: " + expectedTdString1);
                 System.out.println("Actual testTdString for 1: " + testTdString1);
             }
 

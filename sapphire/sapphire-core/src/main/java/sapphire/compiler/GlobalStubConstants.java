@@ -14,7 +14,8 @@ public class GlobalStubConstants {
         return classPackageName + ".stubs";
     }
 
-    // TODO (2018-10-1, Sungwook): Consider removing this as the constant variable is already directly accessible.
+    // TODO (2018-10-1, Sungwook): Consider removing this as the constant variable is already
+    // directly accessible.
     public static String getPolicyPackageName() {
         return POLICY_STUB_PACKAGE;
     }

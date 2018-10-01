@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import sapphire.app.*;
 import sapphire.runtime.SapphireConfiguration;
 
-@SapphireConfiguration(Policies = "sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy,sapphire.policy.replication.ConsensusRSMPolicy")
+@SapphireConfiguration(Policies = "sapphire.policy.dht.DHTPolicy2,sapphire.policy.replication.ConsensusRSMPolicy")
 public class TodoList implements SapphireObject {
 	ArrayList<String> toDos = new ArrayList<String>();
 	String id = "0";

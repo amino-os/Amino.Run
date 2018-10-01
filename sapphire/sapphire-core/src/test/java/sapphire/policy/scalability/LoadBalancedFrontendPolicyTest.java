@@ -43,11 +43,11 @@ import sapphire.runtime.SapphireConfiguration;
 /** Created by Vishwajeet on 2/4/18. */
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({
-        KernelServerImpl.class,
-        Sapphire.class,
-        KernelObjectFactory.class,
-        LocateRegistry.class,
-        SapphireUtils.class
+    KernelServerImpl.class,
+    Sapphire.class,
+    KernelObjectFactory.class,
+    LocateRegistry.class,
+    SapphireUtils.class
 })
 public class LoadBalancedFrontendPolicyTest extends BaseTest {
     int exceptionExpected = 0;

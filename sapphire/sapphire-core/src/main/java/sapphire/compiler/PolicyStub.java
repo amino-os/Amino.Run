@@ -38,10 +38,10 @@ public class PolicyStub extends Stub {
         return ((packageName == null)
                 ? "" //$NON-NLS-1$
                 : ("package "
-                + GlobalStubConstants.getPolicyPackageName()
-                + ';'
-                + EOLN
-                + EOLN)); //$NON-NLS-1$
+                        + GlobalStubConstants.getPolicyPackageName()
+                        + ';'
+                        + EOLN
+                        + EOLN)); //$NON-NLS-1$
     }
 
     @Override

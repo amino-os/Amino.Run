@@ -18,7 +18,6 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import sapphire.app.SO;
 import sapphire.app.SapphireObject;
 import sapphire.app.stubs.SO_Stub;
-import sapphire.common.AppObject;
 import sapphire.common.BaseTest;
 import sapphire.common.SapphireObjectID;
 import sapphire.common.SapphireUtils;
@@ -36,11 +35,11 @@ import sapphire.runtime.Sapphire;
 /** Created by Vishwajeet on 11/9/18. */
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({
-        KernelServerImpl.class,
-        Sapphire.class,
-        KernelObjectFactory.class,
-        LocateRegistry.class,
-        SapphireUtils.class
+    KernelServerImpl.class,
+    Sapphire.class,
+    KernelObjectFactory.class,
+    LocateRegistry.class,
+    SapphireUtils.class
 })
 public class KSTest extends BaseTest {
     @Rule public ExpectedException thrown = ExpectedException.none();

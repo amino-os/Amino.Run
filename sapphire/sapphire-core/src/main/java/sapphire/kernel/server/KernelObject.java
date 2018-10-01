@@ -39,7 +39,7 @@ public class KernelObject extends ObjectHandler {
         try {
             ret = super.invoke(method, params);
         } catch (Exception e) {
-             e.printStackTrace();
+            e.printStackTrace();
             // Throwing the exception again so that the same exception is returned to the client.
             // The client is expected to take appropriate action based on this exception.
             throw e;

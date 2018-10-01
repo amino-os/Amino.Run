@@ -33,11 +33,11 @@ import sapphire.policy.dht.DHTPolicy2;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({
-        KernelServerImpl.class,
-        Sapphire.class,
-        KernelObjectFactory.class,
-        LocateRegistry.class,
-        SapphireUtils.class
+    KernelServerImpl.class,
+    Sapphire.class,
+    KernelObjectFactory.class,
+    LocateRegistry.class,
+    SapphireUtils.class
 })
 public class SapphireMultiPolicyChainTest extends MultiPolicyChainBaseTest {
 
@@ -186,7 +186,8 @@ public class SapphireMultiPolicyChainTest extends MultiPolicyChainBaseTest {
         groupMap.put("DHTPolicy2", SapphireMultiPolicyChainTest.DHT2Group_Stub.class);
         groupMap.put("DefaultSapphirePolicy", SapphireMultiPolicyChainTest.DefaultGroup_Stub.class);
         serverMap.put("DHTPolicy2", SapphireMultiPolicyChainTest.DHT2Server_Stub.class);
-        serverMap.put("DefaultSapphirePolicy", SapphireMultiPolicyChainTest.DefaultServer_Stub.class);
+        serverMap.put(
+                "DefaultSapphirePolicy", SapphireMultiPolicyChainTest.DefaultServer_Stub.class);
         super.setUpMultiDM(groupMap, serverMap);
     }
 

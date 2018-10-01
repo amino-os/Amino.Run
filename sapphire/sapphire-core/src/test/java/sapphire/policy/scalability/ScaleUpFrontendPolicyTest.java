@@ -42,11 +42,11 @@ import sapphire.runtime.SapphireConfiguration;
 /** Created by Venugopal Reddy K 00900280 on 16/4/18. */
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({
-        KernelServerImpl.class,
-        Sapphire.class,
-        KernelObjectFactory.class,
-        LocateRegistry.class,
-        SapphireUtils.class
+    KernelServerImpl.class,
+    Sapphire.class,
+    KernelObjectFactory.class,
+    LocateRegistry.class,
+    SapphireUtils.class
 })
 public class ScaleUpFrontendPolicyTest extends BaseTest {
     @Rule public ExpectedException thrown = ExpectedException.none();
@@ -54,9 +54,9 @@ public class ScaleUpFrontendPolicyTest extends BaseTest {
     @ScaleUpFrontendPolicy.ScaleUpFrontendPolicyConfigAnnotation(
             replicationRateInMs = 20,
             loadbalanceConfig =
-            @LoadBalancedFrontendPolicy.LoadBalancedFrontendPolicyConfigAnnotation(
-                    maxconcurrentReq = 2,
-                    replicacount = 2))
+                    @LoadBalancedFrontendPolicy.LoadBalancedFrontendPolicyConfigAnnotation(
+                            maxconcurrentReq = 2,
+                            replicacount = 2))
     @SapphireConfiguration(Policies = "sapphire.policy.scalability.ScaleUpFrontendPolicy")
     public static class ScaleUpSO extends SO {}
 

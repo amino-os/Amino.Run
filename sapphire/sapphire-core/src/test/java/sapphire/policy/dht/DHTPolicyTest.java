@@ -5,27 +5,17 @@ import static org.powermock.api.mockito.PowerMockito.when;
 
 import java.lang.annotation.Annotation;
 import java.net.InetSocketAddress;
-import java.rmi.registry.LocateRegistry;
 import java.util.*;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
-import sapphire.common.MultiPolicyChainBaseTest;
-import sapphire.common.SapphireUtils;
 import sapphire.kernel.common.KernelOID;
-import sapphire.kernel.common.KernelObjectFactory;
 import sapphire.kernel.common.ServerInfo;
 import sapphire.kernel.server.KernelServerImpl;
 import sapphire.oms.OMSServer;
 import sapphire.oms.OMSServerImpl;
 import sapphire.policy.SapphirePolicy;
 import sapphire.policy.SapphirePolicyContainer;
-import sapphire.runtime.Sapphire;
-import sapphire.runtime.SapphireMultiPolicyChainTest;
 
 public class DHTPolicyTest {
     private OMSServer oms;
@@ -41,7 +31,8 @@ public class DHTPolicyTest {
             servers[i] = new ServerPolicy();
         }
 
-        ArrayList<String> regions = new ArrayList<>(Arrays.asList("region-1", "region-2", "region-3"));
+        ArrayList<String> regions =
+                new ArrayList<>(Arrays.asList("region-1", "region-2", "region-3"));
         oms = spy(OMSServerImpl.class);
         KernelServerImpl.oms = oms;
         oms.registerKernelServer(new ServerInfo(address1, "region-1"));
@@ -111,6 +102,7 @@ public class DHTPolicyTest {
 
         @Override
         public void sapphire_pin_to_server(
-                SapphirePolicy.SapphireServerPolicy sapphireServerPolicy, InetSocketAddress server) {}
+                SapphirePolicy.SapphireServerPolicy sapphireServerPolicy,
+                InetSocketAddress server) {}
     }
 }

@@ -2,7 +2,6 @@ package sapphire.kernel.common;
 
 import java.io.Serializable;
 import java.net.InetSocketAddress;
-import sapphire.common.AppObject;
 import sapphire.policy.SapphirePolicy;
 
 /**

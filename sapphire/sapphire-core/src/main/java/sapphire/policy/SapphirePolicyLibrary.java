@@ -256,7 +256,8 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
             while (serverPolicy.getNextServerPolicy() != null) {
                 // First server policy will be removed when the object is moved; therefore, not
                 // needed to be included in the removal list.
-                // TODO(2018-9-28, Sungwook): Removal logic should be in the same place; therefore, move the logic to  kernelserver.moveKernelObjectToServer()
+                // TODO(2018-9-28, Sungwook): Removal logic should be in the same place; therefore,
+                // move the logic to  kernelserver.moveKernelObjectToServer()
                 serverPolicy = serverPolicy.getNextServerPolicy();
                 serverPoliciesToRemove.add(serverPolicy);
             }
@@ -292,7 +293,8 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 
             // Register the moved associated KernelObjects to OMS with the new KernelServer address.
             // Then, remove the associated KernelObjects from the local KernelServer.
-            // TODO(2018-9-28, Sungwook): Removal logic should be in the same place; therefore, move the logic to  kernelserver.moveKernelObjectToServer()
+            // TODO(2018-9-28, Sungwook): Removal logic should be in the same place; therefore, move
+            // the logic to  kernelserver.moveKernelObjectToServer()
             for (SapphireServerPolicy serverPolicyToRemove : serverPoliciesToRemove) {
                 try {
                     oms().registerKernelObject(serverPolicyToRemove.$__getKernelOID(), server);

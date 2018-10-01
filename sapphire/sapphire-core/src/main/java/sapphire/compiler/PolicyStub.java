@@ -47,11 +47,11 @@ public class PolicyStub extends Stub {
     @Override
     public String getImportStatement() {
         return "import "
-                + GlobalStubConstants.getImportPolicyPackageName()
+                + GlobalStubConstants.POLICY_CLASS
                 + ";"
                 + EOLN //$NON-NLS-1$
                 + "import "
-                + GlobalStubConstants.getImportAppObjectPackageName()
+                + GlobalStubConstants.APPOBJECT_CLASS
                 + ";"
                 + EOLN
                 + EOLN; //$NON-NLS-1$

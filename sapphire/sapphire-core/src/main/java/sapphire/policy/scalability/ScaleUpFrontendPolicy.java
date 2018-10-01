@@ -4,11 +4,11 @@ import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TimerTask;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
-import sapphire.app.DMSpec;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
 import sapphire.kernel.common.KernelObjectStub;
@@ -20,6 +20,32 @@ import sapphire.policy.util.ResettableTimer;
  */
 public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
     static final int REPLICA_CREATE_MIN_TIME_IN_MSEC = 100;
+
+    /** Configurations for ScaleUpFrontendPolicy */
+    public static class Config implements SapphirePolicyConfig {
+        private int replicationRateInMs = REPLICA_CREATE_MIN_TIME_IN_MSEC;
+
+        public int getReplicationRateInMs() {
+            return replicationRateInMs;
+        }
+
+        public void setReplicationRateInMs(int replicationRateInMs) {
+            this.replicationRateInMs = replicationRateInMs;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Config config = (Config) o;
+            return replicationRateInMs == config.replicationRateInMs;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(replicationRateInMs);
+        }
+    }
 
     public static class ClientPolicy extends LoadBalancedFrontendPolicy.ClientPolicy {
         private final AtomicInteger replicaListSyncCtr = new AtomicInteger();
@@ -45,13 +71,15 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
         private transient volatile ResettableTimer timer; // Timer for limiting
 
         @Override
-        public void onCreate(SapphireGroupPolicy group, Map<String, DMSpec> dmSpecMap) {
-            super.onCreate(group, dmSpecMap);
+        public void onCreate(
+                SapphireGroupPolicy group, Map<String, SapphirePolicyConfig> configMap) {
+            super.onCreate(group, configMap);
 
-            if (dmSpecMap != null) {
-                DMSpec spec = dmSpecMap.get(ScaleUpFrontendPolicy.class.getName());
-                if ((spec != null) && (spec.getProperty("replicationRateInMs") != null)) {
-                    replicationRateInMs = Integer.parseInt(spec.getProperty("replicationRateInMs"));
+            if (configMap != null) {
+                SapphirePolicyConfig config =
+                        configMap.get(ScaleUpFrontendPolicy.Config.class.getName());
+                if (config != null) {
+                    replicationRateInMs = ((Config) config).getReplicationRateInMs();
                 }
             }
 
@@ -134,16 +162,18 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
         private transient ResettableTimer timer; // Timer for limiting
 
         @Override
-        public void onCreate(SapphireServerPolicy server, Map<String, DMSpec> dmSpecMap)
+        public void onCreate(
+                SapphireServerPolicy server, Map<String, SapphirePolicyConfig> configMap)
                 throws RemoteException {
+            super.onCreate(server, configMap);
 
-            if (dmSpecMap != null) {
-                DMSpec spec = dmSpecMap.get(ScaleUpFrontendPolicy.class.getName());
-                if ((spec != null) && (spec.getProperty("replicationRateInMs") != null)) {
-                    replicationRateInMs = Integer.parseInt(spec.getProperty("replicationRateInMs"));
+            if (configMap != null) {
+                SapphirePolicyConfig config =
+                        configMap.get(ScaleUpFrontendPolicy.Config.class.getName());
+                if (config != null) {
+                    replicationRateInMs = ((Config) config).getReplicationRateInMs();
                 }
             }
-            super.onCreate(server, dmSpecMap);
 
             if (replicaCreateLimiter == null) {
                 replicaCreateLimiter = new Semaphore(replicaCount, true);

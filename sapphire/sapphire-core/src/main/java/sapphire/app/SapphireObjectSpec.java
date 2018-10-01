@@ -3,7 +3,6 @@ package sapphire.app;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
 /**
@@ -22,8 +21,21 @@ import org.yaml.snakeyaml.Yaml;
  *      SapphireObjectSpec spec = SapphireObjectSpec.newBuilder()
  *                                      .setName("soname")
  *                                      .setLang(Language.Java)
- *                                      .addDM(dm)
+ *                                      .addDMSpec(dm)
  *                                      .create();
+ * </code> Yaml of one Sapphire Object Specification Example: <code>
+ * !!sapphire.app.SapphireObjectSpec
+ * constructorName: college
+ * dmList:
+ * - configs:
+ *   - !!sapphire.policy.scalability.ScaleUpFrontendPolicy$Config {replicationRateInMs: 100}
+ *   - !!sapphire.policy.scalability.LoadBalancedFrontendPolicy$Config {maxConcurrentReq: 200,
+ *     replicaCount: 30}
+ *   name: sapphire.policy.scalability.ScaleUpFrontendPolicy
+ * javaClassName: null
+ * lang: js
+ * name: com.org.College
+ * sourceFileLocation: src/main/js/college.js
  * </code>
  */
 public class SapphireObjectSpec {
@@ -43,7 +55,7 @@ public class SapphireObjectSpec {
     private String constructorName;
 
     /** List of Deployment Managers to be applied on Sapphire object */
-    private List<DMSpec> dmList;
+    private List<DMSpec> dmList = new ArrayList<>();
 
     public static Builder newBuilder() {
         return new Builder();
@@ -97,10 +109,7 @@ public class SapphireObjectSpec {
         this.dmList = dmList;
     }
 
-    public void addDM(DMSpec dmSpec) {
-        if (dmList == null) {
-            dmList = new ArrayList<DMSpec>();
-        }
+    public void addDMSpec(DMSpec dmSpec) {
         dmList.add(dmSpec);
     }
 
@@ -129,10 +138,11 @@ public class SapphireObjectSpec {
 
     @Override
     public String toString() {
-        DumperOptions options = new DumperOptions();
-        options.setAllowReadOnlyProperties(true);
-        Yaml yaml = new Yaml(options);
-        return yaml.dump(this);
+        //        DumperOptions options = new DumperOptions();
+        //        options.setAllowReadOnlyProperties(true);
+        //        Yaml yaml = new Yaml(options);
+
+        return new Yaml().dump(this);
     }
 
     public static class Builder {
@@ -141,7 +151,7 @@ public class SapphireObjectSpec {
         private String javaClassName;
         private String sourceFileLocation;
         private String constructorName;
-        private List<DMSpec> dmList;
+        private List<DMSpec> dmList = new ArrayList<>();
 
         public Builder setName(String name) {
             this.name = name;
@@ -168,12 +178,7 @@ public class SapphireObjectSpec {
             return this;
         }
 
-        public Builder setDmList(List<DMSpec> dmList) {
-            this.dmList = dmList;
-            return this;
-        }
-
-        public Builder addDM(DMSpec dmSpec) {
+        public Builder addDMSpec(DMSpec dmSpec) {
             if (dmList == null) {
                 dmList = new ArrayList<>();
             }

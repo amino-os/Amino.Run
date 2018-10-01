@@ -2,10 +2,10 @@ package sapphire.policy.transaction;
 
 import java.util.ArrayList;
 import java.util.Map;
-import sapphire.app.DMSpec;
 import sapphire.common.AppObject;
 import sapphire.common.Utils;
 import sapphire.policy.SapphirePolicy;
+import sapphire.policy.SapphirePolicyUpcalls;
 import sapphire.policy.SapphirePolicyUpcalls.SapphireServerPolicyUpcalls;
 import sapphire.policy.scalability.masterslave.MethodInvocationRequest;
 import sapphire.policy.scalability.masterslave.MethodInvocationResponse;
@@ -16,7 +16,9 @@ public class AppObjectShimServerPolicy implements SapphireServerPolicyUpcalls {
     private AppObject originMaster;
 
     @Override
-    public void onCreate(SapphirePolicy.SapphireGroupPolicy group, Map<String, DMSpec> dmSpecMap) {}
+    public void onCreate(
+            SapphirePolicy.SapphireGroupPolicy group,
+            Map<String, SapphirePolicyUpcalls.SapphirePolicyConfig> configMap) {}
 
     @Override
     public void onDestroy() {}

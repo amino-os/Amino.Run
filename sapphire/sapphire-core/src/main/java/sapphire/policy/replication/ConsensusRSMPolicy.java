@@ -9,7 +9,6 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Logger;
-import sapphire.app.DMSpec;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
 import sapphire.policy.DefaultSapphirePolicy;
@@ -129,8 +128,9 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
         }
 
         @Override
-        public void onCreate(SapphireGroupPolicy group, Map<String, DMSpec> dmSpecMap) {
-            super.onCreate(group, dmSpecMap);
+        public void onCreate(
+                SapphireGroupPolicy group, Map<String, SapphirePolicyConfig> configMap) {
+            super.onCreate(group, configMap);
             raftServer = new sapphire.policy.util.consensus.raft.Server(this);
         }
 
@@ -192,9 +192,10 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
         private static Logger logger = Logger.getLogger(GroupPolicy.class.getName());
 
         @Override
-        public void onCreate(SapphireServerPolicy server, Map<String, DMSpec> dmSpecMap)
+        public void onCreate(
+                SapphireServerPolicy server, Map<String, SapphirePolicyConfig> configMap)
                 throws RemoteException {
-            super.onCreate(server, dmSpecMap);
+            super.onCreate(server, configMap);
             try {
                 ArrayList<String> regions = sapphire_getRegions();
                 // Register the first replica, which has already been created.

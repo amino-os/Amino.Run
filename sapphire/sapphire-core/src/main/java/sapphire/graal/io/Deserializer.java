@@ -10,16 +10,19 @@ public class Deserializer implements AutoCloseable {
     private DataInputStream in;
     public Map<Integer, Value> seenCache = new HashMap<Integer, Value>();
     private Language lang;
+    private Context context;
 
     public Deserializer(InputStream in, Context c) throws IOException {
         this.in = new DataInputStream(in);
+        this.context = c;
+        if (this.context == null) {
+            this.context = context;
+        }
     }
 
     public Value deserialize() throws IOException {
         seenCache = new HashMap<Integer, Value>();
         lang = Language.valueOf(in.readUTF());
-
-        System.out.println(String.format("lang is %s", lang));
         return deserializeHelper();
     }
 
@@ -27,65 +30,46 @@ public class Deserializer implements AutoCloseable {
         Value out = null;
 
         GraalType type = GraalType.values()[in.readInt()];
-        System.out.println(String.format("type is %s", type));
-
         switch (type) {
             case BOOLEAN:
-                // System.out.println("found boolean");
                 boolean b = in.readBoolean();
-                out = GraalContext.getContext().asValue(b);
-                System.out.println("boolean " + b);
+                out = context.asValue(b);
                 break;
             case NULL:
-                // System.out.println("found null");
-                out = GraalContext.getContext().asValue(null);
-                System.out.println("null");
+                out = context.asValue(null);
                 break;
             case NUMBER:
-                // System.out.println("found number");
                 int i = in.readInt();
-                out = GraalContext.getContext().asValue(i);
-                System.out.println("int " + i);
+                out = context.asValue(i);
                 break;
             case STRING:
-                // System.out.println("found string");
                 String s = in.readUTF();
-                out = GraalContext.getContext().asValue(s);
-                System.out.println("String " + s);
+                out = context.asValue(s);
                 break;
             case DUPLICATE:
-                // System.out.println("found cached value");
                 return seenCache.get(in.readInt());
             case ARRAY:
                 long arraylength = in.readLong();
                 if (arraylength != 0) {
-                    // System.out.println("array of length " + arraylength);
-                    out = GraalContext.getContext().eval(lang.toString(), String.format("[]"));
+                    out = context.eval(lang.toString(), String.format("[]"));
                 }
                 for (int j = 0; j < arraylength; j++) {
                     out.setArrayElement(j, deserializeHelper());
-                    System.out.println("Array element " + j);
                 }
                 break;
             case OBJECT:
                 String className = in.readUTF();
-                System.out.println("Got object, class name is " + className);
-                // out = c.eval(lang, String.format("new %s()", className));
-                out = GraalContext.getContext().eval(lang.toString(), className).newInstance();
+                out = context.eval(lang.toString(), className).newInstance();
 
                 // for(String key : out.getMemberKeys()) {
                 for (String key : getMemberVariables(out)) {
-                    // System.out.println("now reading in " + s);
                     if (key.equals(
                             "__proto__")) { // TODO: for some reason can't serialize js inheritance
-                        // chain
                         continue;
                     }
-                    System.out.println("Reading member, id is " + key);
                     Value member = deserializeHelper();
                     if (member != null) {
                         setInstanceVariable(out, member, key);
-                        // out.putMember(key, member);
                     }
                 }
                 break;
@@ -129,7 +113,9 @@ public class Deserializer implements AutoCloseable {
     }
 
     public void close() throws Exception {
-        in.close();
-        in = null;
+        if (in != null) {
+            in.close();
+            in = null;
+        }
     }
 }

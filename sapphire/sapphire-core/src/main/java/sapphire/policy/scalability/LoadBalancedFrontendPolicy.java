@@ -1,5 +1,9 @@
 package sapphire.policy.scalability;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -7,7 +11,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Logger;
-import sapphire.app.DMSpec;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
 import sapphire.policy.DefaultSapphirePolicy;
@@ -18,7 +21,7 @@ import sapphire.policy.DefaultSapphirePolicy;
  */
 public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
     public static final int STATIC_REPLICA_COUNT = 2;
-    public static final int MAX_CONCURRENT_REQUESTS = 2000;
+    public static final int MAX_CONCURRENT_REQUESTS = 20;
 
     /** Configurations for LoadBalancedFrontendPolicy */
     public static class Config implements SapphirePolicyConfig {
@@ -42,35 +45,6 @@ public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
         }
 
         @Override
-        public DMSpec toDMSpec() {
-            DMSpec spec = new DMSpec();
-            // Use fully qualified class name!
-            spec.setName(LoadBalancedFrontendPolicy.class.getName());
-            spec.addProperty("maxConcurrentReq", String.valueOf(maxConcurrentReq));
-            spec.addProperty("replicaCount", String.valueOf(replicaCount));
-            return spec;
-        }
-
-        @Override
-        public SapphirePolicyConfig fromDMSpec(DMSpec spec) {
-            if (!LoadBalancedFrontendPolicy.class.getName().equals(spec.getName())) {
-                throw new IllegalArgumentException(
-                        String.format(
-                                "DM %s is not able to process spec %s",
-                                LoadBalancedFrontendPolicy.class.getName(), spec));
-            }
-
-            Config config = new Config();
-            Map<String, String> properties = spec.getProperties();
-            if (properties != null) {
-                config.setReplicaCount(Integer.parseInt(properties.get("replicaCount")));
-                config.setMaxConcurrentReq(Integer.parseInt(properties.get("maxConcurrentReq")));
-            }
-
-            return config;
-        }
-
-        @Override
         public boolean equals(Object o) {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
@@ -85,14 +59,13 @@ public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
         }
     }
 
-    /* @Retention(RetentionPolicy.RUNTIME)
+    @Retention(RetentionPolicy.RUNTIME)
     @Target({ElementType.TYPE})
     public @interface LoadBalancedFrontendPolicyConfigAnnotation {
         int maxConcurrentReq() default MAX_CONCURRENT_REQUESTS;
 
         int replicaCount() default STATIC_REPLICA_COUNT;
     }
-    */
 
     /**
      * LoadBalancedFrontend client policy. The client will LoadBalance among the Sapphire Server
@@ -140,12 +113,14 @@ public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
         protected Semaphore limiter;
 
         @Override
-        public void onCreate(SapphireGroupPolicy group, Map<String, DMSpec> dmSpecMap) {
-            super.onCreate(group, dmSpecMap);
-            if (dmSpecMap != null) {
-                DMSpec spec = dmSpecMap.get(LoadBalancedFrontendPolicy.class.getName());
-                if ((spec != null) && (spec.getProperty("maxConcurrentReq") != null)) {
-                    this.maxConcurrentReq = Integer.valueOf(spec.getProperty("maxConcurrentReq"));
+        public void onCreate(
+                SapphireGroupPolicy group, Map<String, SapphirePolicyConfig> configMap) {
+            super.onCreate(group, configMap);
+            if (configMap != null) {
+                SapphirePolicyConfig config =
+                        configMap.get(LoadBalancedFrontendPolicy.Config.class.getName());
+                if (config != null) {
+                    this.maxConcurrentReq = ((Config) config).getMaxConcurrentReq();
                 }
             }
 
@@ -185,16 +160,16 @@ public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
         private int replicaCount = STATIC_REPLICA_COUNT; // we can read from config or annotations
 
         @Override
-        public void onCreate(SapphireServerPolicy server, Map<String, DMSpec> dmSpecMap)
+        public void onCreate(
+                SapphireServerPolicy server, Map<String, SapphirePolicyConfig> configMap)
                 throws RemoteException {
-            super.onCreate(server, dmSpecMap);
+            super.onCreate(server, configMap);
 
-            if (dmSpecMap != null) {
-                DMSpec spec = dmSpecMap.get(LoadBalancedFrontendPolicy.class.getName());
-                if (spec != null) {
-                    if (spec.getProperty("replicaCount") != null) {
-                        this.replicaCount = Integer.valueOf(spec.getProperty("replicaCount"));
-                    }
+            if (configMap != null) {
+                SapphirePolicyConfig config =
+                        configMap.get(LoadBalancedFrontendPolicy.Config.class.getName());
+                if (config != null) {
+                    this.replicaCount = ((Config) config).getReplicaCount();
                 }
             }
             // count is compared below < STATIC_REPLICAS-1 excluding the present server

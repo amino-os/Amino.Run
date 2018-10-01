@@ -12,7 +12,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import sapphire.app.SapphireObjectSpec;
 import sapphire.common.AppObjectStub;
-import sapphire.common.SapphireObjectCreationException;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
 import sapphire.kernel.client.KernelClient;
@@ -142,7 +141,7 @@ public class KernelServerImpl implements KernelServer {
             serverPolicyStub.setReplicaId(serverPolicy.getReplicaId());
             oms.setSapphireReplicaDispatcher(serverPolicy.getReplicaId(), policyHandler);
 
-            serverPolicy.onCreate(serverPolicy.getGroup(), serverPolicy.getDMSpecMap());
+            serverPolicy.onCreate(serverPolicy.getGroup(), serverPolicy.getConfigMap());
         }
 
         objectManager.addObject(oid, object);
@@ -261,9 +260,12 @@ public class KernelServerImpl implements KernelServer {
     }
 
     @Override
-    public AppObjectStub createSapphireObject(String soSpecYaml, Object... args)
-            throws RemoteException, SapphireObjectCreationException, ClassNotFoundException {
-
+    public AppObjectStub createSapphireObject(String soSpecYaml, Object... args) {
+        logger.log(
+                Level.INFO,
+                String.format(
+                        "Got request to create sapphire object with spec '%s' and %d parameters.",
+                        soSpecYaml, args.length));
         SapphireObjectSpec spec = SapphireObjectSpec.fromYaml(soSpecYaml);
         return (AppObjectStub) Sapphire.new_(spec, args);
     }

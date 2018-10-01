@@ -5,7 +5,6 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.UUID;
-import sapphire.app.DMSpec;
 import sapphire.common.AppObject;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
@@ -96,7 +95,7 @@ public abstract class DefaultSapphirePolicyUpcallImpl extends SapphirePolicyLibr
             this.params = params;
         }
 
-        public Map<String, DMSpec> getAppConfigAnnotation() {
+        public Map<String, SapphirePolicyConfig> getAppConfigAnnotation() {
             return super.getAppConfigAnnotation();
         }
 

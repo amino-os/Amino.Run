@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.harmony.rmi.common.RMIUtil;
-import sapphire.app.DMSpec;
+import org.graalvm.polyglot.Context;
 import sapphire.app.Language;
 import sapphire.app.SapphireObjectSpec;
 import sapphire.common.AppObject;
@@ -44,7 +44,8 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
         protected AppObject appObject;
         protected KernelOID oid;
         protected SapphireReplicaID replicaId;
-        protected Map<String, DMSpec> dmSpecMap;
+        protected Context context;
+        protected Map<String, SapphirePolicyConfig> configMap;
         protected SapphirePolicy.SapphireGroupPolicy group;
 
         static Logger logger = Logger.getLogger("sapphire.policy.SapphirePolicyLibrary");
@@ -63,13 +64,19 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 
         @Override
         public void onCreate(
-                SapphirePolicy.SapphireGroupPolicy group, Map<String, DMSpec> dmSpecMap) {
+                SapphirePolicy.SapphireGroupPolicy group,
+                Map<String, SapphirePolicyConfig> configMap) {
             this.group = group;
-            this.dmSpecMap = dmSpecMap;
+            this.configMap = configMap;
         }
 
-        public Map<String, DMSpec> getDMSpecMap() {
-            return this.dmSpecMap;
+        /**
+         * Returns configurations of this server policy.
+         *
+         * @return sapphire policy configuration map
+         */
+        public Map<String, SapphirePolicyConfig> getConfigMap() {
+            return this.configMap;
         }
 
         /** Creates a replica of this server and registers it with the group */
@@ -107,7 +114,7 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
                 */
                 Class c = sapphire_getAppObject().getObject().getClass().getSuperclass();
                 //                serverPolicy.onCreate(getGroup(), c.getAnnotations());
-                serverPolicy.onCreate(getGroup(), dmSpecMap);
+                serverPolicy.onCreate(getGroup(), configMap);
                 getGroup().addServer((SapphireServerPolicy) serverPolicyStub);
             } catch (ClassNotFoundException e) {
                 // TODO Auto-generated catch block
@@ -271,7 +278,7 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
     public abstract static class SapphireGroupPolicyLibrary implements SapphireGroupPolicyUpcalls {
         protected String appObjectClassName;
         protected ArrayList<Object> params;
-        protected Map<String, DMSpec> dmSpecMap;
+        protected Map<String, SapphirePolicyConfig> configMap;
         protected KernelOID oid;
         protected SapphireObjectID sapphireObjId;
 
@@ -307,12 +314,12 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
             return this.oid;
         }
 
-        public void setAppConfigAnnotation(Map<String, DMSpec> dmSpecMap) {
-            this.dmSpecMap = dmSpecMap;
+        public void setAppConfigAnnotation(Map<String, SapphirePolicyConfig> configMap) {
+            this.configMap = configMap;
         }
 
-        public Map<String, DMSpec> getAppConfigAnnotation() {
-            return dmSpecMap;
+        public Map<String, SapphirePolicyConfig> getAppConfigAnnotation() {
+            return configMap;
         }
 
         public void setSapphireObjId(SapphireObjectID sapphireId) {

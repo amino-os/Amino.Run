@@ -9,7 +9,10 @@ import static sapphire.runtime.Sapphire.*;
 
 import sapphire.policy.dht.DHTKey;
 import sapphire.policy.dht.DHTPolicy;
+import sapphire.runtime.SapphireConfiguration;
 
+
+@SapphireConfiguration(Policies = "sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy")
 public class UserManager implements SapphireObject<DHTPolicy> {
     Map<DHTKey, User> users;
     private TagManager tm;

@@ -40,6 +40,7 @@ import sapphire.policy.SapphirePolicyContainerImpl;
  * @author aaasz
  */
 public class Sapphire {
+    static String DEFAULT_POLICY = "sapphire.policy.DefaultSapphirePolicy";
     static Logger logger = Logger.getLogger(Sapphire.class.getName());
 
     /**
@@ -71,6 +72,11 @@ public class Sapphire {
                         }
                     }
                 }
+            }
+
+            if (policyNameChain.size() == 0) {
+                // No annotations specifying policy name. Therefore, use default Sapphire policy.
+                policyNameChain.add(new SapphirePolicyContainerImpl(DEFAULT_POLICY, null));
             }
 
             SapphireServerPolicy previousServerPolicy = null;

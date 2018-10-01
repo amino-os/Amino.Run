@@ -42,7 +42,7 @@ public class WriterTest {
                     + "}";
 
     @Before
-    public void setup() {
+    public void setup() throws Exception {
         polyglotCtx = Context.newBuilder(new String[] {"js"}).allowAllAccess(true).build();
     }
 
@@ -56,7 +56,6 @@ public class WriterTest {
         // Create a student
         Value Student = polyglotCtx.eval("js", JS_Code);
         Value student = Student.newInstance();
-
         student.getMember("setId").execute(studentId);
         student.getMember("setName").execute(studentName);
 
@@ -69,20 +68,14 @@ public class WriterTest {
         student.getMember("addBuddy").execute(buddy);
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-
         Serializer ser = new Serializer(out, Language.js);
+
         Value clone = null;
+        ser.serialize(student);
+        ByteArrayInputStream io = new ByteArrayInputStream(out.toByteArray());
 
-        try {
-            ser.serialize(student);
-            ByteArrayInputStream io = new ByteArrayInputStream(out.toByteArray());
-
-            Deserializer de = new Deserializer(io, polyglotCtx);
-            clone = de.deserialize();
-        } catch (Exception e) {
-
-        }
-
+        Deserializer de = new Deserializer(io, polyglotCtx);
+        clone = de.deserialize();
         Assert.assertEquals(studentId, clone.getMember("id").asInt());
         Assert.assertEquals(studentName, clone.getMember("name").asString());
 

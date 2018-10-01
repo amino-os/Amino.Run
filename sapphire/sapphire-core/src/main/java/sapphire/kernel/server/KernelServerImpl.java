@@ -132,7 +132,7 @@ public class KernelServerImpl implements KernelServer {
         logger.log(Level.INFO, "Adding object " + oid);
 
         // TODO (9/27/2018, Sungwook): Move uncoalesce logic to separate loop at the end of code.
-        this.objectManager.addObject(oid, object);
+        objectManager.addObject(oid, object);
         object.uncoalesce();
 
         // To add Kernel Object to local object manager
@@ -161,7 +161,7 @@ public class KernelServerImpl implements KernelServer {
 
                 KernelObject newko = new KernelObject(serverPolicy);
 
-                this.objectManager.addObject(koid, newko);
+                objectManager.addObject(koid, newko);
                 newko.uncoalesce();
                 logger.log(Level.INFO, "Added " + koid.getID() + " as SapphireServerPolicyLibrary");
 
@@ -234,7 +234,7 @@ public class KernelServerImpl implements KernelServer {
     public void moveKernelObjectToServer(InetSocketAddress host, KernelOID oid)
             throws RemoteException, KernelObjectNotFoundException, SapphireObjectNotFoundException,
                     SapphireObjectReplicaNotFoundException {
-        if (host.equals(this.host)) {
+        if (host.equals(host)) {
             return;
         }
 

@@ -2,6 +2,8 @@ package sapphire.kernel.server;
 
 import java.util.ArrayList;
 import java.util.concurrent.Semaphore;
+import java.util.logging.Logger;
+
 import sapphire.common.ObjectHandler;
 import sapphire.kernel.common.KernelObjectMigratingException;
 
@@ -16,6 +18,7 @@ public class KernelObject extends ObjectHandler {
     private static final int MAX_CONCURRENT_RPCS = 100;
     private Boolean coalesced;
     private Semaphore rpcCounter;
+    private static Logger logger = Logger.getLogger(KernelObject.class.getName());
 
     public KernelObject(Object obj) {
         super(obj);
@@ -39,7 +42,7 @@ public class KernelObject extends ObjectHandler {
         try {
             ret = super.invoke(method, params);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.severe(e.getMessage());
             // Throwing the exception again so that the same exception is returned to the client.
             // The client is expected to take appropriate action based on this exception.
             throw e;

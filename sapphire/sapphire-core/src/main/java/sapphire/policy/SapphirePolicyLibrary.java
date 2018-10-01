@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.harmony.rmi.common.RMIUtil;
-import org.graalvm.polyglot.Context;
 import sapphire.app.DMSpec;
 import sapphire.app.Language;
 import sapphire.app.SapphireObjectSpec;
@@ -19,6 +18,7 @@ import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
 import sapphire.common.SapphireReplicaID;
 import sapphire.compiler.GlobalStubConstants;
+import sapphire.graal.io.GraalContext;
 import sapphire.kernel.common.GlobalKernelReferences;
 import sapphire.kernel.common.KernelOID;
 import sapphire.kernel.common.KernelObjectFactory;
@@ -44,7 +44,6 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
         protected AppObject appObject;
         protected KernelOID oid;
         protected SapphireReplicaID replicaId;
-        protected Context context;
         protected Map<String, DMSpec> dmSpecMap;
         protected SapphirePolicy.SapphireGroupPolicy group;
 
@@ -220,7 +219,8 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
                 } else {
                     appObject =
                             new AppObject(
-                                    context.eval(spec.getLang().name(), spec.getConstructorName())
+                                    GraalContext.getContext()
+                                            .eval(spec.getLang().name(), spec.getConstructorName())
                                             .newInstance(params));
                 }
             } catch (Exception e) {

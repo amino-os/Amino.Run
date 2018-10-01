@@ -8,15 +8,11 @@ import sapphire.app.Language;
 public class Deserializer implements AutoCloseable {
 
     private DataInputStream in;
-    private Context c;
     public Map<Integer, Value> seenCache = new HashMap<Integer, Value>();
     private Language lang;
 
     public Deserializer(InputStream in, Context c) throws IOException {
         this.in = new DataInputStream(in);
-
-        if (c == null) this.c = Context.create();
-        else this.c = c;
     }
 
     public Value deserialize() throws IOException {
@@ -37,24 +33,24 @@ public class Deserializer implements AutoCloseable {
             case BOOLEAN:
                 // System.out.println("found boolean");
                 boolean b = in.readBoolean();
-                out = c.asValue(b);
+                out = GraalContext.getContext().asValue(b);
                 System.out.println("boolean " + b);
                 break;
             case NULL:
                 // System.out.println("found null");
-                out = c.asValue(null);
+                out = GraalContext.getContext().asValue(null);
                 System.out.println("null");
                 break;
             case NUMBER:
                 // System.out.println("found number");
                 int i = in.readInt();
-                out = c.asValue(i);
+                out = GraalContext.getContext().asValue(i);
                 System.out.println("int " + i);
                 break;
             case STRING:
                 // System.out.println("found string");
                 String s = in.readUTF();
-                out = c.asValue(s);
+                out = GraalContext.getContext().asValue(s);
                 System.out.println("String " + s);
                 break;
             case DUPLICATE:
@@ -64,7 +60,7 @@ public class Deserializer implements AutoCloseable {
                 long arraylength = in.readLong();
                 if (arraylength != 0) {
                     // System.out.println("array of length " + arraylength);
-                    out = c.eval(lang.toString(), String.format("[]"));
+                    out = GraalContext.getContext().eval(lang.toString(), String.format("[]"));
                 }
                 for (int j = 0; j < arraylength; j++) {
                     out.setArrayElement(j, deserializeHelper());
@@ -75,7 +71,7 @@ public class Deserializer implements AutoCloseable {
                 String className = in.readUTF();
                 System.out.println("Got object, class name is " + className);
                 // out = c.eval(lang, String.format("new %s()", className));
-                out = c.eval(lang.toString(), className).newInstance();
+                out = GraalContext.getContext().eval(lang.toString(), className).newInstance();
 
                 // for(String key : out.getMemberKeys()) {
                 for (String key : getMemberVariables(out)) {

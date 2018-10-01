@@ -20,8 +20,6 @@ public class ObjectHandler implements Serializable {
     private Object object;
 
     private Language lang;
-    // TODO: Context cannot be SerDe to another machine, we should recreate context.
-    private Context c;
 
     private static Logger logger = Logger.getLogger(ObjectHandler.class.getName());
 
@@ -50,9 +48,6 @@ public class ObjectHandler implements Serializable {
         return lang != Language.java;
     }
 
-    public void SetGraalContext(Context c) {
-        this.c = c;
-    }
     /**
      * At creation time, we create the actual object, which happens to be the superclass of the
      * stub. We also inspect the methods of the object to set up a table we can use to look up the
@@ -91,7 +86,8 @@ public class ObjectHandler implements Serializable {
             ArrayList<Object> objs = new ArrayList<>();
             for (Object p : params) {
                 ByteArrayInputStream in = new ByteArrayInputStream((byte[]) p);
-                sapphire.graal.io.Deserializer deserializer = new Deserializer(in, c);
+                sapphire.graal.io.Deserializer deserializer =
+                        new Deserializer(in, GraalContext.getContext());
                 objs.add(deserializer.deserialize());
             }
             return v.getMember(method).execute(objs.toArray());
@@ -137,7 +133,8 @@ public class ObjectHandler implements Serializable {
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
         lang = Language.valueOf(in.readUTF());
         if (IsGraalObject()) {
-            sapphire.graal.io.Deserializer deserializer = new Deserializer(in, c);
+            sapphire.graal.io.Deserializer deserializer =
+                    new Deserializer(in, GraalContext.getContext());
             object = deserializer.deserialize();
         } else {
             Object obj = in.readObject();

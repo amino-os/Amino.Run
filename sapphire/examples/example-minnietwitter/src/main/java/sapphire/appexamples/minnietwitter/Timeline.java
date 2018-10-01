@@ -5,9 +5,8 @@ import java.util.List;
 
 
 import sapphire.app.SapphireObject;
-import sapphire.policy.ShiftPolicy;
 
-public class Timeline implements SapphireObject<ShiftPolicy> {
+public class Timeline implements SapphireObject {
     //private User user;
     private String userName;
 

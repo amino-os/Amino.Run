@@ -78,16 +78,18 @@ task compileStubs(type: JavaCompile) {
     options.incremental = true
 }
 
-genStubs.mustRunAfter delStubs
-genStubs.mustRunAfter compileJava
-compileStubs.dependsOn genStubs
-tasks.googleJavaFormat.mustRunAfter genStubs
-check.dependsOn tasks.googleJavaFormat
-compileJava.dependsOn delStubs
-jar.dependsOn compileStubs
-
 task integTest(type: Test) {
     testClassesDirs = sourceSets.integrationTest.output.classesDirs
     classpath = sourceSets.integrationTest.runtimeClasspath
     outputs.upToDateWhen { false }
 }
+
+genStubs.mustRunAfter delStubs
+genStubs.mustRunAfter compileJava
+compileStubs.dependsOn genStubs
+tasks.googleJavaFormat.mustRunAfter genStubs
+check.dependsOn tasks.googleJavaFormat
+check.dependsOn integTest
+integTest.mustRunAfter test
+compileJava.dependsOn delStubs
+jar.dependsOn compileStubs

@@ -5,7 +5,7 @@ import sapphire.common.AppObjectStub;
 import sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy;
 import sapphire.runtime.Sapphire;
 
-public class HelloWorld implements SapphireObject<AtLeastOnceRPCPolicy> {
+public class HelloWorld implements SapphireObject {
     private String world = "DCAP World";
 
     public HelloWorld(){}

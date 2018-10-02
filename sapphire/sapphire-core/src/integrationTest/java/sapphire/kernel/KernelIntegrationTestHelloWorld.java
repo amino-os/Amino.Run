@@ -6,16 +6,62 @@ import java.net.InetSocketAddress;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
+import sapphire.app.DMSpec;
+import sapphire.app.Language;
+import sapphire.app.SapphireObjectSpec;
 import sapphire.appexamples.helloworld.HelloWorld;
 import sapphire.common.SapphireObjectID;
 import sapphire.kernel.server.KernelServer;
 import sapphire.kernel.server.KernelServerImpl;
 import sapphire.oms.OMSServer;
+import sapphire.oms.OMSServerImpl;
+import sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy;
+import sapphire.policy.dht.DHTPolicy;
 
 /** Tests the SO creation process in Kernel Server and OMS. */
 public class KernelIntegrationTestHelloWorld {
 
+    @Test
+    public void testCreateSapphireObject() throws Exception {
+        String world = "Disney";
+        String omsIp = "127.0.0.1";
+        int omsPort = 22346;
+        String kstIp = "127.0.0.1";
+        int ksPort = 22345;
+        String hostIp = "127.0.0.2";
+        int hostPort = 22333;
+
+        OMSServerImpl.main(new String[] {omsIp, String.valueOf(omsPort)});
+        KernelServerImpl.main(
+                new String[] {kstIp, String.valueOf(ksPort), omsIp, String.valueOf(omsPort), "r1"});
+
+        Registry registry = LocateRegistry.getRegistry(omsIp, omsPort);
+        OMSServer server = (OMSServer) registry.lookup("SapphireOMS");
+
+        KernelServer nodeServer =
+                new KernelServerImpl(
+                        new InetSocketAddress(hostIp, hostPort),
+                        new InetSocketAddress(omsIp, omsPort));
+
+        SapphireObjectSpec spec = SapphireObjectSpec.newBuilder()
+                .setLang(Language.java)
+                .setJavaClassName("sapphire.appexamples.helloworld.HelloWorld")
+                .addDMSpec(DMSpec.newBuilder()
+                        .setName(AtLeastOnceRPCPolicy.class.getName())
+                        .create())
+                .create();
+
+        SapphireObjectID sapphireObjId =
+                server.createSapphireObject(spec.toString(), world);
+        HelloWorld helloWorld = (HelloWorld) server.acquireSapphireObjectStub(sapphireObjId);
+        Assert.assertEquals("Hi " + world, helloWorld.sayHello());
+        server.deleteSapphireObject(sapphireObjId);
+    }
+
+    // TODO: This test is broken!
+    @Ignore
     @Test
     public void testSOCreation() {
         String ip = "127.0.0.1";

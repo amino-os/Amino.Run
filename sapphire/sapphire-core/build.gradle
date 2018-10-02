@@ -89,3 +89,10 @@ check.dependsOn integTest
 integTest.mustRunAfter test
 compileJava.dependsOn delStubs
 jar.dependsOn compileStubs
+
+task integTest(type: Test) {
+    systemProperty "my_java_home", project.property('org.gradle.java.home')
+    testClassesDirs = sourceSets.integrationTest.output.classesDirs
+    classpath = sourceSets.integrationTest.runtimeClasspath
+    outputs.upToDateWhen { false }
+}

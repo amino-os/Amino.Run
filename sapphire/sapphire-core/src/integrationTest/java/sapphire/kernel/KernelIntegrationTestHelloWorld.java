@@ -62,10 +62,10 @@ public class KernelIntegrationTestHelloWorld {
         /* Start OMS and kernel server as separate process and invoke rpc from app client */
         try {
             String cwd = System.getProperty("user.dir");
-            String myJavaHome = System.getProperty("my_java_home");
+            String javaHome = System.getProperty("dcap_java_home");
             String javaExe = "java";
-            if (myJavaHome != null) {
-                javaExe = Paths.get(myJavaHome, "bin", "java").toString();
+            if (javaHome != null) {
+                javaExe = Paths.get(javaHome, "bin", "java").toString();
                 System.out.println("java to call: " + javaExe);
             }
             String sapphireCore =

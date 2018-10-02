@@ -4,10 +4,15 @@ import java.net.InetSocketAddress;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
+import sapphire.app.DMSpec;
+import sapphire.app.Language;
+import sapphire.app.SapphireObjectSpec;
 import sapphire.common.SapphireObjectID;
 import sapphire.kernel.server.KernelServer;
 import sapphire.kernel.server.KernelServerImpl;
 import sapphire.oms.OMSServer;
+import sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy;
+import sapphire.policy.dht.DHTPolicy;
 
 public class HelloWorldMain {
     public static void main(String[] args) {
@@ -29,8 +34,16 @@ public class HelloWorldMain {
 
             KernelServer nodeServer = new KernelServerImpl(new InetSocketAddress(args[2], Integer.parseInt(args[3])), new InetSocketAddress(args[0], Integer.parseInt(args[1])));
 
+            SapphireObjectSpec spec = SapphireObjectSpec.newBuilder()
+                    .setLang(Language.java)
+                    .setJavaClassName("sapphire.appexamples.helloworld.HelloWorld")
+                    .addDMSpec(DMSpec.newBuilder()
+                            .setName(AtLeastOnceRPCPolicy.class.getName())
+                            .create())
+                    .create();
+
             SapphireObjectID sapphireObjId =
-                    server.createSapphireObject("sapphire.appexamples.helloworld.HelloWorld", world);
+                    server.createSapphireObject(spec.toString(), world);
             HelloWorld helloWorld = (HelloWorld) server.acquireSapphireObjectStub(sapphireObjId);
             System.out.println(helloWorld.sayHello());
 

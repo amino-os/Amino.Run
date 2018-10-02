@@ -12,10 +12,10 @@ import static sapphire.policy.util.consensus.raft.ServerTest.getCurrentLeader;
 import static sapphire.policy.util.consensus.raft.ServerTest.makeFollower;
 import static sapphire.policy.util.consensus.raft.ServerTest.makeLeader;
 
-import java.lang.annotation.Annotation;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
+import java.util.*;
 import java.util.ArrayList;
 import org.junit.After;
 import org.junit.Before;
@@ -26,8 +26,10 @@ import org.junit.runner.RunWith;
 import org.mockito.Matchers;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
+import sapphire.app.Language;
 import sapphire.app.SO;
 import sapphire.app.SapphireObject;
+import sapphire.app.SapphireObjectSpec;
 import sapphire.app.stubs.SO_Stub;
 import sapphire.common.BaseTest;
 import sapphire.common.SapphireObjectID;
@@ -125,10 +127,11 @@ public class ConsensusRSMPolicyTest extends BaseTest {
     public void setUp() throws Exception {
         this.serversInSameRegion = false;
         super.setUp(Server_Stub.class, Group_Stub.class);
+        SapphireObjectSpec spec = new SapphireObjectSpec();
+        spec.setLang(Language.java);
+        spec.setJavaClassName("sapphire.policy.replication.ConsensusRSMPolicyTest$ConsensusSO");
 
-        SapphireObjectID sapphireObjId =
-                spiedOms.createSapphireObject(
-                        "sapphire.policy.replication.ConsensusRSMPolicyTest$ConsensusSO");
+        SapphireObjectID sapphireObjId = spiedOms.createSapphireObject(spec.toString());
         soStub = (SO_Stub) spiedOms.acquireSapphireObjectStub(sapphireObjId);
         client =
                 (DefaultSapphirePolicy.DefaultClientPolicy)
@@ -203,7 +206,7 @@ public class ConsensusRSMPolicyTest extends BaseTest {
     public void omsNotAvailable() throws Exception {
         when(this.group.sapphire_getRegions()).thenThrow(new RemoteException());
         thrown.expect(Error.class);
-        this.group.onCreate(this.server1, new Annotation[] {});
+        this.group.onCreate(this.server1, new HashMap<>());
     }
 
     /**

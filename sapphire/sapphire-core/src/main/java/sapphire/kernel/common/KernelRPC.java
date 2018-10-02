@@ -1,7 +1,11 @@
 package sapphire.kernel.common;
 
+import java.io.ByteArrayOutputStream;
 import java.io.Serializable;
 import java.util.*;
+import org.graalvm.polyglot.*;
+import sapphire.app.Language;
+import sapphire.graal.io.*;
 
 /**
  * Sapphire Kernel RPC Includes the object being called, the method and the parameters
@@ -17,6 +21,23 @@ public class KernelRPC implements Serializable {
         this.oid = oid;
         this.method = method;
         this.params = params;
+    }
+
+    public KernelRPC(KernelOID oid, Language language, String method, ArrayList<Object> params)
+            throws Exception {
+        this.oid = oid;
+        this.method = method;
+        if (language != Language.java) {
+            for (Object p : params) {
+                ByteArrayOutputStream out = new ByteArrayOutputStream();
+                sapphire.graal.io.Serializer serializer =
+                        new Serializer(out, (Language) params.get(0));
+                serializer.serialize((Value) p);
+                this.params.add(out.toByteArray());
+            }
+        } else {
+            this.params = params;
+        }
     }
 
     public KernelOID getOID() {

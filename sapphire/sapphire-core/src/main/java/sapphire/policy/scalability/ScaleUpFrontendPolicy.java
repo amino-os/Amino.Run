@@ -1,15 +1,10 @@
 package sapphire.policy.scalability;
 
-import static sapphire.common.Utils.getAnnotation;
-
-import java.lang.annotation.Annotation;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.Objects;
 import java.util.TimerTask;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -26,12 +21,30 @@ import sapphire.policy.util.ResettableTimer;
 public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
     static final int REPLICA_CREATE_MIN_TIME_IN_MSEC = 100;
 
-    @Retention(RetentionPolicy.RUNTIME)
-    @Target({ElementType.TYPE})
-    public @interface ScaleUpFrontendPolicyConfigAnnotation {
-        int replicationRateInMs() default REPLICA_CREATE_MIN_TIME_IN_MSEC;
+    /** Configurations for ScaleUpFrontendPolicy */
+    public static class Config implements SapphirePolicyConfig {
+        private int replicationRateInMs = REPLICA_CREATE_MIN_TIME_IN_MSEC;
 
-        LoadBalancedFrontendPolicyConfigAnnotation loadbalanceConfig();
+        public int getReplicationRateInMs() {
+            return replicationRateInMs;
+        }
+
+        public void setReplicationRateInMs(int replicationRateInMs) {
+            this.replicationRateInMs = replicationRateInMs;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Config config = (Config) o;
+            return replicationRateInMs == config.replicationRateInMs;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(replicationRateInMs);
+        }
     }
 
     public static class ClientPolicy extends LoadBalancedFrontendPolicy.ClientPolicy {
@@ -58,18 +71,16 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
         private transient volatile ResettableTimer timer; // Timer for limiting
 
         @Override
-        public void onCreate(SapphireGroupPolicy group, Annotation[] annotations) {
-            Annotation[] lbConfigAnnotations = annotations;
-            ScaleUpFrontendPolicyConfigAnnotation annotation =
-                    getAnnotation(annotations, ScaleUpFrontendPolicyConfigAnnotation.class);
-            if (annotation != null && null != annotation.loadbalanceConfig()) {
-                lbConfigAnnotations = new Annotation[] {annotation.loadbalanceConfig()};
-            }
+        public void onCreate(
+                SapphireGroupPolicy group, Map<String, SapphirePolicyConfig> configMap) {
+            super.onCreate(group, configMap);
 
-            super.onCreate(group, lbConfigAnnotations);
-
-            if (annotation != null) {
-                replicationRateInMs = annotation.replicationRateInMs();
+            if (configMap != null) {
+                SapphirePolicyConfig config =
+                        configMap.get(ScaleUpFrontendPolicy.Config.class.getName());
+                if (config != null) {
+                    replicationRateInMs = ((Config) config).getReplicationRateInMs();
+                }
             }
 
             replicaCreateLimiter = new Semaphore(replicaCount, true);
@@ -151,20 +162,19 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
         private transient ResettableTimer timer; // Timer for limiting
 
         @Override
-        public void onCreate(SapphireServerPolicy server, Annotation[] annotations)
+        public void onCreate(
+                SapphireServerPolicy server, Map<String, SapphirePolicyConfig> configMap)
                 throws RemoteException {
-            Annotation[] lbConfigAnnotations = annotations;
-            ScaleUpFrontendPolicyConfigAnnotation annotation =
-                    getAnnotation(annotations, ScaleUpFrontendPolicyConfigAnnotation.class);
-            if (annotation != null && null != annotation.loadbalanceConfig()) {
-                lbConfigAnnotations = new Annotation[] {annotation.loadbalanceConfig()};
+            super.onCreate(server, configMap);
+
+            if (configMap != null) {
+                SapphirePolicyConfig config =
+                        configMap.get(ScaleUpFrontendPolicy.Config.class.getName());
+                if (config != null) {
+                    replicationRateInMs = ((Config) config).getReplicationRateInMs();
+                }
             }
 
-            super.onCreate(server, lbConfigAnnotations);
-
-            if (annotation != null) {
-                replicationRateInMs = annotation.replicationRateInMs();
-            }
             if (replicaCreateLimiter == null) {
                 replicaCreateLimiter = new Semaphore(replicaCount, true);
             }

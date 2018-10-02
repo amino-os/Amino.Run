@@ -1,10 +1,10 @@
 package sapphire.policy.mobility.explicitmigration;
 
-import java.lang.annotation.Annotation;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.Objects;
 import java.util.logging.Logger;
-import sapphire.common.Utils;
 import sapphire.kernel.common.GlobalKernelReferences;
 import sapphire.kernel.common.KernelObjectMigratingException;
 import sapphire.kernel.server.KernelServerImpl;
@@ -19,24 +19,77 @@ import sapphire.policy.DefaultSapphirePolicy;
  * ExplicitMigratorImpl class). TODO: improve this by using annotations instead
  */
 public class ExplicitMigrationPolicy extends DefaultSapphirePolicy {
+    public static final int RETRYTIMEOUTINMILLIS = 15000;
+    public static final int MINWAITINTERVALINMILLIS = 100;
+    public static final String MIGRATEOBJECTMETHODNAME = "migrateObject";
+
+    /** Configurations for ExplicitMigrationPolicy */
+    public static class Config implements SapphirePolicyConfig {
+        private int retryTimeoutInMillis = RETRYTIMEOUTINMILLIS;
+        private int minWaitIntervalInMillis = MINWAITINTERVALINMILLIS;
+        private String migrateObjectMethodName = MIGRATEOBJECTMETHODNAME;
+
+        public int getretryTimeoutInMillis() {
+            return retryTimeoutInMillis;
+        }
+
+        public void setRetryTimeoutInMillis(int retryTimeoutInMillis) {
+            this.retryTimeoutInMillis = retryTimeoutInMillis;
+        }
+
+        public int getMinWaitIntervalInMillis() {
+            return minWaitIntervalInMillis;
+        }
+
+        public void setMinWaitIntervalInMillis(int minWaitInterval) {
+            this.minWaitIntervalInMillis = minWaitInterval;
+        }
+
+        public String getMigrateObjectMethodName() {
+            return migrateObjectMethodName;
+        }
+
+        public void setMigrateObjectMethodName(String methodName) {
+            this.migrateObjectMethodName = methodName;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            ExplicitMigrationPolicy.Config config = (ExplicitMigrationPolicy.Config) o;
+            return retryTimeoutInMillis == config.retryTimeoutInMillis
+                    && minWaitIntervalInMillis == config.minWaitIntervalInMillis
+                    && migrateObjectMethodName.equals(config.minWaitIntervalInMillis);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(retryTimeoutInMillis, minWaitIntervalInMillis);
+        }
+    }
+
     public static class ClientPolicy extends DefaultClientPolicy {
         private static Logger logger =
                 Logger.getLogger(ExplicitMigrationPolicy.ClientPolicy.class.getName());
 
         // Maximum time interval for wait before timing out (in milliseconds)
-        private long retryTimeoutInMillis = 15000;
+        private long retryTimeoutInMillis = RETRYTIMEOUTINMILLIS;
         // Minimum time interval for wait before retrying (in milliseconds)
-        private long minWaitIntervalInMillis = 100;
+        private long minWaitIntervalInMillis = MINWAITINTERVALINMILLIS;
 
         @Override
-        public void onCreate(SapphireGroupPolicy group, Annotation[] annotations) {
-            super.onCreate(group, annotations);
+        public void onCreate(
+                SapphireGroupPolicy group, Map<String, SapphirePolicyConfig> configMap) {
+            super.onCreate(group, configMap);
 
-            ExplicitMigrationPolicySpec spec =
-                    Utils.getAnnotation(annotations, ExplicitMigrationPolicySpec.class);
-            if (spec != null) {
-                retryTimeoutInMillis = spec.retryTimeoutInMillis();
-                minWaitIntervalInMillis = spec.minWaitIntervalInMillis();
+            if (configMap != null) {
+                SapphirePolicyConfig config =
+                        configMap.get(ExplicitMigrationPolicy.Config.class.getName());
+                if (config != null) {
+                    this.retryTimeoutInMillis = ((Config) config).getretryTimeoutInMillis();
+                    this.minWaitIntervalInMillis = ((Config) config).getMinWaitIntervalInMillis();
+                }
             }
         }
 
@@ -72,16 +125,17 @@ public class ExplicitMigrationPolicy extends DefaultSapphirePolicy {
     public static class ServerPolicy extends DefaultServerPolicy {
         private static Logger logger =
                 Logger.getLogger(ExplicitMigrationPolicy.ServerPolicy.class.getName());
-        private String migrateObjectMethodName = "migrateObject";
+        private String migrateObjectMethodName = MIGRATEOBJECTMETHODNAME;
 
         @Override
-        public void onCreate(SapphireGroupPolicy group, Annotation[] annotations) {
-            super.onCreate(group, annotations);
+        public void onCreate(
+                SapphireGroupPolicy group, Map<String, SapphirePolicyConfig> configMap) {
+            super.onCreate(group, configMap);
 
-            ExplicitMigrationPolicySpec spec =
-                    Utils.getAnnotation(annotations, ExplicitMigrationPolicySpec.class);
-            if (spec != null) {
-                migrateObjectMethodName = spec.migrateObjectMethodName();
+            SapphirePolicyConfig config =
+                    configMap.get(ExplicitMigrationPolicy.Config.class.getName());
+            if (config != null) {
+                migrateObjectMethodName = ((Config) config).getMigrateObjectMethodName();
             }
         }
 

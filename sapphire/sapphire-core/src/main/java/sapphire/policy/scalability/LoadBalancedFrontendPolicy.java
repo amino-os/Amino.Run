@@ -1,8 +1,5 @@
 package sapphire.policy.scalability;
 
-import static sapphire.common.Utils.getAnnotation;
-
-import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -10,6 +7,8 @@ import java.lang.annotation.Target;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Logger;
 import sapphire.common.SapphireObjectNotFoundException;
@@ -21,16 +20,51 @@ import sapphire.policy.DefaultSapphirePolicy;
  * consistency
  */
 public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
+    public static final int STATIC_REPLICA_COUNT = 2;
+    public static final int MAX_CONCURRENT_REQUESTS = 20;
 
-    static final int STATIC_REPLICA_COUNT = 2;
-    static final int MAX_CONCURRENT_REQUESTS = 2000;
+    /** Configurations for LoadBalancedFrontendPolicy */
+    public static class Config implements SapphirePolicyConfig {
+        private int maxConcurrentReq = MAX_CONCURRENT_REQUESTS;
+        private int replicaCount = STATIC_REPLICA_COUNT;
+
+        public int getMaxConcurrentReq() {
+            return maxConcurrentReq;
+        }
+
+        public void setMaxConcurrentReq(int maxConcurrentReq) {
+            this.maxConcurrentReq = maxConcurrentReq;
+        }
+
+        public int getReplicaCount() {
+            return replicaCount;
+        }
+
+        public void setReplicaCount(int replicaCount) {
+            this.replicaCount = replicaCount;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Config config = (Config) o;
+            return maxConcurrentReq == config.maxConcurrentReq
+                    && replicaCount == config.replicaCount;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(maxConcurrentReq, replicaCount);
+        }
+    }
 
     @Retention(RetentionPolicy.RUNTIME)
     @Target({ElementType.TYPE})
     public @interface LoadBalancedFrontendPolicyConfigAnnotation {
-        int maxconcurrentReq() default MAX_CONCURRENT_REQUESTS;
+        int maxConcurrentReq() default MAX_CONCURRENT_REQUESTS;
 
-        int replicacount() default STATIC_REPLICA_COUNT;
+        int replicaCount() default STATIC_REPLICA_COUNT;
     }
 
     /**
@@ -74,18 +108,22 @@ public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
      */
     public static class ServerPolicy extends DefaultSapphirePolicy.DefaultServerPolicy {
         private static Logger logger = Logger.getLogger(ServerPolicy.class.getName());
-        protected int maxConcurrentReq =
-                MAX_CONCURRENT_REQUESTS; // we can read from default config or annotations
+        // we can read from default config or annotations
+        protected int maxConcurrentReq = MAX_CONCURRENT_REQUESTS;
         protected Semaphore limiter;
 
         @Override
-        public void onCreate(SapphireGroupPolicy group, Annotation[] annotations) {
-            super.onCreate(group, annotations);
-            LoadBalancedFrontendPolicyConfigAnnotation annotation =
-                    getAnnotation(annotations, LoadBalancedFrontendPolicyConfigAnnotation.class);
-            if (annotation != null) {
-                this.maxConcurrentReq = annotation.maxconcurrentReq();
+        public void onCreate(
+                SapphireGroupPolicy group, Map<String, SapphirePolicyConfig> configMap) {
+            super.onCreate(group, configMap);
+            if (configMap != null) {
+                SapphirePolicyConfig config =
+                        configMap.get(LoadBalancedFrontendPolicy.Config.class.getName());
+                if (config != null) {
+                    this.maxConcurrentReq = ((Config) config).getMaxConcurrentReq();
+                }
             }
+
             if (this.limiter == null) {
                 this.limiter = new Semaphore(this.maxConcurrentReq, true);
             }
@@ -122,17 +160,20 @@ public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
         private int replicaCount = STATIC_REPLICA_COUNT; // we can read from config or annotations
 
         @Override
-        public void onCreate(SapphireServerPolicy server, Annotation[] annotations)
+        public void onCreate(
+                SapphireServerPolicy server, Map<String, SapphirePolicyConfig> configMap)
                 throws RemoteException {
-            super.onCreate(server, annotations);
-            LoadBalancedFrontendPolicyConfigAnnotation annotation =
-                    getAnnotation(annotations, LoadBalancedFrontendPolicyConfigAnnotation.class);
+            super.onCreate(server, configMap);
 
-            if (annotation != null) {
-                this.replicaCount = annotation.replicacount();
+            if (configMap != null) {
+                SapphirePolicyConfig config =
+                        configMap.get(LoadBalancedFrontendPolicy.Config.class.getName());
+                if (config != null) {
+                    this.replicaCount = ((Config) config).getReplicaCount();
+                }
             }
-            int count =
-                    0; // count is compared below < STATIC_REPLICAS-1 excluding the present server
+            // count is compared below < STATIC_REPLICAS-1 excluding the present server
+            int count = 0;
             int numnodes = 0; // num of nodes/servers in the selected region
 
             /* Creation of group happens when the first instance of sapphire object is

@@ -1,12 +1,16 @@
 package sapphire.policy;
 
-import java.lang.annotation.Annotation;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.harmony.rmi.common.RMIUtil;
+import org.graalvm.polyglot.Context;
+import sapphire.app.Language;
+import sapphire.app.SapphireObjectSpec;
 import sapphire.common.AppObject;
 import sapphire.common.AppObjectStub;
 import sapphire.common.SapphireObjectID;
@@ -14,6 +18,7 @@ import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
 import sapphire.common.SapphireReplicaID;
 import sapphire.compiler.GlobalStubConstants;
+import sapphire.graal.io.GraalContext;
 import sapphire.kernel.common.GlobalKernelReferences;
 import sapphire.kernel.common.KernelOID;
 import sapphire.kernel.common.KernelObjectFactory;
@@ -39,6 +44,9 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
         protected AppObject appObject;
         protected KernelOID oid;
         protected SapphireReplicaID replicaId;
+        protected Context context;
+        protected Map<String, SapphirePolicyConfig> configMap;
+        protected SapphirePolicy.SapphireGroupPolicy group;
 
         static Logger logger = Logger.getLogger("sapphire.policy.SapphirePolicyLibrary");
 
@@ -53,6 +61,23 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
         /*
          * SAPPHIRE API FOR SERVER POLICIES
          */
+
+        @Override
+        public void onCreate(
+                SapphirePolicy.SapphireGroupPolicy group,
+                Map<String, SapphirePolicyConfig> configMap) {
+            this.group = group;
+            this.configMap = configMap;
+        }
+
+        /**
+         * Returns configurations of this server policy.
+         *
+         * @return sapphire policy configuration map
+         */
+        public Map<String, SapphirePolicyConfig> getConfigMap() {
+            return this.configMap;
+        }
 
         /** Creates a replica of this server and registers it with the group */
         // TODO: Also replicate the policy ??
@@ -88,7 +113,8 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
                   getClass().getSuperclass() gives as class sapphire.appexamples.hankstodo.app.TodoListManager
                 */
                 Class c = sapphire_getAppObject().getObject().getClass().getSuperclass();
-                serverPolicy.onCreate(getGroup(), c.getAnnotations());
+                //                serverPolicy.onCreate(getGroup(), c.getAnnotations());
+                serverPolicy.onCreate(getGroup(), configMap);
                 getGroup().addServer((SapphireServerPolicy) serverPolicyStub);
             } catch (ClassNotFoundException e) {
                 // TODO Auto-generated catch block
@@ -164,30 +190,48 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
         /**
          * Internal function used to initialize the App Object
          *
-         * @param appObjectClassName
+         * @param spec
          * @param params
          */
         // TODO: not final (stub overrides it)
-        public AppObjectStub $__initialize(Class<?> appObjectStubClass, Object[] params) {
-            AppObjectStub actualAppObject =
-                    null; // The Actual App Object, managed by an AppObject Handler
+        public AppObjectStub $__initialize(SapphireObjectSpec spec, Object[] params) {
+            logger.info(String.format("Creating app object '%s' with parameters %s", spec, params));
+
+            AppObjectStub actualAppObject = null;
             try {
-                // Construct the list of classes of the arguments as Class[]
-                if (params != null) {
-                    Class<?>[] argClasses = Sapphire.getParamsClasses(params);
-                    actualAppObject =
-                            (AppObjectStub)
-                                    appObjectStubClass
-                                            .getConstructor(argClasses)
-                                            .newInstance(params);
-                } else actualAppObject = (AppObjectStub) appObjectStubClass.newInstance();
+                if (spec.getLang() == Language.java) {
+                    Class<?> appObjectClass = Class.forName(spec.getJavaClassName());
+                    String appStubClassName =
+                            GlobalStubConstants.getAppPackageName(
+                                            RMIUtil.getPackageName(appObjectClass))
+                                    + "."
+                                    + RMIUtil.getShortName(appObjectClass)
+                                    + GlobalStubConstants.STUB_SUFFIX;
 
-                actualAppObject.$__initialize(true);
+                    Class<?> appObjectStubClass = Class.forName(appStubClassName);
+                    // Construct the list of classes of the arguments as Class[]
+                    if (params != null) {
+                        Class<?>[] argClasses = Sapphire.getParamsClasses(params);
+                        actualAppObject =
+                                (AppObjectStub)
+                                        appObjectStubClass
+                                                .getConstructor(argClasses)
+                                                .newInstance(params);
 
-                // Create the App Object
-                appObject = new AppObject(actualAppObject);
+                    } else {
+                        actualAppObject = (AppObjectStub) appObjectStubClass.newInstance();
+                    }
+                    actualAppObject.$__initialize(true);
+                    appObject = new AppObject(actualAppObject);
+                } else {
+                    appObject =
+                            new AppObject(
+                                    GraalContext.getContext()
+                                            .eval(spec.getLang().name(), spec.getConstructorName())
+                                            .newInstance(params));
+                }
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.log(Level.SEVERE, "Failed to initialize server policy", e);
             }
             return actualAppObject;
         }
@@ -234,7 +278,7 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
     public abstract static class SapphireGroupPolicyLibrary implements SapphireGroupPolicyUpcalls {
         protected String appObjectClassName;
         protected ArrayList<Object> params;
-        protected Annotation[] appConfigAnnotation;
+        protected Map<String, SapphirePolicyConfig> configMap;
         protected KernelOID oid;
         protected SapphireObjectID sapphireObjId;
 
@@ -270,12 +314,12 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
             return this.oid;
         }
 
-        public void setAppConfigAnnotation(Annotation[] appConfigAnnotation) {
-            this.appConfigAnnotation = appConfigAnnotation;
+        public void setAppConfigAnnotation(Map<String, SapphirePolicyConfig> configMap) {
+            this.configMap = configMap;
         }
 
-        public Annotation[] getAppConfigAnnotation() {
-            return appConfigAnnotation;
+        public Map<String, SapphirePolicyConfig> getAppConfigAnnotation() {
+            return configMap;
         }
 
         public void setSapphireObjId(SapphireObjectID sapphireId) {

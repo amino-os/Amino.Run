@@ -3,10 +3,10 @@ package sapphire.policy.dht;
 import static org.mockito.Mockito.spy;
 import static org.powermock.api.mockito.PowerMockito.when;
 
-import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -14,6 +14,7 @@ import sapphire.kernel.server.KernelServerImpl;
 import sapphire.oms.OMSServer;
 import sapphire.oms.OMSServerImpl;
 import sapphire.policy.SapphirePolicy;
+import sapphire.policy.SapphirePolicyUpcalls;
 
 public class DHTPolicyTest {
     private OMSServer oms;
@@ -56,11 +57,12 @@ public class DHTPolicyTest {
     }
 
     private static class ServerPolicy extends DHTPolicy.DHTServerPolicy {
-        private SapphirePolicy.SapphireGroupPolicy group;
         List<Object> requests = new ArrayList<>();
 
         @Override
-        public void onCreate(SapphirePolicy.SapphireGroupPolicy group, Annotation[] annotations) {
+        public void onCreate(
+                SapphirePolicy.SapphireGroupPolicy group,
+                Map<String, SapphirePolicyUpcalls.SapphirePolicyConfig> configMap) {
             this.group = group;
         }
 

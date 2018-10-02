@@ -30,8 +30,12 @@ configurations {
 }
 
 dependencies {
-    compile 'org.json:json:20171018'
     compile project(':dependencies:java.rmi')
+    compile 'org.json:json:20171018'
+    // TODO(multi-lang): Unable to fetch jar from maven central due to Proxy issue.
+    // Load jar file from disk temporarily.
+    compile files('libs/snakeyaml-1.23.jar')
+
     testCompile 'org.mockito:mockito-core:1.+'
     testCompile 'org.powermock:powermock:1.6.5'
     testCompile 'org.powermock:powermock-module-junit4:1.6.5'
@@ -74,16 +78,18 @@ task compileStubs(type: JavaCompile) {
     options.incremental = true
 }
 
-genStubs.mustRunAfter delStubs
-genStubs.mustRunAfter compileJava
-compileStubs.dependsOn genStubs
-tasks.googleJavaFormat.mustRunAfter genStubs
-check.dependsOn tasks.googleJavaFormat
-compileJava.dependsOn delStubs
-jar.dependsOn compileStubs
-
 task integTest(type: Test) {
     testClassesDirs = sourceSets.integrationTest.output.classesDirs
     classpath = sourceSets.integrationTest.runtimeClasspath
     outputs.upToDateWhen { false }
 }
+
+genStubs.mustRunAfter delStubs
+genStubs.mustRunAfter compileJava
+compileStubs.dependsOn genStubs
+tasks.googleJavaFormat.mustRunAfter genStubs
+check.dependsOn tasks.googleJavaFormat
+check.dependsOn integTest
+integTest.mustRunAfter test
+compileJava.dependsOn delStubs
+jar.dependsOn compileStubs

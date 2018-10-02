@@ -1,17 +1,15 @@
 package sapphire.policy;
 
-import java.lang.annotation.Annotation;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class DefaultSapphirePolicy extends SapphirePolicy {
 
     public static class DefaultServerPolicy extends SapphireServerPolicy {
-        private DefaultGroupPolicy group;
-
         @Override
         public SapphireGroupPolicy getGroup() {
             return group;
@@ -21,8 +19,9 @@ public class DefaultSapphirePolicy extends SapphirePolicy {
         public void onMembershipChange() {}
 
         @Override
-        public void onCreate(SapphireGroupPolicy group, Annotation[] annotations) {
-            this.group = (DefaultGroupPolicy) group;
+        public void onCreate(
+                SapphireGroupPolicy group, Map<String, SapphirePolicyConfig> configMap) {
+            super.onCreate(group, configMap);
         }
 
         public void onDestroy() {
@@ -50,7 +49,8 @@ public class DefaultSapphirePolicy extends SapphirePolicy {
         }
 
         @Override
-        public void onCreate(SapphireGroupPolicy group, Annotation[] annotations) {
+        public void onCreate(
+                SapphireGroupPolicy group, Map<String, SapphirePolicyConfig> configMap) {
             this.group = (DefaultGroupPolicy) group;
         }
     }
@@ -87,7 +87,8 @@ public class DefaultSapphirePolicy extends SapphirePolicy {
         }
 
         @Override
-        public void onCreate(SapphireServerPolicy server, Annotation[] annotations)
+        public void onCreate(
+                SapphireServerPolicy server, Map<String, SapphirePolicyConfig> configMap)
                 throws RemoteException {
             addServer(server);
         }

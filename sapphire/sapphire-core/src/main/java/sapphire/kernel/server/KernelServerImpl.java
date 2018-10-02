@@ -10,8 +10,8 @@ import java.util.ArrayList;
 import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import sapphire.app.SapphireObjectSpec;
 import sapphire.common.AppObjectStub;
-import sapphire.common.SapphireObjectCreationException;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
 import sapphire.kernel.client.KernelClient;
@@ -141,11 +141,7 @@ public class KernelServerImpl implements KernelServer {
             serverPolicyStub.setReplicaId(serverPolicy.getReplicaId());
             oms.setSapphireReplicaDispatcher(serverPolicy.getReplicaId(), policyHandler);
 
-            /* Initialize dynamic data of server policy object(i.e., timers, executors, sockets etc)
-            on new host */
-            Class<?> c =
-                    serverPolicy.sapphire_getAppObject().getObject().getClass().getSuperclass();
-            serverPolicy.onCreate(serverPolicy.getGroup(), c.getAnnotations());
+            serverPolicy.onCreate(serverPolicy.getGroup(), serverPolicy.getConfigMap());
         }
 
         objectManager.addObject(oid, object);
@@ -263,20 +259,15 @@ public class KernelServerImpl implements KernelServer {
         return client;
     }
 
-    /**
-     * Create the sapphire object
-     *
-     * @param className
-     * @param args
-     * @return
-     * @throws RemoteException
-     * @throws SapphireObjectCreationException
-     * @throws ClassNotFoundException
-     */
     @Override
-    public AppObjectStub createSapphireObject(String className, Object... args)
-            throws RemoteException, SapphireObjectCreationException, ClassNotFoundException {
-        return (AppObjectStub) Sapphire.new_(Class.forName(className), args);
+    public AppObjectStub createSapphireObject(String soSpecYaml, Object... args) {
+        logger.log(
+                Level.INFO,
+                String.format(
+                        "Got request to create sapphire object with spec '%s' and %d parameters.",
+                        soSpecYaml, args.length));
+        SapphireObjectSpec spec = SapphireObjectSpec.fromYaml(soSpecYaml);
+        return (AppObjectStub) Sapphire.new_(spec, args);
     }
 
     public class MemoryStatThread extends Thread {

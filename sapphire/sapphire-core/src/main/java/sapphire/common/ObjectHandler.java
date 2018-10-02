@@ -1,14 +1,12 @@
 package sapphire.common;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
+import java.io.*;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.logging.Logger;
 import org.graalvm.polyglot.*;
+import sapphire.app.Language;
 import sapphire.graal.io.*;
 
 /**
@@ -21,8 +19,7 @@ public class ObjectHandler implements Serializable {
     /** Reference to the actual object instance */
     private Object object;
 
-    boolean isGraalObject;
-    Context c;
+    private Language lang;
 
     private static Logger logger = Logger.getLogger(ObjectHandler.class.getName());
 
@@ -47,9 +44,10 @@ public class ObjectHandler implements Serializable {
         }
     }
 
-    public void SetGraalContext(Context c) {
-        this.c = c;
+    private boolean IsGraalObject() {
+        return lang != Language.java;
     }
+
     /**
      * At creation time, we create the actual object, which happens to be the superclass of the
      * stub. We also inspect the methods of the object to set up a table we can use to look up the
@@ -60,8 +58,16 @@ public class ObjectHandler implements Serializable {
     public ObjectHandler(Object obj) {
         // TODO: get all the methods from all superclasses - careful about duplicates
         object = obj;
-        isGraalObject = org.graalvm.polyglot.Value.class.isAssignableFrom(obj.getClass());
-        if (!isGraalObject) {
+
+        // TODO: we should support other languages than js, when object is created we can track it's
+        // language.
+        if (org.graalvm.polyglot.Value.class.isAssignableFrom(obj.getClass())) {
+            lang = Language.js;
+        } else {
+            lang = Language.java;
+        }
+
+        if (!IsGraalObject()) {
             fillMethodTable(obj);
         }
         logger.fine("Created object " + obj.toString());
@@ -75,7 +81,19 @@ public class ObjectHandler implements Serializable {
      * @return the return value from the method
      */
     public Object invoke(String method, ArrayList<Object> params) throws Exception {
-        return methods.get(method).invoke(object, params.toArray());
+        if (IsGraalObject()) {
+            Value v = (Value) object;
+            ArrayList<Object> objs = new ArrayList<>();
+            for (Object p : params) {
+                ByteArrayInputStream in = new ByteArrayInputStream((byte[]) p);
+                sapphire.graal.io.Deserializer deserializer =
+                        new Deserializer(in, GraalContext.getContext());
+                objs.add(deserializer.deserialize());
+            }
+            return v.getMember(method).execute(objs.toArray());
+        } else {
+            return methods.get(method).invoke(object, params.toArray());
+        }
     }
 
     public Serializable getObject() {
@@ -90,11 +108,11 @@ public class ObjectHandler implements Serializable {
         this.object = object;
     }
 
-    private void writeObject(ObjectOutputStream out) throws Exception {
-        out.writeBoolean(isGraalObject);
-        if (isGraalObject) {
+    private void writeObject(ObjectOutputStream out) throws IOException {
+        out.writeUTF(lang.toString());
+        if (IsGraalObject()) {
             // TODO: make language configurable.
-            sapphire.graal.io.Serializer serializer = new Serializer(out, "js");
+            sapphire.graal.io.Serializer serializer = new Serializer(out, lang);
             serializer.serialize((Value) this.object);
         } else {
             out.writeObject(object);
@@ -108,16 +126,15 @@ public class ObjectHandler implements Serializable {
      * @throws IOException Note - it's not possible to simply make writeObject public, as java
      *     serialization requires it to be private.
      */
-    public void write(ObjectOutputStream out) throws Exception {
-        // out.writeBoolean(isGraalObject);
+    public void write(ObjectOutputStream out) throws IOException {
         this.writeObject(out);
     }
 
-    private void readObject(ObjectInputStream in) throws Exception {
-        isGraalObject = in.readBoolean();
-        if (isGraalObject) {
-            if (c == null) c = Context.create();
-            sapphire.graal.io.Deserializer deserializer = new Deserializer(in, c);
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        lang = Language.valueOf(in.readUTF());
+        if (IsGraalObject()) {
+            sapphire.graal.io.Deserializer deserializer =
+                    new Deserializer(in, GraalContext.getContext());
             object = deserializer.deserialize();
         } else {
             Object obj = in.readObject();
@@ -126,7 +143,7 @@ public class ObjectHandler implements Serializable {
         }
     }
 
-    public void read(ObjectInputStream in) throws Exception {
+    public void read(ObjectInputStream in) throws IOException, ClassNotFoundException {
         this.readObject(in);
     }
 }

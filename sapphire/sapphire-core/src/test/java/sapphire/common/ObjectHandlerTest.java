@@ -13,7 +13,6 @@ public class ObjectHandlerTest {
         Context c = Context.create();
         Value v = c.eval("js", "[1,42,3]");
         ObjectHandler objHandler = new ObjectHandler(v);
-        objHandler.SetGraalContext(c);
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         ObjectOutputStream oos = new ObjectOutputStream(byteArrayOutputStream);
         oos.writeObject(objHandler);
@@ -32,5 +31,16 @@ public class ObjectHandlerTest {
         System.out.println("After SerDe, value is " + objHandler.getGraalObject());
 
         assert objHandler.getGraalObject().toString().equals(clone.getGraalObject().toString());
+    }
+
+    @Test
+    public void testJavaObject() throws Exception {
+        String s = "helloworld";
+        ObjectHandler obj = new ObjectHandler(s);
+        byte[] bytes = Utils.toBytes(obj);
+
+        ObjectHandler obj2 = (ObjectHandler) Utils.toObject(bytes);
+
+        assert s.equals(obj2.getObject());
     }
 }

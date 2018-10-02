@@ -3,13 +3,13 @@ package sapphire.policy.scalability;
 import static sapphire.policy.scalability.masterslave.MethodInvocationResponse.ReturnCode;
 
 import java.io.Serializable;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
@@ -162,10 +162,11 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultSapphirePolicy 
         private Lock masterLock;
 
         @Override
-        public void onCreate(SapphireServerPolicy server, Annotation[] annotations)
+        public void onCreate(
+                SapphireServerPolicy server, Map<String, SapphirePolicyConfig> configMap)
                 throws RemoteException {
             logger = Logger.getLogger(this.getClass().getName());
-            super.onCreate(server, annotations);
+            super.onCreate(server, configMap);
             RuntimeSpec spec = Utils.getRuntimeSpec(server.getClass());
             try {
 

@@ -333,7 +333,7 @@ public class Sapphire {
 
     /* Returns a pointer to the given Sapphire Object */
     // TODO: how to implement this ?
-    public static Object this_(SapphireObject<?> so) {
+    public static Object this_(SapphireObject so) {
 
         AppObjectStub appObject = (AppObjectStub) so;
         return null;

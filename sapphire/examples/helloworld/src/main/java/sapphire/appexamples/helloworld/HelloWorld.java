@@ -1,11 +1,10 @@
 package sapphire.appexamples.helloworld;
 
 import sapphire.app.*;
-import sapphire.common.AppObjectStub;
-import sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy;
-import sapphire.runtime.Sapphire;
+import sapphire.runtime.SapphireConfiguration;
 
-public class HelloWorld implements SapphireObject<AtLeastOnceRPCPolicy> {
+@SapphireConfiguration(Policies = "sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy")
+public class HelloWorld implements SapphireObject {
     private String world = "DCAP World";
 
     public HelloWorld(){}

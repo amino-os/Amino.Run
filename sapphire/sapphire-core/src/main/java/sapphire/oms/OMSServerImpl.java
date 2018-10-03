@@ -249,6 +249,7 @@ public class OMSServerImpl implements OMSServer {
 
         AppObjectStub appObjStub = null;
         try {
+            /*
             AppObjectStub localObjStub = objectManager.getInstanceObjectStub(sapphireObjId);
             SapphirePolicy.SapphireClientPolicy clientPolicy = extractClientPolicy(localObjStub);
             SapphirePolicy.SapphireServerPolicy serverPolicy =
@@ -264,10 +265,12 @@ public class OMSServerImpl implements OMSServer {
             // run oms and kernel server in one process.
             appObjStub = Sapphire.extractAppStub(appObjStub);
             SapphirePolicy.SapphireClientPolicy client = clientPolicy.getClass().newInstance();
-            client.onCreate(
-                    clientPolicy.getGroup(), clientPolicy.getGroup().getAppConfigAnnotation());
+            client.onCreate(clientPolicy.getGroup(), clientPolicy.getGroup().getAppConfigAnnotation());
             client.setServer(serverPolicy);
             appObjStub.$__initialize(client);
+            */
+            appObjStub = objectManager.getInstanceObjectStub(sapphireObjId);;
+            appObjStub.$__initialize(false);
         } catch (Exception e) {
             logger.warning("Exception occurred : " + e);
             throw new SapphireObjectNotFoundException(

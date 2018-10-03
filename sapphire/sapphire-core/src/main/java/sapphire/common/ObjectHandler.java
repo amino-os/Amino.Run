@@ -44,7 +44,7 @@ public class ObjectHandler implements Serializable {
         }
     }
 
-    private boolean IsGraalObject() {
+    public boolean IsGraalObject() {
         return lang != Language.java;
     }
 
@@ -53,7 +53,7 @@ public class ObjectHandler implements Serializable {
      * stub. We also inspect the methods of the object to set up a table we can use to look up the
      * method on RPC.
      *
-     * @param stub
+     * @param obj
      */
     public ObjectHandler(Object obj) {
         // TODO: get all the methods from all superclasses - careful about duplicates
@@ -81,16 +81,19 @@ public class ObjectHandler implements Serializable {
      * @return the return value from the method
      */
     public Object invoke(String method, ArrayList<Object> params) throws Exception {
-        if (IsGraalObject()) {
+        if (params.size() > 0 && params.get(0) instanceof Language) {
             Value v = (Value) object;
             ArrayList<Object> objs = new ArrayList<>();
-            for (Object p : params) {
+
+            for (int i = 1; i < params.size(); ++i) {
+                Object p = params.get(i);
                 ByteArrayInputStream in = new ByteArrayInputStream((byte[]) p);
                 sapphire.graal.io.Deserializer deserializer =
                         new Deserializer(in, GraalContext.getContext());
                 objs.add(deserializer.deserialize());
             }
-            return v.getMember(method).execute(objs.toArray());
+            Value ret = v.getMember(method).execute(objs.toArray());
+            return new ObjectHandler(ret);
         } else {
             return methods.get(method).invoke(object, params.toArray());
         }
@@ -136,6 +139,7 @@ public class ObjectHandler implements Serializable {
             sapphire.graal.io.Deserializer deserializer =
                     new Deserializer(in, GraalContext.getContext());
             object = deserializer.deserialize();
+            System.out.println("Successfully de-serialized object " + object.toString());
         } else {
             Object obj = in.readObject();
             fillMethodTable(obj);

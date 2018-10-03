@@ -339,6 +339,7 @@ public class Sapphire {
             Class<?> clazz = Class.forName(dm.getName());
             policyClasses.add(clazz);
         }
+
         return policyClasses;
     }
 
@@ -393,7 +394,8 @@ public class Sapphire {
             SapphireObjectSpec spec, SapphireServerPolicy serverPolicy, Object[] args)
             throws Exception {
         AppObjectStub appObjectStub = serverPolicy.$__initialize(spec, args);
-        return extractAppStub(appObjectStub);
+        // TODO(multi-lang): We may need to create a clone for non-java app object stub.
+        return spec.getLang() == Language.java ? extractAppStub(appObjectStub) : appObjectStub;
     }
 
     public static AppObjectStub extractAppStub(AppObjectStub appObject) throws Exception {

@@ -38,20 +38,20 @@ public class PolicyStub extends Stub {
         return ((packageName == null)
                 ? "" //$NON-NLS-1$
                 : ("package "
-                + GlobalStubConstants.getPolicyPackageName()
-                + ';'
-                + EOLN
-                + EOLN)); //$NON-NLS-1$
+                        + GlobalStubConstants.getPolicyPackageName()
+                        + ';'
+                        + EOLN
+                        + EOLN)); //$NON-NLS-1$
     }
 
     @Override
     public String getImportStatement() {
         return "import "
-                + GlobalStubConstants.getImportPolicyPackageName()
+                + GlobalStubConstants.POLICY_CLASS
                 + ";"
                 + EOLN //$NON-NLS-1$
                 + "import "
-                + GlobalStubConstants.getImportAppObjectPackageName()
+                + GlobalStubConstants.APPOBJECT_CLASS
                 + ";"
                 + EOLN
                 + EOLN; //$NON-NLS-1$

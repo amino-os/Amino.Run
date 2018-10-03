@@ -2,6 +2,7 @@ package sapphire.kernel.common;
 
 import java.io.Serializable;
 import java.net.InetSocketAddress;
+import sapphire.policy.SapphirePolicy;
 
 /**
  * Kernel object stub. Basic mechanisms for stub to make RPC to a kernel object
@@ -14,4 +15,6 @@ public interface KernelObjectStub extends Serializable {
     public InetSocketAddress $__getHostname();
 
     public void $__updateHostname(InetSocketAddress hostname);
+
+    public void $__setNextClientPolicy(SapphirePolicy.SapphireClientPolicy clientPolicy);
 }

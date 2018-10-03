@@ -2,6 +2,8 @@ package sapphire.policy.replication;
 
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
+import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
@@ -51,6 +53,20 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
 
                 setServer((ServerPolicy) e.getLeader());
                 ret = ((ServerPolicy) e.getLeader()).onRPC(method, params);
+            } catch (InvocationTargetException e) {
+                /*
+                 * Added for handling Multi-DM scenarios where LeaderException can be nested inside InvocationTargetException.
+                 * Check whether the received InvocationTargetException is LeaderException which needs to be handled.
+                 */
+
+                if (e.getTargetException() instanceof LeaderException) {
+                    LeaderException le = (LeaderException) e.getTargetException();
+                    if (null == le.getLeader()) {
+                        throw new RemoteException("Raft leader is not elected");
+                    }
+                    setServer((ServerPolicy) le.getLeader());
+                    ret = ((ServerPolicy) le.getLeader()).onRPC(method, params);
+                }
             } catch (RemoteException e) {
                 /* Get servers from the group and find a responding server */
                 boolean serverFound = false;
@@ -104,6 +120,11 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
         }
 
         @Override
+        public void initialize() {
+            this.initializeRaftServer();
+        }
+
+        @Override
         public int appendEntries(
                 int term,
                 UUID leader,
@@ -140,6 +161,11 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
          * this.raftServer.addServer(consensusServer.getRaftServer().getMyServerID(),
          * consensusServer.getRaftServer()); } }
          */
+
+        /** Initialize the local RAFT Server instance. */
+        public void initializeRaftServer() {
+            raftServer = new sapphire.policy.util.consensus.raft.Server(this);
+        }
 
         /**
          * Initialize the RAFT protocol with the specified set of servers.
@@ -179,6 +205,8 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
 
         @Override
         public void onDestroy() {
+            // TODO (Sungwook, 2018-10-3): Investigate why manual testing with DHT2+Consensus only
+            // works when commenting out the below code.
             super.onDestroy();
             if (raftServer != null) {
                 raftServer.stop();
@@ -194,16 +222,20 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
         public void onCreate(SapphireServerPolicy server, Annotation[] annotations)
                 throws RemoteException {
             super.onCreate(server, annotations);
+
             try {
                 ArrayList<String> regions = sapphire_getRegions();
                 // Register the first replica, which has already been created.
                 ServerPolicy consensusServer = (ServerPolicy) server;
-
                 // Create additional replicas, one per region. TODO:  Create N-1 replicas on
                 // different servers in the same zone.
                 for (int i = 1; i < regions.size(); i++) {
-                    ServerPolicy replica = (ServerPolicy) consensusServer.sapphire_replicate();
-                    replica.sapphire_pin(regions.get(i));
+                    InetSocketAddress newServerAddress = oms().getServerInRegion(regions.get(i));
+                    ServerPolicy replica =
+                            (ServerPolicy)
+                                    consensusServer.sapphire_replicate(
+                                            server.getProcessedPolicies());
+                    consensusServer.sapphire_pin_to_server(replica, newServerAddress);
                 }
                 consensusServer.sapphire_pin(regions.get(0));
 
@@ -221,7 +253,6 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
                 for (ServerPolicy s : allServers.values()) {
                     s.initializeRaft(allServers);
                 }
-
             } catch (RemoteException e) {
                 // TODO: Sapphire Group Policy Interface does not allow throwing exceptions, so in
                 // the mean time convert to an Error.

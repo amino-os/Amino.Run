@@ -45,6 +45,8 @@ public final class AppStub extends Stub {
 
     @Override
     public String getImportStatement() {
+        // Import statement is part of getStubSource in parent Stub class.
+        // While PolicyStub needs to import additional classes, AppStub doesn't.
         return "";
     }
 

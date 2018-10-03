@@ -34,7 +34,6 @@ public class ServerTest {
         appObject = mock(AppObject.class);
 
         for (int i = 0; i < SERVER_COUNT; i++) {
-
             serverPolicy[i] = spy(ConsensusRSMPolicy.ServerPolicy.class);
             serverPolicy[i].$__initialize(appObject);
             ((ConsensusRSMPolicy.ServerPolicy) serverPolicy[i])

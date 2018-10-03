@@ -28,6 +28,7 @@ import sapphire.kernel.common.KernelRPC;
 import sapphire.kernel.common.KernelRPCException;
 import sapphire.kernel.common.ServerInfo;
 import sapphire.policy.DefaultSapphirePolicy;
+import sapphire.policy.SapphirePolicy;
 import sapphire.policy.util.ResettableTimer;
 import sapphire.runtime.Sapphire;
 
@@ -49,7 +50,7 @@ public class KSTest extends BaseTest {
             implements KernelObjectStub {
         sapphire.kernel.common.KernelOID $__oid = null;
         java.net.InetSocketAddress $__hostname = null;
-        int $__lastSeenTick = 0;
+        SapphirePolicy.SapphireClientPolicy $__nextClientPolicy = null;
 
         public Group_Stub(sapphire.kernel.common.KernelOID oid) {
             this.$__oid = oid;
@@ -67,12 +68,8 @@ public class KSTest extends BaseTest {
             this.$__hostname = hostname;
         }
 
-        public int $__getLastSeenTick() {
-            return $__lastSeenTick;
-        }
-
-        public void $__setLastSeenTick(int lastSeenTick) {
-            this.$__lastSeenTick = lastSeenTick;
+        public void $__setNextClientPolicy(SapphirePolicy.SapphireClientPolicy clientPolicy) {
+            $__nextClientPolicy = clientPolicy;
         }
     }
 
@@ -80,7 +77,7 @@ public class KSTest extends BaseTest {
             implements KernelObjectStub {
         KernelOID $__oid = null;
         InetSocketAddress $__hostname = null;
-        int $__lastSeenTick = 0;
+        SapphirePolicy.SapphireClientPolicy $__nextClientPolicy = null;
 
         public Server_Stub(KernelOID oid) {
             this.oid = oid;
@@ -99,12 +96,8 @@ public class KSTest extends BaseTest {
             this.$__hostname = hostname;
         }
 
-        public int $__getLastSeenTick() {
-            return $__lastSeenTick;
-        }
-
-        public void $__setLastSeenTick(int lastSeenTick) {
-            this.$__lastSeenTick = lastSeenTick;
+        public void $__setNextClientPolicy(SapphirePolicy.SapphireClientPolicy clientPolicy) {
+            $__nextClientPolicy = clientPolicy;
         }
     }
 
@@ -134,6 +127,8 @@ public class KSTest extends BaseTest {
         ArrayList<Object> params = new ArrayList<Object>();
         KernelRPC rpc = new KernelRPC(server1.$__getKernelOID(), method, params);
         thrown.expect(KernelRPCException.class);
-        spiedKs1.makeKernelRPC(rpc);
+        // Modified the KernelRPC call from spiedKs1 to spiedKs3 as the local
+        // KernelServer has been changed to KS3, as part of Multi-DM implementation.
+        spiedKs3.makeKernelRPC(rpc);
     }
 }

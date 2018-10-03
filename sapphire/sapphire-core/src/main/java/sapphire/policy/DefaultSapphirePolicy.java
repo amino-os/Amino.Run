@@ -3,9 +3,6 @@ package sapphire.policy;
 import java.lang.annotation.Annotation;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class DefaultSapphirePolicy extends SapphirePolicy {
 
@@ -24,6 +21,9 @@ public class DefaultSapphirePolicy extends SapphirePolicy {
         public void onCreate(SapphireGroupPolicy group, Annotation[] annotations) {
             this.group = (DefaultGroupPolicy) group;
         }
+
+        @Override
+        public void initialize() {}
 
         public void onDestroy() {
             super.onDestroy();
@@ -56,8 +56,7 @@ public class DefaultSapphirePolicy extends SapphirePolicy {
     }
 
     public static class DefaultGroupPolicy extends SapphireGroupPolicy {
-        private Set<SapphireServerPolicy> servers =
-                Collections.newSetFromMap(new ConcurrentHashMap<SapphireServerPolicy, Boolean>());
+        private ArrayList<SapphireServerPolicy> servers = new ArrayList<SapphireServerPolicy>();
 
         @Override
         public synchronized void addServer(SapphireServerPolicy server) throws RemoteException {
@@ -69,7 +68,7 @@ public class DefaultSapphirePolicy extends SapphirePolicy {
         }
 
         @Override
-        public void removeServer(SapphireServerPolicy server) throws RemoteException {
+        public synchronized void removeServer(SapphireServerPolicy server) throws RemoteException {
             if (servers != null) {
                 servers.remove(server);
             }

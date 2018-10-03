@@ -14,14 +14,8 @@ public class GlobalStubConstants {
         return classPackageName + ".stubs";
     }
 
-    public static String getImportAppObjectPackageName() {
-        return APPOBJECT_CLASS;
-    }
-
-    public static String getImportPolicyPackageName() {
-        return POLICY_CLASS;
-    }
-
+    // TODO (2018-10-1, Sungwook): Consider removing this as the constant variable is already
+    // directly accessible.
     public static String getPolicyPackageName() {
         return POLICY_STUB_PACKAGE;
     }

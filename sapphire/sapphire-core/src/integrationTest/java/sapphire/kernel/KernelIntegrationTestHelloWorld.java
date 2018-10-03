@@ -18,7 +18,6 @@ import sapphire.kernel.server.KernelServerImpl;
 import sapphire.oms.OMSServer;
 import sapphire.oms.OMSServerImpl;
 import sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy;
-import sapphire.policy.dht.DHTPolicy;
 
 /** Tests the SO creation process in Kernel Server and OMS. */
 public class KernelIntegrationTestHelloWorld {
@@ -45,16 +44,17 @@ public class KernelIntegrationTestHelloWorld {
                         new InetSocketAddress(hostIp, hostPort),
                         new InetSocketAddress(omsIp, omsPort));
 
-        SapphireObjectSpec spec = SapphireObjectSpec.newBuilder()
-                .setLang(Language.java)
-                .setJavaClassName("sapphire.appexamples.helloworld.HelloWorld")
-                .addDMSpec(DMSpec.newBuilder()
-                        .setName(AtLeastOnceRPCPolicy.class.getName())
-                        .create())
-                .create();
+        SapphireObjectSpec spec =
+                SapphireObjectSpec.newBuilder()
+                        .setLang(Language.java)
+                        .setJavaClassName("sapphire.appexamples.helloworld.HelloWorld")
+                        .addDMSpec(
+                                DMSpec.newBuilder()
+                                        .setName(AtLeastOnceRPCPolicy.class.getName())
+                                        .create())
+                        .create();
 
-        SapphireObjectID sapphireObjId =
-                server.createSapphireObject(spec.toString(), world);
+        SapphireObjectID sapphireObjId = server.createSapphireObject(spec.toString(), world);
         HelloWorld helloWorld = (HelloWorld) server.acquireSapphireObjectStub(sapphireObjId);
         Assert.assertEquals("Hi " + world, helloWorld.sayHello());
         server.deleteSapphireObject(sapphireObjId);

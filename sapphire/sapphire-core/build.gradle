@@ -74,16 +74,19 @@ task compileStubs(type: JavaCompile) {
     options.incremental = true
 }
 
+task integTest(type: Test) {
+    systemProperty "DCAP_JAVA_HOME", project.property('org.gradle.java.home')
+    testClassesDirs = sourceSets.integrationTest.output.classesDirs
+    classpath = sourceSets.integrationTest.runtimeClasspath
+    outputs.upToDateWhen { false }
+}
+
 genStubs.mustRunAfter delStubs
 genStubs.mustRunAfter compileJava
 compileStubs.dependsOn genStubs
 tasks.googleJavaFormat.mustRunAfter genStubs
 check.dependsOn tasks.googleJavaFormat
+check.dependsOn integTest
+integTest.mustRunAfter test
 compileJava.dependsOn delStubs
 jar.dependsOn compileStubs
-
-task integTest(type: Test) {
-    testClassesDirs = sourceSets.integrationTest.output.classesDirs
-    classpath = sourceSets.integrationTest.runtimeClasspath
-    outputs.upToDateWhen { false }
-}

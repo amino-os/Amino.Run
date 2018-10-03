@@ -28,7 +28,6 @@ import sapphire.kernel.server.KernelServerImpl;
 import sapphire.policy.DefaultSapphirePolicy;
 import sapphire.policy.SapphirePolicy;
 import sapphire.policy.SapphirePolicyContainer;
-import sapphire.policy.SapphirePolicyContainerImpl;
 import sapphire.policy.dht.DHTPolicy2;
 
 @RunWith(PowerMockRunner.class)
@@ -204,8 +203,7 @@ public class SapphireMultiPolicyChainTest extends MultiPolicyChainBaseTest {
         List<SapphirePolicyContainer> policyNameChain = new ArrayList<SapphirePolicyContainer>();
         List<SapphirePolicyContainer> processedPolicies = new ArrayList<SapphirePolicyContainer>();
 
-        policyNameChain.add(
-                new SapphirePolicyContainerImpl("sapphire.policy.dht.DHTPolicy2", null));
+        policyNameChain.add(new SapphirePolicyContainer("sapphire.policy.dht.DHTPolicy2", null));
         List<SapphirePolicyContainer> policyList =
                 Sapphire.createPolicy(
                         DefaultSO.class,
@@ -226,10 +224,9 @@ public class SapphireMultiPolicyChainTest extends MultiPolicyChainBaseTest {
         List<SapphirePolicyContainer> policyNameChain = new ArrayList<SapphirePolicyContainer>();
         List<SapphirePolicyContainer> processedPolicies = new ArrayList<SapphirePolicyContainer>();
 
+        policyNameChain.add(new SapphirePolicyContainer("sapphire.policy.dht.DHTPolicy2", null));
         policyNameChain.add(
-                new SapphirePolicyContainerImpl("sapphire.policy.dht.DHTPolicy2", null));
-        policyNameChain.add(
-                new SapphirePolicyContainerImpl("sapphire.policy.DefaultSapphirePolicy", null));
+                new SapphirePolicyContainer("sapphire.policy.DefaultSapphirePolicy", null));
 
         List<SapphirePolicyContainer> policyList =
                 Sapphire.createPolicy(

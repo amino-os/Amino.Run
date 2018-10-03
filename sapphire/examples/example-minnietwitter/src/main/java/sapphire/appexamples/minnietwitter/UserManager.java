@@ -13,7 +13,7 @@ import sapphire.runtime.SapphireConfiguration;
 
 
 @SapphireConfiguration(Policies = "sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy")
-public class UserManager implements SapphireObject<DHTPolicy> {
+public class UserManager implements SapphireObject {
     Map<DHTKey, User> users;
     private TagManager tm;
 

@@ -11,6 +11,8 @@ import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
 import sapphire.policy.DefaultSapphirePolicy;
 
+// TODO (Sungwook, 2018-10-2) Discard after updating original DHT policy to work with multi policy
+// chain.
 public class DHTPolicy2 extends DefaultSapphirePolicy {
 
     public static class DHTClientPolicy extends DefaultClientPolicy {
@@ -41,10 +43,17 @@ public class DHTPolicy2 extends DefaultSapphirePolicy {
         }
 
         @Override
-        /** params may be an application parameter or method name in case of multi-DM. */
+        /**
+         * Finds the responsible node based on the value of the first parameter in application, and
+         * calls the method. If the call is not about application (e.g. call server policy method),
+         * calls the first node from the server list. Note that params may contain another (method
+         * name, ArrayLisy params) and so on.
+         *
+         * @param method Method name. Method can be either for policy or application.
+         * @param params Parameters for the method.
+         * @throws Exception
+         */
         public Object onRPC(String method, ArrayList<Object> params) throws Exception {
-            // This code path is about calling method in application.
-            System.out.println("Client) onRPC DHTPolicy2");
 
             ArrayList<Object> applicationParams = getApplicationParam(method, params);
             DHTServerPolicy responsibleNode;
@@ -55,17 +64,20 @@ public class DHTPolicy2 extends DefaultSapphirePolicy {
             } else {
                 responsibleNode = (DHTServerPolicy) group.getServers().get(0);
             }
-            return responsibleNode.forwardedRPC(method, params);
+
+            return responsibleNode.onRPC(method, params);
         }
 
         /**
-         * Find first application paramter from nested arraylist.
+         * Find the application parameters, and return them.
          *
-         * @return The first application parameter.
+         * @param method Method name. Method can be either for policy or application.
+         * @param params Parameters for the method.
+         * @return Application parameters.
          */
-        private ArrayList<Object> getApplicationParam(String methodName, ArrayList<Object> params) {
+        private ArrayList<Object> getApplicationParam(String method, ArrayList<Object> params) {
             ArrayList<Object> currentParams = params;
-            Object firstParam = methodName;
+            Object firstParam = method;
 
             while (currentParams != null && currentParams.size() == 2) {
                 if (currentParams.get(1) instanceof ArrayList) {
@@ -79,6 +91,7 @@ public class DHTPolicy2 extends DefaultSapphirePolicy {
             if (firstParam instanceof String && ((String) firstParam).contains(sapphirePolicyStr)) {
                 return null;
             }
+
             return currentParams;
         }
     }
@@ -104,14 +117,7 @@ public class DHTPolicy2 extends DefaultSapphirePolicy {
         public void onMembershipChange() {}
 
         @Override
-        /** params may be an application parameter or method name in case of multi-DM. */
         public Object onRPC(String method, ArrayList<Object> params) throws Exception {
-            System.out.println("Server) onRPC at DHTPolicy2 called.");
-            return super.onRPC(method, params);
-        }
-
-        public Object forwardedRPC(String method, ArrayList<Object> params) throws Exception {
-            System.out.println("Server) forwardedRPC at DHTPolicy2 called.");
             return super.onRPC(method, params);
         }
     }
@@ -134,7 +140,6 @@ public class DHTPolicy2 extends DefaultSapphirePolicy {
         @Override
         public void onCreate(SapphireServerPolicy server, Annotation[] annotations) {
             nodes = new HashMap<Integer, DHTNode>();
-            System.out.println("Group.onCreate at DHTPolicy2");
 
             try {
                 ArrayList<String> regions = sapphire_getRegions();
@@ -189,20 +194,6 @@ public class DHTPolicy2 extends DefaultSapphirePolicy {
             }
 
             return servers;
-        }
-
-        @Override
-        public void removeServer(SapphireServerPolicy server) {}
-
-        @Override
-        public void onFailure(SapphireServerPolicy server) {
-            // TODO
-        }
-
-        @Override
-        public SapphireServerPolicy onRefRequest() {
-            // TODO
-            return null;
         }
 
         /** TODO: key is literally from the input value currently. It should be hashed key. */

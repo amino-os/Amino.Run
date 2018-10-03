@@ -44,7 +44,6 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
             Object ret = null;
 
             try {
-                System.out.println("Client) onRPC Consensus");
                 ret = getServer().onRPC(method, params);
             } catch (LeaderException e) {
 
@@ -54,12 +53,12 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
 
                 setServer((ServerPolicy) e.getLeader());
                 ret = ((ServerPolicy) e.getLeader()).onRPC(method, params);
-            }
-            // Added for handling Multi-DM scenarios where LeaderException
-            // can be nested inside InvocationTargetException.
-            catch (InvocationTargetException e) {
-                // Check whether the received InvocationTargetException is
-                // LeaderException which needs to be handled.
+            } catch (InvocationTargetException e) {
+                /*
+                 * Added for handling Multi-DM scenarios where LeaderException can be nested inside InvocationTargetException.
+                 * Check whether the received InvocationTargetException is LeaderException which needs to be handled.
+                 */
+
                 if (e.getTargetException() instanceof LeaderException) {
                     LeaderException le = (LeaderException) e.getTargetException();
                     if (null == le.getLeader()) {
@@ -152,6 +151,7 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
         @Override
         public void onCreate(SapphireGroupPolicy group, Annotation[] annotations) {
             super.onCreate(group, annotations);
+            raftServer = new sapphire.policy.util.consensus.raft.Server(this);
         }
 
         /**
@@ -187,7 +187,7 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
         // ensure snapshot operation and apply operation are synchronized.
         public Object apply(Object operation) throws Exception {
             RPC rpc = (RPC) operation;
-            logger.fine(String.format("Applying %s(%s)", rpc.method, rpc.params));
+            logger.info(String.format("Applying %s(%s)", rpc.method, rpc.params));
             if (rpc.params == null) {
                 rpc.params = new ArrayList<Object>();
             }
@@ -197,11 +197,18 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
 
         @Override
         public Object onRPC(String method, ArrayList<Object> params) throws Exception {
-            System.out.println("Server) onRPC at Consensus for " + method);
             return raftServer.applyToStateMachine(
                     new RPC(
                             method,
                             params)); // first commit it to the logs of a consensus of replicas.
+        }
+
+        @Override
+        public void onDestroy() {
+            super.onDestroy();
+            if (raftServer != null) {
+                raftServer.stop();
+            }
         }
     }
 
@@ -210,12 +217,14 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
         private static Logger logger = Logger.getLogger(GroupPolicy.class.getName());
 
         @Override
-        public void onCreate(SapphireServerPolicy server, Annotation[] annotations) {
+        public void onCreate(SapphireServerPolicy server, Annotation[] annotations)
+                throws RemoteException {
+            super.onCreate(server, annotations);
+
             try {
                 ArrayList<String> regions = sapphire_getRegions();
                 // Register the first replica, which has already been created.
                 ServerPolicy consensusServer = (ServerPolicy) server;
-                addServer(consensusServer);
                 // Create additional replicas, one per region. TODO:  Create N-1 replicas on
                 // different servers in the same zone.
                 for (int i = 1; i < regions.size(); i++) {
@@ -227,7 +236,6 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
                     consensusServer.sapphire_pin_to_server(replica, newServerAddress);
                 }
                 consensusServer.sapphire_pin(regions.get(0));
-                consensusServer.initialize();
 
                 // Tell all the servers about one another
                 ConcurrentHashMap<UUID, ServerPolicy> allServers =
@@ -243,7 +251,6 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
                 for (ServerPolicy s : allServers.values()) {
                     s.initializeRaft(allServers);
                 }
-
             } catch (RemoteException e) {
                 // TODO: Sapphire Group Policy Interface does not allow throwing exceptions, so in
                 // the mean time convert to an Error.

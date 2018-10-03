@@ -3,7 +3,6 @@ package sapphire.kernel.server;
 import java.util.ArrayList;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Logger;
-
 import sapphire.common.ObjectHandler;
 import sapphire.kernel.common.KernelObjectMigratingException;
 

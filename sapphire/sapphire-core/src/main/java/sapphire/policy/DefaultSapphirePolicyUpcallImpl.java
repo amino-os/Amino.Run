@@ -50,12 +50,6 @@ public abstract class DefaultSapphirePolicyUpcallImpl extends SapphirePolicyLibr
     public abstract static class DefaultSapphireServerPolicyUpcallImpl
             extends SapphireServerPolicyLibrary {
         public Object onRPC(String method, ArrayList<Object> params) throws Exception {
-            if (params != null) {
-                StringBuilder sb = new StringBuilder();
-                for (Object param : params) {
-                    sb.append(param.toString() + ",");
-                }
-            }
             if (nextServerKernelObject == null) {
                 /* The default behavior is to just invoke the method on the Sapphire Object this Server Policy Object manages */
                 return appObject.invoke(method, params);
@@ -96,6 +90,10 @@ public abstract class DefaultSapphirePolicyUpcallImpl extends SapphirePolicyLibr
 
         public AppObject sapphire_getRemoteAppObject() throws RemoteException {
             return super.sapphire_getAppObject();
+        }
+
+        public String sapphire_getRegion() {
+            return super.sapphire_getRegion();
         }
 
         public void onDestroy() {}

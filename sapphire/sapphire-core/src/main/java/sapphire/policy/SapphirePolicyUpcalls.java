@@ -21,8 +21,10 @@ public interface SapphirePolicyUpcalls {
     }
 
     interface SapphireServerPolicyUpcalls extends Serializable {
+        // onCreate is called during creation of Sapphire policy.
         void onCreate(SapphireGroupPolicy group, Annotation[] annotations);
 
+        // initialize is called after migration.
         void initialize();
 
         void onDestroy();

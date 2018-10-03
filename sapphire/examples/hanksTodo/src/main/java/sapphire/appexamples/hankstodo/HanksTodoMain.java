@@ -45,32 +45,46 @@ public class HanksTodoMain {
 
             TodoList td1 = tlm.newTodoList(ListName);
 
-            sleep(10000);   // Needed only for ConsensusRSM testing.
+            // Consensus policy needs some time after creating new Sapphire object; otherwise, leader election may fail.
+            sleep(12000);
             System.out.println("new to do list for 1");
 
-            for (int i=0; i<1; i++) {
+            for (int i = 0; i < 5; i++) {
                 // Add to-do items.
-                System.out.println("Adding to do 1.1");
-                td1.addToDo(1, Do1_1+"<"+i+">");
-                System.out.println("Adding to do 1.2");
-                td1.addToDo(1, Do1_2+"<"+i+">");
-                System.out.println("Adding to do 2.1");
-                td1.addToDo(2, Do2_1+"<"+i+">");
-                System.out.println("Adding to do 2.2");
-                td1.addToDo(2, Do2_2+"<"+i+">");
-
-                // Retrieve to-do items.
-                TodoList getTd1 = tlm.getToDoList(ListName);
-                String testTdString2 = getTd1.getToDoString(2);
-                String expectedTdString2 = String.format("%s<%d> : %s<%d> : %s<%d> : %s<%d> : ", Do1_1, i, Do1_2, i, Do2_1, i, Do2_2, i);
-				System.out.println("Expect testTdString for 2: " + expectedTdString2);
-                System.out.println("Actual testTdString for 2: " + testTdString2);
-
-                String testTdString1 = getTd1.getToDoString(1);
-                String expectedTdString1 = String.format("%s<%d> : %s<%d> : %s<%d> : %s<%d> : ", Do1_1, i, Do1_2, i, Do2_1, i, Do2_2, i);
-                System.out.println("Expect testTdString for 1: " + expectedTdString1);
-                System.out.println("Actual testTdString for 1: " + testTdString1);
+                System.out.println("Adding to do 1.1 at loop " + i);
+                td1.addToDo(1, Do1_1 + "<" + i + ">");
+                System.out.println("Adding to do 1.2 at loop " + i);
+                td1.addToDo(1, Do1_2 + "<" + i + ">");
+                System.out.println("Adding to do 2.1 at loop " + i);
+                td1.addToDo(2, Do2_1 + "<" + i + ">");
+                System.out.println("Adding to do 2.2 at loop " + i);
+                td1.addToDo(2, Do2_2 + "<" + i + ">");
             }
+
+            String expectedTdString2 = "", expectedTdString1 = "";
+            for (int i = 0; i < 5; i++) {
+                expectedTdString2 +=
+                        String.format(
+                                "%s<%d> : %s<%d> : ",
+                                Do2_1, i, Do2_2, i);
+
+                expectedTdString1 +=
+                        String.format(
+                                "%s<%d> : %s<%d> : ",
+                                Do1_1, i, Do1_2, i);
+            }
+
+            // Retrieve to-do items.
+            System.out.println("Please note expected String may display incorrect values depending on the policy.");
+
+            TodoList getTd1 = tlm.getToDoList(ListName);
+            String testTdString2 = getTd1.getToDoString(2);
+            System.out.println("Expect testTdString for 2: " + expectedTdString2);
+            System.out.println("Actual testTdString for 2: " + testTdString2);
+
+            String testTdString1 = getTd1.getToDoString(1);
+            System.out.println("Expect testTdString for 1: " + expectedTdString1);
+            System.out.println("Actual testTdString for 1: " + testTdString1);
 
             tlm.doSomething("Testing completed.");
 

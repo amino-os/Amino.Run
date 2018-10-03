@@ -5,24 +5,48 @@ import sapphire.kernel.common.KernelOID;
 import sapphire.kernel.common.KernelObjectStub;
 
 /** Contains Sapphire policies. */
-public interface SapphirePolicyContainer extends Serializable {
-    String policyName = null;
-    int oid = 0;
-    SapphirePolicy.SapphireGroupPolicy groupPolicy = null;
+public class SapphirePolicyContainer implements Serializable {
+    private String policyName;
+    private SapphirePolicy.SapphireGroupPolicy getGroupPolicyStub;
+    private SapphirePolicy.SapphireServerPolicy serverPolicy;
+    private KernelObjectStub serverPolicyStub;
+    private int oid;
 
-    int getKernelOID();
+    public SapphirePolicyContainer(
+            String policyName, SapphirePolicy.SapphireGroupPolicy getGroupPolicyStub) {
+        this.policyName = policyName;
+        this.getGroupPolicyStub = getGroupPolicyStub;
+    }
 
-    void setKernelOID(KernelOID kernelOID);
+    public int getKernelOID() {
+        return oid;
+    }
 
-    String getPolicyName();
+    public void setKernelOID(KernelOID kernelOID) {
+        this.oid = kernelOID.getID();
+    }
 
-    SapphirePolicy.SapphireGroupPolicy getGroupPolicyStub();
+    public String getPolicyName() {
+        return this.policyName;
+    }
 
-    SapphirePolicy.SapphireServerPolicy getServerPolicy();
+    public SapphirePolicy.SapphireGroupPolicy getGroupPolicyStub() {
+        return this.getGroupPolicyStub;
+    }
 
-    KernelObjectStub getServerPolicyStub();
+    public SapphirePolicy.SapphireServerPolicy getServerPolicy() {
+        return this.serverPolicy;
+    }
 
-    void setServerPolicy(SapphirePolicy.SapphireServerPolicy serverPolicy);
+    public KernelObjectStub getServerPolicyStub() {
+        return this.serverPolicyStub;
+    }
 
-    void setServerPolicyStub(KernelObjectStub serverPolicyStub);
+    public void setServerPolicy(SapphirePolicy.SapphireServerPolicy serverPolicy) {
+        this.serverPolicy = serverPolicy;
+    }
+
+    public void setServerPolicyStub(KernelObjectStub serverPolicyStub) {
+        this.serverPolicyStub = serverPolicyStub;
+    }
 }

@@ -69,6 +69,9 @@ public class DHTPolicy extends DefaultSapphirePolicy {
                 InetSocketAddress newServerAddress = null;
                 for (int i = 1; i < numOfShards; i++) {
                     newServerAddress = oms().getServerInRegion(regions.get(i));
+
+                    // TODO (Sungwook, 2018-10-2) Passing processedPolicies may not be necessary as
+                    // they are already available.
                     SapphireServerPolicy replica =
                             dhtServer.sapphire_replicate(server.getProcessedPolicies());
                     dhtServer.sapphire_pin_to_server(replica, newServerAddress);

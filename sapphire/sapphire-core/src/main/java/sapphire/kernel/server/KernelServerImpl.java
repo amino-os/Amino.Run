@@ -168,14 +168,12 @@ public class KernelServerImpl implements KernelServer {
                 try {
                     serverPolicy.initialize();
                 } catch (Exception e) {
-                    e.printStackTrace();
                     String exceptionMsg =
                             "Initialization failed at copyKernelObject for KernelObject("
                                     + koid.getID()
                                     + ").  ";
                     logger.severe(exceptionMsg);
-
-                    throw new RemoteException(e.getMessage());
+                    throw new RemoteException(exceptionMsg, e);
                 }
             }
 
@@ -184,15 +182,12 @@ public class KernelServerImpl implements KernelServer {
             try {
                 firstServerPolicy.initialize();
             } catch (Exception e) {
-                e.printStackTrace();
                 String exceptionMsg =
                         String.format(
                                 "Initialization for first server policy failed at copyKernelObject for KernelObject(%d)",
                                 oid.getID());
-
                 logger.severe(exceptionMsg);
-
-                throw new RemoteException(e.getMessage());
+                throw new RemoteException(exceptionMsg, e);
             }
         } else {
             logger.log(Level.WARNING, "Added " + oid.getID() + " as unknown type.");
@@ -234,7 +229,7 @@ public class KernelServerImpl implements KernelServer {
     public void moveKernelObjectToServer(InetSocketAddress host, KernelOID oid)
             throws RemoteException, KernelObjectNotFoundException, SapphireObjectNotFoundException,
                     SapphireObjectReplicaNotFoundException {
-        if (host.equals(host)) {
+        if (host.equals(this.host)) {
             return;
         }
 
@@ -292,7 +287,7 @@ public class KernelServerImpl implements KernelServer {
         return object.getObject();
     }
 
-    public Serializable getKernelObject(KernelOID oid) throws KernelObjectNotFoundException {
+    public KernelObject getKernelObject(KernelOID oid) throws KernelObjectNotFoundException {
         KernelObject object = objectManager.lookupObject(oid);
         return object;
     }

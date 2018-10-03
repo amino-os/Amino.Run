@@ -41,7 +41,7 @@ public class Serializer implements AutoCloseable {
         // if (v.canExecute()) return;
 
         // check if value cached
-        if (seenCache.keySet().contains(v.toString())) {
+        /*if (seenCache.keySet().contains(v.toString())) {
             out.writeInt(GraalType.DUPLICATE.ordinal());
             out.writeInt(seenCache.get(v.toString()));
             System.out.println("found in cache: " + v.toString());
@@ -51,7 +51,7 @@ public class Serializer implements AutoCloseable {
             seenCache.put(v.toString(), seenInd);
             // out.writeInt(seenInd);
             seenInd++;
-        }
+        }*/
 
         if (v.isBoolean()) {
             System.out.println("found boolean: " + v);
@@ -93,7 +93,7 @@ public class Serializer implements AutoCloseable {
                 System.out.println("found members: " + keys);
                 // System.out.println("writing " + keys.size() + " members");
                 for (String k : keys) {
-                    if (k.equals("__proto__")) { // TODO hard coded for js
+                    if (k.equals("__proto__") || v.getMember(k).canExecute()) {
                         continue;
                     }
                     System.out.println("key: " + k + " value: " + v.getMember(k));

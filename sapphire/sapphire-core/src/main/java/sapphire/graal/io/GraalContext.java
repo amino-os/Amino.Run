@@ -13,10 +13,14 @@ public class GraalContext {
     private static String sapphireObjectPath;
     private static Logger logger = Logger.getLogger("sapphire.kernel.server.KernelServerImpl");
 
+    public static void main(String[] args) throws Exception {
+        getContext();
+    }
+
     public static Context getContext() throws IOException {
         if (context == null) {
             context = Context.create();
-            setSapphireObjectPath(".");
+            setSapphireObjectPath("/Users/haibinxie/SapphireObjects");
         }
 
         return context;
@@ -35,8 +39,12 @@ public class GraalContext {
         File[] files = (new File(dir)).listFiles();
         if (files == null) return;
         for (File f : files) {
-            logger.log(Level.INFO, String.format("Found file %s %s" + f.getPath() + f.getName()));
-            context.eval(Source.newBuilder(language.toString(), f).build());
+            try {
+                logger.log(Level.INFO, String.format("Found file %s %s", f.getPath(), f.getName()));
+                context.eval(Source.newBuilder(language.toString(), f).build());
+            } catch (Exception e) {
+                logger.log(Level.SEVERE, e.toString());
+            }
         }
     }
 }

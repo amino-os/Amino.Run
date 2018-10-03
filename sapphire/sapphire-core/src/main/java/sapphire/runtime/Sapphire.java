@@ -8,6 +8,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -329,11 +330,16 @@ public class Sapphire {
      * @throws Exception
      */
     private static List<Class<?>> getPolicies(List<DMSpec> dmList) throws Exception {
+        if (dmList == null || dmList.isEmpty()) {
+            return Arrays.asList(DefaultSapphirePolicy.class);
+        }
+
         List<Class<?>> policyClasses = new ArrayList<>();
         for (DMSpec dm : dmList) {
             Class<?> clazz = Class.forName(dm.getName());
             policyClasses.add(clazz);
         }
+
         return policyClasses;
     }
 
@@ -388,7 +394,7 @@ public class Sapphire {
             SapphireObjectSpec spec, SapphireServerPolicy serverPolicy, Object[] args)
             throws Exception {
         AppObjectStub appObjectStub = serverPolicy.$__initialize(spec, args);
-        return extractAppStub(appObjectStub);
+        return spec.getLang() == Language.java ? extractAppStub(appObjectStub) : appObjectStub;
     }
 
     public static AppObjectStub extractAppStub(AppObjectStub appObject) throws Exception {

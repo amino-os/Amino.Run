@@ -248,17 +248,25 @@ public class OMSServerImpl implements OMSServer {
 
         AppObjectStub appObjStub = null;
         try {
-            AppObjectStub localObjStub = objectManager.getInstanceObjectStub(sapphireObjId);
-            SapphirePolicy.SapphireClientPolicy clientPolicy = extractClientPolicy(localObjStub);
-            SapphirePolicy.SapphireServerPolicy serverPolicy =
-                    (SapphirePolicy.SapphireServerPolicy) policyHandler.getObjects().get(0);
-            appObjStub = (AppObjectStub) serverPolicy.sapphire_getRemoteAppObject().getObject();
-            appObjStub.$__initialize(false);
-            SapphirePolicy.SapphireClientPolicy client = clientPolicy.getClass().newInstance();
-            client.onCreate(
+            //AppObjectStub localObjStub = objectManager.getInstanceObjectStub(sapphireObjId);
+            //appObjStub = Sapphire.extractAppStub(localObjStub);
+            //appObjStub.$__initialize(false);
+
+             /*SapphirePolicy.SapphireClientPolicy clientPolicy = extractClientPolicy(localObjStub);
+             SapphirePolicy.SapphireServerPolicy serverPolicy = (SapphirePolicy.SapphireServerPolicy)
+             policyHandler.getObjects().get(0);
+
+             appObjStub = (AppObjectStub) serverPolicy.sapphire_getRemoteAppObject().getObject();
+             appObjStub.$__initialize(false);
+
+             SapphirePolicy.SapphireClientPolicy client = clientPolicy.getClass().newInstance();
+             client.onCreate(
                     clientPolicy.getGroup(), clientPolicy.getGroup().getAppConfigAnnotation());
-            client.setServer(serverPolicy);
-            appObjStub.$__initialize(client);
+             client.setServer(serverPolicy);
+             appObjStub.$__initialize(client);*/
+
+            appObjStub = objectManager.getInstanceObjectStub(sapphireObjId);;
+            appObjStub.$__initialize(false);
         } catch (Exception e) {
             logger.warning("Exception occurred : " + e);
             throw new SapphireObjectNotFoundException(

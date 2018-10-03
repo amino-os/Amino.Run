@@ -184,9 +184,6 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
             KernelObjectFactory.delete($__getKernelOID());
         }
 
-        /*
-         * INTERNAL FUNCTIONS
-         */
         /**
          * Internal function used to initialize the App Object
          *
@@ -198,36 +195,44 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
             logger.info(String.format("Creating app object '%s' with parameters %s", spec, params));
 
             AppObjectStub actualAppObject = null;
+
             try {
+                String appStubClassName;
                 if (spec.getLang() == Language.java) {
                     Class<?> appObjectClass = Class.forName(spec.getJavaClassName());
-                    String appStubClassName =
+                    appStubClassName =
                             GlobalStubConstants.getAppPackageName(
                                             RMIUtil.getPackageName(appObjectClass))
                                     + "."
                                     + RMIUtil.getShortName(appObjectClass)
                                     + GlobalStubConstants.STUB_SUFFIX;
+                } else {
+                    appStubClassName =
+                            "sapphire.appexamples.college.stubs." + spec.getName() + "_ClientStub";
+                }
 
-                    Class<?> appObjectStubClass = Class.forName(appStubClassName);
-                    // Construct the list of classes of the arguments as Class[]
-                    if (params != null) {
-                        Class<?>[] argClasses = Sapphire.getParamsClasses(params);
-                        actualAppObject =
-                                (AppObjectStub)
-                                        appObjectStubClass
-                                                .getConstructor(argClasses)
-                                                .newInstance(params);
+                Class<?> appObjectStubClass = Class.forName(appStubClassName);
+                // Construct the list of classes of the arguments as Class[]
+                if (params != null) {
+                    Class<?>[] argClasses = Sapphire.getParamsClasses(params);
+                    actualAppObject =
+                            (AppObjectStub)
+                                    appObjectStubClass
+                                            .getConstructor(argClasses)
+                                            .newInstance(params);
 
-                    } else {
-                        actualAppObject = (AppObjectStub) appObjectStubClass.newInstance();
-                    }
+                } else {
+                    actualAppObject = (AppObjectStub) appObjectStubClass.newInstance();
+                }
+
+                if (spec.getLang() == Language.java) {
                     actualAppObject.$__initialize(true);
                     appObject = new AppObject(actualAppObject);
                 } else {
                     appObject =
                             new AppObject(
                                     GraalContext.getContext()
-                                            .eval(spec.getLang().name(), spec.getConstructorName())
+                                            .eval(spec.getLang().name(), spec.getName())
                                             .newInstance(params));
                 }
             } catch (Exception e) {

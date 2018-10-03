@@ -8,7 +8,7 @@ import sapphire.app.Language;
 public class Deserializer implements AutoCloseable {
 
     private DataInputStream in;
-    public Map<Integer, Value> seenCache = new HashMap<Integer, Value>();
+    public Map<Integer, Value> seenCache;
     private Language lang;
     private Context context;
 
@@ -23,10 +23,11 @@ public class Deserializer implements AutoCloseable {
     public Value deserialize() throws IOException {
         seenCache = new HashMap<Integer, Value>();
         lang = Language.valueOf(in.readUTF());
+
         return deserializeHelper();
     }
 
-    public Value deserializeHelper() throws IOException {
+    private Value deserializeHelper() throws IOException {
         Value out = null;
 
         GraalType type = GraalType.values()[in.readInt()];
@@ -59,24 +60,29 @@ public class Deserializer implements AutoCloseable {
                 break;
             case OBJECT:
                 String className = in.readUTF();
+                System.out.println(String.format("Deserializer found class %s", className));
                 out = context.eval(lang.toString(), className).newInstance();
 
                 // for(String key : out.getMemberKeys()) {
                 for (String key : getMemberVariables(out)) {
-                    if (key.equals(
-                            "__proto__")) { // TODO: for some reason can't serialize js inheritance
+                    if (key.equals("__proto__") || out.getMember(key).canExecute()) {
                         continue;
                     }
-                    Value member = deserializeHelper();
-                    if (member != null) {
-                        setInstanceVariable(out, member, key);
+                    try {
+                        Value member = deserializeHelper();
+                        if (member != null) {
+                            setInstanceVariable(out, member, key);
+                        }
+                    } catch (Exception e) {
+                        throw new IOException(
+                                String.format("Failed to deserialize %s, %s", key, e.toString()));
                     }
                 }
                 break;
             default:
                 throw new IOException("we should never get here, unknown type " + type);
         }
-        seenCache.put(seenCache.size(), out);
+        // seenCache.put(seenCache.size(), out);
         return out;
     }
 

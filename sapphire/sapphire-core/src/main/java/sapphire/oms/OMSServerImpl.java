@@ -245,11 +245,6 @@ public class OMSServerImpl implements OMSServer {
 
         AppObjectStub appObjStub = null;
         try {
-            AppObjectStub localObjStub = objectManager.getInstanceObjectStub(sapphireObjId);
-            SapphirePolicy.SapphireClientPolicy clientPolicy = extractClientPolicy(localObjStub);
-            SapphirePolicy.SapphireServerPolicy serverPolicy =
-                    (SapphirePolicy.SapphireServerPolicy) policyHandler.getObjects().get(0);
-            appObjStub = (AppObjectStub) serverPolicy.sapphire_getRemoteAppObject().getObject();
             // Calling extractAppStub to create a clone of appObjStub and set directInvocation
             // to false on the clone instance. If we run oms and kernel server on the same
             // process, serverPolicy.sapphire_getRemoteAppObject().getObject() returns the
@@ -258,12 +253,8 @@ public class OMSServerImpl implements OMSServer {
             // it will modify the the value of appObjStub instance within the server policy
             // which will cause infinite loop. This infinite loop issue will surface when we
             // run oms and kernel server in one process.
-            appObjStub = Sapphire.extractAppStub(appObjStub);
-            SapphirePolicy.SapphireClientPolicy client = clientPolicy.getClass().newInstance();
-            client.onCreate(
-                    clientPolicy.getGroup(), clientPolicy.getGroup().getAppConfigAnnotation());
-            client.setServer(serverPolicy);
-            appObjStub.$__initialize(client);
+            AppObjectStub localObjStub = objectManager.getInstanceObjectStub(sapphireObjId);
+            appObjStub = Sapphire.extractAppStub(localObjStub);
         } catch (Exception e) {
             logger.warning("Exception occurred : " + e);
             throw new SapphireObjectNotFoundException(

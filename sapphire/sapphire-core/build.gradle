@@ -74,6 +74,10 @@ task compileStubs(type: JavaCompile) {
     options.incremental = true
 }
 
+test {
+    systemProperty "DCAP_JAVA_HOME", project.property('org.gradle.java.home')
+}
+
 task integTest(type: Test) {
     systemProperty "DCAP_JAVA_HOME", project.property('org.gradle.java.home')
     testClassesDirs = sourceSets.integrationTest.output.classesDirs

@@ -1,0 +1,11 @@
+# Configuration for running KVStore as a
+# sapphire object with DurableSerializableRPC policy.
+!!sapphire.app.SapphireObjectSpec
+constructorName: null
+dmList:
+- configs: []
+  name: sapphire.policy.checkpoint.durableserializable.DurableSerializableRPCPolicy
+javaClassName: sapphire.demo.KVStore
+lang: java
+name: null
+sourceFileLocation: null

@@ -134,11 +134,10 @@ public class Sapphire {
             SapphireServerPolicy previousServerPolicy,
             KernelObjectStub previousServerPolicyStub,
             Object[] appArgs)
-        throws Exception {
-//            throws RemoteException, ClassNotFoundException, KernelObjectNotFoundException,
-//                    KernelObjectNotCreatedException, SapphireObjectNotFoundException,
-//                    SapphireObjectReplicaNotFoundException, InstantiationException,
-//                    IllegalAccessException, CloneNotSupportedException {
+            throws RemoteException, ClassNotFoundException, KernelObjectNotFoundException,
+                    KernelObjectNotCreatedException, SapphireObjectNotFoundException,
+                    SapphireObjectReplicaNotFoundException, InstantiationException,
+                    IllegalAccessException, CloneNotSupportedException {
 
         if (policyNameChain == null || policyNameChain.size() == 0) return null;
         String policyName = policyNameChain.get(0).getPolicyName();

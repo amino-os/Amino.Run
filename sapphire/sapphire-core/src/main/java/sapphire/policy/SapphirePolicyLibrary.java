@@ -8,17 +8,16 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.harmony.rmi.common.RMIUtil;
-import org.graalvm.polyglot.Context;
 import sapphire.app.Language;
 import sapphire.app.SapphireObjectSpec;
 import sapphire.common.AppObject;
 import sapphire.common.AppObjectStub;
+import sapphire.common.GraalObject;
 import sapphire.common.SapphireObjectID;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
 import sapphire.common.SapphireReplicaID;
 import sapphire.compiler.GlobalStubConstants;
-import sapphire.graal.io.GraalContext;
 import sapphire.kernel.common.GlobalKernelReferences;
 import sapphire.kernel.common.KernelOID;
 import sapphire.kernel.common.KernelObjectFactory;
@@ -44,7 +43,6 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
         protected AppObject appObject;
         protected KernelOID oid;
         protected SapphireReplicaID replicaId;
-        protected Context context;
         protected Map<String, SapphirePolicyConfig> configMap;
         protected SapphirePolicy.SapphireGroupPolicy group;
 
@@ -229,11 +227,15 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
                     actualAppObject.$__initialize(true);
                     appObject = new AppObject(actualAppObject);
                 } else {
+                            // TODO(multi-lang):
+                            /*
                     appObject =
                             new AppObject(
                                     GraalContext.getContext()
                                             .eval(spec.getLang().name(), spec.getName())
                                             .newInstance(params));
+                                            */
+                    appObject = new AppObject(new GraalObject(spec, params));
                 }
             } catch (Exception e) {
                 logger.log(Level.SEVERE, "Failed to initialize server policy", e);

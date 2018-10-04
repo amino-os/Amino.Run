@@ -21,7 +21,6 @@ sourceSets {
         }
         resources.srcDir file('src/integrationTest/resources')
     }
-    test.java.srcDirs += 'src/integrationTest/java'
 }
 
 configurations {
@@ -72,10 +71,6 @@ task compileStubs(type: JavaCompile) {
     classpath = sourceSets.main.compileClasspath
     destinationDir = sourceSets.main.output.classesDir
     options.incremental = true
-}
-
-test {
-    systemProperty "DCAP_JAVA_HOME", project.property('org.gradle.java.home')
 }
 
 task integTest(type: Test) {

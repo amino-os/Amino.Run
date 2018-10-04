@@ -68,7 +68,7 @@ public class DHTPolicy extends DefaultSapphirePolicy {
                 // Create replicas based on annotation
                 InetSocketAddress newServerAddress = null;
                 for (int i = 1; i < numOfShards; i++) {
-                    newServerAddress = oms().getServerInRegion(regions.get(i));
+                    newServerAddress = oms().getServerInRegion(regions.get(i % regions.size()));
 
                     // TODO (Sungwook, 2018-10-2) Passing processedPolicies may not be necessary as
                     // they are already available.

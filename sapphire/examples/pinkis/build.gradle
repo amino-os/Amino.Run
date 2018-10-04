@@ -47,6 +47,19 @@ task runks(type: JavaExec) {
     args project.property('kernelServerIp'), project.property('kernelServerPort'), project.property('omsIp'), project.property('omsPort')
 }
 
+// task to start more kernel server (hosting the SO)
+task runks2(type: JavaExec) {
+    classpath = sourceSets.main.runtimeClasspath
+    main = 'sapphire.kernel.server.KernelServerImpl'
+    args project.property('kernelServerIp'), project.property('kernelServerPort2'), project.property('omsIp'), project.property('omsPort')
+}
+
+task runks3(type: JavaExec) {
+    classpath = sourceSets.main.runtimeClasspath
+    main = 'sapphire.kernel.server.KernelServerImpl'
+    args project.property('kernelServerIp'), project.property('kernelServerPort3'), project.property('omsIp'), project.property('omsPort')
+}
+
 // task for run client
 task runapp(type: JavaExec) {
     main = "sapphire.demo.pinkisClient"

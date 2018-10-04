@@ -1,9 +1,6 @@
-# Configuration for running KVStore with DHT DM
+# Configuration for running KVStore without DM
 !!sapphire.app.SapphireObjectSpec
 constructorName: null
-dmList:
-- configs: []
-  name: sapphire.policy.dht.DHTPolicy
 javaClassName: sapphire.demo.KVStore
 lang: java
 name: null

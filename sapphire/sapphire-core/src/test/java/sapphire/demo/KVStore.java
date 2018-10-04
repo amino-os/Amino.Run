@@ -3,9 +3,21 @@ package sapphire.demo;
 import java.io.Serializable;
 import java.util.Hashtable;
 import java.util.Map;
+import sapphire.app.SapphireObject;
 
-/** A simple key value class for integration tests. */
-public class KVStore {
+/**
+ * A simple key value class for integration tests.
+ *
+ * Note: Make <code>KVStore</code> implementing
+ * <code>SapphireObject</> interface in order to
+ * backward compatible with annotation based sapphire
+ * object specification.
+ *
+ * We can remove <code>SapphireObject</code> interface
+ * after we completely deprecate annotation based
+ * specification.
+ */
+public class KVStore implements SapphireObject {
     private Map<String, Serializable> kvStore = new Hashtable<>();
 
     public void set(String key, Serializable value) {

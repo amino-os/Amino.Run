@@ -8,17 +8,16 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.harmony.rmi.common.RMIUtil;
-import org.graalvm.polyglot.Context;
 import sapphire.app.Language;
 import sapphire.app.SapphireObjectSpec;
 import sapphire.common.AppObject;
 import sapphire.common.AppObjectStub;
+import sapphire.common.GraalObject;
 import sapphire.common.SapphireObjectID;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
 import sapphire.common.SapphireReplicaID;
 import sapphire.compiler.GlobalStubConstants;
-import sapphire.graal.io.GraalContext;
 import sapphire.kernel.common.GlobalKernelReferences;
 import sapphire.kernel.common.KernelOID;
 import sapphire.kernel.common.KernelObjectFactory;
@@ -44,7 +43,6 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
         protected AppObject appObject;
         protected KernelOID oid;
         protected SapphireReplicaID replicaId;
-        protected Context context;
         protected Map<String, SapphirePolicyConfig> configMap;
         protected SapphirePolicy.SapphireGroupPolicy group;
 
@@ -184,9 +182,6 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
             KernelObjectFactory.delete($__getKernelOID());
         }
 
-        /*
-         * INTERNAL FUNCTIONS
-         */
         /**
          * Internal function used to initialize the App Object
          *
@@ -198,37 +193,41 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
             logger.info(String.format("Creating app object '%s' with parameters %s", spec, params));
 
             AppObjectStub actualAppObject = null;
+
             try {
+                String appStubClassName;
                 if (spec.getLang() == Language.java) {
                     Class<?> appObjectClass = Class.forName(spec.getJavaClassName());
-                    String appStubClassName =
+                    appStubClassName =
                             GlobalStubConstants.getAppPackageName(
                                             RMIUtil.getPackageName(appObjectClass))
                                     + "."
                                     + RMIUtil.getShortName(appObjectClass)
                                     + GlobalStubConstants.STUB_SUFFIX;
+                } else {
+                    appStubClassName =
+                            "sapphire.appexamples.college.stubs." + spec.getName() + "_ClientStub";
+                }
 
-                    Class<?> appObjectStubClass = Class.forName(appStubClassName);
-                    // Construct the list of classes of the arguments as Class[]
-                    if (params != null) {
-                        Class<?>[] argClasses = Sapphire.getParamsClasses(params);
-                        actualAppObject =
-                                (AppObjectStub)
-                                        appObjectStubClass
-                                                .getConstructor(argClasses)
-                                                .newInstance(params);
+                Class<?> appObjectStubClass = Class.forName(appStubClassName);
+                // Construct the list of classes of the arguments as Class[]
+                if (params != null) {
+                    Class<?>[] argClasses = Sapphire.getParamsClasses(params);
+                    actualAppObject =
+                            (AppObjectStub)
+                                    appObjectStubClass
+                                            .getConstructor(argClasses)
+                                            .newInstance(params);
 
-                    } else {
-                        actualAppObject = (AppObjectStub) appObjectStubClass.newInstance();
-                    }
+                } else {
+                    actualAppObject = (AppObjectStub) appObjectStubClass.newInstance();
+                }
+
+                if (spec.getLang() == Language.java) {
                     actualAppObject.$__initialize(true);
                     appObject = new AppObject(actualAppObject);
                 } else {
-                    appObject =
-                            new AppObject(
-                                    GraalContext.getContext()
-                                            .eval(spec.getLang().name(), spec.getConstructorName())
-                                            .newInstance(params));
+                    appObject = new AppObject(new GraalObject(spec, params));
                 }
             } catch (Exception e) {
                 logger.log(Level.SEVERE, "Failed to initialize server policy", e);

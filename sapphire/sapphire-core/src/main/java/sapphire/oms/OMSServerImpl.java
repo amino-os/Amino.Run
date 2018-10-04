@@ -232,9 +232,7 @@ public class OMSServerImpl implements OMSServer {
         EventHandler policyHandler = null;
         EventHandler[] handlers = objectManager.getSapphireReplicasById(sapphireObjId);
 
-        /* Instead of getting appobject always from the first replica handler, get it from a
-        random replica and return it. It ensure that even if first replica handler is not reachable,
-         acquire appobject will eventually succeed later if not in this call */
+        /* Get a random server policy stub and inject it to appObjStub's client policy */
         if (handlers.length != 0) {
             policyHandler = handlers[new Random().nextInt(handlers.length)];
         }
@@ -243,34 +241,17 @@ public class OMSServerImpl implements OMSServer {
             throw new SapphireObjectNotFoundException("Failed to get sapphire object.");
         }
 
-        AppObjectStub appObjStub = null;
         try {
-            AppObjectStub localObjStub = objectManager.getInstanceObjectStub(sapphireObjId);
-            SapphirePolicy.SapphireClientPolicy clientPolicy = extractClientPolicy(localObjStub);
-            SapphirePolicy.SapphireServerPolicy serverPolicy =
-                    (SapphirePolicy.SapphireServerPolicy) policyHandler.getObjects().get(0);
-            appObjStub = (AppObjectStub) serverPolicy.sapphire_getRemoteAppObject().getObject();
-            // Calling extractAppStub to create a clone of appObjStub and set directInvocation
-            // to false on the clone instance. If we run oms and kernel server on the same
-            // process, serverPolicy.sapphire_getRemoteAppObject().getObject() returns the
-            // real appObjectStub instance within the server policy whose directInvocation is
-            // true. In this case, if we set directInvocation to false on appObjStub directly,
-            // it will modify the the value of appObjStub instance within the server policy
-            // which will cause infinite loop. This infinite loop issue will surface when we
-            // run oms and kernel server in one process.
-            appObjStub = Sapphire.extractAppStub(appObjStub);
-            SapphirePolicy.SapphireClientPolicy client = clientPolicy.getClass().newInstance();
-            client.onCreate(
-                    clientPolicy.getGroup(), clientPolicy.getGroup().getAppConfigAnnotation());
-            client.setServer(serverPolicy);
-            appObjStub.$__initialize(client);
+            AppObjectStub appObjStub = objectManager.getInstanceObjectStub(sapphireObjId);
+            SapphirePolicy.SapphireClientPolicy clientPolicy = extractClientPolicy(appObjStub);
+            clientPolicy.setServer(
+                    (SapphirePolicy.SapphireServerPolicy) policyHandler.getObjects().get(0));
+            return appObjStub;
         } catch (Exception e) {
             logger.warning("Exception occurred : " + e);
             throw new SapphireObjectNotFoundException(
                     "Failed to get object. Exception occurred.", e);
         }
-
-        return appObjStub;
     }
 
     /**

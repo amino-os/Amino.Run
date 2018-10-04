@@ -6,7 +6,6 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import sapphire.common.AppObject;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
 import sapphire.policy.SapphirePolicy.SapphireServerPolicy;
@@ -86,10 +85,6 @@ public abstract class DefaultSapphirePolicyUpcallImpl extends SapphirePolicyLibr
 
         public void sapphire_remove_replica() throws RemoteException {
             super.sapphire_remove_replica();
-        }
-
-        public AppObject sapphire_getRemoteAppObject() throws RemoteException {
-            return super.sapphire_getAppObject();
         }
 
         public String sapphire_getRegion() {

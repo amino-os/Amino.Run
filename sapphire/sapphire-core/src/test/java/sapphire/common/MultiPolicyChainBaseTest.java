@@ -122,8 +122,6 @@ public class MultiPolicyChainBaseTest {
                             spiedStub = spy(stub);
                             DefaultSapphirePolicy.DefaultServerPolicy serverPolicyStub =
                                     (DefaultSapphirePolicy.DefaultServerPolicy) spiedStub;
-                            when(serverPolicyStub.sapphire_getRemoteAppObject())
-                                    .thenReturn(new AppObject(new SO_Stub()));
                             if (1 == i) {
                                 server1 = serverPolicyStub;
                             } else if (2 == i) {

@@ -227,14 +227,6 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
                     actualAppObject.$__initialize(true);
                     appObject = new AppObject(actualAppObject);
                 } else {
-                            // TODO(multi-lang):
-                            /*
-                    appObject =
-                            new AppObject(
-                                    GraalContext.getContext()
-                                            .eval(spec.getLang().name(), spec.getName())
-                                            .newInstance(params));
-                                            */
                     appObject = new AppObject(new GraalObject(spec, params));
                 }
             } catch (Exception e) {

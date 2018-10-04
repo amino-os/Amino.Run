@@ -79,20 +79,6 @@ public class ObjectHandler implements Serializable {
      * @return the return value from the method
      */
     public Object invoke(String method, ArrayList<Object> params) throws Exception {
-/*        if (params.size() > 0 && params.get(0) instanceof Language) {
-            Value v = (Value) object;
-            ArrayList<Object> objs = new ArrayList<>();
-
-            for (int i = 1; i < params.size(); ++i) {
-                Object p = params.get(i);
-                ByteArrayInputStream in = new ByteArrayInputStream((byte[]) p);
-                sapphire.graal.io.Deserializer deserializer =
-                        new Deserializer(in, GraalContext.getContext());
-                objs.add(deserializer.deserialize());
-            }
-            Value ret = v.getMember(method).execute(objs.toArray());
-            return new ObjectHandler(ret);
-            */
         if (isGraalObject) {
             return ((GraalObject) object).invoke(method, params);
         } else {

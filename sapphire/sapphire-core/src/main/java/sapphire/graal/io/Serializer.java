@@ -3,7 +3,6 @@ package sapphire.graal.io;
 import java.io.*;
 import java.util.*;
 import java.util.logging.Logger;
-
 import org.graalvm.polyglot.*;
 import sapphire.app.Language;
 

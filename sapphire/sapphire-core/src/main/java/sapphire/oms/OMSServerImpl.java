@@ -269,7 +269,8 @@ public class OMSServerImpl implements OMSServer {
             client.setServer(serverPolicy);
             appObjStub.$__initialize(client);
             */
-            appObjStub = objectManager.getInstanceObjectStub(sapphireObjId);;
+            appObjStub = objectManager.getInstanceObjectStub(sapphireObjId);
+            ;
             appObjStub.$__initialize(false);
         } catch (Exception e) {
             logger.warning("Exception occurred : " + e);

@@ -161,7 +161,7 @@ public class DHTPolicy2 extends DefaultSapphirePolicy {
                             dhtServer.sapphire_replicate(server.getProcessedPolicies());
                     dhtServer.sapphire_pin_to_server(replica, newServerAddress);
                 }
-                dhtServer.sapphire_pin(regions.get(0));
+                dhtServer.sapphire_pin_to_server(server, oms().getServerInRegion(regions.get(0)));
             } catch (RemoteException e) {
                 e.printStackTrace();
                 throw new Error(

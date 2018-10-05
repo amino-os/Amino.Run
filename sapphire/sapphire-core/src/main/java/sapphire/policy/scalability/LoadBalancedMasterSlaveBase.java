@@ -186,7 +186,7 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultSapphirePolicy 
                 InetSocketAddress dest = getAvailable(0, servers, unavailable);
 
                 ServerBase s = (ServerBase) server;
-                s.sapphire_pin_to_server(dest);
+                s.sapphire_pin_to_server(server, dest);
                 updateReplicaHostName(s, dest);
                 s.start();
                 logger.info("created master on " + dest);
@@ -195,7 +195,7 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultSapphirePolicy 
                     dest = getAvailable(i + 1, servers, unavailable);
                     ServerBase replica =
                             (ServerBase) s.sapphire_replicate(s.getProcessedPolicies());
-                    replica.sapphire_pin_to_server(dest);
+                    s.sapphire_pin_to_server(replica, dest);
                     updateReplicaHostName(replica, dest);
                     removeServer(replica);
                     addServer(replica);

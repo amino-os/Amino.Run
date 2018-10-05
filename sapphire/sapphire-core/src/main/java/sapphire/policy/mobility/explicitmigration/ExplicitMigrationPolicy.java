@@ -177,7 +177,7 @@ public class ExplicitMigrationPolicy extends DefaultSapphirePolicy {
             }
 
             if (!localAddress.equals(destinationAddr)) {
-                localKernel.moveKernelObjectToServer(destinationAddr, this.oid);
+                localKernel.moveKernelObjectToServer(this, destinationAddr);
             }
 
             logger.info(

@@ -172,7 +172,7 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultSapphirePolicy 
                 ArrayList<InetSocketAddress> servers =
                         GlobalKernelReferences.nodeServer.oms.getServers();
                 // TODO: Remove the following check. Use heap to find the best server location.
-                if (servers.size() <= spec.replicas()) {
+                if (servers.size() < spec.replicas()) {
                     throw new IllegalStateException(
                             String.format(
                                     "server# (%s) <= replicas# (%s)",

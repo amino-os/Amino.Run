@@ -1,0 +1,32 @@
+apply plugin: 'java'
+
+/*
+    TODO: Finish OMS and kernel server changes for multi language
+    Add following changes after:
+    1. Add sapphire-core as dependencies
+    2. Add task for generating and compiling stubs. (Currently manually added)
+    3. Add task for run OMS and kernel server
+*/
+dependencies {
+
+}
+
+// Task for Stub compilation
+task compileStubs(type: JavaCompile) {
+    source = sourceSets.main.java.srcDirs
+    classpath = sourceSets.main.compileClasspath
+    destinationDir = sourceSets.main.output.classesDir
+    options.incremental = true
+}
+
+// Task for run Ruby hanksTodoApp demo app
+// Usage: gradlew runapp -PW=DisneyWorld
+task runapp(type: Exec) {
+    executable "ruby"
+    args "--jvm", "--polyglot", "--jvm.classpath=${project.projectDir}/build/classes/java/main/",
+            "${project.projectDir}/src/main/ruby/sapphire/appexamples/hankstodo/hanks_todo_main.rb"
+
+    environment  RUBY_HOME: './src/main/ruby/sapphire/appexamples/hankstodo'
+}
+
+runapp.dependsOn compileStubs

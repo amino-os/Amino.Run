@@ -243,9 +243,15 @@ public class OMSServerImpl implements OMSServer {
 
         try {
             AppObjectStub appObjStub = objectManager.getInstanceObjectStub(sapphireObjId);
+
             SapphirePolicy.SapphireClientPolicy clientPolicy = extractClientPolicy(appObjStub);
+
+            // todo: fix properly. commenting out as temporary workaround for pinkis 3 DHT x 2 MasterSlave
+            /*
             clientPolicy.setServer(
                     (SapphirePolicy.SapphireServerPolicy) policyHandler.getObjects().get(0));
+            */
+
             return appObjStub;
         } catch (Exception e) {
             logger.warning("Exception occurred : " + e);

@@ -7,7 +7,7 @@ import java.io.Serializable;
 import java.util.Hashtable;
 import java.util.Map;
 
-@SapphireConfiguration(Policies = "sapphire.policy.dht.DHTPolicy")
+@SapphireConfiguration(Policies = {"sapphire.policy.dht.DHTPolicy", "sapphire.policy.scalability.LoadBalancedMasterSlaveSyncPolicy"})
 public class pinkisServer implements SapphireObject {
     private Map<String, Serializable> kvStore = new Hashtable<>();
 

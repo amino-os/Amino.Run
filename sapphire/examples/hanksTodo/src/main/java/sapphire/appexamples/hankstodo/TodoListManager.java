@@ -42,4 +42,10 @@ public class TodoListManager implements SapphireObject {
 		}
 		return t;
 	}
+	public void deleteTodoList(String name) {
+		TodoList t = todoLists.remove(name);
+		if (t != null) {
+			delete_(t);
+		}
+	}
 }

@@ -40,7 +40,9 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
         protected KernelOID oid;
         protected SapphireReplicaID replicaId;
 
-        static Logger logger = Logger.getLogger("sapphire.policy.SapphirePolicyLibrary");
+        static Logger logger =
+                Logger.getLogger(
+                        "sapphire.policy.SapphirePolicyLibrary.SapphireServerPolicyLibrary");
 
         // SeverPolicy calls Kernel object in the chain - this is transparent call which will either
         // invoke method in the next server policy or app object.
@@ -136,6 +138,7 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
                 List<SapphirePolicyContainer> processedPoliciesReplica =
                         new ArrayList<SapphirePolicyContainer>();
                 Sapphire.createPolicy(
+                        this.getGroup().sapphireObjId,
                         appObjectClass,
                         actualAppObject,
                         processedPolicies,
@@ -158,6 +161,7 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
                 // should be created after this policy.
                 List<SapphirePolicyContainer> nextPolicyList =
                         Sapphire.createPolicy(
+                                this.getGroup().sapphireObjId,
                                 appObjectClass,
                                 null,
                                 this.nextPolicies,
@@ -455,6 +459,9 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
             return GlobalKernelReferences.nodeServer.oms;
         }
 
+        static Logger logger =
+                Logger.getLogger(
+                        "sapphire.policy.SapphireGroupPolicyLibrary.SapphireGroupPolicyLibrary");
         /*
          * SAPPHIRE API FOR GROUP POLICIES
          */
@@ -513,6 +520,7 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
                     removeReplica(replica);
                 } catch (Exception innerException) {
                 }
+                logger.severe(e.getMessage());
                 throw e;
             }
             return replica;
@@ -551,11 +559,12 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 
             for (Iterator<SapphireServerPolicy> itr = servers.iterator(); itr.hasNext(); ) {
                 SapphireServerPolicy server = itr.next();
+
                 try {
                     server.sapphire_remove_replica();
                     itr.remove();
                 } catch (Exception e) {
-
+                    logger.severe(e.getMessage());
                 }
             }
 

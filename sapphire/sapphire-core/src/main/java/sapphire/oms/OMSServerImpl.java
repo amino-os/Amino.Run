@@ -246,7 +246,8 @@ public class OMSServerImpl implements OMSServer {
 
             SapphirePolicy.SapphireClientPolicy clientPolicy = extractClientPolicy(appObjStub);
 
-            // todo: fix properly. commenting out as temporary workaround for pinkis 3 DHT x 2 MasterSlave
+            // todo: fix properly. commenting out as temporary workaround for pinkis 3 DHT x 2
+            // MasterSlave
             /*
             clientPolicy.setServer(
                     (SapphirePolicy.SapphireServerPolicy) policyHandler.getObjects().get(0));
@@ -510,5 +511,42 @@ public class OMSServerImpl implements OMSServer {
     public void unRegisterSapphireReplica(SapphireReplicaID replicaId)
             throws RemoteException, SapphireObjectNotFoundException {
         objectManager.removeReplica(replicaId);
+    }
+
+    /**
+     * get all the sapphire objects in the system
+     *
+     * @return Returns ArrayList<SapphireObjectID>
+     * @throws RemoteException
+     */
+    @Override
+    public ArrayList<SapphireObjectID> getAllSapphireObjects() throws RemoteException {
+        System.out.println("ListSapphireObjects Start");
+        ArrayList<SapphireObjectID> arr = objectManager.getAllSapphireObjects();
+        System.out.println("ListSapphireObjects End" + arr);
+        return arr;
+    }
+
+    /**
+     * get all the Replicas of a SapphireObject
+     *
+     * @return Returns ArrayList<EventHandler>
+     * @throws RemoteException
+     */
+    @Override
+    public EventHandler[] getSapphireReplicasById(SapphireObjectID oid)
+            throws SapphireObjectNotFoundException {
+        return objectManager.getSapphireReplicasById(oid);
+    }
+
+    /**
+     * get all the kernel objects in the oms system
+     *
+     * @return Returns ArrayList<KernelOID>
+     * @throws RemoteException
+     */
+    @Override
+    public ArrayList<KernelOID> getAllKernelObjects() throws RemoteException {
+        return kernelObjectManager.getAllKernelObjects();
     }
 }

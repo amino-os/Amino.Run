@@ -3,11 +3,14 @@ package sapphire.appexamples.hankstodo;
 import java.net.InetSocketAddress;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import sapphire.common.SapphireObjectID;
+import sapphire.kernel.common.KernelOID;
 import sapphire.kernel.server.KernelServer;
 import sapphire.kernel.server.KernelServerImpl;
 import sapphire.oms.OMSServer;
+import sapphire.runtime.EventHandler;
 
 import static java.lang.Thread.sleep;
 
@@ -38,6 +41,21 @@ public class HanksTodoMain {
             System.out.println(omsserver);
 
             KernelServer nodeServer = new KernelServerImpl(new InetSocketAddress(args[2], Integer.parseInt(args[3])), new InetSocketAddress(args[0], Integer.parseInt(args[1])));
+
+            System.out.println("ListSapphireObjects: Before Starting the APP" );
+            ArrayList<SapphireObjectID> list =  omsserver.getAllSapphireObjects();
+            for (SapphireObjectID Id : list) {
+                System.out.println("SapphireObjectID: " + Id.getID());
+                EventHandler[] arr = omsserver.getSapphireReplicasById(Id);
+                for (EventHandler evt : arr ){
+                    System.out.println("Replica: " + evt.toString());
+                }
+            }
+            ArrayList<KernelOID> KOids = omsserver.getAllKernelObjects();
+            for (KernelOID KId : KOids ){
+                System.out.println("KernelOIDs: " + KId.toString());
+            }
+
 
             SapphireObjectID sapphireObjId = omsserver.createSapphireObject("sapphire.appexamples.hankstodo.TodoListManager");
             TodoListManager tlm = (TodoListManager)omsserver.acquireSapphireObjectStub(sapphireObjId);
@@ -87,6 +105,40 @@ public class HanksTodoMain {
             System.out.println("Actual testTdString for 1: " + testTdString1);
 
             tlm.doSomething("Testing completed.");
+
+            System.out.println("ListSapphireObjects: Before Deleting" );
+
+            ArrayList<SapphireObjectID> list1 =  omsserver.getAllSapphireObjects();
+            for (SapphireObjectID Id : list1) {
+                System.out.println("SapphireObjectID: " + Id.getID());
+                EventHandler[] arr = omsserver.getSapphireReplicasById(Id);
+                for (EventHandler evt : arr ){
+                    System.out.println("Replica: " + evt.toString());
+                }
+            }
+            ArrayList<KernelOID> KOids1 = omsserver.getAllKernelObjects();
+            for (KernelOID KId : KOids1 ){
+                System.out.println("KernelOIDs: " + KId.toString());
+            }
+
+
+            tlm.deleteTodoList(ListName);
+
+            omsserver.deleteSapphireObject(sapphireObjId);
+
+            System.out.println("ListSapphireObjects: After Deleting" );
+            ArrayList<SapphireObjectID> list2 = omsserver.getAllSapphireObjects();
+            for (SapphireObjectID Id : list2) {
+                System.out.println("SapphireObjectID: " + Id.getID());
+                EventHandler[] arr = omsserver.getSapphireReplicasById(Id);
+                for (EventHandler evt : arr ){
+                    System.out.println("Replica: " + evt.toString());
+                }
+            }
+            ArrayList<KernelOID> KOids2 = omsserver.getAllKernelObjects();
+            for (KernelOID KId : KOids2 ){
+                System.out.println("KernelOIDs: " + KId.toString());
+            }
 
         } catch (Exception e) {
             // TODO Auto-generated catch block

@@ -20,6 +20,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import sapphire.app.SO;
 import sapphire.common.AppObject;
 import sapphire.common.MultiPolicyChainBaseTest;
+import sapphire.common.SapphireObjectID;
 import sapphire.common.SapphireUtils;
 import sapphire.kernel.common.KernelOID;
 import sapphire.kernel.common.KernelObjectFactory;
@@ -202,10 +203,12 @@ public class SapphireMultiPolicyChainTest extends MultiPolicyChainBaseTest {
         KernelObjectStub previousServerPolicyStub = null;
         List<SapphirePolicyContainer> policyNameChain = new ArrayList<SapphirePolicyContainer>();
         List<SapphirePolicyContainer> processedPolicies = new ArrayList<SapphirePolicyContainer>();
+        SapphireObjectID sapphireObjId = spiedOms.registerSapphireObject();
 
         policyNameChain.add(new SapphirePolicyContainer("sapphire.policy.dht.DHTPolicy2", null));
         List<SapphirePolicyContainer> policyList =
                 Sapphire.createPolicy(
+                        sapphireObjId,
                         DefaultSO.class,
                         null,
                         policyNameChain,
@@ -223,6 +226,7 @@ public class SapphireMultiPolicyChainTest extends MultiPolicyChainBaseTest {
         KernelObjectStub previousServerPolicyStub = null;
         List<SapphirePolicyContainer> policyNameChain = new ArrayList<SapphirePolicyContainer>();
         List<SapphirePolicyContainer> processedPolicies = new ArrayList<SapphirePolicyContainer>();
+        SapphireObjectID sapphireObjId = spiedOms.registerSapphireObject();
 
         policyNameChain.add(new SapphirePolicyContainer("sapphire.policy.dht.DHTPolicy2", null));
         policyNameChain.add(
@@ -230,6 +234,7 @@ public class SapphireMultiPolicyChainTest extends MultiPolicyChainBaseTest {
 
         List<SapphirePolicyContainer> policyList =
                 Sapphire.createPolicy(
+                        sapphireObjId,
                         DefaultSO.class,
                         null,
                         policyNameChain,

@@ -2,6 +2,7 @@ package sapphire.kernel.server;
 
 import java.io.Serializable;
 import java.net.InetSocketAddress;
+import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -151,6 +152,7 @@ public class KernelServerImpl implements KernelServer {
         // TODO (9/27/2018, Sungwook): Move uncoalesce logic to separate loop at the end of code.
         objectManager.addObject(oid, object);
         object.uncoalesce();
+        oms.registerKernelObject(oid, host);
 
         // To add Kernel Object to local object manager
         Serializable realObj = object.getObject();
@@ -180,6 +182,7 @@ public class KernelServerImpl implements KernelServer {
 
                 objectManager.addObject(koid, newko);
                 newko.uncoalesce();
+                oms.registerKernelObject(koid, host);
                 logger.log(Level.INFO, "Added " + koid.getID() + " as SapphireServerPolicyLibrary");
 
                 try {
@@ -256,7 +259,6 @@ public class KernelServerImpl implements KernelServer {
 
         List<SapphirePolicy.SapphireServerPolicy> serverPoliciesToRemove =
                 new ArrayList<SapphirePolicy.SapphireServerPolicy>();
-        SapphirePolicy.SapphireServerPolicy firstServerPolicy = serverPolicy;
         KernelOID oid = serverPolicy.$__getKernelOID();
 
         /**
@@ -275,7 +277,6 @@ public class KernelServerImpl implements KernelServer {
             serverPolicy = serverPolicy.getNextServerPolicy();
             serverPoliciesToRemove.add(serverPolicy);
         }
-        serverPolicy = firstServerPolicy;
 
         KernelObject object = objectManager.lookupObject(oid);
         object.coalesce();
@@ -285,9 +286,18 @@ public class KernelServerImpl implements KernelServer {
         try {
             client.copyObjectToServer(host, oid, object);
         } catch (RemoteException e) {
-            e.printStackTrace();
-            throw new RemoteException("Could not contact destination server.");
+            String msg =
+                    String.format(
+                            "Failed to copy object to server oid:%d, target host:%s",
+                            oid.getID(), host.getHostName());
+            logger.severe(msg);
+            throw new RemoteException(msg, e);
         } catch (KernelObjectStubNotCreatedException e) {
+            String msg =
+                    String.format(
+                            "Failed to create policy stub object on destination server. oid:%d, target host:%s",
+                            oid.getID(), host.getHostName());
+            logger.severe(msg);
             throw new RemoteException(
                     "Failed to create policy stub object on destination server.", e);
         }
@@ -296,18 +306,13 @@ public class KernelServerImpl implements KernelServer {
         // Then, remove the associated KernelObjects from the local KernelServer.
         for (SapphirePolicy.SapphireServerPolicy serverPolicyToRemove : serverPoliciesToRemove) {
             try {
-                oms.registerKernelObject(serverPolicyToRemove.$__getKernelOID(), host);
                 serverPolicyToRemove.onDestroy();
                 objectManager.removeObject(serverPolicyToRemove.$__getKernelOID());
-            } catch (RemoteException e) {
-                logger.severe(e.getMessage());
-                throw new RemoteException("Could not contact oms to update kernel object host.");
             } catch (KernelObjectNotFoundException e) {
-                logger.severe(e.getMessage());
-                throw new Error(
-                        "Could not find object to remove in this server. Oid: "
-                                + serverPolicyToRemove.$__getKernelOID(),
-                        e);
+                String msg =
+                        "Could not find object to remove in this server. Oid:"
+                                + serverPolicyToRemove.$__getKernelOID().getID();
+                logger.warning(msg);
             }
         }
     }
@@ -340,10 +345,6 @@ public class KernelServerImpl implements KernelServer {
     public KernelObject getKernelObject(KernelOID oid) throws KernelObjectNotFoundException {
         KernelObject object = objectManager.lookupObject(oid);
         return object;
-    }
-
-    public void removeObject(KernelOID oid) throws KernelObjectNotFoundException {
-        objectManager.removeObject(oid);
     }
 
     /**

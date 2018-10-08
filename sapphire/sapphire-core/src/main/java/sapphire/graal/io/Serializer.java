@@ -14,7 +14,7 @@ enum GraalType {
     STRING,
     ARRAY,
     OBJECT,
-    DUPLICATE;
+    DUPLICATE
 }
 
 public class Serializer implements AutoCloseable {
@@ -86,7 +86,6 @@ public class Serializer implements AutoCloseable {
             // String className = v.getMetaObject().getMember("className").asString();
             String className = getClassName(v);
             out.writeUTF(className);
-
             // check named members
             if (v.hasMembers()) {
                 // List<String> keys = new ArrayList<>(v.getMemberKeys());
@@ -94,7 +93,8 @@ public class Serializer implements AutoCloseable {
                 logger.fine("found members: " + keys);
                 // logger.fine("writing " + keys.size() + " members");
                 for (String k : keys) {
-                    if (k.equals("__proto__") || v.getMember(k).canExecute()) {
+                    if (k.equals("__proto__")
+                            || v.getMember(k).canExecute()) {
                         continue;
                     }
                     logger.fine("key: " + k + " value: " + v.getMember(k));
@@ -118,7 +118,10 @@ public class Serializer implements AutoCloseable {
     private String getClassName(Value v) {
         switch (lang) {
             case ruby:
-                return v.getMetaObject().getMember("name").execute().asString();
+                System.out.println(v.getMetaObject().getMemberKeys());
+                System.out.println(v.getMetaObject().toString());
+                return v.getMetaObject().toString();
+                // return v.getMetaObject().getMember("name").execute().asString();
             case js:
                 return v.getMetaObject().getMember("className").asString();
         }
@@ -128,10 +131,11 @@ public class Serializer implements AutoCloseable {
     private List<String> getMemberVariables(Value v) {
         switch (lang) {
             case ruby:
+                System.out.println(v.getMemberKeys());
                 Value instVars = v.getMember("instance_variables").execute();
                 List<String> varSte = new ArrayList<String>();
                 for (int i = 0; i < instVars.getArraySize(); i++) {
-                    varSte.add(instVars.getArrayElement(i).toString());
+                    varSte.add(instVars.getArrayElement(i).toString().replaceAll(":", ""));
                 }
                 return varSte;
             case js:

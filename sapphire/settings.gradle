@@ -11,6 +11,7 @@ include ':dependencies:apache.harmony'
 // Sapphire demo app
 include ':examples:helloworld'
 include ':examples:hanksTodo'
+include ':examples:hanksTodoRuby'
 include ':examples:example-minnietwitter'
 include ':examples:example-minnietwitter:subprojects'
 include ':examples:pinkis'

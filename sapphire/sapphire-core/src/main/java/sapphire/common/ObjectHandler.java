@@ -37,6 +37,10 @@ public class ObjectHandler implements Serializable {
         return obj.getClass();
     }
 
+    public boolean isGraalObject() {
+        return isGraalObject;
+    }
+
     private void fillMethodTable(Object obj) {
         Class<?> cl = getClass(obj);
         this.methods = new Hashtable<String, Method>();
@@ -65,9 +69,7 @@ public class ObjectHandler implements Serializable {
 
         isGraalObject = IsGraalObject();
 
-        if (!IsGraalObject()) {
-            fillMethodTable(obj);
-        }
+        fillMethodTable(obj);
         logger.fine("Created object " + obj.toString());
     }
 
@@ -79,11 +81,7 @@ public class ObjectHandler implements Serializable {
      * @return the return value from the method
      */
     public Object invoke(String method, ArrayList<Object> params) throws Exception {
-        if (isGraalObject) {
-            return ((GraalObject) object).invoke(method, params);
-        } else {
-            return methods.get(method).invoke(object, params.toArray());
-        }
+        return methods.get(method).invoke(object, params.toArray());
     }
 
     public Serializable getObject() {
@@ -126,7 +124,24 @@ public class ObjectHandler implements Serializable {
             System.out.println("Successfully de-serialized object " + object.toString());
             */
         if (ObjectType.valueOf(in.readUTF()) == ObjectType.graal) {
-            object = GraalObject.readObject(in);
+            GraalObject object = (GraalObject) GraalObject.readObject(in);
+            Class<?> appObjectStubClass = Class.forName(object.getJavaClassName());
+            // Construct the list of classes of the arguments as Class[]
+            // TODO: Currently all polyglot application stub should have default
+            // constructor. Fix it
+            Object appStubObject;
+            try {
+                appStubObject = appObjectStubClass.newInstance();
+            } catch (IllegalAccessException e) {
+                throw new ClassNotFoundException("IllegalAccessException  " + e.getMessage());
+            } catch (InstantiationException e) {
+                throw new ClassNotFoundException("InstantiationException  " + e.getMessage());
+            }
+
+            ((GraalObject) appStubObject).$__initializeGraal(object);
+
+            fillMethodTable(appStubObject);
+            this.object = appStubObject;
         } else {
             Object obj = in.readObject();
             fillMethodTable(obj);

@@ -5,10 +5,8 @@ import static org.junit.Assert.*;
 import java.io.*;
 import org.graalvm.polyglot.*;
 import org.junit.Test;
-import sapphire.app.DMSpec;
 import sapphire.app.Language;
 import sapphire.app.SapphireObjectSpec;
-import sapphire.policy.dht.DHTPolicy;
 
 public class ObjectHandlerTest {
 
@@ -46,38 +44,33 @@ public class ObjectHandlerTest {
         out.println(JS_Code);
         out.flush();
 
-        DHTPolicy.Config config = new DHTPolicy.Config();
-        config.setNumOfShards(3);
-
         SapphireObjectSpec spec =
                 SapphireObjectSpec.newBuilder()
                         .setLang(Language.js)
                         .setConstructorName("Student")
+                        .setJavaClassName("sapphire.common.GraalObject")
                         .setSourceFileLocation(filename)
-                        .addDMSpec(
-                                DMSpec.newBuilder()
-                                        .setName(DHTPolicy.class.getName())
-                                        .addConfig(config)
-                                        .create())
                         .create();
 
-        GraalObject graalObject = new GraalObject(spec, null);
+        GraalObject graalObject =
+                GraalObject.newBuilder()
+                        .setSourceLocation(filename)
+                        .setConstructor("Student")
+                        .setJavaClassName("sapphire.common.GraalObject")
+                        .setLang(Language.js)
+                        .create();
 
+        graalObject.$__initializeGraal(spec, new Object[0]);
         ObjectHandler objHandler = new ObjectHandler(graalObject);
-        // objHandler.SetGraalContext(c);
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         ObjectOutputStream oos = new ObjectOutputStream(byteArrayOutputStream);
         oos.writeObject(objHandler);
-        //        objHandler.write(oos);
         oos.flush();
 
         byte[] bytes = byteArrayOutputStream.toByteArray();
-        //        ObjectHandler inObj = new ObjectHandler(c.eval("js", "0"));
-        //        inObj.SetGraalContext(c);
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes);
         ObjectInputStream objectInputSteam = new ObjectInputStream(byteArrayInputStream);
         ObjectHandler clone = (ObjectHandler) objectInputSteam.readObject();
-        //        inObj.read(objectInputSteam);
 
         System.out.println("Original value is " + objHandler.getObject().toString());
         System.out.println("After SerDe, value is " + clone.getObject().toString());

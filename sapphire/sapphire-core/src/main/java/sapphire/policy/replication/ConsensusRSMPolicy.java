@@ -239,6 +239,8 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
                 }
                 consensusServer.sapphire_pin(regions.get(0));
 
+                addServer(server);
+
                 // Tell all the servers about one another
                 ConcurrentHashMap<UUID, ServerPolicy> allServers =
                         new ConcurrentHashMap<UUID, ServerPolicy>();

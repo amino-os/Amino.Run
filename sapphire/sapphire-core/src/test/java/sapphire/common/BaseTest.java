@@ -17,7 +17,6 @@ import java.rmi.registry.LocateRegistry;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.powermock.api.mockito.PowerMockito;
-import sapphire.app.Language;
 import sapphire.app.SO;
 import sapphire.app.SapphireObjectSpec;
 import sapphire.app.stubs.SO_Stub;
@@ -189,9 +188,13 @@ public class BaseTest {
                     @Override
                     public Object answer(InvocationOnMock invocation) throws Throwable {
                         if ((invocation.getMethod().getName().equals("getAppStub"))) {
-                            SapphireObjectSpec spec = new SapphireObjectSpec();
-                            spec.setLang(Language.java);
-                            spec.setJavaClassName(SO.class.getCanonicalName());
+                            //                            SapphireObjectSpec spec = new
+                            // SapphireObjectSpec();
+                            //                            spec.setLang(Language.java);
+                            //
+                            // spec.setJavaClassName(SO.class.getCanonicalName());
+                            SapphireObjectSpec spec =
+                                    (SapphireObjectSpec) invocation.getArguments()[0];
                             SapphirePolicy.SapphireServerPolicy serverPolicy =
                                     (SapphirePolicy.SapphireServerPolicy)
                                             invocation.getArguments()[1];

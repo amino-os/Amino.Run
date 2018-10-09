@@ -1,9 +1,6 @@
 package sapphire.policy.dht;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -14,6 +11,7 @@ import java.util.logging.Logger;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
 import sapphire.policy.DefaultSapphirePolicy;
+import sapphire.runtime.annotations.AnnotationConfig;
 
 public class DHTPolicy extends DefaultSapphirePolicy {
     private static final int DEFAULT_NUM_OF_SHARDS = 3;
@@ -87,6 +85,13 @@ public class DHTPolicy extends DefaultSapphirePolicy {
                 SapphirePolicyConfig config = configMap.get(DHTPolicy.Config.class.getName());
                 if (config != null) {
                     this.numOfShards = ((Config) config).getNumOfShards();
+                } else {
+                    // Support java annotations for backward compatibility
+                    AnnotationConfig c =
+                            (AnnotationConfig) configMap.get(DHTConfigure.class.getName());
+                    if (c != null) {
+                        this.numOfShards = Integer.valueOf(c.getConfig("numOfShards"));
+                    }
                 }
             }
 

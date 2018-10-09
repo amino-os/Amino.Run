@@ -156,8 +156,8 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
                 // side).
                 SapphireServerPolicy lastServerPolicy = (SapphireServerPolicy) this;
 
-                Class appObjectClass =
-                        sapphire_getAppObject().getObject().getClass().getSuperclass();
+                // TODO (merge):
+                // Class appObjectClass = sapphire_getAppObject().getObject().getClass().getSuperclass();
                 AppObject actualAppObject = lastServerPolicy.sapphire_getAppObject();
                 if (actualAppObject == null) throw new Exception("Could not find AppObject");
 
@@ -167,6 +167,7 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
                         new ArrayList<SapphirePolicyContainer>();
                 Sapphire.createPolicy(
                         spec,
+                        actualAppObject,
                         configMap,
                         processedPolicies,
                         processedPoliciesReplica,
@@ -189,6 +190,7 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
                 List<SapphirePolicyContainer> nextPolicyList =
                         Sapphire.createPolicy(
                                 spec,
+                                null,
                                 configMap,
                                 this.nextPolicies,
                                 processedPoliciesReplica,

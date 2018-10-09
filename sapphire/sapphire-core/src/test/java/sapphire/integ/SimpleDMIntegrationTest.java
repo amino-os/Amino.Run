@@ -52,7 +52,7 @@ public class SimpleDMIntegrationTest {
     public void testDMs() throws Exception {
         File[] files = getResourceFiles("specs/simple-dm/");
         for (File f : files) {
-            if (!f.getName().endsWith("yaml")) {
+            if (!f.getName().endsWith("DurableSerializableRPCDM.yaml")) {
                 continue;
             }
 

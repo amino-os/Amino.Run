@@ -1,9 +1,14 @@
 package sapphire.policy.dht;
 
 import java.io.Serializable;
+import java.net.InetSocketAddress;
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Logger;
+import sapphire.common.SapphireObjectNotFoundException;
+import sapphire.common.SapphireObjectReplicaNotFoundException;
 import sapphire.policy.DefaultSapphirePolicy;
 
 // TODO (Sungwook, 2018-10-2) Discard after updating original DHT policy to work with multi policy
@@ -17,10 +22,11 @@ public class DHTPolicy2 extends DefaultSapphirePolicy {
         DHTServerPolicy server = null;
         DHTGroupPolicy group = null;
 
-        //        @Override
-        //        public void onCreate(SapphireGroupPolicy group, Annotation[] annotations) {
-        //            this.group = (DHTGroupPolicy) group;
-        //        }
+        @Override
+        public void onCreate(
+                SapphireGroupPolicy group, Map<String, SapphirePolicyConfig> configMap) {
+            this.group = (DHTGroupPolicy) group;
+        }
 
         @Override
         public void setServer(SapphireServerPolicy server) {
@@ -95,10 +101,11 @@ public class DHTPolicy2 extends DefaultSapphirePolicy {
         private static Logger logger = Logger.getLogger(DefaultServerPolicy.class.getName());
         private DHTGroupPolicy group = null;
 
-        //        @Override
-        //        public void onCreate(SapphireGroupPolicy group, Annotation[] annotations) {
-        //            this.group = (DHTGroupPolicy) group;
-        //        }
+        @Override
+        public void onCreate(
+                SapphireGroupPolicy group, Map<String, SapphirePolicyConfig> configMap) {
+            this.group = (DHTGroupPolicy) group;
+        }
 
         @Override
         public void initialize() {}
@@ -132,40 +139,39 @@ public class DHTPolicy2 extends DefaultSapphirePolicy {
             }
         }
 
-        //        @Override
-        //        public void onCreate(SapphireServerPolicy server, Annotation[] annotations) {
-        //            nodes = new HashMap<Integer, DHTNode>();
-        //
-        //            try {
-        //                ArrayList<String> regions = sapphire_getRegions();
-        //
-        //                // Add the first DHT node
-        //                groupSize++;
-        //                int id = groupSize;
-        //                DHTServerPolicy dhtServer = (DHTServerPolicy) server;
-        //
-        //                DHTNode newNode = new DHTNode(id, dhtServer);
-        //                nodes.put(id, newNode);
-        //
-        //                for (int i = 1; i < regions.size(); i++) {
-        //                    InetSocketAddress newServerAddress =
-        // oms().getServerInRegion(regions.get(i));
-        //                    SapphireServerPolicy replica =
-        //                            dhtServer.sapphire_replicate(server.getProcessedPolicies());
-        //                    dhtServer.sapphire_pin_to_server(replica, newServerAddress);
-        //                }
-        //                dhtServer.sapphire_pin(regions.get(0));
-        //            } catch (RemoteException e) {
-        //                e.printStackTrace();
-        //                throw new Error(
-        //                        "Could not create new group policy because the oms is not
-        // available.");
-        //            } catch (SapphireObjectNotFoundException e) {
-        //                throw new Error("Failed to find sapphire object.", e);
-        //            } catch (SapphireObjectReplicaNotFoundException e) {
-        //                throw new Error("Failed to find sapphire object replica.", e);
-        //            }
-        //        }
+        @Override
+        public void onCreate(
+                SapphireServerPolicy server, Map<String, SapphirePolicyConfig> configMap) {
+            nodes = new HashMap<Integer, DHTNode>();
+
+            try {
+                ArrayList<String> regions = sapphire_getRegions();
+
+                // Add the first DHT node
+                groupSize++;
+                int id = groupSize;
+                DHTServerPolicy dhtServer = (DHTServerPolicy) server;
+
+                DHTNode newNode = new DHTNode(id, dhtServer);
+                nodes.put(id, newNode);
+
+                for (int i = 1; i < regions.size(); i++) {
+                    InetSocketAddress newServerAddress = oms().getServerInRegion(regions.get(i));
+                    SapphireServerPolicy replica =
+                            dhtServer.sapphire_replicate(server.getProcessedPolicies());
+                    dhtServer.sapphire_pin_to_server(replica, newServerAddress);
+                }
+                dhtServer.sapphire_pin(regions.get(0));
+            } catch (RemoteException e) {
+                e.printStackTrace();
+                throw new Error(
+                        "Could not create new group policy because the oms is not available.");
+            } catch (SapphireObjectNotFoundException e) {
+                throw new Error("Failed to find sapphire object.", e);
+            } catch (SapphireObjectReplicaNotFoundException e) {
+                throw new Error("Failed to find sapphire object replica.", e);
+            }
+        }
 
         @Override
         public void addServer(SapphireServerPolicy server) {

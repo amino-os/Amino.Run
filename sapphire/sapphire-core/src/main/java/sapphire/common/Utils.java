@@ -235,9 +235,9 @@ public class Utils {
             throws InvocationTargetException, IllegalAccessException {
         Map<String, SapphirePolicyConfig> map = new HashMap<>();
         Class<? extends Annotation> type = annotation.annotationType();
-
         AnnotationConfig config = new AnnotationConfig();
         config.setAnnotationType(type.getName());
+        map.put(type.getName(), config);
 
         for (Method method : type.getDeclaredMethods()) {
             method.setAccessible(true);
@@ -273,6 +273,37 @@ public class Utils {
             map.put(dmSpec.getName(), configMap);
             for (SapphirePolicyConfig config : dmSpec.getConfigs()) {
                 configMap.put(config.getClass().getName(), config);
+            }
+        }
+
+        return map;
+    }
+
+    /**
+     * Extracts sapphire policy configurations from {@code DMSpec} list and returns a <em>flat</em>
+     * map which contains all configurations. Map key is the configuration class name, and map value
+     * is a {@code SapphirePolicyConfig} instance.
+     *
+     * <p>This method assumes that each DM has its own configuration type. If multiple DMs use the
+     * same configuration type, then the configuration of the last DM in the list will override
+     * configurations of other DMs. This method is created as
+     *
+     * <p>This method is created as a temporary workaround to pass DM configurations to sapphire
+     * policies without significantly modify the existing APIs. It should be replaced with {@link
+     * #fromDMSpecListToConfigMap(List)} eventually.
+     *
+     * @param dmSpecList a {@code DMSpec} list
+     * @return a map that contains all DM configurations where the key is the class name of a {@code
+     *     SapphirePolicyConfig} and the value is a {@link SapphirePolicyConfig} instance.
+     * @deprecated recommend to use {@link #fromDMSpecListToConfigMap(List)}
+     */
+    public static Map<String, SapphirePolicyConfig> fromDMSpecListToFlatConfigMap(
+            List<DMSpec> dmSpecList) {
+        Map<String, SapphirePolicyConfig> map = new HashMap<>();
+
+        for (DMSpec dmSpec : dmSpecList) {
+            for (SapphirePolicyConfig config : dmSpec.getConfigs()) {
+                map.put(config.getClass().getName(), config);
             }
         }
 

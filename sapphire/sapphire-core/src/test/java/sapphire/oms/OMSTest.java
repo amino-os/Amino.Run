@@ -116,7 +116,7 @@ public class OMSTest extends BaseTest {
         super.setUp(Server_Stub.class, Group_Stub.class);
         SapphireObjectSpec spec = new SapphireObjectSpec();
         spec.setLang(Language.java);
-        spec.setJavaClassName("sapphire.oms.OMSTest$DefaultSO");
+        spec.setJavaClassName("sapphire.app.SO");
         SapphireObjectID sapphireObjId = spiedOms.createSapphireObject(spec.toString());
 
         soStub = (SO_Stub) spiedOms.acquireSapphireObjectStub(sapphireObjId);

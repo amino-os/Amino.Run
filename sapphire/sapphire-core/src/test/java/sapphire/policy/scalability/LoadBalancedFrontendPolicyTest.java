@@ -133,8 +133,7 @@ public class LoadBalancedFrontendPolicyTest extends BaseTest {
         SapphireObjectSpec spec =
                 SapphireObjectSpec.newBuilder()
                         .setLang(Language.java)
-                        .setJavaClassName(
-                                "sapphire.policy.scalability.LoadBalancedFrontendPolicyTest$LoadBalanceSO")
+                        .setJavaClassName("sapphire.app.SO")
                         .addDMSpec(
                                 DMSpec.newBuilder()
                                         .setName(LoadBalancedFrontendPolicy.class.getName())

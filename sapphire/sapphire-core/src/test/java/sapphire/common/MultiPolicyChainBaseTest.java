@@ -17,6 +17,7 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.powermock.api.mockito.PowerMockito;
 import sapphire.app.SO;
+import sapphire.app.SapphireObjectSpec;
 import sapphire.app.stubs.SO_Stub;
 import sapphire.kernel.common.GlobalKernelReferences;
 import sapphire.kernel.common.KernelObjectFactory;
@@ -38,7 +39,6 @@ import sapphire.runtime.Sapphire;
  * testing MultiDM scenarios.
  */
 public class MultiPolicyChainBaseTest {
-
     protected DefaultSapphirePolicy.DefaultClientPolicy client;
     protected DefaultSapphirePolicy.DefaultServerPolicy server1;
     protected DefaultSapphirePolicy.DefaultServerPolicy server2;
@@ -53,7 +53,10 @@ public class MultiPolicyChainBaseTest {
 
     protected boolean serversInSameRegion = true;
 
-    public void setUpMultiDM(HashMap<String, Class> groupMap, HashMap<String, Class> serverMap)
+    public void setUpMultiDM(
+            SapphireObjectSpec spec,
+            HashMap<String, Class> groupMap,
+            HashMap<String, Class> serverMap)
             throws Exception {
         PowerMockito.mockStatic(LocateRegistry.class);
         when(LocateRegistry.getRegistry(anyString(), anyInt())).thenReturn(dummyRegistry);
@@ -173,14 +176,13 @@ public class MultiPolicyChainBaseTest {
                     public Object answer(InvocationOnMock invocation) throws Throwable {
                         if ((invocation.getMethod().getName().equals("getAppStub"))) {
                             String appStubClassName = SO_Stub.class.getName();
+                            Object[] arguments = invocation.getArguments();
                             SapphirePolicy.SapphireServerPolicy serverPolicy =
                                     (SapphirePolicy.SapphireServerPolicy)
                                             invocation.getArguments()[1];
                             Object[] args = (Object[]) invocation.getArguments()[2];
 
-                            return Sapphire.extractAppStub(
-                                    serverPolicy.$__initialize(
-                                            Class.forName(appStubClassName), args));
+                            return Sapphire.extractAppStub(serverPolicy.$__initialize(spec, args));
                         }
 
                         return invocation.callRealMethod();

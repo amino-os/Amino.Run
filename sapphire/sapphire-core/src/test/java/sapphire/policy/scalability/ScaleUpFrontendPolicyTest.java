@@ -131,8 +131,7 @@ public class ScaleUpFrontendPolicyTest extends BaseTest {
         SapphireObjectSpec spec =
                 SapphireObjectSpec.newBuilder()
                         .setLang(Language.java)
-                        .setJavaClassName(
-                                "sapphire.policy.scalability.ScaleUpFrontendPolicyTest$ScaleUpSO")
+                        .setJavaClassName("sapphire.app.SO")
                         .addDMSpec(
                                 DMSpec.newBuilder()
                                         .setName(ScaleUpFrontendPolicy.class.getName())

@@ -1,22 +1,18 @@
 package sapphire.policy.replication;
 
 import static java.lang.Thread.sleep;
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.junit.Assert.assertNotNull;
+import static org.mockito.Mockito.*;
 import static org.powermock.api.mockito.PowerMockito.when;
 import static sapphire.common.SapphireUtils.deleteSapphireObject;
 import static sapphire.common.UtilsTest.extractFieldValueOnInstance;
-import static sapphire.policy.util.consensus.raft.ServerTest.getCurrentLeader;
-import static sapphire.policy.util.consensus.raft.ServerTest.makeFollower;
-import static sapphire.policy.util.consensus.raft.ServerTest.makeLeader;
+import static sapphire.policy.util.consensus.raft.ServerTest.*;
 
-import java.lang.annotation.Annotation;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.util.ArrayList;
+import java.util.HashMap;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -26,13 +22,11 @@ import org.junit.runner.RunWith;
 import org.mockito.Matchers;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
+import sapphire.app.Language;
 import sapphire.app.SO;
+import sapphire.app.SapphireObjectSpec;
 import sapphire.app.stubs.SO_Stub;
-import sapphire.common.AppObject;
-import sapphire.common.BaseTest;
-import sapphire.common.SapphireObjectID;
-import sapphire.common.SapphireUtils;
-import sapphire.common.Utils;
+import sapphire.common.*;
 import sapphire.kernel.common.KernelOID;
 import sapphire.kernel.common.KernelObjectFactory;
 import sapphire.kernel.common.KernelObjectStub;
@@ -123,10 +117,11 @@ public class ConsensusRSMPolicyTest extends BaseTest {
     public void setUp() throws Exception {
         this.serversInSameRegion = false;
         super.setUp(Server_Stub.class, Group_Stub.class);
+        SapphireObjectSpec spec = new SapphireObjectSpec();
+        spec.setLang(Language.java);
+        spec.setJavaClassName("sapphire.policy.replication.ConsensusRSMPolicyTest$ConsensusSO");
 
-        SapphireObjectID sapphireObjId =
-                spiedOms.createSapphireObject(
-                        "sapphire.policy.replication.ConsensusRSMPolicyTest$ConsensusSO");
+        SapphireObjectID sapphireObjId = spiedOms.createSapphireObject(spec.toString());
         soStub = (SO_Stub) spiedOms.acquireSapphireObjectStub(sapphireObjId);
         client =
                 (DefaultSapphirePolicy.DefaultClientPolicy)
@@ -201,7 +196,7 @@ public class ConsensusRSMPolicyTest extends BaseTest {
     public void omsNotAvailable() throws Exception {
         when(this.group.sapphire_getRegions()).thenThrow(new RemoteException());
         thrown.expect(Error.class);
-        this.group.onCreate(this.server1, new Annotation[] {});
+        this.group.onCreate(this.server1, new HashMap<>());
     }
 
     /**

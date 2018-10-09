@@ -1,5 +1,7 @@
 package sapphire.common;
 
+import static sapphire.policy.SapphirePolicyUpcalls.SapphirePolicyConfig;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -9,14 +11,16 @@ import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import sapphire.app.DMSpec;
+import sapphire.runtime.annotations.AnnotationConfig;
 import sapphire.runtime.annotations.Immutable;
 import sapphire.runtime.annotations.RuntimeSpec;
 
-/** Created by quinton on 1/23/18. */
 public class Utils {
     private static final Logger logger = Logger.getLogger(Utils.class.getName());
 
@@ -205,5 +209,73 @@ public class Utils {
         }
 
         return null;
+    }
+
+    /**
+     * Converts annotations to sapphire policy configurations. This method is created to support
+     * existing Java demo apps which uses Java annotations to configure sapphire policies. It can be
+     * deleted after we completed deprecate java annotation based sapphire policy configuration.
+     *
+     * @param annotations java annotations
+     * @return a map which contains the sapphire policy config
+     * @throws Exception
+     * @deprecated
+     */
+    public static Map<String, SapphirePolicyConfig> toSapphirePolicyConfig(Annotation[] annotations)
+            throws InvocationTargetException, IllegalAccessException {
+        Map<String, SapphirePolicyConfig> configMap = new TreeMap<>();
+        for (Annotation a : annotations) {
+            configMap.putAll(toSapphirePolicyConfig(a));
+        }
+
+        return configMap;
+    }
+
+    private static Map<String, SapphirePolicyConfig> toSapphirePolicyConfig(Annotation annotation)
+            throws InvocationTargetException, IllegalAccessException {
+        Map<String, SapphirePolicyConfig> map = new HashMap<>();
+        Class<? extends Annotation> type = annotation.annotationType();
+
+        AnnotationConfig config = new AnnotationConfig();
+        config.setAnnotationType(type.getName());
+
+        for (Method method : type.getDeclaredMethods()) {
+            method.setAccessible(true);
+            Object value = method.invoke(annotation, (Object[]) null);
+            config.addConfig(method.getName(), value.toString());
+            if (value instanceof Annotation) {
+                Map<String, SapphirePolicyConfig> innerMap =
+                        toSapphirePolicyConfig((Annotation) value);
+                map.putAll(innerMap);
+            }
+        }
+
+        return map;
+    }
+
+    /**
+     * Extracts sapphire policy configurations from given DM specifications.
+     *
+     * <p>Returns a 2-level nested map. At the first level, the map key is the sapphire policy name,
+     * map value is a map which contains all configurations of that policy. At the second level, the
+     * map key is the class name of the configuration, map value is a {@link SapphirePolicyConfig}
+     * instance.
+     *
+     * @param dmSpecList a list of DM specifications
+     * @return a nested map which contains all configurations
+     */
+    public static Map<String, Map<String, SapphirePolicyConfig>> fromDMSpecListToConfigMap(
+            List<DMSpec> dmSpecList) {
+        Map<String, Map<String, SapphirePolicyConfig>> map = new HashMap<>();
+
+        for (DMSpec dmSpec : dmSpecList) {
+            Map<String, SapphirePolicyConfig> configMap = new HashMap<>();
+            map.put(dmSpec.getName(), configMap);
+            for (SapphirePolicyConfig config : dmSpec.getConfigs()) {
+                configMap.put(config.getClass().getName(), config);
+            }
+        }
+
+        return map;
     }
 }

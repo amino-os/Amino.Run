@@ -1,0 +1,10 @@
+# Configuration for running KVStore with DHT DM
+!!sapphire.app.SapphireObjectSpec
+constructorName: null
+dmList:
+- configs: []
+  name: sapphire.policy.dht.DHTPolicy
+javaClassName: sapphire.demo.KVStore
+lang: java
+name: null
+sourceFileLocation: null

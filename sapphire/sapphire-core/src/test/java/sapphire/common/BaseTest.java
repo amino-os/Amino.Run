@@ -17,7 +17,9 @@ import java.rmi.registry.LocateRegistry;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.powermock.api.mockito.PowerMockito;
+import sapphire.app.Language;
 import sapphire.app.SO;
+import sapphire.app.SapphireObjectSpec;
 import sapphire.app.stubs.SO_Stub;
 import sapphire.kernel.common.GlobalKernelReferences;
 import sapphire.kernel.common.KernelOID;
@@ -187,15 +189,15 @@ public class BaseTest {
                     @Override
                     public Object answer(InvocationOnMock invocation) throws Throwable {
                         if ((invocation.getMethod().getName().equals("getAppStub"))) {
-                            String appStubClassName = SO_Stub.class.getName();
+                            SapphireObjectSpec spec = new SapphireObjectSpec();
+                            spec.setLang(Language.java);
+                            spec.setJavaClassName(SO.class.getCanonicalName());
                             SapphirePolicy.SapphireServerPolicy serverPolicy =
                                     (SapphirePolicy.SapphireServerPolicy)
                                             invocation.getArguments()[1];
                             Object[] args = (Object[]) invocation.getArguments()[2];
 
-                            return Sapphire.extractAppStub(
-                                    serverPolicy.$__initialize(
-                                            Class.forName(appStubClassName), args));
+                            return Sapphire.extractAppStub(serverPolicy.$__initialize(spec, args));
                         }
                         if (!(invocation.getMethod().getName().equals("getPolicyStub")))
                             return invocation.callRealMethod();

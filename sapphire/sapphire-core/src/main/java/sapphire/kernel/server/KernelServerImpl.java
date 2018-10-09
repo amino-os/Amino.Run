@@ -10,8 +10,8 @@ import java.util.ArrayList;
 import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import sapphire.app.SapphireObjectSpec;
 import sapphire.common.AppObjectStub;
-import sapphire.common.SapphireObjectCreationException;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
 import sapphire.kernel.client.KernelClient;
@@ -130,6 +130,22 @@ public class KernelServerImpl implements KernelServer {
                     KernelObjectStubNotCreatedException, SapphireObjectNotFoundException,
                     SapphireObjectReplicaNotFoundException {
         logger.log(Level.INFO, "Adding object " + oid);
+        if (object.getObject() instanceof SapphirePolicy.SapphireServerPolicy) {
+            /* Set the policy object handlers of new host */
+            SapphirePolicy.SapphireServerPolicy serverPolicy =
+                    (SapphirePolicy.SapphireServerPolicy) object.getObject();
+            SapphirePolicy.SapphireServerPolicy serverPolicyStub =
+                    (SapphirePolicy.SapphireServerPolicy)
+                            Sapphire.getPolicyStub(serverPolicy.getClass(), oid);
+            ArrayList<Object> policyObjList = new ArrayList<>();
+            EventHandler policyHandler = new EventHandler(host, policyObjList);
+            policyObjList.add(serverPolicyStub);
+
+            serverPolicyStub.setReplicaId(serverPolicy.getReplicaId());
+            oms.setSapphireReplicaDispatcher(serverPolicy.getReplicaId(), policyHandler);
+
+            serverPolicy.onCreate(serverPolicy.getGroup(), serverPolicy.getConfigMap());
+        }
 
         // TODO (9/27/2018, Sungwook): Move uncoalesce logic to separate loop at the end of code.
         objectManager.addObject(oid, object);
@@ -314,20 +330,15 @@ public class KernelServerImpl implements KernelServer {
         return client;
     }
 
-    /**
-     * Create the sapphire object
-     *
-     * @param className
-     * @param args
-     * @return
-     * @throws RemoteException
-     * @throws SapphireObjectCreationException
-     * @throws ClassNotFoundException
-     */
     @Override
-    public AppObjectStub createSapphireObject(String className, Object... args)
-            throws RemoteException, SapphireObjectCreationException, ClassNotFoundException {
-        return (AppObjectStub) Sapphire.new_(Class.forName(className), args);
+    public AppObjectStub createSapphireObject(String soSpecYaml, Object... args) {
+        logger.log(
+                Level.INFO,
+                String.format(
+                        "Got request to create sapphire object with spec '%s' and %d parameters.",
+                        soSpecYaml, args.length));
+        SapphireObjectSpec spec = SapphireObjectSpec.fromYaml(soSpecYaml);
+        return (AppObjectStub) Sapphire.new_(spec, args);
     }
 
     public class MemoryStatThread extends Thread {

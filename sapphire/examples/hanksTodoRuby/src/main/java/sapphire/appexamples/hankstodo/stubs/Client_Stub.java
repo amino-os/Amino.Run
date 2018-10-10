@@ -1,24 +1,28 @@
 package sapphire.appexamples.hankstodo.stubs;
 
+import sapphire.app.Language;
+
 import java.net.InetSocketAddress;
 
 public class Client_Stub {
     public Client_Stub(){}
 
-    public sapphire.appexamples.hankstodo.stubs.TodoListManager_Stub GetTodoListManager(InetSocketAddress host, InetSocketAddress omsHost) {
+    public sapphire.appexamples.hankstodo.stubs.TodoListManager_Stub GetTodoListManager(
+            InetSocketAddress host,
+            InetSocketAddress omsHost,
+            sapphire.app.Language lang,
+            String fileName) {
         try {
             // Create OMSClient for oms server interaction
             sapphire.app.OMSClient omsClient = new sapphire.app.OMSClient(host, omsHost);
             sapphire.policy.dht.DHTPolicy.Config config = new sapphire.policy.dht.DHTPolicy.Config();
             config.setNumOfShards(3);
 
-            java.lang.String rubyHome = java.lang.System.getProperty("RUBY_HOME");
-
             sapphire.app.SapphireObjectSpec spec = sapphire.app.SapphireObjectSpec.newBuilder()
-                    .setLang(sapphire.app.Language.ruby)
+                    .setLang(lang)
                     .setConstructorName("TodoListManager")
                     .setJavaClassName("sapphire.appexamples.hankstodo.stubs.TodoListManager_Stub")
-                    .setSourceFileLocation((new java.io.File(rubyHome + "/todo_list_manager.rb").toString()))
+                    .setSourceFileLocation((new java.io.File(fileName).toString()))
                     .addDMSpec(sapphire.app.DMSpec.newBuilder()
                             .setName(sapphire.policy.dht.DHTPolicy.class.getName())
                             .addConfig(config)
@@ -54,12 +58,19 @@ public class Client_Stub {
             return;
         }
 
-        java.lang.System.setProperty("RUBY_HOME", "/home/paas/development/DCAP-Sapphire/sapphire/examples/hanksTodoRuby/src/main/ruby/sapphire/appexamples/hankstodo");
+        java.lang.System.setProperty("RUBY_HOME", "/Users/haibinxie/Code/DCAP_Sapphire_Fork/DCAP-Sapphire/sapphire/examples/hanksTodoRuby/src/main/ruby/sapphire/appexamples/hankstodo");
+        java.lang.String rubyHome = java.lang.System.getProperty("RUBY_HOME");
 
+        Test(host, omsHost, sapphire.app.Language.js, rubyHome + "/todo_list_manager.js");
+        Test(host, omsHost, Language.ruby, rubyHome + "/todo_list_manager.rb");
+    }
+
+    private static void Test(InetSocketAddress host, InetSocketAddress omsHost, sapphire.app.Language lang, String fileName) {
         Client_Stub client = new Client_Stub();
         sapphire.appexamples.hankstodo.stubs.TodoListManager_Stub tls =
-                client.GetTodoListManager(host, omsHost);
+                client.GetTodoListManager(host, omsHost, lang, fileName);
 
+        java.lang.System.out.println(String.format("**************Test %s*************", lang));
         java.lang.System.out.println("Response from SO for newTodoList --> " + tls.newTodoList("Hanks"));
         java.lang.System.out.println("Response from SO for addTodo --> " + tls.addTodo("Hanks","Hanks first Task"));
         java.lang.System.out.println("Response from SO for addTodo --> " + tls.addTodo("Hanks","Hanks second Task"));
@@ -67,6 +78,5 @@ public class Client_Stub {
         java.lang.System.out.println("Response from SO for completeTodo --> " + tls.completeTodo("Hanks","Hanks first Task" ));
         java.lang.System.out.println("Response from SO for getTodos --> " + tls.getTodos("Hanks"));
         java.lang.System.out.println("Response from SO for deleteTodoList --> " + tls.deleteTodoList("Hanks"));
-
     }
 }

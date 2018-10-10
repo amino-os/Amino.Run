@@ -65,8 +65,13 @@ public class Sapphire {
             SapphireServerPolicy previousServerPolicy = null;
             KernelObjectStub previousServerPolicyStub = null;
 
+            /* Register for a sapphire object Id from OMS */
+            SapphireObjectID sapphireObjId =
+                    GlobalKernelReferences.nodeServer.oms.registerSapphireObject();
+
             List<SapphirePolicyContainer> policyList =
                     createPolicy(
+                            sapphireObjId,
                             appObjectClass,
                             null,
                             policyNameChain,
@@ -127,6 +132,7 @@ public class Sapphire {
      * @throws Exception
      */
     public static List<SapphirePolicyContainer> createPolicy(
+            SapphireObjectID sapphireObjId,
             Class<?> appObjectClass,
             AppObject appObject,
             List<SapphirePolicyContainer> policyNameChain,
@@ -152,10 +158,6 @@ public class Sapphire {
         Class<?> sapphireServerPolicyClass = policyMap.get("sapphireServerPolicyClass");
         Class<?> sapphireClientPolicyClass = policyMap.get("sapphireClientPolicyClass");
         Class<?> sapphireGroupPolicyClass = policyMap.get("sapphireGroupPolicyClass");
-
-        /* Register for a sapphire object Id from OMS */
-        SapphireObjectID sapphireObjId =
-                GlobalKernelReferences.nodeServer.oms.registerSapphireObject();
 
         /* Create and the Kernel Object for the Group Policy and get the Group Policy Stub
         Note that group policy does not need to update hostname because it only applies to
@@ -233,6 +235,7 @@ public class Sapphire {
 
         if (nextPoliciesToCreate.size() != 0) {
             createPolicy(
+                    sapphireObjId,
                     appObjectClass,
                     null,
                     nextPoliciesToCreate,

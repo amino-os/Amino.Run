@@ -88,6 +88,8 @@ public class HanksTodoMain {
 
             tlm.doSomething("Testing completed.");
 
+            tlm.deleteTodoList(ListName);
+            omsserver.deleteSapphireObject(sapphireObjId);
         } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();

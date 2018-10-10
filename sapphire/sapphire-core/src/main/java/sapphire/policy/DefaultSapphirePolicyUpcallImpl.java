@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import sapphire.app.SapphireObjectSpec;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
 import sapphire.policy.SapphirePolicy.SapphireServerPolicy;
@@ -58,8 +57,8 @@ public abstract class DefaultSapphirePolicyUpcallImpl extends SapphirePolicyLibr
             }
         }
 
-        public SapphireServerPolicy sapphire_replicate(List<SapphirePolicyContainer> processedPolicies)
-                throws RemoteException {
+        public SapphireServerPolicy sapphire_replicate(
+                List<SapphirePolicyContainer> processedPolicies) throws RemoteException {
             return super.sapphire_replicate(processedPolicies);
         }
 

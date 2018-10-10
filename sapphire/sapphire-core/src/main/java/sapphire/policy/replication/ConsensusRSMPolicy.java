@@ -224,9 +224,11 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
                 SapphireServerPolicy server, Map<String, SapphirePolicyConfig> configMap)
                 throws RemoteException {
             // TODO(merged):
-            // super.onCreate(server, annotations);
+           // super.onCreate(server, annotations);
 
             super.onCreate(server, configMap);
+            addServer(server);
+
             try {
                 ArrayList<String> regions = sapphire_getRegions();
                 // Register the first replica, which has already been created.

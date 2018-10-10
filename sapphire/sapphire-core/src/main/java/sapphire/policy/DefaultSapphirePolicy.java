@@ -89,7 +89,6 @@ public class DefaultSapphirePolicy extends SapphirePolicy {
         public void onCreate(
                 SapphireServerPolicy server, Map<String, SapphirePolicyConfig> configMap)
                 throws RemoteException {
-            addServer(server);
         }
 
         @Override

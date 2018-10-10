@@ -313,6 +313,10 @@ public class Sapphire {
                     appArgs);
         }
 
+        if (existingGroupPolicy == null) {
+            groupPolicy.addServer(serverPolicyStub);
+        }
+
         String ko = "";
         for (SapphirePolicyContainer policyContainer : processedPolicies) {
             ko += String.valueOf(policyContainer.getKernelOID()) + ",";

@@ -36,7 +36,6 @@ import sapphire.kernel.server.KernelServerImpl;
 import sapphire.policy.DefaultSapphirePolicy;
 import sapphire.policy.SapphirePolicy;
 import sapphire.runtime.Sapphire;
-import sapphire.runtime.SapphireConfiguration;
 
 /** ScaleupFrontend DM test cases */
 
@@ -52,14 +51,6 @@ import sapphire.runtime.SapphireConfiguration;
 public class ScaleUpFrontendPolicyTest extends BaseTest {
     @Rule public ExpectedException thrown = ExpectedException.none();
 
-    // TODO (merge):
-    //    @ScaleUpFrontendPolicy.ScaleUpFrontendPolicyConfigAnnotation(
-    //            replicationRateInMs = 20,
-    //            loadbalanceConfig =
-    //                    @LoadBalancedFrontendPolicy.LoadBalancedFrontendPolicyConfigAnnotation(
-    //                            maxConcurrentReq = 2,
-    //                            replicaCount = 2))
-    @SapphireConfiguration(Policies = "sapphire.policy.scalability.ScaleUpFrontendPolicy")
     public static class ScaleUpSO extends SO {}
 
     public static class Group_Stub extends ScaleUpFrontendPolicy.GroupPolicy

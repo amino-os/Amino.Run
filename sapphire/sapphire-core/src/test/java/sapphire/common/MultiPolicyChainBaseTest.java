@@ -102,13 +102,6 @@ public class MultiPolicyChainBaseTest {
                     public Object answer(InvocationOnMock invocation) throws Throwable {
 
                         if (invocation.getMethod().getName().equals("createStub")) {
-                            /*Class<?> policy = (Class) invocation.getArguments()[0];
-                            if (policy.getName().contains("Server")) {
-                                //invocation.getArguments()[0] = serverClass;
-                            } else {
-                                assert (policy.getName().contains("Group"));
-                                //invocation.getArguments()[0] = groupClass;
-                            }*/
                             return invocation.callRealMethod();
                         }
 

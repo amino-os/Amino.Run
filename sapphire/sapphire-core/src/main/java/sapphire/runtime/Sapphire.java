@@ -532,11 +532,6 @@ public class Sapphire {
         throw new Exception("The Object doesn't implement the SapphireObject interface.");
     }
 
-    /* Returns the policy used by the Sapphire Object based on input class name */
-    //    public static Class<?> getPolicy(String policyClassName) throws ClassNotFoundException {
-    //        return Class.forName(policyClassName);
-    //    }
-
     /**
      * Constructs a policy map for each client, server and group policy based on input policy name.
      *
@@ -649,20 +644,6 @@ public class Sapphire {
         return serverPolicy;
     }
 
-    // TODO (merge):
-    //    public static AppObjectStub getAppStub(
-    //            Class<?> appObjectClass, SapphireServerPolicy serverPolicy, Object[] args)
-    //            throws CloneNotSupportedException, IllegalAccessException, ClassNotFoundException
-    // {
-    //        String appStubClassName =
-    //                GlobalStubConstants.getAppPackageName(RMIUtil.getPackageName(appObjectClass))
-    //                        + "."
-    //                        + RMIUtil.getShortName(appObjectClass)
-    //                        + GlobalStubConstants.STUB_SUFFIX;
-    //        return extractAppStub(serverPolicy.$__initialize(Class.forName(appStubClassName),
-    // args));
-    //    }
-    //
     private static AppObjectStub getAppStub(
             SapphireObjectSpec spec, SapphireServerPolicy serverPolicy, Object[] args)
             throws IllegalAccessException, CloneNotSupportedException {

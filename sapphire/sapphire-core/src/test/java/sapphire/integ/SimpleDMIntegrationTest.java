@@ -44,7 +44,7 @@ public class SimpleDMIntegrationTest {
     }
 
     /**
-     * Test sapphire object specifications in <code>src/test/resrouces/specs</code> directory.
+     * Test sapphire object specifications in <code>src/test/resources/specs</code> directory.
      *
      * @throws Exception
      */
@@ -57,9 +57,7 @@ public class SimpleDMIntegrationTest {
             }
 
             SapphireObjectSpec spec = readSapphireSpec(f);
-            System.out.println("Running test for DM: " + spec.getDmList());
             runTest(spec);
-            System.out.println("Test passed");
         }
     }
 

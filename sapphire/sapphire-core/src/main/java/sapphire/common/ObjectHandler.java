@@ -115,14 +115,6 @@ public class ObjectHandler implements Serializable {
     }
 
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        /*
-        lang = Language.valueOf(in.readUTF());
-        if (IsGraalObject()) {
-            sapphire.graal.io.Deserializer deserializer =
-                    new Deserializer(in, GraalContext.getContext());
-            object = deserializer.deserialize();
-            System.out.println("Successfully de-serialized object " + object.toString());
-            */
         if (ObjectType.valueOf(in.readUTF()) == ObjectType.graal) {
             GraalObject object = (GraalObject) GraalObject.readObject(in);
             Class<?> appObjectStubClass = Class.forName(object.getJavaClassName());

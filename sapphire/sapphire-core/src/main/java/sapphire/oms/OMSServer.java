@@ -23,7 +23,7 @@ import sapphire.policy.SapphirePolicyUpcalls;
 import sapphire.runtime.EventHandler;
 
 public interface OMSServer extends Remote {
-    public static final long KS_HEARTBEAT_TIMEOUT = 6000000; // milliseconds
+    public static final long KS_HEARTBEAT_TIMEOUT = 6000; // milliseconds
 
     KernelOID registerKernelObject(InetSocketAddress host) throws RemoteException;
 

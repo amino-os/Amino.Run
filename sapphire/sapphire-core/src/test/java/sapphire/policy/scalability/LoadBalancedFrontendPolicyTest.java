@@ -28,7 +28,6 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import sapphire.app.*;
 import sapphire.app.SO;
 import sapphire.app.stubs.SO_Stub;
-import sapphire.common.AppObject;
 import sapphire.common.BaseTest;
 import sapphire.common.SapphireObjectID;
 import sapphire.common.SapphireUtils;
@@ -39,7 +38,6 @@ import sapphire.kernel.server.KernelServerImpl;
 import sapphire.policy.DefaultSapphirePolicy;
 import sapphire.policy.SapphirePolicy;
 import sapphire.runtime.Sapphire;
-import sapphire.runtime.SapphireConfiguration;
 
 /** Created by Vishwajeet on 2/4/18. */
 @RunWith(PowerMockRunner.class)
@@ -53,21 +51,12 @@ import sapphire.runtime.SapphireConfiguration;
 public class LoadBalancedFrontendPolicyTest extends BaseTest {
     int exceptionExpected = 0;
 
-    @LoadBalancedFrontendPolicy.LoadBalancedFrontendPolicyConfigAnnotation(
-            maxConcurrentReq = 2,
-            replicaCount = 2)
-    @SapphireConfiguration(Policies = "sapphire.policy.scalability.LoadBalancedFrontendPolicy")
     public static class LoadBalanceSO extends SO {}
-    // TODO (merge):
-    //    public static class LoadBalanceSO extends SO
-    //            implements SapphireObject<LoadBalancedFrontendPolicy> {}
 
     public static class Group_Stub extends LoadBalancedFrontendPolicy.GroupPolicy
             implements KernelObjectStub {
         sapphire.kernel.common.KernelOID $__oid = null;
         java.net.InetSocketAddress $__hostname = null;
-        int $__lastSeenTick = 0;
-        AppObject appObject = null;
         SapphirePolicy.SapphireClientPolicy $__nextClientPolicy = null;
 
         public Group_Stub(sapphire.kernel.common.KernelOID oid) {
@@ -95,8 +84,6 @@ public class LoadBalancedFrontendPolicyTest extends BaseTest {
             implements KernelObjectStub {
         KernelOID $__oid = null;
         InetSocketAddress $__hostname = null;
-        int $__lastSeenTick = 0;
-        AppObject $__appObject = null;
         SapphirePolicy.SapphireClientPolicy $__nextClientPolicy = null;
 
         public Server_Stub(KernelOID oid) {
@@ -221,19 +208,6 @@ public class LoadBalancedFrontendPolicyTest extends BaseTest {
         setFieldValueOnInstance(group1, "replicaCount", 5);
         group1.onCreate(this.server1, new HashMap<>());
     }
-
-    /*
-    @Test
-    public void testConfig() {
-        LoadBalancedFrontendPolicy.Config config = new LoadBalancedFrontendPolicy.Config();
-        config.setReplicaCount(3);
-        config.setMaxConcurrentReq(300);
-
-        LoadBalancedFrontendPolicy.Config clone =
-                (LoadBalancedFrontendPolicy.Config) config.fromDMSpec(config.toDMSpec());
-        Assert.assertEquals(config, clone);
-    }
-    */
 
     @After
     public void tearDown() throws Exception {

@@ -1,11 +1,11 @@
 package sapphire.policy.dht;
 
 import java.io.Serializable;
-import java.lang.annotation.Annotation;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Logger;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
@@ -23,7 +23,8 @@ public class DHTPolicy2 extends DefaultSapphirePolicy {
         DHTGroupPolicy group = null;
 
         @Override
-        public void onCreate(SapphireGroupPolicy group, Annotation[] annotations) {
+        public void onCreate(
+                SapphireGroupPolicy group, Map<String, SapphirePolicyConfig> configMap) {
             this.group = (DHTGroupPolicy) group;
         }
 
@@ -101,7 +102,8 @@ public class DHTPolicy2 extends DefaultSapphirePolicy {
         private DHTGroupPolicy group = null;
 
         @Override
-        public void onCreate(SapphireGroupPolicy group, Annotation[] annotations) {
+        public void onCreate(
+                SapphireGroupPolicy group, Map<String, SapphirePolicyConfig> configMap) {
             this.group = (DHTGroupPolicy) group;
         }
 
@@ -138,7 +140,8 @@ public class DHTPolicy2 extends DefaultSapphirePolicy {
         }
 
         @Override
-        public void onCreate(SapphireServerPolicy server, Annotation[] annotations) {
+        public void onCreate(
+                SapphireServerPolicy server, Map<String, SapphirePolicyConfig> configMap) {
             nodes = new HashMap<Integer, DHTNode>();
 
             try {

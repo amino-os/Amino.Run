@@ -3,7 +3,6 @@ package sapphire.policy.dht;
 import static org.mockito.Mockito.spy;
 import static org.powermock.api.mockito.PowerMockito.when;
 
-import java.lang.annotation.Annotation;
 import java.net.InetSocketAddress;
 import java.util.*;
 import org.junit.Assert;
@@ -16,6 +15,7 @@ import sapphire.oms.OMSServer;
 import sapphire.oms.OMSServerImpl;
 import sapphire.policy.SapphirePolicy;
 import sapphire.policy.SapphirePolicyContainer;
+import sapphire.policy.SapphirePolicyUpcalls;
 
 public class DHTPolicyTest {
     private OMSServer oms;
@@ -68,7 +68,6 @@ public class DHTPolicyTest {
     }
 
     private static class ServerPolicy extends DHTPolicy.DHTServerPolicy {
-        private SapphirePolicy.SapphireGroupPolicy group;
         List<Object> requests = new ArrayList<>();
 
         @Override
@@ -77,8 +76,13 @@ public class DHTPolicyTest {
             return new KernelOID(oid);
         }
 
-        @Override
-        public void onCreate(SapphirePolicy.SapphireGroupPolicy group, Annotation[] annotations) {
+        // TODO (merge):
+        // @Override
+        // public void onCreate(SapphirePolicy.SapphireGroupPolicy group, Annotation[] annotations)
+        // {
+        public void onCreate(
+                SapphirePolicy.SapphireGroupPolicy group,
+                Map<String, SapphirePolicyUpcalls.SapphirePolicyConfig> configMap) {
             this.group = group;
         }
 

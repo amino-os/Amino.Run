@@ -28,6 +28,7 @@ task wrapper(type: Wrapper) {
 
 subprojects {
     repositories {
+        mavenCentral()
         jcenter()
         google()
     }

@@ -8,16 +8,15 @@ import static sapphire.common.UtilsTest.extractFieldValueOnInstance;
 import java.net.InetSocketAddress;
 import java.rmi.registry.LocateRegistry;
 import java.util.List;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
+import sapphire.app.Language;
 import sapphire.app.SO;
 import sapphire.app.SapphireObject;
+import sapphire.app.SapphireObjectSpec;
 import sapphire.app.stubs.SO_Stub;
 import sapphire.common.AppObject;
 import sapphire.common.BaseTest;
@@ -114,9 +113,14 @@ public class OMSTest extends BaseTest {
 
     @Before
     public void setUp() throws Exception {
-        super.setUp(Server_Stub.class, Group_Stub.class);
-        SapphireObjectID sapphireObjId =
-                spiedOms.createSapphireObject("sapphire.oms.OMSTest$DefaultSO");
+        SapphireObjectSpec spec =
+                SapphireObjectSpec.newBuilder()
+                        .setLang(Language.java)
+                        .setJavaClassName("sapphire.app.SO")
+                        .create();
+        super.setUp(spec, Server_Stub.class, Group_Stub.class);
+        SapphireObjectID sapphireObjId = spiedOms.createSapphireObject(spec.toString());
+
         soStub = (SO_Stub) spiedOms.acquireSapphireObjectStub(sapphireObjId);
         client =
                 (DefaultSapphirePolicy.DefaultClientPolicy)

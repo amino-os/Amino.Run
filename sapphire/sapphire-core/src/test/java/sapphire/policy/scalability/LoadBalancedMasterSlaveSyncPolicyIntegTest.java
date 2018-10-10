@@ -1,9 +1,9 @@
 package sapphire.policy.scalability;
 
 import java.io.Serializable;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashMap;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -46,9 +46,9 @@ public class LoadBalancedMasterSlaveSyncPolicyIntegTest {
         group.addServer(server2);
 
         client.setServer(server1);
-        client.onCreate(group, new Annotation[] {});
-        server1.onCreate(group, new Annotation[] {});
-        server2.onCreate(group, new Annotation[] {});
+        client.onCreate(group, new HashMap<>());
+        server1.onCreate(group, new HashMap<>());
+        server2.onCreate(group, new HashMap<>());
         server1.start();
         server2.start();
     }

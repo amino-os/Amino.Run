@@ -7,13 +7,16 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Map;
 import org.junit.Assert;
 import org.junit.Test;
 import sapphire.kernel.common.KernelOID;
 import sapphire.kernel.common.KernelRPC;
+import sapphire.policy.SapphirePolicyUpcalls;
 import sapphire.policy.mobility.explicitmigration.ExplicitMigrationPolicySpec;
 import sapphire.policy.scalability.masterslave.LogEntry;
 import sapphire.policy.scalability.masterslave.MethodInvocationRequest;
+import sapphire.runtime.annotations.AnnotationConfig;
 import sapphire.runtime.annotations.Immutable;
 import sapphire.runtime.annotations.RuntimeSpec;
 
@@ -192,6 +195,21 @@ public class UtilsTest {
         Assert.assertEquals(3, spec.replicas());
 
         Assert.assertNull(Utils.getAnnotation(annotations, ExplicitMigrationPolicySpec.class));
+    }
+
+    @Test
+    public void toSapphirePolicyConfig() throws Exception {
+        Annotation[] annotations = Clazz.class.getAnnotations();
+        Map<String, SapphirePolicyUpcalls.SapphirePolicyConfig> configMap =
+                Utils.toSapphirePolicyConfig(annotations);
+        System.out.println(configMap);
+        Assert.assertEquals(1, configMap.size());
+        for (Map.Entry<String, SapphirePolicyUpcalls.SapphirePolicyConfig> en :
+                configMap.entrySet()) {
+            Assert.assertEquals(RuntimeSpec.class.getName(), en.getKey());
+            AnnotationConfig config = (AnnotationConfig) en.getValue();
+            Assert.assertEquals("3", config.getConfig("replicas"));
+        }
     }
 
     @RuntimeSpec(replicas = 3)

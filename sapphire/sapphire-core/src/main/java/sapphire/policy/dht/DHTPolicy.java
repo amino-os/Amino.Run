@@ -1,24 +1,48 @@
 package sapphire.policy.dht;
 
-import static sapphire.common.Utils.getAnnotation;
-
-import java.lang.annotation.Annotation;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Random;
 import java.util.logging.Logger;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
 import sapphire.policy.DefaultSapphirePolicy;
+import sapphire.runtime.annotations.AnnotationConfig;
 
 public class DHTPolicy extends DefaultSapphirePolicy {
-    static final int DEFAULT_NUM_OF_SHARDS = 3;
+    private static final int DEFAULT_NUM_OF_SHARDS = 3;
 
+    /** Configuration for DHT Policy. */
+    public static class Config implements SapphirePolicyConfig {
+        private int numOfShards = DEFAULT_NUM_OF_SHARDS;
+
+        public int getNumOfShards() {
+            return numOfShards;
+        }
+
+        public void setNumOfShards(int numOfShards) {
+            this.numOfShards = numOfShards;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Config config = (Config) o;
+            return numOfShards == config.numOfShards;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(numOfShards);
+        }
+    }
+
+    // TODO(multi-lang): Delete Annotations
     @Retention(RetentionPolicy.RUNTIME)
     @Target({ElementType.TYPE})
     public @interface DHTConfigure {
@@ -51,14 +75,24 @@ public class DHTPolicy extends DefaultSapphirePolicy {
         private Random generator = new Random(System.currentTimeMillis());
 
         @Override
-        public void onCreate(SapphireServerPolicy server, Annotation[] annotations)
+        public void onCreate(
+                SapphireServerPolicy server, Map<String, SapphirePolicyConfig> configMap)
                 throws RemoteException {
             dhtChord = new DHTChord();
-            super.onCreate(server, annotations);
+            super.onCreate(server, configMap);
 
-            DHTConfigure annotation = getAnnotation(annotations, DHTConfigure.class);
-            if (annotation != null) {
-                this.numOfShards = annotation.numOfShards();
+            if (configMap != null) {
+                SapphirePolicyConfig config = configMap.get(DHTPolicy.Config.class.getName());
+                if (config != null) {
+                    this.numOfShards = ((Config) config).getNumOfShards();
+                } else {
+                    // Support java annotations for backward compatibility
+                    AnnotationConfig c =
+                            (AnnotationConfig) configMap.get(DHTConfigure.class.getName());
+                    if (c != null) {
+                        this.numOfShards = Integer.valueOf(c.getConfig("numOfShards"));
+                    }
+                }
             }
 
             try {

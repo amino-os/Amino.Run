@@ -157,7 +157,8 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
                 SapphireServerPolicy lastServerPolicy = (SapphireServerPolicy) this;
 
                 // TODO (merge):
-                // Class appObjectClass = sapphire_getAppObject().getObject().getClass().getSuperclass();
+                // Class appObjectClass =
+                // sapphire_getAppObject().getObject().getClass().getSuperclass();
                 AppObject actualAppObject = lastServerPolicy.sapphire_getAppObject();
                 if (actualAppObject == null) throw new Exception("Could not find AppObject");
 

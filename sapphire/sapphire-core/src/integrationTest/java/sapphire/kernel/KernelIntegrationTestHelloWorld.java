@@ -84,8 +84,10 @@ public class KernelIntegrationTestHelloWorld {
                 System.out.println("java to call: " + javaExe);
             }
             String sapphireCore =
-                    cwd
+                            cwd
                             + "/../sapphire-core/build/libs/sapphire-core-1.0.0.jar:"
+                            + cwd
+                            + "/../sapphire-core/libs/snakeyaml-1.23.jar:"
                             + cwd
                             + "/../dependencies/java.rmi/build/libs/java.rmi-1.0.0.jar:"
                             + cwd
@@ -122,8 +124,17 @@ public class KernelIntegrationTestHelloWorld {
                             new InetSocketAddress(appHost[2], Integer.parseInt(appHost[3])),
                             new InetSocketAddress(appHost[0], Integer.parseInt(appHost[1])));
 
+            SapphireObjectSpec spec =
+                    SapphireObjectSpec.newBuilder()
+                            .setLang(Language.java)
+                            .setJavaClassName("sapphire.appexamples.helloworld.HelloWorld")
+                            .addDMSpec(
+                                    DMSpec.newBuilder()
+                                            .setName(AtLeastOnceRPCPolicy.class.getName())
+                                            .create())
+                            .create();
             SapphireObjectID sapphireObjId =
-                    server.createSapphireObject("sapphire.appexamples.helloworld.HelloWorld");
+                    server.createSapphireObject(spec.toString());
             HelloWorld helloWorld = (HelloWorld) server.acquireSapphireObjectStub(sapphireObjId);
 
             System.out.println("result.." + helloWorld.sayHello());

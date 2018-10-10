@@ -209,10 +209,9 @@ public class SapphireMultiPolicyChainTest extends MultiPolicyChainBaseTest {
         super.setUpMultiDM(spec, groupMap, serverMap);
     }
 
-    @Ignore
     @Test
     public void testNew_() throws Exception {
-        Object temp = Sapphire.new_(DefaultSO.class, null);
+        Object temp = Sapphire.new_(DefaultSO.class);
         assertNotEquals(null, temp);
     }
 

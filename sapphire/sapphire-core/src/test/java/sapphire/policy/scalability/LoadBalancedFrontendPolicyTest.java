@@ -124,7 +124,6 @@ public class LoadBalancedFrontendPolicyTest extends BaseTest {
 
     @Before
     public void setUp() throws Exception {
-        super.setUp(Server_Stub.class, Group_Stub.class);
 
         LoadBalancedFrontendPolicy.Config config = new LoadBalancedFrontendPolicy.Config();
         config.setMaxConcurrentReq(2);
@@ -140,6 +139,7 @@ public class LoadBalancedFrontendPolicyTest extends BaseTest {
                                         .addConfig(config)
                                         .create())
                         .create();
+        super.setUp(spec, Server_Stub.class, Group_Stub.class);
 
         SapphireObjectID sapphireObjId = spiedOms.createSapphireObject(spec.toString());
         soStub = (SO_Stub) spiedOms.acquireSapphireObjectStub(sapphireObjId);

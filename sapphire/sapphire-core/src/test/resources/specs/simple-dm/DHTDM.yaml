@@ -2,7 +2,8 @@
 !!sapphire.app.SapphireObjectSpec
 constructorName: null
 dmList:
-- configs: []
+- configs:
+  - !!sapphire.policy.dht.DHTPolicy$Config {numOfShards: 1}
   name: sapphire.policy.dht.DHTPolicy
 javaClassName: sapphire.demo.KVStore
 lang: java

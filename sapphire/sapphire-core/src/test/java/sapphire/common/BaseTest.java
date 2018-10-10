@@ -56,7 +56,8 @@ public class BaseTest {
 
     protected boolean serversInSameRegion = true;
 
-    public void setUp(Class<?> serverClass, Class<?> groupClass) throws Exception {
+    public void setUp(SapphireObjectSpec spec, Class<?> serverClass, Class<?> groupClass)
+            throws Exception {
         PowerMockito.mockStatic(LocateRegistry.class);
         when(LocateRegistry.getRegistry(anyString(), anyInt())).thenReturn(dummyRegistry);
 
@@ -188,13 +189,6 @@ public class BaseTest {
                     @Override
                     public Object answer(InvocationOnMock invocation) throws Throwable {
                         if ((invocation.getMethod().getName().equals("getAppStub"))) {
-                            //                            SapphireObjectSpec spec = new
-                            // SapphireObjectSpec();
-                            //                            spec.setLang(Language.java);
-                            //
-                            // spec.setJavaClassName(SO.class.getCanonicalName());
-                            SapphireObjectSpec spec =
-                                    (SapphireObjectSpec) invocation.getArguments()[0];
                             SapphirePolicy.SapphireServerPolicy serverPolicy =
                                     (SapphirePolicy.SapphireServerPolicy)
                                             invocation.getArguments()[1];

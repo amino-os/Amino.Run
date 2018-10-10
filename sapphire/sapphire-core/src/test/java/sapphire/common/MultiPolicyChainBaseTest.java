@@ -7,6 +7,7 @@ import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.powermock.api.mockito.PowerMockito.when;
 import static sapphire.common.SapphireUtils.addHost;
 import static sapphire.common.SapphireUtils.dummyRegistry;
+import static sapphire.common.SapphireUtils.getHostOnOmsKernelServerManager;
 import static sapphire.common.SapphireUtils.startSpiedKernelServer;
 import static sapphire.common.SapphireUtils.startSpiedOms;
 import static sapphire.common.UtilsTest.extractFieldValueOnInstance;
@@ -20,6 +21,7 @@ import sapphire.app.SO;
 import sapphire.app.SapphireObjectSpec;
 import sapphire.app.stubs.SO_Stub;
 import sapphire.kernel.common.GlobalKernelReferences;
+import sapphire.kernel.common.KernelOID;
 import sapphire.kernel.common.KernelObjectFactory;
 import sapphire.kernel.common.KernelObjectStub;
 import sapphire.kernel.server.KernelObject;
@@ -183,6 +185,16 @@ public class MultiPolicyChainBaseTest {
                             Object[] args = (Object[]) invocation.getArguments()[2];
 
                             return Sapphire.extractAppStub(serverPolicy.$__initialize(spec, args));
+                        }
+                        if (!(invocation.getMethod().getName().equals("getPolicyStub")))
+                            return invocation.callRealMethod();
+
+                        if (invocation.getArguments().length == 2) {
+                            KernelOID oid = (KernelOID) invocation.getArguments()[1];
+                            KernelServer ks =
+                                    getHostOnOmsKernelServerManager(
+                                            spiedOms, spiedOms.lookupKernelObject(oid));
+                            return ((KernelServerImpl) ks).getObject(oid);
                         }
 
                         return invocation.callRealMethod();

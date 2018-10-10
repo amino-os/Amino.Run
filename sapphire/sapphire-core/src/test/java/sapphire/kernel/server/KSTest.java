@@ -105,10 +105,12 @@ public class KSTest extends BaseTest {
 
     @Before
     public void setUp() throws Exception {
-        super.setUp(Server_Stub.class, Group_Stub.class);
-        SapphireObjectSpec spec = new SapphireObjectSpec();
-        spec.setLang(Language.java);
-        spec.setJavaClassName("sapphire.app.SO");
+        SapphireObjectSpec spec =
+                SapphireObjectSpec.newBuilder()
+                        .setLang(Language.java)
+                        .setJavaClassName("sapphire.app.SO")
+                        .create();
+        super.setUp(spec, Server_Stub.class, Group_Stub.class);
 
         SapphireObjectID sapphireObjId = spiedOms.createSapphireObject(spec.toString());
 

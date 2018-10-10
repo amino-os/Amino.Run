@@ -119,7 +119,6 @@ public class ScaleUpFrontendPolicyTest extends BaseTest {
 
     @Before
     public void setUp() throws Exception {
-        super.setUp(Server_Stub.class, Group_Stub.class);
 
         ScaleUpFrontendPolicy.Config scaleConfig = new ScaleUpFrontendPolicy.Config();
         scaleConfig.setReplicationRateInMs(400);
@@ -139,6 +138,7 @@ public class ScaleUpFrontendPolicyTest extends BaseTest {
                                         .addConfig(lbConfig)
                                         .create())
                         .create();
+        super.setUp(spec, Server_Stub.class, Group_Stub.class);
 
         SapphireObjectID sapphireObjId = spiedOms.createSapphireObject(spec.toString());
         soStub = (SO_Stub) spiedOms.acquireSapphireObjectStub(sapphireObjId);

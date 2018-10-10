@@ -113,7 +113,6 @@ public class MinnieTwitterMain {
             for (int i = 0; i < EVENTS_PER_USER; i++) {
                 cnt++;
                 int userId = i % USERS_NUM;
-                TimeUnit.MILLISECONDS.sleep(2000);
                 String tweet = getTweet(cnt);
 
                 try {

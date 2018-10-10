@@ -247,41 +247,8 @@ public class OMSServerImpl implements OMSServer {
 
         try {
             AppObjectStub appObjStub = objectManager.getInstanceObjectStub(sapphireObjId);
-
-            SapphirePolicy.SapphireClientPolicy clientPolicy = extractClientPolicy(appObjStub);
-
-            // todo: fix properly. commenting out as temporary workaround for pinkis 3 DHT x 2
-            // MasterSlave
-            /*
-            clientPolicy.setServer(
-                    (SapphirePolicy.SapphireServerPolicy) policyHandler.getObjects().get(0));
-            */
-
+            appObjStub.$__initialize(false);
             return appObjStub;
-            // TODO (merge):
-            /*
-            AppObjectStub localObjStub = objectManager.getInstanceObjectStub(sapphireObjId);
-            SapphirePolicy.SapphireClientPolicy clientPolicy = extractClientPolicy(localObjStub);
-            SapphirePolicy.SapphireServerPolicy serverPolicy =
-                    (SapphirePolicy.SapphireServerPolicy) policyHandler.getObjects().get(0);
-            appObjStub = (AppObjectStub) serverPolicy.sapphire_getRemoteAppObject().getObject();
-            // Calling extractAppStub to create a clone of appObjStub and set directInvocation
-            // to false on the clone instance. If we run oms and kernel server on the same
-            // process, serverPolicy.sapphire_getRemoteAppObject().getObject() returns the
-            // real appObjectStub instance within the server policy whose directInvocation is
-            // true. In this case, if we set directInvocation to false on appObjStub directly,
-            // it will modify the the value of appObjStub instance within the server policy
-            // which will cause infinite loop. This infinite loop issue will surface when we
-            // run oms and kernel server in one process.
-            appObjStub = Sapphire.extractAppStub(appObjStub);
-            SapphirePolicy.SapphireClientPolicy client = clientPolicy.getClass().newInstance();
-            client.onCreate(clientPolicy.getGroup(), clientPolicy.getGroup().getAppConfigAnnotation());
-            client.setServer(serverPolicy);
-            appObjStub.$__initialize(client);
-            */
-            //            appObjStub = objectManager.getInstanceObjectStub(sapphireObjId);
-            //            ;
-            //            appObjStub.$__initialize(false);
         } catch (Exception e) {
             logger.warning("Exception occurred : " + e);
             throw new SapphireObjectNotFoundException(

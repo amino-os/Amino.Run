@@ -1,10 +1,19 @@
 package sapphire.app;
 
+import java.net.InetSocketAddress;
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+import org.graalvm.polyglot.Value;
 import sapphire.common.AppObjectStub;
 import sapphire.common.SapphireObjectCreationException;
 import sapphire.common.SapphireObjectID;
 import sapphire.common.SapphireObjectNotFoundException;
+import sapphire.graal.io.SerializeValue;
+import sapphire.kernel.server.KernelServer;
+import sapphire.kernel.server.KernelServerImpl;
+import sapphire.oms.OMSServer;
 
 /**
  * TODO(multi-lang): Implement OMSClient
@@ -12,29 +21,57 @@ import sapphire.common.SapphireObjectNotFoundException;
  * <p>Client used by applications to interact with OMS.
  *
  * <p>Ruby application: <code>
- *     oms = Java.type('sapphire.app.OMSClient')
- *     so = oms.getInstance().createSapphireObject(...)
+ *      omsClient = Java.type('sapphire.app.OMSClient').new(host, oms)
+ *      so = omsClient.createSapphireObject(...)
  * </code>
  */
 public class OMSClient {
+    private OMSServer omsserver;
 
-    /** @return OMS client instance */
-    public static OMSClient getInstance() {
-        return null;
+    /**
+     * Create OMS client object.
+     *
+     * @param host HOST InetSocketAddress
+     * @param omsHost OMS InetSocketAddress
+     * @throws RemoteException unable to reach OMS server
+     * @throws NotBoundException oms server not bind with "SapphireOMS" name
+     */
+    public OMSClient(InetSocketAddress host, InetSocketAddress omsHost)
+            throws RemoteException, NotBoundException {
+        Registry registry = LocateRegistry.getRegistry(omsHost.getHostName(), omsHost.getPort());
+        omsserver = (OMSServer) registry.lookup("SapphireOMS");
+        KernelServer nodeServer = new KernelServerImpl(host, omsHost);
     }
-
     /**
      * Create sapphire object.
      *
-     * @param sapphireObjectSpec sapphire object specification in YAML
+     * @param spec sapphire object specification in YAML
      * @param args arguments to sapphire object constructor
      * @return ID of the newly created sapphire object
      * @throws RemoteException unable to reach OMS server
      * @throws SapphireObjectCreationException unable to create sapphire object.
      */
-    public SapphireObjectID createSapphireObject(String sapphireObjectSpec, Object... args)
+    public SapphireObjectID createSapphireObject(SapphireObjectSpec spec, Object... args)
             throws RemoteException, SapphireObjectCreationException {
-        return null;
+
+        // convert graal...Value to serializable object
+        Object[] serializableObjects = new Object[args.length];
+        for (int i = 0; i < args.length; i++) {
+            if (args[i] instanceof org.graalvm.polyglot.Value) {
+                try {
+                    serializableObjects[i] =
+                            SerializeValue.getSerializeValue((Value) args[i], spec.getLang());
+                } catch (Exception e) {
+                    // TODO: Add Serialization exception for
+                    // sapphire.graal.Serialization/Deserialization
+                    // currently sending SapphireObjectCreationException
+                    throw new SapphireObjectCreationException("Failed to serialize");
+                }
+                continue;
+            }
+            serializableObjects[i] = args[i];
+        }
+        return omsserver.createSapphireObject(spec.toString(), serializableObjects);
     }
 
     /**
@@ -48,6 +85,6 @@ public class OMSClient {
      */
     public AppObjectStub acquireSapphireObjectStub(SapphireObjectID sapphireObjId)
             throws RemoteException, SapphireObjectNotFoundException {
-        return null;
+        return omsserver.acquireSapphireObjectStub(sapphireObjId);
     }
 }

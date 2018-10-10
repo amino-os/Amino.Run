@@ -412,41 +412,48 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
             logger.info(String.format("Creating app object '%s' with parameters %s", spec, params));
 
             AppObjectStub actualAppObject = null;
-
             try {
-                String appStubClassName;
                 if (spec.getLang() == Language.java) {
                     Class<?> appObjectClass = Class.forName(spec.getJavaClassName());
-                    appStubClassName =
+                    String appStubClassName =
                             GlobalStubConstants.getAppPackageName(
                                             RMIUtil.getPackageName(appObjectClass))
                                     + "."
                                     + RMIUtil.getShortName(appObjectClass)
                                     + GlobalStubConstants.STUB_SUFFIX;
-                } else {
-                    appStubClassName =
-                            "sapphire.appexamples.college.stubs." + spec.getName() + "_ClientStub";
-                }
 
-                Class<?> appObjectStubClass = Class.forName(appStubClassName);
-                // Construct the list of classes of the arguments as Class[]
-                if (params != null) {
-                    Class<?>[] argClasses = Sapphire.getParamsClasses(params);
-                    actualAppObject =
-                            (AppObjectStub)
-                                    appObjectStubClass
-                                            .getConstructor(argClasses)
-                                            .newInstance(params);
+                    Class<?> appObjectStubClass = Class.forName(appStubClassName);
+                    // Construct the list of classes of the arguments as Class[]
+                    if (params != null) {
+                        Class<?>[] argClasses = Sapphire.getParamsClasses(params);
+                        actualAppObject =
+                                (AppObjectStub)
+                                        appObjectStubClass
+                                                .getConstructor(argClasses)
+                                                .newInstance(params);
 
-                } else {
-                    actualAppObject = (AppObjectStub) appObjectStubClass.newInstance();
-                }
+                    } else {
+                        actualAppObject = (AppObjectStub) appObjectStubClass.newInstance();
+                    }
 
-                if (spec.getLang() == Language.java) {
                     actualAppObject.$__initialize(true);
                     appObject = new AppObject(actualAppObject);
                 } else {
-                    appObject = new AppObject(new GraalObject(spec, params));
+                    String stubClassName = spec.getJavaClassName();
+                    if (stubClassName.isEmpty()) {
+                        throw new RuntimeException("stub class name missing for application");
+                    }
+
+                    Class<?> appObjectStubClass = Class.forName(spec.getJavaClassName());
+                    // Construct the list of classes of the arguments as Class[]
+                    // TODO: Currently all polyglot application stub should have default
+                    // constructor. Fix it
+                    Object appStubObject = appObjectStubClass.newInstance();
+                    ((GraalObject) appStubObject).$__initializeGraal(spec, params);
+                    actualAppObject = (AppObjectStub) appStubObject;
+                    actualAppObject.$__initialize(true);
+
+                    appObject = new AppObject(actualAppObject);
                 }
             } catch (Exception e) {
                 logger.log(Level.SEVERE, "Failed to initialize server policy", e);

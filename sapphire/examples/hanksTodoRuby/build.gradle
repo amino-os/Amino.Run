@@ -1,0 +1,61 @@
+apply plugin: 'java'
+
+/*
+    TODO: Add following changes after:
+    1. Add task for generating and compiling stubs. (Currently manually added)
+*/
+dependencies {
+    compile project(':sapphire-core')
+}
+
+// Task for Stub compilation
+task compileStubs(type: JavaCompile) {
+    source = sourceSets.main.java.srcDirs
+    classpath = sourceSets.main.runtimeClasspath
+    destinationDir = sourceSets.main.output.classesDir
+    options.incremental = true
+}
+
+jar.dependsOn compileStubs
+
+// Start OMS with "gradlew runoms"
+task runoms(type: JavaExec) {
+    dependsOn jar
+    classpath = sourceSets.main.runtimeClasspath
+    main = 'sapphire.oms.OMSServerImpl'
+    args project.property('omsIp'), project.property('omsPort')
+}
+
+// Start kernel server with "gradlew runks"
+task runks(type: JavaExec) {
+    classpath = sourceSets.main.runtimeClasspath
+    main = 'sapphire.kernel.server.KernelServerImpl'
+    args project.property('kernelServerIp'), project.property('kernelServerPort'), project.property('omsIp'), project.property('omsPort')
+}
+
+/*  TODO: Currently exception in passing Graal Value object from java stub to ruby.
+    // fix the issue and uncomment below task
+// Task for run Ruby hanksTodoApp demo app
+// Usage: gradlew runapp
+task runapp(type: Exec) {
+
+    def classpath = sourceSets.main.runtimeClasspath.asPath
+    executable "ruby"
+    args "--jvm", "--polyglot", "--jvm.classpath=${classpath}",
+            "${project.projectDir}/src/main/ruby/sapphire/appexamples/hankstodo/hanks_todo_main.rb"
+
+    environment  RUBY_HOME: "${project.projectDir}/src/main/ruby/sapphire/appexamples/hankstodo"
+    environment  RUBY_IP: "${project.property('omsIp')}"
+    environment  RUBY_PORT: "${project.property('omsPort')}"
+}
+*/
+
+// Start kernel server with "gradlew runapp"
+task runapp(type: JavaExec) {
+    classpath = sourceSets.main.runtimeClasspath
+    main = 'sapphire.appexamples.hankstodo.stubs.Client_Stub'
+    System.setProperty("RUBY_HOME", "${project.projectDir}/src/main/ruby/sapphire/appexamples/hankstodo/")
+    args project.property('kernelIpAndroid'), project.property('kernelServerPort'), project.property('omsIp'), project.property('omsPort')
+}
+
+runapp.dependsOn compileStubs

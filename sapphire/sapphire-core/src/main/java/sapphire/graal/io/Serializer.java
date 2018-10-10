@@ -93,8 +93,7 @@ public class Serializer implements AutoCloseable {
                 logger.fine("found members: " + keys);
                 // logger.fine("writing " + keys.size() + " members");
                 for (String k : keys) {
-                    if (k.equals("__proto__")
-                            || v.getMember(k).canExecute()) {
+                    if (k.equals("__proto__") || v.getMember(k).canExecute()) {
                         continue;
                     }
                     logger.fine("key: " + k + " value: " + v.getMember(k));

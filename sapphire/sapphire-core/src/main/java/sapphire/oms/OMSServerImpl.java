@@ -519,11 +519,8 @@ public class OMSServerImpl implements OMSServer {
      * @return Returns ArrayList<SapphireObjectID>
      * @throws RemoteException
      */
-    @Override
     public ArrayList<SapphireObjectID> getAllSapphireObjects() throws RemoteException {
-        System.out.println("ListSapphireObjects Start");
         ArrayList<SapphireObjectID> arr = objectManager.getAllSapphireObjects();
-        System.out.println("ListSapphireObjects End" + arr);
         return arr;
     }
 
@@ -533,7 +530,6 @@ public class OMSServerImpl implements OMSServer {
      * @return Returns ArrayList<EventHandler>
      * @throws RemoteException
      */
-    @Override
     public EventHandler[] getSapphireReplicasById(SapphireObjectID oid)
             throws SapphireObjectNotFoundException {
         return objectManager.getSapphireReplicasById(oid);
@@ -545,7 +541,6 @@ public class OMSServerImpl implements OMSServer {
      * @return Returns ArrayList<KernelOID>
      * @throws RemoteException
      */
-    @Override
     public ArrayList<KernelOID> getAllKernelObjects() throws RemoteException {
         return kernelObjectManager.getAllKernelObjects();
     }

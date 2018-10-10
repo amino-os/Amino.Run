@@ -97,12 +97,4 @@ public interface OMSServer extends Remote {
 
     void unRegisterSapphireReplica(SapphireReplicaID replicaId)
             throws RemoteException, SapphireObjectNotFoundException;
-
-    // testing purpose
-    ArrayList<SapphireObjectID> getAllSapphireObjects() throws RemoteException;
-
-    EventHandler[] getSapphireReplicasById(SapphireObjectID oid)
-            throws RemoteException, SapphireObjectNotFoundException;
-
-    ArrayList<KernelOID> getAllKernelObjects() throws RemoteException;
 }

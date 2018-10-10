@@ -173,28 +173,28 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultSapphirePolicy 
                 ArrayList<InetSocketAddress> servers =
                         GlobalKernelReferences.nodeServer.oms.getServers();
                 // TODO: Remove the following check. Use heap to find the best server location.
-                if (servers.size() < spec.replicas()) {
-                    throw new IllegalStateException(
-                            String.format(
-                                    "server# (%s) <= replicas# (%s)",
-                                    servers.size(), spec.replicas()));
-                }
+//                if (servers.size() < spec.replicas()) {
+//                    throw new IllegalStateException(
+//                            String.format(
+//                                    "server# (%s) <= replicas# (%s)",
+//                                    servers.size(), spec.replicas()));
+//                }
 
                 List<InetSocketAddress> unavailable = new ArrayList<InetSocketAddress>();
                 unavailable.add(
                         GlobalKernelReferences.nodeServer.oms.lookupKernelObject(
                                 $__getKernelOID()));
-                InetSocketAddress dest = getAvailable(servers, unavailable);
+                InetSocketAddress dest = getAvailable(0, servers, unavailable);
 
                 ServerBase s = (ServerBase) server;
                 s.sapphire_pin_to_server(dest);
                 updateReplicaHostName(s, dest);
-                unavailable.add(dest);
+//                unavailable.add(dest);
                 s.start();
                 logger.info("created master on " + dest);
 
                 for (int i = 0; i < spec.replicas() - 1; i++) {
-                    dest = getAvailable(servers, unavailable);
+                    dest = getAvailable(i+1, servers, unavailable);
                     ServerBase replica =
                             (ServerBase) s.sapphire_replicate(s.getProcessedPolicies());
                     replica.sapphire_pin_to_server(dest);
@@ -202,7 +202,7 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultSapphirePolicy 
                     removeServer(replica);
                     addServer(replica);
                     replica.start();
-                    unavailable.add(dest);
+//                    unavailable.add(dest);
                     logger.info("created slave on " + dest);
                 }
             } catch (RemoteException e) {
@@ -219,13 +219,16 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultSapphirePolicy 
         }
 
         InetSocketAddress getAvailable(
+                int index,
                 List<InetSocketAddress> servers, List<InetSocketAddress> unavailable) {
             for (InetSocketAddress s : servers) {
                 if (!unavailable.contains(s)) {
+                    unavailable.add(s);
                     return s;
                 }
             }
-            return null;
+
+            return servers.get(index%servers.size());
         }
 
         /**

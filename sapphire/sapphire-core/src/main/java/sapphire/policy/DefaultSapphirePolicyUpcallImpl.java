@@ -1,10 +1,10 @@
 package sapphire.policy;
 
-import java.lang.annotation.Annotation;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
@@ -105,7 +105,7 @@ public abstract class DefaultSapphirePolicyUpcallImpl extends SapphirePolicyLibr
             this.params = params;
         }
 
-        public Annotation[] getAppConfigAnnotation() {
+        public Map<String, SapphirePolicyConfig> getAppConfigAnnotation() {
             return super.getAppConfigAnnotation();
         }
 

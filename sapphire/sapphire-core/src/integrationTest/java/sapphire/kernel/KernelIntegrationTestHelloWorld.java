@@ -8,12 +8,16 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import org.junit.Assert;
 import org.junit.Test;
+import sapphire.app.DMSpec;
+import sapphire.app.Language;
+import sapphire.app.SapphireObjectSpec;
 import sapphire.appexamples.helloworld.HelloWorld;
 import sapphire.common.SapphireObjectID;
 import sapphire.kernel.server.KernelServer;
 import sapphire.kernel.server.KernelServerImpl;
 import sapphire.oms.OMSServer;
 import sapphire.oms.OMSServerImpl;
+import sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy;
 
 /** Tests the SO creation process in Kernel Server and OMS. */
 public class KernelIntegrationTestHelloWorld {
@@ -40,8 +44,21 @@ public class KernelIntegrationTestHelloWorld {
                         new InetSocketAddress(hostIp, hostPort),
                         new InetSocketAddress(omsIp, omsPort));
 
+        /* TODO(merge):
         SapphireObjectID sapphireObjId =
                 server.createSapphireObject("sapphire.appexamples.helloworld.HelloWorld", world);
+                */
+        SapphireObjectSpec spec =
+                SapphireObjectSpec.newBuilder()
+                        .setLang(Language.java)
+                        .setJavaClassName("sapphire.appexamples.helloworld.HelloWorld")
+                        .addDMSpec(
+                                DMSpec.newBuilder()
+                                        .setName(AtLeastOnceRPCPolicy.class.getName())
+                                        .create())
+                        .create();
+
+        SapphireObjectID sapphireObjId = server.createSapphireObject(spec.toString(), world);
         HelloWorld helloWorld = (HelloWorld) server.acquireSapphireObjectStub(sapphireObjId);
         Assert.assertEquals("Hi " + world, helloWorld.sayHello());
         server.deleteSapphireObject(sapphireObjId);
@@ -69,6 +86,8 @@ public class KernelIntegrationTestHelloWorld {
             String sapphireCore =
                     cwd
                             + "/../sapphire-core/build/libs/sapphire-core-1.0.0.jar:"
+                            + cwd
+                            + "/../sapphire-core/libs/snakeyaml-1.23.jar:"
                             + cwd
                             + "/../dependencies/java.rmi/build/libs/java.rmi-1.0.0.jar:"
                             + cwd
@@ -105,8 +124,16 @@ public class KernelIntegrationTestHelloWorld {
                             new InetSocketAddress(appHost[2], Integer.parseInt(appHost[3])),
                             new InetSocketAddress(appHost[0], Integer.parseInt(appHost[1])));
 
-            SapphireObjectID sapphireObjId =
-                    server.createSapphireObject("sapphire.appexamples.helloworld.HelloWorld");
+            SapphireObjectSpec spec =
+                    SapphireObjectSpec.newBuilder()
+                            .setLang(Language.java)
+                            .setJavaClassName("sapphire.appexamples.helloworld.HelloWorld")
+                            .addDMSpec(
+                                    DMSpec.newBuilder()
+                                            .setName(AtLeastOnceRPCPolicy.class.getName())
+                                            .create())
+                            .create();
+            SapphireObjectID sapphireObjId = server.createSapphireObject(spec.toString());
             HelloWorld helloWorld = (HelloWorld) server.acquireSapphireObjectStub(sapphireObjId);
 
             System.out.println("result.." + helloWorld.sayHello());

@@ -1,12 +1,12 @@
 package sapphire.policy.replication;
 
 import java.io.Serializable;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -149,8 +149,9 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
         }
 
         @Override
-        public void onCreate(SapphireGroupPolicy group, Annotation[] annotations) {
-            super.onCreate(group, annotations);
+        public void onCreate(
+                SapphireGroupPolicy group, Map<String, SapphirePolicyConfig> configMap) {
+            super.onCreate(group, configMap);
             raftServer = new sapphire.policy.util.consensus.raft.Server(this);
         }
 
@@ -219,9 +220,14 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
         private static Logger logger = Logger.getLogger(GroupPolicy.class.getName());
 
         @Override
-        public void onCreate(SapphireServerPolicy server, Annotation[] annotations)
+        public void onCreate(
+                SapphireServerPolicy server, Map<String, SapphirePolicyConfig> configMap)
                 throws RemoteException {
-            super.onCreate(server, annotations);
+            // TODO(merged):
+            // super.onCreate(server, annotations);
+
+            super.onCreate(server, configMap);
+            addServer(server);
 
             try {
                 ArrayList<String> regions = sapphire_getRegions();

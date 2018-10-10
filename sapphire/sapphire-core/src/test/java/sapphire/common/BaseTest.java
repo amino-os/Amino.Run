@@ -18,6 +18,7 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.powermock.api.mockito.PowerMockito;
 import sapphire.app.SO;
+import sapphire.app.SapphireObjectSpec;
 import sapphire.app.stubs.SO_Stub;
 import sapphire.kernel.common.GlobalKernelReferences;
 import sapphire.kernel.common.KernelOID;
@@ -55,7 +56,8 @@ public class BaseTest {
 
     protected boolean serversInSameRegion = true;
 
-    public void setUp(Class<?> serverClass, Class<?> groupClass) throws Exception {
+    public void setUp(SapphireObjectSpec spec, Class<?> serverClass, Class<?> groupClass)
+            throws Exception {
         PowerMockito.mockStatic(LocateRegistry.class);
         when(LocateRegistry.getRegistry(anyString(), anyInt())).thenReturn(dummyRegistry);
 
@@ -187,15 +189,12 @@ public class BaseTest {
                     @Override
                     public Object answer(InvocationOnMock invocation) throws Throwable {
                         if ((invocation.getMethod().getName().equals("getAppStub"))) {
-                            String appStubClassName = SO_Stub.class.getName();
                             SapphirePolicy.SapphireServerPolicy serverPolicy =
                                     (SapphirePolicy.SapphireServerPolicy)
                                             invocation.getArguments()[1];
                             Object[] args = (Object[]) invocation.getArguments()[2];
 
-                            return Sapphire.extractAppStub(
-                                    serverPolicy.$__initialize(
-                                            Class.forName(appStubClassName), args));
+                            return Sapphire.extractAppStub(serverPolicy.$__initialize(spec, args));
                         }
                         if (!(invocation.getMethod().getName().equals("getPolicyStub")))
                             return invocation.callRealMethod();

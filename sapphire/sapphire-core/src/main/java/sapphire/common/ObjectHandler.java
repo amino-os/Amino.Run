@@ -1,9 +1,6 @@
 package sapphire.common;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
+import java.io.*;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -21,8 +18,12 @@ public class ObjectHandler implements Serializable {
     /** Reference to the actual object instance */
     private Object object;
 
-    boolean isGraalObject;
-    Context c;
+    public enum ObjectType {
+        graal,
+        java,
+    }
+
+    private boolean isGraalObject = false;
 
     private static Logger logger = Logger.getLogger(ObjectHandler.class.getName());
 
@@ -36,6 +37,10 @@ public class ObjectHandler implements Serializable {
         return obj.getClass();
     }
 
+    public boolean isGraalObject() {
+        return isGraalObject;
+    }
+
     private void fillMethodTable(Object obj) {
         Class<?> cl = getClass(obj);
         this.methods = new Hashtable<String, Method>();
@@ -47,23 +52,24 @@ public class ObjectHandler implements Serializable {
         }
     }
 
-    public void SetGraalContext(Context c) {
-        this.c = c;
+    private boolean IsGraalObject() {
+        return (object instanceof GraalObject);
     }
+
     /**
      * At creation time, we create the actual object, which happens to be the superclass of the
      * stub. We also inspect the methods of the object to set up a table we can use to look up the
      * method on RPC.
      *
-     * @param stub
+     * @param obj
      */
     public ObjectHandler(Object obj) {
         // TODO: get all the methods from all superclasses - careful about duplicates
         object = obj;
-        isGraalObject = org.graalvm.polyglot.Value.class.isAssignableFrom(obj.getClass());
-        if (!isGraalObject) {
-            fillMethodTable(obj);
-        }
+
+        isGraalObject = IsGraalObject();
+
+        fillMethodTable(obj);
         logger.fine("Created object " + obj.toString());
     }
 
@@ -82,21 +88,17 @@ public class ObjectHandler implements Serializable {
         return (Serializable) object;
     }
 
-    public Value getGraalObject() {
-        return (Value) object;
-    }
-
     public void setObject(Serializable object) {
         this.object = object;
     }
 
-    private void writeObject(ObjectOutputStream out) throws Exception {
-        out.writeBoolean(isGraalObject);
+    private void writeObject(ObjectOutputStream out) throws IOException {
         if (isGraalObject) {
+            out.writeUTF(ObjectType.graal.toString());
             // TODO: make language configurable.
-            sapphire.graal.io.Serializer serializer = new Serializer(out, "js");
-            serializer.serialize((Value) this.object);
+            ((GraalObject) object).writeObject(out);
         } else {
+            out.writeUTF(ObjectType.java.toString());
             out.writeObject(object);
         }
     }
@@ -108,17 +110,30 @@ public class ObjectHandler implements Serializable {
      * @throws IOException Note - it's not possible to simply make writeObject public, as java
      *     serialization requires it to be private.
      */
-    public void write(ObjectOutputStream out) throws Exception {
-        // out.writeBoolean(isGraalObject);
+    public void write(ObjectOutputStream out) throws IOException {
         this.writeObject(out);
     }
 
-    private void readObject(ObjectInputStream in) throws Exception {
-        isGraalObject = in.readBoolean();
-        if (isGraalObject) {
-            if (c == null) c = Context.create();
-            sapphire.graal.io.Deserializer deserializer = new Deserializer(in, c);
-            object = deserializer.deserialize();
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        if (ObjectType.valueOf(in.readUTF()) == ObjectType.graal) {
+            GraalObject object = (GraalObject) GraalObject.readObject(in);
+            Class<?> appObjectStubClass = Class.forName(object.getJavaClassName());
+            // Construct the list of classes of the arguments as Class[]
+            // TODO: Currently all polyglot application stub should have default
+            // constructor. Fix it
+            Object appStubObject;
+            try {
+                appStubObject = appObjectStubClass.newInstance();
+            } catch (IllegalAccessException e) {
+                throw new ClassNotFoundException("IllegalAccessException  " + e.getMessage());
+            } catch (InstantiationException e) {
+                throw new ClassNotFoundException("InstantiationException  " + e.getMessage());
+            }
+
+            ((GraalObject) appStubObject).$__initializeGraal(object);
+
+            fillMethodTable(appStubObject);
+            this.object = appStubObject;
         } else {
             Object obj = in.readObject();
             fillMethodTable(obj);
@@ -126,7 +141,7 @@ public class ObjectHandler implements Serializable {
         }
     }
 
-    public void read(ObjectInputStream in) throws Exception {
+    public void read(ObjectInputStream in) throws IOException, ClassNotFoundException {
         this.readObject(in);
     }
 }

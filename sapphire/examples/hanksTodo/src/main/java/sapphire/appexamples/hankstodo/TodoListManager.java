@@ -1,15 +1,20 @@
 package sapphire.appexamples.hankstodo;
 
 
+import sapphire.app.DMSpec;
+import sapphire.app.Language;
 import sapphire.app.SapphireObject;
 import static sapphire.runtime.Sapphire.*;
 
+import sapphire.app.SapphireObjectSpec;
+import sapphire.policy.DefaultSapphirePolicy;
+import sapphire.policy.dht.DHTPolicy2;
+import sapphire.policy.replication.ConsensusRSMPolicy;
 import sapphire.runtime.SapphireConfiguration;
 
 import java.util.Hashtable;
 import java.util.Map;
 
-@SapphireConfiguration(Policies = "sapphire.policy.DefaultSapphirePolicy")
 public class TodoListManager implements SapphireObject {
 	Map<String, TodoList> todoLists = new Hashtable<String, TodoList>();
 
@@ -24,7 +29,21 @@ public class TodoListManager implements SapphireObject {
 	public TodoList newTodoList(String id) {
 		TodoList t = todoLists.get(id);
 		if (t == null) {
-			t = (TodoList) new_(TodoList.class, id);
+			SapphireObjectSpec spec;
+			spec = SapphireObjectSpec.newBuilder()
+					.setLang(Language.java)
+					.setJavaClassName(TodoList.class.getName())
+					.addDMSpec(
+							DMSpec.newBuilder()
+									.setName(DHTPolicy2.class.getName())
+									.create())
+					.addDMSpec(
+							DMSpec.newBuilder()
+									.setName(ConsensusRSMPolicy.class.getName())
+									.create())
+					.create();
+
+			t = (TodoList) new_(spec, id);
 			todoLists.put(id, t);
 			System.out.println("Created new Todo list");
 		} else {

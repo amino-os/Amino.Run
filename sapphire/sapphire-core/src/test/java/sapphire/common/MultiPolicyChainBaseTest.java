@@ -7,6 +7,7 @@ import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.powermock.api.mockito.PowerMockito.when;
 import static sapphire.common.SapphireUtils.addHost;
 import static sapphire.common.SapphireUtils.dummyRegistry;
+import static sapphire.common.SapphireUtils.getHostOnOmsKernelServerManager;
 import static sapphire.common.SapphireUtils.startSpiedKernelServer;
 import static sapphire.common.SapphireUtils.startSpiedOms;
 import static sapphire.common.UtilsTest.extractFieldValueOnInstance;
@@ -17,8 +18,10 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.powermock.api.mockito.PowerMockito;
 import sapphire.app.SO;
+import sapphire.app.SapphireObjectSpec;
 import sapphire.app.stubs.SO_Stub;
 import sapphire.kernel.common.GlobalKernelReferences;
+import sapphire.kernel.common.KernelOID;
 import sapphire.kernel.common.KernelObjectFactory;
 import sapphire.kernel.common.KernelObjectStub;
 import sapphire.kernel.server.KernelObject;
@@ -38,7 +41,6 @@ import sapphire.runtime.Sapphire;
  * testing MultiDM scenarios.
  */
 public class MultiPolicyChainBaseTest {
-
     protected DefaultSapphirePolicy.DefaultClientPolicy client;
     protected DefaultSapphirePolicy.DefaultServerPolicy server1;
     protected DefaultSapphirePolicy.DefaultServerPolicy server2;
@@ -53,7 +55,10 @@ public class MultiPolicyChainBaseTest {
 
     protected boolean serversInSameRegion = true;
 
-    public void setUpMultiDM(HashMap<String, Class> groupMap, HashMap<String, Class> serverMap)
+    public void setUpMultiDM(
+            SapphireObjectSpec spec,
+            HashMap<String, Class> groupMap,
+            HashMap<String, Class> serverMap)
             throws Exception {
         PowerMockito.mockStatic(LocateRegistry.class);
         when(LocateRegistry.getRegistry(anyString(), anyInt())).thenReturn(dummyRegistry);
@@ -97,13 +102,6 @@ public class MultiPolicyChainBaseTest {
                     public Object answer(InvocationOnMock invocation) throws Throwable {
 
                         if (invocation.getMethod().getName().equals("createStub")) {
-                            /*Class<?> policy = (Class) invocation.getArguments()[0];
-                            if (policy.getName().contains("Server")) {
-                                //invocation.getArguments()[0] = serverClass;
-                            } else {
-                                assert (policy.getName().contains("Group"));
-                                //invocation.getArguments()[0] = groupClass;
-                            }*/
                             return invocation.callRealMethod();
                         }
 
@@ -173,14 +171,23 @@ public class MultiPolicyChainBaseTest {
                     public Object answer(InvocationOnMock invocation) throws Throwable {
                         if ((invocation.getMethod().getName().equals("getAppStub"))) {
                             String appStubClassName = SO_Stub.class.getName();
+                            Object[] arguments = invocation.getArguments();
                             SapphirePolicy.SapphireServerPolicy serverPolicy =
                                     (SapphirePolicy.SapphireServerPolicy)
                                             invocation.getArguments()[1];
                             Object[] args = (Object[]) invocation.getArguments()[2];
 
-                            return Sapphire.extractAppStub(
-                                    serverPolicy.$__initialize(
-                                            Class.forName(appStubClassName), args));
+                            return Sapphire.extractAppStub(serverPolicy.$__initialize(spec, args));
+                        }
+                        if (!(invocation.getMethod().getName().equals("getPolicyStub")))
+                            return invocation.callRealMethod();
+
+                        if (invocation.getArguments().length == 2) {
+                            KernelOID oid = (KernelOID) invocation.getArguments()[1];
+                            KernelServer ks =
+                                    getHostOnOmsKernelServerManager(
+                                            spiedOms, spiedOms.lookupKernelObject(oid));
+                            return ((KernelServerImpl) ks).getObject(oid);
                         }
 
                         return invocation.callRealMethod();

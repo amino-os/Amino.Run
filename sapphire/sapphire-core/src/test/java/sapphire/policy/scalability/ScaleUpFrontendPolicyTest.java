@@ -22,6 +22,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
+import sapphire.app.*;
 import sapphire.app.SO;
 import sapphire.app.stubs.SO_Stub;
 import sapphire.common.AppObject;
@@ -35,7 +36,6 @@ import sapphire.kernel.server.KernelServerImpl;
 import sapphire.policy.DefaultSapphirePolicy;
 import sapphire.policy.SapphirePolicy;
 import sapphire.runtime.Sapphire;
-import sapphire.runtime.SapphireConfiguration;
 
 /** ScaleupFrontend DM test cases */
 
@@ -51,13 +51,6 @@ import sapphire.runtime.SapphireConfiguration;
 public class ScaleUpFrontendPolicyTest extends BaseTest {
     @Rule public ExpectedException thrown = ExpectedException.none();
 
-    @ScaleUpFrontendPolicy.ScaleUpFrontendPolicyConfigAnnotation(
-            replicationRateInMs = 20,
-            loadbalanceConfig =
-                    @LoadBalancedFrontendPolicy.LoadBalancedFrontendPolicyConfigAnnotation(
-                            maxconcurrentReq = 2,
-                            replicacount = 2))
-    @SapphireConfiguration(Policies = "sapphire.policy.scalability.ScaleUpFrontendPolicy")
     public static class ScaleUpSO extends SO {}
 
     public static class Group_Stub extends ScaleUpFrontendPolicy.GroupPolicy
@@ -117,10 +110,28 @@ public class ScaleUpFrontendPolicyTest extends BaseTest {
 
     @Before
     public void setUp() throws Exception {
-        super.setUp(Server_Stub.class, Group_Stub.class);
-        SapphireObjectID sapphireObjId =
-                spiedOms.createSapphireObject(
-                        "sapphire.policy.scalability.ScaleUpFrontendPolicyTest$ScaleUpSO");
+
+        ScaleUpFrontendPolicy.Config scaleConfig = new ScaleUpFrontendPolicy.Config();
+        scaleConfig.setReplicationRateInMs(400);
+
+        LoadBalancedFrontendPolicy.Config lbConfig = new LoadBalancedFrontendPolicy.Config();
+        lbConfig.setMaxConcurrentReq(3);
+        lbConfig.setReplicaCount(3);
+
+        SapphireObjectSpec spec =
+                SapphireObjectSpec.newBuilder()
+                        .setLang(Language.java)
+                        .setJavaClassName("sapphire.app.SO")
+                        .addDMSpec(
+                                DMSpec.newBuilder()
+                                        .setName(ScaleUpFrontendPolicy.class.getName())
+                                        .addConfig(scaleConfig)
+                                        .addConfig(lbConfig)
+                                        .create())
+                        .create();
+        super.setUp(spec, Server_Stub.class, Group_Stub.class);
+
+        SapphireObjectID sapphireObjId = spiedOms.createSapphireObject(spec.toString());
         soStub = (SO_Stub) spiedOms.acquireSapphireObjectStub(sapphireObjId);
         client =
                 (DefaultSapphirePolicy.DefaultClientPolicy)

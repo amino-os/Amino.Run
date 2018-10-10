@@ -1,9 +1,9 @@
 package sapphire.oms;
 
 import static sapphire.compiler.GlobalStubConstants.POLICY_ONDESTROY_MTD_NAME_FORMAT;
+import static sapphire.policy.SapphirePolicyUpcalls.SapphirePolicyConfig;
 
 import java.io.IOException;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.net.InetSocketAddress;
 import java.rmi.NotBoundException;
@@ -13,6 +13,7 @@ import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Random;
 import java.util.logging.Logger;
 import org.json.JSONException;
@@ -181,14 +182,14 @@ public class OMSServerImpl implements OMSServer {
     /**
      * Create the sapphire object of given class on one of the servers
      *
-     * @param absoluteSapphireClassName
-     * @param args
+     * @param sapphireObjectSpec sapphire object specification in YAML
+     * @param args parameters to sapphire object constructor
      * @return Returns sapphire object id
      * @throws RemoteException
      * @throws SapphireObjectCreationException
      */
     @Override
-    public SapphireObjectID createSapphireObject(String absoluteSapphireClassName, Object... args)
+    public SapphireObjectID createSapphireObject(String sapphireObjectSpec, Object... args)
             throws RemoteException, SapphireObjectCreationException {
         /* Get a random server in the first region */
         InetSocketAddress host =
@@ -205,9 +206,12 @@ public class OMSServerImpl implements OMSServer {
                     "Failed to create sapphire object. Kernel server not found.");
         }
 
+        // TODO(multi-lang): Store spec together with object ID in objectManager
+        // SapphireObjectSpec spec = SapphireObjectSpec.fromYaml(sapphireObjectSpec);
+
         /* Invoke create sapphire object on the kernel server */
         try {
-            AppObjectStub appObjStub = server.createSapphireObject(absoluteSapphireClassName, args);
+            AppObjectStub appObjStub = server.createSapphireObject(sapphireObjectSpec, args);
             SapphirePolicy.SapphireClientPolicy clientPolicy = extractClientPolicy(appObjStub);
             objectManager.setInstanceObjectStub(
                     clientPolicy.getGroup().getSapphireObjId(), appObjStub);
@@ -243,15 +247,7 @@ public class OMSServerImpl implements OMSServer {
 
         try {
             AppObjectStub appObjStub = objectManager.getInstanceObjectStub(sapphireObjId);
-
-            SapphirePolicy.SapphireClientPolicy clientPolicy = extractClientPolicy(appObjStub);
-
-            // todo: fix properly. commenting out as temporary workaround for pinkis 3 DHT x 2 MasterSlave
-            /*
-            clientPolicy.setServer(
-                    (SapphirePolicy.SapphireServerPolicy) policyHandler.getObjects().get(0));
-            */
-
+            appObjStub.$__initialize(false);
             return appObjStub;
         } catch (Exception e) {
             logger.warning("Exception occurred : " + e);
@@ -357,10 +353,12 @@ public class OMSServerImpl implements OMSServer {
      */
     @Override
     public SapphirePolicy.SapphireGroupPolicy createGroupPolicy(
-            Class<?> policyClass, SapphireObjectID sapphireObjId, Annotation[] appConfigAnnotation)
+            Class<?> policyClass,
+            SapphireObjectID sapphireObjId,
+            Map<String, SapphirePolicyConfig> configMap)
             throws RemoteException, ClassNotFoundException, KernelObjectNotCreatedException,
                     SapphireObjectNotFoundException {
-        return Sapphire.createGroupPolicy(policyClass, sapphireObjId, appConfigAnnotation);
+        return Sapphire.createGroupPolicy(policyClass, sapphireObjId, configMap);
     }
 
     public static void main(String args[]) {

@@ -4,6 +4,9 @@ import java.net.InetSocketAddress;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.logging.Level;
+
+import sapphire.app.Language;
+import sapphire.app.SapphireObjectSpec;
 import sapphire.common.SapphireObjectID;
 import sapphire.kernel.server.KernelServer;
 import sapphire.kernel.server.KernelServerImpl;
@@ -39,7 +42,12 @@ public class HanksTodoMain {
 
             KernelServer nodeServer = new KernelServerImpl(new InetSocketAddress(args[2], Integer.parseInt(args[3])), new InetSocketAddress(args[0], Integer.parseInt(args[1])));
 
-            SapphireObjectID sapphireObjId = omsserver.createSapphireObject("sapphire.appexamples.hankstodo.TodoListManager");
+            SapphireObjectSpec spec = SapphireObjectSpec.newBuilder()
+                    .setLang(Language.java)
+                    .setJavaClassName("sapphire.appexamples.hankstodo.TodoListManager")
+                    .create();
+
+            SapphireObjectID sapphireObjId = omsserver.createSapphireObject(spec.toString());
             TodoListManager tlm = (TodoListManager)omsserver.acquireSapphireObjectStub(sapphireObjId);
             System.out.println("Received tlm: " + tlm);
 

@@ -23,6 +23,7 @@ task runoms(type: JavaExec) {
     dependsOn jar
     classpath = sourceSets.main.runtimeClasspath
     main = 'sapphire.oms.OMSServerImpl'
+    jvmArgs "-DLOG_DIR=" + project.property('logDir')
     args project.property('omsIp'), project.property('omsPort')
 }
 
@@ -30,6 +31,7 @@ task runoms(type: JavaExec) {
 task runks(type: JavaExec) {
     classpath = sourceSets.main.runtimeClasspath
     main = 'sapphire.kernel.server.KernelServerImpl'
+    jvmArgs "-DLOG_DIR=" + project.property('logDir')
     args project.property('kernelServerIp'), project.property('kernelServerPort'), project.property('omsIp'), project.property('omsPort')
 }
 

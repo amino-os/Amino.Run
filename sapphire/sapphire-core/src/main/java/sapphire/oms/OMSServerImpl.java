@@ -42,6 +42,14 @@ import sapphire.runtime.Sapphire;
  * @author iyzhang
  */
 public class OMSServerImpl implements OMSServer {
+    static {
+        String path =
+                OMSServerImpl.class
+                        .getClassLoader()
+                        .getResource("oms-logging.properties")
+                        .getFile();
+        System.setProperty("java.util.logging.config.file", path);
+    }
 
     private static Logger logger = Logger.getLogger("sapphire.oms.OMSServerImpl");
 

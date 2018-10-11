@@ -40,6 +40,16 @@ import sapphire.runtime.Sapphire;
  * @author iyzhang
  */
 public class KernelServerImpl implements KernelServer {
+
+    static {
+        String path =
+                KernelServerImpl.class
+                        .getClassLoader()
+                        .getResource("ks-logging.properties")
+                        .getFile();
+        System.setProperty("java.util.logging.config.file", path);
+    }
+
     private static Logger logger = Logger.getLogger("sapphire.kernel.server.KernelServerImpl");
     private InetSocketAddress host;
     private String region;

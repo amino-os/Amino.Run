@@ -12,24 +12,28 @@ class AppRuby
 
         # 1. Load College_Stub_Ruby class with GraalVM API.
         # Eventually we will get Student_Stub from OMS.
-        # College college = ...
         collegeStubClass = Java.type("sapphire.graalvm.demo.College_Stub_Ruby")
+
         # create new instance
         college = collegeStubClass.new
 
         # get college name
-        puts "app college name is : #{college.getName()}"
+        puts "Created College: #{college.getName()}"
 
         # 2. Create a Student instance with GraalVM API.
-        college.addStudent(1, "AmitStudent")
-        college.addStudent(2, "AmitStudent2")
+        s1 = "ruby_student_1"
+        puts "Add student #{s1} to college."
+        college.addStudent(1, s1)
+
+        s2 = "ruby_student_2"
+        puts "Add student #{s2} to college."
+        college.addStudent(2, s2)
 
         # 3. Prints out all students from college
+        puts "Getting students from college..."
         collegeStuds = college.getStudents()
         collegeStuds.each { |student|
-                  puts "#{student}"
-                  puts "get student name #{student.getName}"
-                  puts "get student id #{student.getID}"
+              puts "Got student: #{student.getName}"
         }
     end
 end

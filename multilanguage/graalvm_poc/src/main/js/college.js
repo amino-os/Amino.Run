@@ -4,9 +4,9 @@ class Student {
      * Deserailizer relies on the default constructor
      * to create instance.
      */
-    constructor() {
+    constructor(name) {
         this.id = 0;
-        this.name = "defaultstudent";
+        this.name = name;
     }
 
     setId(id) {
@@ -31,8 +31,8 @@ class Student {
 }
 
 class College {
-    constructor() {
-        this.name = "defaultcollege";
+    constructor(name) {
+        this.name = name;
         this.students = [];
     }
 

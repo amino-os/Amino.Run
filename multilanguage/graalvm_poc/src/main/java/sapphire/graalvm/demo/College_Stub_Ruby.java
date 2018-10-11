@@ -1,9 +1,7 @@
 package sapphire.graalvm.demo;
 
-import sapphire.graalvm.serde.*;
 import org.graalvm.polyglot.*;
 import java.io.*;
-import java.lang.reflect.Field;
 import java.util.*;
 
 // This is a stub file for Ruby College class.
@@ -26,22 +24,18 @@ public class College_Stub_Ruby {
 
         // Build the context from code with Ruby
         String rubyHome = System.getProperty("RUBY_HOME");
-        System.out.println("RUBY_HOME:" + rubyHome);
         Value v0 = polyglot.eval(Source.newBuilder("ruby", new File(rubyHome + "/college.rb")).build());
 
         // create College class instance for ruby
-        college = polyglot.eval("ruby", "College").newInstance("AmitCollege");
+        college = polyglot.eval("ruby", "College").newInstance("RubyCollege");
     }
 
     public String getName() throws Exception {
-
-        // 1. Use GraalVM polyplot API to invoke 
+        // 1. Use GraalVM polyplot API to invoke
         // getName method on the college instance. 
         // 2. Serialize return value to bytes
         // 3. Descerialize bytes into GraalVM Value object
-
         Value v = college.getMember("getName").execute();
-        System.out.println("getName "+v);
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         sapphire.graalvm.serde.Serializer ser = new sapphire.graalvm.serde.Serializer(out, "ruby");
@@ -51,7 +45,6 @@ public class College_Stub_Ruby {
                 new ByteArrayInputStream(out.toByteArray()),
                 polyglot);
         Value name = de.deserialize();
-        System.out.println("getName returns " + name);
         return name.asString();
     }
 
@@ -94,9 +87,6 @@ public class College_Stub_Ruby {
                 new ByteArrayInputStream(out.toByteArray()),
                 polyglot);
         Value clientStudents = de.deserialize();
-
-        System.out.println("Students is proxy object " + clientStudents.isProxyObject());
-        System.out.println("Students is host object " + clientStudents.isHostObject());
         return clientStudents.as(List.class);
     }
 }

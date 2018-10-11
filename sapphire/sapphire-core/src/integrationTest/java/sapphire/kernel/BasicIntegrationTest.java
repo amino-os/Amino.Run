@@ -25,9 +25,9 @@ public class BasicIntegrationTest {
     public void testCreateSapphireObject() throws Exception {
         String world = "Disney";
         String omsIp = "127.0.0.1";
-        int omsPort = 22346;
+        int omsPort = 22546;
         String kstIp = "127.0.0.1";
-        int ksPort = 22345;
+        int ksPort = 22545;
         String hostIp = "127.0.0.2";
         int hostPort = 22333;
 

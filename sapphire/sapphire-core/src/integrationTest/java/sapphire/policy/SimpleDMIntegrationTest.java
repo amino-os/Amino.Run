@@ -1,5 +1,7 @@
 package sapphire.policy;
 
+import static sapphire.kernel.IntegrationTestBase.*;
+
 import java.io.File;
 import java.net.InetSocketAddress;
 import java.net.URL;
@@ -20,12 +22,8 @@ import sapphire.oms.OMSServerImpl;
  * multiple kernel servers are not covered here.
  */
 public class SimpleDMIntegrationTest {
-    private static String omsIp = "127.0.0.1";
-    private static int omsPort = 22346;
     private static String kstIp = "127.0.0.1";
     private static int ksPort = 22345;
-    private static String hostIp = "127.0.0.2";
-    private static int hostPort = 22333;
     private OMSServer oms;
 
     @BeforeClass
@@ -36,7 +34,7 @@ public class SimpleDMIntegrationTest {
     }
 
     @Before
-    public void startOmsAndKernelServer() throws Exception {
+    public void setUp() throws Exception {
         Registry registry = LocateRegistry.getRegistry(omsIp, omsPort);
         oms = (OMSServer) registry.lookup("SapphireOMS");
         new KernelServerImpl(

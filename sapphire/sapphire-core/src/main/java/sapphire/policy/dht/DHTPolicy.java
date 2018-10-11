@@ -110,7 +110,7 @@ public class DHTPolicy extends DefaultSapphirePolicy {
                             dhtServer.sapphire_replicate(server.getProcessedPolicies());
                     dhtServer.sapphire_pin_to_server(replica, newServerAddress);
                 }
-                dhtServer.sapphire_pin_to_server(server, oms().getServerInRegion(regions.get(0)));
+                dhtServer.sapphire_pin(server, regions.get(0));
             } catch (RemoteException e) {
                 throw new Error(
                         "Could not create new group policy because the oms is not available.");

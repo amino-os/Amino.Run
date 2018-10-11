@@ -61,6 +61,12 @@ public abstract class DefaultSapphirePolicyUpcallImpl extends SapphirePolicyLibr
             return super.sapphire_replicate(processedPolicies);
         }
 
+        public void sapphire_pin(SapphireServerPolicy sapphireServerPolicy, String region)
+                throws RemoteException, SapphireObjectNotFoundException,
+                        SapphireObjectReplicaNotFoundException {
+            super.sapphire_pin(sapphireServerPolicy, region);
+        }
+
         /* This function is added here just to generate the stub for this function in all Policies server policy */
         public void sapphire_pin_to_server(
                 SapphireServerPolicy sapphireServerPolicy, InetSocketAddress server)

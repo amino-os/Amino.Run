@@ -246,14 +246,42 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
             return appObjectStub;
         }
 
-        /*
-           Pin server policies in the chain.
-           1) Checks if there is server policy to pin to the new host.
-           2) Obtain the first server policy (farthest from app object) by moving the pointer in the chain.
-           3) Navigate through the chain to find all server policy information that need to be removed after move.
-           4) Copy the chain of server policy to the new host.
-           5) Remove the server policies in the local chain that were moved.
-        */
+        /**
+         * pin server policies chain to a server in the given region.
+         *
+         * @param serverPolicyStub
+         * @param region
+         * @throws RemoteException
+         * @throws SapphireObjectNotFoundException
+         * @throws SapphireObjectReplicaNotFoundException
+         */
+        public void sapphire_pin(SapphireServerPolicy serverPolicyStub, String region)
+                throws RemoteException, SapphireObjectNotFoundException,
+                        SapphireObjectReplicaNotFoundException {
+            logger.info("Pinning Sapphire object " + oid.toString() + " to " + region);
+            InetSocketAddress server = null;
+            try {
+                server = oms().getServerInRegion(region);
+            } catch (RemoteException e) {
+                logger.severe(e.getMessage());
+                throw new RemoteException("Could not contact oms to pin object.", e);
+            }
+            sapphire_pin_to_server(serverPolicyStub, server);
+        }
+
+        /**
+         * Pin server policy chain to a given server. 1) Checks if there is server policy to pin to
+         * the new host. 2) Obtain the first server policy (farthest from app object) by moving the
+         * pointer in the chain. 3) Navigate through the chain to find all server policy information
+         * that need to be removed after move. 4) Copy the chain of server policy to the new host.
+         * 5) Remove the server policies in the local chain that were moved.
+         *
+         * @param serverPolicyStub
+         * @param server
+         * @throws RemoteException
+         * @throws SapphireObjectNotFoundException
+         * @throws SapphireObjectReplicaNotFoundException
+         */
         public void sapphire_pin_to_server(
                 SapphireServerPolicy serverPolicyStub, InetSocketAddress server)
                 throws RemoteException, SapphireObjectNotFoundException,

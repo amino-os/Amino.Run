@@ -1,9 +1,7 @@
 package sapphire.graalvm.demo;
 
-import sapphire.graalvm.serde.*;
 import org.graalvm.polyglot.*;
 import java.io.*;
-import java.lang.reflect.Field;
 import java.util.*;
 
 // This is a stub file for javascript College class.
@@ -15,36 +13,27 @@ import java.util.*;
  * This stub exposes the same methods as the javascript
  * College class.
  */
-public class College_Stub {
+public class College_Stub_JS {
     Context polyglot;
     Value college;
 
-    public College_Stub() throws Exception{
+    public College_Stub_JS() throws Exception{
         // Use GraalVM polyplot API to create a College instance.
         polyglot = Context.newBuilder(new String[] {"js"})
                 .allowAllAccess(true)
                 .build();
 
         String jsHome = System.getProperty("JS_HOME");
-        System.out.println("JS_HOME:" + jsHome);
         Value v0 = polyglot.eval(Source.newBuilder("js", new File(jsHome + "/college.js")).build());
-
-        college = polyglot.eval("js", "new College(\"MichaelCollege\")");
-        //TypesDB.register(college);
-        //TypesDB.register(polyglot.eval("js", "new Student()"));
-        //TypesDB.register(college.getMember("students"));
+        college = polyglot.eval("js", "new College(\"JS_College\")");
     }
 
     public String getName() throws Exception {
-
-        // 1. Use GraalVM polyplot API to invoke 
+        // 1. Use GraalVM polyplot API to invoke
         // getName method on the college instance. 
         // 2. Serialize return value to bytes
         // 3. Descerialize bytes into GraalVM Value object
-
         Value v = college.getMember("getName").execute();
-        System.out.println("getName "+v);
-
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         sapphire.graalvm.serde.Serializer ser = new sapphire.graalvm.serde.Serializer(out, "js");
         ser.serialize(v);
@@ -53,7 +42,6 @@ public class College_Stub {
                 new ByteArrayInputStream(out.toByteArray()),
                 polyglot);
         Value name = de.deserialize();
-        System.out.println("getName returns " + name);
         return name.asString();
     }
 
@@ -96,9 +84,6 @@ public class College_Stub {
                 new ByteArrayInputStream(out.toByteArray()),
                 polyglot);
         Value clientStudents = de.deserialize();
-
-        System.out.println("Students is proxy object " + clientStudents.isProxyObject());
-        System.out.println("Students is host object " + clientStudents.isHostObject());
         return clientStudents.as(List.class);
     }
 }

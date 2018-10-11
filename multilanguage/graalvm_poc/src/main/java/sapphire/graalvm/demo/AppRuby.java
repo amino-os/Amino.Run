@@ -6,18 +6,22 @@ public class AppRuby {
     // in Ruby.
     public static void main(String[] args) {
         try {
-            System.out.println("******");
             // 1. Load College_Stub_Ruby class with GraalVM API.
             // Eventually we will get Student_Stub from OMS.
             // College college = ...
             College_Stub_Ruby college = new College_Stub_Ruby();
             String name = college.getName();
-            System.out.println("app college name is " + name);
+            System.out.println("Created College: " + name);
 
             // 2. Create a Student instance with GraalVM API.
-            college.addStudent(1, "AmitStudent");
-            college.addStudent(2, "AmitStudent2");
+            String s1 = "ruby_student_1";
+            college.addStudent(1, s1);
+            System.out.println(String.format("Add student %s to college.", s1));
+            String s2 = "ruby_student_2";
+            college.addStudent(2, s2);
+            System.out.println(String.format("Add student %s to college.", s2));
 
+            System.out.println("Getting students from college...");
             // Prints out all students from college
             List<Object> students = college.getStudents();
             for (Object o: students) {

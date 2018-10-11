@@ -4,7 +4,6 @@ import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
@@ -103,10 +102,6 @@ public abstract class DefaultSapphirePolicyUpcallImpl extends SapphirePolicyLibr
         public void $__initialize(String appObjectClassName, ArrayList<Object> params) {
             this.appObjectClassName = appObjectClassName;
             this.params = params;
-        }
-
-        public Map<String, SapphirePolicyConfig> getAppConfigAnnotation() {
-            return super.getAppConfigAnnotation();
         }
 
         public SapphireServerPolicy onRefRequest() throws RemoteException {

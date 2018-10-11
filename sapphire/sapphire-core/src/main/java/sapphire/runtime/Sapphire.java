@@ -475,7 +475,6 @@ public class Sapphire {
             SapphireGroupPolicy groupPolicy = initializeGroupPolicy(groupPolicyStub);
             groupPolicyStub.setSapphireObjId(sapphireObjId);
             groupPolicy.setSapphireObjId(sapphireObjId);
-            groupPolicy.setAppConfigAnnotation(configMap);
 
             EventHandler sapphireHandler =
                     new EventHandler(

@@ -507,7 +507,6 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
     public abstract static class SapphireGroupPolicyLibrary implements SapphireGroupPolicyUpcalls {
         protected String appObjectClassName;
         protected ArrayList<Object> params;
-        protected Map<String, SapphirePolicyConfig> configMap;
         protected KernelOID oid;
         protected SapphireObjectID sapphireObjId;
 
@@ -541,14 +540,6 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 
         public KernelOID $__getKernelOID() {
             return this.oid;
-        }
-
-        public void setAppConfigAnnotation(Map<String, SapphirePolicyConfig> configMap) {
-            this.configMap = configMap;
-        }
-
-        public Map<String, SapphirePolicyConfig> getAppConfigAnnotation() {
-            return configMap;
         }
 
         public void setSapphireObjId(SapphireObjectID sapphireId) {

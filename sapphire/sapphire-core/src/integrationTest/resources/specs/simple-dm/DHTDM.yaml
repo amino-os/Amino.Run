@@ -3,7 +3,7 @@
 constructorName: null
 dmList:
 - configs:
-  - !!sapphire.policy.dht.DHTPolicy$Config {numOfShards: 1}
+  - !!sapphire.policy.dht.DHTPolicy$Config {numOfShards: 3}
   name: sapphire.policy.dht.DHTPolicy
 javaClassName: sapphire.demo.KVStore
 lang: java

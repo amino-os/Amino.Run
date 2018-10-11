@@ -1,4 +1,4 @@
-package sapphire.integ;
+package sapphire.policy;
 
 import java.io.File;
 import java.net.InetSocketAddress;
@@ -7,9 +7,8 @@ import java.nio.file.Files;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.List;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+
+import org.junit.*;
 import sapphire.app.SapphireObjectSpec;
 import sapphire.common.SapphireObjectID;
 import sapphire.demo.KVStore;
@@ -22,23 +21,25 @@ import sapphire.oms.OMSServerImpl;
  * multiple kernel servers are not covered here.
  */
 public class SimpleDMIntegrationTest {
-    private String omsIp = "127.0.0.1";
-    private int omsPort = 22346;
-    private String kstIp = "127.0.0.1";
-    private int ksPort = 22345;
-    private String hostIp = "127.0.0.2";
-    private int hostPort = 22333;
+    private static String omsIp = "127.0.0.1";
+    private static int omsPort = 22346;
+    private static String kstIp = "127.0.0.1";
+    private static int ksPort = 22345;
+    private static String hostIp = "127.0.0.2";
+    private static int hostPort = 22333;
     private OMSServer oms;
+
+    @BeforeClass
+    public static void bootstrap() throws Exception {
+        OMSServerImpl.main(new String[]{omsIp, String.valueOf(omsPort)});
+        KernelServerImpl.main(
+                new String[]{kstIp, String.valueOf(ksPort), omsIp, String.valueOf(omsPort), "r1"});
+    }
 
     @Before
     public void startOmsAndKernelServer() throws Exception {
-        OMSServerImpl.main(new String[] {omsIp, String.valueOf(omsPort)});
-        KernelServerImpl.main(
-                new String[] {kstIp, String.valueOf(ksPort), omsIp, String.valueOf(omsPort), "r1"});
-
         Registry registry = LocateRegistry.getRegistry(omsIp, omsPort);
         oms = (OMSServer) registry.lookup("SapphireOMS");
-
         new KernelServerImpl(
                 new InetSocketAddress(hostIp, hostPort), new InetSocketAddress(omsIp, omsPort));
     }
@@ -82,12 +83,13 @@ public class SimpleDMIntegrationTest {
     }
 
     private void runTest(SapphireObjectSpec spec) throws Exception {
-        String key = "k1";
-        String value = "v1";
-
         SapphireObjectID sapphireObjId = oms.createSapphireObject(spec.toString());
         KVStore store = (KVStore) oms.acquireSapphireObjectStub(sapphireObjId);
-        store.set(key, value);
-        Assert.assertEquals(value, store.get(key));
+        for (int i = 0; i < 10; i++) {
+            String key = "k1_" + i;
+            String value = "v1_" + i;
+            store.set(key, value);
+            Assert.assertEquals(value, store.get(key));
+        }
     }
 }

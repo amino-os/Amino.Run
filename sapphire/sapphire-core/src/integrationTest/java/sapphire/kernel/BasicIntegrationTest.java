@@ -20,7 +20,7 @@ import sapphire.oms.OMSServerImpl;
 import sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy;
 
 /** Tests the SO creation process in Kernel Server and OMS. */
-public class KernelIntegrationTestHelloWorld {
+public class BasicIntegrationTest {
 
     @Test
     public void testCreateSapphireObject() throws Exception {
@@ -44,10 +44,6 @@ public class KernelIntegrationTestHelloWorld {
                         new InetSocketAddress(hostIp, hostPort),
                         new InetSocketAddress(omsIp, omsPort));
 
-        /* TODO(merge):
-        SapphireObjectID sapphireObjId =
-                server.createSapphireObject("sapphire.appexamples.helloworld.HelloWorld", world);
-                */
         SapphireObjectSpec spec =
                 SapphireObjectSpec.newBuilder()
                         .setLang(Language.java)

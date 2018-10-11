@@ -246,7 +246,16 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
             return appObjectStub;
         }
 
-        public void sapphire_pin(String region)
+        /**
+         * pin server policies chain to a server in the given region.
+         *
+         * @param serverPolicyStub
+         * @param region
+         * @throws RemoteException
+         * @throws SapphireObjectNotFoundException
+         * @throws SapphireObjectReplicaNotFoundException
+         */
+        public void sapphire_pin(SapphireServerPolicy serverPolicyStub, String region)
                 throws RemoteException, SapphireObjectNotFoundException,
                         SapphireObjectReplicaNotFoundException {
             logger.info("Pinning Sapphire object " + oid.toString() + " to " + region);
@@ -255,40 +264,28 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
                 server = oms().getServerInRegion(region);
             } catch (RemoteException e) {
                 logger.severe(e.getMessage());
-                throw new RemoteException("Could not contact oms.", e);
+                throw new RemoteException("Could not contact oms to pin object.", e);
             }
-            sapphire_pin_to_server(server);
+            sapphire_pin_to_server(serverPolicyStub, server);
         }
 
-        // This function is same as sapphire_pin but pining to the server instead of region
-        // TODO (2018-9-26, Sungwook), Remove this method after updating all policies to use below
-        // method.
-        public void sapphire_pin_to_server(InetSocketAddress server)
-                throws RemoteException, SapphireObjectNotFoundException,
-                        SapphireObjectReplicaNotFoundException {
-            logger.info("Pinning Sapphire object " + oid.toString() + " to " + server);
-            try {
-                kernel().moveKernelObjectToServer(server, oid);
-            } catch (KernelObjectNotFoundException e) {
-                logger.severe(e.getMessage());
-                throw new Error("Could not find myself on this server!", e);
-            }
-        }
-
-        /*
-           Pin server policies in the chain.
-           1) Checks if there is server policy to pin to the new host.
-           2) Obtain the first server policy (farthest from app object) by moving the pointer in the chain.
-           3) Navigate through the chain to find all server policy information that need to be removed after move.
-           4) Copy the chain of server policy to the new host.
-           5) Remove the server policies in the local chain that were moved.
-        */
+        /**
+         * Pin server policy chain to a given server. 1) Checks if there is server policy to pin to
+         * the new host. 2) Obtain the first server policy (farthest from app object) by moving the
+         * pointer in the chain. 3) Navigate through the chain to find all server policy information
+         * that need to be removed after move. 4) Copy the chain of server policy to the new host.
+         * 5) Remove the server policies in the local chain that were moved.
+         *
+         * @param serverPolicyStub
+         * @param server
+         * @throws RemoteException
+         * @throws SapphireObjectNotFoundException
+         * @throws SapphireObjectReplicaNotFoundException
+         */
         public void sapphire_pin_to_server(
                 SapphireServerPolicy serverPolicyStub, InetSocketAddress server)
                 throws RemoteException, SapphireObjectNotFoundException,
                         SapphireObjectReplicaNotFoundException {
-            List<SapphireServerPolicy> serverPoliciesToRemove =
-                    new ArrayList<SapphireServerPolicy>();
 
             KernelOID serverOID = serverPolicyStub.$__getKernelOID();
             SapphireServerPolicy serverPolicy;
@@ -305,24 +302,6 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
             while (serverPolicy.getPreviousServerPolicy() != null) {
                 serverPolicy = serverPolicy.getPreviousServerPolicy();
             }
-            SapphireServerPolicy firstServerPolicy = serverPolicy;
-
-            /**
-             * Create a list of associated ServerPolicies which needs to be explicitly removed from
-             * the local KernelServer. These associated ServerPolicy KernelObjects will be moved to
-             * the new Server when the first KernelObject is moved. The remaining KernelObject in
-             * the local KernelServer should be explicitly removed The new KernelServer address
-             * needs to be registered with the OMS explicitly for these associated KernelObjects.
-             */
-            while (serverPolicy.getNextServerPolicy() != null) {
-                // First server policy will be removed when the object is moved; therefore, not
-                // needed to be included in the removal list.
-                // TODO(2018-9-28, Sungwook): Removal logic should be in the same place; therefore,
-                // move the logic to  kernelserver.moveKernelObjectToServer()
-                serverPolicy = serverPolicy.getNextServerPolicy();
-                serverPoliciesToRemove.add(serverPolicy);
-            }
-            serverPolicy = firstServerPolicy;
 
             // Before pinning the Sapphire Object replica to the provided KernelServer, need to
             // update the Hostname.
@@ -340,7 +319,7 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
                             + " to "
                             + server);
             try {
-                kernel().moveKernelObjectToServer(server, serverPolicy.$__getKernelOID());
+                kernel().moveKernelObjectToServer(serverPolicy, server);
             } catch (KernelObjectNotFoundException e) {
                 logger.severe(e.getMessage());
                 throw new Error("Could not find myself on this server!", e);
@@ -352,22 +331,6 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
                 throw new Error("Could not find Sapphire replica on this server!", e);
             }
 
-            // Register the moved associated KernelObjects to OMS with the new KernelServer address.
-            // Then, remove the associated KernelObjects from the local KernelServer.
-            // TODO(2018-9-28, Sungwook): Removal logic should be in the same place; therefore, move
-            // the logic to  kernelserver.moveKernelObjectToServer()
-            for (SapphireServerPolicy serverPolicyToRemove : serverPoliciesToRemove) {
-                try {
-                    oms().registerKernelObject(serverPolicyToRemove.$__getKernelOID(), server);
-                    kernel().removeObject(serverPolicyToRemove.$__getKernelOID());
-                } catch (KernelObjectNotFoundException e) {
-                    logger.severe(e.getMessage());
-                    throw new Error(
-                            "Could not find object to remove in this server. Oid: "
-                                    + serverPolicyToRemove.$__getKernelOID(),
-                            e);
-                }
-            }
             logger.info(
                     "(Complete) Pinning Sapphire object "
                             + serverPolicy.$__getKernelOID()
@@ -548,6 +511,25 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 
         public SapphireObjectID getSapphireObjId() {
             return sapphireObjId;
+        }
+
+        protected SapphireServerPolicy addReplica(
+                SapphireServerPolicy replicaSource, InetSocketAddress dest)
+                throws RemoteException, SapphireObjectNotFoundException,
+                        SapphireObjectReplicaNotFoundException {
+            SapphireServerPolicy replica =
+                    replicaSource.sapphire_replicate(replicaSource.getProcessedPolicies());
+            try {
+                replicaSource.sapphire_pin_to_server(replica, dest);
+                updateReplicaHostName(replica, dest);
+            } catch (Exception e) {
+                try {
+                    removeReplica(replica);
+                } catch (Exception innerException) {
+                }
+                throw e;
+            }
+            return replica;
         }
 
         protected void removeReplica(SapphireServerPolicy server)

@@ -99,10 +99,7 @@ public class DHTPolicyTest {
         }
 
         @Override
-        public void sapphire_pin(String region) {}
-
-        @Override
-        public void sapphire_pin_to_server(InetSocketAddress server) {}
+        public void sapphire_pin(SapphirePolicy.SapphireServerPolicy serverPolicy, String region) {}
 
         @Override
         public void sapphire_pin_to_server(

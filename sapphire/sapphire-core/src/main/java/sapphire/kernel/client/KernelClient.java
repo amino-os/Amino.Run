@@ -141,6 +141,10 @@ public class KernelClient {
         try {
             return tryMakeKernelRPC(server, rpc);
         } catch (KernelObjectNotFoundException e) {
+            logger.warning(
+                    String.format(
+                            "Object was not found at the target location. Host:%s oid:%d method:%s",
+                            host.toString(), rpc.getOID().getID(), rpc.getMethod()));
             return lookupAndTryMakeKernelRPC(stub, rpc);
         }
     }

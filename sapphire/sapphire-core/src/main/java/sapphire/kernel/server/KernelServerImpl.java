@@ -2,11 +2,13 @@ package sapphire.kernel.server;
 
 import java.io.Serializable;
 import java.net.InetSocketAddress;
+import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -150,6 +152,7 @@ public class KernelServerImpl implements KernelServer {
         // TODO (9/27/2018, Sungwook): Move uncoalesce logic to separate loop at the end of code.
         objectManager.addObject(oid, object);
         object.uncoalesce();
+        oms.registerKernelObject(oid, host);
 
         // To add Kernel Object to local object manager
         Serializable realObj = object.getObject();
@@ -179,6 +182,7 @@ public class KernelServerImpl implements KernelServer {
 
                 objectManager.addObject(koid, newko);
                 newko.uncoalesce();
+                oms.registerKernelObject(koid, host);
                 logger.log(Level.INFO, "Added " + koid.getID() + " as SapphireServerPolicyLibrary");
 
                 try {
@@ -237,16 +241,41 @@ public class KernelServerImpl implements KernelServer {
     /**
      * Move object from this server to host.
      *
+     * @param serverPolicy
      * @param host
-     * @param oid
      * @throws RemoteException
      * @throws KernelObjectNotFoundException
+     * @throws SapphireObjectNotFoundException
+     * @throws SapphireObjectReplicaNotFoundException
      */
-    public void moveKernelObjectToServer(InetSocketAddress host, KernelOID oid)
+    public void moveKernelObjectToServer(
+            SapphirePolicy.SapphireServerPolicy serverPolicy, InetSocketAddress host)
             throws RemoteException, KernelObjectNotFoundException, SapphireObjectNotFoundException,
                     SapphireObjectReplicaNotFoundException {
+
         if (host.equals(this.host)) {
             return;
+        }
+
+        List<SapphirePolicy.SapphireServerPolicy> serverPoliciesToRemove =
+                new ArrayList<SapphirePolicy.SapphireServerPolicy>();
+        KernelOID oid = serverPolicy.$__getKernelOID();
+
+        /**
+         * Create a list of ServerPolicy and associated ServerPolicies in the chain, which needs to
+         * be explicitly removed from the local KernelServer. The associated ServerPolicy
+         * KernelObjects will be moved to the new Server when the first KernelObject is moved. The
+         * remaining KernelObject in the local KernelServer should be explicitly removed. The new
+         * KernelServer address needs to be registered with the OMS explicitly for these associated
+         * KernelObjects.
+         */
+        // Add the firstServerPolicy to the list.
+        serverPoliciesToRemove.add(serverPolicy);
+        // Add the ServerPolicies in the chain to the list, so that the associated
+        // KernelObjects are removed from the local KernelServer.
+        while (serverPolicy.getNextServerPolicy() != null) {
+            serverPolicy = serverPolicy.getNextServerPolicy();
+            serverPoliciesToRemove.add(serverPolicy);
         }
 
         KernelObject object = objectManager.lookupObject(oid);
@@ -257,25 +286,35 @@ public class KernelServerImpl implements KernelServer {
         try {
             client.copyObjectToServer(host, oid, object);
         } catch (RemoteException e) {
-            e.printStackTrace();
-            throw new RemoteException("Could not contact destination server.");
+            String msg =
+                    String.format(
+                            "Failed to copy object to server oid:%d, target host:%s",
+                            oid.getID(), host.getHostName());
+            logger.severe(msg);
+            throw new RemoteException(msg, e);
         } catch (KernelObjectStubNotCreatedException e) {
+            String msg =
+                    String.format(
+                            "Failed to create policy stub object on destination server. oid:%d, target host:%s",
+                            oid.getID(), host.getHostName());
+            logger.severe(msg);
             throw new RemoteException(
                     "Failed to create policy stub object on destination server.", e);
         }
 
-        try {
-            oms.registerKernelObject(oid, host);
-        } catch (RemoteException e) {
-            throw new RemoteException("Could not contact oms to update kernel object host.");
+        // Register the moved associated KernelObjects to OMS with the new KernelServer address.
+        // Then, remove the associated KernelObjects from the local KernelServer.
+        for (SapphirePolicy.SapphireServerPolicy serverPolicyToRemove : serverPoliciesToRemove) {
+            try {
+                serverPolicyToRemove.onDestroy();
+                objectManager.removeObject(serverPolicyToRemove.$__getKernelOID());
+            } catch (KernelObjectNotFoundException e) {
+                String msg =
+                        "Could not find object to remove in this server. Oid:"
+                                + serverPolicyToRemove.$__getKernelOID().getID();
+                logger.warning(msg);
+            }
         }
-
-        if (object.getObject() instanceof SapphirePolicy.SapphireServerPolicy) {
-            /* De-initialize dynamic data of server policy object(i.e., timers, executors, sockets etc) */
-            ((SapphirePolicy.SapphireServerPolicy) object.getObject()).onDestroy();
-        }
-
-        objectManager.removeObject(oid);
     }
 
     /**
@@ -306,10 +345,6 @@ public class KernelServerImpl implements KernelServer {
     public KernelObject getKernelObject(KernelOID oid) throws KernelObjectNotFoundException {
         KernelObject object = objectManager.lookupObject(oid);
         return object;
-    }
-
-    public void removeObject(KernelOID oid) throws KernelObjectNotFoundException {
-        objectManager.removeObject(oid);
     }
 
     /**

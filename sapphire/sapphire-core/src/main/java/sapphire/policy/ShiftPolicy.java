@@ -49,7 +49,7 @@ public class ShiftPolicy extends DefaultSapphirePolicy {
                                     + this.oid
                                     + " to "
                                     + shiftWinner);
-                    localKernel.moveKernelObjectToServer(shiftWinner, this.oid);
+                    localKernel.moveKernelObjectToServer(this, shiftWinner);
                 }
             }
 

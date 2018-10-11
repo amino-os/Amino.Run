@@ -71,7 +71,7 @@ public class OMSServerImpl implements OMSServer {
 
     /** Register a new host for this kernel object. Used to move a kernel object */
     public void registerKernelObject(KernelOID oid, InetSocketAddress host)
-            throws RemoteException, KernelObjectNotFoundException {
+            throws KernelObjectNotFoundException {
         logger.info("Registering new host for " + oid.toString() + " on " + host.toString());
         kernelObjectManager.register(oid, host);
     }

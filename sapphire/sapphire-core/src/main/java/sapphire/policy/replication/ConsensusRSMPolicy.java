@@ -243,7 +243,7 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
                                             server.getProcessedPolicies());
                     consensusServer.sapphire_pin_to_server(replica, newServerAddress);
                 }
-                consensusServer.sapphire_pin(regions.get(0));
+                consensusServer.sapphire_pin(server, regions.get(0));
 
                 addServer(server);
 

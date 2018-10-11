@@ -4,33 +4,28 @@ dependencies {
     compile project(':sapphire-core')
 }
 
-// Task for Stub compilation
-task compileStubs(type: JavaCompile) {
-    source = sourceSets.main.java.srcDirs
-    classpath = sourceSets.main.compileClasspath
-    destinationDir = sourceSets.main.output.classesDir
-    options.incremental = true
-}
-
 // Task for app stub generation
 task genAppStubs(type: JavaExec) {
     main = "sapphire.compiler.StubGenerator"
     classpath = sourceSets.main.runtimeClasspath
     def pkgName = 'sapphire.appexamples.minnietwitter'
     def src = "$buildDir/classes/java/main/sapphire/appexamples/minnietwitter/"
-    def dst = "src/main/java/sapphire/appexamples/minnietwitter/stubs/"
+    def dst = "$projectDir/src/main/java/sapphire/appexamples/minnietwitter/stubs/"
     args src, pkgName, dst
+    outputs.dir dst // Declare outputs, so gradle will run if they have been changed
+    inputs.dir src   // Declare inputs, so gradle will run if they have been changed
 }
 
-clean.doFirst {
-    delete fileTree("$projectDir/src/main/java/sapphire/appexamples/minnietwitter/stubs") {
-        include '**/*_Stub.java'
-    }
-    println "Deleted $projectDir/src/main/java/sapphire/appexamples/minnietwitter/stubs"
+// Task for Stub compilation
+task compileStubs(type: JavaCompile) {
+    inputs.dir genAppStubs.outputs // Tell gradle to only recompile stubs when they've been regenerated.
+    outputs.dir "$buildDir/classes/java/main/sapphire/appexamples/minnietwitter/stubs/" // ... or when someone messed with the compiled stubs
+    source = sourceSets.main.java.srcDirs
+    classpath = sourceSets.main.compileClasspath
+    destinationDir = sourceSets.main.output.classesDir
+    options.incremental = true
 }
 
-genAppStubs.mustRunAfter compileJava
-compileStubs.dependsOn genAppStubs
 jar.dependsOn compileStubs
 
 task runoms(type: JavaExec) {

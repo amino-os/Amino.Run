@@ -63,4 +63,5 @@ function test() {
     c.delete_todo_list("todoList1");
 }
 
-test();
+// For test purpose only
+//test();

@@ -86,11 +86,11 @@ production-ready.
 * [Meetings](https://github.com/Huawei-PaaS/DCAP-Sapphire/wiki/Meetings)
 * Huawei Repository: http://rnd-github-usa-g.huawei.com/SeattleCloudBU/DCAP-Sapphire
 
-<!--- TODO: Add links to UW papers --->
+## References
 <sup>1</sup> [Customizable and Extensible Deployment for Mobile/Cloud Applications
 ](https://syslab.cs.washington.edu/papers/sapphire-osdi14.pdf)<br/>
 <sup>2</sup> [Diamond: Automating Data Management and Storage for Wide-area, Reactive Applications](https://syslab.cs.washington.edu/papers/diamond-osdi16.pdf)<br/>
-<sup>3</sup>[Building Consistent Transactions with Inconsistent Replication (Extended Version)](https://syslab.cs.washington.edu/papers/tapir-tr-v2.pdf)<br/>
+<sup>3</sup> [Building Consistent Transactions with Inconsistent Replication (Extended Version)](https://syslab.cs.washington.edu/papers/tapir-tr-v2.pdf)<br/>
 <sup>4</sup> Link to paper<br/>
 <sup>5</sup> Link to paper<br/>
 <sup>6</sup> Not all of these languages are currently officially supported, but they are all on our medium-term roadmap, support based on [GraalVM](http://www.graalvm.org/docs/)<br/>

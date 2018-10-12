@@ -7,7 +7,6 @@ import java.nio.file.Files;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.List;
-
 import org.junit.*;
 import sapphire.app.SapphireObjectSpec;
 import sapphire.common.SapphireObjectID;
@@ -31,9 +30,9 @@ public class SimpleDMIntegrationTest {
 
     @BeforeClass
     public static void bootstrap() throws Exception {
-        OMSServerImpl.main(new String[]{omsIp, String.valueOf(omsPort)});
+        OMSServerImpl.main(new String[] {omsIp, String.valueOf(omsPort)});
         KernelServerImpl.main(
-                new String[]{kstIp, String.valueOf(ksPort), omsIp, String.valueOf(omsPort), "r1"});
+                new String[] {kstIp, String.valueOf(ksPort), omsIp, String.valueOf(omsPort), "r1"});
     }
 
     @Before

@@ -91,7 +91,7 @@ public class Deserializer implements AutoCloseable {
                 Value instVars = v.getMember("instance_variables").execute();
                 List<String> varStr = new ArrayList<String>();
                 for (int i = 0; i < instVars.getArraySize(); i++) {
-                    varStr.add(instVars.getArrayElement(i).toString());
+                    varStr.add(instVars.getArrayElement(i).toString().replaceAll(":", ""));
                 }
                 return varStr;
             case js:

@@ -204,9 +204,13 @@ public class SapphireMultiPolicyChainTest extends MultiPolicyChainBaseTest {
         List<SapphirePolicyContainer> policyNameChain = new ArrayList<SapphirePolicyContainer>();
         List<SapphirePolicyContainer> processedPolicies = new ArrayList<SapphirePolicyContainer>();
 
+        /* Register for a sapphire object Id from OMS */
+        SapphireObjectID sapphireObjId = spiedOms.registerSapphireObject();
+
         policyNameChain.add(new SapphirePolicyContainer("sapphire.policy.dht.DHTPolicy2", null));
         List<SapphirePolicyContainer> policyList =
                 Sapphire.createPolicy(
+                        sapphireObjId,
                         spec,
                         null,
                         configMap,
@@ -226,12 +230,16 @@ public class SapphireMultiPolicyChainTest extends MultiPolicyChainBaseTest {
         List<SapphirePolicyContainer> policyNameChain = new ArrayList<SapphirePolicyContainer>();
         List<SapphirePolicyContainer> processedPolicies = new ArrayList<SapphirePolicyContainer>();
 
+        /* Register for a sapphire object Id from OMS */
+        SapphireObjectID sapphireObjId = spiedOms.registerSapphireObject();
+
         policyNameChain.add(new SapphirePolicyContainer("sapphire.policy.dht.DHTPolicy2", null));
         policyNameChain.add(
                 new SapphirePolicyContainer("sapphire.policy.DefaultSapphirePolicy", null));
 
         List<SapphirePolicyContainer> policyList =
                 Sapphire.createPolicy(
+                        sapphireObjId,
                         spec,
                         null,
                         configMap,

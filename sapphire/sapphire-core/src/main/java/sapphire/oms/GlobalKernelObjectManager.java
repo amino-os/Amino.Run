@@ -1,6 +1,8 @@
 package sapphire.oms;
 
 import java.net.InetSocketAddress;
+import java.rmi.RemoteException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
@@ -90,5 +92,15 @@ public class GlobalKernelObjectManager {
             throw new KernelObjectNotFoundException("Not a valid kernel object id.");
         }
         return host;
+    }
+
+    /**
+     * get all the kernel objects from the oms system
+     *
+     * @throws RemoteException
+     */
+    public ArrayList<KernelOID> getAllKernelObjects() throws RemoteException {
+        ArrayList<KernelOID> arr = new ArrayList<KernelOID>(kernelObjects.keySet());
+        return arr;
     }
 }

@@ -1,5 +1,7 @@
 package sapphire.oms;
 
+import java.rmi.RemoteException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Random;
 import java.util.UUID;
@@ -119,6 +121,16 @@ public class SapphireObjectManager {
             sapphireObjectsByName.remove(instance.getName());
         }
         sapphireObjects.remove(sapphireObjId);
+    }
+
+    /**
+     * get all the sapphire objects
+     *
+     * @throws java.rmi.RemoteException
+     */
+    public ArrayList<SapphireObjectID> getAllSapphireObjects() throws RemoteException {
+        ArrayList<SapphireObjectID> arr = new ArrayList<SapphireObjectID>(sapphireObjects.keySet());
+        return arr;
     }
 
     /**

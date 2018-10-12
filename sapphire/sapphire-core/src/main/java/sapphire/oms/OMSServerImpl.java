@@ -509,4 +509,36 @@ public class OMSServerImpl implements OMSServer {
             throws RemoteException, SapphireObjectNotFoundException {
         objectManager.removeReplica(replicaId);
     }
+
+    /**
+     * get all the sapphire objects in the system
+     *
+     * @return Returns ArrayList<SapphireObjectID>
+     * @throws RemoteException
+     */
+    public ArrayList<SapphireObjectID> getAllSapphireObjects() throws RemoteException {
+        ArrayList<SapphireObjectID> arr = objectManager.getAllSapphireObjects();
+        return arr;
+    }
+
+    /**
+     * get all the Replicas of a SapphireObject
+     *
+     * @return Returns ArrayList<EventHandler>
+     * @throws RemoteException
+     */
+    public EventHandler[] getSapphireReplicasById(SapphireObjectID oid)
+            throws SapphireObjectNotFoundException {
+        return objectManager.getSapphireReplicasById(oid);
+    }
+
+    /**
+     * get all the kernel object Ids in the oms system
+     *
+     * @return Returns ArrayList<KernelOID>
+     * @throws RemoteException
+     */
+    public ArrayList<KernelOID> getAllKernelObjects() throws RemoteException {
+        return kernelObjectManager.getAllKernelObjects();
+    }
 }

@@ -1,10 +1,10 @@
 # Configuration for running KVStore as a
-# sapphire object with DurableSerializableRPC policy.
+# sapphire object with CacheLease policy.
 !!sapphire.app.SapphireObjectSpec
 constructorName: null
 dmList:
 - configs: []
-  name: sapphire.policy.checkpoint.durableserializable.DurableSerializableRPCPolicy
+  name: sapphire.policy.cache.CacheLeasePolicy
 javaClassName: sapphire.demo.KVStore
 lang: java
 name: null

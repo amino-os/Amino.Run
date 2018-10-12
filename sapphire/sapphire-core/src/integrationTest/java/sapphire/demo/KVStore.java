@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.Hashtable;
 import java.util.Map;
 import sapphire.app.SapphireObject;
+import sapphire.policy.serializability.LockingTransactionImpl;
 
 /**
  * A simple key value class for integration tests.
@@ -17,7 +18,7 @@ import sapphire.app.SapphireObject;
  * after we completely deprecate annotation based
  * specification.
  */
-public class KVStore implements SapphireObject {
+public class KVStore extends LockingTransactionImpl implements SapphireObject {
     private Map<String, Serializable> kvStore = new Hashtable<>();
 
     public void set(String key, Serializable value) {

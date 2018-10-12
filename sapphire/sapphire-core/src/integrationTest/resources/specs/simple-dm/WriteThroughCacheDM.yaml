@@ -1,10 +1,10 @@
-# Configuration for running KeyValueStore as a
-# sapphire object with Consensus policy.
+# Configuration for running KVStore as a
+# sapphire object with WriteThroughCache policy.
 !!sapphire.app.SapphireObjectSpec
 constructorName: null
 dmList:
 - configs: []
-  name: sapphire.policy.replication.ConsensusRSMPolicy
+  name: sapphire.policy.cache.WriteThroughCachePolicy
 javaClassName: sapphire.demo.KVStore
 lang: java
 name: null

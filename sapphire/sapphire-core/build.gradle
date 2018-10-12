@@ -21,7 +21,6 @@ sourceSets {
         }
         resources.srcDir file('src/integrationTest/resources')
     }
-    test.java.srcDirs += 'src/integrationTest/java'
 }
 
 configurations {

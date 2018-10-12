@@ -55,7 +55,11 @@ public class SimpleDMIntegrationTest {
             }
 
             SapphireObjectSpec spec = readSapphireSpec(f);
-            runTest(spec);
+            if (f.getName().startsWith("LockingTransaction")) {
+                runLockingTransactionTest(spec);
+            } else {
+                runTest(spec);
+            }
         }
     }
 
@@ -86,6 +90,19 @@ public class SimpleDMIntegrationTest {
             String key = "k1_" + i;
             String value = "v1_" + i;
             store.set(key, value);
+            Assert.assertEquals(value, store.get(key));
+        }
+    }
+
+    private void runLockingTransactionTest(SapphireObjectSpec spec) throws Exception {
+        SapphireObjectID sapphireObjId = oms.createSapphireObject(spec.toString());
+        KVStore store = (KVStore) oms.acquireSapphireObjectStub(sapphireObjId);
+        for (int i = 0; i < 10; i++) {
+            String key = "k1_" + i;
+            String value = "v1_" + i;
+            store.startTransaction();
+            store.set(key, value);
+            store.commitTransaction();
             Assert.assertEquals(value, store.get(key));
         }
     }

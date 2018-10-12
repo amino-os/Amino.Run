@@ -58,7 +58,6 @@ public class Client_Stub {
             return;
         }
 
-        java.lang.System.setProperty("RUBY_HOME", "/Users/haibinxie/Code/DCAP_Sapphire_Fork/DCAP-Sapphire/sapphire/examples/hanksTodoRuby/src/main/ruby/sapphire/appexamples/hankstodo");
         java.lang.String rubyHome = java.lang.System.getProperty("RUBY_HOME");
 
         Test(host, omsHost, sapphire.app.Language.js, rubyHome + "/todo_list_manager.js");

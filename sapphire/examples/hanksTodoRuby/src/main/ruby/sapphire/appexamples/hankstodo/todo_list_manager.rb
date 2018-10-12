@@ -1,10 +1,36 @@
 #!/usr/bin/ruby
+# TODO: Support multifile SO .
+# Ruby library/file load steps:
+#   loadPath = File.expand_path('src/main/ruby/sapphire/appexamples/hankstodo',__dir__)
+#   $:.unshift(folder) unless $:.include?(loadPath)
+# Identified Issue: When Ruby SO is used in kernel server "__dir__" returns current working directory
+#                   But when run in Ruby env it returns directory of ruby file itself.
+class TodoList
+    def initialize(name)
+        @to_dos = Array.new
+        @name = name
+    end
 
-folder = File.expand_path('src/main/ruby/sapphire/appexamples/hankstodo',__dir__)
-puts "foldername : #{folder}"
-$:.unshift(folder) unless $:.include?(folder)
+    def add_todo(todo)
+        @to_dos.push(todo)
+        puts "add #{todo} success!!!"
+        return "OK!"
+    end
 
-require 'todo_list'
+    def complete_todo(todo)
+        @to_dos.delete(todo)
+        puts "#{todo} task removed"
+        return "OK!"
+    end
+
+    def get_todos
+        return @to_dos
+    end
+
+    def getName
+        @name
+    end
+end
 
 class Manager
     def initialize

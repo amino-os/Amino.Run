@@ -53,8 +53,8 @@ task runapp(type: Exec) {
 // Start kernel server with "gradlew runapp"
 task runapp(type: JavaExec) {
     classpath = sourceSets.main.runtimeClasspath
+    systemProperty "RUBY_HOME",  "${project.projectDir}/src/main/ruby/sapphire/appexamples/hankstodo/"
     main = 'sapphire.appexamples.hankstodo.stubs.Client_Stub'
-    System.setProperty("RUBY_HOME", "${project.projectDir}/src/main/ruby/sapphire/appexamples/hankstodo/")
     args project.property('kernelIpAndroid'), project.property('kernelServerPort'), project.property('omsIp'), project.property('omsPort')
 }
 

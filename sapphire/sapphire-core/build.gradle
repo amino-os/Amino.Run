@@ -34,7 +34,6 @@ dependencies {
     // TODO(multi-lang): Unable to fetch jar from maven central due to Proxy issue.
     // Load jar file from disk temporarily.
     compile files('libs/snakeyaml-1.23.jar')
-
     testCompile 'org.mockito:mockito-core:1.+'
     testCompile 'org.powermock:powermock:1.6.5'
     testCompile 'org.powermock:powermock-module-junit4:1.6.5'
@@ -59,18 +58,14 @@ task genStubs(type: JavaExec) {
     def src = "$buildDir/classes/java/main/sapphire/policy/"
     def dst = "$projectDir/src/main/java/sapphire/policy/stubs/"
     args src, pkgName, dst
-}
-
-// Task for deleting Java stubs
-task delStubs {
-    delete fileTree("$projectDir/src/main/java/sapphire/policy/stubs") {
-        include '**/*_Stub.java'
-    }
-    println "Deleted $projectDir/src/main/java/sapphire/policy/stubs"
+    outputs.dir dst // Declare outputs, so gradle will run if they have been changed
+    inputs.dir src   // Declare inputs, so gradle will run if they have been changed
 }
 
 // Task for stub compilation
 task compileStubs(type: JavaCompile) {
+    inputs.dir genStubs.outputs // Try to convince gradle to only recompile stubs when they've been regenerated.
+    outputs.dir "$buildDir/classes/java/main/sapphire/policy/stubs" // ... or when someone messed with the compiled stubs
     source = sourceSets.main.java.srcDirs
     classpath = sourceSets.main.compileClasspath
     destinationDir = sourceSets.main.output.classesDir
@@ -81,15 +76,10 @@ task integTest(type: Test) {
     systemProperty "DCAP_JAVA_HOME", project.property('org.gradle.java.home')
     testClassesDirs = sourceSets.integrationTest.output.classesDirs
     classpath = sourceSets.integrationTest.runtimeClasspath
-    outputs.upToDateWhen { false }
 }
 
-genStubs.mustRunAfter delStubs
-genStubs.mustRunAfter compileJava
-compileStubs.dependsOn genStubs
 tasks.googleJavaFormat.mustRunAfter genStubs
 check.dependsOn tasks.googleJavaFormat
 check.dependsOn integTest
 integTest.mustRunAfter test
-compileJava.dependsOn delStubs
-jar.dependsOn compileStubs
+jar.inputs.dir compileStubs.outputs // jar needs to be rebuilt if stubs got recompiled

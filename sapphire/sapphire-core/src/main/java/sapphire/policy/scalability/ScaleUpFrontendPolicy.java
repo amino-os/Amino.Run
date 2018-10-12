@@ -204,7 +204,7 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
             SapphireServerPolicy replica =
                     replicaSource.sapphire_replicate(replicaSource.getProcessedPolicies());
             try {
-                replica.sapphire_pin_to_server(dest);
+                replica.sapphire_pin_to_server(replica, dest);
                 updateReplicaHostName(replica, dest);
             } catch (Exception e) {
                 try {

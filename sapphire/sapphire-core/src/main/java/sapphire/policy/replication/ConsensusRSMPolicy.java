@@ -188,7 +188,7 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
         // ensure snapshot operation and apply operation are synchronized.
         public Object apply(Object operation) throws Exception {
             RPC rpc = (RPC) operation;
-            logger.info(String.format("Applying %s(%s)", rpc.method, rpc.params));
+            logger.fine(String.format("Applying %s(%s)", rpc.method, rpc.params));
             if (rpc.params == null) {
                 rpc.params = new ArrayList<Object>();
             }

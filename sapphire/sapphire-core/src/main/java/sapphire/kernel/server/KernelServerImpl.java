@@ -386,6 +386,11 @@ public class KernelServerImpl implements KernelServer {
                 System.out.println(
                         "Total memory: " + Runtime.getRuntime().totalMemory() + " Bytes");
                 System.out.println("Free memory: " + Runtime.getRuntime().freeMemory() + " Bytes");
+                logger.fine("objectManager.getAllKernelObjectOids()");
+                KernelOID[] Oids = objectManager.getAllKernelObjectOids();
+                for (KernelOID oid : Oids) {
+                    logger.fine("oid:" + oid.toString());
+                }
             }
         }
     }

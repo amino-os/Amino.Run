@@ -167,6 +167,7 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
                 List<SapphirePolicyContainer> processedPoliciesReplica =
                         new ArrayList<SapphirePolicyContainer>();
                 Sapphire.createPolicy(
+                        this.getGroup().sapphireObjId,
                         spec,
                         actualAppObject,
                         configMap,
@@ -190,6 +191,7 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
                 // should be created after this policy.
                 List<SapphirePolicyContainer> nextPolicyList =
                         Sapphire.createPolicy(
+                                this.getGroup().sapphireObjId,
                                 spec,
                                 null,
                                 configMap,

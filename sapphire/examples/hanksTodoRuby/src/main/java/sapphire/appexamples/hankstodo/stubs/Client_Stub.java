@@ -8,11 +8,18 @@ public class Client_Stub {
     public Client_Stub(){}
 
     public sapphire.appexamples.hankstodo.stubs.TodoListManager_Stub GetTodoListManager(
-            InetSocketAddress host,
-            InetSocketAddress omsHost,
-            sapphire.app.Language lang,
+            String hostIp,
+            String hostPort,
+            String omsIp,
+            String omsPort,
+            String langStr,
             String fileName) {
+
         try {
+            InetSocketAddress host = new InetSocketAddress(hostIp, Integer.parseInt(hostPort));
+            InetSocketAddress omsHost = new InetSocketAddress(omsIp, Integer.parseInt(omsPort));
+            sapphire.app.Language lang = Language.valueOf(langStr);
+
             // Create OMSClient for oms server interaction
             sapphire.app.OMSClient omsClient = new sapphire.app.OMSClient(host, omsHost);
             sapphire.policy.dht.DHTPolicy.Config config = new sapphire.policy.dht.DHTPolicy.Config();
@@ -28,7 +35,6 @@ public class Client_Stub {
                             .addConfig(config)
                             .create())
                     .create();
-
 
             sapphire.common.SapphireObjectID sapphireObjId = omsClient.createSapphireObject(spec);
             sapphire.appexamples.hankstodo.stubs.TodoListManager_Stub tlm =
@@ -47,27 +53,20 @@ public class Client_Stub {
             return;
         }
 
-        InetSocketAddress host, omsHost;
-
-        try {
-            host = new InetSocketAddress(args[0], Integer.parseInt(args[1]));
-            omsHost = new InetSocketAddress(args[2], Integer.parseInt(args[3]));
-        } catch (NumberFormatException e) {
-            System.out.println("Incorrect arguments to the kernel server");
-            System.out.println("[host ip] [host port] [oms ip] [oms port]");
-            return;
-        }
+        String hostIp = args[0];
+        String hostPort = args[1];
+        String omsIp = args[2];
+        String omsPort = args[3];
 
         java.lang.String rubyHome = java.lang.System.getProperty("RUBY_HOME");
-
-        Test(host, omsHost, sapphire.app.Language.js, rubyHome + "/todo_list_manager.js");
-        Test(host, omsHost, Language.ruby, rubyHome + "/todo_list_manager.rb");
+        Test(hostIp, hostPort, omsIp, omsPort, sapphire.app.Language.js, rubyHome + "/todo_list_manager.js");
+        Test(hostIp, hostPort, omsIp, omsPort, Language.ruby, rubyHome + "/todo_list_manager.rb");
     }
 
-    private static void Test(InetSocketAddress host, InetSocketAddress omsHost, sapphire.app.Language lang, String fileName) {
+    private static void Test(String hostIp, String hostPort, String omsIp, String omsPort, sapphire.app.Language lang, String fileName) {
         Client_Stub client = new Client_Stub();
         sapphire.appexamples.hankstodo.stubs.TodoListManager_Stub tls =
-                client.GetTodoListManager(host, omsHost, lang, fileName);
+                client.GetTodoListManager(hostIp, hostPort, omsIp, omsPort, lang.name(), fileName);
 
         java.lang.System.out.println(String.format("**************Test %s*************", lang));
         java.lang.System.out.println("Response from SO for newTodoList --> " + tls.newTodoList("Hanks"));

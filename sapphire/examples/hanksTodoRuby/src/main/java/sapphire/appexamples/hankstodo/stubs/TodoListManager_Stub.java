@@ -57,6 +57,7 @@ public final class TodoListManager_Stub extends sapphire.common.GraalObject impl
                 $__result = $__client.onRPC($__method, $__params);
                 if ($__result instanceof SerializeValue) {
                     $__result = deserializedSerializeValue((SerializeValue)$__result);
+                    $__result = ((org.graalvm.polyglot.Value)$__result).as(java.lang.Object.class);
                 }
             } catch (sapphire.common.AppExceptionWrapper e) {
                 Exception ex = e.getException();
@@ -92,6 +93,7 @@ public final class TodoListManager_Stub extends sapphire.common.GraalObject impl
                 $__result = $__client.onRPC($__method, $__params);
                 if ($__result instanceof SerializeValue) {
                     $__result = deserializedSerializeValue((SerializeValue)$__result);
+                    $__result = ((org.graalvm.polyglot.Value)$__result).as(java.lang.Object.class);
                 }
             } catch (sapphire.common.AppExceptionWrapper e) {
                 Exception ex = e.getException();
@@ -129,6 +131,7 @@ public final class TodoListManager_Stub extends sapphire.common.GraalObject impl
                 $__result = $__client.onRPC($__method, $__params);
                 if ($__result instanceof SerializeValue) {
                     $__result = deserializedSerializeValue((SerializeValue)$__result);
+                    $__result = ((org.graalvm.polyglot.Value)$__result).as(java.lang.Object.class);
                 }
             } catch (sapphire.common.AppExceptionWrapper e) {
                 Exception ex = e.getException();
@@ -164,6 +167,8 @@ public final class TodoListManager_Stub extends sapphire.common.GraalObject impl
                 $__result = $__client.onRPC($__method, $__params);
                 if ($__result instanceof SerializeValue) {
                     $__result = deserializedSerializeValue((SerializeValue)$__result);
+                    $__result = ((org.graalvm.polyglot.Value)$__result).as(java.lang.Object.class);
+                    System.out.println($__result);
                 }
             } catch (sapphire.common.AppExceptionWrapper e) {
                 Exception ex = e.getException();
@@ -177,6 +182,7 @@ public final class TodoListManager_Stub extends sapphire.common.GraalObject impl
             }
         }
 
+        System.out.println($__result);
         return ($__result);
     }
 
@@ -201,6 +207,8 @@ public final class TodoListManager_Stub extends sapphire.common.GraalObject impl
                 $__result = $__client.onRPC($__method, $__params);
                 if ($__result instanceof SerializeValue) {
                     $__result = deserializedSerializeValue((SerializeValue)$__result);
+                    $__result = ((org.graalvm.polyglot.Value)$__result).as(java.lang.Object.class);
+                    System.out.println($__result);
                 }
             } catch (sapphire.common.AppExceptionWrapper e) {
                 Exception ex = e.getException();
@@ -214,6 +222,7 @@ public final class TodoListManager_Stub extends sapphire.common.GraalObject impl
             }
         }
 
+        System.out.println($__result);
         return ($__result);
     }
 }

@@ -33,29 +33,28 @@ task runks(type: JavaExec) {
     args project.property('kernelServerIp'), project.property('kernelServerPort'), project.property('omsIp'), project.property('omsPort')
 }
 
-/*  TODO: Currently exception in passing Graal Value object from java stub to ruby.
+//  TODO: Currently exception in passing Graal Value object from java stub to ruby.
     // fix the issue and uncomment below task
 // Task for run Ruby hanksTodoApp demo app
-// Usage: gradlew runapp
-task runapp(type: Exec) {
-
+// Usage: gradlew runrubyapp
+task runrubyapp(type: Exec) {
+    environment  RUBY_HOME: "${project.projectDir}/src/main/ruby/sapphire/appexamples/hankstodo"
+    environment  OMS_IP: "${project.property('omsIp')}"
+    environment  OMS_PORT: "${project.property('omsPort')}"
+    environment  KERNEL_SERVER_IP: "${project.property('fakeKernelServerIp')}"
+    environment  KERNEL_SERVER_PORT: "${project.property('kernelServerPort')}"
     def classpath = sourceSets.main.runtimeClasspath.asPath
     executable "ruby"
     args "--jvm", "--polyglot", "--jvm.classpath=${classpath}",
             "${project.projectDir}/src/main/ruby/sapphire/appexamples/hankstodo/hanks_todo_main.rb"
-
-    environment  RUBY_HOME: "${project.projectDir}/src/main/ruby/sapphire/appexamples/hankstodo"
-    environment  RUBY_IP: "${project.property('omsIp')}"
-    environment  RUBY_PORT: "${project.property('omsPort')}"
 }
-*/
 
 // Start kernel server with "gradlew runapp"
 task runapp(type: JavaExec) {
     classpath = sourceSets.main.runtimeClasspath
     systemProperty "RUBY_HOME",  "${project.projectDir}/src/main/ruby/sapphire/appexamples/hankstodo/"
     main = 'sapphire.appexamples.hankstodo.stubs.Client_Stub'
-    args project.property('kernelIpAndroid'), project.property('kernelServerPort'), project.property('omsIp'), project.property('omsPort')
+    args project.property('fakeKernelServerIp'), project.property('kernelServerPort'), project.property('omsIp'), project.property('omsPort')
 }
 
 runapp.dependsOn compileStubs

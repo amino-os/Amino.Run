@@ -34,7 +34,6 @@ task runks(type: JavaExec) {
 }
 
 // Task for run Ruby hanksTodoApp demo app
-// Usage: gradlew runrubyapp
 task runrubyapp(type: Exec) {
     environment  RUBY_HOME: "${project.projectDir}/src/main/ruby/sapphire/appexamples/hankstodo"
     environment  OMS_IP: "${project.property('omsIp')}"
@@ -48,9 +47,8 @@ task runrubyapp(type: Exec) {
 }
 
 // Task for run javascript hanksTodoApp demo app
-// Usage: gradlew runjsapp
 task runjsapp(type: Exec) {
-    environment  RUBY_HOME: "${project.projectDir}/src/main/ruby/sapphire/appexamples/hankstodo"
+    environment  JS_HOME: "${project.projectDir}/src/main/js/sapphire/appexamples/hankstodo"
     environment  OMS_IP: "${project.property('omsIp')}"
     environment  OMS_PORT: "${project.property('omsPort')}"
     environment  KERNEL_SERVER_IP: "${project.property('embeddedKernelServerIp')}"
@@ -58,13 +56,14 @@ task runjsapp(type: Exec) {
     def classpath = sourceSets.main.runtimeClasspath.asPath
     executable "js"
     args "--jvm", "--polyglot", "--jvm.classpath=${classpath}",
-            "${project.projectDir}/src/main/ruby/sapphire/appexamples/hankstodo/hanks_todo_main.js"
+            "${project.projectDir}/src/main/js/sapphire/appexamples/hankstodo/hanks_todo_main.js"
 }
 
 // Task for run Java demo app
 task runapp(type: JavaExec) {
     classpath = sourceSets.main.runtimeClasspath
     systemProperty "RUBY_HOME",  "${project.projectDir}/src/main/ruby/sapphire/appexamples/hankstodo/"
+    systemProperty "JS_HOME",  "${project.projectDir}/src/main/js/sapphire/appexamples/hankstodo/"
     main = 'sapphire.appexamples.hankstodo.stubs.Client_Stub'
     args project.property('embeddedKernelServerIp'), project.property('kernelServerPort'), project.property('omsIp'), project.property('omsPort')
 }

@@ -59,7 +59,8 @@ public class Client_Stub {
         String omsPort = args[3];
 
         java.lang.String rubyHome = java.lang.System.getProperty("RUBY_HOME");
-        Test(hostIp, hostPort, omsIp, omsPort, sapphire.app.Language.js, rubyHome + "/todo_list_manager.js");
+        java.lang.String jsHome = java.lang.System.getProperty("JS_HOME");
+        Test(hostIp, hostPort, omsIp, omsPort, sapphire.app.Language.js, jsHome + "/todo_list_manager.js");
         Test(hostIp, hostPort, omsIp, omsPort, Language.ruby, rubyHome + "/todo_list_manager.rb");
     }
 

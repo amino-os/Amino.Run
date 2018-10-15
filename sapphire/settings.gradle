@@ -1,6 +1,6 @@
 // Sapphire
 rootProject.name = 'sapphire'
-include ':sapphire-core'
+include ':sapphire-core', ':graal-sdk'
 
 // Sapphire's Dependencies
 include ':dependencies:java.rmi'

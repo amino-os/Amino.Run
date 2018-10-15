@@ -16,6 +16,10 @@ task genStubs(type: JavaExec) {
     inputs.dir src   // Declare inputs, so gradle will run if they have been changed
 }
 
+clean {
+    delete genStubs.outputs // Add generated stubs to what the clean task must delete
+}
+
 // Task for Stub compilation
 task compileStubs(type: JavaCompile) {
     inputs.dir genStubs.outputs // Tell gradle to only recompile stubs when they've been regenerated.

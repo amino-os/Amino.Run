@@ -5,7 +5,7 @@ dependencies {
 }
 
 // Task for app stub generation
-task genAppStubs(type: JavaExec) {
+task genStubs(type: JavaExec) {
     main = "sapphire.compiler.StubGenerator"
     classpath = sourceSets.main.runtimeClasspath
     def pkgName = 'sapphire.appexamples.minnietwitter'
@@ -16,9 +16,13 @@ task genAppStubs(type: JavaExec) {
     inputs.dir src   // Declare inputs, so gradle will run if they have been changed
 }
 
+clean {
+    delete genStubs.outputs // Add generated stubs to what the clean task must delete
+}
+
 // Task for Stub compilation
 task compileStubs(type: JavaCompile) {
-    inputs.dir genAppStubs.outputs // Tell gradle to only recompile stubs when they've been regenerated.
+    inputs.dir genStubs.outputs // Tell gradle to only recompile stubs when they've been regenerated.
     outputs.dir "$buildDir/classes/java/main/sapphire/appexamples/minnietwitter/stubs/" // ... or when someone messed with the compiled stubs
     source = sourceSets.main.java.srcDirs
     classpath = sourceSets.main.compileClasspath

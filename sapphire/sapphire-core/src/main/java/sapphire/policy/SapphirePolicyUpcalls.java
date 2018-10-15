@@ -81,10 +81,16 @@ public interface SapphirePolicyUpcalls {
 
         void removeServer(SapphireServerPolicy server) throws RemoteException;
 
+        void updateServer(SapphireServerPolicy server) throws RemoteException;
+
         ArrayList<SapphireServerPolicy> getServers() throws RemoteException;
 
         void onFailure(SapphireServerPolicy server) throws RemoteException;
 
         SapphireServerPolicy onRefRequest() throws RemoteException;
+
+        // Added for performing actions needed at the GroupPolicy level when
+        // ServerPolicy is moved or migrated from one Kernel Server to another.
+        void onMigrate(SapphireServerPolicy server) throws RemoteException;
     }
 }

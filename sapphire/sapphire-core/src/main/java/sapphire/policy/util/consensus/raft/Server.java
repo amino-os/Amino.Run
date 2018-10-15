@@ -142,7 +142,7 @@ public class Server
             List<LogEntry> entries,
             int leaderCommit)
             throws InvalidTermException, PrevLogTermMismatch, InvalidLogIndex {
-        logger.info(
+        logger.fine(
                 String.format(
                         "%s: received AppendEntries request from leader %s, term %d, prevLogIndex=%d, prevLogTerm=%d, leaderCommit=%d, entries=%d",
                         pState.myServerID,
@@ -208,7 +208,7 @@ public class Server
 
         /* Delete the existing conflicting entries and append the new entries */
         if (pState.log().size() - 1 >= ++logIndex) {
-            logger.info(
+            logger.fine(
                     String.format(
                             "%s: Removing conflicting log entries. Current log size=%d, Current commit index=%d. Replacing logs starting from index=%d",
                             pState.myServerID,
@@ -249,7 +249,7 @@ public class Server
      */
     public int requestVote(int term, UUID candidate, int lastLogIndex, int lastLogTerm)
             throws InvalidTermException, AlreadyVotedException, CandidateBehindException {
-        logger.info(
+        logger.fine(
                 String.format(
                         "%s received vote request from %s (term=%d, lastLogIndex=%d, lastLogTerm=%d)",
                         pState.myServerID, candidate, term, lastLogIndex, lastLogTerm));
@@ -278,14 +278,14 @@ public class Server
         UUID votedFor = pState.getVotedFor();
         if (votedFor.equals(NO_LEADER) || votedFor.equals(candidate)) {
             int localLogSize = pState.log().size();
-            logger.info(
+            logger.fine(
                     String.format(
                             "%s deciding whether to vote for %s: local log size = %d",
                             pState.myServerID, candidate, localLogSize));
             if (lastLogIndex >= this.lastLogIndex()
                     && (localLogSize == 0
                             || lastLogTerm >= pState.log().get(this.lastLogIndex()).term)) {
-                logger.info(
+                logger.fine(
                         String.format("%s decided to vote for %s", pState.myServerID, candidate));
                 pState.setVotedFor(candidate, pState.getVotedFor());
                 return currentTerm; // Vote for her!
@@ -313,7 +313,7 @@ public class Server
         int lastApplied;
         while (vState.getCommitIndex() > (lastApplied = vState.getLastApplied())) {
             LogEntry entry = pState.log().get(vState.incrementLastApplied(lastApplied));
-            logger.info(pState.myServerID + ": Applying " + entry);
+            logger.fine(pState.myServerID + ": Applying " + entry);
             try {
                 applier.apply(entry.operation);
             } catch (java.lang.Exception e) {
@@ -470,7 +470,7 @@ public class Server
             while (!success && vState.getState() == State.LEADER) {
                 final Integer otherServerNextIndex = leader.nextIndex.get(otherServerID);
                 try {
-                    logger.info(
+                    logger.fine(
                             String.format(
                                     "%s sending appendEntries to %s: otherServerNextIndex=%d, log.size=%d",
                                     pState.myServerID,
@@ -617,7 +617,7 @@ public class Server
              * If command received from client: append entry to local log, respond after entry
              * applied to state machine (§5.3)
              */
-            logger.info(String.format("%s: applyToStateMachine(%s)", pState.myServerID, operation));
+            logger.fine(String.format("%s: applyToStateMachine(%s)", pState.myServerID, operation));
             final int logIndex;
             synchronized (pState) {
                 pState.log().add(new LogEntry(operation, pState.getCurrentTerm()));
@@ -658,7 +658,7 @@ public class Server
                             }
                         });
             }
-            logger.info(
+            logger.fine(
                     String.format(
                             "%s: Waiting for logindex %d to be committed to %d majority quorum.",
                             pState.myServerID, logIndex, majorityQuorumSize()));
@@ -670,14 +670,14 @@ public class Server
                                 "Failed to commit logindex %d to quorum of %d.  Reason: %s",
                                 logIndex, majorityQuorumSize(), e));
             }
-            logger.info(
+            logger.fine(
                     String.format(
                             "%s: Logindex %d was committed to %d majority quorum.",
                             pState.myServerID, logIndex, majorityQuorumSize()));
             updateCommitIndex();
             Object returnVal = applyCommitted();
             if (vState.getLastApplied() >= logIndex) {
-                logger.info("logIndex " + logIndex + " applied to state machine: " + operation);
+                logger.fine("logIndex " + logIndex + " applied to state machine: " + operation);
             } else {
                 logger.severe(
                         String.format(
@@ -699,7 +699,7 @@ public class Server
                 while (vState.getCommitIndex() > vState.getLastApplied()) {
                     LogEntry entry =
                             pState.log().get(vState.incrementLastApplied(vState.getLastApplied()));
-                    logger.info(pState.myServerID + ": Applying " + entry);
+                    logger.fine(pState.myServerID + ": Applying " + entry);
                     try {
                         lastReturnVal = applier.apply(entry.operation);
                         lastException = null;
@@ -926,7 +926,7 @@ public class Server
          * or start another election, as appropriate.
          */
         void sendVoteRequests() {
-            logger.info(
+            logger.fine(
                     "Sending vote requests to "
                             + vState.otherServers.keySet().size()
                             + " other servers");

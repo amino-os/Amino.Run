@@ -18,6 +18,7 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.powermock.api.mockito.PowerMockito;
 import sapphire.app.SO;
+import sapphire.app.SapphireObjectSpec;
 import sapphire.app.stubs.SO_Stub;
 import sapphire.kernel.common.GlobalKernelReferences;
 import sapphire.kernel.common.KernelOID;
@@ -55,7 +56,8 @@ public class BaseTest {
 
     protected boolean serversInSameRegion = true;
 
-    public void setUp(Class<?> serverClass, Class<?> groupClass) throws Exception {
+    public void setUp(SapphireObjectSpec spec, Class<?> serverClass, Class<?> groupClass)
+            throws Exception {
         PowerMockito.mockStatic(LocateRegistry.class);
         when(LocateRegistry.getRegistry(anyString(), anyInt())).thenReturn(dummyRegistry);
 
@@ -79,12 +81,14 @@ public class BaseTest {
         spiedKs2 = startSpiedKernelServer(spiedOms, kernelPort2, regions[1]);
         spiedKs3 = startSpiedKernelServer(spiedOms, kernelPort3, regions[2]);
         // Set this instance of kernel server as local kernel server
-        GlobalKernelReferences.nodeServer = (KernelServerImpl) spiedKs1;
+        // Setting spiedKs3 as the local KernelServer, as KS3 maps to the first one with port 10001.
+        // Modified the local KernelServer from KS1 to KS3 as part of Multi-DM implementation.
+        GlobalKernelReferences.nodeServer = (KernelServerImpl) spiedKs3;
 
         /* Add all the hosts to the kernel client of local kernel server instance so that every call
         becomes local invocation */
         addHost(spiedKs2);
-        addHost(spiedKs3);
+        addHost(spiedKs1);
 
         // Stub static kernel object factory methods
         mockStatic(
@@ -135,8 +139,6 @@ public class BaseTest {
                             spiedStub = spy(stub);
                             DefaultSapphirePolicy.DefaultServerPolicy serverPolicyStub =
                                     (DefaultSapphirePolicy.DefaultServerPolicy) spiedStub;
-                            when(serverPolicyStub.sapphire_getRemoteAppObject())
-                                    .thenReturn(new AppObject(new SO_Stub()));
                             if (1 == i) {
                                 server1 = serverPolicyStub;
                             } else if (2 == i) {
@@ -187,15 +189,12 @@ public class BaseTest {
                     @Override
                     public Object answer(InvocationOnMock invocation) throws Throwable {
                         if ((invocation.getMethod().getName().equals("getAppStub"))) {
-                            String appStubClassName = SO_Stub.class.getName();
                             SapphirePolicy.SapphireServerPolicy serverPolicy =
                                     (SapphirePolicy.SapphireServerPolicy)
                                             invocation.getArguments()[1];
                             Object[] args = (Object[]) invocation.getArguments()[2];
 
-                            return Sapphire.extractAppStub(
-                                    serverPolicy.$__initialize(
-                                            Class.forName(appStubClassName), args));
+                            return Sapphire.extractAppStub(serverPolicy.$__initialize(spec, args));
                         }
                         if (!(invocation.getMethod().getName().equals("getPolicyStub")))
                             return invocation.callRealMethod();

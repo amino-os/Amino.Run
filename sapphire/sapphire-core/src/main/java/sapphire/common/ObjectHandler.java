@@ -1,13 +1,12 @@
 package sapphire.common;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
+import java.io.*;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.logging.Logger;
+import org.graalvm.polyglot.*;
+import sapphire.graal.io.*;
 
 /**
  * An object handler contains the actual object and pointers to its methods. It basically invokes
@@ -17,7 +16,14 @@ import java.util.logging.Logger;
  */
 public class ObjectHandler implements Serializable {
     /** Reference to the actual object instance */
-    private Serializable object;
+    private Object object;
+
+    public enum ObjectType {
+        graal,
+        java,
+    }
+
+    private boolean isGraalObject = false;
 
     private static Logger logger = Logger.getLogger(ObjectHandler.class.getName());
 
@@ -31,6 +37,10 @@ public class ObjectHandler implements Serializable {
         return obj.getClass();
     }
 
+    public boolean isGraalObject() {
+        return isGraalObject;
+    }
+
     private void fillMethodTable(Object obj) {
         Class<?> cl = getClass(obj);
         this.methods = new Hashtable<String, Method>();
@@ -41,16 +51,24 @@ public class ObjectHandler implements Serializable {
                 this.methods.put(methods[i].toGenericString(), methods[i]);
         }
     }
+
+    private boolean IsGraalObject() {
+        return (object instanceof GraalObject);
+    }
+
     /**
      * At creation time, we create the actual object, which happens to be the superclass of the
      * stub. We also inspect the methods of the object to set up a table we can use to look up the
      * method on RPC.
      *
-     * @param stub
+     * @param obj
      */
     public ObjectHandler(Object obj) {
         // TODO: get all the methods from all superclasses - careful about duplicates
-        object = (Serializable) obj;
+        object = obj;
+
+        isGraalObject = IsGraalObject();
+
         fillMethodTable(obj);
         logger.fine("Created object " + obj.toString());
     }
@@ -67,7 +85,7 @@ public class ObjectHandler implements Serializable {
     }
 
     public Serializable getObject() {
-        return object;
+        return (Serializable) object;
     }
 
     public void setObject(Serializable object) {
@@ -75,7 +93,14 @@ public class ObjectHandler implements Serializable {
     }
 
     private void writeObject(ObjectOutputStream out) throws IOException {
-        out.writeObject(object);
+        if (isGraalObject) {
+            out.writeUTF(ObjectType.graal.toString());
+            // TODO: make language configurable.
+            ((GraalObject) object).writeObject(out);
+        } else {
+            out.writeUTF(ObjectType.java.toString());
+            out.writeObject(object);
+        }
     }
 
     /**
@@ -90,9 +115,30 @@ public class ObjectHandler implements Serializable {
     }
 
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        Object obj = in.readObject();
-        fillMethodTable(obj);
-        this.object = (Serializable) obj;
+        if (ObjectType.valueOf(in.readUTF()) == ObjectType.graal) {
+            GraalObject object = (GraalObject) GraalObject.readObject(in);
+            Class<?> appObjectStubClass = Class.forName(object.getJavaClassName());
+            // Construct the list of classes of the arguments as Class[]
+            // TODO: Currently all polyglot application stub should have default
+            // constructor. Fix it
+            Object appStubObject;
+            try {
+                appStubObject = appObjectStubClass.newInstance();
+            } catch (IllegalAccessException e) {
+                throw new ClassNotFoundException("IllegalAccessException  " + e.getMessage());
+            } catch (InstantiationException e) {
+                throw new ClassNotFoundException("InstantiationException  " + e.getMessage());
+            }
+
+            ((GraalObject) appStubObject).$__initializeGraal(object);
+
+            fillMethodTable(appStubObject);
+            this.object = appStubObject;
+        } else {
+            Object obj = in.readObject();
+            fillMethodTable(obj);
+            this.object = obj;
+        }
     }
 
     public void read(ObjectInputStream in) throws IOException, ClassNotFoundException {

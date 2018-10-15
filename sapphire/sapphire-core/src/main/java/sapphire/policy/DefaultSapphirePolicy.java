@@ -1,17 +1,12 @@
 package sapphire.policy;
 
-import java.lang.annotation.Annotation;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Map;
 
 public class DefaultSapphirePolicy extends SapphirePolicy {
 
     public static class DefaultServerPolicy extends SapphireServerPolicy {
-        private DefaultGroupPolicy group;
-
         @Override
         public SapphireGroupPolicy getGroup() {
             return group;
@@ -21,9 +16,13 @@ public class DefaultSapphirePolicy extends SapphirePolicy {
         public void onMembershipChange() {}
 
         @Override
-        public void onCreate(SapphireGroupPolicy group, Annotation[] annotations) {
-            this.group = (DefaultGroupPolicy) group;
+        public void onCreate(
+                SapphireGroupPolicy group, Map<String, SapphirePolicyConfig> configMap) {
+            super.onCreate(group, configMap);
         }
+
+        @Override
+        public void initialize() {}
 
         public void onDestroy() {
             super.onDestroy();
@@ -50,16 +49,20 @@ public class DefaultSapphirePolicy extends SapphirePolicy {
         }
 
         @Override
-        public void onCreate(SapphireGroupPolicy group, Annotation[] annotations) {
+        public void onCreate(
+                SapphireGroupPolicy group, Map<String, SapphirePolicyConfig> configMap) {
             this.group = (DefaultGroupPolicy) group;
         }
     }
 
     public static class DefaultGroupPolicy extends SapphireGroupPolicy {
-        private Set<SapphireServerPolicy> servers =
-                Collections.newSetFromMap(new ConcurrentHashMap<SapphireServerPolicy, Boolean>());
+        private ArrayList<SapphireServerPolicy> servers = new ArrayList<SapphireServerPolicy>();
 
         @Override
+        /**
+         * it is advisable that defer putting this server policy into group policy until the server
+         * policy is complete with full policy chain.
+         */
         public synchronized void addServer(SapphireServerPolicy server) throws RemoteException {
             if (servers == null) {
                 // TODO: Need to change it to proper exception
@@ -69,7 +72,7 @@ public class DefaultSapphirePolicy extends SapphirePolicy {
         }
 
         @Override
-        public void removeServer(SapphireServerPolicy server) throws RemoteException {
+        public synchronized void removeServer(SapphireServerPolicy server) throws RemoteException {
             if (servers != null) {
                 servers.remove(server);
             }
@@ -87,10 +90,9 @@ public class DefaultSapphirePolicy extends SapphirePolicy {
         }
 
         @Override
-        public void onCreate(SapphireServerPolicy server, Annotation[] annotations)
-                throws RemoteException {
-            addServer(server);
-        }
+        public void onCreate(
+                SapphireServerPolicy server, Map<String, SapphirePolicyConfig> configMap)
+                throws RemoteException {}
 
         @Override
         public synchronized void onDestroy() throws RemoteException {

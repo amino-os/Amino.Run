@@ -125,6 +125,5 @@ public class StubGenerator {
         String dst = args[2];
         generateStubs(src, pkg, dst);
         LOGGER.info(String.format("Generated stubs. src: %s, package: %s, dst: %s", src, pkg, dst));
-        System.exit(0);
     }
 }

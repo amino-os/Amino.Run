@@ -1,9 +1,9 @@
 package sapphire.oms;
 
 import static sapphire.compiler.GlobalStubConstants.POLICY_ONDESTROY_MTD_NAME_FORMAT;
+import static sapphire.policy.SapphirePolicyUpcalls.SapphirePolicyConfig;
 
 import java.io.IOException;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.net.InetSocketAddress;
 import java.rmi.NotBoundException;
@@ -13,6 +13,7 @@ import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Random;
 import java.util.logging.Logger;
 import org.json.JSONException;
@@ -41,6 +42,7 @@ import sapphire.runtime.Sapphire;
  * @author iyzhang
  */
 public class OMSServerImpl implements OMSServer {
+
     private static Logger logger = Logger.getLogger("sapphire.oms.OMSServerImpl");
 
     private GlobalKernelObjectManager kernelObjectManager;
@@ -69,7 +71,7 @@ public class OMSServerImpl implements OMSServer {
 
     /** Register a new host for this kernel object. Used to move a kernel object */
     public void registerKernelObject(KernelOID oid, InetSocketAddress host)
-            throws RemoteException, KernelObjectNotFoundException {
+            throws KernelObjectNotFoundException {
         logger.info("Registering new host for " + oid.toString() + " on " + host.toString());
         kernelObjectManager.register(oid, host);
     }
@@ -180,14 +182,14 @@ public class OMSServerImpl implements OMSServer {
     /**
      * Create the sapphire object of given class on one of the servers
      *
-     * @param absoluteSapphireClassName
-     * @param args
+     * @param sapphireObjectSpec sapphire object specification in YAML
+     * @param args parameters to sapphire object constructor
      * @return Returns sapphire object id
      * @throws RemoteException
      * @throws SapphireObjectCreationException
      */
     @Override
-    public SapphireObjectID createSapphireObject(String absoluteSapphireClassName, Object... args)
+    public SapphireObjectID createSapphireObject(String sapphireObjectSpec, Object... args)
             throws RemoteException, SapphireObjectCreationException {
         /* Get a random server in the first region */
         InetSocketAddress host =
@@ -204,9 +206,12 @@ public class OMSServerImpl implements OMSServer {
                     "Failed to create sapphire object. Kernel server not found.");
         }
 
+        // TODO(multi-lang): Store spec together with object ID in objectManager
+        // SapphireObjectSpec spec = SapphireObjectSpec.fromYaml(sapphireObjectSpec);
+
         /* Invoke create sapphire object on the kernel server */
         try {
-            AppObjectStub appObjStub = server.createSapphireObject(absoluteSapphireClassName, args);
+            AppObjectStub appObjStub = server.createSapphireObject(sapphireObjectSpec, args);
             SapphirePolicy.SapphireClientPolicy clientPolicy = extractClientPolicy(appObjStub);
             objectManager.setInstanceObjectStub(
                     clientPolicy.getGroup().getSapphireObjId(), appObjStub);
@@ -231,9 +236,7 @@ public class OMSServerImpl implements OMSServer {
         EventHandler policyHandler = null;
         EventHandler[] handlers = objectManager.getSapphireReplicasById(sapphireObjId);
 
-        /* Instead of getting appobject always from the first replica handler, get it from a
-        random replica and return it. It ensure that even if first replica handler is not reachable,
-         acquire appobject will eventually succeed later if not in this call */
+        /* Get a random server policy stub and inject it to appObjStub's client policy */
         if (handlers.length != 0) {
             policyHandler = handlers[new Random().nextInt(handlers.length)];
         }
@@ -242,26 +245,15 @@ public class OMSServerImpl implements OMSServer {
             throw new SapphireObjectNotFoundException("Failed to get sapphire object.");
         }
 
-        AppObjectStub appObjStub = null;
         try {
-            AppObjectStub localObjStub = objectManager.getInstanceObjectStub(sapphireObjId);
-            SapphirePolicy.SapphireClientPolicy clientPolicy = extractClientPolicy(localObjStub);
-            SapphirePolicy.SapphireServerPolicy serverPolicy =
-                    (SapphirePolicy.SapphireServerPolicy) policyHandler.getObjects().get(0);
-            appObjStub = (AppObjectStub) serverPolicy.sapphire_getRemoteAppObject().getObject();
+            AppObjectStub appObjStub = objectManager.getInstanceObjectStub(sapphireObjId);
             appObjStub.$__initialize(false);
-            SapphirePolicy.SapphireClientPolicy client = clientPolicy.getClass().newInstance();
-            client.onCreate(
-                    clientPolicy.getGroup(), clientPolicy.getGroup().getAppConfigAnnotation());
-            client.setServer(serverPolicy);
-            appObjStub.$__initialize(client);
+            return appObjStub;
         } catch (Exception e) {
             logger.warning("Exception occurred : " + e);
             throw new SapphireObjectNotFoundException(
                     "Failed to get object. Exception occurred.", e);
         }
-
-        return appObjStub;
     }
 
     /**
@@ -361,10 +353,12 @@ public class OMSServerImpl implements OMSServer {
      */
     @Override
     public SapphirePolicy.SapphireGroupPolicy createGroupPolicy(
-            Class<?> policyClass, SapphireObjectID sapphireObjId, Annotation[] appConfigAnnotation)
+            Class<?> policyClass,
+            SapphireObjectID sapphireObjId,
+            Map<String, SapphirePolicyConfig> configMap)
             throws RemoteException, ClassNotFoundException, KernelObjectNotCreatedException,
                     SapphireObjectNotFoundException {
-        return Sapphire.createGroupPolicy(policyClass, sapphireObjId, appConfigAnnotation);
+        return Sapphire.createGroupPolicy(policyClass, sapphireObjId, configMap);
     }
 
     public static void main(String args[]) {
@@ -514,5 +508,37 @@ public class OMSServerImpl implements OMSServer {
     public void unRegisterSapphireReplica(SapphireReplicaID replicaId)
             throws RemoteException, SapphireObjectNotFoundException {
         objectManager.removeReplica(replicaId);
+    }
+
+    /**
+     * get all the sapphire objects in the system
+     *
+     * @return Returns ArrayList<SapphireObjectID>
+     * @throws RemoteException
+     */
+    public ArrayList<SapphireObjectID> getAllSapphireObjects() throws RemoteException {
+        ArrayList<SapphireObjectID> arr = objectManager.getAllSapphireObjects();
+        return arr;
+    }
+
+    /**
+     * get all the Replicas of a SapphireObject
+     *
+     * @return Returns ArrayList<EventHandler>
+     * @throws RemoteException
+     */
+    public EventHandler[] getSapphireReplicasById(SapphireObjectID oid)
+            throws SapphireObjectNotFoundException {
+        return objectManager.getSapphireReplicasById(oid);
+    }
+
+    /**
+     * get all the kernel object Ids in the oms system
+     *
+     * @return Returns ArrayList<KernelOID>
+     * @throws RemoteException
+     */
+    public ArrayList<KernelOID> getAllKernelObjects() throws RemoteException {
+        return kernelObjectManager.getAllKernelObjects();
     }
 }

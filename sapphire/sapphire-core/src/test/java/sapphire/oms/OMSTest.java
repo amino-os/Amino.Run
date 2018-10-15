@@ -8,17 +8,17 @@ import static sapphire.common.UtilsTest.extractFieldValueOnInstance;
 import java.net.InetSocketAddress;
 import java.rmi.registry.LocateRegistry;
 import java.util.List;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
+import sapphire.app.Language;
 import sapphire.app.SO;
 import sapphire.app.SapphireObject;
+import sapphire.app.SapphireObjectSpec;
 import sapphire.app.stubs.SO_Stub;
+import sapphire.common.AppObject;
 import sapphire.common.BaseTest;
 import sapphire.common.SapphireObjectID;
 import sapphire.common.SapphireUtils;
@@ -27,6 +27,7 @@ import sapphire.kernel.common.KernelObjectFactory;
 import sapphire.kernel.common.KernelObjectStub;
 import sapphire.kernel.server.KernelServerImpl;
 import sapphire.policy.DefaultSapphirePolicy;
+import sapphire.policy.SapphirePolicy;
 import sapphire.runtime.Sapphire;
 
 /** OMS API test cases */
@@ -49,7 +50,8 @@ public class OMSTest extends BaseTest {
             implements KernelObjectStub {
         sapphire.kernel.common.KernelOID $__oid = null;
         java.net.InetSocketAddress $__hostname = null;
-        int $__lastSeenTick = 0;
+        AppObject appObject = null;
+        SapphirePolicy.SapphireClientPolicy $__nextClientPolicy = null;
 
         public Group_Stub(sapphire.kernel.common.KernelOID oid) {
             this.$__oid = oid;
@@ -67,12 +69,12 @@ public class OMSTest extends BaseTest {
             this.$__hostname = hostname;
         }
 
-        public int $__getLastSeenTick() {
-            return $__lastSeenTick;
+        public void $__setNextClientPolicy(SapphirePolicy.SapphireClientPolicy clientPolicy) {
+            $__nextClientPolicy = clientPolicy;
         }
 
-        public void $__setLastSeenTick(int lastSeenTick) {
-            this.$__lastSeenTick = lastSeenTick;
+        public AppObject $__getAppObject() {
+            return this.appObject;
         }
     }
 
@@ -80,7 +82,8 @@ public class OMSTest extends BaseTest {
             implements KernelObjectStub {
         KernelOID $__oid = null;
         InetSocketAddress $__hostname = null;
-        int $__lastSeenTick = 0;
+        AppObject appObject = null;
+        SapphirePolicy.SapphireClientPolicy $__nextClientPolicy = null;
 
         public Server_Stub(KernelOID oid) {
             this.oid = oid;
@@ -99,20 +102,25 @@ public class OMSTest extends BaseTest {
             this.$__hostname = hostname;
         }
 
-        public int $__getLastSeenTick() {
-            return $__lastSeenTick;
+        public void $__setNextClientPolicy(SapphirePolicy.SapphireClientPolicy clientPolicy) {
+            $__nextClientPolicy = clientPolicy;
         }
 
-        public void $__setLastSeenTick(int lastSeenTick) {
-            this.$__lastSeenTick = lastSeenTick;
+        public AppObject $__getAppObject() {
+            return this.appObject;
         }
     }
 
     @Before
     public void setUp() throws Exception {
-        super.setUp(Server_Stub.class, Group_Stub.class);
-        SapphireObjectID sapphireObjId =
-                spiedOms.createSapphireObject("sapphire.oms.OMSTest$DefaultSO");
+        SapphireObjectSpec spec =
+                SapphireObjectSpec.newBuilder()
+                        .setLang(Language.java)
+                        .setJavaClassName("sapphire.app.SO")
+                        .create();
+        super.setUp(spec, Server_Stub.class, Group_Stub.class);
+        SapphireObjectID sapphireObjId = spiedOms.createSapphireObject(spec.toString());
+
         soStub = (SO_Stub) spiedOms.acquireSapphireObjectStub(sapphireObjId);
         client =
                 (DefaultSapphirePolicy.DefaultClientPolicy)

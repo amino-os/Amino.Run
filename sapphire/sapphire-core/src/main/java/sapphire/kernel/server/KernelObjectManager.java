@@ -1,6 +1,7 @@
 package sapphire.kernel.server;
 
 import java.lang.reflect.Constructor;
+import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 import sapphire.kernel.common.KernelOID;
@@ -95,5 +96,15 @@ public class KernelObjectManager {
         // create new kernelobject
         KernelObject kernelObject = new KernelObject(obj);
         addObject(oid, kernelObject);
+    }
+
+    /**
+     * get all the kernel object Ids from the KS
+     *
+     * @return Returns Array of KernelOID
+     */
+    public KernelOID[] getAllKernelObjectOids() {
+        Collection<KernelOID> values = objects.keySet();
+        return values.toArray(new KernelOID[values.size()]);
     }
 }

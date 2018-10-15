@@ -15,8 +15,10 @@ import org.junit.runner.RunWith;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
+import sapphire.app.Language;
 import sapphire.app.SO;
 import sapphire.app.SapphireObject;
+import sapphire.app.SapphireObjectSpec;
 import sapphire.app.stubs.SO_Stub;
 import sapphire.common.BaseTest;
 import sapphire.common.SapphireObjectID;
@@ -28,6 +30,7 @@ import sapphire.kernel.common.KernelRPC;
 import sapphire.kernel.common.KernelRPCException;
 import sapphire.kernel.common.ServerInfo;
 import sapphire.policy.DefaultSapphirePolicy;
+import sapphire.policy.SapphirePolicy;
 import sapphire.policy.util.ResettableTimer;
 import sapphire.runtime.Sapphire;
 
@@ -49,7 +52,7 @@ public class KSTest extends BaseTest {
             implements KernelObjectStub {
         sapphire.kernel.common.KernelOID $__oid = null;
         java.net.InetSocketAddress $__hostname = null;
-        int $__lastSeenTick = 0;
+        SapphirePolicy.SapphireClientPolicy $__nextClientPolicy = null;
 
         public Group_Stub(sapphire.kernel.common.KernelOID oid) {
             this.$__oid = oid;
@@ -67,12 +70,8 @@ public class KSTest extends BaseTest {
             this.$__hostname = hostname;
         }
 
-        public int $__getLastSeenTick() {
-            return $__lastSeenTick;
-        }
-
-        public void $__setLastSeenTick(int lastSeenTick) {
-            this.$__lastSeenTick = lastSeenTick;
+        public void $__setNextClientPolicy(SapphirePolicy.SapphireClientPolicy clientPolicy) {
+            $__nextClientPolicy = clientPolicy;
         }
     }
 
@@ -80,7 +79,7 @@ public class KSTest extends BaseTest {
             implements KernelObjectStub {
         KernelOID $__oid = null;
         InetSocketAddress $__hostname = null;
-        int $__lastSeenTick = 0;
+        SapphirePolicy.SapphireClientPolicy $__nextClientPolicy = null;
 
         public Server_Stub(KernelOID oid) {
             this.oid = oid;
@@ -99,20 +98,22 @@ public class KSTest extends BaseTest {
             this.$__hostname = hostname;
         }
 
-        public int $__getLastSeenTick() {
-            return $__lastSeenTick;
-        }
-
-        public void $__setLastSeenTick(int lastSeenTick) {
-            this.$__lastSeenTick = lastSeenTick;
+        public void $__setNextClientPolicy(SapphirePolicy.SapphireClientPolicy clientPolicy) {
+            $__nextClientPolicy = clientPolicy;
         }
     }
 
     @Before
     public void setUp() throws Exception {
-        super.setUp(Server_Stub.class, Group_Stub.class);
-        SapphireObjectID sapphireObjId =
-                spiedOms.createSapphireObject("sapphire.kernel.server.KSTest$DefaultSO");
+        SapphireObjectSpec spec =
+                SapphireObjectSpec.newBuilder()
+                        .setLang(Language.java)
+                        .setJavaClassName("sapphire.app.SO")
+                        .create();
+        super.setUp(spec, Server_Stub.class, Group_Stub.class);
+
+        SapphireObjectID sapphireObjId = spiedOms.createSapphireObject(spec.toString());
+
         soStub = (SO_Stub) spiedOms.acquireSapphireObjectStub(sapphireObjId);
         client =
                 (DefaultSapphirePolicy.DefaultClientPolicy)
@@ -134,6 +135,8 @@ public class KSTest extends BaseTest {
         ArrayList<Object> params = new ArrayList<Object>();
         KernelRPC rpc = new KernelRPC(server1.$__getKernelOID(), method, params);
         thrown.expect(KernelRPCException.class);
-        spiedKs1.makeKernelRPC(rpc);
+        // Modified the KernelRPC call from spiedKs1 to spiedKs3 as the local
+        // KernelServer has been changed to KS3, as part of Multi-DM implementation.
+        spiedKs3.makeKernelRPC(rpc);
     }
 }

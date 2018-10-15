@@ -7,11 +7,12 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import sapphire.app.SapphireObjectSpec;
 import sapphire.common.AppObjectStub;
-import sapphire.common.SapphireObjectCreationException;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
 import sapphire.kernel.client.KernelClient;
@@ -26,6 +27,8 @@ import sapphire.kernel.common.KernelRPCException;
 import sapphire.kernel.common.ServerInfo;
 import sapphire.oms.OMSServer;
 import sapphire.policy.SapphirePolicy;
+import sapphire.policy.SapphirePolicyContainer;
+import sapphire.policy.SapphirePolicyLibrary.*;
 import sapphire.policy.util.ResettableTimer;
 import sapphire.runtime.EventHandler;
 import sapphire.runtime.Sapphire;
@@ -127,6 +130,7 @@ public class KernelServerImpl implements KernelServer {
             throws RemoteException, KernelObjectNotFoundException,
                     KernelObjectStubNotCreatedException, SapphireObjectNotFoundException,
                     SapphireObjectReplicaNotFoundException {
+        logger.log(Level.INFO, "Adding object " + oid);
         if (object.getObject() instanceof SapphirePolicy.SapphireServerPolicy) {
             /* Set the policy object handlers of new host */
             SapphirePolicy.SapphireServerPolicy serverPolicy =
@@ -141,15 +145,72 @@ public class KernelServerImpl implements KernelServer {
             serverPolicyStub.setReplicaId(serverPolicy.getReplicaId());
             oms.setSapphireReplicaDispatcher(serverPolicy.getReplicaId(), policyHandler);
 
-            /* Initialize dynamic data of server policy object(i.e., timers, executors, sockets etc)
-            on new host */
-            Class<?> c =
-                    serverPolicy.sapphire_getAppObject().getObject().getClass().getSuperclass();
-            serverPolicy.onCreate(serverPolicy.getGroup(), c.getAnnotations());
+            serverPolicy.onCreate(serverPolicy.getGroup(), serverPolicy.getConfigMap());
         }
 
+        // TODO (9/27/2018, Sungwook): Move uncoalesce logic to separate loop at the end of code.
         objectManager.addObject(oid, object);
         object.uncoalesce();
+        oms.registerKernelObject(oid, host);
+
+        // To add Kernel Object to local object manager
+        Serializable realObj = object.getObject();
+
+        if (realObj instanceof SapphireServerPolicyLibrary) {
+            SapphireServerPolicyLibrary firstServerPolicy = (SapphireServerPolicyLibrary) realObj;
+
+            for (SapphirePolicyContainer spContainer : firstServerPolicy.getProcessedPolicies()) {
+                // Add Server Policy object in the same order as client side has created.
+                SapphireServerPolicyLibrary serverPolicy = spContainer.getServerPolicy();
+
+                // Added for setting the ReplicaId and registering handler for this replica to OMS.
+                SapphirePolicy.SapphireServerPolicy serverPolicyStub =
+                        (SapphirePolicy.SapphireServerPolicy) spContainer.getServerPolicyStub();
+                ArrayList<Object> policyObjList = new ArrayList<>();
+                EventHandler policyHandler = new EventHandler(host, policyObjList);
+                policyObjList.add(serverPolicyStub);
+                serverPolicyStub.setReplicaId(serverPolicy.getReplicaId());
+                oms.setSapphireReplicaDispatcher(serverPolicy.getReplicaId(), policyHandler);
+
+                KernelOID koid = serverPolicy.$__getKernelOID();
+                if (oid == koid) {
+                    continue;
+                }
+
+                KernelObject newko = new KernelObject(serverPolicy);
+
+                objectManager.addObject(koid, newko);
+                newko.uncoalesce();
+                oms.registerKernelObject(koid, host);
+                logger.log(Level.INFO, "Added " + koid.getID() + " as SapphireServerPolicyLibrary");
+
+                try {
+                    serverPolicy.initialize();
+                } catch (Exception e) {
+                    String exceptionMsg =
+                            "Initialization failed at copyKernelObject for KernelObject("
+                                    + koid.getID()
+                                    + ").  ";
+                    logger.severe(exceptionMsg);
+                    throw new RemoteException(exceptionMsg, e);
+                }
+            }
+
+            // First server policy is initialized at the end as the order is executed backwards from
+            // app object.
+            try {
+                firstServerPolicy.initialize();
+            } catch (Exception e) {
+                String exceptionMsg =
+                        String.format(
+                                "Initialization for first server policy failed at copyKernelObject for KernelObject(%d)",
+                                oid.getID());
+                logger.severe(exceptionMsg);
+                throw new RemoteException(exceptionMsg, e);
+            }
+        } else {
+            logger.log(Level.WARNING, "Added " + oid.getID() + " as unknown type.");
+        }
     }
 
     /** LOCAL INTERFACES * */
@@ -179,16 +240,41 @@ public class KernelServerImpl implements KernelServer {
     /**
      * Move object from this server to host.
      *
+     * @param serverPolicy
      * @param host
-     * @param oid
      * @throws RemoteException
      * @throws KernelObjectNotFoundException
+     * @throws SapphireObjectNotFoundException
+     * @throws SapphireObjectReplicaNotFoundException
      */
-    public void moveKernelObjectToServer(InetSocketAddress host, KernelOID oid)
+    public void moveKernelObjectToServer(
+            SapphirePolicy.SapphireServerPolicy serverPolicy, InetSocketAddress host)
             throws RemoteException, KernelObjectNotFoundException, SapphireObjectNotFoundException,
                     SapphireObjectReplicaNotFoundException {
+
         if (host.equals(this.host)) {
             return;
+        }
+
+        List<SapphirePolicy.SapphireServerPolicy> serverPoliciesToRemove =
+                new ArrayList<SapphirePolicy.SapphireServerPolicy>();
+        KernelOID oid = serverPolicy.$__getKernelOID();
+
+        /**
+         * Create a list of ServerPolicy and associated ServerPolicies in the chain, which needs to
+         * be explicitly removed from the local KernelServer. The associated ServerPolicy
+         * KernelObjects will be moved to the new Server when the first KernelObject is moved. The
+         * remaining KernelObject in the local KernelServer should be explicitly removed. The new
+         * KernelServer address needs to be registered with the OMS explicitly for these associated
+         * KernelObjects.
+         */
+        // Add the firstServerPolicy to the list.
+        serverPoliciesToRemove.add(serverPolicy);
+        // Add the ServerPolicies in the chain to the list, so that the associated
+        // KernelObjects are removed from the local KernelServer.
+        while (serverPolicy.getNextServerPolicy() != null) {
+            serverPolicy = serverPolicy.getNextServerPolicy();
+            serverPoliciesToRemove.add(serverPolicy);
         }
 
         KernelObject object = objectManager.lookupObject(oid);
@@ -199,25 +285,35 @@ public class KernelServerImpl implements KernelServer {
         try {
             client.copyObjectToServer(host, oid, object);
         } catch (RemoteException e) {
-            e.printStackTrace();
-            throw new RemoteException("Could not contact destination server.");
+            String msg =
+                    String.format(
+                            "Failed to copy object to server oid:%d, target host:%s",
+                            oid.getID(), host.getHostName());
+            logger.severe(msg);
+            throw new RemoteException(msg, e);
         } catch (KernelObjectStubNotCreatedException e) {
+            String msg =
+                    String.format(
+                            "Failed to create policy stub object on destination server. oid:%d, target host:%s",
+                            oid.getID(), host.getHostName());
+            logger.severe(msg);
             throw new RemoteException(
                     "Failed to create policy stub object on destination server.", e);
         }
 
-        try {
-            oms.registerKernelObject(oid, host);
-        } catch (RemoteException e) {
-            throw new RemoteException("Could not contact oms to update kernel object host.");
+        // Register the moved associated KernelObjects to OMS with the new KernelServer address.
+        // Then, remove the associated KernelObjects from the local KernelServer.
+        for (SapphirePolicy.SapphireServerPolicy serverPolicyToRemove : serverPoliciesToRemove) {
+            try {
+                serverPolicyToRemove.onDestroy();
+                objectManager.removeObject(serverPolicyToRemove.$__getKernelOID());
+            } catch (KernelObjectNotFoundException e) {
+                String msg =
+                        "Could not find object to remove in this server. Oid:"
+                                + serverPolicyToRemove.$__getKernelOID().getID();
+                logger.warning(msg);
+            }
         }
-
-        if (object.getObject() instanceof SapphirePolicy.SapphireServerPolicy) {
-            /* De-initialize dynamic data of server policy object(i.e., timers, executors, sockets etc) */
-            ((SapphirePolicy.SapphireServerPolicy) object.getObject()).onDestroy();
-        }
-
-        objectManager.removeObject(oid);
     }
 
     /**
@@ -245,6 +341,11 @@ public class KernelServerImpl implements KernelServer {
         return object.getObject();
     }
 
+    public KernelObject getKernelObject(KernelOID oid) throws KernelObjectNotFoundException {
+        KernelObject object = objectManager.lookupObject(oid);
+        return object;
+    }
+
     /**
      * Get the local hostname
      *
@@ -263,20 +364,15 @@ public class KernelServerImpl implements KernelServer {
         return client;
     }
 
-    /**
-     * Create the sapphire object
-     *
-     * @param className
-     * @param args
-     * @return
-     * @throws RemoteException
-     * @throws SapphireObjectCreationException
-     * @throws ClassNotFoundException
-     */
     @Override
-    public AppObjectStub createSapphireObject(String className, Object... args)
-            throws RemoteException, SapphireObjectCreationException, ClassNotFoundException {
-        return (AppObjectStub) Sapphire.new_(Class.forName(className), args);
+    public AppObjectStub createSapphireObject(String soSpecYaml, Object... args) {
+        logger.log(
+                Level.INFO,
+                String.format(
+                        "Got request to create sapphire object with spec '%s' and %d parameters.",
+                        soSpecYaml, args.length));
+        SapphireObjectSpec spec = SapphireObjectSpec.fromYaml(soSpecYaml);
+        return (AppObjectStub) Sapphire.new_(spec, args);
     }
 
     public class MemoryStatThread extends Thread {
@@ -290,6 +386,11 @@ public class KernelServerImpl implements KernelServer {
                 System.out.println(
                         "Total memory: " + Runtime.getRuntime().totalMemory() + " Bytes");
                 System.out.println("Free memory: " + Runtime.getRuntime().freeMemory() + " Bytes");
+                logger.fine("objectManager.getAllKernelObjectOids()");
+                KernelOID[] Oids = objectManager.getAllKernelObjectOids();
+                for (KernelOID oid : Oids) {
+                    logger.fine("oid:" + oid.toString());
+                }
             }
         }
     }

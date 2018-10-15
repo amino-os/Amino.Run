@@ -74,7 +74,7 @@ public class Lock {
             throw new IllegalArgumentException("clientId not specified");
         }
 
-        if (!this.isExpired()) {
+        if (!this.isExpired() && (!clientId.equals(this.clientId))) {
             return false;
         }
 

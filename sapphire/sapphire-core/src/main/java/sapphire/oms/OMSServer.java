@@ -1,11 +1,11 @@
 package sapphire.oms;
 
-import java.lang.annotation.Annotation;
 import java.net.InetSocketAddress;
 import java.rmi.NotBoundException;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.Map;
 import sapphire.common.AppObjectStub;
 import sapphire.common.SapphireObjectCreationException;
 import sapphire.common.SapphireObjectID;
@@ -19,6 +19,7 @@ import sapphire.kernel.common.KernelObjectNotFoundException;
 import sapphire.kernel.common.KernelServerNotFoundException;
 import sapphire.kernel.common.ServerInfo;
 import sapphire.policy.SapphirePolicy;
+import sapphire.policy.SapphirePolicyUpcalls;
 import sapphire.runtime.EventHandler;
 
 public interface OMSServer extends Remote {
@@ -50,7 +51,9 @@ public interface OMSServer extends Remote {
             throws RemoteException, NotBoundException, KernelServerNotFoundException;
 
     SapphirePolicy.SapphireGroupPolicy createGroupPolicy(
-            Class<?> policyClass, SapphireObjectID sapphireObjId, Annotation[] appConfigAnnotation)
+            Class<?> policyClass,
+            SapphireObjectID sapphireObjId,
+            Map<String, SapphirePolicyUpcalls.SapphirePolicyConfig> configMap)
             throws RemoteException, ClassNotFoundException, KernelObjectNotCreatedException,
                     SapphireObjectNotFoundException;
 
@@ -73,7 +76,7 @@ public interface OMSServer extends Remote {
             throws RemoteException, SapphireObjectNotFoundException,
                     SapphireObjectReplicaNotFoundException;
 
-    SapphireObjectID createSapphireObject(String absoluteSapphireClassName, Object... args)
+    SapphireObjectID createSapphireObject(String sapphireObjectSpec, Object... args)
             throws RemoteException, SapphireObjectCreationException;
 
     AppObjectStub acquireSapphireObjectStub(SapphireObjectID sapphireObjId)

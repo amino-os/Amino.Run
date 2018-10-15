@@ -20,7 +20,6 @@ public class Deserializer implements AutoCloseable {
 	public Value deserialize() throws Exception {
 		seenCache = new HashMap<Integer, Value>();
 		lang = in.readUTF();
-		System.out.println(String.format("lang is %s", lang));
 		return deserializeHelper();
 	}
 
@@ -28,63 +27,45 @@ public class Deserializer implements AutoCloseable {
 		Value out = null;
 
 		GraalType type = GraalType.values()[in.readInt()];
-		System.out.println(String.format("type is %s", type));
-
 		switch(type) {
 			case BOOLEAN:
 				//System.out.println("found boolean");
 				boolean b = in.readBoolean();
 				out = c.asValue(b);
-				System.out.println("boolean " + b);
 				break;
 			case NULL:
-				//System.out.println("found null");
 				out = c.asValue(null);
-				System.out.println("null");
 				break;
 			case NUMBER:
-				//System.out.println("found number");
 				int i = in.readInt();
 				out = c.asValue(i);
-				System.out.println("int " + i);
 				break;
 			case STRING:
-				//System.out.println("found string");
 				String s = in.readUTF();
 				out = c.asValue(s);
-				System.out.println("String " + s);
 				break;
 			case DUPLICATE:
-				//System.out.println("found cached value");
 				return seenCache.get(in.readInt());
 			case ARRAY:
 				long arraylength = in.readLong();
 				if(arraylength != 0) {
-					//System.out.println("array of length " + arraylength);
 					out = c.eval(lang, String.format("[]"));
 				}
 				for(int j = 0; j < arraylength; j++) {
 					out.setArrayElement(j, deserializeHelper());
-					System.out.println("Array element " + j);
 				}
 				break;
 			case OBJECT:
 				String className = in.readUTF();
-				System.out.println("Got object, class name is " + className);
-				//out = c.eval(lang, String.format("new %s()", className));
 				out = c.eval(lang, className).newInstance();
 
-				//for(String key : out.getMemberKeys()) {
 				for(String key : getMemberVariables(out)) {
-					//System.out.println("now reading in " + s);
 					if(key.equals("__proto__")) { //TODO: for some reason can't serialize js inheritance chain
 						continue;
 					}
-					System.out.println("Reading member, id is " + key);
 					Value member = deserializeHelper();
 					if(member != null) {
                         setInstanceVariable(out,member,key);
-						//out.putMember(key, member);
 					}
 				}
 				break;

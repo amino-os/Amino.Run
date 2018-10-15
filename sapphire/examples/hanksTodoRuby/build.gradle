@@ -1,0 +1,71 @@
+apply plugin: 'java'
+
+/*
+    TODO: Add following changes after:
+    1. Add task for generating and compiling stubs. (Currently manually added)
+*/
+dependencies {
+    compile project(':sapphire-core')
+}
+
+// Task for Stub compilation
+task compileStubs(type: JavaCompile) {
+    source = sourceSets.main.java.srcDirs
+    classpath = sourceSets.main.runtimeClasspath
+    destinationDir = sourceSets.main.output.classesDir
+    options.incremental = true
+}
+
+jar.dependsOn compileStubs
+
+// Start OMS with "gradlew runoms"
+task runoms(type: JavaExec) {
+    dependsOn jar
+    classpath = sourceSets.main.runtimeClasspath
+    main = 'sapphire.oms.OMSServerImpl'
+    args project.property('omsIp'), project.property('omsPort')
+}
+
+// Start kernel server with "gradlew runks"
+task runks(type: JavaExec) {
+    classpath = sourceSets.main.runtimeClasspath
+    main = 'sapphire.kernel.server.KernelServerImpl'
+    args project.property('kernelServerIp'), project.property('kernelServerPort'), project.property('omsIp'), project.property('omsPort')
+}
+
+// Task for run Ruby hanksTodoApp demo app
+task runrubyapp(type: Exec) {
+    environment  RUBY_HOME: "${project.projectDir}/src/main/ruby/sapphire/appexamples/hankstodo"
+    environment  OMS_IP: "${project.property('omsIp')}"
+    environment  OMS_PORT: "${project.property('omsPort')}"
+    environment  KERNEL_SERVER_IP: "${project.property('embeddedKernelServerIp')}"
+    environment  KERNEL_SERVER_PORT: "${project.property('kernelServerPort')}"
+    def classpath = sourceSets.main.runtimeClasspath.asPath
+    executable "ruby"
+    args "--jvm", "--polyglot", "--jvm.classpath=${classpath}",
+            "${project.projectDir}/src/main/ruby/sapphire/appexamples/hankstodo/hanks_todo_main.rb"
+}
+
+// Task for run javascript hanksTodoApp demo app
+task runjsapp(type: Exec) {
+    environment  JS_HOME: "${project.projectDir}/src/main/js/sapphire/appexamples/hankstodo"
+    environment  OMS_IP: "${project.property('omsIp')}"
+    environment  OMS_PORT: "${project.property('omsPort')}"
+    environment  KERNEL_SERVER_IP: "${project.property('embeddedKernelServerIp')}"
+    environment  KERNEL_SERVER_PORT: "${project.property('kernelServerPort')}"
+    def classpath = sourceSets.main.runtimeClasspath.asPath
+    executable "js"
+    args "--jvm", "--polyglot", "--jvm.classpath=${classpath}",
+            "${project.projectDir}/src/main/js/sapphire/appexamples/hankstodo/hanks_todo_main.js"
+}
+
+// Task for run Java demo app
+task runapp(type: JavaExec) {
+    classpath = sourceSets.main.runtimeClasspath
+    systemProperty "RUBY_HOME",  "${project.projectDir}/src/main/ruby/sapphire/appexamples/hankstodo/"
+    systemProperty "JS_HOME",  "${project.projectDir}/src/main/js/sapphire/appexamples/hankstodo/"
+    main = 'sapphire.appexamples.hankstodo.stubs.Client_Stub'
+    args project.property('embeddedKernelServerIp'), project.property('kernelServerPort'), project.property('omsIp'), project.property('omsPort')
+}
+
+runapp.dependsOn compileStubs

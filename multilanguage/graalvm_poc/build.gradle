@@ -22,8 +22,8 @@ task genStub(type: JavaExec) {
     ]
 }
 
-task runApp(type: JavaExec) {
-    main = "sapphire.graalvm.demo.App"
+task runAppJS(type: JavaExec) {
+    main = "sapphire.graalvm.demo.AppJS"
     classpath = sourceSets.main.runtimeClasspath
     systemProperties = [
         JS_HOME: System.getProperty('JS_HOME', './src/main/js/')

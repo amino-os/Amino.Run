@@ -78,4 +78,8 @@ cscope.*
 
 /bazel-*
 *.pyc
-**/stubs/**
+
+# ignore auto generated sapphire stub files
+**/stubs/** 
+# except KVStore_Stub.java which is used for integ test
+!**/sapphire-core/src/integrationTest/java/sapphire/demo/stubs/KVStore_Stub.java

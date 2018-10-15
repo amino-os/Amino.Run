@@ -45,6 +45,19 @@ public class PolicyStub extends Stub {
     }
 
     @Override
+    public String getImportStatement() {
+        return "import "
+                + GlobalStubConstants.POLICY_CLASS
+                + ";"
+                + EOLN //$NON-NLS-1$
+                + "import "
+                + GlobalStubConstants.APPOBJECT_CLASS
+                + ";"
+                + EOLN
+                + EOLN; //$NON-NLS-1$
+    }
+
+    @Override
     public String getStubClassDeclaration() {
         StringBuilder buffer = new StringBuilder("");
         buffer.append("public final class " + stubName + " extends " + className + " implements ");
@@ -58,6 +71,11 @@ public class PolicyStub extends Stub {
         StringBuilder buffer = new StringBuilder();
         buffer.append(indenter.indent() + "sapphire.kernel.common.KernelOID $__oid = null;" + EOLN);
         buffer.append(indenter.indent() + "java.net.InetSocketAddress $__hostname = null;" + EOLN);
+        buffer.append(indenter.indent() + "AppObject appObject = null;" + EOLN);
+        buffer.append(
+                indenter.indent()
+                        + "SapphirePolicy.SapphireClientPolicy $__nextClientPolicy = null;"
+                        + EOLN);
         return buffer.toString();
     }
 
@@ -124,11 +142,41 @@ public class PolicyStub extends Stub {
                         + EOLN
                         + EOLN);
 
+        /* Implementation for setNextClientPolicy */
+        buffer.append(
+                indenter.indent()
+                        + "public void $__setNextClientPolicy(SapphirePolicy.SapphireClientPolicy clientPolicy) {"
+                        + EOLN);
+        buffer.append(
+                indenter.tIncrease()
+                        + "this.$__nextClientPolicy = clientPolicy;"
+                        + EOLN
+                        + indenter.indent()
+                        + "}"
+                        + EOLN
+                        + EOLN);
+
+        /* Implementation for getAppObject */
+        buffer.append(indenter.indent() + "public AppObject $__getAppObject() {" + EOLN);
+        buffer.append(
+                indenter.tIncrease()
+                        + "return this.appObject;"
+                        + EOLN
+                        + indenter.indent()
+                        + "}"
+                        + EOLN
+                        + EOLN);
+
         /* Implementation for makeRPC */
         buffer.append(
                 indenter.indent()
                         + "public Object $__makeKernelRPC(java.lang.String method, java.util.ArrayList<Object> params) throws java.rmi.RemoteException, java.lang.Exception {"
                         + EOLN);
+
+        buffer.append(indenter.tIncrease() + "if ($__nextClientPolicy != null) {" + EOLN);
+        buffer.append(
+                indenter.tIncrease(2) + "return $__nextClientPolicy.onRPC(method, params);" + EOLN);
+        buffer.append(indenter.tIncrease() + "}" + EOLN + EOLN);
         buffer.append(
                 indenter.tIncrease()
                         + "sapphire.kernel.common.KernelRPC rpc = new sapphire.kernel.common.KernelRPC($__oid, method, params);"

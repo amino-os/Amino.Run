@@ -1,11 +1,10 @@
 package sapphire.policy;
 
-import java.lang.annotation.Annotation;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
-import sapphire.common.AppObject;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
 import sapphire.policy.SapphirePolicy.SapphireServerPolicy;
@@ -49,32 +48,35 @@ public abstract class DefaultSapphirePolicyUpcallImpl extends SapphirePolicyLibr
     public abstract static class DefaultSapphireServerPolicyUpcallImpl
             extends SapphireServerPolicyLibrary {
         public Object onRPC(String method, ArrayList<Object> params) throws Exception {
-            /* The default behavior is to just invoke the method on the Sapphire Object this Server Policy Object manages */
-            return appObject.invoke(method, params);
+            if (nextServerKernelObject == null) {
+                /* The default behavior is to just invoke the method on the Sapphire Object this Server Policy Object manages */
+                return appObject.invoke(method, params);
+            } else {
+                return nextServerKernelObject.invoke(method, params);
+            }
         }
-        /* This function is added here just to generate the stub for this function in all DMs server policy */
-        public SapphireServerPolicy sapphire_replicate() throws RemoteException {
-            return super.sapphire_replicate();
+
+        public SapphireServerPolicy sapphire_replicate(
+                List<SapphirePolicyContainer> processedPolicies) throws RemoteException {
+            return super.sapphire_replicate(processedPolicies);
         }
-        /* This function is added here just to generate the stub for this function in all DMs server policy */
-        public void sapphire_pin(String region)
+
+        public void sapphire_pin(SapphireServerPolicy sapphireServerPolicy, String region)
                 throws RemoteException, SapphireObjectNotFoundException,
                         SapphireObjectReplicaNotFoundException {
-            super.sapphire_pin(region);
+            super.sapphire_pin(sapphireServerPolicy, region);
         }
-        /* This function is added here just to generate the stub for this function in all DMs server policy */
-        public void sapphire_pin_to_server(InetSocketAddress server)
+
+        /* This function is added here just to generate the stub for this function in all Policies server policy */
+        public void sapphire_pin_to_server(
+                SapphireServerPolicy sapphireServerPolicy, InetSocketAddress server)
                 throws RemoteException, SapphireObjectNotFoundException,
                         SapphireObjectReplicaNotFoundException {
-            super.sapphire_pin_to_server(server);
+            super.sapphire_pin_to_server(sapphireServerPolicy, server);
         }
 
         public void sapphire_remove_replica() throws RemoteException {
             super.sapphire_remove_replica();
-        }
-
-        public AppObject sapphire_getRemoteAppObject() throws RemoteException {
-            return super.sapphire_getAppObject();
         }
 
         public String sapphire_getRegion() {
@@ -93,10 +95,6 @@ public abstract class DefaultSapphirePolicyUpcallImpl extends SapphirePolicyLibr
         public void $__initialize(String appObjectClassName, ArrayList<Object> params) {
             this.appObjectClassName = appObjectClassName;
             this.params = params;
-        }
-
-        public Annotation[] getAppConfigAnnotation() {
-            return super.getAppConfigAnnotation();
         }
 
         public SapphireServerPolicy onRefRequest() throws RemoteException {

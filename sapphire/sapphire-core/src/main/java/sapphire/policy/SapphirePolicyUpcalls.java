@@ -1,15 +1,32 @@
 package sapphire.policy;
 
 import java.io.Serializable;
-import java.lang.annotation.Annotation;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.Map;
 import sapphire.policy.SapphirePolicy.SapphireGroupPolicy;
 import sapphire.policy.SapphirePolicy.SapphireServerPolicy;
 
 public interface SapphirePolicyUpcalls {
+    /**
+     * Interface for sapphire policy configuration.
+     *
+     * <p>Each sapphire policy can optionally define a Config class to allow programmers to pass
+     * configurations to the sapphire policy. All Config classes should implement this interface.
+     */
+    interface SapphirePolicyConfig extends Serializable {}
+
+    /** Interface for client policy */
     interface SapphireClientPolicyUpcalls extends Serializable {
-        void onCreate(SapphireGroupPolicy group, Annotation[] annotations);
+        /**
+         * Initialize client policy.
+         *
+         * @param group the group policy
+         * @param configMap the map that contains sapphire policy configurations. The key is the
+         *     class name of the configuration and the value is a {@link SapphirePolicyConfig}
+         *     instance.
+         */
+        void onCreate(SapphireGroupPolicy group, Map<String, SapphirePolicyConfig> configMap);
 
         void setServer(SapphireServerPolicy server);
 
@@ -21,7 +38,21 @@ public interface SapphirePolicyUpcalls {
     }
 
     interface SapphireServerPolicyUpcalls extends Serializable {
-        void onCreate(SapphireGroupPolicy group, Annotation[] annotations);
+
+        // TODO (merged):
+        // onCreate is called during creation of Sapphire policy.
+        // void onCreate(SapphireGroupPolicy group, Annotation[] annotations);
+        /**
+         * Initialize server policy.
+         *
+         * @param group the group policy that manages this server policy
+         * @param configMap the map that contains sapphire policy configurations. The key is the
+         *     class name of the configuration and the value is a
+         */
+        void onCreate(SapphireGroupPolicy group, Map<String, SapphirePolicyConfig> configMap);
+
+        // initialize is called after migration.
+        void initialize();
 
         void onDestroy();
 
@@ -33,7 +64,16 @@ public interface SapphirePolicyUpcalls {
     }
 
     interface SapphireGroupPolicyUpcalls extends Serializable {
-        void onCreate(SapphireServerPolicy server, Annotation[] annotations) throws RemoteException;
+        /**
+         * Initialize g porouplicy.
+         *
+         * @param server the server policy that is managed by the group policy
+         * @param configMap the map that contains sapphire policy configurations. The key is the
+         *     class name of the configuration, and the value is a {@link SapphirePolicyConfig}
+         *     instance.
+         */
+        void onCreate(SapphireServerPolicy server, Map<String, SapphirePolicyConfig> configMap)
+                throws RemoteException;
 
         void addServer(SapphireServerPolicy server) throws RemoteException;
 

@@ -1,9 +1,9 @@
 package sapphire.policy.scalability;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
@@ -78,7 +78,7 @@ public class LoadBalancedMasterSlaveSyncPolicyTest {
             AppObject appObj = new AppObject(new Date());
             server.$__setKernelOID(new KernelOID(i));
             server.$__initialize(appObj);
-            server.onCreate(group, new Annotation[] {});
+            server.onCreate(group, new HashMap<>());
             group.addServer(server);
             servers.add(server);
         }

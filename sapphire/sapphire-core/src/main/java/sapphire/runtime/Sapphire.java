@@ -318,11 +318,6 @@ public class Sapphire {
                     appArgs);
         }
 
-        // server policy stub at this moment has the full policy chain; safe to add to group
-        if (existingGroupPolicy == null) {
-            groupPolicy.addServer(serverPolicyStub);
-        }
-
         String ko = "";
         for (SapphirePolicyContainer policyContainer : processedPolicies) {
             ko += String.valueOf(policyContainer.getKernelOID()) + ",";

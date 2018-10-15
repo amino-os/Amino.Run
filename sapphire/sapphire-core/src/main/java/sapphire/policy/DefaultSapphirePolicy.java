@@ -59,10 +59,6 @@ public class DefaultSapphirePolicy extends SapphirePolicy {
         private ArrayList<SapphireServerPolicy> servers = new ArrayList<SapphireServerPolicy>();
 
         @Override
-        /**
-         * it is advisable that defer putting this server policy into group policy until the server
-         * policy is complete with full policy chain.
-         */
         public synchronized void addServer(SapphireServerPolicy server) throws RemoteException {
             if (servers == null) {
                 // TODO: Need to change it to proper exception
@@ -76,6 +72,16 @@ public class DefaultSapphirePolicy extends SapphirePolicy {
             if (servers != null) {
                 servers.remove(server);
             }
+        }
+
+        @Override
+        public synchronized void updateServer(SapphireServerPolicy server) throws RemoteException {
+            if (servers == null) {
+                // TODO: Change the exception to proper one, similar to addServer exception.
+                throw new RemoteException("updateServer() failed, Group object deleted.");
+            }
+            servers.remove(server);
+            servers.add(server);
         }
 
         @Override
@@ -101,5 +107,8 @@ public class DefaultSapphirePolicy extends SapphirePolicy {
             super.onDestroy();
             servers = null;
         }
+
+        @Override
+        public void onMigrate(SapphireServerPolicy server) throws RemoteException {}
     }
 }

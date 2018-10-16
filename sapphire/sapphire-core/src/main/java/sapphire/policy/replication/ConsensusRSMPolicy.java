@@ -227,7 +227,6 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
             // super.onCreate(server, annotations);
 
             super.onCreate(server, configMap);
-            addServer(server);
 
             try {
                 ArrayList<String> regions = sapphire_getRegions();

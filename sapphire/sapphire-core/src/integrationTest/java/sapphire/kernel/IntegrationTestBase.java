@@ -22,29 +22,19 @@ public class IntegrationTestBase {
         Runtime runtime = Runtime.getRuntime();
 
         /* Start OMS and kernel server as separate process and invoke rpc from app client */
-        String cwd = System.getProperty("user.dir");
         String myJavaHome = System.getProperty("DCAP_JAVA_HOME");
         String javaExe = "java";
         if (myJavaHome != null) {
             javaExe = Paths.get(myJavaHome, "bin", "java").toString();
             System.out.println("java to call: " + javaExe);
         }
-        String sapphireCore =
-                cwd
-                        + "/../sapphire-core/build/libs/sapphire-core-1.0.0.jar:"
-                        + cwd
-                        + "/../dependencies/java.rmi/build/libs/java.rmi-1.0.0.jar:"
-                        + cwd
-                        + "/../dependencies/apache.harmony/build/libs/apache.harmony-1.0.0.jar:"
-                        + cwd
-                        + "/../sapphire-core/build/classes/java/test:"
-                        + cwd
-                        + "/../sapphire-core/libs/snakeyaml-1.23.jar";
+
+        String classPath = System.getProperty("java.class.path");
 
         String omsCmd =
                 javaExe
                         + " -cp "
-                        + sapphireCore
+                        + classPath
                         + " sapphire.oms.OMSServerImpl "
                         + omsIp
                         + " 22346 ";
@@ -54,7 +44,7 @@ public class IntegrationTestBase {
         String ksCmd1 =
                 javaExe
                         + " -cp "
-                        + sapphireCore
+                        + classPath
                         + " sapphire.kernel.server.KernelServerImpl "
                         + omsIp
                         + " 22345 "

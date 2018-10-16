@@ -31,9 +31,8 @@ configurations {
 dependencies {
     compile project(':dependencies:java.rmi')
     compile 'org.json:json:20171018'
-    // TODO(multi-lang): Unable to fetch jar from maven central due to Proxy issue.
-    // Load jar file from disk temporarily.
-    compile files('libs/snakeyaml-1.23.jar')
+    compile 'org.graalvm:graal-sdk:1.0.0-rc7'
+    compile 'org.yaml:snakeyaml:1.23'
     testCompile 'org.mockito:mockito-core:1.+'
     testCompile 'org.powermock:powermock:1.6.5'
     testCompile 'org.powermock:powermock-module-junit4:1.6.5'
@@ -60,6 +59,10 @@ task genStubs(type: JavaExec) {
     args src, pkgName, dst
     outputs.dir dst // Declare outputs, so gradle will run if they have been changed
     inputs.dir src   // Declare inputs, so gradle will run if they have been changed
+}
+
+clean {
+    delete genStubs.outputs // Add generated stubs to what the clean task must delete
 }
 
 // Task for stub compilation

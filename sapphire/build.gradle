@@ -38,8 +38,11 @@ subprojects {
 
     // Bintray Configurations:
     // 1. Env variable BINTRAY_USER and BINTRAY_API_KEY must be set
-    // properly in order to enable bintray upload. 
-    // 2. Run gradlew bintrayUpload to upload sapphire-core.jar.
+    // properly in order to enable bintray upload. Information can
+    // be found in pinned messages in #dcap slack channel.
+    // 2. Run "gradlew --info bintrayUpload" in project dir to upload
+    // jar file. For example, to upload sapphire-core.jar, you need to
+    // run "gradlew --info bintrayUpload" in sapphire-core project.
     // 3. If you modified sapphire-core.jar without bumping up the 
     // package version, then you need to remind developers to clean 
     // old versions from gradle cache by running $(rm -rf ~/.gradle/caches).

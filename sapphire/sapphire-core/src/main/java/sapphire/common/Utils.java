@@ -19,7 +19,6 @@ import java.util.logging.Logger;
 import sapphire.app.DMSpec;
 import sapphire.runtime.annotations.AnnotationConfig;
 import sapphire.runtime.annotations.Immutable;
-import sapphire.runtime.annotations.RuntimeSpec;
 
 public class Utils {
     private static final Logger logger = Logger.getLogger(Utils.class.getName());
@@ -179,16 +178,6 @@ public class Utils {
 
     public static boolean isImmutableMethod(Method method) {
         return method.getDeclaredAnnotation(Immutable.class) != null;
-    }
-
-    /**
-     * Returns the {@link RuntimeSpec} spec specified on the given class.
-     *
-     * @param clazz
-     * @return
-     */
-    public static RuntimeSpec getRuntimeSpec(Class<?> clazz) {
-        return clazz.getAnnotation(RuntimeSpec.class);
     }
 
     /**

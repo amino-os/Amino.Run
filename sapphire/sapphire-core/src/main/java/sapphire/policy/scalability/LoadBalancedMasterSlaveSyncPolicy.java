@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import sapphire.policy.scalability.masterslave.*;
-import sapphire.runtime.annotations.RuntimeSpec;
 
 /**
  * A master slave DM that replicates requests from master to slave synchronously in best effort. It
@@ -27,8 +26,6 @@ public class LoadBalancedMasterSlaveSyncPolicy extends LoadBalancedMasterSlaveBa
     public static class ClientPolicy extends ClientBase {}
 
     /** Server side policy */
-    // TODO (Terry): Move annotation onto Sapphire object
-    @RuntimeSpec(replicas = 2)
     public static class ServerPolicy extends ServerBase {
         private transient Logger logger;
         private transient Committer commitExecutor;

@@ -19,14 +19,12 @@ import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
 import sapphire.common.Utils;
 import sapphire.kernel.common.GlobalKernelReferences;
-import sapphire.kernel.common.KernelObjectNotFoundException;
 import sapphire.policy.DefaultSapphirePolicy;
 import sapphire.policy.scalability.masterslave.Lock;
 import sapphire.policy.scalability.masterslave.MethodInvocationRequest;
 import sapphire.policy.scalability.masterslave.MethodInvocationResponse;
 import sapphire.policy.scalability.masterslave.ReplicationRequest;
 import sapphire.policy.scalability.masterslave.ReplicationResponse;
-import sapphire.runtime.annotations.RuntimeSpec;
 
 /**
  * Base class for LoadBalancedMasterSlave DM
@@ -157,6 +155,7 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultSapphirePolicy 
      * instance which does not satisfy the high available requirement.
      */
     public abstract static class GroupBase extends DefaultGroupPolicy {
+        private static final int NUM_OF_REPLICAS = 2;
         private Logger logger;
         private Random random = new Random(System.currentTimeMillis());
         private Lock masterLock;
@@ -167,31 +166,29 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultSapphirePolicy 
                 throws RemoteException {
             logger = Logger.getLogger(this.getClass().getName());
             super.onCreate(server, configMap);
-            RuntimeSpec spec = Utils.getRuntimeSpec(server.getClass());
             try {
 
                 ArrayList<InetSocketAddress> servers =
                         GlobalKernelReferences.nodeServer.oms.getServers();
-                if (servers.size() < spec.replicas()) {
+                if (servers.size() < NUM_OF_REPLICAS) {
                     logger.warning(
                             String.format(
-                                    "server# (%s) <= replicas# (%s)",
-                                    servers.size(), spec.replicas()));
+                                    "Number of kernel servers (%s) is less than "
+                                            + "number of replicas (%s). We will run both master replica "
+                                            + "and slave replica on the same server which will decrease "
+                                            + "availability.",
+                                    servers.size(), NUM_OF_REPLICAS));
                 }
 
                 List<InetSocketAddress> unavailable = new ArrayList<InetSocketAddress>();
-                unavailable.add(
-                        GlobalKernelReferences.nodeServer.oms.lookupKernelObject(
-                                $__getKernelOID()));
                 InetSocketAddress dest = getAvailable(0, servers, unavailable);
-
                 ServerBase s = (ServerBase) server;
                 s.sapphire_pin_to_server(server, dest);
                 updateReplicaHostName(s, dest);
                 s.start();
-                logger.info("created master on " + dest);
+                logger.info("Created master on " + dest);
 
-                for (int i = 0; i < spec.replicas() - 1; i++) {
+                for (int i = 0; i < NUM_OF_REPLICAS - 1; i++) {
                     dest = getAvailable(i + 1, servers, unavailable);
                     ServerBase replica =
                             (ServerBase) s.sapphire_replicate(s.getProcessedPolicies());
@@ -204,8 +201,6 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultSapphirePolicy 
                 }
             } catch (RemoteException e) {
                 throw new RuntimeException("failed to create group: " + e, e);
-            } catch (KernelObjectNotFoundException e) {
-                throw new RuntimeException("unable to find kernel object: " + e, e);
             } catch (NotBoundException e) {
                 throw new Error("rmi operation not bound: " + e, e);
             } catch (SapphireObjectNotFoundException e) {
@@ -215,6 +210,17 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultSapphirePolicy 
             }
         }
 
+        /**
+         * Returns a server from the given {@code servers} list but not in {@code unavailable} list.
+         * If no available server can be found, then return the {@code index % servers.size()}th
+         * server in the {@code servers} list.
+         *
+         * @param index index of the
+         * @param servers a list of servers
+         * @param unavailable a list of unavailable servers
+         * @return an available server; or the {@code index % servers.size()}th server in the given
+         *     server list if no available server can be found.
+         */
         InetSocketAddress getAvailable(
                 int index, List<InetSocketAddress> servers, List<InetSocketAddress> unavailable) {
             for (InetSocketAddress s : servers) {

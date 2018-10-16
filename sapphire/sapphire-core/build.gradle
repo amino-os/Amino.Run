@@ -31,10 +31,8 @@ configurations {
 dependencies {
     compile project(':dependencies:java.rmi')
     compile 'org.json:json:20171018'
-    // TODO(multi-lang): Unable to fetch jar from maven central due to Proxy issue.
-    // Load jar file from disk temporarily.
-    compile files('libs/snakeyaml-1.23.jar')
     compile 'org.graalvm:graal-sdk:1.0.0-rc7'
+    compile 'org.yaml:snakeyaml:1.23'
     testCompile 'org.mockito:mockito-core:1.+'
     testCompile 'org.powermock:powermock:1.6.5'
     testCompile 'org.powermock:powermock-module-junit4:1.6.5'

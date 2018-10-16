@@ -79,31 +79,16 @@ public class BasicIntegrationTest {
                 javaExe = Paths.get(javaHome, "bin", "java").toString();
                 System.out.println("java to call: " + javaExe);
             }
-            String sapphireCore =
-                    cwd
-                            + "/../sapphire-core/build/libs/sapphire-core-1.0.0.jar:"
-                            + cwd
-                            + "/../sapphire-core/libs/snakeyaml-1.23.jar:"
-                            + cwd
-                            + "/../dependencies/java.rmi/build/libs/java.rmi-1.0.0.jar:"
-                            + cwd
-                            + "/../dependencies/apache.harmony/build/libs/apache.harmony-1.0.0.jar:"
-                            + cwd
-                            + "/../examples/helloworld/build/libs/helloworld.jar ";
 
+            String classPath = System.getProperty("java.class.path");
             String omsCmd =
-                    javaExe
-                            + " -cp "
-                            + sapphireCore
-                            + " sapphire.oms.OMSServerImpl "
-                            + ip
-                            + " 22446 ";
+                    javaExe + " -cp " + classPath + " sapphire.oms.OMSServerImpl " + ip + " 22446 ";
             omsProcess = runtime.exec(omsCmd);
             sleep(500);
             String ksCmd =
                     javaExe
                             + " -cp "
-                            + sapphireCore
+                            + classPath
                             + " sapphire.kernel.server.KernelServerImpl "
                             + ip
                             + " 22445 "

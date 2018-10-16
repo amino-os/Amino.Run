@@ -212,7 +212,6 @@ public class SapphireMultiPolicyChainTest extends MultiPolicyChainBaseTest {
                 Sapphire.createPolicy(
                         sapphireObjId,
                         spec,
-                        null,
                         configMap,
                         policyNameChain,
                         processedPolicies,
@@ -241,7 +240,6 @@ public class SapphireMultiPolicyChainTest extends MultiPolicyChainBaseTest {
                 Sapphire.createPolicy(
                         sapphireObjId,
                         spec,
-                        null,
                         configMap,
                         policyNameChain,
                         processedPolicies,

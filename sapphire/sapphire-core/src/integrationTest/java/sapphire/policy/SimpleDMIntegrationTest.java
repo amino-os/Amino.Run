@@ -15,7 +15,6 @@ import sapphire.common.SapphireObjectID;
 import sapphire.demo.KVStore;
 import sapphire.kernel.server.KernelServerImpl;
 import sapphire.oms.OMSServer;
-import sapphire.oms.OMSServerImpl;
 
 /**
  * Test <strong>simple</strong> deployment managers. Complex DMs, e.g. Consensus, that require
@@ -28,9 +27,7 @@ public class SimpleDMIntegrationTest {
 
     @BeforeClass
     public static void bootstrap() throws Exception {
-        OMSServerImpl.main(new String[] {omsIp, String.valueOf(omsPort)});
-        KernelServerImpl.main(
-                new String[] {kstIp, String.valueOf(ksPort), omsIp, String.valueOf(omsPort), "r1"});
+        startOmsAndKernelServers("r1");
     }
 
     @Before
@@ -105,5 +102,10 @@ public class SimpleDMIntegrationTest {
             store.commitTransaction();
             Assert.assertEquals(value, store.get(key));
         }
+    }
+
+    @AfterClass
+    public static void cleanUp() {
+        killOmsAndKernelServers();
     }
 }

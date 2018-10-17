@@ -3,6 +3,8 @@ package sapphire.kernel;
 import static java.lang.Thread.sleep;
 
 import java.io.File;
+import java.io.IOException;
+import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
@@ -10,13 +12,52 @@ import sapphire.app.SapphireObjectSpec;
 
 public class IntegrationTestBase {
     public static String omsIp = "127.0.0.1";
+    public static String ksIp = omsIp;
     public static int omsPort = 22346;
+    public static int ks1Port = 22345;
+    public static int ks2Port = 22344;
+    public static int ks3Port = 22343;
     public static String hostIp = "127.0.0.2";
     public static int hostPort = 22333;
     private static Process omsProcess = null;
     private static Process kernelServerProcess1 = null;
     private static Process kernelServerProcess2 = null;
     private static Process kernelServerProcess3 = null;
+
+    static void waitForSockListen(String ip, int port) {
+        Socket socket = null;
+        while (socket == null) {
+            try {
+                socket = new Socket(ip, port);
+            } catch (IOException e) {
+                try {
+                    sleep(100);
+                } catch (InterruptedException e1) {
+                    e1.printStackTrace();
+                }
+            }
+        }
+    }
+
+    static void waitForSockClose(String ip, int port) {
+        Socket socket = null;
+        try {
+            socket = new Socket(ip, port);
+        } catch (IOException e) {
+        }
+        while (socket != null) {
+            try {
+                socket = new Socket(ip, port);
+                try {
+                    sleep(100);
+                } catch (InterruptedException e1) {
+                    e1.printStackTrace();
+                }
+            } catch (IOException e) {
+                break;
+            }
+        }
+    }
 
     public static void startOmsAndKernelServers(String KernelServerRegion) throws Exception {
         Runtime runtime = Runtime.getRuntime();
@@ -32,54 +73,51 @@ public class IntegrationTestBase {
         String classPath = System.getProperty("java.class.path");
 
         String omsCmd =
-                javaExe
-                        + " -cp "
-                        + classPath
-                        + " sapphire.oms.OMSServerImpl "
-                        + omsIp
-                        + " 22346 ";
+                javaExe + " -cp " + classPath + " sapphire.oms.OMSServerImpl " + omsIp + " 22346 ";
         omsProcess = runtime.exec(omsCmd);
-        sleep(1000);
+        waitForSockListen(omsIp, omsPort);
 
         String ksCmd1 =
                 javaExe
                         + " -cp "
                         + classPath
                         + " sapphire.kernel.server.KernelServerImpl "
-                        + omsIp
+                        + ksIp
                         + " 22345 "
                         + omsIp
                         + " 22346 "
                         + " "
                         + KernelServerRegion;
         kernelServerProcess1 = runtime.exec(ksCmd1);
+        waitForSockListen(ksIp, ks1Port);
 
         String ksCmd2 =
                 javaExe
                         + " -cp "
-                        + sapphireCore
+                        + classPath
                         + " sapphire.kernel.server.KernelServerImpl "
-                        + omsIp
+                        + ksIp
                         + " 22344 "
                         + omsIp
                         + " 22346 "
                         + " "
                         + KernelServerRegion;
         kernelServerProcess2 = runtime.exec(ksCmd2);
+        waitForSockListen(ksIp, ks2Port);
 
         String ksCmd3 =
                 javaExe
                         + " -cp "
-                        + sapphireCore
+                        + classPath
                         + " sapphire.kernel.server.KernelServerImpl "
-                        + omsIp
+                        + ksIp
                         + " 22343 "
                         + omsIp
                         + " 22346 "
                         + " "
                         + KernelServerRegion;
         kernelServerProcess3 = runtime.exec(ksCmd3);
-        sleep(500);
+        waitForSockListen(ksIp, ks3Port);
     }
 
     /**
@@ -104,15 +142,19 @@ public class IntegrationTestBase {
     public static void killOmsAndKernelServers() {
         if (omsProcess != null) {
             omsProcess.destroy();
+            waitForSockClose(omsIp, omsPort);
         }
         if (kernelServerProcess1 != null) {
             kernelServerProcess1.destroy();
+            waitForSockClose(ksIp, ks1Port);
         }
         if (kernelServerProcess2 != null) {
             kernelServerProcess2.destroy();
+            waitForSockClose(ksIp, ks2Port);
         }
         if (kernelServerProcess3 != null) {
             kernelServerProcess3.destroy();
+            waitForSockClose(ksIp, ks3Port);
         }
     }
 }

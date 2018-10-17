@@ -1,0 +1,12 @@
+!!sapphire.app.SapphireObjectSpec
+constructorName: null
+dmList:
+- configs:
+  - !!sapphire.policy.dht.DHTPolicy$Config {numOfShards: 2}
+  name: sapphire.policy.dht.DHTPolicy
+- configs: []
+  name: sapphire.policy.scalability.LoadBalancedMasterSlaveSyncPolicy
+javaClassName: sapphire.demo.KeyValueStore
+lang: java
+name: null
+sourceFileLocation: null

@@ -61,7 +61,7 @@ task runks3(type: JavaExec) {
 
 // task for run client
 task runapp(type: JavaExec) {
-    main = "sapphire.demo.pinkisClient"
+    main = "sapphire.demo.KeyValueStoreClient"
     classpath = sourceSets.main.runtimeClasspath
     args project.property('omsIp'), project.property('omsPort')
 }

@@ -127,12 +127,6 @@ public class GraalObject implements Serializable {
     }
 
     public Object invoke(String method, ArrayList<Object> params) throws Exception {
-        ArrayList<Object> objs = new ArrayList<>();
-        //        for (Object p : params) {
-        //            ByteArrayInputStream in = new ByteArrayInputStream((byte[]) p);
-        //            sapphire.graal.io.Deserializer deserializer = new Deserializer(in, context);
-        //            objs.add(deserializer.deserialize());
-        //        }
         Value object = value.getMember(method).execute(params.toArray());
         return SerializeValue.getSerializeValue(object, lang);
     }

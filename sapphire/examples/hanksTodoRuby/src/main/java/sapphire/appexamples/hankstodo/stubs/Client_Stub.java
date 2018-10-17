@@ -60,6 +60,8 @@ public class Client_Stub {
 
         java.lang.String rubyHome = java.lang.System.getProperty("RUBY_HOME");
         java.lang.String jsHome = java.lang.System.getProperty("JS_HOME");
+        if (jsHome == null || jsHome.isEmpty()) jsHome = "./examples/hanksTodoRuby/src/main/js/sapphire/appexamples/hankstodo";
+        if (rubyHome == null || rubyHome.isEmpty()) rubyHome = "./examples/hanksTodoRuby/src/main/ruby/sapphire/appexamples/hankstodo";
         Test(hostIp, hostPort, omsIp, omsPort, sapphire.app.Language.js, jsHome + "/todo_list_manager.js");
         Test(hostIp, hostPort, omsIp, omsPort, Language.ruby, rubyHome + "/todo_list_manager.rb");
     }

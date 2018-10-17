@@ -4,27 +4,27 @@ class TodoListManager {
         this.map = new Map();
     }
 
-    new_todo_list(name) {
+    newTodoList(name) {
         console.log("new_todo_list");
         var b = this.map.has(name);
         if (!b) this.map.set(name, new Set());
         return b;
     }
 
-    delete_todo_list(name) {
+    deleteTodoList(name) {
         console.log("delete_todo_list");
         var b = this.map.has(name);
         if (b) this.map.delete(name);
         return b;
     }
 
-    add_todo(todoListName, todoTaskName) {
+    addTodo(todoListName, todoTaskName) {
         console.log("add_todo");
         this.map.get(todoListName).add(todoTaskName);
         return "OK_add_todo"
     }
 
-    get_todos(todoListName) {
+    getTodos(todoListName) {
         console.log("get_todos");
         var v = this.map.get(todoListName);
         var res = [];
@@ -34,7 +34,7 @@ class TodoListManager {
         return res;
     }
 
-    complete_todo(todoListName, todoTaskName) {
+    completeTodo(todoListName, todoTaskName) {
         console.log("complete_todo");
 
         if (this.map.has(todoListName) && this.map.get(todoListName).has(todoTaskName)) {
@@ -48,19 +48,19 @@ class TodoListManager {
 
 function test() {
     var c = new TodoListManager();
-    c.new_todo_list("todoList1");
-    c.add_todo("todoList1", "task1");
-    c.add_todo("todoList1", "task2");
-    var v = c.get_todos("todoList1");
+    c.newTodoList("todoList1");
+    c.addTodo("todoList1", "task1");
+    c.addTodo("todoList1", "task2");
+    var v = c.getTodos("todoList1");
     v.forEach(function(value) {
       console.log(value);
     });
-    c.complete_todo("todoList1", "task1");
-    v = c.get_todos("todoList1");
+    c.completeTodo("todoList1", "task1");
+    v = c.getTodos("todoList1");
     v.forEach(function(value) {
           console.log(value);
         });
-    c.delete_todo_list("todoList1");
+    c.deleteTodoList("todoList1");
 }
 
 // For test purpose only

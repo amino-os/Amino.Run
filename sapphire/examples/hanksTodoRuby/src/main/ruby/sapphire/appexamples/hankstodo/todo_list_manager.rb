@@ -11,19 +11,19 @@ class TodoList
         @name = name
     end
 
-    def add_todo(todo)
+    def addTodo(todo)
         @to_dos.push(todo)
         puts "add #{todo} success!!!"
         return "OK!"
     end
 
-    def complete_todo(todo)
+    def completeTodo(todo)
         @to_dos.delete(todo)
         puts "#{todo} task removed"
         return "OK!"
     end
 
-    def get_todos
+    def getTodos
         return @to_dos
     end
 
@@ -43,7 +43,7 @@ class Manager
 end
 
 class TodoListManager < Manager
-    def new_todo_list(name)
+    def newTodoList(name)
         list = nil
         @todo_lists.each { |lst|
             if lst.getName == name
@@ -60,7 +60,7 @@ class TodoListManager < Manager
         return name
     end
 
-    def delete_todo_list(name)
+    def deleteTodoList(name)
         list = nil
         @todo_lists.each { |lst|
             if lst.getName == name
@@ -76,7 +76,7 @@ class TodoListManager < Manager
         return "OK!!!!"
     end
 
-    def add_todo(name, todo)
+    def addTodo(name, todo)
         list = nil
         @todo_lists.each { |lst|
         puts "list name #{lst.getName}"
@@ -87,12 +87,12 @@ class TodoListManager < Manager
         }
 
         if list != nil
-            return list.add_todo(todo)
+            return list.addTodo(todo)
         end
         return "Failed !!!!"
     end
 
-    def get_todos(name)
+    def getTodos(name)
         list = nil
         @todo_lists.each { |lst|
             if lst.getName == name
@@ -102,13 +102,13 @@ class TodoListManager < Manager
         }
 
         if list != nil
-            return list.get_todos
+            return list.getTodos
         end
 
         return nil
     end
 
-    def complete_todo(name, todo)
+    def completeTodo(name, todo)
         list = nil
         @todo_lists.each { |lst|
             if lst.getName == name
@@ -118,7 +118,7 @@ class TodoListManager < Manager
         }
 
         if list != nil
-            return list.complete_todo(todo)
+            return list.completeTodo(todo)
         end
 
         return nil

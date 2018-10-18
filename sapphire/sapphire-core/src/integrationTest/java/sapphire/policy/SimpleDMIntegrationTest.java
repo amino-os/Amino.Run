@@ -1,5 +1,7 @@
 package sapphire.policy;
 
+import static sapphire.kernel.IntegrationTestBase.*;
+
 import java.io.File;
 import java.net.InetSocketAddress;
 import java.net.URL;
@@ -13,30 +15,23 @@ import sapphire.common.SapphireObjectID;
 import sapphire.demo.KVStore;
 import sapphire.kernel.server.KernelServerImpl;
 import sapphire.oms.OMSServer;
-import sapphire.oms.OMSServerImpl;
 
 /**
  * Test <strong>simple</strong> deployment managers. Complex DMs, e.g. Consensus, that require
  * multiple kernel servers are not covered here.
  */
 public class SimpleDMIntegrationTest {
-    private static String omsIp = "127.0.0.1";
-    private static int omsPort = 22346;
     private static String kstIp = "127.0.0.1";
     private static int ksPort = 22345;
-    private static String hostIp = "127.0.0.2";
-    private static int hostPort = 22333;
     private OMSServer oms;
 
     @BeforeClass
     public static void bootstrap() throws Exception {
-        OMSServerImpl.main(new String[] {omsIp, String.valueOf(omsPort)});
-        KernelServerImpl.main(
-                new String[] {kstIp, String.valueOf(ksPort), omsIp, String.valueOf(omsPort), "r1"});
+        startOmsAndKernelServers("r1");
     }
 
     @Before
-    public void startOmsAndKernelServer() throws Exception {
+    public void setUp() throws Exception {
         Registry registry = LocateRegistry.getRegistry(omsIp, omsPort);
         oms = (OMSServer) registry.lookup("SapphireOMS");
         new KernelServerImpl(
@@ -57,7 +52,11 @@ public class SimpleDMIntegrationTest {
             }
 
             SapphireObjectSpec spec = readSapphireSpec(f);
-            runTest(spec);
+            if (f.getName().startsWith("LockingTransaction")) {
+                runLockingTransactionTest(spec);
+            } else {
+                runTest(spec);
+            }
         }
     }
 
@@ -90,5 +89,23 @@ public class SimpleDMIntegrationTest {
             store.set(key, value);
             Assert.assertEquals(value, store.get(key));
         }
+    }
+
+    private void runLockingTransactionTest(SapphireObjectSpec spec) throws Exception {
+        SapphireObjectID sapphireObjId = oms.createSapphireObject(spec.toString());
+        KVStore store = (KVStore) oms.acquireSapphireObjectStub(sapphireObjId);
+        for (int i = 0; i < 10; i++) {
+            String key = "k1_" + i;
+            String value = "v1_" + i;
+            store.startTransaction();
+            store.set(key, value);
+            store.commitTransaction();
+            Assert.assertEquals(value, store.get(key));
+        }
+    }
+
+    @AfterClass
+    public static void cleanUp() {
+        killOmsAndKernelServers();
     }
 }

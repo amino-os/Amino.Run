@@ -1,7 +1,0 @@
-# Configuration for running KVStore without DM
-!!sapphire.app.SapphireObjectSpec
-constructorName: null
-javaClassName: sapphire.demo.KVStore
-lang: java
-name: null
-sourceFileLocation: null

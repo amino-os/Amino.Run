@@ -1,0 +1,11 @@
+# Configuration for running KVStore as a
+# sapphire object with Immutable policy.
+!!sapphire.app.SapphireObjectSpec
+constructorName: null
+dmList:
+- configs: []
+  name: sapphire.policy.primitive.ImmutablePolicy
+javaClassName: sapphire.demo.KVStore
+lang: java
+name: null
+sourceFileLocation: null

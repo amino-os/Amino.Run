@@ -22,7 +22,7 @@ public class ImmutablePolicy extends DefaultSapphirePolicy {
         public Object onRPC(String method, ArrayList<Object> params) throws Exception {
             synchronized (this) {
                 if (cachedObject == null) {
-                    cachedObject = getServer().sapphire_getAppObject();
+                    cachedObject = ((ServerPolicy) getServer()).getObject();
                 }
             }
 
@@ -30,7 +30,11 @@ public class ImmutablePolicy extends DefaultSapphirePolicy {
         }
     }
 
-    public static class ServerPolicy extends DefaultServerPolicy {}
+    public static class ServerPolicy extends DefaultServerPolicy {
+        public AppObject getObject() {
+            return sapphire_getAppObject();
+        }
+    }
 
     public static class GroupPolicy extends DefaultGroupPolicy {}
 }

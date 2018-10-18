@@ -1,10 +1,10 @@
 # Configuration for running KVStore as a
-# sapphire object with AtLeastOnceRPC policy.
+# sapphire object with LockingTransaction policy.
 !!sapphire.app.SapphireObjectSpec
 constructorName: null
 dmList:
 - configs: []
-  name: sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy
+  name: sapphire.policy.serializability.LockingTransactionPolicy
 javaClassName: sapphire.demo.KVStore
 lang: java
 name: null

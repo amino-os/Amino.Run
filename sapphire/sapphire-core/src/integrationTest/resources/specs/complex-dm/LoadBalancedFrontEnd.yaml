@@ -1,0 +1,11 @@
+# Configuration for running KeyValueStore as a
+# sapphire object with LoadBalancedFrontend policy.
+!!sapphire.app.SapphireObjectSpec
+constructorName: null
+dmList:
+- configs: []
+  name: sapphire.policy.scalability.LoadBalancedFrontendPolicy
+javaClassName: sapphire.demo.KVStore
+lang: java
+name: null
+sourceFileLocation: null

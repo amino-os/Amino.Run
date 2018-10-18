@@ -13,9 +13,8 @@
  */
 package sapphire.demo.stubs;
 
-import sapphire.demo.KVStore;
-
-public final class KVStore_Stub extends KVStore implements sapphire.common.AppObjectStub {
+public final class KVStore_Stub extends sapphire.demo.KVStore
+        implements sapphire.common.AppObjectStub {
 
     sapphire.policy.SapphirePolicy.SapphireClientPolicy $__client = null;
     boolean $__directInvocation = false;
@@ -36,13 +35,69 @@ public final class KVStore_Stub extends KVStore implements sapphire.common.AppOb
         return super.clone();
     }
 
+    // Implementation of startTransaction(long)
+    public void startTransaction(long $param_long_1) {
+        java.lang.Object $__result = null;
+        if ($__directInvocation) {
+            try {
+                super.startTransaction($param_long_1);
+            } catch (java.lang.Exception e) {
+                throw new sapphire.common.AppExceptionWrapper(e);
+            }
+        } else {
+            java.util.ArrayList<Object> $__params = new java.util.ArrayList<Object>();
+            String $__method = "public void sapphire.demo.KVStore.startTransaction(long)";
+            $__params.add($param_long_1);
+            try {
+                $__result = $__client.onRPC($__method, $__params);
+            } catch (sapphire.common.AppExceptionWrapper e) {
+                Exception ex = e.getException();
+                if (ex instanceof java.lang.RuntimeException) {
+                    throw (java.lang.RuntimeException) ex;
+                } else {
+                    throw new java.lang.RuntimeException(ex);
+                }
+            } catch (java.lang.Exception e) {
+                throw new java.lang.RuntimeException(e);
+            }
+        }
+    }
+
+    // Implementation of startTransaction()
+    public void startTransaction() throws java.lang.Exception {
+        java.lang.Object $__result = null;
+        if ($__directInvocation) {
+            try {
+                super.startTransaction();
+            } catch (java.lang.Exception e) {
+                throw new sapphire.common.AppExceptionWrapper(e);
+            }
+        } else {
+            java.util.ArrayList<Object> $__params = new java.util.ArrayList<Object>();
+            String $__method =
+                    "public void sapphire.demo.KVStore.startTransaction() throws java.lang.Exception";
+            try {
+                $__result = $__client.onRPC($__method, $__params);
+            } catch (sapphire.common.AppExceptionWrapper e) {
+                Exception ex = e.getException();
+                if (ex instanceof java.lang.RuntimeException) {
+                    throw (java.lang.RuntimeException) ex;
+                } else {
+                    throw new java.lang.RuntimeException(ex);
+                }
+            } catch (java.lang.Exception e) {
+                throw new java.lang.RuntimeException(e);
+            }
+        }
+    }
+
     // Implementation of set(String, Serializable)
-    public void set(String $param_String_1, java.io.Serializable $param_Serializable_2) {
-        Object $__result = null;
+    public void set(java.lang.String $param_String_1, java.io.Serializable $param_Serializable_2) {
+        java.lang.Object $__result = null;
         if ($__directInvocation) {
             try {
                 super.set($param_String_1, $param_Serializable_2);
-            } catch (Exception e) {
+            } catch (java.lang.Exception e) {
                 throw new sapphire.common.AppExceptionWrapper(e);
             }
         } else {
@@ -55,24 +110,52 @@ public final class KVStore_Stub extends KVStore implements sapphire.common.AppOb
                 $__result = $__client.onRPC($__method, $__params);
             } catch (sapphire.common.AppExceptionWrapper e) {
                 Exception ex = e.getException();
-                if (ex instanceof RuntimeException) {
-                    throw (RuntimeException) ex;
+                if (ex instanceof java.lang.RuntimeException) {
+                    throw (java.lang.RuntimeException) ex;
                 } else {
-                    throw new RuntimeException(ex);
+                    throw new java.lang.RuntimeException(ex);
                 }
-            } catch (Exception e) {
-                throw new RuntimeException(e);
+            } catch (java.lang.Exception e) {
+                throw new java.lang.RuntimeException(e);
+            }
+        }
+    }
+
+    // Implementation of rollbackTransaction()
+    public void rollbackTransaction() throws java.lang.Exception {
+        java.lang.Object $__result = null;
+        if ($__directInvocation) {
+            try {
+                super.rollbackTransaction();
+            } catch (java.lang.Exception e) {
+                throw new sapphire.common.AppExceptionWrapper(e);
+            }
+        } else {
+            java.util.ArrayList<Object> $__params = new java.util.ArrayList<Object>();
+            String $__method =
+                    "public void sapphire.demo.KVStore.rollbackTransaction() throws java.lang.Exception";
+            try {
+                $__result = $__client.onRPC($__method, $__params);
+            } catch (sapphire.common.AppExceptionWrapper e) {
+                Exception ex = e.getException();
+                if (ex instanceof java.lang.RuntimeException) {
+                    throw (java.lang.RuntimeException) ex;
+                } else {
+                    throw new java.lang.RuntimeException(ex);
+                }
+            } catch (java.lang.Exception e) {
+                throw new java.lang.RuntimeException(e);
             }
         }
     }
 
     // Implementation of get(String)
-    public java.io.Serializable get(String $param_String_1) {
-        Object $__result = null;
+    public java.io.Serializable get(java.lang.String $param_String_1) {
+        java.lang.Object $__result = null;
         if ($__directInvocation) {
             try {
                 $__result = super.get($param_String_1);
-            } catch (Exception e) {
+            } catch (java.lang.Exception e) {
                 throw new sapphire.common.AppExceptionWrapper(e);
             }
         } else {
@@ -84,15 +167,43 @@ public final class KVStore_Stub extends KVStore implements sapphire.common.AppOb
                 $__result = $__client.onRPC($__method, $__params);
             } catch (sapphire.common.AppExceptionWrapper e) {
                 Exception ex = e.getException();
-                if (ex instanceof RuntimeException) {
-                    throw (RuntimeException) ex;
+                if (ex instanceof java.lang.RuntimeException) {
+                    throw (java.lang.RuntimeException) ex;
                 } else {
-                    throw new RuntimeException(ex);
+                    throw new java.lang.RuntimeException(ex);
                 }
-            } catch (Exception e) {
-                throw new RuntimeException(e);
+            } catch (java.lang.Exception e) {
+                throw new java.lang.RuntimeException(e);
             }
         }
         return ((java.io.Serializable) $__result);
+    }
+
+    // Implementation of commitTransaction()
+    public void commitTransaction() throws java.lang.Exception {
+        java.lang.Object $__result = null;
+        if ($__directInvocation) {
+            try {
+                super.commitTransaction();
+            } catch (java.lang.Exception e) {
+                throw new sapphire.common.AppExceptionWrapper(e);
+            }
+        } else {
+            java.util.ArrayList<Object> $__params = new java.util.ArrayList<Object>();
+            String $__method =
+                    "public void sapphire.demo.KVStore.commitTransaction() throws java.lang.Exception";
+            try {
+                $__result = $__client.onRPC($__method, $__params);
+            } catch (sapphire.common.AppExceptionWrapper e) {
+                Exception ex = e.getException();
+                if (ex instanceof java.lang.RuntimeException) {
+                    throw (java.lang.RuntimeException) ex;
+                } else {
+                    throw new java.lang.RuntimeException(ex);
+                }
+            } catch (java.lang.Exception e) {
+                throw new java.lang.RuntimeException(e);
+            }
+        }
     }
 }

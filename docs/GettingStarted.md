@@ -14,12 +14,25 @@
 
 
 # Quick Start
-### Download GraalVM 
-* Download GraalVM from https://www.graalvm.org/downloads/
+## Download and install GraalVM Community Edition
+* You will need to download and install the corrrect version (usually the latest stable version) 
+  based on the dependency configured in 
+  [sapphire/sapphire-core/build.gradle](https://github.com/Huawei-PaaS/DCAP-Sapphire/blob/master/sapphire/sapphire-core/build.gradle). 
+  As of October 2018, that's 
+  [GraalVM Community Edition 1.0 RC7](https://github.com/oracle/graal/releases/tag/vm-1.0.0-rc7).
+  Note that the open source Community Edition works fine, so don't bother with the Enterprise Edition unless 
+  you have a specific need for it.
+  Follow instructions at  https://www.graalvm.org/docs/getting-started/ for downloading and installing.
+  In particular, set your JAVA_HOME and PATH variables appropriately.  For example, something along the lines of the following at the end of your ~/.bash_profile in your home directory works well on Linux and Mac OS X:
+```  
+export GRAALVM_HOME=~/Downloads/graalvm-ce-1.0.0-rc7/Contents/Home
+export JAVA_HOME=$GRAALVM_HOME
+export PATH=$GRAALVM_HOME/bin:$PATH
+```
 
-### Install Android SDK and Android Studio
+## Install Android SDK and Android Studio
 * Follow [instructions](https://developer.android.com/studio/) to install Android SDK and Anroid Studio. More details can be found at [here](https://wiki.appcelerator.org/display/guides2/Installing+the+Android+SDK#InstallingtheAndroidSDK-InstallingAndroidSDKToolsonmacOS).
-* Android SDK and Android Studio are *not* required by Sapphire. But many Sapphire demo applications are android applications. We recommend install Android SDK and Android Studio.
+* Android SDK and Android Studio are *not* required by Sapphire. But many Sapphire demo applications are android applications. We recommend installing Android SDK and Android Studio.
 ```shell
 // on Mac
 $ brew cask install android-sdk
@@ -41,25 +54,29 @@ sdk.dir=<your sdk dir>
 EOF
 ```
 
-### Checking out Sapphire
+## Getting and Building the Source Code
+
+### Check out Sapphire from Github
 ```shell
 # checkout sapphire
 $ git clone https://github.com/Huawei-PaaS/DCAP-Sapphire
-
-# set path to gradlew
-$ export PATH=$PATH:<path to gradlew>
-
-# set GraalVM JDK location
-$ set org.gradle.java.home in DCAP-Sapphire/sapphire/gradle.properties 
 ```
 
-### List Sapphire Projects
+### Build and Test Sapphire Core
+```shell
+# build sapphire-core
+> cd DCAP_Sapphire/sapphire/sapphire-core
+> ../gradlew build
+
+### Other gradle tasks and tips
+
+#### List Sapphire Projects
 ```shell
 > cd DCAP_Sapphire/sapphire
 > ./gradlew projects
 ```
 
-### Clean Sapphire
+#### Clean Sapphire
 ```shell
 # clean sapphire-core and dependencies
 > cd DCAP_Sapphire/sapphire
@@ -69,7 +86,7 @@ $ set org.gradle.java.home in DCAP-Sapphire/sapphire/gradle.properties
 > ./gradlew :sapphire-core:clean
 ```
 
-### Format Source Code
+#### Format Source Code
 ```shell
 # format source code
 > cd DCAP_Sapphire/sapphire
@@ -79,24 +96,13 @@ $ set org.gradle.java.home in DCAP-Sapphire/sapphire/gradle.properties
 > ./gradlew verGJF
 ```
 
-### Generate Policy Stub
+#### Generate Policy Stub
 ```shell
 > cd DCAP_Sapphire/sapphire/sapphire-core
 > ../gradlew genPolicyStubs
 ```
 
-### Build Sapphire
-```shell
-# build sapphire-core
-> cd DCAP_Sapphire/sapphire/sapphire-core
-> ../gradlew build
-
-# build hankstodo
-> cd DCAP_Sapphire/sapphire/examples/hanksTodo
-> ../../gradlew build
-```
-
-### Publish Sapphire 
+### Publish Sapphire Core to Bintray 
 ```shell
 export BINTRAY_USER="<bintray_user>"
 export BINTRAY_API_KEY="<bintray_api_key>"
@@ -108,12 +114,25 @@ export BINTRAY_API_KEY="<bintray_api_key>"
 > ./gradlew --info :apache.harmony:bintrayUpload
 ```
 
-### Gradle Tips
+
+### Other Gradle Tips
 ```shell
 > ./gradlew projects
 > ./gradlew tasks --all
 > ./gradlew properties
 > ./gradlew jar
+```
+
+### Build and Test Basic Example Applications
+#### Build and Run Hankstodo, a simple TODO list manager
+```shell
+> cd DCAP_Sapphire/sapphire
+> # Run the Object Management System
+> ./gradlew :examples:hanksTodo:runoms
+> # In a new terminal window: Run a Kernel Server
+> ./gradlew :examples:hanksTodo:runks
+> # In a new terminal window: Run the Application
+> ./gradlew :examples:hanksTodo:runapp
 ```
 
 # Android Studio Setup

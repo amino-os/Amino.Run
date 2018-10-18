@@ -3,7 +3,6 @@ package sapphire.kernel;
 import static java.lang.Thread.sleep;
 
 import java.net.InetSocketAddress;
-import java.nio.file.Paths;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import org.junit.Assert;
@@ -73,13 +72,7 @@ public class BasicIntegrationTest {
         /* Start OMS and kernel server as separate process and invoke rpc from app client */
         try {
             String cwd = System.getProperty("user.dir");
-            String javaHome = System.getProperty("DCAP_JAVA_HOME");
-            String javaExe = "java";
-            if (javaHome != null) {
-                javaExe = Paths.get(javaHome, "bin", "java").toString();
-                System.out.println("java to call: " + javaExe);
-            }
-
+            String javaExe = System.getProperty("java.home") + "/bin/java";
             String classPath = System.getProperty("java.class.path");
             String omsCmd =
                     javaExe + " -cp " + classPath + " sapphire.oms.OMSServerImpl " + ip + " 22446 ";

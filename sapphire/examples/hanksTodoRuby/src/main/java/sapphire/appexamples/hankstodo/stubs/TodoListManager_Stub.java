@@ -1,10 +1,5 @@
 package sapphire.appexamples.hankstodo.stubs;
 
-import org.graalvm.polyglot.Value;
-import jdk.nashorn.internal.runtime.regexp.joni.exception.SyntaxException;
-import java.util.Arrays;
-import sapphire.graal.io.SerializeValue;
-
 public final class TodoListManager_Stub extends sapphire.common.GraalObject implements sapphire.common.AppObjectStub {
 
     sapphire.policy.SapphirePolicy.SapphireClientPolicy $__client = null;
@@ -38,7 +33,7 @@ public final class TodoListManager_Stub extends sapphire.common.GraalObject impl
         if ($__directInvocation) {
             try {
                 java.util.ArrayList<Object> objs = new java.util.ArrayList<>();
-                objs.addAll(Arrays.asList(args));
+                objs.addAll(java.util.Arrays.asList(args));
                 $__result = super.invoke("newTodoList", objs);
             } catch (java.lang.Exception e) {
                 throw new sapphire.common.AppExceptionWrapper(e);
@@ -46,13 +41,12 @@ public final class TodoListManager_Stub extends sapphire.common.GraalObject impl
         } else {
             java.util.ArrayList<Object> $__params = new java.util.ArrayList<Object>();
             String $__method = "public java.lang.Object sapphire.appexamples.hankstodo.stubs.TodoListManager_Stub.newTodoList(java.lang.Object...)";
-            $__params.addAll(Arrays.asList(args));
+            $__params.addAll(java.util.Arrays.asList(args));
             try {
                 $__result = $__client.onRPC($__method, $__params);
-                if ($__result instanceof SerializeValue) {
-                    $__result = deserializedSerializeValue((SerializeValue)$__result);
+                if ($__result instanceof sapphire.graal.io.SerializeValue) {
+                    $__result = deserializedSerializeValue((sapphire.graal.io.SerializeValue)$__result);
                     $__result = ((org.graalvm.polyglot.Value)$__result).as(java.lang.Object.class);
-                    System.out.println($__result);
                 }
             } catch (sapphire.common.AppExceptionWrapper e) {
                 Exception ex = e.getException();
@@ -66,7 +60,6 @@ public final class TodoListManager_Stub extends sapphire.common.GraalObject impl
             }
         }
 
-        System.out.println($__result);
         return ($__result);
     }
 
@@ -75,7 +68,7 @@ public final class TodoListManager_Stub extends sapphire.common.GraalObject impl
         if ($__directInvocation) {
             try {
                 java.util.ArrayList<Object> objs = new java.util.ArrayList<>();
-                objs.addAll(Arrays.asList(args));
+                objs.addAll(java.util.Arrays.asList(args));
                 $__result = super.invoke("deleteTodoList", objs);
             } catch (java.lang.Exception e) {
                 throw new sapphire.common.AppExceptionWrapper(e);
@@ -83,13 +76,12 @@ public final class TodoListManager_Stub extends sapphire.common.GraalObject impl
         } else {
             java.util.ArrayList<Object> $__params = new java.util.ArrayList<Object>();
             String $__method = "public java.lang.Object sapphire.appexamples.hankstodo.stubs.TodoListManager_Stub.deleteTodoList(java.lang.Object...)";
-            $__params.addAll(Arrays.asList(args));
+            $__params.addAll(java.util.Arrays.asList(args));
             try {
                 $__result = $__client.onRPC($__method, $__params);
-                if ($__result instanceof SerializeValue) {
-                    $__result = deserializedSerializeValue((SerializeValue)$__result);
+                if ($__result instanceof sapphire.graal.io.SerializeValue) {
+                    $__result = deserializedSerializeValue((sapphire.graal.io.SerializeValue)$__result);
                     $__result = ((org.graalvm.polyglot.Value)$__result).as(java.lang.Object.class);
-                    System.out.println($__result);
                 }
             } catch (sapphire.common.AppExceptionWrapper e) {
                 Exception ex = e.getException();
@@ -103,8 +95,7 @@ public final class TodoListManager_Stub extends sapphire.common.GraalObject impl
             }
         }
 
-        System.out.println($__result);
-        return ($__result);
+        return $__result;
     }
 
     public java.lang.Object addTodo(Object... args) {
@@ -112,7 +103,7 @@ public final class TodoListManager_Stub extends sapphire.common.GraalObject impl
         if ($__directInvocation) {
             try {
                 java.util.ArrayList<Object> objs = new java.util.ArrayList<>();
-                objs.addAll(Arrays.asList(args));
+                objs.addAll(java.util.Arrays.asList(args));
                 $__result = super.invoke("addTodo", objs);
             } catch (java.lang.Exception e) {
                 throw new sapphire.common.AppExceptionWrapper(e);
@@ -120,13 +111,12 @@ public final class TodoListManager_Stub extends sapphire.common.GraalObject impl
         } else {
             java.util.ArrayList<Object> $__params = new java.util.ArrayList<Object>();
             String $__method = "public java.lang.Object sapphire.appexamples.hankstodo.stubs.TodoListManager_Stub.addTodo(java.lang.Object...)";
-            $__params.addAll(Arrays.asList(args));
+            $__params.addAll(java.util.Arrays.asList(args));
             try {
                 $__result = $__client.onRPC($__method, $__params);
-                if ($__result instanceof SerializeValue) {
-                    $__result = deserializedSerializeValue((SerializeValue)$__result);
+                if ($__result instanceof sapphire.graal.io.SerializeValue) {
+                    $__result = deserializedSerializeValue((sapphire.graal.io.SerializeValue)$__result);
                     $__result = ((org.graalvm.polyglot.Value)$__result).as(java.lang.Object.class);
-                    System.out.println($__result);
                 }
             } catch (sapphire.common.AppExceptionWrapper e) {
                 Exception ex = e.getException();
@@ -140,8 +130,7 @@ public final class TodoListManager_Stub extends sapphire.common.GraalObject impl
             }
         }
 
-        System.out.println($__result);
-        return ($__result);
+        return $__result;
     }
 
     public java.lang.Object getTodos(Object... args) {
@@ -149,7 +138,7 @@ public final class TodoListManager_Stub extends sapphire.common.GraalObject impl
         if ($__directInvocation) {
             try {
                 java.util.ArrayList<Object> objs = new java.util.ArrayList<>();
-                objs.addAll(Arrays.asList(args));
+                objs.addAll(java.util.Arrays.asList(args));
                 $__result = super.invoke("getTodos", objs);
             } catch (java.lang.Exception e) {
                 throw new sapphire.common.AppExceptionWrapper(e);
@@ -157,13 +146,12 @@ public final class TodoListManager_Stub extends sapphire.common.GraalObject impl
         } else {
             java.util.ArrayList<Object> $__params = new java.util.ArrayList<Object>();
             String $__method = "public java.lang.Object sapphire.appexamples.hankstodo.stubs.TodoListManager_Stub.getTodos(java.lang.Object...)";
-            $__params.addAll(Arrays.asList(args));
+            $__params.addAll(java.util.Arrays.asList(args));
             try {
                 $__result = $__client.onRPC($__method, $__params);
-                if ($__result instanceof SerializeValue) {
-                    $__result = deserializedSerializeValue((SerializeValue)$__result);
+                if ($__result instanceof sapphire.graal.io.SerializeValue) {
+                    $__result = deserializedSerializeValue((sapphire.graal.io.SerializeValue)$__result);
                     $__result = ((org.graalvm.polyglot.Value)$__result).as(java.lang.Object.class);
-                    System.out.println($__result);
                 }
             } catch (sapphire.common.AppExceptionWrapper e) {
                 Exception ex = e.getException();
@@ -177,8 +165,7 @@ public final class TodoListManager_Stub extends sapphire.common.GraalObject impl
             }
         }
 
-        System.out.println($__result);
-        return ($__result);
+        return $__result;
     }
 
     public java.lang.Object completeTodo(Object... args) {
@@ -186,7 +173,7 @@ public final class TodoListManager_Stub extends sapphire.common.GraalObject impl
         if ($__directInvocation) {
             try {
                 java.util.ArrayList<Object> objs = new java.util.ArrayList<>();
-                objs.addAll(Arrays.asList(args));
+                objs.addAll(java.util.Arrays.asList(args));
                 $__result = super.invoke("completeTodo", objs);
             } catch (java.lang.Exception e) {
                 throw new sapphire.common.AppExceptionWrapper(e);
@@ -194,13 +181,12 @@ public final class TodoListManager_Stub extends sapphire.common.GraalObject impl
         } else {
             java.util.ArrayList<Object> $__params = new java.util.ArrayList<Object>();
             String $__method = "public java.lang.Object sapphire.appexamples.hankstodo.stubs.TodoListManager_Stub.completeTodo(java.lang.Object...)";
-            $__params.addAll(Arrays.asList(args));
+            $__params.addAll(java.util.Arrays.asList(args));
             try {
                 $__result = $__client.onRPC($__method, $__params);
-                if ($__result instanceof SerializeValue) {
-                    $__result = deserializedSerializeValue((SerializeValue)$__result);
+                if ($__result instanceof sapphire.graal.io.SerializeValue) {
+                    $__result = deserializedSerializeValue((sapphire.graal.io.SerializeValue)$__result);
                     $__result = ((org.graalvm.polyglot.Value)$__result).as(java.lang.Object.class);
-                    System.out.println($__result);
                 }
             } catch (sapphire.common.AppExceptionWrapper e) {
                 Exception ex = e.getException();
@@ -214,8 +200,7 @@ public final class TodoListManager_Stub extends sapphire.common.GraalObject impl
             }
         }
 
-        System.out.println($__result);
-        return ($__result);
+        return $__result;
     }
 
 }

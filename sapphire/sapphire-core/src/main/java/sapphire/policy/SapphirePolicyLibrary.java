@@ -127,6 +127,10 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
             this.spec = spec;
         }
 
+        public SapphireObjectSpec getSapphireObjectSpec() {
+            return this.spec;
+        }
+
         @Override
         public void onCreate(
                 SapphirePolicy.SapphireGroupPolicy group,
@@ -169,7 +173,6 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
                 Sapphire.createPolicy(
                         this.getGroup().sapphireObjId,
                         spec,
-                        actualAppObject,
                         configMap,
                         processedPolicies,
                         processedPoliciesReplica,
@@ -193,7 +196,6 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
                         Sapphire.createPolicy(
                                 this.getGroup().sapphireObjId,
                                 spec,
-                                null,
                                 configMap,
                                 this.nextPolicies,
                                 processedPoliciesReplica,

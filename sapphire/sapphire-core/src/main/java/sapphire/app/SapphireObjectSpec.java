@@ -1,5 +1,6 @@
 package sapphire.app;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -38,7 +39,7 @@ import org.yaml.snakeyaml.Yaml;
  * sourceFileLocation: src/main/js/college.js
  * </code>
  */
-public class SapphireObjectSpec {
+public class SapphireObjectSpec implements Serializable {
     /** Programming Language in which the Sapphire object is written */
     private Language lang;
 

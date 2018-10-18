@@ -85,7 +85,6 @@ public class Sapphire {
                     createPolicy(
                             sapphireObjId,
                             spec,
-                            null,
                             configMap,
                             policyNameChain,
                             processedPolicies,
@@ -142,7 +141,6 @@ public class Sapphire {
                     createPolicy(
                             sapphireObjId,
                             spec,
-                            null,
                             configMap,
                             policyNameChain,
                             processedPolicies,
@@ -211,7 +209,6 @@ public class Sapphire {
     public static List<SapphirePolicyContainer> createPolicy(
             SapphireObjectID sapphireObjId,
             SapphireObjectSpec spec,
-            AppObject appObject,
             Map<String, SapphirePolicyConfig> configMap,
             List<SapphirePolicyContainer> policyNameChain,
             List<SapphirePolicyContainer> processedPolicies,
@@ -277,7 +274,7 @@ public class Sapphire {
                     previousServerPolicyStub,
                     client);
         } else {
-            initAppStub(spec, serverPolicy, serverPolicyStub, client, appArgs, appObject);
+            initAppStub(spec, serverPolicy, serverPolicyStub, client, appArgs);
         }
 
         // Note that subList is non serializable; hence, the new list creation.
@@ -312,7 +309,6 @@ public class Sapphire {
             createPolicy(
                     sapphireObjId,
                     spec,
-                    null,
                     configMap,
                     nextPoliciesToCreate,
                     processedPolicies,
@@ -749,6 +745,8 @@ public class Sapphire {
             throws KernelObjectNotFoundException {
         serverPolicyStub.$__initialize(prevServerPolicy.sapphire_getAppObject());
         serverPolicy.$__initialize(prevServerPolicy.sapphire_getAppObject());
+        serverPolicyStub.setSapphireObjectSpec(prevServerPolicy.getSapphireObjectSpec());
+        serverPolicy.setSapphireObjectSpec(prevServerPolicy.getSapphireObjectSpec());
 
         KernelObject previousServerPolicyKernelObject =
                 GlobalKernelReferences.nodeServer.getKernelObject(
@@ -778,20 +776,16 @@ public class Sapphire {
             SapphireServerPolicy serverPolicy,
             SapphireServerPolicy serverPolicyStub,
             SapphireClientPolicy clientPolicy,
-            Object[] appArgs,
-            AppObject appObject)
+            Object[] appArgs)
             throws ClassNotFoundException, IllegalAccessException, CloneNotSupportedException {
-        AppObjectStub appStub;
 
-        if (appObject != null) {
-            serverPolicyStub.$__initialize(appObject);
-            serverPolicy.$__initialize(appObject);
-        } else {
-            appStub = getAppStub(spec, serverPolicy, appArgs);
-            appStub.$__initialize(clientPolicy);
-            serverPolicy.$__initialize(appStub);
-            serverPolicyStub.$__initialize(appStub);
-        }
+        AppObjectStub appStub;
+        appStub = getAppStub(spec, serverPolicy, appArgs);
+        appStub.$__initialize(clientPolicy);
+        serverPolicy.$__initialize(appStub);
+        serverPolicyStub.$__initialize(appStub);
+        serverPolicy.setSapphireObjectSpec(spec);
+        serverPolicyStub.setSapphireObjectSpec(spec);
     }
 
     public static Class<?>[] getParamsClasses(Object[] params) throws ClassNotFoundException {

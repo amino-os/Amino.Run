@@ -2,6 +2,7 @@ package sapphire.app;
 
 import static sapphire.policy.SapphirePolicyUpcalls.SapphirePolicyConfig;
 
+import java.io.Serializable;
 import java.util.*;
 import org.yaml.snakeyaml.Yaml;
 
@@ -11,7 +12,7 @@ import org.yaml.snakeyaml.Yaml;
  * <p>Each DM specification contains a sapphire policy name and an optional list of sapphire policy
  * configurations.
  */
-public final class DMSpec {
+public final class DMSpec implements Serializable {
     private String name;
     private List<SapphirePolicyConfig> configs = new ArrayList<>();
 

@@ -2,53 +2,107 @@ package sapphire.compiler;
 
 import java.io.*;
 import java.util.*;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.graalvm.polyglot.*;
-import sapphire.app.Language;
 
 public class GraalStubGenerator {
-
-    private static String workingDir =
-            "./examples/hanksTodoRuby/src/main/js/sapphire/appexamples/hankstodo";
+    private Value prototype;
+    private String fileName;
+    private static Logger logger = Logger.getLogger(GraalStubGenerator.class.getName());
+    private static String stubSuffix = "_Stub";
+    private static String packageName;
+    private static String[] supportedLangs = {"js", "python", "ruby"};
 
     public static void main(String[] args) throws Exception {
-        try {
-            // src folder, package name, dest folder
-            String[] supportedLangs = {"js", "python", "ruby"};
-            Context polyglot = Context.newBuilder(supportedLangs).allowAllAccess(true).build();
-            String jsHome = System.getProperty("JS_HOME");
-            if (jsHome != null && !jsHome.isEmpty()) workingDir = jsHome;
+        if (args.length != 4) {
+            System.out.println(
+                    "Invalid arguments, expected arguments:  [SapphireObjectFileOrFolder] [OutputFolder] [StubPackageName] [ClassNamesSeparatedByComma]");
+            return;
+        }
 
-            polyglot.eval(
-                    Source.newBuilder("js", new File(workingDir + "/todo_list_manager_new.js"))
-                            .build());
-            Value v1 = polyglot.eval("js", "TodoListManager").newInstance();
-            GraalStubGenerator stubGenerator = new GraalStubGenerator(Language.js, v1);
-            stubGenerator.generateStub();
-        } catch (Exception ex) {
-            System.out.println(ex.toString());
+        String inputFile = args[0], outputDirectory = args[1], packageName = args[2];
+        String[] classNames = args[3].split(",");
+
+        Context polyglot = Context.newBuilder(supportedLangs).allowAllAccess(true).build();
+
+        // Evaluate all polyglot files recursively.
+        File f = new File(inputFile);
+        List<File> files = new ArrayList<>();
+        getFilesRecursively(files, f);
+        for (File sub : files) {
+            String l = getLanguageFromFileName(sub.getName());
+            if (!l.isEmpty())
+                try {
+                    polyglot.eval(Source.newBuilder(l, sub).build());
+                } catch (Exception e) {
+                    // Note, we don't throw exception, skip the file and continue evaluating
+                    // remaining files.
+                    logger.log(
+                            Level.WARNING,
+                            String.format(
+                                    "Failed to evaluate file %s via lang %s, exception is %s",
+                                    sub.getAbsolutePath(), l, e.getMessage()));
+                }
+        }
+
+        for (String className : classNames) {
+            for (String supportedLang : supportedLangs) {
+                Value v;
+                try {
+                    v = polyglot.eval(supportedLang, className).newInstance();
+                } catch (Exception e) {
+                    logger.log(
+                            Level.INFO,
+                            String.format(
+                                    "Failed to found class %s in language %s",
+                                    className, supportedLang));
+                    continue;
+                }
+
+                logger.log(
+                        Level.INFO,
+                        String.format(
+                                "Generating stub for class %s in language %s",
+                                className, supportedLang));
+                GraalStubGenerator gen =
+                        new GraalStubGenerator(
+                                v,
+                                outputDirectory + "/" + packageName.replaceAll("\\.", "/"),
+                                packageName);
+                gen.generateStub();
+            }
         }
     }
 
-    public GraalStubGenerator(Language lang, Value prototype) {
-        this.prototype = prototype;
-        this.lang = lang;
-        this.fileName =
-                workingDir
-                        + "/stubs/"
-                        + prototype.getMetaObject().getMember("className")
-                        + stubSuffix
-                        + ".java";
+    private static void getFilesRecursively(List<File> files, File f) {
+        if (f.isFile()) {
+            files.add(f);
+            return;
+        }
+
+        if (f.isDirectory()) {
+            for (File sub : f.listFiles()) {
+                getFilesRecursively(files, sub);
+            }
+        }
     }
 
-    private PrintStream out;
-    private Value prototype;
-    private int indentLevel;
-    private String fileName;
-    private Language lang;
-    private static Logger logger = Logger.getLogger(StubGenerator.class.getName());
-    private static String stubSuffix = "_Stub";
-    private String packageName = "sapphire.appexamples.hankstodo.stubs";
+    private static String getLanguageFromFileName(String fileName) {
+        if (fileName.endsWith(".js")) return "js";
+        if (fileName.endsWith(".rb")) return "ruby";
+        if (fileName.endsWith(".py")) return "python";
+
+        // TODO: test and add support for other languages.
+        return "";
+    }
+
+    public GraalStubGenerator(Value prototype, String outputDir, String packageName) {
+        this.prototype = prototype;
+        this.fileName = outputDir + "/" + getClassName() + stubSuffix + ".java";
+        this.packageName = packageName;
+        new File(outputDir).mkdirs();
+    }
 
     // string format following these inputs:
     // packageName
@@ -58,7 +112,7 @@ public class GraalStubGenerator {
     // stubSuffix
     // className
     // functions
-    String codeStringFormat =
+    private static String codeStringFormat =
             "package %s;\n\n"
                     + "import org.graalvm.polyglot.Value;\n"
                     + "import jdk.nashorn.internal.runtime.regexp.joni.exception.SyntaxException;\n"
@@ -101,7 +155,7 @@ public class GraalStubGenerator {
     // packageName
     // className
     // functionName
-    String functionStringFormat =
+    private static String functionStringFormat =
             "    public java.lang.Object %s(Object... args) {\n"
                     + "        java.lang.Object $__result = null;\n"
                     + "        if ($__directInvocation) {\n"
@@ -139,8 +193,8 @@ public class GraalStubGenerator {
                     + "        return ($__result);\n"
                     + "    }\n\n";
 
-    public String getClassName() {
-        return prototype.getMetaObject().getMember("className").asString();
+    private String getClassName() {
+        return prototype.getMetaObject().toString();
     }
 
     public void generateStub() throws FileNotFoundException {
@@ -156,16 +210,23 @@ public class GraalStubGenerator {
                         stubSuffix,
                         functions);
 
-        this.out = new PrintStream(fileName);
-        this.out.print(code);
+        if (new File(fileName).exists()) {
+            logger.log(
+                    Level.WARNING,
+                    String.format("Stub already exists, will be overwritten. %s", fileName));
+        }
+
+        PrintStream out = new PrintStream(fileName);
+        out.print(code);
     }
 
-    public String generateFunctions() {
+    private String generateFunctions() {
         StringBuilder res = new StringBuilder();
         String className = getClassName();
         for (String m : prototype.getMemberKeys()) {
             // Graal Value has lots of self defined function, let's skip them.
-            if (m.startsWith("__")) break;
+            // TODO: need to find a good way to skip graal self-defined functions.
+            if (m.startsWith("__")) continue;
 
             System.out.println("got key " + m);
             if (prototype.getMember(m).canExecute() && !m.equals("constructor")) {

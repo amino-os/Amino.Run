@@ -135,15 +135,8 @@ export BINTRAY_API_KEY="<bintray_api_key>"
 > ./gradlew :examples:hanksTodo:runapp
 ```
 
-# Android Studio Setup
-
-### IntelliJ 
-* Use *Open* to open Sapphire project. *Import* may not work properly.
+# IntelliJ Tips
+* If you decide to use IntelliJ instead of Android Studio, use *Open* to open the Sapphire project, 
+  as *Import* may not work properly.
 
 ![import_sapphire](images/ImportSapphireInIntelliJ.png)
-
-### Enable GraalVM SDK
-To enbale GraalVM in Android Studio, you need to 
-* add Graal SDK and 
-* manually add `jre/lib/boot/graal-sdk.jar` in SDK classpath. Otherwise, Android Studio will not be able to resolve polyglot data types. 
-![add_graalvm_sdk](images/Add_GraalVM_SDK.png)

@@ -321,6 +321,13 @@ public class Sapphire {
                     appArgs);
         }
 
+        /** Added updation of GroupPolicy server list, to handle MultiPolicy scenarios
+         *  so that the master copy of the PolicyChain has the entire Policy chain.
+         */
+        if (existingGroupPolicy == null) {
+            groupPolicy.updateServer(serverPolicyStub);
+        }
+
         String ko = "";
         for (SapphirePolicyContainer policyContainer : processedPolicies) {
             ko += String.valueOf(policyContainer.getKernelOID()) + ",";

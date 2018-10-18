@@ -59,6 +59,10 @@ public class DefaultSapphirePolicy extends SapphirePolicy {
         private ArrayList<SapphireServerPolicy> servers = new ArrayList<SapphireServerPolicy>();
 
         @Override
+        /**
+         * It is advisable that defer putting this server policy into group policy until the server
+         * policy is complete with full policy chain.
+         */
         public synchronized void addServer(SapphireServerPolicy server) throws RemoteException {
             if (servers == null) {
                 // TODO: Need to change it to proper exception

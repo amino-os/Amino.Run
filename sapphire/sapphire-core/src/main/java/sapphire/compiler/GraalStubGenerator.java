@@ -21,7 +21,8 @@ public class GraalStubGenerator {
             return;
         }
 
-        String inputFile = args[0], outputDirectory = args[1], packageName = args[2];
+        String inputFile = args[0], outputDirectory = args[1];
+        packageName = args[2];
         String[] classNames = args[3].split(",");
 
         Context polyglot = Context.newBuilder(supportedLangs).allowAllAccess(true).build();
@@ -31,46 +32,55 @@ public class GraalStubGenerator {
         List<File> files = new ArrayList<>();
         getFilesRecursively(files, f);
         for (File sub : files) {
-            String l = getLanguageFromFileName(sub.getName());
-            if (!l.isEmpty())
-                try {
-                    polyglot.eval(Source.newBuilder(l, sub).build());
-                } catch (Exception e) {
-                    // Note, we don't throw exception, skip the file and continue evaluating
-                    // remaining files.
-                    logger.log(
-                            Level.WARNING,
-                            String.format(
-                                    "Failed to evaluate file %s via lang %s, exception is %s",
-                                    sub.getAbsolutePath(), l, e.getMessage()));
-                }
+            loadFile(sub, polyglot);
         }
 
         for (String className : classNames) {
-            for (String supportedLang : supportedLangs) {
-                Value v;
-                try {
-                    v = polyglot.eval(supportedLang, className).newInstance();
-                } catch (Exception e) {
-                    logger.log(
-                            Level.INFO,
-                            String.format(
-                                    "Failed to found class %s in language %s",
-                                    className, supportedLang));
-                    continue;
-                }
+            for (String lang : supportedLangs) {
+                generateStub(polyglot, lang, className, outputDirectory);
+            }
+        }
+    }
 
+    private static void generateStub(Context polyglot, String lang, String className, String outputDirectory) throws Exception {
+        Value v;
+        try {
+            v = polyglot.eval(lang, className).newInstance();
+        } catch (Exception e) {
+            logger.log(
+                    Level.INFO,
+                    String.format(
+                            "Failed to found class %s in language %s",
+                            className, lang));
+            return;
+        }
+
+        logger.log(
+                Level.INFO,
+                String.format(
+                        "Generating stub for class %s in language %s",
+                        className, lang));
+        GraalStubGenerator gen =
+                new GraalStubGenerator(
+                        v,
+                        outputDirectory + "/" + packageName.replaceAll("\\.", "/"),
+                        packageName);
+        gen.generateStub();
+    }
+
+    private static void loadFile(File file, Context polyglot) {
+        String l = getLanguageFromFileName(file.getName());
+        if (!l.isEmpty()) {
+            try {
+                polyglot.eval(Source.newBuilder(l, file).build());
+            } catch (Exception e) {
+                // Note, we don't throw exception, skip the file and continue evaluating
+                // remaining files.
                 logger.log(
-                        Level.INFO,
+                        Level.WARNING,
                         String.format(
-                                "Generating stub for class %s in language %s",
-                                className, supportedLang));
-                GraalStubGenerator gen =
-                        new GraalStubGenerator(
-                                v,
-                                outputDirectory + "/" + packageName.replaceAll("\\.", "/"),
-                                packageName);
-                gen.generateStub();
+                                "Failed to evaluate file %s via lang %s, exception is %s",
+                                file.getAbsolutePath(), l, e.getMessage()));
             }
         }
     }

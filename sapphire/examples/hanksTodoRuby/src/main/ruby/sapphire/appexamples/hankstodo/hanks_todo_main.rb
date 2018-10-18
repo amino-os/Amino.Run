@@ -17,16 +17,30 @@ class HanksTodoMain
         tlm = omsClient.GetTodoListManager(ENV['KERNEL_SERVER_IP'], ENV['KERNEL_SERVER_PORT'], ENV['OMS_IP'], ENV['OMS_PORT'], "ruby", fileName)
 
         # create new TODO list
-        puts #{tlm.methods}"
         t1 = tlm.newTodoList("Hanks")
         puts "got the object #{t1}"
 
-        puts "#{tlm.addTodo("Hanks", "First todo")}"
-        puts "#{tlm.addTodo("Hanks", "Second todo")}"
-        puts "#{tlm.addTodo("Hanks", "Third todo")}"
-        puts "#{tlm.getTodos("Hanks")}"
-        puts "#{tlm.completeTodo("Hanks", "Second todo")}"
-        puts "#{tlm.getTodos("Hanks")}"
+        # add tasks
+        puts "add First task #{tlm.addTodo("Hanks", "First todo")}"
+        puts "add Second task #{tlm.addTodo("Hanks", "Second todo")}"
+        puts "add Third task #{tlm.addTodo("Hanks", "Third todo")}"
+
+        # get added tasks
+        list = tlm.getTodos("Hanks")
+        puts "Current Task List:"
+        list.each do |task|
+          puts "#{task}"
+        end
+
+        # update completed task
+        puts "Update Second task status #{tlm.completeTodo("Hanks", "Second todo")}"
+
+        # get pending tasks
+        list = tlm.getTodos("Hanks")
+        puts "Current Task List:"
+        list.each do |task|
+           puts "#{task}"
+        end
     end
 end
 

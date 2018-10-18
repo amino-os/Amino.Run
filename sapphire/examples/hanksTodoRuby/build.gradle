@@ -41,7 +41,7 @@ task runrubyapp(type: Exec) {
     environment  KERNEL_SERVER_IP: "${project.property('embeddedKernelServerIp')}"
     environment  KERNEL_SERVER_PORT: "${project.property('kernelServerPort')}"
     def classpath = sourceSets.main.runtimeClasspath.asPath
-    executable "ruby"
+    executable "$System.env.JAVA_HOME/bin/ruby"
     args "--jvm", "--polyglot", "--jvm.classpath=${classpath}",
             "${project.projectDir}/src/main/ruby/sapphire/appexamples/hankstodo/hanks_todo_main.rb"
 }
@@ -54,7 +54,7 @@ task runjsapp(type: Exec) {
     environment  KERNEL_SERVER_IP: "${project.property('embeddedKernelServerIp')}"
     environment  KERNEL_SERVER_PORT: "${project.property('kernelServerPort')}"
     def classpath = sourceSets.main.runtimeClasspath.asPath
-    executable "js"
+    executable "$System.env.JAVA_HOME/bin/js"
     args "--jvm", "--polyglot", "--jvm.classpath=${classpath}",
             "${project.projectDir}/src/main/js/sapphire/appexamples/hankstodo/hanks_todo_main.js"
 }

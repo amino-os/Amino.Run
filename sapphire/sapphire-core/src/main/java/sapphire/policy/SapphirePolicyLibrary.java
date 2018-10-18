@@ -345,7 +345,7 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
         // TODO (2018-9-26, Sungwook) Remove after verification.
         public void sapphire_remove_replica() throws RemoteException {
             try {
-                oms().unRegisterSapphireReplica(getReplicaId());
+                GlobalKernelReferences.nodeServer.oms.unRegisterSapphireReplica(getReplicaId());
             } catch (SapphireObjectNotFoundException e) {
                 /* Sapphire object not found */
                 logger.severe(e.getMessage());
@@ -560,6 +560,18 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
             }
         }
 
+        /**
+         * Notifies server policies to exit. Each server policy should do three tasks: 1) remove
+         * itself from {@code KernelObjectManager} on local kernel server, 2) remove itself of OMS's
+         * {@code KernelObjectManager}, and 3) remove replica ID from OMS.
+         *
+         * <p><strong>Warning:</strong> Do not try to call OMS to unregister the sapphire object.
+         * {@link OMSServer#deleteSapphireObject(SapphireObjectID)} is the public entry point to
+         * delete a sapphire object. OMS will take care of deleting sapphire object at {@link
+         * sapphire.oms.OMSServerImpl#deleteSapphireObject(SapphireObjectID)}.
+         *
+         * @throws RemoteException
+         */
         public void onDestroy() throws RemoteException {
             /* Delete all the servers */
             ArrayList<SapphireServerPolicy> servers = getServers();
@@ -575,15 +587,6 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
                 } catch (Exception e) {
 
                 }
-            }
-
-            // TODO: Need retry upon failures ??
-
-            try {
-                oms().unRegisterSapphireObject(getSapphireObjId());
-            } catch (SapphireObjectNotFoundException e) {
-                /* Sapphire object not found */
-                e.printStackTrace();
             }
 
             KernelObjectFactory.delete($__getKernelOID());

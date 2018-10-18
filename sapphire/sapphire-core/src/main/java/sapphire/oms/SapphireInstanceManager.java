@@ -1,19 +1,25 @@
 package sapphire.oms;
 
+import static sapphire.policy.SapphirePolicy.SapphireGroupPolicy;
+
+import java.rmi.RemoteException;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Logger;
 import sapphire.common.AppObjectStub;
 import sapphire.common.SapphireObjectID;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
 import sapphire.common.SapphireReplicaID;
+import sapphire.policy.SapphirePolicy;
 import sapphire.runtime.EventHandler;
 
 public class SapphireInstanceManager {
+    private static final Logger logger = Logger.getLogger(SapphireInstanceManager.class.getName());
 
     private SapphireObjectID oid;
     private String name;
@@ -22,6 +28,19 @@ public class SapphireInstanceManager {
     private AppObjectStub objectStub;
     private HashMap<SapphireReplicaID, EventHandler> replicaDispatchers;
     private Random oidGenerator;
+    /**
+     * Root group policy is the <strong>outmost</strong> group policy of this sapphire object.
+     *
+     * <p>For example, given a sapphire object with DM list [DHT, MasterSlave], its outmost DM is
+     * DHT. In this case, {@code rootGroupPolicy} is the DHT group policy.
+     *
+     * <p>TODO(multi-dm): We actually need to maintain group policies of inner DMs too.
+     * We need to organize group policies, their relationships, and their healthiness into
+     * a table as described in the multi-DM design doc.
+     *
+     *  @see <a href="https://docs.google.com/document/d/1g5SnzsnyGXzdZVDF_uj9MQJomQpHS-PMpfwnYn4RNDU/edit#heading=h.j9vsjm8kyruk">Multi-DM Design Doc</a>
+     */
+    private SapphireGroupPolicy rootGroupPolicy;
 
     /**
      * Randomly generate a new replica id
@@ -38,6 +57,15 @@ public class SapphireInstanceManager {
         replicaDispatchers = new HashMap<SapphireReplicaID, EventHandler>();
         oidGenerator = new Random(new Date().getTime());
         referenceCount = new AtomicInteger(1);
+    }
+
+    /**
+     * Sets the root group policy of this sapphire object.
+     *
+     * @param rootGroupPolicy root group policy
+     */
+    public void setRootGroupPolicy(SapphirePolicy.SapphireGroupPolicy rootGroupPolicy) {
+        this.rootGroupPolicy = rootGroupPolicy;
     }
 
     /**
@@ -140,7 +168,10 @@ public class SapphireInstanceManager {
         return values.toArray(new EventHandler[values.size()]);
     }
 
-    public void clear() {
+    public void clear() throws RemoteException {
+        if (rootGroupPolicy != null) {
+            rootGroupPolicy.onDestroy();
+        }
         replicaDispatchers.clear();
     }
 

@@ -38,30 +38,22 @@ public class LoadBalancedFrontendDMIntegrationTest {
     }
 
     private void runTest(SapphireObjectSpec spec) throws Exception {
-        String key1 = "k1";
-        String value1 = "v1";
-        String key2 = "k2";
-        String value2 = "v2";
-
         SapphireObjectID sapphireObjId = oms.createSapphireObject(spec.toString());
         KVStore store = (KVStore) oms.acquireSapphireObjectStub(sapphireObjId);
-        store.set(key1, value1);
-        store.set(key2, value2);
-        Assert.assertEquals(value1, store.get(key1));
-        Assert.assertEquals(value2, store.get(key2));
+        for (int i = 0; i < 10; i++) {
+            String key = "k1_" + i;
+            String value = "v1_" + i;
+            store.set(key, value);
+            store.set(key, value);
+            Assert.assertEquals(value, store.get(key));
+        }
     }
 
     @Test
     public void testLoadBalancedFrontendDMs() throws Exception {
-        try {
-            File file = getResourceFile("specs/complex-dm/LoadBalancedFrontEnd.yaml");
-            SapphireObjectSpec spec = readSapphireSpec(file);
-            System.out.println("Running test for DM: " + spec.getDmList());
-            runTest(spec);
-            System.out.println("Test passed");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        File file = getResourceFile("specs/complex-dm/LoadBalancedFrontEnd.yaml");
+        SapphireObjectSpec spec = readSapphireSpec(file);
+        runTest(spec);
     }
 
     @AfterClass

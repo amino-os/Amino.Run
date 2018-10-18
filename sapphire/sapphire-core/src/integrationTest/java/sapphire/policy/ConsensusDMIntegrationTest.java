@@ -39,14 +39,16 @@ public class ConsensusDMIntegrationTest {
     }
 
     private void runTest(SapphireObjectSpec spec) throws Exception {
-        String key = "k1";
-        String value = "v1";
-
         SapphireObjectID sapphireObjId = oms.createSapphireObject(spec.toString());
         sleep(5000);
         KVStore store = (KVStore) oms.acquireSapphireObjectStub(sapphireObjId);
-        store.set(key, value);
-        Assert.assertEquals(value, store.get(key));
+        for (int i = 0; i < 10; i++) {
+            String key = "k1_" + i;
+            String value = "v1_" + i;
+            store.set(key, value);
+            sleep(500);
+            Assert.assertEquals(value, store.get(key));
+        }
     }
 
     /**
@@ -56,15 +58,9 @@ public class ConsensusDMIntegrationTest {
      */
     @Test
     public void testConsensusDM() throws Exception {
-        try {
-            File file = getResourceFile("specs/complex-dm/Consensus.yaml");
-            SapphireObjectSpec spec = readSapphireSpec(file);
-            System.out.println("Running test for DM: " + spec.getDmList());
-            runTest(spec);
-            System.out.println("Test passed");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        File file = getResourceFile("specs/complex-dm/Consensus.yaml");
+        SapphireObjectSpec spec = readSapphireSpec(file);
+        runTest(spec);
     }
 
     @AfterClass

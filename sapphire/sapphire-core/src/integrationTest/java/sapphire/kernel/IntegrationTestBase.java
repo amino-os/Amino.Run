@@ -33,7 +33,7 @@ public class IntegrationTestBase {
                 try {
                     sleep(100);
                 } catch (InterruptedException e1) {
-                    e1.printStackTrace();
+                    System.out.println(e1.toString());
                 }
             }
         }
@@ -44,6 +44,7 @@ public class IntegrationTestBase {
         try {
             socket = new Socket(ip, port);
         } catch (IOException e) {
+            System.out.println(e.toString());
         }
         while (socket != null) {
             try {
@@ -51,7 +52,7 @@ public class IntegrationTestBase {
                 try {
                     sleep(100);
                 } catch (InterruptedException e1) {
-                    e1.printStackTrace();
+                    System.out.println(e1.toString());
                 }
             } catch (IOException e) {
                 break;

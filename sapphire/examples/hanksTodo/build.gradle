@@ -57,6 +57,13 @@ task runks3(type: JavaExec) {
     args project.property('kernelServerIp'), project.property('kernelServerPort3'), project.property('omsIp'), project.property('omsPort')
 }
 
+// Start fourth kernel server with "gradlew runks4"
+task runks4(type: JavaExec) {
+    classpath = sourceSets.main.runtimeClasspath
+    main = 'sapphire.kernel.server.KernelServerImpl'
+    args project.property('kernelServerIp'), project.property('kernelServerPort4'), project.property('omsIp'), project.property('omsPort')
+}
+
 // Task for run hanksTodoApp demo app
 // Usage: gradlew runapp -PW=DisneyWorld
 task runapp(type: JavaExec) {

@@ -272,6 +272,7 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
                     consensusServer.sapphire_pin_to_server(replica, newServerAddress);
                 }
                 consensusServer.sapphire_pin(server, regions.get(0));
+                addServer(server);
 
                 // Need to initialize and update RaftServers created as part of
                 // GroupPolicy creation.

@@ -35,6 +35,7 @@ jar.dependsOn compileStubs
 task runoms(type: JavaExec) {
     dependsOn jar
     classpath = sourceSets.main.runtimeClasspath
+    jvmArgs '-Djava.util.logging.config.file=' + project.projectDir + '/../../logging.properties'
     main = 'sapphire.oms.OMSServerImpl'
     args project.property('omsIp'), project.property('omsPort')
 }
@@ -42,6 +43,7 @@ task runoms(type: JavaExec) {
 // task to start kernel server (hosting the SO)
 task runks(type: JavaExec) {
     classpath = sourceSets.main.runtimeClasspath
+    jvmArgs '-Djava.util.logging.config.file=' + project.projectDir + '/../../logging.properties'
     main = 'sapphire.kernel.server.KernelServerImpl'
     args project.property('kernelServerIp'), project.property('kernelServerPort'), project.property('omsIp'), project.property('omsPort')
 }
@@ -49,12 +51,14 @@ task runks(type: JavaExec) {
 // task to start more kernel server (hosting the SO)
 task runks2(type: JavaExec) {
     classpath = sourceSets.main.runtimeClasspath
+    jvmArgs '-Djava.util.logging.config.file=' + project.projectDir + '/../../logging.properties'
     main = 'sapphire.kernel.server.KernelServerImpl'
     args project.property('kernelServerIp'), project.property('kernelServerPort2'), project.property('omsIp'), project.property('omsPort')
 }
 
 task runks3(type: JavaExec) {
     classpath = sourceSets.main.runtimeClasspath
+    jvmArgs '-Djava.util.logging.config.file=' + project.projectDir + '/../../logging.properties'
     main = 'sapphire.kernel.server.KernelServerImpl'
     args project.property('kernelServerIp'), project.property('kernelServerPort3'), project.property('omsIp'), project.property('omsPort')
 }
@@ -62,6 +66,7 @@ task runks3(type: JavaExec) {
 // task for run client
 task runapp(type: JavaExec) {
     main = "sapphire.demo.KeyValueStoreClient"
+    jvmArgs '-Djava.util.logging.config.file=' + project.projectDir + '/../../logging.properties'
     classpath = sourceSets.main.runtimeClasspath
     args project.property('omsIp'), project.property('omsPort')
 }

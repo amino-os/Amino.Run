@@ -34,7 +34,6 @@ public class HanksTodoMain {
 
         Registry registry;
 
-        java.util.logging.Logger.getLogger("my.category").setLevel(Level.FINEST);
         try {
             registry = LocateRegistry.getRegistry(args[0],Integer.parseInt(args[1]));
             OMSServer omsserver = (OMSServer) registry.lookup("SapphireOMS");

@@ -22,6 +22,7 @@ jar.dependsOn compileStubs
 task runoms(type: JavaExec) {
     dependsOn jar
     classpath = sourceSets.main.runtimeClasspath
+    jvmArgs '-Djava.util.logging.config.file=' + project.projectDir + '/../../logging.properties'
     main = 'sapphire.oms.OMSServerImpl'
     args project.property('omsIp'), project.property('omsPort')
 }
@@ -29,6 +30,7 @@ task runoms(type: JavaExec) {
 // Start kernel server with "gradlew runks"
 task runks(type: JavaExec) {
     classpath = sourceSets.main.runtimeClasspath
+    jvmArgs '-Djava.util.logging.config.file=' + project.projectDir + '/../../logging.properties'
     main = 'sapphire.kernel.server.KernelServerImpl'
     args project.property('kernelServerIp'), project.property('kernelServerPort'), project.property('omsIp'), project.property('omsPort')
 }
@@ -62,6 +64,7 @@ task runjsapp(type: Exec) {
 // Task for run Java demo app
 task runapp(type: JavaExec) {
     classpath = sourceSets.main.runtimeClasspath
+    jvmArgs '-Djava.util.logging.config.file=' + project.projectDir + '/../../logging.properties'
     systemProperty "RUBY_HOME",  "${project.projectDir}/src/main/ruby/sapphire/appexamples/hankstodo/"
     systemProperty "JS_HOME",  "${project.projectDir}/src/main/js/sapphire/appexamples/hankstodo/"
     main = 'sapphire.appexamples.hankstodo.stubs.Client_Stub'

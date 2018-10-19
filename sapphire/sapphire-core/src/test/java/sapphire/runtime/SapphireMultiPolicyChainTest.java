@@ -24,10 +24,7 @@ import sapphire.kernel.common.KernelOID;
 import sapphire.kernel.common.KernelObjectFactory;
 import sapphire.kernel.common.KernelObjectStub;
 import sapphire.kernel.server.KernelServerImpl;
-import sapphire.policy.DefaultSapphirePolicy;
-import sapphire.policy.SapphirePolicy;
-import sapphire.policy.SapphirePolicyContainer;
-import sapphire.policy.SapphirePolicyUpcalls;
+import sapphire.policy.*;
 import sapphire.policy.dht.DHTPolicy2;
 
 @RunWith(PowerMockRunner.class)
@@ -45,8 +42,8 @@ public class SapphireMultiPolicyChainTest extends MultiPolicyChainBaseTest {
     public static class DefaultSO extends SO {}
 
     private SapphireObjectSpec spec;
-    private Map<String, Map<String, SapphirePolicyUpcalls.SapphirePolicyConfig>> configMaps;
-    private Map<String, SapphirePolicyUpcalls.SapphirePolicyConfig> configMap;
+    private Map<String, Map<String, SapphirePolicyConfig>> configMaps;
+    private Map<String, SapphirePolicyConfig> configMap;
 
     public static class DefaultGroup_Stub extends DefaultSapphirePolicy.DefaultGroupPolicy
             implements KernelObjectStub {

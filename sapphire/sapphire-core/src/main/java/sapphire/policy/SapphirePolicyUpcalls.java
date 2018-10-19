@@ -8,13 +8,6 @@ import sapphire.policy.SapphirePolicy.SapphireGroupPolicy;
 import sapphire.policy.SapphirePolicy.SapphireServerPolicy;
 
 public interface SapphirePolicyUpcalls {
-    /**
-     * Interface for sapphire policy configuration.
-     *
-     * <p>Each sapphire policy can optionally define a Config class to allow programmers to pass
-     * configurations to the sapphire policy. All Config classes should implement this interface.
-     */
-    interface SapphirePolicyConfig extends Serializable {}
 
     /** Interface for client policy */
     interface SapphireClientPolicyUpcalls extends Serializable {

@@ -14,8 +14,8 @@ import sapphire.kernel.server.KernelServerImpl;
 import sapphire.oms.OMSServer;
 import sapphire.oms.OMSServerImpl;
 import sapphire.policy.SapphirePolicy;
+import sapphire.policy.SapphirePolicyConfig;
 import sapphire.policy.SapphirePolicyContainer;
-import sapphire.policy.SapphirePolicyUpcalls;
 
 public class DHTPolicyTest {
     private OMSServer oms;
@@ -48,7 +48,11 @@ public class DHTPolicyTest {
     @Test
     public void test() throws Exception {
         DHTPolicy.DHTGroupPolicy group = new DHTPolicy.DHTGroupPolicy();
-        group.onCreate(servers[0], null);
+        Map<String, SapphirePolicyConfig> configMap = new HashMap<>();
+        servers[0].onCreate(group, configMap);
+        servers[1].onCreate(group, configMap);
+        servers[2].onCreate(group, configMap);
+        group.onCreate(servers[0], configMap);
         group.addServer(servers[1]);
         group.addServer(servers[2]);
 
@@ -82,8 +86,8 @@ public class DHTPolicyTest {
         // {
         public void onCreate(
                 SapphirePolicy.SapphireGroupPolicy group,
-                Map<String, SapphirePolicyUpcalls.SapphirePolicyConfig> configMap) {
-            this.group = group;
+                Map<String, SapphirePolicyConfig> configMap) {
+            super.onCreate(group, configMap);
         }
 
         @Override

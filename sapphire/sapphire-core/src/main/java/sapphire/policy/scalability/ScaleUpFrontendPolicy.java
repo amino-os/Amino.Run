@@ -12,6 +12,7 @@ import java.util.logging.Logger;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
 import sapphire.kernel.common.KernelObjectStub;
+import sapphire.policy.SapphirePolicyConfig;
 import sapphire.policy.util.ResettableTimer;
 
 /**

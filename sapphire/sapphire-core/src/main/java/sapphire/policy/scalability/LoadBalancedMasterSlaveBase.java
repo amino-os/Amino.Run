@@ -20,6 +20,8 @@ import sapphire.common.SapphireObjectReplicaNotFoundException;
 import sapphire.common.Utils;
 import sapphire.kernel.common.GlobalKernelReferences;
 import sapphire.policy.DefaultSapphirePolicy;
+import sapphire.policy.SapphireLocationConfig;
+import sapphire.policy.SapphirePolicyConfig;
 import sapphire.policy.scalability.masterslave.Lock;
 import sapphire.policy.scalability.masterslave.MethodInvocationRequest;
 import sapphire.policy.scalability.masterslave.MethodInvocationResponse;
@@ -159,6 +161,7 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultSapphirePolicy 
         private Logger logger;
         private Random random = new Random(System.currentTimeMillis());
         private Lock masterLock;
+        private Map<String, String> nodeLabels;
 
         @Override
         public void onCreate(
@@ -166,10 +169,31 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultSapphirePolicy 
                 throws RemoteException {
             logger = Logger.getLogger(this.getClass().getName());
             super.onCreate(server, configMap);
-            try {
 
-                ArrayList<InetSocketAddress> servers =
-                        GlobalKernelReferences.nodeServer.oms.getServers();
+            if (configMap != null) {
+                SapphirePolicyConfig config = configMap.get(SapphireLocationConfig.class.getName());
+                if (config != null) {
+                    this.nodeLabels = ((SapphireLocationConfig) config).getNodeLabels();
+                }
+            }
+            logger.info(
+                    String.format(
+                            "Creating master and slave instance on hosts with label %s",
+                            nodeLabels));
+
+            try {
+                String region = null;
+                if (nodeLabels != null) {
+                    region = nodeLabels.get(SapphireLocationConfig.REGION);
+                }
+
+                List<InetSocketAddress> servers;
+                if (region != null && !region.isEmpty()) {
+                    servers = GlobalKernelReferences.nodeServer.oms.getServersInRegion(region);
+                } else {
+                    servers = GlobalKernelReferences.nodeServer.oms.getServers();
+                }
+
                 if (servers.size() < NUM_OF_REPLICAS) {
                     logger.warning(
                             String.format(
@@ -179,6 +203,10 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultSapphirePolicy 
                                             + "availability.",
                                     servers.size(), NUM_OF_REPLICAS));
                 }
+
+                logger.info(
+                        String.format(
+                                "Creating master and slave instances in servers: %s", servers));
 
                 List<InetSocketAddress> unavailable = new ArrayList<InetSocketAddress>();
                 InetSocketAddress dest = getAvailable(0, servers, unavailable);
@@ -215,7 +243,7 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultSapphirePolicy 
          * If no available server can be found, then return the {@code index % servers.size()}th
          * server in the {@code servers} list.
          *
-         * @param index index of the
+         * @param index index of the server
          * @param servers a list of servers
          * @param unavailable a list of unavailable servers
          * @return an available server; or the {@code index % servers.size()}th server in the given

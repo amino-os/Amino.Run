@@ -1,7 +1,5 @@
 package sapphire.common;
 
-import static sapphire.policy.SapphirePolicyUpcalls.SapphirePolicyConfig;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -17,6 +15,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import sapphire.app.DMSpec;
+import sapphire.policy.SapphirePolicyConfig;
 import sapphire.runtime.annotations.AnnotationConfig;
 import sapphire.runtime.annotations.Immutable;
 

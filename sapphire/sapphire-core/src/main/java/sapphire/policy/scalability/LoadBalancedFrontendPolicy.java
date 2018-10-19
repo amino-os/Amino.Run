@@ -14,6 +14,7 @@ import java.util.logging.Logger;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
 import sapphire.policy.DefaultSapphirePolicy;
+import sapphire.policy.SapphirePolicyConfig;
 
 /**
  * Created by SrinivasChilveri on 2/19/18. Simple load balancing w/ static number of replicas and no

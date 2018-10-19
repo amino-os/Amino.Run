@@ -14,6 +14,7 @@ import java.util.logging.Logger;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
 import sapphire.policy.DefaultSapphirePolicy;
+import sapphire.policy.SapphirePolicyConfig;
 import sapphire.policy.util.consensus.raft.AlreadyVotedException;
 import sapphire.policy.util.consensus.raft.CandidateBehindException;
 import sapphire.policy.util.consensus.raft.InvalidLogIndex;

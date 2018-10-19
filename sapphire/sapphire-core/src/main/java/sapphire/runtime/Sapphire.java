@@ -1,7 +1,5 @@
 package sapphire.runtime;
 
-import static sapphire.policy.SapphirePolicyUpcalls.SapphirePolicyConfig;
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -34,9 +32,11 @@ import sapphire.policy.DefaultSapphirePolicy;
 import sapphire.policy.DefaultSapphirePolicy.DefaultClientPolicy;
 import sapphire.policy.DefaultSapphirePolicy.DefaultGroupPolicy;
 import sapphire.policy.DefaultSapphirePolicy.DefaultServerPolicy;
+import sapphire.policy.SapphireLocationConfig;
 import sapphire.policy.SapphirePolicy.SapphireClientPolicy;
 import sapphire.policy.SapphirePolicy.SapphireGroupPolicy;
 import sapphire.policy.SapphirePolicy.SapphireServerPolicy;
+import sapphire.policy.SapphirePolicyConfig;
 import sapphire.policy.SapphirePolicyContainer;
 
 /**
@@ -306,6 +306,13 @@ public class Sapphire {
         previousServerPolicyStub = (KernelObjectStub) serverPolicyStub;
 
         if (nextPoliciesToCreate.size() != 0) {
+            // TODO: hack for demo
+            if (policyName != null && policyName.contains("DHT")) {
+                SapphireLocationConfig c = new SapphireLocationConfig();
+                c.addNodeLabel(SapphireLocationConfig.REGION, "r0");
+                configMap.put(c.getClass().getName(), c);
+            }
+
             createPolicy(
                     sapphireObjId,
                     spec,

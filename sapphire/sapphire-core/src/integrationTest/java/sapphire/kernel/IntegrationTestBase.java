@@ -6,9 +6,10 @@ import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.List;
 import sapphire.app.SapphireObjectSpec;
+import sapphire.kernel.server.KernelServerImpl;
+import sapphire.oms.OMSServerImpl;
 
 public class IntegrationTestBase {
     public static String omsIp = "127.0.0.1";
@@ -40,85 +41,95 @@ public class IntegrationTestBase {
     }
 
     static void waitForSockClose(String ip, int port) {
-        Socket socket = null;
-        try {
-            socket = new Socket(ip, port);
-        } catch (IOException e) {
-            System.out.println(e.toString());
-        }
-        while (socket != null) {
-            try {
-                socket = new Socket(ip, port);
-                try {
-                    sleep(100);
-                } catch (InterruptedException e1) {
-                    System.out.println(e1.toString());
-                }
-            } catch (IOException e) {
-                break;
-            }
-        }
+        //        Socket socket = null;
+        //        try {
+        //            socket = new Socket(ip, port);
+        //        } catch (IOException e) {
+        //            System.out.println(e.toString());
+        //        }
+        //        while (socket != null) {
+        //            try {
+        //                socket = new Socket(ip, port);
+        //                try {
+        //                    sleep(100);
+        //                } catch (InterruptedException e1) {
+        //                    System.out.println(e1.toString());
+        //                }
+        //            } catch (IOException e) {
+        //                break;
+        //            }
+        //        }
     }
 
     public static void startOmsAndKernelServers(String KernelServerRegion) throws Exception {
-        Runtime runtime = Runtime.getRuntime();
+
+        OMSServerImpl.main(new String[] {omsIp, String.valueOf(omsPort)});
+        KernelServerImpl.main(
+                new String[] {ksIp, "22345", omsIp, String.valueOf(omsPort), KernelServerRegion});
+        KernelServerImpl.main(
+                new String[] {ksIp, "22346", omsIp, String.valueOf(omsPort), KernelServerRegion});
+        KernelServerImpl.main(
+                new String[] {ksIp, "22347", omsIp, String.valueOf(omsPort), KernelServerRegion});
+
+        //        Runtime runtime = Runtime.getRuntime();
 
         /* Start OMS and kernel server as separate process and invoke rpc from app client */
-        String myJavaHome = System.getProperty("DCAP_JAVA_HOME");
-        String javaExe = "java";
-        if (myJavaHome != null) {
-            javaExe = Paths.get(myJavaHome, "bin", "java").toString();
-            System.out.println("java to call: " + javaExe);
-        }
-
-        String classPath = System.getProperty("java.class.path");
-
-        String omsCmd =
-                javaExe + " -cp " + classPath + " sapphire.oms.OMSServerImpl " + omsIp + " 22346 ";
-        omsProcess = runtime.exec(omsCmd);
-        waitForSockListen(omsIp, omsPort);
-
-        String ksCmd1 =
-                javaExe
-                        + " -cp "
-                        + classPath
-                        + " sapphire.kernel.server.KernelServerImpl "
-                        + ksIp
-                        + " 22345 "
-                        + omsIp
-                        + " 22346 "
-                        + " "
-                        + KernelServerRegion;
-        kernelServerProcess1 = runtime.exec(ksCmd1);
-        waitForSockListen(ksIp, ks1Port);
-
-        String ksCmd2 =
-                javaExe
-                        + " -cp "
-                        + classPath
-                        + " sapphire.kernel.server.KernelServerImpl "
-                        + ksIp
-                        + " 22344 "
-                        + omsIp
-                        + " 22346 "
-                        + " "
-                        + KernelServerRegion;
-        kernelServerProcess2 = runtime.exec(ksCmd2);
-        waitForSockListen(ksIp, ks2Port);
-
-        String ksCmd3 =
-                javaExe
-                        + " -cp "
-                        + classPath
-                        + " sapphire.kernel.server.KernelServerImpl "
-                        + ksIp
-                        + " 22343 "
-                        + omsIp
-                        + " 22346 "
-                        + " "
-                        + KernelServerRegion;
-        kernelServerProcess3 = runtime.exec(ksCmd3);
-        waitForSockListen(ksIp, ks3Port);
+        //        String myJavaHome = System.getProperty("DCAP_JAVA_HOME");
+        //        String javaExe = "java";
+        //        if (myJavaHome != null) {
+        //            javaExe = Paths.get(myJavaHome, "bin", "java").toString();
+        //            System.out.println("java to call: " + javaExe);
+        //        }
+        //
+        //        String classPath = System.getProperty("java.class.path");
+        //
+        //        String omsCmd =
+        //                javaExe + " -cp " + classPath + " sapphire.oms.OMSServerImpl " + omsIp + "
+        // 22346 ";
+        //        omsProcess = runtime.exec(omsCmd);
+        ////        waitForSockListen(omsIp, omsPort);
+        //
+        //        String ksCmd1 =
+        //                javaExe
+        //                        + " -cp "
+        //                        + classPath
+        //                        + " sapphire.kernel.server.KernelServerImpl "
+        //                        + ksIp
+        //                        + " 22345 "
+        //                        + omsIp
+        //                        + " 22346 "
+        //                        + " "
+        //                        + KernelServerRegion;
+        //        kernelServerProcess1 = runtime.exec(ksCmd1);
+        ////        waitForSockListen(ksIp, ks1Port);
+        //
+        //        String ksCmd2 =
+        //                javaExe
+        //                        + " -cp "
+        //                        + classPath
+        //                        + " sapphire.kernel.server.KernelServerImpl "
+        //                        + ksIp
+        //                        + " 22344 "
+        //                        + omsIp
+        //                        + " 22346 "
+        //                        + " "
+        //                        + KernelServerRegion;
+        //        kernelServerProcess2 = runtime.exec(ksCmd2);
+        //        waitForSockListen(ksIp, ks2Port);
+        //
+        //        String ksCmd3 =
+        //                javaExe
+        //                        + " -cp "
+        //                        + classPath
+        //                        + " sapphire.kernel.server.KernelServerImpl "
+        //                        + ksIp
+        //                        + " 22343 "
+        //                        + omsIp
+        //                        + " 22346 "
+        //                        + " "
+        //                        + KernelServerRegion;
+        //        kernelServerProcess3 = runtime.exec(ksCmd3);
+        //        waitForSockListen(ksIp, ks3Port);
     }
 
     /**

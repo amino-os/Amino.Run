@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
 import sapphire.policy.DefaultSapphirePolicy;
+import sapphire.policy.SapphirePolicyConfig;
 
 // TODO (Sungwook, 2018-10-2) Discard after updating original DHT policy to work with multi policy
 // chain.
@@ -141,7 +142,10 @@ public class DHTPolicy2 extends DefaultSapphirePolicy {
 
         @Override
         public void onCreate(
-                SapphireServerPolicy server, Map<String, SapphirePolicyConfig> configMap) {
+                String region,
+                SapphireServerPolicy server,
+                Map<String, SapphirePolicyConfig> configMap)
+                throws java.rmi.RemoteException {
             nodes = new HashMap<Integer, DHTNode>();
 
             try {

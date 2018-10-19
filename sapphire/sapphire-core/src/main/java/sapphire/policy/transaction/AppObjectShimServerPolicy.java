@@ -5,7 +5,7 @@ import java.util.Map;
 import sapphire.common.AppObject;
 import sapphire.common.Utils;
 import sapphire.policy.SapphirePolicy;
-import sapphire.policy.SapphirePolicyUpcalls;
+import sapphire.policy.SapphirePolicyConfig;
 import sapphire.policy.SapphirePolicyUpcalls.SapphireServerPolicyUpcalls;
 import sapphire.policy.scalability.masterslave.MethodInvocationRequest;
 import sapphire.policy.scalability.masterslave.MethodInvocationResponse;
@@ -18,7 +18,7 @@ public class AppObjectShimServerPolicy implements SapphireServerPolicyUpcalls {
     @Override
     public void onCreate(
             SapphirePolicy.SapphireGroupPolicy group,
-            Map<String, SapphirePolicyUpcalls.SapphirePolicyConfig> configMap) {}
+            Map<String, SapphirePolicyConfig> configMap) {}
 
     @Override
     public void initialize() {}

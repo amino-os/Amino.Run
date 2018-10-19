@@ -1,7 +1,6 @@
 package sapphire.oms;
 
 import static sapphire.compiler.GlobalStubConstants.POLICY_ONDESTROY_MTD_NAME_FORMAT;
-import static sapphire.policy.SapphirePolicyUpcalls.SapphirePolicyConfig;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -33,6 +32,7 @@ import sapphire.kernel.common.ServerInfo;
 import sapphire.kernel.server.KernelServer;
 import sapphire.kernel.server.KernelServerImpl;
 import sapphire.policy.SapphirePolicy;
+import sapphire.policy.SapphirePolicyConfig;
 import sapphire.runtime.EventHandler;
 import sapphire.runtime.Sapphire;
 

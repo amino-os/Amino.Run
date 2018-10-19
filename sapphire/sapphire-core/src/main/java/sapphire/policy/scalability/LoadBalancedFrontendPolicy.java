@@ -14,6 +14,7 @@ import java.util.logging.Logger;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
 import sapphire.policy.DefaultSapphirePolicy;
+import sapphire.policy.SapphirePolicyConfig;
 
 /**
  * Created by SrinivasChilveri on 2/19/18. Simple load balancing w/ static number of replicas and no
@@ -161,9 +162,11 @@ public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
 
         @Override
         public void onCreate(
-                SapphireServerPolicy server, Map<String, SapphirePolicyConfig> configMap)
+                String region,
+                SapphireServerPolicy server,
+                Map<String, SapphirePolicyConfig> configMap)
                 throws RemoteException {
-            super.onCreate(server, configMap);
+            super.onCreate(region, server, configMap);
 
             if (configMap != null) {
                 SapphirePolicyConfig config =
@@ -184,7 +187,7 @@ public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
                 /* Find the current region and the kernel server on which this first instance of
                 sapphire object is being created. And try to replicate the
                 sapphire objects in the same region(excluding this kernel server) */
-                String region = server.sapphire_getRegion();
+                region = server.sapphire_getRegion();
                 InetSocketAddress addr =
                         server.sapphire_locate_kernel_object(server.$__getKernelOID());
 

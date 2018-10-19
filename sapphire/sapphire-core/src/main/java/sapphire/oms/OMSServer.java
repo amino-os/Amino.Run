@@ -19,7 +19,7 @@ import sapphire.kernel.common.KernelObjectNotFoundException;
 import sapphire.kernel.common.KernelServerNotFoundException;
 import sapphire.kernel.common.ServerInfo;
 import sapphire.policy.SapphirePolicy;
-import sapphire.policy.SapphirePolicyUpcalls;
+import sapphire.policy.SapphirePolicyConfig;
 import sapphire.runtime.EventHandler;
 
 public interface OMSServer extends Remote {
@@ -53,7 +53,7 @@ public interface OMSServer extends Remote {
     SapphirePolicy.SapphireGroupPolicy createGroupPolicy(
             Class<?> policyClass,
             SapphireObjectID sapphireObjId,
-            Map<String, SapphirePolicyUpcalls.SapphirePolicyConfig> configMap)
+            Map<String, SapphirePolicyConfig> configMap)
             throws RemoteException, ClassNotFoundException, KernelObjectNotCreatedException,
                     SapphireObjectNotFoundException;
 

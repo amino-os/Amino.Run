@@ -8,9 +8,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
 import java.util.logging.Logger;
-import sapphire.common.SapphireObjectNotFoundException;
-import sapphire.common.SapphireObjectReplicaNotFoundException;
 import sapphire.policy.DefaultSapphirePolicy;
+import sapphire.policy.SapphirePolicyConfig;
 import sapphire.runtime.annotations.AnnotationConfig;
 
 public class DHTPolicy extends DefaultSapphirePolicy {
@@ -76,10 +75,12 @@ public class DHTPolicy extends DefaultSapphirePolicy {
 
         @Override
         public void onCreate(
-                SapphireServerPolicy server, Map<String, SapphirePolicyConfig> configMap)
+                String region,
+                SapphireServerPolicy server,
+                Map<String, SapphirePolicyConfig> configMap)
                 throws RemoteException {
             dhtChord = new DHTChord();
-            super.onCreate(server, configMap);
+            super.onCreate(region, server, configMap);
 
             if (configMap != null) {
                 SapphirePolicyConfig config = configMap.get(DHTPolicy.Config.class.getName());
@@ -98,26 +99,33 @@ public class DHTPolicy extends DefaultSapphirePolicy {
             try {
                 ArrayList<String> regions = sapphire_getRegions();
                 DHTServerPolicy dhtServer = (DHTServerPolicy) server;
+                // TODO: hack for demo.
+                // dhtServer.sapphire_pin(server, regions.get(0));
 
                 // Create replicas based on annotation
                 InetSocketAddress newServerAddress = null;
                 for (int i = 1; i < numOfShards; i++) {
-                    newServerAddress = oms().getServerInRegion(regions.get(i % regions.size()));
+                    region = regions.get(i % regions.size());
+                    if (region == null) {
+                        throw new IllegalStateException("no region available for DHT DM");
+                    }
+                    logger.info(String.format("Creating shard %s in region %s", i, region));
 
                     // TODO (Sungwook, 2018-10-2) Passing processedPolicies may not be necessary as
                     // they are already available.
                     SapphireServerPolicy replica =
-                            dhtServer.sapphire_replicate(server.getProcessedPolicies());
-                    dhtServer.sapphire_pin_to_server(replica, newServerAddress);
+                            dhtServer.sapphire_replicate(server.getProcessedPolicies(), region);
+
+                    // TODO: hack for demo. When we demo DHT + master slave, DHT
+                    // is not the last DM, and therefore should not call sapphire_pin
+                    // to relocate server policy.
+                    // newServerAddress = oms().getServerInRegion(region);
+                    // dhtServer.sapphire_pin_to_server(replica,
+                    // newServerAddress);
                 }
-                dhtServer.sapphire_pin(server, regions.get(0));
             } catch (RemoteException e) {
                 throw new Error(
                         "Could not create new group policy because the oms is not available.");
-            } catch (SapphireObjectNotFoundException e) {
-                throw new Error("Failed to find sapphire object.", e);
-            } catch (SapphireObjectReplicaNotFoundException e) {
-                throw new Error("Failed to find sapphire object replica.", e);
             }
         }
 

@@ -150,7 +150,8 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 
         /** Creates a replica of this server and registers it with the group. */
         public SapphireServerPolicy sapphire_replicate(
-                List<SapphirePolicyContainer> processedPolicies) throws RemoteException {
+                List<SapphirePolicyContainer> processedPolicies, String region)
+                throws RemoteException {
             KernelObjectStub serverPolicyStub = null;
             SapphireServerPolicy serverPolicy = null;
 
@@ -178,6 +179,7 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
                         processedPoliciesReplica,
                         null,
                         null,
+                        region,
                         null);
 
                 // Last policy in the returned chain is replica of this policy.
@@ -201,6 +203,7 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
                                 processedPoliciesReplica,
                                 serverPolicy,
                                 serverPolicyStub,
+                                region,
                                 null);
 
                 String ko = "";

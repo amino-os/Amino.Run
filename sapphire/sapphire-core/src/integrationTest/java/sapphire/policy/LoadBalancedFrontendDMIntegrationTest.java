@@ -14,6 +14,7 @@ import org.junit.Test;
 import sapphire.app.SapphireObjectSpec;
 import sapphire.common.SapphireObjectID;
 import sapphire.demo.KVStore;
+import sapphire.kernel.server.KernelServer;
 import sapphire.kernel.server.KernelServerImpl;
 import sapphire.oms.OMSServer;
 
@@ -22,19 +23,23 @@ import sapphire.oms.OMSServer;
  * multiple kernel servers are covered here.
  */
 public class LoadBalancedFrontendDMIntegrationTest {
+    private static String region = "IND";
     OMSServer oms;
 
     @BeforeClass
     public static void bootstrap() throws Exception {
-        startOmsAndKernelServers("IND");
+        startOmsAndKernelServers(region);
     }
 
     @Before
     public void setUp() throws Exception {
         Registry registry = LocateRegistry.getRegistry(omsIp, omsPort);
         oms = (OMSServer) registry.lookup("SapphireOMS");
-        new KernelServerImpl(
-                new InetSocketAddress(hostIp, hostPort), new InetSocketAddress(omsIp, omsPort));
+        KernelServer ks =
+                new KernelServerImpl(
+                        new InetSocketAddress(hostIp, hostPort),
+                        new InetSocketAddress(omsIp, omsPort));
+        ((KernelServerImpl) ks).setRegion(region);
     }
 
     private void runTest(SapphireObjectSpec spec) throws Exception {

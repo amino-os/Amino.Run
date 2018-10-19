@@ -81,8 +81,7 @@ public class RequestReplicator implements Replicator, Closeable {
                         } catch (Exception e) {
                             logger.log(
                                     Level.WARNING,
-                                    String.format("failed to replicate request %s: %s", request, e),
-                                    e);
+                                    String.format("failed to replicate request %s", request));
                         }
                         return response;
                     }

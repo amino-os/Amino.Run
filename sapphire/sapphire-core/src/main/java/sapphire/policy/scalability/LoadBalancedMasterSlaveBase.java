@@ -163,7 +163,9 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultSapphirePolicy 
 
         @Override
         public void onCreate(
-                SapphireServerPolicy server, Map<String, SapphirePolicyConfig> configMap, String regionRestriction)
+                SapphireServerPolicy server,
+                Map<String, SapphirePolicyConfig> configMap,
+                String regionRestriction)
                 throws RemoteException {
             logger = Logger.getLogger(this.getClass().getName());
             super.onCreate(server, configMap);
@@ -171,7 +173,10 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultSapphirePolicy 
             try {
 
                 ArrayList<InetSocketAddress> servers =
-                        GlobalKernelReferences.nodeServer.oms.getServers();
+                        (regionRestriction != null)
+                                ? GlobalKernelReferences.nodeServer.oms.getServersInRegion(
+                                        regionRestriction)
+                                : GlobalKernelReferences.nodeServer.oms.getServers();
                 if (servers.size() < spec.replicas()) {
                     logger.warning(
                             String.format(
@@ -183,6 +188,7 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultSapphirePolicy 
                 unavailable.add(
                         GlobalKernelReferences.nodeServer.oms.lookupKernelObject(
                                 $__getKernelOID()));
+
                 InetSocketAddress dest = getAvailable(0, servers, unavailable);
 
                 ServerBase s = (ServerBase) server;
@@ -194,7 +200,9 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultSapphirePolicy 
                 for (int i = 0; i < spec.replicas() - 1; i++) {
                     dest = getAvailable(i + 1, servers, unavailable);
                     ServerBase replica =
-                            (ServerBase) s.sapphire_replicate(s.getProcessedPolicies(), regionRestriction);
+                            (ServerBase)
+                                    s.sapphire_replicate(
+                                            s.getProcessedPolicies(), regionRestriction);
                     s.sapphire_pin_to_server(replica, dest);
                     updateReplicaHostName(replica, dest);
                     removeServer(replica);

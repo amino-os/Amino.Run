@@ -208,7 +208,7 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
                         regionRestriction,
                         null);
 
-//                getGroup().addServer((SapphireServerPolicy) serverPolicyStub);
+                getGroup().addServer((SapphireServerPolicy) serverPolicyStub);
             } catch (ClassNotFoundException e) {
                 // TODO Auto-generated catch block
 //                logger.severe(e.getMessage());

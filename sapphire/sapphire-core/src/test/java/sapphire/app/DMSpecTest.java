@@ -18,7 +18,7 @@ public class DMSpecTest {
     @Test
     public void testSerialization() throws Exception {
         DMSpec spec = createDMSpec();
-        DMSpec clone = (DMSpec)Utils.toObject(Utils.toBytes(spec));
+        DMSpec clone = (DMSpec) Utils.toObject(Utils.toBytes(spec));
         Assert.assertEquals(spec, clone);
     }
 
@@ -31,10 +31,9 @@ public class DMSpecTest {
         lbConfig.setReplicaCount(30);
 
         return DMSpec.newBuilder()
-                        .setName(ScaleUpFrontendPolicy.class.getName())
-                        .addConfig(scaleUpConfig)
-                        .addConfig(lbConfig)
-                        .create();
-
+                .setName(ScaleUpFrontendPolicy.class.getName())
+                .addConfig(scaleUpConfig)
+                .addConfig(lbConfig)
+                .create();
     }
 }

@@ -36,6 +36,7 @@ jar.dependsOn compileStubs
 task runoms(type: JavaExec) {
     dependsOn jar
     classpath = sourceSets.main.runtimeClasspath
+    jvmArgs '-Djava.util.logging.config.file=' + project.projectDir + '/../../logging.properties'
     main = 'sapphire.oms.OMSServerImpl'
     args project.property('omsIp'), project.property('omsPort')
 }
@@ -43,6 +44,7 @@ task runoms(type: JavaExec) {
 // Start kernel server with "gradlew runks"
 task runks(type: JavaExec) {
     classpath = sourceSets.main.runtimeClasspath
+    jvmArgs '-Djava.util.logging.config.file=' + project.projectDir + '/../../logging.properties'
     main = 'sapphire.kernel.server.KernelServerImpl'
     args project.property('kernelServerIp'), project.property('kernelServerPort'), project.property('omsIp'), project.property('omsPort')
 }
@@ -52,5 +54,6 @@ task runks(type: JavaExec) {
 task runapp(type: JavaExec) {
     main = "sapphire.appexamples.hankstodo.HanksTodoMain"
     classpath = sourceSets.main.runtimeClasspath
+    jvmArgs '-Djava.util.logging.config.file=' + project.projectDir + '/../../logging.properties'
     args project.property('omsIp'), project.property('omsPort'), project.property('kernelIpAndroid'), project.property('kernelServerPort')
 }

@@ -44,11 +44,11 @@ public class SapphireObjectSpecTest {
                         .create();
 
         return SapphireObjectSpec.newBuilder()
-                        .setLang(Language.js)
-                        .setName("com.org.College")
-                        .setSourceFileLocation("src/main/js/college.js")
-                        .setConstructorName("college")
-                        .addDMSpec(dmSpec)
-                        .create();
+                .setLang(Language.js)
+                .setName("com.org.College")
+                .setSourceFileLocation("src/main/js/college.js")
+                .setConstructorName("college")
+                .addDMSpec(dmSpec)
+                .create();
     }
 }

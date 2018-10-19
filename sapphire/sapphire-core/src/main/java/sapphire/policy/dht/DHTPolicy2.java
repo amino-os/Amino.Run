@@ -8,17 +8,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
-
-import org.graalvm.collections.Pair;
-import sapphire.common.SapphireObjectNotFoundException;
-import sapphire.common.SapphireObjectReplicaNotFoundException;
-import sapphire.kernel.common.GlobalKernelReferences;
 import sapphire.kernel.common.KernelOID;
-import sapphire.kernel.common.KernelObjectNotFoundException;
-import sapphire.kernel.common.KernelObjectStub;
-import sapphire.oms.GlobalKernelObjectManager;
 import sapphire.policy.DefaultSapphirePolicy;
-import sapphire.policy.SapphirePolicy;
 
 // TODO (Sungwook, 2018-10-2) Discard after updating original DHT policy to work with multi policy
 // chain.
@@ -190,7 +181,8 @@ public class DHTPolicy2 extends DefaultSapphirePolicy {
                                         + newServerAddresses.get(i).getHostName()
                                         + " at restricted "
                                         + regionRestriction);
-//                        dhtServer.sapphire_pin_to_server(replica, newServerAddresses.get(i));
+                        //                        dhtServer.sapphire_pin_to_server(replica,
+                        // newServerAddresses.get(i));
                     }
                 } else {
                     for (int i = 1; i < regions.size(); i++) {
@@ -209,7 +201,8 @@ public class DHTPolicy2 extends DefaultSapphirePolicy {
                                         + newServerAddress.getHostName()
                                         + " at "
                                         + regions.get(i));
-//                        dhtServer.sapphire_pin_to_server(replica, newServerAddress);
+                        //                        dhtServer.sapphire_pin_to_server(replica,
+                        // newServerAddress);
                     }
                 }
 
@@ -225,7 +218,7 @@ public class DHTPolicy2 extends DefaultSapphirePolicy {
                                 + server
                                 + " at "
                                 + regionRestriction);
-//                dhtServer.sapphire_pin(server, regionRestriction);
+                //                dhtServer.sapphire_pin(server, regionRestriction);
 
             } catch (RemoteException e) {
                 e.printStackTrace();

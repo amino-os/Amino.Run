@@ -3,7 +3,6 @@ package sapphire.policy.replication;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.net.InetSocketAddress;
-import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;

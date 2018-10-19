@@ -75,7 +75,13 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultSapphirePolicy 
                                 params,
                                 type);
 
-                MethodInvocationResponse response = server.onRPC(request);
+                MethodInvocationResponse response = null;
+                try {
+                 response = server.onRPC(request);
+                } catch (Exception e) {
+                    logger.severe("Exception occurred.");
+                    e.printStackTrace();
+                }
                 switch (response.getReturnCode()) {
                     case SUCCESS:
                         return response.getResult();
@@ -91,6 +97,7 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultSapphirePolicy 
                 }
             } while (++retryCnt <= MAX_RETRY);
 
+            System.out.println("!!! FAIL !!!");
             throw new Exception(String.format("failed to execute method %s after retries", method));
         }
 
@@ -195,7 +202,7 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultSapphirePolicy 
                 s.sapphire_pin_to_server(server, dest);
                 updateReplicaHostName(s, dest);
                 s.start();
-                logger.info("created master on " + dest);
+                logger.info("created master on " + dest + " at " + regionRestriction);
 
                 for (int i = 0; i < spec.replicas() - 1; i++) {
                     dest = getAvailable(i + 1, servers, unavailable);
@@ -205,10 +212,10 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultSapphirePolicy 
                                             s.getProcessedPolicies(), regionRestriction);
                     s.sapphire_pin_to_server(replica, dest);
                     updateReplicaHostName(replica, dest);
-                    removeServer(replica);
+//                    removeServer(replica);
                     addServer(replica);
-                    replica.start();
-                    logger.info("created slave on " + dest);
+                    //                    replica.start();
+                    logger.info("created slave on " + dest + " at " + regionRestriction);
                 }
             } catch (RemoteException e) {
                 throw new RuntimeException("failed to create group: " + e, e);
@@ -235,6 +242,14 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultSapphirePolicy 
             return servers.get(index % servers.size());
         }
 
+        @Override
+        public void onMigrate(SapphireServerPolicy serverPolicyStub) throws RemoteException {
+            // Update the GroupPolicy ServerList with the new ServerPolicy Stub after migration,
+            // as the ServerList will be having a copy of the initial replica ServerPolicy stub.
+            // Hence any values updated in ServerPolicyStub during migration will not visible
+            // at the GroupPolicy level.
+            updateServer(serverPolicyStub);
+        }
         /**
          * Renew lock
          *

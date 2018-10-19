@@ -58,7 +58,7 @@ public class Sapphire {
     public static Object new_(SapphireObjectSpec spec, Object... args) {
         AppObjectStub appStub = null;
         try {
-//            logger.info("Creating object for spec:" + spec);
+            //            logger.info("Creating object for spec:" + spec);
             if (spec.getLang() == Language.java && spec.getDmList().isEmpty()) {
                 Class<?> appObjectClass = Class.forName(spec.getJavaClassName());
                 return new_(appObjectClass, args);
@@ -95,17 +95,27 @@ public class Sapphire {
                             args);
 
             // TODO: Remove after debugging.
-            List<SapphireServerPolicy> servers1 = policyList.get(0).getGroupPolicyStub().getServers();
-            List<SapphireServerPolicy> servers2 = policyList.get(1).getGroupPolicyStub().getServers();
-
-            for (SapphireServerPolicy server : servers1) {
-                KernelObjectStub os = (KernelObjectStub)server;
-                System.out.println("Server1 oid:" + os.$__getKernelOID() + " host:"+((KernelObjectStub) server).$__getHostname());
-            }
-            for (SapphireServerPolicy server : servers2) {
-                KernelObjectStub os = (KernelObjectStub)server;
-                System.out.println("Server2 oid:" + os.$__getKernelOID() + " host:"+((KernelObjectStub) server).$__getHostname());
-            }
+//            List<SapphireServerPolicy> servers1 =
+//                    policyList.get(0).getGroupPolicyStub().getServers();
+//            List<SapphireServerPolicy> servers2 =
+//                    policyList.get(1).getGroupPolicyStub().getServers();
+//
+//            for (SapphireServerPolicy server : servers1) {
+//                KernelObjectStub os = (KernelObjectStub) server;
+//                System.out.println(
+//                        "Server1 oid:"
+//                                + os.$__getKernelOID()
+//                                + " host:"
+//                                + ((KernelObjectStub) server).$__getHostname());
+//            }
+//            for (SapphireServerPolicy server : servers2) {
+//                KernelObjectStub os = (KernelObjectStub) server;
+//                System.out.println(
+//                        "Server2 oid:"
+//                                + os.$__getKernelOID()
+//                                + " host:"
+//                                + ((KernelObjectStub) server).$__getHostname());
+//            }
             appStub = policyList.get(0).getServerPolicy().sapphire_getAppObjectStub();
         } catch (Exception e) {
             logger.log(
@@ -239,9 +249,9 @@ public class Sapphire {
             String regionRestriction,
             Object[] appArgs)
             throws RemoteException, ClassNotFoundException, KernelObjectNotFoundException,
-            KernelObjectNotCreatedException, SapphireObjectNotFoundException,
-            SapphireObjectReplicaNotFoundException, InstantiationException,
-            InvocationTargetException, IllegalAccessException, CloneNotSupportedException {
+                    KernelObjectNotCreatedException, SapphireObjectNotFoundException,
+                    SapphireObjectReplicaNotFoundException, InstantiationException,
+                    InvocationTargetException, IllegalAccessException, CloneNotSupportedException {
 
         if (policyNameChain == null || policyNameChain.size() == 0) return null;
         String policyName = policyNameChain.get(0).getPolicyName();
@@ -322,14 +332,6 @@ public class Sapphire {
         serverPolicy.setProcessedPolicies(processedPoliciesSoFar);
         serverPolicyStub.setProcessedPolicies(processedPoliciesSoFar);
 
-//        if (existingGroupPolicy == null) {
-//            // TODO(2081-10-12, Sungwook) See if moving this to after createPolicy is feasible as it
-//            // will be easier to understand e.g,) replica is created first (current) vs orignal is
-//            // created first (after move)
-//            groupPolicy.onCreate(serverPolicyStub, configMap, regionRestriction);
-//        }
-
-
         if (existingGroupPolicy == null) {
             // TODO(2081-10-12, Sungwook) See if moving this to after createPolicy is feasible as it
             // will be easier to understand e.g,) replica is created first (current) vs orignal is
@@ -367,12 +369,13 @@ public class Sapphire {
             groupPolicy.addServer(serverPolicyStub);
         }
 
-//        String ko = "";
-//        for (SapphirePolicyContainer policyContainer : processedPolicies) {
-//            ko += String.valueOf(policyContainer.getKernelOID()) + ",";
-//        }
-//
-//        logger.log(Level.INFO, "OID from processed policies at " + policyName + " : " + ko);
+        //        String ko = "";
+        //        for (SapphirePolicyContainer policyContainer : processedPolicies) {
+        //            ko += String.valueOf(policyContainer.getKernelOID()) + ",";
+        //        }
+        //
+        //        logger.log(Level.INFO, "OID from processed policies at " + policyName + " : " +
+        // ko);
 
         return processedPolicies;
     }
@@ -519,7 +522,7 @@ public class Sapphire {
             SapphireObjectID sapphireObjId,
             Map<String, SapphirePolicyConfig> configMap)
             throws RemoteException, ClassNotFoundException, KernelObjectNotCreatedException,
-            SapphireObjectNotFoundException {
+                    SapphireObjectNotFoundException {
         SapphireGroupPolicy groupPolicyStub = (SapphireGroupPolicy) getPolicyStub(policyClass);
         try {
             SapphireGroupPolicy groupPolicy = initializeGroupPolicy(groupPolicyStub);
@@ -750,7 +753,7 @@ public class Sapphire {
             SapphireServerPolicy serverPolicy,
             SapphireServerPolicy serverPolicyStub)
             throws SapphireObjectNotFoundException, SapphireObjectReplicaNotFoundException,
-            RemoteException {
+                    RemoteException {
         /* Register for a replica ID from OMS */
         SapphireReplicaID sapphireReplicaId =
                 GlobalKernelReferences.nodeServer.oms.registerSapphireReplica(sapphireObjId);

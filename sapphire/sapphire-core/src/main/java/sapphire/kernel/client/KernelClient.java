@@ -6,7 +6,6 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.Hashtable;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
@@ -131,8 +130,8 @@ public class KernelClient {
             throw new Exception("RPC is null");
         }
 
-//        String rpcStr = (rpc == null) ? "" : rpc.toString();
-//        logger.log(Level.FINE, "Making RPC to " + host.toString() + " RPC: " + rpcStr);
+        //        String rpcStr = (rpc == null) ? "" : rpc.toString();
+        //        logger.log(Level.FINE, "Making RPC to " + host.toString() + " RPC: " + rpcStr);
 
         // Check whether this object is local.
         KernelServer server;
@@ -156,8 +155,8 @@ public class KernelClient {
 
     public void copyObjectToServer(InetSocketAddress host, KernelOID oid, KernelObject object)
             throws RemoteException, KernelObjectNotFoundException,
-            KernelObjectStubNotCreatedException, SapphireObjectNotFoundException,
-            SapphireObjectReplicaNotFoundException {
+                    KernelObjectStubNotCreatedException, SapphireObjectNotFoundException,
+                    SapphireObjectReplicaNotFoundException {
         getServer(host).copyKernelObject(oid, object);
     }
 }

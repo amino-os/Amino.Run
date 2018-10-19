@@ -199,7 +199,8 @@ public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
                     for (count = 0; count < numnodes && count < replicaCount - 1; count++) {
                         ServerPolicy replica =
                                 (ServerPolicy)
-                                        server.sapphire_replicate(server.getProcessedPolicies(), null);
+                                        server.sapphire_replicate(
+                                                server.getProcessedPolicies(), null);
                         server.sapphire_pin_to_server(replica, kernelServers.get(count));
                         updateReplicaHostName(replica, kernelServers.get(count));
                     }

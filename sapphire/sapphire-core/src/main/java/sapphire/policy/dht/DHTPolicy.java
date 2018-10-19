@@ -8,13 +8,11 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
 import java.util.logging.Logger;
-import sapphire.common.SapphireObjectNotFoundException;
-import sapphire.common.SapphireObjectReplicaNotFoundException;
 import sapphire.policy.DefaultSapphirePolicy;
 import sapphire.runtime.annotations.AnnotationConfig;
 
 public class DHTPolicy extends DefaultSapphirePolicy {
-    private static final int DEFAULT_NUM_OF_SHARDS = 3;
+    private static final int DEFAULT_NUM_OF_SHARDS = 2;
 
     /** Configuration for DHT Policy. */
     public static class Config implements SapphirePolicyConfig {
@@ -61,7 +59,7 @@ public class DHTPolicy extends DefaultSapphirePolicy {
             }
 
             DHTNode node = dhtChord.getResponsibleNode(key);
-            logger.fine("Responsible node for: " + key + " is: " + node.id);
+//            System.out.println("Responsible node for: " + key + " is: " + node.id);
             return node.server.onRPC(method, params);
         }
     }
@@ -82,7 +80,7 @@ public class DHTPolicy extends DefaultSapphirePolicy {
 
         @Override
         public void onCreate(
-                SapphireServerPolicy server, Map<String, SapphirePolicyConfig> configMap)
+                SapphireServerPolicy server, Map<String, SapphirePolicyConfig> configMap, String regionRestriction)
                 throws RemoteException {
             dhtChord = new DHTChord();
             super.onCreate(server, configMap);
@@ -115,18 +113,19 @@ public class DHTPolicy extends DefaultSapphirePolicy {
                     // they are already available.
                     SapphireServerPolicy replica =
                             dhtServer.sapphire_replicate(server.getProcessedPolicies(), region);
-//                    dhtServer.sapphire_pin_to_server(replica, newServerAddress);
+                    //                    dhtServer.sapphire_pin_to_server(replica,
+                    // newServerAddress);
                 }
-//                dhtServer.sapphire_pin(server, regions.get(0));
+                //                dhtServer.sapphire_pin(server, regions.get(0));
             } catch (RemoteException e) {
                 throw new Error(
                         "Could not create new group policy because the oms is not available.");
             }
-//            catch (SapphireObjectNotFoundException e) {
-//                throw new Error("Failed to find sapphire object.", e);
-//            } catch (SapphireObjectReplicaNotFoundException e) {
-//                throw new Error("Failed to find sapphire object replica.", e);
-//            }
+            //            catch (SapphireObjectNotFoundException e) {
+            //                throw new Error("Failed to find sapphire object.", e);
+            //            } catch (SapphireObjectReplicaNotFoundException e) {
+            //                throw new Error("Failed to find sapphire object replica.", e);
+            //            }
         }
 
         @Override

@@ -75,6 +75,9 @@ public interface SapphirePolicyUpcalls {
         void onCreate(SapphireServerPolicy server, Map<String, SapphirePolicyConfig> configMap)
                 throws RemoteException;
 
+        void onCreate(SapphireServerPolicy server, Map<String, SapphirePolicyConfig> configMap, String regionRestriction)
+                throws RemoteException;
+
         void addServer(SapphireServerPolicy server) throws RemoteException;
 
         void onDestroy() throws RemoteException;

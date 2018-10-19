@@ -202,7 +202,7 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
                 throws RemoteException, SapphireObjectNotFoundException,
                         SapphireObjectReplicaNotFoundException {
             SapphireServerPolicy replica =
-                    replicaSource.sapphire_replicate(replicaSource.getProcessedPolicies());
+                    replicaSource.sapphire_replicate(replicaSource.getProcessedPolicies(), null);
             try {
                 replica.sapphire_pin_to_server(replica, dest);
                 updateReplicaHostName(replica, dest);

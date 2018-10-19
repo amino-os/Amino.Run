@@ -163,7 +163,7 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultSapphirePolicy 
 
         @Override
         public void onCreate(
-                SapphireServerPolicy server, Map<String, SapphirePolicyConfig> configMap)
+                SapphireServerPolicy server, Map<String, SapphirePolicyConfig> configMap, String regionRestriction)
                 throws RemoteException {
             logger = Logger.getLogger(this.getClass().getName());
             super.onCreate(server, configMap);
@@ -194,7 +194,7 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultSapphirePolicy 
                 for (int i = 0; i < spec.replicas() - 1; i++) {
                     dest = getAvailable(i + 1, servers, unavailable);
                     ServerBase replica =
-                            (ServerBase) s.sapphire_replicate(s.getProcessedPolicies());
+                            (ServerBase) s.sapphire_replicate(s.getProcessedPolicies(), regionRestriction);
                     s.sapphire_pin_to_server(replica, dest);
                     updateReplicaHostName(replica, dest);
                     removeServer(replica);

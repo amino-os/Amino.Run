@@ -127,7 +127,12 @@ public class KernelClient {
     public Object makeKernelRPC(KernelObjectStub stub, KernelRPC rpc)
             throws KernelObjectNotFoundException, Exception {
         InetSocketAddress host = stub.$__getHostname();
-        logger.log(Level.FINE, "Making RPC to " + host.toString() + " RPC: " + rpc.toString());
+        if (rpc == null) {
+            throw new Exception("RPC is null");
+        }
+
+//        String rpcStr = (rpc == null) ? "" : rpc.toString();
+//        logger.log(Level.FINE, "Making RPC to " + host.toString() + " RPC: " + rpcStr);
 
         // Check whether this object is local.
         KernelServer server;
@@ -151,8 +156,8 @@ public class KernelClient {
 
     public void copyObjectToServer(InetSocketAddress host, KernelOID oid, KernelObject object)
             throws RemoteException, KernelObjectNotFoundException,
-                    KernelObjectStubNotCreatedException, SapphireObjectNotFoundException,
-                    SapphireObjectReplicaNotFoundException {
+            KernelObjectStubNotCreatedException, SapphireObjectNotFoundException,
+            SapphireObjectReplicaNotFoundException {
         getServer(host).copyKernelObject(oid, object);
     }
 }

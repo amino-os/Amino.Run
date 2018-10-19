@@ -218,6 +218,7 @@ public class SapphireMultiPolicyChainTest extends MultiPolicyChainBaseTest {
                         processedPolicies,
                         previousServerPolicy,
                         previousServerPolicyStub,
+                        null,
                         null);
 
         assertEquals(1, policyList.size());
@@ -247,6 +248,7 @@ public class SapphireMultiPolicyChainTest extends MultiPolicyChainBaseTest {
                         processedPolicies,
                         previousServerPolicy,
                         previousServerPolicyStub,
+                        null,
                         null);
 
         assertEquals(2, policyList.size());

@@ -103,7 +103,10 @@ public class DefaultSapphirePolicy extends SapphirePolicy {
         public void onCreate(
                 SapphireServerPolicy server, Map<String, SapphirePolicyConfig> configMap)
                 throws RemoteException {}
-
+        @Override
+        public void onCreate(
+                SapphireServerPolicy server, Map<String, SapphirePolicyConfig> configMap, String regionRestriction)
+                throws RemoteException {}
         @Override
         public synchronized void onDestroy() throws RemoteException {
             super.onDestroy();

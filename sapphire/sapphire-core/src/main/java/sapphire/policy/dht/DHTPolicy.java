@@ -69,10 +69,16 @@ public class DHTPolicy extends DefaultSapphirePolicy {
     public static class DHTServerPolicy extends DefaultServerPolicy {}
 
     public static class DHTGroupPolicy extends DefaultGroupPolicy {
+        private String defaultRegion = "Region1";
         private static Logger logger = Logger.getLogger(DHTGroupPolicy.class.getName());
         private int numOfShards = DEFAULT_NUM_OF_SHARDS;
         private DHTChord dhtChord;
         private Random generator = new Random(System.currentTimeMillis());
+
+        public DHTGroupPolicy() {
+            setDefaultRegion(defaultRegion);
+            dhtChord = new DHTChord();
+        }
 
         @Override
         public void onCreate(
@@ -102,23 +108,25 @@ public class DHTPolicy extends DefaultSapphirePolicy {
                 // Create replicas based on annotation
                 InetSocketAddress newServerAddress = null;
                 for (int i = 1; i < numOfShards; i++) {
-                    newServerAddress = oms().getServerInRegion(regions.get(i % regions.size()));
+                    String region = regions.get(i % regions.size());
+                    newServerAddress = oms().getServerInRegion(region);
 
                     // TODO (Sungwook, 2018-10-2) Passing processedPolicies may not be necessary as
                     // they are already available.
                     SapphireServerPolicy replica =
-                            dhtServer.sapphire_replicate(server.getProcessedPolicies());
-                    dhtServer.sapphire_pin_to_server(replica, newServerAddress);
+                            dhtServer.sapphire_replicate(server.getProcessedPolicies(), region);
+//                    dhtServer.sapphire_pin_to_server(replica, newServerAddress);
                 }
-                dhtServer.sapphire_pin(server, regions.get(0));
+//                dhtServer.sapphire_pin(server, regions.get(0));
             } catch (RemoteException e) {
                 throw new Error(
                         "Could not create new group policy because the oms is not available.");
-            } catch (SapphireObjectNotFoundException e) {
-                throw new Error("Failed to find sapphire object.", e);
-            } catch (SapphireObjectReplicaNotFoundException e) {
-                throw new Error("Failed to find sapphire object replica.", e);
             }
+//            catch (SapphireObjectNotFoundException e) {
+//                throw new Error("Failed to find sapphire object.", e);
+//            } catch (SapphireObjectReplicaNotFoundException e) {
+//                throw new Error("Failed to find sapphire object replica.", e);
+//            }
         }
 
         @Override

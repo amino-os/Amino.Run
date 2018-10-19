@@ -9,6 +9,7 @@ import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.kernel.server.KernelServer;
 import sapphire.kernel.server.KernelServerImpl;
 import sapphire.oms.OMSServer;
+import sapphire.oms.OMSServerImpl;
 import sapphire.policy.SapphirePolicyUpcalls;
 import sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy;
 import sapphire.policy.dht.DHTPolicy;
@@ -22,6 +23,14 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
 public class pinkisClient {
+
+    static final int NumOfRegions = 2;
+    static final int NumOfKernelServersPerRegion = 2;
+    static final String RegionsNameBase = "Region";
+    static final String ip = "127.0.0.1";
+    static int omsPort = 22346;
+    static int ksPort = 30001;
+
     public static void main(String[] args) {
         System.out.println("hello demo");
 
@@ -30,6 +39,20 @@ public class pinkisClient {
         pinkisServer server = null;
 
         try {
+//            OMSServerImpl.main(new String[] {ip, String.valueOf(omsPort)});
+//            Thread.sleep(1000);
+//
+//            for (int i = 1; i < NumOfRegions + 1; i++) {
+//                for (int j = 0; j < NumOfKernelServersPerRegion; j++) {
+//                    KernelServerImpl.main(
+//                            new String[] {
+//                                    ip, String.valueOf(ksPort), ip, String.valueOf(omsPort), RegionsNameBase + i
+//                            });
+//                    ksPort++;
+//                    Thread.sleep(200);
+//                }
+//            }
+
             KernelServer dummyLocalKS = new KernelServerImpl(new InetSocketAddress("127.0.0.2", 11111), new InetSocketAddress(args[0], Integer.parseInt(args[1])));
 
             Registry registry = LocateRegistry.getRegistry(args[0],Integer.parseInt(args[1]));
@@ -62,6 +85,10 @@ public class pinkisClient {
         } catch (SapphireObjectNotFoundException e) {
             e.printStackTrace();
         }
+
+//        catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
 
         for (int i=0; i<30; ++i) {
             server.set("foo_"+i, "bar_"+i);

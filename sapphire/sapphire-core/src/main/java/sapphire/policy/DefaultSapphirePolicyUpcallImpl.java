@@ -57,13 +57,13 @@ public abstract class DefaultSapphirePolicyUpcallImpl extends SapphirePolicyLibr
         }
 
         public SapphireServerPolicy sapphire_replicate(
-                List<SapphirePolicyContainer> processedPolicies) throws RemoteException {
-            return super.sapphire_replicate(processedPolicies);
+                List<SapphirePolicyContainer> processedPolicies, String regionRestriction) throws RemoteException {
+            return super.sapphire_replicate(processedPolicies, regionRestriction);
         }
 
         public void sapphire_pin(SapphireServerPolicy sapphireServerPolicy, String region)
                 throws RemoteException, SapphireObjectNotFoundException,
-                        SapphireObjectReplicaNotFoundException {
+                SapphireObjectReplicaNotFoundException {
             super.sapphire_pin(sapphireServerPolicy, region);
         }
 
@@ -71,7 +71,7 @@ public abstract class DefaultSapphirePolicyUpcallImpl extends SapphirePolicyLibr
         public void sapphire_pin_to_server(
                 SapphireServerPolicy sapphireServerPolicy, InetSocketAddress server)
                 throws RemoteException, SapphireObjectNotFoundException,
-                        SapphireObjectReplicaNotFoundException {
+                SapphireObjectReplicaNotFoundException {
             super.sapphire_pin_to_server(sapphireServerPolicy, server);
         }
 

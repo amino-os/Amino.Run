@@ -3,39 +3,25 @@ apply plugin: 'java'
 /*
     TODO: Add following changes after:
     1. Add task for generating and compiling stubs. (Currently manually added)
+    2. genStubs is disabled below - enable it
 */
-dependencies {
-    compile project(':sapphire-core')
+// Customize app stub generation for this example - disable it for now - see above.
+genStubs {
+    def src = "/tmp"
+    def dst = "/tmp/stubs"
+    def pkg = ''
+    args src, pkg, dst
+    // outputs.dir '' // Declare outputs, so gradle will run if they have been changed
+    // inputs.dir ''   // Declare inputs, so gradle will run if they have been changed
 }
-
-// Task for Stub compilation
-task compileStubs(type: JavaCompile) {
-    source = sourceSets.main.java.srcDirs
-    classpath = sourceSets.main.runtimeClasspath
-    destinationDir = sourceSets.main.output.classesDir
-    options.incremental = true
+// Customize stub compilation for this example
+compileStubs {
+    outputs.dir "$buildDir/classes/java/main/sapphire/appexamples/hankstodo/stubs/"
 }
 
 jar.dependsOn compileStubs
 
-// Start OMS with "gradlew runoms"
-task runoms(type: JavaExec) {
-    dependsOn jar
-    classpath = sourceSets.main.runtimeClasspath
-    jvmArgs '-Djava.util.logging.config.file=' + project.projectDir + '/../../logging.properties'
-    main = 'sapphire.oms.OMSServerImpl'
-    args project.property('omsIp'), project.property('omsPort')
-}
-
-// Start kernel server with "gradlew runks"
-task runks(type: JavaExec) {
-    classpath = sourceSets.main.runtimeClasspath
-    jvmArgs '-Djava.util.logging.config.file=' + project.projectDir + '/../../logging.properties'
-    main = 'sapphire.kernel.server.KernelServerImpl'
-    args project.property('kernelServerIp'), project.property('kernelServerPort'), project.property('omsIp'), project.property('omsPort')
-}
-
-// Task for run Ruby hanksTodoApp demo app
+// Task to run Ruby app
 task runrubyapp(type: Exec) {
     environment  RUBY_HOME: "${project.projectDir}/src/main/ruby/sapphire/appexamples/hankstodo"
     environment  OMS_IP: "${project.property('omsIp')}"
@@ -61,14 +47,12 @@ task runjsapp(type: Exec) {
             "${project.projectDir}/src/main/js/sapphire/appexamples/hankstodo/hanks_todo_main.js"
 }
 
-// Task for run Java demo app
-task runapp(type: JavaExec) {
-    classpath = sourceSets.main.runtimeClasspath
-    jvmArgs '-Djava.util.logging.config.file=' + project.projectDir + '/../../logging.properties'
+// Customise task to run Java app
+runapp {
     systemProperty "RUBY_HOME",  "${project.projectDir}/src/main/ruby/sapphire/appexamples/hankstodo/"
     systemProperty "JS_HOME",  "${project.projectDir}/src/main/js/sapphire/appexamples/hankstodo/"
     main = 'sapphire.appexamples.hankstodo.stubs.Client_Stub'
-    args project.property('embeddedKernelServerIp'), project.property('kernelServerPort'), project.property('omsIp'), project.property('omsPort')
+    args = [project.property('embeddedKernelServerIp'), project.property('kernelServerPort'), project.property('omsIp'), project.property('omsPort')]
 }
 
 runapp.dependsOn compileStubs

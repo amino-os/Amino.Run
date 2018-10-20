@@ -28,9 +28,12 @@ public class HanksTodoMain {
 
         if (args.length < 4) {
             System.out.println("Incorrect arguments to the program");
-            System.out.println("<host-ip> <host-port> <oms ip> <oms-port>");
-            return;
+            System.out.println("usage: " + HanksTodoMain.class.getSimpleName() + " <host-ip> <host-port> <oms ip> <oms-port>");
+            System.exit(1);
         }
+        String hostIp = args[0], hostPort = args[1], omsIp = args[2], omsPort = args[3];
+        InetSocketAddress hostAddr = new InetSocketAddress(hostIp, Integer.parseInt(hostPort)), omsAddr = new InetSocketAddress(omsIp, Integer.parseInt(omsPort));
+
 
         Registry registry;
 

@@ -1,59 +1,23 @@
 apply plugin: 'java-library'
 
-dependencies {
-    compile project(':sapphire-core')
-}
-
-// Task for app stub generation
-task genStubs(type: JavaExec) {
-    main = "sapphire.compiler.StubGenerator"
-    classpath = sourceSets.main.runtimeClasspath
-    def pkgName = 'sapphire.appexamples.hankstodo'
+// Customize app stub generation for this example
+genStubs {
     def src = "$buildDir/classes/java/main/sapphire/appexamples/hankstodo"
     def dst = "$projectDir/src/main/java/sapphire/appexamples/hankstodo/stubs/"
-    args src, pkgName, dst
+    def pkg = 'sapphire.appexamples.hankstodo'
+    args src, pkg, dst
     outputs.dir dst // Declare outputs, so gradle will run if they have been changed
     inputs.dir src   // Declare inputs, so gradle will run if they have been changed
 }
 
-clean {
-    delete genStubs.outputs // Add generated stubs to what the clean task must delete
+// Customize stub compilation for this example
+compileStubs {
+    outputs.dir "$buildDir/classes/java/main/sapphire/appexamples/hankstodo/stubs/"
 }
 
-// Task for Stub compilation
-task compileStubs(type: JavaCompile) {
-    inputs.dir genStubs.outputs // Tell gradle to only recompile stubs when they've been regenerated.
-    outputs.dir "$buildDir/classes/java/main/sapphire/appexamples/hankstodo/stubs/" // ... or when someone messed with the compiled stubs
-    source = sourceSets.main.java.srcDirs
-    classpath = sourceSets.main.compileClasspath
-    destinationDir = sourceSets.main.output.classesDir
-    options.incremental = true
+// Customize runapp for this example
+runapp {
+    main = "sapphire.appexamples.hankstodo.HanksTodoMain"
 }
-
 jar.dependsOn compileStubs
 
-// Start OMS with "gradlew runoms"
-task runoms(type: JavaExec) {
-    dependsOn jar
-    classpath = sourceSets.main.runtimeClasspath
-    jvmArgs '-Djava.util.logging.config.file=' + project.projectDir + '/../../logging.properties'
-    main = 'sapphire.oms.OMSServerImpl'
-    args project.property('omsIp'), project.property('omsPort')
-}
-
-// Start kernel server with "gradlew runks"
-task runks(type: JavaExec) {
-    classpath = sourceSets.main.runtimeClasspath
-    jvmArgs '-Djava.util.logging.config.file=' + project.projectDir + '/../../logging.properties'
-    main = 'sapphire.kernel.server.KernelServerImpl'
-    args project.property('kernelServerIp'), project.property('kernelServerPort'), project.property('omsIp'), project.property('omsPort')
-}
-
-// Task for run hanksTodoApp demo app
-// Usage: gradlew runapp -PW=DisneyWorld
-task runapp(type: JavaExec) {
-    main = "sapphire.appexamples.hankstodo.HanksTodoMain"
-    classpath = sourceSets.main.runtimeClasspath
-    jvmArgs '-Djava.util.logging.config.file=' + project.projectDir + '/../../logging.properties'
-    args project.property('omsIp'), project.property('omsPort'), project.property('kernelIpAndroid'), project.property('kernelServerPort')
-}

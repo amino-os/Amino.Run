@@ -44,10 +44,15 @@ dependencies {
     testCompile 'org.powermock:powermock:1.6.5'
     testCompile 'org.powermock:powermock-module-junit4:1.6.5'
     testCompile 'org.powermock:powermock-api-mockito:1.6.5'
+    // TODO: quinton: the following 2 lines shouldn't be necessary
+    // But if removed, 4 integration tests fail with the following types of exception.
+    // Try to figure out why, and fix the problem so that these lines can be removed.
+    //    sapphire.policy.ConsensusDMIntegrationTest > testConsensusDM FAILED
+    //        sapphire.common.SapphireObjectCreationException at ConsensusDMIntegrationTest.java:42
+    //            Caused by: java.lang.NullPointerException
     testCompile project(':examples:helloworld')
     integrationTestCompile project(':examples:helloworld')
 }
-
 
 // Maven Plugin Properties
 // Reset maven properties to ensure that their values are 
@@ -55,36 +60,19 @@ dependencies {
 group = project.property('mavenGroupId')
 version =  project.property('mavenVersion')
 
-// Task for Policy Stub Generation:
-// Run `gradlew genStubs` to generate policy stub files
-task genStubs(type: JavaExec) {
-    main = "sapphire.compiler.StubGenerator"
-    classpath = sourceSets.main.runtimeClasspath
-    def pkgName = 'sapphire.policy'
-    def src = "$buildDir/classes/java/main/sapphire/policy/"
-    def dst = "$projectDir/src/main/java/sapphire/policy/stubs/"
-    args src, pkgName, dst
-    outputs.dir dst // Declare outputs, so gradle will run if they have been changed
-    inputs.dir src   // Declare inputs, so gradle will run if they have been changed
-}
-
-clean {
-    delete genStubs.outputs // Add generated stubs to what the clean task must delete
-}
-
-// Task for stub compilation
-task compileStubs(type: JavaCompile) {
-    inputs.dir genStubs.outputs // Try to convince gradle to only recompile stubs when they've been regenerated.
-    outputs.dir "$buildDir/classes/java/main/sapphire/policy/stubs" // ... or when someone messed with the compiled stubs
-    source = sourceSets.main.java.srcDirs
-    classpath = sourceSets.main.compileClasspath
-    destinationDir = sourceSets.main.output.classesDir
-    options.incremental = true
-}
-
 task integTest(type: Test) {
     testClassesDirs = sourceSets.integrationTest.output.classesDirs
     classpath = sourceSets.integrationTest.runtimeClasspath
+}
+
+// Customize DM stub generation
+genStubs {
+    def pkg = 'sapphire.policy'
+    def src = file(project.buildDir.toString() + '/classes/java/main/sapphire/policy/')
+    def dst = file(project.projectDir.toString() + '/src/main/java/sapphire/policy/stubs/')
+    args src.toString(), pkg, dst.toString()
+    outputs.dir dst // Declare outputs, so gradle will run if they have been changed
+    inputs.dir src   // Declare inputs, so gradle will run if they have been changed
 }
 
 tasks.googleJavaFormat.mustRunAfter genStubs

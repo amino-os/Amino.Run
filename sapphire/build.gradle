@@ -35,6 +35,7 @@ subprojects {
     apply plugin: 'maven'
     apply plugin: 'maven-publish'
     apply plugin: 'com.jfrog.bintray'
+    apply plugin: 'java'
 
     // Bintray Configurations:
     // 1. Env variable BINTRAY_USER and BINTRAY_API_KEY must be set
@@ -89,5 +90,28 @@ subprojects {
                 }
             }
         }
+    }
+
+    // Task for Stub Generation:
+    // Run `gradlew genStubs` to generate stub files
+    task genStubs(type: JavaExec) {
+        main = "sapphire.compiler.StubGenerator"
+        classpath = sourceSets.main.runtimeClasspath
+     }
+
+    clean {
+        delete genStubs.outputs.files // Add generated stubs to what the clean task must delete
+        doLast {
+            println 'DEBUG: Clean will also delete ' + genStubs.outputs.files.asCollection()
+        }
+    }
+
+    // Task for stub compilation
+    task compileStubs(type: JavaCompile) {
+        source = sourceSets.main.java.srcDirs
+        classpath = sourceSets.main.compileClasspath
+        destinationDir = sourceSets.main.output.classesDir
+        options.incremental = true
+        inputs.dir genStubs.outputs
     }
 }

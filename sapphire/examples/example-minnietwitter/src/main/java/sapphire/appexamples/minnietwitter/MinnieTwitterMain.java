@@ -6,7 +6,6 @@ import java.rmi.registry.Registry;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.TimeUnit;
 
 import sapphire.app.Language;
 import sapphire.app.SapphireObjectSpec;
@@ -72,14 +71,14 @@ public class MinnieTwitterMain {
      * (Sungwook Moon, 12/5/2017) This is a temporary method for demo to show shift policy.
      * This method adds a single user and send tweet messages for predefined times.
      */
-    private static void ExecuteSingleUserDemo(String[] args) {
+    private static void ExecuteSingleUserDemo(InetSocketAddress hostAddr, InetSocketAddress omsAddr) {
         Registry registry;
 
         try {
-            registry = LocateRegistry.getRegistry(args[0], Integer.parseInt(args[1]));
+            registry = LocateRegistry.getRegistry(omsAddr.getHostName(), omsAddr.getPort());
             OMSServer server = (OMSServer) registry.lookup("SapphireOMS");
 
-            KernelServer nodeServer = new KernelServerImpl(new InetSocketAddress(args[2], Integer.parseInt(args[3])), new InetSocketAddress(args[0], Integer.parseInt(args[1])));
+            KernelServer nodeServer = new KernelServerImpl(hostAddr, omsAddr);
 
             /* Get Twitter and User Manager */
             SapphireObjectSpec spec = SapphireObjectSpec.newBuilder()
@@ -141,16 +140,16 @@ public class MinnieTwitterMain {
         }
     }
 
-    private static void ExecuteFullDemo(String[] args) {
+    private static void ExecuteFullDemo(InetSocketAddress hostAddr, InetSocketAddress omsAddr) {
 
         Registry registry;
         List<Timeline> timelines = new ArrayList<Timeline>();
 
         try {
-            registry = LocateRegistry.getRegistry(args[0], Integer.parseInt(args[1]));
+            registry = LocateRegistry.getRegistry(omsAddr.getHostString(), omsAddr.getPort());
             OMSServer server = (OMSServer) registry.lookup("SapphireOMS");
 
-            KernelServer nodeServer = new KernelServerImpl(new InetSocketAddress(args[2], Integer.parseInt(args[3])), new InetSocketAddress(args[0], Integer.parseInt(args[1])));
+            KernelServer nodeServer = new KernelServerImpl(hostAddr, omsAddr);
 
             /* Get Twitter and User Manager */
             SapphireObjectID sapphireObjId = server.createSapphireObject("sapphire.appexamples.minnietwitter.TwitterManager", new Object[0]);
@@ -218,6 +217,14 @@ public class MinnieTwitterMain {
         }
     }
     public static void main(String[] args) {
-        ExecuteSingleUserDemo(args);
+
+        if (args.length < 4) {
+            System.out.println("Incorrect arguments to the program");
+            System.out.println("usage: " + MinnieTwitterMain.class.getSimpleName() + " <oms ip> <oms-port> <host-ip> <host-port>");
+            System.exit(1);
+        }
+        String omsIp = args[0], omsPort = args[1], hostIp = args[2], hostPort = args[3];
+        InetSocketAddress hostAddr = new InetSocketAddress(hostIp, Integer.parseInt(hostPort)), omsAddr = new InetSocketAddress(omsIp, Integer.parseInt(omsPort));
+        ExecuteSingleUserDemo(hostAddr, omsAddr);
     }
 }

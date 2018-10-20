@@ -1,0 +1,57 @@
+// All default build scripts common to all examples go here.
+// These defaults can be overridden in build.gradle files of individual examples where necessary.
+subprojects {
+    dependencies {
+        compile project(':sapphire-core')
+    }
+
+    // Run OMS
+    task runoms(type: JavaExec) {
+        classpath = sourceSets.main.runtimeClasspath
+        jvmArgs '-Djava.util.logging.config.file=' + project.projectDir + '/../../logging.properties'
+        main = 'sapphire.oms.OMSServerImpl'
+        args project.property('omsIp'), project.property('omsPort')
+        inputs.dir compileStubs
+    }
+
+    // Run a kernel server
+    task runks(type: JavaExec) {
+        classpath = sourceSets.main.runtimeClasspath
+        jvmArgs '-Djava.util.logging.config.file=' + project.projectDir + '/../../logging.properties'
+        main = 'sapphire.kernel.server.KernelServerImpl'
+        args project.property('kernelServerIp'), project.property('kernelServerPort'), project.property('omsIp'), project.property('omsPort'), project.property("kernelServerRegion")
+        inputs.dir compileStubs
+    }
+
+    // Run a second kernel server
+    task runks2(type: JavaExec) {
+        classpath = runks.classpath // TODO: How do we create a new task that inherits from an existing task, or takes a parameter?  Hack for now.
+        jvmArgs runks.jvmArgs
+        main = runks.main
+        args project.property('kernelServerIp'), project.property('kernelServerPort2'), project.property('omsIp'), project.property('omsPort'), project.property("kernelServerRegion2")
+    }
+
+    // Run a third kernel server
+    task runks3(type: JavaExec) {
+        classpath = runks.classpath
+        jvmArgs runks.jvmArgs
+        main = runks.main
+        args project.property('kernelServerIp'), project.property('kernelServerPort3'), project.property('omsIp'), project.property('omsPort'), project.property("kernelServerRegion3")
+    }
+
+    // Run a fourth kernel server
+    task runks4(type: JavaExec) {
+        classpath = runks.classpath
+        jvmArgs runks.jvmArgs
+        main = runks.main
+        args project.property('kernelServerIp'), project.property('kernelServerPort4'), project.property('omsIp'), project.property('omsPort'), project.property("kernelServerRegion4")
+    }
+
+    // Run application
+    task runapp(type: JavaExec) {
+        classpath = sourceSets.main.runtimeClasspath
+        jvmArgs '-Djava.util.logging.config.file=' + project.projectDir + '/../../logging.properties'
+        args project.property('omsIp'), project.property('omsPort'), project.property('embeddedKernelServerIp'), project.property('kernelServerPort')
+        inputs.dir compileStubs
+    }
+}

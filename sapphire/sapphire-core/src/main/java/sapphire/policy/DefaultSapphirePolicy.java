@@ -60,7 +60,7 @@ public class DefaultSapphirePolicy extends SapphirePolicy {
 
         @Override
         /**
-         * it is advisable that defer putting this server policy into group policy until the server
+         * It is advisable that defer putting this server policy into group policy until the server
          * policy is complete with full policy chain.
          */
         public synchronized void addServer(SapphireServerPolicy server) throws RemoteException {
@@ -68,7 +68,14 @@ public class DefaultSapphirePolicy extends SapphirePolicy {
                 // TODO: Need to change it to proper exception
                 throw new RemoteException("Group object deleted");
             }
+            if (servers.remove(server)) {
+                System.out.println("Removed server for update");
+            } else {
+                System.out.println("No servers to remove.");
+            }
             servers.add(server);
+            System.out.println("Added server for " + server);
+            System.out.println("number of servers: " + servers.size());
         }
 
         @Override
@@ -76,6 +83,16 @@ public class DefaultSapphirePolicy extends SapphirePolicy {
             if (servers != null) {
                 servers.remove(server);
             }
+        }
+
+        @Override
+        public synchronized void updateServer(SapphireServerPolicy server) throws RemoteException {
+            if (servers == null) {
+                // TODO: Change the exception to proper one, similar to addServer exception.
+                throw new RemoteException("updateServer() failed, Group object deleted.");
+            }
+            servers.remove(server);
+            servers.add(server);
         }
 
         @Override
@@ -95,9 +112,19 @@ public class DefaultSapphirePolicy extends SapphirePolicy {
                 throws RemoteException {}
 
         @Override
+        public void onCreate(
+                SapphireServerPolicy server,
+                Map<String, SapphirePolicyConfig> configMap,
+                String regionRestriction)
+                throws RemoteException {}
+
+        @Override
         public synchronized void onDestroy() throws RemoteException {
             super.onDestroy();
             servers = null;
         }
+
+        @Override
+        public void onMigrate(SapphireServerPolicy server) throws RemoteException {}
     }
 }

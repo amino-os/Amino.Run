@@ -5,10 +5,10 @@ import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
-import sapphire.common.SapphireObjectNotFoundException;
-import sapphire.common.SapphireObjectReplicaNotFoundException;
+import sapphire.kernel.common.KernelOID;
 import sapphire.policy.DefaultSapphirePolicy;
 
 // TODO (Sungwook, 2018-10-2) Discard after updating original DHT policy to work with multi policy
@@ -126,8 +126,9 @@ public class DHTPolicy2 extends DefaultSapphirePolicy {
 
     public static class DHTGroupPolicy extends DefaultGroupPolicy {
         private static Logger logger = Logger.getLogger(DefaultGroupPolicy.class.getName());
-        private HashMap<Integer, DHTNode> nodes;
+        private HashMap<Integer, DHTNode> nodes = new HashMap<Integer, DHTNode>();
         private int groupSize = 0;
+        private String defaultRegion = "Region1";
 
         private class DHTNode implements Serializable {
             public int id;
@@ -139,48 +140,111 @@ public class DHTPolicy2 extends DefaultSapphirePolicy {
             }
         }
 
+        public DHTGroupPolicy() {
+            setDefaultRegion(defaultRegion);
+        }
+
         @Override
         public void onCreate(
-                SapphireServerPolicy server, Map<String, SapphirePolicyConfig> configMap) {
+                SapphireServerPolicy server,
+                Map<String, SapphirePolicyConfig> configMap,
+                String regionRestriction)
+                throws RemoteException {
+            // TODO (Sungwook): Is this sufficient? What about addserver for replica? How was
+            // original code working?
+            super.onCreate(server, configMap);
+
             nodes = new HashMap<Integer, DHTNode>();
 
             try {
                 ArrayList<String> regions = sapphire_getRegions();
 
                 // Add the first DHT node
-                groupSize++;
-                int id = groupSize;
+                addServer(server);
                 DHTServerPolicy dhtServer = (DHTServerPolicy) server;
 
-                DHTNode newNode = new DHTNode(id, dhtServer);
-                nodes.put(id, newNode);
+                if (regionRestriction != null) {
+                    List<InetSocketAddress> newServerAddresses =
+                            oms().getServersInRegion(regionRestriction);
 
-                for (int i = 1; i < regions.size(); i++) {
-                    InetSocketAddress newServerAddress = oms().getServerInRegion(regions.get(i));
-                    SapphireServerPolicy replica =
-                            dhtServer.sapphire_replicate(server.getProcessedPolicies());
-                    dhtServer.sapphire_pin_to_server(replica, newServerAddress);
+                    for (int i = 1; i < newServerAddresses.size(); i++) {
+                        SapphireServerPolicy replica =
+                                dhtServer.sapphire_replicate(
+                                        server.getProcessedPolicies(), regionRestriction);
+                        KernelOID replicaOid = replica.$__getKernelOID();
+
+                        addServer(replica);
+                        System.out.println(
+                                "(DHT2) Pin replica "
+                                        + replica.$__getKernelOID()
+                                        + " to "
+                                        + newServerAddresses.get(i).getHostName()
+                                        + " at restricted "
+                                        + regionRestriction);
+                        //                        dhtServer.sapphire_pin_to_server(replica,
+                        // newServerAddresses.get(i));
+                    }
+                } else {
+                    for (int i = 1; i < regions.size(); i++) {
+                        InetSocketAddress newServerAddress =
+                                oms().getServerInRegion(regions.get(i));
+                        SapphireServerPolicy replica =
+                                dhtServer.sapphire_replicate(
+                                        server.getProcessedPolicies(), regions.get(i));
+                        KernelOID replicaOid = replica.$__getKernelOID();
+                        addServer(replica);
+                        // replica is null if it was migrated.
+                        System.out.println(
+                                "(DHT2) Pin replica "
+                                        + replica.$__getKernelOID()
+                                        + " to "
+                                        + newServerAddress.getHostName()
+                                        + " at "
+                                        + regions.get(i));
+                        //                        dhtServer.sapphire_pin_to_server(replica,
+                        // newServerAddress);
+                    }
                 }
-                dhtServer.sapphire_pin(server, regions.get(0));
+
+                if (regionRestriction == null) {
+                    regionRestriction = regions.get(0);
+                }
+                KernelOID oid = server.$__getKernelOID();
+
+                System.out.println(
+                        "(DHT2) Pin original "
+                                + oid
+                                + " to "
+                                + server
+                                + " at "
+                                + regionRestriction);
+                //                dhtServer.sapphire_pin(server, regionRestriction);
+
             } catch (RemoteException e) {
                 e.printStackTrace();
                 throw new Error(
                         "Could not create new group policy because the oms is not available.");
-            } catch (SapphireObjectNotFoundException e) {
-                throw new Error("Failed to find sapphire object.", e);
-            } catch (SapphireObjectReplicaNotFoundException e) {
-                throw new Error("Failed to find sapphire object replica.", e);
             }
         }
 
         @Override
         public void addServer(SapphireServerPolicy server) {
-            groupSize++;
-            int id = groupSize;
             try {
                 DHTServerPolicy dhtServer = (DHTServerPolicy) server;
-                DHTNode newNode = new DHTNode(id, dhtServer);
-                nodes.put(id, newNode);
+
+                for (DHTNode node : nodes.values()) {
+                    if (dhtServer == node.server) {
+                        int id = node.id;
+                        DHTNode newNode = new DHTNode(id, dhtServer);
+                        nodes.replace(id, node, newNode);
+                        return;
+                    }
+                }
+
+                // Create a new node and add to the node list.
+                groupSize++;
+                DHTNode newNode = new DHTNode(groupSize, dhtServer);
+                nodes.put(groupSize, newNode);
             } catch (Exception e) {
                 e.printStackTrace();
                 throw new Error("Could not add DHTServer.");

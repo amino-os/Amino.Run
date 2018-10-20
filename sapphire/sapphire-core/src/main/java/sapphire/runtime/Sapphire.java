@@ -58,7 +58,7 @@ public class Sapphire {
     public static Object new_(SapphireObjectSpec spec, Object... args) {
         AppObjectStub appStub = null;
         try {
-            logger.info("Creating object for spec:" + spec);
+            //            logger.info("Creating object for spec:" + spec);
             if (spec.getLang() == Language.java && spec.getDmList().isEmpty()) {
                 Class<?> appObjectClass = Class.forName(spec.getJavaClassName());
                 return new_(appObjectClass, args);
@@ -90,8 +90,31 @@ public class Sapphire {
                             processedPolicies,
                             previousServerPolicy,
                             previousServerPolicyStub,
+                            null,
                             args);
 
+            // TODO: Remove after debugging.
+            //            List<SapphireServerPolicy> servers1 =
+            //                    policyList.get(0).getGroupPolicyStub().getServers();
+            //            List<SapphireServerPolicy> servers2 =
+            //                    policyList.get(1).getGroupPolicyStub().getServers();
+            //
+            //            for (SapphireServerPolicy server : servers1) {
+            //                KernelObjectStub os = (KernelObjectStub) server;
+            //                System.out.println(
+            //                        "Server1 oid:"
+            //                                + os.$__getKernelOID()
+            //                                + " host:"
+            //                                + ((KernelObjectStub) server).$__getHostname());
+            //            }
+            //            for (SapphireServerPolicy server : servers2) {
+            //                KernelObjectStub os = (KernelObjectStub) server;
+            //                System.out.println(
+            //                        "Server2 oid:"
+            //                                + os.$__getKernelOID()
+            //                                + " host:"
+            //                                + ((KernelObjectStub) server).$__getHostname());
+            //            }
             appStub = policyList.get(0).getServerPolicy().sapphire_getAppObjectStub();
         } catch (Exception e) {
             logger.log(
@@ -146,9 +169,13 @@ public class Sapphire {
                             processedPolicies,
                             previousServerPolicy,
                             previousServerPolicyStub,
+                            null,
                             args);
 
             AppObjectStub appStub = policyList.get(0).getServerPolicy().sapphire_getAppObjectStub();
+
+            // TODO (Sungwook, 2018-10-12): sapphire_pin_to_server() might be needed if group is
+            // separated from KernelServer where original server policy should be located.
             logger.info("Sapphire Object created: " + appObjectClass.getName());
             return appStub;
         } catch (Exception e) {
@@ -202,6 +229,8 @@ public class Sapphire {
      * @param previousServerPolicy ServerPolicy that was created just before and needs to be linked
      * @param previousServerPolicyStub ServerPolicyStub that was created just before and needs to be
      *     linked
+     * @param regionRestriction Object needs to be located within particular region if default
+     *     region information exists.
      * @param appArgs arguments for application object
      * @return processedPolicies
      * @throws Exception
@@ -214,6 +243,7 @@ public class Sapphire {
             List<SapphirePolicyContainer> processedPolicies,
             SapphireServerPolicy previousServerPolicy,
             KernelObjectStub previousServerPolicyStub,
+            String regionRestriction,
             Object[] appArgs)
             throws RemoteException, ClassNotFoundException, KernelObjectNotFoundException,
                     KernelObjectNotCreatedException, SapphireObjectNotFoundException,
@@ -273,6 +303,7 @@ public class Sapphire {
                     previousServerPolicy,
                     previousServerPolicyStub,
                     client);
+
         } else {
             initAppStub(spec, serverPolicy, serverPolicyStub, client, appArgs);
         }
@@ -299,7 +330,18 @@ public class Sapphire {
         serverPolicyStub.setProcessedPolicies(processedPoliciesSoFar);
 
         if (existingGroupPolicy == null) {
-            groupPolicy.onCreate(serverPolicyStub, configMap);
+            // TODO(2081-10-12, Sungwook) See if moving this to after createPolicy is feasible as it
+            // will be easier to understand e.g,) replica is created first (current) vs orignal is
+            // created first (after move)
+            groupPolicy.onCreate(serverPolicyStub, configMap, regionRestriction);
+        }
+
+        String regionRestrictionToPassDown;
+        if (regionRestriction == null) {
+            // Regions restriction for downstream policies.
+            regionRestrictionToPassDown = groupPolicy.getDefaultRegion();
+        } else {
+            regionRestrictionToPassDown = regionRestriction;
         }
 
         previousServerPolicy = serverPolicy;
@@ -314,6 +356,7 @@ public class Sapphire {
                     processedPolicies,
                     previousServerPolicy,
                     previousServerPolicyStub,
+                    regionRestrictionToPassDown,
                     appArgs);
         }
 
@@ -322,12 +365,13 @@ public class Sapphire {
             groupPolicy.addServer(serverPolicyStub);
         }
 
-        String ko = "";
-        for (SapphirePolicyContainer policyContainer : processedPolicies) {
-            ko += String.valueOf(policyContainer.getKernelOID()) + ",";
-        }
-
-        logger.log(Level.INFO, "OID from processed policies at " + policyName + " : " + ko);
+        //        String ko = "";
+        //        for (SapphirePolicyContainer policyContainer : processedPolicies) {
+        //            ko += String.valueOf(policyContainer.getKernelOID()) + ",";
+        //        }
+        //
+        //        logger.log(Level.INFO, "OID from processed policies at " + policyName + " : " +
+        // ko);
 
         return processedPolicies;
     }
@@ -350,6 +394,7 @@ public class Sapphire {
             SapphireObjectSpec spec,
             Object[] args,
             PolicyComponents pc,
+            String regionRestriction,
             Annotation[] annotations,
             Map<String, SapphirePolicyConfig> configMap)
             throws Exception {
@@ -399,7 +444,7 @@ public class Sapphire {
         client.onCreate(groupPolicyStub, configMap);
         appStub.$__initialize(client);
         serverPolicy.onCreate(groupPolicyStub, configMap);
-        groupPolicyStub.onCreate(serverPolicyStub, configMap);
+        groupPolicyStub.onCreate(serverPolicyStub, configMap, regionRestriction);
 
         logger.info("Sapphire Object created: " + spec);
         return appStub;

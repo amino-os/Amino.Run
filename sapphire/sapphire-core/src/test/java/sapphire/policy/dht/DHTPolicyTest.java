@@ -94,7 +94,7 @@ public class DHTPolicyTest {
 
         @Override
         public SapphirePolicy.SapphireServerPolicy sapphire_replicate(
-                List<SapphirePolicyContainer> processedPolicies) {
+                List<SapphirePolicyContainer> processedPolicies, String regionRestriction) {
             return new ServerPolicy();
         }
 

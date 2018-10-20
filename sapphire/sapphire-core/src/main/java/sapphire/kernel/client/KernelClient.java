@@ -6,7 +6,6 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.Hashtable;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
@@ -127,7 +126,12 @@ public class KernelClient {
     public Object makeKernelRPC(KernelObjectStub stub, KernelRPC rpc)
             throws KernelObjectNotFoundException, Exception {
         InetSocketAddress host = stub.$__getHostname();
-        logger.log(Level.FINE, "Making RPC to " + host.toString() + " RPC: " + rpc.toString());
+        if (rpc == null) {
+            throw new Exception("RPC is null");
+        }
+
+        //        String rpcStr = (rpc == null) ? "" : rpc.toString();
+        //        logger.log(Level.FINE, "Making RPC to " + host.toString() + " RPC: " + rpcStr);
 
         // Check whether this object is local.
         KernelServer server;

@@ -4,15 +4,15 @@ import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Logger;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
+import sapphire.kernel.common.KernelOID;
+import sapphire.kernel.common.KernelObjectNotFoundException;
+import sapphire.kernel.common.KernelObjectStub;
 import sapphire.policy.DefaultSapphirePolicy;
 import sapphire.policy.util.consensus.raft.AlreadyVotedException;
 import sapphire.policy.util.consensus.raft.CandidateBehindException;
@@ -174,12 +174,21 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
          * @param servers
          */
         public void initializeRaft(ConcurrentMap<UUID, ServerPolicy> servers) {
+            updateRaft(servers);
+            this.raftServer.start();
+        }
+
+        /**
+         * Update the RAFT protocol with the specified set of servers.
+         *
+         * @param servers
+         */
+        public void updateRaft(ConcurrentMap<UUID, ServerPolicy> servers) {
             for (UUID id : servers.keySet()) {
                 if (!id.equals(raftServer.getMyServerID())) {
                     this.raftServer.addServer(id, servers.get(id));
                 }
             }
-            this.raftServer.start();
         }
 
         // TODO: This method should be thread safe
@@ -219,15 +228,40 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
     public static class GroupPolicy extends DefaultSapphirePolicy.DefaultGroupPolicy {
         private static Logger logger = Logger.getLogger(GroupPolicy.class.getName());
 
+        public void initAndUpdateRaftServers(boolean onCreate) throws RemoteException {
+            // Need to retrieve all the Servers which are part of this GroupPolicy.
+            ConcurrentHashMap<UUID, ServerPolicy> allServers =
+                    new ConcurrentHashMap<UUID, ServerPolicy>();
+            // First get the self-assigned ID from each server
+            List<SapphireServerPolicy> servers = getServers();
+            for (SapphireServerPolicy i : servers) {
+                ServerPolicy s = (ServerPolicy) i;
+                allServers.put(s.getRaftServerId(), s);
+            }
+            // Now tell each server about the location and ID of all the servers, and start the
+            // RAFT protocol on each server.
+            for (ServerPolicy s : allServers.values()) {
+                // If called during GroupPolicy creation, then the RaftServer needs to be started.
+                // Else when called during ServerPolicy migration, need to only update the
+                // existing raftServers on the particular raftServer migration.
+                if (onCreate) {
+                    s.initializeRaft(allServers);
+                } else {
+                    s.updateRaft(allServers);
+                }
+            }
+        }
+
         @Override
         public void onCreate(
-                SapphireServerPolicy server, Map<String, SapphirePolicyConfig> configMap)
+                SapphireServerPolicy server,
+                Map<String, SapphirePolicyConfig> configMap,
+                String regionRestriction)
                 throws RemoteException {
             // TODO(merged):
             // super.onCreate(server, annotations);
 
             super.onCreate(server, configMap);
-            addServer(server);
 
             try {
                 ArrayList<String> regions = sapphire_getRegions();
@@ -235,32 +269,70 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
                 ServerPolicy consensusServer = (ServerPolicy) server;
                 // Create additional replicas, one per region. TODO:  Create N-1 replicas on
                 // different servers in the same zone.
-                for (int i = 1; i < regions.size(); i++) {
-                    InetSocketAddress newServerAddress = oms().getServerInRegion(regions.get(i));
-                    ServerPolicy replica =
-                            (ServerPolicy)
-                                    consensusServer.sapphire_replicate(
-                                            server.getProcessedPolicies());
-                    consensusServer.sapphire_pin_to_server(replica, newServerAddress);
-                }
-                consensusServer.sapphire_pin(server, regions.get(0));
+                if (regionRestriction != null) {
+                    List<InetSocketAddress> newServerAddresses =
+                            oms().getServersInRegion(regionRestriction);
 
+                    for (int i = 1; i < newServerAddresses.size(); i++) {
+                        SapphireServerPolicy replica =
+                                consensusServer.sapphire_replicate(
+                                        server.getProcessedPolicies(), regionRestriction);
+                        System.out.println(
+                                "(Consensus) Pin replica "
+                                        + replica.$__getKernelOID()
+                                        + " to "
+                                        + newServerAddresses.get(i)
+                                        + " at restricted "
+                                        + regionRestriction);
+                        InetSocketAddress newServerAddress = newServerAddresses.get(i);
+                        consensusServer.sapphire_pin_to_server(replica, newServerAddress);
+                    }
+                } else {
+                    throw new RemoteException("It should not come here !!!");
+
+                    //                    for (int i = 1; i < regions.size(); i++) {
+                    //                        String region = regions.get(i);
+                    //                        InetSocketAddress newServerAddress =
+                    // oms().getServerInRegion(region);
+                    //                        ServerPolicy replica =
+                    //                                (ServerPolicy)
+                    //                                        consensusServer.sapphire_replicate(
+                    //                                                server.getProcessedPolicies(),
+                    // region);
+                    //                        if (replica != null) {
+                    //                            System.out.println(
+                    //                                    "(Consensus) Pin replica "
+                    //                                            + replica.$__getKernelOID()
+                    //                                            + " to "
+                    //                                            + newServerAddress.getHostName()
+                    //                                            + " at "
+                    //                                            + region);
+                    //                            consensusServer.sapphire_pin_to_server(replica,
+                    // newServerAddress);
+                    //                        } else {
+                    //                            System.out.println("(Consensus) Replica is
+                    // null.");
+                    //                        }
+                    //                    }
+                    //                    regionRestriction = regions.get(0);
+                }
+
+                KernelOID originalOid = server.$__getKernelOID();
+                System.out.println(
+                        "(Consensus) Pin original " + originalOid + " at " + regionRestriction);
+
+                consensusServer.sapphire_pin(server, regionRestriction);
+                try {
+                    InetSocketAddress latestServerAddress = oms().lookupKernelObject(originalOid);
+                    ((KernelObjectStub) server).$__updateHostname(latestServerAddress);
+                } catch (KernelObjectNotFoundException e) {
+                    logger.severe("Object was not found: " + originalOid);
+                }
                 addServer(server);
+                // Need to initialize and update RaftServers created as part of
+                // GroupPolicy creation.
+                initAndUpdateRaftServers(true);
 
-                // Tell all the servers about one another
-                ConcurrentHashMap<UUID, ServerPolicy> allServers =
-                        new ConcurrentHashMap<UUID, ServerPolicy>();
-                // First get the self-assigned ID from each server
-                List<SapphireServerPolicy> servers = getServers();
-                for (SapphireServerPolicy i : servers) {
-                    ServerPolicy s = (ServerPolicy) i;
-                    allServers.put(s.getRaftServerId(), s);
-                }
-                // Now tell each server about the location and ID of all the servers, and start the
-                // RAFT protocol on each server.
-                for (ServerPolicy s : allServers.values()) {
-                    s.initializeRaft(allServers);
-                }
             } catch (RemoteException e) {
                 // TODO: Sapphire Group Policy Interface does not allow throwing exceptions, so in
                 // the mean time convert to an Error.
@@ -271,6 +343,17 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
             } catch (SapphireObjectReplicaNotFoundException e) {
                 throw new Error("Failed to find sapphire object replica.", e);
             }
+        }
+
+        @Override
+        public void onMigrate(SapphireServerPolicy serverPolicyStub) throws RemoteException {
+            // Update the GroupPolicy ServerList with the new ServerPolicy Stub after migration,
+            // as the ServerList will be having a copy of the initial replica ServerPolicy stub.
+            // Hence any values updated in ServerPolicyStub during migration will not visible
+            // at the GroupPolicy level.
+            updateServer(serverPolicyStub);
+            // Need to update existing RaftServers on the ServerPolicy Migration.
+            initAndUpdateRaftServers(false);
         }
     }
 }

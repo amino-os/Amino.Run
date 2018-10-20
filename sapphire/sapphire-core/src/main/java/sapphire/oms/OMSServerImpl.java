@@ -65,14 +65,14 @@ public class OMSServerImpl implements OMSServer {
      */
     public KernelOID registerKernelObject(InetSocketAddress host) throws RemoteException {
         KernelOID oid = kernelObjectManager.register(host);
-        logger.info("Registering " + oid.toString() + " on host " + host.toString());
+        logger.fine("Registering " + oid.toString() + " on host " + host.toString());
         return oid;
     }
 
     /** Register a new host for this kernel object. Used to move a kernel object */
     public void registerKernelObject(KernelOID oid, InetSocketAddress host)
             throws KernelObjectNotFoundException {
-        logger.info("Registering new host for " + oid.toString() + " on " + host.toString());
+        logger.fine("Registering new host for " + oid.toString() + " on " + host.toString());
         kernelObjectManager.register(oid, host);
     }
 

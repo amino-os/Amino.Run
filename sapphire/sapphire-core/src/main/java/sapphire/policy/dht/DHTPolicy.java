@@ -6,7 +6,6 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Random;
 import java.util.logging.Logger;
 import sapphire.policy.DefaultSapphirePolicy;
 import sapphire.policy.SapphirePolicyConfig;
@@ -14,6 +13,7 @@ import sapphire.runtime.annotations.AnnotationConfig;
 
 public class DHTPolicy extends DefaultSapphirePolicy {
     private static final int DEFAULT_NUM_OF_SHARDS = 3;
+    private static final int VIRTUAL_NODE_FACTOR = 5;
 
     /** Configuration for DHT Policy. */
     public static class Config implements SapphirePolicyConfig {
@@ -71,7 +71,7 @@ public class DHTPolicy extends DefaultSapphirePolicy {
         private static Logger logger = Logger.getLogger(DHTGroupPolicy.class.getName());
         private int numOfShards = DEFAULT_NUM_OF_SHARDS;
         private DHTChord dhtChord;
-        private Random generator = new Random(System.currentTimeMillis());
+        //        private Random generator = new Random(System.currentTimeMillis());
 
         @Override
         public void onCreate(
@@ -79,7 +79,7 @@ public class DHTPolicy extends DefaultSapphirePolicy {
                 SapphireServerPolicy server,
                 Map<String, SapphirePolicyConfig> configMap)
                 throws RemoteException {
-            dhtChord = new DHTChord();
+            dhtChord = new DHTChord(VIRTUAL_NODE_FACTOR);
             super.onCreate(region, server, configMap);
 
             if (configMap != null) {
@@ -132,10 +132,12 @@ public class DHTPolicy extends DefaultSapphirePolicy {
         @Override
         public void addServer(SapphireServerPolicy server) throws RemoteException {
             super.addServer(server);
-            DHTKey id = new DHTKey(Integer.toString(generator.nextInt(Integer.MAX_VALUE)));
+            //            DHTKey id = new
+            // DHTKey(Integer.toString(generator.nextInt(Integer.MAX_VALUE)));
+            //            DHTServerPolicy dhtServer = (DHTServerPolicy) server;
+            //            DHTNode newNode = new DHTNode(id, dhtServer);
             DHTServerPolicy dhtServer = (DHTServerPolicy) server;
-            DHTNode newNode = new DHTNode(id, dhtServer);
-            dhtChord.add(newNode);
+            dhtChord.add(dhtServer);
         }
 
         public DHTChord getChord() {

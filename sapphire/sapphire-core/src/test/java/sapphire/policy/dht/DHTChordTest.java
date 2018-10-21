@@ -4,13 +4,18 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 public class DHTChordTest {
     private DHTChord dhtChord;
+    private Random generator = new Random(System.currentTimeMillis());
 
     @Before
     public void setup() {
@@ -18,16 +23,8 @@ public class DHTChordTest {
 
         for (int i = 0; i < 5; i++) {
             DHTNode ni = new DHTNode(new DHTKey("node_" + i), null);
-            dhtChord.add(ni);
+            dhtChord.add(null);
         }
-    }
-
-    @Test
-    public void testGetResponsibleNodeWhenNodeExists() {
-        String identifier = "node_0";
-        DHTNode n = dhtChord.getResponsibleNode(new DHTKey(identifier));
-        // DHTKey exists in nodes
-        Assert.assertEquals(identifier, n.id.getIdentifier());
     }
 
     @Test
@@ -58,6 +55,36 @@ public class DHTChordTest {
                 Assert.assertTrue(i.id.compareTo(key) > 0);
             }
         }
+    }
+
+    @Test
+    public void testChord() {
+        int numOfKeys = 100;
+        Map<DHTPolicy.DHTServerPolicy, AtomicInteger> counts = new HashMap<>();
+        DHTChord chord = new DHTChord(20);
+        for (int i = 0; i < 5; i++) {
+            DHTPolicy.DHTServerPolicy server = new DHTPolicy.DHTServerPolicy();
+            chord.add(server);
+        }
+
+        for (int i = 0; i < numOfKeys; i++) {
+            String key = "key_" + i;
+            DHTNode node = chord.getResponsibleNode(new DHTKey(key));
+            DHTPolicy.DHTServerPolicy server = node.server;
+            if (!counts.containsKey(server)) {
+                counts.put(server, new AtomicInteger());
+            }
+            counts.get(server).getAndIncrement();
+        }
+
+        System.out.println(counts);
+        int total = 0;
+        for (AtomicInteger i : counts.values()) {
+            total += i.get();
+        }
+        ;
+
+        Assert.assertEquals(total, numOfKeys);
     }
 
     @Test

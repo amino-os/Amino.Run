@@ -1,17 +1,14 @@
 package sapphire.policy.dht;
 
-import java.lang.annotation.*;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Random;
 import java.util.logging.Logger;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
 import sapphire.policy.DefaultSapphirePolicy;
-import sapphire.runtime.annotations.AnnotationConfig;
 
 public class DHTPolicy extends DefaultSapphirePolicy {
     private static final int DEFAULT_NUM_OF_SHARDS = 3;
@@ -42,13 +39,6 @@ public class DHTPolicy extends DefaultSapphirePolicy {
         }
     }
 
-    // TODO(multi-lang): Delete Annotations
-    @Retention(RetentionPolicy.RUNTIME)
-    @Target({ElementType.TYPE})
-    public @interface DHTConfigure {
-        int numOfShards() default DEFAULT_NUM_OF_SHARDS;
-    }
-
     public static class DHTClientPolicy extends DefaultClientPolicy {
         private static Logger logger = Logger.getLogger(DHTPolicy.DHTClientPolicy.class.getName());
         private DHTChord dhtChord;
@@ -72,7 +62,6 @@ public class DHTPolicy extends DefaultSapphirePolicy {
         private static Logger logger = Logger.getLogger(DHTGroupPolicy.class.getName());
         private int numOfShards = DEFAULT_NUM_OF_SHARDS;
         private DHTChord dhtChord;
-        private Random generator = new Random(System.currentTimeMillis());
 
         @Override
         public void onCreate(
@@ -85,13 +74,6 @@ public class DHTPolicy extends DefaultSapphirePolicy {
                 SapphirePolicyConfig config = configMap.get(DHTPolicy.Config.class.getName());
                 if (config != null) {
                     this.numOfShards = ((Config) config).getNumOfShards();
-                } else {
-                    // Support java annotations for backward compatibility
-                    AnnotationConfig c =
-                            (AnnotationConfig) configMap.get(DHTConfigure.class.getName());
-                    if (c != null) {
-                        this.numOfShards = Integer.valueOf(c.getConfig("numOfShards"));
-                    }
                 }
             }
 
@@ -124,10 +106,8 @@ public class DHTPolicy extends DefaultSapphirePolicy {
         @Override
         public void addServer(SapphireServerPolicy server) throws RemoteException {
             super.addServer(server);
-            DHTKey id = new DHTKey(Integer.toString(generator.nextInt(Integer.MAX_VALUE)));
             DHTServerPolicy dhtServer = (DHTServerPolicy) server;
-            DHTNode newNode = new DHTNode(id, dhtServer);
-            dhtChord.add(newNode);
+            dhtChord.add(dhtServer);
         }
 
         public DHTChord getChord() {

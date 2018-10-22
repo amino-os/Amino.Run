@@ -19,6 +19,7 @@ import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
 import sapphire.common.Utils;
 import sapphire.kernel.common.GlobalKernelReferences;
+import sapphire.kernel.common.KernelObjectStub;
 import sapphire.policy.DefaultSapphirePolicy;
 import sapphire.policy.SapphirePolicyConfig;
 import sapphire.policy.scalability.masterslave.Lock;
@@ -74,6 +75,10 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultSapphirePolicy 
                                 params,
                                 type);
 
+                logger.log(
+                        Level.INFO,
+                        "Sending request to master server %s",
+                        ((KernelObjectStub) server).$__getHostname());
                 MethodInvocationResponse response = server.onRPC(request);
                 switch (response.getReturnCode()) {
                     case SUCCESS:

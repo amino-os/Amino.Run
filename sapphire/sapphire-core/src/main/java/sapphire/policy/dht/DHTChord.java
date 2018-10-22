@@ -5,12 +5,20 @@ import java.util.Comparator;
 import java.util.Random;
 import java.util.TreeSet;
 
+/**
+ * A (probably overly) simplified Chord implementation.
+ *
+ * For instruction on chord and virtual nodes, please take a look at the
+ * original <a href="https://pdos.csail.mit.edu/papers/chord:sigcomm01/chord_sigcomm.pdf">chord paper</a>.
+ *
+ * @see <a href="https://pdos.csail.mit.edu/papers/chord:sigcomm01/chord_sigcomm.pdf">chord paper</a>
+ */
 public class DHTChord implements Serializable {
     private int virtualNodeFactor = 5;
     private TreeSet<DHTNode> nodes = new TreeSet<>(new DHTNodeComparator());
-    private Random generator = new Random(System.currentTimeMillis());
+    private static Random generator = new Random(System.currentTimeMillis());
 
-    /** Default chord constructor with virtual node factor set to five. */
+    /** Default chord constructor */
     public DHTChord() {}
 
     /**

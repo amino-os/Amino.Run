@@ -77,8 +77,9 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultSapphirePolicy 
 
                 logger.log(
                         Level.INFO,
-                        "Sending request to master server %s",
-                        ((KernelObjectStub) server).$__getHostname());
+                        String.format(
+                                "Sending request to master server %s",
+                                ((KernelObjectStub) server).$__getHostname()));
                 MethodInvocationResponse response = server.onRPC(request);
                 switch (response.getReturnCode()) {
                     case SUCCESS:

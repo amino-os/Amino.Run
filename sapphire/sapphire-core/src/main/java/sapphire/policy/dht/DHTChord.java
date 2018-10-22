@@ -2,65 +2,13 @@ package sapphire.policy.dht;
 
 import java.io.Serializable;
 import java.util.Comparator;
-import java.util.Random;
 import java.util.TreeSet;
 
-/**
- * A (probably overly) simplified Chord implementation.
- *
- * For instruction on chord and virtual nodes, please take a look at the
- * original <a href="https://pdos.csail.mit.edu/papers/chord:sigcomm01/chord_sigcomm.pdf">chord paper</a>.
- *
- * @see <a href="https://pdos.csail.mit.edu/papers/chord:sigcomm01/chord_sigcomm.pdf">chord paper</a>
- */
 public class DHTChord implements Serializable {
-    private int virtualNodeFactor = 5;
     private TreeSet<DHTNode> nodes = new TreeSet<>(new DHTNodeComparator());
-    private static Random generator = new Random(System.currentTimeMillis());
 
-    /** Default chord constructor */
-    public DHTChord() {}
-
-    /**
-     * Constructs a chord with the given virtual node factor. Virtual node factor must be greater
-     * than zero.
-     *
-     * <p>{@code virtualNodeFactor} controls the number of virtual nodes to be added into the chord
-     * for every server. If {@code virtualNodeFactor} is five, then five virtual nodes will be added
-     * into chord for every server.
-     *
-     * @param virtualNodeFactor the number of virtual nodes to be added for every server. It must be
-     *     greater than zero.
-     */
-    public DHTChord(int virtualNodeFactor) {
-        if (virtualNodeFactor <= 0) {
-            throw new IllegalArgumentException(
-                    String.format(
-                            "Invalid virtual node factor %s. Virtual node factor must be greater than 0.",
-                            virtualNodeFactor));
-        }
-        this.virtualNodeFactor = virtualNodeFactor;
-    }
-
-    /**
-     * Adds the specified server into chord.
-     *
-     * <p>When {@code virtualNodeFactor} is specified, the chord will add the specified number of
-     * virtual nodes for the given server in the chord.
-     *
-     * @param server {@code DHTServerPolicy} instance
-     * @throws NullPointerException when server is {@code null}.
-     */
-    public void add(DHTPolicy.DHTServerPolicy server) {
-        if (server == null) {
-            throw new NullPointerException("server must not be null");
-        }
-
-        for (int i = 0; i < virtualNodeFactor; i++) {
-            DHTKey id = new DHTKey(Integer.toString(generator.nextInt(Integer.MAX_VALUE)));
-            DHTNode node = new DHTNode(id, server);
-            nodes.add(node);
-        }
+    public void add(DHTNode node) {
+        nodes.add(node);
     }
 
     public DHTNode getResponsibleNode(DHTKey key) {

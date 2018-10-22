@@ -1,6 +1,5 @@
 package sapphire.oms;
 
-import static sapphire.compiler.GlobalStubConstants.POLICY_ONDESTROY_MTD_NAME_FORMAT;
 import static sapphire.policy.SapphirePolicyUpcalls.SapphirePolicyConfig;
 
 import java.io.IOException;
@@ -14,7 +13,7 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Random;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.JSONException;
 import sapphire.common.AppObjectStub;
@@ -213,8 +212,9 @@ public class OMSServerImpl implements OMSServer {
         try {
             AppObjectStub appObjStub = server.createSapphireObject(sapphireObjectSpec, args);
             SapphirePolicy.SapphireClientPolicy clientPolicy = extractClientPolicy(appObjStub);
-            objectManager.setInstanceObjectStub(
-                    clientPolicy.getGroup().getSapphireObjId(), appObjStub);
+            SapphireObjectID sid = clientPolicy.getGroup().getSapphireObjId();
+            objectManager.setInstanceObjectStub(sid, appObjStub);
+            objectManager.setRootGroupPolicy(sid, clientPolicy.getGroup());
             return clientPolicy.getGroup().getSapphireObjId();
         } catch (Exception e) {
             throw new SapphireObjectCreationException(
@@ -227,32 +227,19 @@ public class OMSServerImpl implements OMSServer {
      *
      * @param sapphireObjId
      * @return Returns sapphire object stub
-     * @throws RemoteException
      * @throws SapphireObjectNotFoundException
      */
     @Override
     public AppObjectStub acquireSapphireObjectStub(SapphireObjectID sapphireObjId)
-            throws RemoteException, SapphireObjectNotFoundException {
-        EventHandler policyHandler = null;
-        EventHandler[] handlers = objectManager.getSapphireReplicasById(sapphireObjId);
-
-        /* Get a random server policy stub and inject it to appObjStub's client policy */
-        if (handlers.length != 0) {
-            policyHandler = handlers[new Random().nextInt(handlers.length)];
-        }
-
-        if (policyHandler == null) {
-            throw new SapphireObjectNotFoundException("Failed to get sapphire object.");
-        }
+            throws SapphireObjectNotFoundException {
 
         try {
             AppObjectStub appObjStub = objectManager.getInstanceObjectStub(sapphireObjId);
             appObjStub.$__initialize(false);
             return appObjStub;
         } catch (Exception e) {
-            logger.warning("Exception occurred : " + e);
             throw new SapphireObjectNotFoundException(
-                    "Failed to get object. Exception occurred.", e);
+                    "Failed to acquire stub for sapphire object " + sapphireObjId, e);
         }
     }
 
@@ -313,30 +300,27 @@ public class OMSServerImpl implements OMSServer {
      */
     @Override
     public boolean deleteSapphireObject(SapphireObjectID sapphireObjId)
-            throws RemoteException, SapphireObjectNotFoundException {
+            throws SapphireObjectNotFoundException {
 
         if (objectManager.decrRefCountAndGet(sapphireObjId) != 0) {
             return true;
         }
 
-        EventHandler handler = getSapphireObjectDispatcher(sapphireObjId);
-        if (handler == null) {
-            logger.warning("Sapphire object handler is null");
-            return false;
-        }
-
-        /* Invoke onDestroy method on group policy object */
+        boolean successfullyRemoved = true;
         try {
-            handler.invoke(
+            objectManager.removeInstance(sapphireObjId);
+            logger.log(
+                    Level.FINE,
                     String.format(
-                            POLICY_ONDESTROY_MTD_NAME_FORMAT,
-                            handler.getObjects().get(0).getClass().getName()),
-                    new ArrayList());
+                            "Successfully removed sapphire object with oid %s", sapphireObjId));
         } catch (Exception e) {
-            logger.warning("Exception occurred : " + e);
+            logger.log(
+                    Level.SEVERE,
+                    String.format("Failed to remove sapphire object with oid %s", sapphireObjId),
+                    e);
+            successfullyRemoved = false;
         }
-
-        return true;
+        return successfullyRemoved;
     }
 
     /**
@@ -428,20 +412,6 @@ public class OMSServerImpl implements OMSServer {
     }
 
     /**
-     * Sets the event handler of sapphire object
-     *
-     * @param sapphireObjId
-     * @param dispatcher
-     * @throws RemoteException
-     * @throws SapphireObjectNotFoundException
-     */
-    @Override
-    public void setSapphireObjectDispatcher(SapphireObjectID sapphireObjId, EventHandler dispatcher)
-            throws RemoteException, SapphireObjectNotFoundException {
-        objectManager.setInstanceDispatcher(sapphireObjId, dispatcher);
-    }
-
-    /**
      * Sets the event handler of sapphire replica
      *
      * @param replicaId
@@ -458,40 +428,11 @@ public class OMSServerImpl implements OMSServer {
     }
 
     /**
-     * Gets the event handler of sapphire object
-     *
-     * @param sapphireObjId
-     * @return
-     * @throws RemoteException
-     * @throws SapphireObjectNotFoundException
-     */
-    @Override
-    public EventHandler getSapphireObjectDispatcher(SapphireObjectID sapphireObjId)
-            throws RemoteException, SapphireObjectNotFoundException {
-        return objectManager.getInstanceDispatcher(sapphireObjId);
-    }
-
-    /**
-     * Gets the event handler of sapphire replica
-     *
-     * @param replicaId
-     * @return
-     * @throws RemoteException
-     * @throws SapphireObjectNotFoundException
-     */
-    @Override
-    public EventHandler getSapphireReplicaDispatcher(SapphireReplicaID replicaId)
-            throws RemoteException, SapphireObjectNotFoundException,
-                    SapphireObjectReplicaNotFoundException {
-        return objectManager.getReplicaDispatcher(replicaId);
-    }
-
-    /**
      * Unregister the sapphire object
      *
      * @param sapphireObjId
      * @throws RemoteException
-     * @throws SapphireObjectNotFoundException
+     * @throws SapphireObjectNotFoundException:w
      */
     public void unRegisterSapphireObject(SapphireObjectID sapphireObjId)
             throws RemoteException, SapphireObjectNotFoundException {

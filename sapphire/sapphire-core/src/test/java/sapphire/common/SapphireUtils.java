@@ -2,7 +2,6 @@ package sapphire.common;
 
 import static org.mockito.Mockito.spy;
 import static sapphire.common.UtilsTest.extractFieldValueOnInstance;
-import static sapphire.compiler.GlobalStubConstants.POLICY_ONDESTROY_MTD_NAME_FORMAT;
 
 import java.net.InetSocketAddress;
 import java.rmi.AccessException;
@@ -22,7 +21,6 @@ import sapphire.oms.OMSServer;
 import sapphire.oms.OMSServerImpl;
 import sapphire.oms.SapphireInstanceManager;
 import sapphire.oms.SapphireObjectManager;
-import sapphire.runtime.EventHandler;
 
 /** Created by Vishwajeet on 4/4/18. */
 public class SapphireUtils {
@@ -127,24 +125,9 @@ public class SapphireUtils {
         return sapphireObjects.get(sapphireObjId);
     }
 
+    @Deprecated
     public static void deleteSapphireObject(OMSServer oms, SapphireObjectID sapphireObjId)
             throws Exception {
-        EventHandler handler = oms.getSapphireObjectDispatcher(sapphireObjId);
-        /* Handlers are made from mocked objects(server & group). Mocked objects will have all the
-         * final methods. Need to remove the final keyword from onDestroy() */
-        // "public final void
-        // sapphire.policy.scalability.ScaleUpFrontendPolicyTest$Group_Stub$$EnhancerByMockitoWithCGLIB$$6faa2a3e.onDestroy() throws java.rmi.RemoteException"
-        StringBuffer destroyName =
-                new StringBuffer(
-                        String.format(
-                                POLICY_ONDESTROY_MTD_NAME_FORMAT,
-                                handler.getObjects().get(0).getClass().getName()));
-        String newDestroyName = destroyName.toString();
-        destroyName.insert("public ".length(), "final ");
-        Hashtable<String, Object> handlers =
-                (Hashtable<String, Object>) extractFieldValueOnInstance(handler, "handlers");
-        Object policyHandler = handlers.get(destroyName.toString());
-        handlers.put(newDestroyName, policyHandler);
         oms.deleteSapphireObject(sapphireObjId);
     }
 }

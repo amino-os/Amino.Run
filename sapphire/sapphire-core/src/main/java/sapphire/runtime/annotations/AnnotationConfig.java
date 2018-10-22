@@ -2,7 +2,7 @@ package sapphire.runtime.annotations;
 
 import java.util.HashMap;
 import java.util.Map;
-import sapphire.policy.SapphirePolicyUpcalls;
+import sapphire.policy.SapphirePolicyConfig;
 
 /**
  * This class can be removed after we completely deprecated Java annotation based sapphire policy
@@ -11,7 +11,7 @@ import sapphire.policy.SapphirePolicyUpcalls;
  * @deprecated This class is created to support java annotation based sapphire policy
  *     configurations.
  */
-public class AnnotationConfig implements SapphirePolicyUpcalls.SapphirePolicyConfig {
+public class AnnotationConfig implements SapphirePolicyConfig {
     private String annotationType;
 
     private Map<String, String> properties = new HashMap<>();

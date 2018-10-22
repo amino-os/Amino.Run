@@ -8,13 +8,6 @@ import sapphire.policy.SapphirePolicy.SapphireGroupPolicy;
 import sapphire.policy.SapphirePolicy.SapphireServerPolicy;
 
 public interface SapphirePolicyUpcalls {
-    /**
-     * Interface for sapphire policy configuration.
-     *
-     * <p>Each sapphire policy can optionally define a Config class to allow programmers to pass
-     * configurations to the sapphire policy. All Config classes should implement this interface.
-     */
-    interface SapphirePolicyConfig extends Serializable {}
 
     /** Interface for client policy */
     interface SapphireClientPolicyUpcalls extends Serializable {
@@ -67,12 +60,16 @@ public interface SapphirePolicyUpcalls {
         /**
          * Initialize g porouplicy.
          *
+         * @param region
          * @param server the server policy that is managed by the group policy
          * @param configMap the map that contains sapphire policy configurations. The key is the
          *     class name of the configuration, and the value is a {@link SapphirePolicyConfig}
          *     instance.
          */
-        void onCreate(SapphireServerPolicy server, Map<String, SapphirePolicyConfig> configMap)
+        void onCreate(
+                String region,
+                SapphireServerPolicy server,
+                Map<String, SapphirePolicyConfig> configMap)
                 throws RemoteException;
 
         void addServer(SapphireServerPolicy server) throws RemoteException;

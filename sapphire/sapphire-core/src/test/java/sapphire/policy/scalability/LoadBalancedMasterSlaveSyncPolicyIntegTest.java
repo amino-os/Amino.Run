@@ -2,6 +2,7 @@ package sapphire.policy.scalability;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
 import org.junit.Assert;
@@ -9,6 +10,7 @@ import org.junit.Before;
 import org.junit.Test;
 import sapphire.common.AppObject;
 import sapphire.kernel.common.KernelOID;
+import sapphire.policy.SapphirePolicy;
 import sapphire.policy.scalability.masterslave.MethodInvocationRequest;
 import sapphire.policy.scalability.masterslave.MethodInvocationResponse;
 import sapphire.runtime.annotations.Immutable;
@@ -149,7 +151,20 @@ public class LoadBalancedMasterSlaveSyncPolicyIntegTest {
 
     private static class ClientMock extends LoadBalancedMasterSlaveSyncPolicy.ClientPolicy {}
 
-    private static class ServerMock extends LoadBalancedMasterSlaveSyncPolicy.ServerPolicy {}
+    private static class ServerMock extends LoadBalancedMasterSlaveSyncPolicy.ServerPolicy
+            implements sapphire.kernel.common.KernelObjectStub {
+
+        @Override
+        public InetSocketAddress $__getHostname() {
+            return null;
+        }
+
+        @Override
+        public void $__updateHostname(InetSocketAddress hostname) {}
+
+        @Override
+        public void $__setNextClientPolicy(SapphirePolicy.SapphireClientPolicy clientPolicy) {}
+    }
 
     private static class GroupMock extends LoadBalancedMasterSlaveSyncPolicy.GroupPolicy {}
 

@@ -42,29 +42,25 @@ public class GraalStubGenerator {
         }
     }
 
-    private static void generateStub(Context polyglot, String lang, String className, String outputDirectory) throws Exception {
+    private static void generateStub(
+            Context polyglot, String lang, String className, String outputDirectory)
+            throws Exception {
         Value v;
         try {
             v = polyglot.eval(lang, className).newInstance();
         } catch (Exception e) {
             logger.log(
                     Level.INFO,
-                    String.format(
-                            "Failed to found class %s in language %s",
-                            className, lang));
+                    String.format("Failed to found class %s in language %s", className, lang));
             return;
         }
 
         logger.log(
                 Level.INFO,
-                String.format(
-                        "Generating stub for class %s in language %s",
-                        className, lang));
+                String.format("Generating stub for class %s in language %s", className, lang));
         GraalStubGenerator gen =
                 new GraalStubGenerator(
-                        v,
-                        outputDirectory + "/" + packageName.replaceAll("\\.", "/"),
-                        packageName);
+                        v, outputDirectory + "/" + packageName.replaceAll("\\.", "/"), packageName);
         gen.generateStub();
     }
 

@@ -14,6 +14,7 @@ import java.util.logging.Logger;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
 import sapphire.policy.DefaultSapphirePolicy;
+import sapphire.policy.SapphirePolicyConfig;
 import sapphire.policy.util.consensus.raft.AlreadyVotedException;
 import sapphire.policy.util.consensus.raft.CandidateBehindException;
 import sapphire.policy.util.consensus.raft.InvalidLogIndex;
@@ -221,12 +222,14 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
 
         @Override
         public void onCreate(
-                SapphireServerPolicy server, Map<String, SapphirePolicyConfig> configMap)
+                String region,
+                SapphireServerPolicy server,
+                Map<String, SapphirePolicyConfig> configMap)
                 throws RemoteException {
             // TODO(merged):
             // super.onCreate(server, annotations);
 
-            super.onCreate(server, configMap);
+            super.onCreate(region, server, configMap);
             addServer(server);
 
             try {

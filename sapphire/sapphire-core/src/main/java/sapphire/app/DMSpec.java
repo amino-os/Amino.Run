@@ -1,10 +1,9 @@
 package sapphire.app;
 
-import static sapphire.policy.SapphirePolicyUpcalls.SapphirePolicyConfig;
-
 import java.io.Serializable;
 import java.util.*;
 import org.yaml.snakeyaml.Yaml;
+import sapphire.policy.SapphirePolicyConfig;
 
 /**
  * Deployment Manager Specification. Also known as Sapphire Policy Specification.

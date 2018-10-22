@@ -6,6 +6,7 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import sapphire.policy.SapphirePolicyConfig;
 import sapphire.policy.scalability.masterslave.*;
 
 /**

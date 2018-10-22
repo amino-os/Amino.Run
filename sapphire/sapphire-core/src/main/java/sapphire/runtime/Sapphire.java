@@ -1,7 +1,5 @@
 package sapphire.runtime;
 
-import static sapphire.policy.SapphirePolicyUpcalls.SapphirePolicyConfig;
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -37,6 +35,7 @@ import sapphire.policy.DefaultSapphirePolicy.DefaultServerPolicy;
 import sapphire.policy.SapphirePolicy.SapphireClientPolicy;
 import sapphire.policy.SapphirePolicy.SapphireGroupPolicy;
 import sapphire.policy.SapphirePolicy.SapphireServerPolicy;
+import sapphire.policy.SapphirePolicyConfig;
 import sapphire.policy.SapphirePolicyContainer;
 
 /**
@@ -90,6 +89,7 @@ public class Sapphire {
                             processedPolicies,
                             previousServerPolicy,
                             previousServerPolicyStub,
+                            "",
                             args);
 
             appStub = policyList.get(0).getServerPolicy().sapphire_getAppObjectStub();
@@ -146,6 +146,7 @@ public class Sapphire {
                             processedPolicies,
                             previousServerPolicy,
                             previousServerPolicyStub,
+                            "",
                             args);
 
             AppObjectStub appStub = policyList.get(0).getServerPolicy().sapphire_getAppObjectStub();
@@ -214,12 +215,12 @@ public class Sapphire {
             List<SapphirePolicyContainer> processedPolicies,
             SapphireServerPolicy previousServerPolicy,
             KernelObjectStub previousServerPolicyStub,
+            String region,
             Object[] appArgs)
             throws RemoteException, ClassNotFoundException, KernelObjectNotFoundException,
                     KernelObjectNotCreatedException, SapphireObjectNotFoundException,
                     SapphireObjectReplicaNotFoundException, InstantiationException,
                     InvocationTargetException, IllegalAccessException, CloneNotSupportedException {
-
         if (policyNameChain == null || policyNameChain.size() == 0) return null;
         String policyName = policyNameChain.get(0).getPolicyName();
         SapphireGroupPolicy existingGroupPolicy = policyNameChain.get(0).getGroupPolicyStub();
@@ -299,13 +300,21 @@ public class Sapphire {
         serverPolicyStub.setProcessedPolicies(processedPoliciesSoFar);
 
         if (existingGroupPolicy == null) {
-            groupPolicy.onCreate(serverPolicyStub, configMap);
+            groupPolicy.onCreate(region, serverPolicyStub, configMap);
         }
 
         previousServerPolicy = serverPolicy;
         previousServerPolicyStub = (KernelObjectStub) serverPolicyStub;
 
         if (nextPoliciesToCreate.size() != 0) {
+            // TODO: hacks for demo
+            if (policyName != null && policyName.contains("DHT")) {
+                if (region == null || region.isEmpty()) {
+                    List<String> regions = GlobalKernelReferences.nodeServer.oms.getRegions();
+                    logger.info("Regions available for DHT: " + regions);
+                    region = regions.get(0);
+                }
+            }
             createPolicy(
                     sapphireObjId,
                     spec,
@@ -314,6 +323,7 @@ public class Sapphire {
                     processedPolicies,
                     previousServerPolicy,
                     previousServerPolicyStub,
+                    region,
                     appArgs);
         }
 
@@ -399,7 +409,7 @@ public class Sapphire {
         client.onCreate(groupPolicyStub, configMap);
         appStub.$__initialize(client);
         serverPolicy.onCreate(groupPolicyStub, configMap);
-        groupPolicyStub.onCreate(serverPolicyStub, configMap);
+        groupPolicyStub.onCreate("", serverPolicyStub, configMap);
 
         logger.info("Sapphire Object created: " + spec);
         return appStub;

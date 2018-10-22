@@ -198,7 +198,7 @@ public class ConsensusRSMPolicyTest extends BaseTest {
     public void omsNotAvailable() throws Exception {
         when(this.group.sapphire_getRegions()).thenThrow(new RemoteException());
         thrown.expect(Error.class);
-        this.group.onCreate(this.server1, new HashMap<>());
+        this.group.onCreate("", this.server1, new HashMap<>());
     }
 
     /**

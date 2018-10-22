@@ -141,7 +141,10 @@ public class DHTPolicy2 extends DefaultSapphirePolicy {
 
         @Override
         public void onCreate(
-                SapphireServerPolicy server, Map<String, SapphirePolicyConfig> configMap) {
+                String region,
+                SapphireServerPolicy server,
+                Map<String, SapphirePolicyConfig> configMap)
+                throws java.rmi.RemoteException {
             nodes = new HashMap<Integer, DHTNode>();
 
             try {

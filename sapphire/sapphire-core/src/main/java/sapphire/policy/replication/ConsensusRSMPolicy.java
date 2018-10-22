@@ -221,12 +221,14 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
 
         @Override
         public void onCreate(
-                SapphireServerPolicy server, Map<String, SapphirePolicyConfig> configMap)
+                String region,
+                SapphireServerPolicy server,
+                Map<String, SapphirePolicyConfig> configMap)
                 throws RemoteException {
             // TODO(merged):
             // super.onCreate(server, annotations);
 
-            super.onCreate(server, configMap);
+            super.onCreate(region, server, configMap);
             addServer(server);
 
             try {

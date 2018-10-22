@@ -58,7 +58,13 @@ public abstract class DefaultSapphirePolicyUpcallImpl extends SapphirePolicyLibr
 
         public SapphireServerPolicy sapphire_replicate(
                 List<SapphirePolicyContainer> processedPolicies) throws RemoteException {
-            return super.sapphire_replicate(processedPolicies);
+            return super.sapphire_replicate(processedPolicies, "");
+        }
+
+        public SapphireServerPolicy sapphire_replicate(
+                List<SapphirePolicyContainer> processedPolicies, String region)
+                throws RemoteException {
+            return super.sapphire_replicate(processedPolicies, region);
         }
 
         public void sapphire_pin(SapphireServerPolicy sapphireServerPolicy, String region)

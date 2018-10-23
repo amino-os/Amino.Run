@@ -15,4 +15,4 @@ include ':examples:hanksTodo'
 include ':examples:hanksTodoRuby'
 include ':examples:helloworld'
 include ':examples:kvstore'
-
+include ':examples:kvstorejs'

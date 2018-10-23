@@ -77,3 +77,17 @@ task runapp(type: JavaExec) {
     classpath = sourceSets.main.runtimeClasspath
     args project.property('omsIp'), project.property('omsPort')
 }
+
+// task for run javascript kvstore client
+task runjsapp(type: Exec) {
+    environment  JS_HOME: "${project.projectDir}/src/main/js/sapphire/demo"
+    environment  OMS_IP: "${project.property('omsIp')}"
+    environment  OMS_PORT: "${project.property('omsPort')}"
+    environment  KERNEL_SERVER_IP: "${project.property('embeddedKernelServerIp')}"
+    environment  KERNEL_SERVER_PORT: "${project.property('kernelServerPort')}"
+    def classpath = sourceSets.main.runtimeClasspath.asPath
+    
+    executable "$System.env.JAVA_HOME/bin/js"
+    args "--jvm", "--polyglot", "--jvm.classpath=${classpath}", 
+            "${project.projectDir}/src/main/js/sapphire/demo/KeyValueStoreClient.js"
+}

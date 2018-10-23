@@ -5,7 +5,10 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Objects;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import sapphire.common.SapphireObjectNotFoundException;
+import sapphire.common.SapphireObjectReplicaNotFoundException;
 import sapphire.policy.DefaultSapphirePolicy;
 
 public class DHTPolicy extends DefaultSapphirePolicy {
@@ -80,9 +83,15 @@ public class DHTPolicy extends DefaultSapphirePolicy {
             try {
                 ArrayList<String> regions = sapphire_getRegions();
                 DHTServerPolicy dhtServer = (DHTServerPolicy) server;
-                // TODO: hack for demo.
-                // Sungwook will raise another PR to address it shortly
-                // dhtServer.sapphire_pin(server, regions.get(0));
+
+                boolean pinned = dhtServer.alreadyPinned();
+
+                if (pinned) {
+                    // This policy chain was already pinned by downstream policy; hence, skipping.
+                    logger.log(Level.INFO, "Pinning DHT policy original chain was skipped.");
+                } else {
+                    dhtServer.sapphire_pin(server, regions.get(0));
+                }
 
                 // Create replicas based on annotation
                 InetSocketAddress newServerAddress = null;
@@ -98,16 +107,20 @@ public class DHTPolicy extends DefaultSapphirePolicy {
                     SapphireServerPolicy replica =
                             dhtServer.sapphire_replicate(server.getProcessedPolicies(), region);
 
-                    // TODO: hack for demo. When we demo DHT + master slave, DHT
-                    // is not the last DM, and therefore should not call sapphire_pin
-                    // to relocate server policy.
-                    // newServerAddress = oms().getServerInRegion(region);
-                    // dhtServer.sapphire_pin_to_server(replica,
-                    // newServerAddress);
+                    if (pinned) {
+                        logger.log(Level.INFO, "Pinning DHT policy replica chain was skipped.");
+                    } else {
+                        newServerAddress = oms().getServerInRegion(region);
+                        dhtServer.sapphire_pin_to_server(replica, newServerAddress);
+                    }
                 }
             } catch (RemoteException e) {
                 throw new Error(
                         "Could not create new group policy because the oms is not available.");
+            } catch (SapphireObjectNotFoundException e) {
+                throw new Error("Could not find Sapphire object.");
+            } catch (SapphireObjectReplicaNotFoundException e) {
+                throw new Error("Could not find Sapphire object replica.");
             }
         }
 

@@ -48,6 +48,7 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
         protected Map<String, SapphirePolicyConfig> configMap;
         protected SapphirePolicy.SapphireGroupPolicy group;
         protected SapphireObjectSpec spec;
+        protected boolean alreadyPinned;
 
         static Logger logger = Logger.getLogger("sapphire.policy.SapphirePolicyLibrary");
 
@@ -129,6 +130,14 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 
         public SapphireObjectSpec getSapphireObjectSpec() {
             return this.spec;
+        }
+
+        public boolean alreadyPinned() {
+            return this.alreadyPinned;
+        }
+
+        public void setAlreadyPinned(boolean alreadyPinned) {
+            this.alreadyPinned = alreadyPinned;
         }
 
         @Override
@@ -337,6 +346,7 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
                 logger.severe(e.getMessage());
                 throw new Error("Could not find Sapphire replica on this server!", e);
             }
+            serverPolicy.setAlreadyPinned(true);
 
             logger.info(
                     "(Complete) Pinning Sapphire object "

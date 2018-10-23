@@ -44,6 +44,7 @@ public class Sapphire {
      * @param args parameters to sapphire object constructor
      * @return sapphire object stub
      */
+    // TODO: Group policy should be created first, then group policy should create other policies.
     public static Object new_(SapphireObjectSpec spec, Object... args) {
         AppObjectStub appStub = null;
         try {
@@ -184,6 +185,7 @@ public class Sapphire {
 
         return policyNameChain;
     }
+
     /**
      * Creates app object stub along with instantiation of policies and stubs, and returns processed
      * policies for given policyNameChain.
@@ -290,10 +292,6 @@ public class Sapphire {
         serverPolicy.setProcessedPolicies(processedPoliciesSoFar);
         serverPolicyStub.setProcessedPolicies(processedPoliciesSoFar);
 
-        if (existingGroupPolicy == null) {
-            groupPolicy.onCreate(region, serverPolicyStub, configMap);
-        }
-
         previousServerPolicy = serverPolicy;
         previousServerPolicyStub = (KernelObjectStub) serverPolicyStub;
 
@@ -320,6 +318,32 @@ public class Sapphire {
 
         // server policy stub at this moment has the full policy chain; safe to add to group
         if (existingGroupPolicy == null) {
+            int idx = 0, size = processedPolicies.size();
+
+            // Indicates start of downstream policies.
+            int startIdx = size - nextPoliciesToCreate.size();
+
+            try {
+                // Set whether the chain was already pinned or not from downstream policies.
+                for (SapphirePolicyContainer policyContainer : processedPolicies) {
+                    if (idx >= startIdx) {
+                        // Start checking all the downstream policies but skip upstream policies.
+                        SapphireServerPolicy ssp = policyContainer.getServerPolicy();
+                        if (ssp.alreadyPinned()) {
+                            serverPolicyStub.setAlreadyPinned(true);
+                        }
+                    }
+                    idx++;
+                }
+            } catch (Exception e) {
+                logger.log(
+                        Level.SEVERE,
+                        String.format(
+                                "Checking chain pinning failed. Size of processed policies = %d startIdx = %d",
+                                size, startIdx));
+                throw e;
+            }
+            groupPolicy.onCreate(region, serverPolicyStub, configMap);
             groupPolicy.addServer(serverPolicyStub);
         }
 
@@ -730,6 +754,8 @@ public class Sapphire {
             throws KernelObjectNotFoundException {
         serverPolicyStub.$__initialize(prevServerPolicy.sapphire_getAppObject());
         serverPolicy.$__initialize(prevServerPolicy.sapphire_getAppObject());
+        // TODO: Investigate whether setSapphireObjectSpec should set from prevServerPolicy or
+        // serverPolicy.
         serverPolicyStub.setSapphireObjectSpec(prevServerPolicy.getSapphireObjectSpec());
         serverPolicy.setSapphireObjectSpec(prevServerPolicy.getSapphireObjectSpec());
 

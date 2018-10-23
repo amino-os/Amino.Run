@@ -37,14 +37,19 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultSapphirePolicy 
     public abstract static class ClientBase extends DefaultClientPolicy {
         private static Logger logger = Logger.getLogger(ClientBase.class.getName());
         private final AtomicLong SeqGenerator = new AtomicLong();
-        private final UUID CLIENT_ID;
+        private transient UUID CLIENT_ID;
 
-        public ClientBase() {
-            CLIENT_ID = UUID.randomUUID();
-        }
+        public ClientBase() {}
 
         @Override
         public Object onRPC(String method, ArrayList<Object> params) throws Exception {
+
+            if (CLIENT_ID == null) {
+                // This ensures client ID is generated only after the first RPC call; thus,
+                // preventing different clients using the same ID (e.g., Group policy making a call)
+                CLIENT_ID = UUID.randomUUID();
+            }
+
             final int MAX_RETRY = 5;
             int retryCnt = 1, waitInMilliseconds = 50;
             GroupBase group = (GroupBase) getGroup();

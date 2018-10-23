@@ -14,6 +14,7 @@ import sapphire.policy.scalability.masterslave.MethodInvocationResponse;
 public class AppObjectShimServerPolicy implements SapphireServerPolicyUpcalls {
     private AppObject appObject;
     private AppObject originMaster;
+    private boolean ifPolicyChainPinned;
 
     @Override
     public void onCreate(

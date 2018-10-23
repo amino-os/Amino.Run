@@ -63,6 +63,7 @@ public class DefaultSapphirePolicy extends SapphirePolicy {
          * it is advisable that defer putting this server policy into group policy until the server
          * policy is complete with full policy chain.
          */
+        // TODO: Consider changing the name to updateServer and making it to remove server first.
         public synchronized void addServer(SapphireServerPolicy server) throws RemoteException {
             if (servers == null) {
                 // TODO: Need to change it to proper exception

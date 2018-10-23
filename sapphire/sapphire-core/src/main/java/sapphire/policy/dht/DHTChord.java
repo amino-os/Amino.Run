@@ -8,10 +8,11 @@ import java.util.TreeSet;
 /**
  * A (probably overly) simplified Chord implementation.
  *
- * For instruction on chord and virtual nodes, please take a look at the
- * original <a href="https://pdos.csail.mit.edu/papers/chord:sigcomm01/chord_sigcomm.pdf">chord paper</a>.
+ * <p>For instruction on chord and virtual nodes, please take a look at the original <a
+ * href="https://pdos.csail.mit.edu/papers/chord:sigcomm01/chord_sigcomm.pdf">chord paper</a>.
  *
- * @see <a href="https://pdos.csail.mit.edu/papers/chord:sigcomm01/chord_sigcomm.pdf">chord paper</a>
+ * @see <a href="https://pdos.csail.mit.edu/papers/chord:sigcomm01/chord_sigcomm.pdf">chord
+ *     paper</a>
  */
 public class DHTChord implements Serializable {
     private int virtualNodeFactor = 5;
@@ -54,6 +55,12 @@ public class DHTChord implements Serializable {
     public void add(DHTPolicy.DHTServerPolicy server) {
         if (server == null) {
             throw new NullPointerException("server must not be null");
+        }
+
+        for (DHTNode node : nodes) {
+            if (node.server == server) {
+                nodes.remove(node);
+            }
         }
 
         for (int i = 0; i < virtualNodeFactor; i++) {

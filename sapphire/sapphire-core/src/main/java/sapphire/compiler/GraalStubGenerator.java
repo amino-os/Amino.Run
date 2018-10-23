@@ -9,6 +9,7 @@ import org.graalvm.polyglot.*;
 public class GraalStubGenerator {
     private Value prototype;
     private String fileName;
+    private String lang;
     private static Logger logger = Logger.getLogger(GraalStubGenerator.class.getName());
     private static String stubSuffix = "_Stub";
     private static String packageName;
@@ -42,27 +43,26 @@ public class GraalStubGenerator {
         }
     }
 
-    private static void generateStub(Context polyglot, String lang, String className, String outputDirectory) throws Exception {
+    private static void generateStub(
+            Context polyglot, String lang, String className, String outputDirectory)
+            throws Exception {
         Value v;
         try {
             v = polyglot.eval(lang, className).newInstance();
         } catch (Exception e) {
             logger.log(
                     Level.INFO,
-                    String.format(
-                            "Failed to found class %s in language %s",
-                            className, lang));
+                    String.format("Could not find class %s in language %s", className, lang));
             return;
         }
 
         logger.log(
                 Level.INFO,
-                String.format(
-                        "Generating stub for class %s in language %s",
-                        className, lang));
+                String.format("Generating stub for class %s in language %s", className, lang));
         GraalStubGenerator gen =
                 new GraalStubGenerator(
                         v,
+                        lang,
                         outputDirectory + "/" + packageName.replaceAll("\\.", "/"),
                         packageName);
         gen.generateStub();
@@ -107,7 +107,8 @@ public class GraalStubGenerator {
         return "";
     }
 
-    public GraalStubGenerator(Value prototype, String outputDir, String packageName) {
+    public GraalStubGenerator(Value prototype, String lang, String outputDir, String packageName) {
+        this.lang = lang;
         this.prototype = prototype;
         this.fileName = outputDir + "/" + getClassName() + stubSuffix + ".java";
         this.packageName = packageName;
@@ -126,14 +127,45 @@ public class GraalStubGenerator {
             "package %s;\n\n"
                     + "import org.graalvm.polyglot.Value;\n"
                     + "import jdk.nashorn.internal.runtime.regexp.joni.exception.SyntaxException;\n"
+                    + "\n"
+                    + "import java.io.File;\n"
+                    + "import java.net.InetSocketAddress;\n"
+                    + "import java.nio.file.Files;\n"
+                    + "import java.rmi.registry.LocateRegistry;\n"
+                    + "import java.rmi.registry.Registry;\n"
                     + "import java.util.Arrays;\n"
+                    + "import java.util.List;\n"
+                    + "\n"
+                    + "import sapphire.app.SapphireObjectSpec;\n"
+                    + "import sapphire.common.SapphireObjectID;\n"
                     + "import sapphire.graal.io.SerializeValue;\n"
+                    + "import sapphire.kernel.server.KernelServerImpl;\n"
+                    + "import sapphire.oms.OMSServer;"
                     + "\n"
                     + "public final class %s%s extends sapphire.common.GraalObject implements sapphire.common.AppObjectStub {\n"
                     + "\n"
                     + "    sapphire.policy.SapphirePolicy.SapphireClientPolicy $__client = null;\n"
                     + "    boolean $__directInvocation = false;\n"
                     + "\n"
+                    + "    public static KeyValueStore_Stub getStub(String specYamlFile, String omsIP, String omsPort) throws Exception {\n"
+                    + "        String spec = getSpec(specYamlFile);\n"
+                    + "        Registry registry = LocateRegistry.getRegistry(omsIP, Integer.parseInt(omsPort));\n"
+                    + "        new KernelServerImpl(new InetSocketAddress(\"127.0.0.2\", 0), new InetSocketAddress(omsIP, Integer.parseInt(omsPort)));\n"
+                    + "        OMSServer oms = (OMSServer) registry.lookup(\"SapphireOMS\");\n"
+                    + "\n"
+                    + "        SapphireObjectID oid = oms.createSapphireObject(spec);\n"
+                    + "        KeyValueStore_Stub store = (KeyValueStore_Stub)oms.acquireSapphireObjectStub(oid);\n"
+                    + "        store.$__initializeGraal(SapphireObjectSpec.fromYaml(spec));\n"
+                    + "\n"
+                    + "        return store;\n"
+                    + "    }\n"
+                    + "\n"
+                    + "    private static String getSpec(String specYamlFile) throws Exception {\n"
+                    + "        ClassLoader classLoader = new KeyValueStoreClient().getClass().getClassLoader();\n"
+                    + "        File file = new File(classLoader.getResource(specYamlFile).getFile());\n"
+                    + "        List<String> lines = Files.readAllLines(file.toPath());\n"
+                    + "        return String.join(\"\\n\", lines);\n"
+                    + "    }\n\n"
                     + "    public %s%s () {super();}\n"
                     + "\n"
                     + "    public void $__initialize(sapphire.policy.SapphirePolicy.SapphireClientPolicy client) {\n"
@@ -236,7 +268,13 @@ public class GraalStubGenerator {
         for (String m : prototype.getMemberKeys()) {
             // Graal Value has lots of self defined function, let's skip them.
             // TODO: need to find a good way to skip graal self-defined functions.
-            if (m.startsWith("__")) continue;
+            if (m.startsWith("__")) {
+                // Don't ask why:) this is the pattern with js graal object, all functions after
+                // this are
+                // Graal self-defined functions so we skip them all.
+                if (lang.equals("js")) break;
+                else continue;
+            }
 
             System.out.println("got key " + m);
             if (prototype.getMember(m).canExecute() && !m.equals("constructor")) {

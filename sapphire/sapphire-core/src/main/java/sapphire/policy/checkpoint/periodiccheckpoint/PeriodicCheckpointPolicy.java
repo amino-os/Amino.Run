@@ -13,7 +13,7 @@ public class PeriodicCheckpointPolicy extends CheckpointPolicyBase {
     public static class ClientPolicy extends CheckpointPolicyBase.ClientPolicy {}
 
     public static class ServerPolicy extends CheckpointPolicyBase.ServerPolicy {
-        protected int MAX_RPCS_BEFORE_CHECKPOINT = 1; // N
+        public static int MAX_RPCS_BEFORE_CHECKPOINT = 1; // N
         protected int rpcsBeforeCheckpoint = MAX_RPCS_BEFORE_CHECKPOINT;
 
         @Override

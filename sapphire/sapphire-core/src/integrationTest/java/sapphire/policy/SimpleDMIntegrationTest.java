@@ -54,6 +54,14 @@ public class SimpleDMIntegrationTest {
             SapphireObjectSpec spec = readSapphireSpec(f);
             if (f.getName().startsWith("LockingTransaction")) {
                 runLockingTransactionTest(spec);
+            } else if (f.getName().startsWith("ExplicitCaching")) {
+                runExplicitCachingTest(spec);
+            } else if (f.getName().startsWith("ExplicitCheckpoint")) {
+                runExplicitCheckPointTest(spec);
+            } else if (f.getName().startsWith("PeriodicCheckpoint")) {
+                runPeriodicCheckpointTest(spec);
+            } else if (f.getName().startsWith("ExplicitMigration")) {
+                runExplicitMigration(spec);
             } else {
                 runTest(spec);
             }
@@ -102,6 +110,112 @@ public class SimpleDMIntegrationTest {
             store.commitTransaction();
             Assert.assertEquals(value, store.get(key));
         }
+    }
+
+    private void runExplicitMigration(SapphireObjectSpec spec) throws Exception {
+        SapphireObjectID sapphireObjId = oms.createSapphireObject(spec.toString());
+        KVStore store = (KVStore) oms.acquireSapphireObjectStub(sapphireObjId);
+        String key0 = "k1";
+        String value0 = "v1_0";
+        store.set(key0, value0);
+        Assert.assertEquals(value0, store.get(key0));
+
+        /* Sapphire object is created on a random server. It is not known on which server SO is created.
+           Migrate SO twice to ensure migration to other server happens atleast once.
+        */
+
+        /* Migrate SO to first server and verify the value */
+        store.migrateObject(new InetSocketAddress(ksIp, ks1Port));
+        Assert.assertEquals(value0, store.get(key0));
+
+        /* Add another key-value entry and verify */
+        String key1 = "k2";
+        String value1 = "v1_1";
+        store.set(key1, value1);
+        Assert.assertEquals(value1, store.get(key1));
+
+        /* Migrate SO to second server and verify the values */
+        store.migrateObject(new InetSocketAddress(ksIp, ks2Port));
+        Assert.assertEquals(value0, store.get(key0));
+        Assert.assertEquals(value1, store.get(key1));
+    }
+
+    private void runExplicitCachingTest(SapphireObjectSpec spec) throws Exception {
+        SapphireObjectID sapphireObjId = oms.createSapphireObject(spec.toString());
+        KVStore store = (KVStore) oms.acquireSapphireObjectStub(sapphireObjId);
+
+        /* Cache the object */
+        store.pull();
+
+        for (int i = 0; i < 10; i++) {
+            String key = "k1_" + i;
+            String value = "v1_" + i;
+
+            /* update on local cached object */
+            store.set(key, value);
+            Assert.assertEquals(value, store.get(key));
+        }
+
+        /* Push the modified cached object to server */
+        store.push();
+
+        /* Verify the map values on the server */
+        for (int i = 0; i < 10; i++) {
+            String key = "k1_" + i;
+            String value = "v1_" + i;
+            Assert.assertEquals(value, store.get(key));
+        }
+    }
+
+    private void runExplicitCheckPointTest(SapphireObjectSpec spec) throws Exception {
+        SapphireObjectID sapphireObjId = oms.createSapphireObject(spec.toString());
+        KVStore store = (KVStore) oms.acquireSapphireObjectStub(sapphireObjId);
+
+        String key = "k1";
+        String value0 = "v1_0";
+        store.set(key, value0);
+
+        /* checkpoint this state */
+        store.saveCheckpoint();
+        Assert.assertEquals(value0, store.get(key));
+
+        /* Set another value and verify it */
+        String value1 = "v1_1";
+        store.set(key, value1);
+        Assert.assertEquals(value1, store.get(key));
+
+        /* Restore to previous state */
+        store.restoreCheckpoint();
+
+        /* verify the restore value */
+        Assert.assertEquals(value0, store.get(key));
+    }
+
+    private void runPeriodicCheckpointTest(SapphireObjectSpec spec) throws Exception {
+        SapphireObjectID sapphireObjId = oms.createSapphireObject(spec.toString());
+        KVStore store = (KVStore) oms.acquireSapphireObjectStub(sapphireObjId);
+
+        String key = "k1";
+        String preValue = null;
+        int checkpointPeriod =
+                sapphire.policy.checkpoint.periodiccheckpoint.PeriodicCheckpointPolicy.ServerPolicy
+                        .MAX_RPCS_BEFORE_CHECKPOINT;
+        for (int i = 1; i <= checkpointPeriod + 1; i++) {
+            String value = "v1_" + i;
+            store.set(key, value);
+            Assert.assertEquals(value, store.get(key));
+
+            if (i % checkpointPeriod == 0) {
+                /* record the checkpointed value */
+                preValue = value;
+            }
+        }
+
+        /* Restore to previous state */
+        store.restoreCheckpoint();
+
+        /* verify the restore value */
+        Assert.assertEquals(preValue, store.get(key));
     }
 
     @AfterClass

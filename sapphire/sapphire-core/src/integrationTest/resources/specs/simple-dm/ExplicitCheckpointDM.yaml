@@ -1,0 +1,11 @@
+#Configuration for running KVStore as a
+# sapphire object with ExplicitCheckpoint policy.
+!!sapphire.app.SapphireObjectSpec
+constructorName: null
+dmList:
+- configs: []
+  name: sapphire.policy.checkpoint.explicitcheckpoint.ExplicitCheckpointPolicy
+javaClassName: sapphire.demo.KVStore
+lang: java
+name: null
+sourceFileLocation: null

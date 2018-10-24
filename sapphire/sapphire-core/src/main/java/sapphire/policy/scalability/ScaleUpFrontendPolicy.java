@@ -163,9 +163,11 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
 
         @Override
         public void onCreate(
-                SapphireServerPolicy server, Map<String, SapphirePolicyConfig> configMap)
+                String region,
+                SapphireServerPolicy server,
+                Map<String, SapphirePolicyConfig> configMap)
                 throws RemoteException {
-            super.onCreate(server, configMap);
+            super.onCreate(region, server, configMap);
 
             if (configMap != null) {
                 SapphirePolicyConfig config =

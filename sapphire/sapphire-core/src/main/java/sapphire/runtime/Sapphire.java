@@ -1,18 +1,12 @@
 package sapphire.runtime;
 
-import static sapphire.policy.SapphirePolicyUpcalls.SapphirePolicyConfig;
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.rmi.RemoteException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.harmony.rmi.common.RMIUtil;
@@ -22,13 +16,7 @@ import sapphire.app.SapphireObject;
 import sapphire.app.SapphireObjectSpec;
 import sapphire.common.*;
 import sapphire.compiler.GlobalStubConstants;
-import sapphire.kernel.common.GlobalKernelReferences;
-import sapphire.kernel.common.KernelOID;
-import sapphire.kernel.common.KernelObjectFactory;
-import sapphire.kernel.common.KernelObjectNotCreatedException;
-import sapphire.kernel.common.KernelObjectNotFoundException;
-import sapphire.kernel.common.KernelObjectStub;
-import sapphire.kernel.common.KernelObjectStubNotCreatedException;
+import sapphire.kernel.common.*;
 import sapphire.kernel.server.KernelObject;
 import sapphire.policy.DefaultSapphirePolicy;
 import sapphire.policy.DefaultSapphirePolicy.DefaultClientPolicy;
@@ -38,6 +26,7 @@ import sapphire.policy.SapphirePolicy.SapphireClientPolicy;
 import sapphire.policy.SapphirePolicy.SapphireGroupPolicy;
 import sapphire.policy.SapphirePolicy.SapphireServerPolicy;
 import sapphire.policy.SapphirePolicyContainer;
+import sapphire.policy.SapphirePolicyUpcalls;
 
 /**
  * Used by the developer to create a Sapphire Object given the Application Object class and the
@@ -66,7 +55,7 @@ public class Sapphire {
 
             List<SapphirePolicyContainer> processedPolicies = new ArrayList<>();
             List<SapphirePolicyContainer> policyNameChain = getPolicyNameChain(spec);
-            Map<String, SapphirePolicyConfig> configMap =
+            Map<String, SapphirePolicyUpcalls.SapphirePolicyConfig> configMap =
                     Utils.fromDMSpecListToFlatConfigMap(spec.getDmList());
 
             if (policyNameChain.size() == 0) {
@@ -90,6 +79,7 @@ public class Sapphire {
                             processedPolicies,
                             previousServerPolicy,
                             previousServerPolicyStub,
+                            "",
                             args);
 
             appStub = policyList.get(0).getServerPolicy().sapphire_getAppObjectStub();
@@ -114,7 +104,8 @@ public class Sapphire {
     public static Object new_(Class<?> appObjectClass, Object... args) {
         try {
             Annotation[] annotations = appObjectClass.getAnnotations();
-            Map<String, SapphirePolicyConfig> configMap = Utils.toSapphirePolicyConfig(annotations);
+            Map<String, SapphirePolicyUpcalls.SapphirePolicyConfig> configMap =
+                    Utils.toSapphirePolicyConfig(annotations);
             List<SapphirePolicyContainer> processedPolicies =
                     new ArrayList<SapphirePolicyContainer>();
             List<SapphirePolicyContainer> policyNameChain = getPolicyNameChain(annotations);
@@ -146,6 +137,7 @@ public class Sapphire {
                             processedPolicies,
                             previousServerPolicy,
                             previousServerPolicyStub,
+                            "",
                             args);
 
             AppObjectStub appStub = policyList.get(0).getServerPolicy().sapphire_getAppObjectStub();
@@ -209,17 +201,17 @@ public class Sapphire {
     public static List<SapphirePolicyContainer> createPolicy(
             SapphireObjectID sapphireObjId,
             SapphireObjectSpec spec,
-            Map<String, SapphirePolicyConfig> configMap,
+            Map<String, SapphirePolicyUpcalls.SapphirePolicyConfig> configMap,
             List<SapphirePolicyContainer> policyNameChain,
             List<SapphirePolicyContainer> processedPolicies,
             SapphireServerPolicy previousServerPolicy,
             KernelObjectStub previousServerPolicyStub,
+            String region,
             Object[] appArgs)
             throws RemoteException, ClassNotFoundException, KernelObjectNotFoundException,
                     KernelObjectNotCreatedException, SapphireObjectNotFoundException,
                     SapphireObjectReplicaNotFoundException, InstantiationException,
                     InvocationTargetException, IllegalAccessException, CloneNotSupportedException {
-
         if (policyNameChain == null || policyNameChain.size() == 0) return null;
         String policyName = policyNameChain.get(0).getPolicyName();
         SapphireGroupPolicy existingGroupPolicy = policyNameChain.get(0).getGroupPolicyStub();
@@ -299,13 +291,21 @@ public class Sapphire {
         serverPolicyStub.setProcessedPolicies(processedPoliciesSoFar);
 
         if (existingGroupPolicy == null) {
-            groupPolicy.onCreate(serverPolicyStub, configMap);
+            groupPolicy.onCreate(region, serverPolicyStub, configMap);
         }
 
         previousServerPolicy = serverPolicy;
         previousServerPolicyStub = (KernelObjectStub) serverPolicyStub;
 
         if (nextPoliciesToCreate.size() != 0) {
+            // TODO: hacks for demo
+            if (policyName != null && policyName.contains("DHT")) {
+                if (region == null || region.isEmpty()) {
+                    List<String> regions = GlobalKernelReferences.nodeServer.oms.getRegions();
+                    logger.info("Regions available for DHT: " + regions);
+                    region = regions.get(0);
+                }
+            }
             createPolicy(
                     sapphireObjId,
                     spec,
@@ -314,6 +314,7 @@ public class Sapphire {
                     processedPolicies,
                     previousServerPolicy,
                     previousServerPolicyStub,
+                    region,
                     appArgs);
         }
 
@@ -351,7 +352,7 @@ public class Sapphire {
             Object[] args,
             PolicyComponents pc,
             Annotation[] annotations,
-            Map<String, SapphirePolicyConfig> configMap)
+            Map<String, SapphirePolicyUpcalls.SapphirePolicyConfig> configMap)
             throws Exception {
         /* Register for a sapphire object Id from OMS */
         SapphireObjectID sapphireObjId =
@@ -399,7 +400,7 @@ public class Sapphire {
         client.onCreate(groupPolicyStub, configMap);
         appStub.$__initialize(client);
         serverPolicy.onCreate(groupPolicyStub, configMap);
-        groupPolicyStub.onCreate(serverPolicyStub, configMap);
+        groupPolicyStub.onCreate("", serverPolicyStub, configMap);
 
         logger.info("Sapphire Object created: " + spec);
         return appStub;
@@ -462,6 +463,7 @@ public class Sapphire {
      *
      * @param policyClass
      * @param sapphireObjId
+     * @param configMap
      * @return Returns group policy object stub
      * @throws RemoteException
      * @throws ClassNotFoundException
@@ -471,7 +473,7 @@ public class Sapphire {
     public static SapphireGroupPolicy createGroupPolicy(
             Class<?> policyClass,
             SapphireObjectID sapphireObjId,
-            Map<String, SapphirePolicyConfig> configMap)
+            Map<String, SapphirePolicyUpcalls.SapphirePolicyConfig> configMap)
             throws RemoteException, ClassNotFoundException, KernelObjectNotCreatedException,
                     SapphireObjectNotFoundException {
         SapphireGroupPolicy groupPolicyStub = (SapphireGroupPolicy) getPolicyStub(policyClass);
@@ -479,28 +481,11 @@ public class Sapphire {
             SapphireGroupPolicy groupPolicy = initializeGroupPolicy(groupPolicyStub);
             groupPolicyStub.setSapphireObjId(sapphireObjId);
             groupPolicy.setSapphireObjId(sapphireObjId);
-
-            EventHandler sapphireHandler =
-                    new EventHandler(
-                            GlobalKernelReferences.nodeServer.getLocalHost(),
-                            new ArrayList() {
-                                {
-                                    add(groupPolicyStub);
-                                }
-                            });
-
-            /* Register the handler for the sapphire object */
-            GlobalKernelReferences.nodeServer.oms.setSapphireObjectDispatcher(
-                    sapphireObjId, sapphireHandler);
         } catch (KernelObjectNotFoundException e) {
             logger.severe(
                     "Failed to find the group kernel object created just before it. Exception info: "
                             + e);
             throw new KernelObjectNotCreatedException("Failed to find the kernel object", e);
-        } catch (SapphireObjectNotFoundException e) {
-            logger.warning("Failed to find sapphire object. Exception info: " + e);
-            KernelObjectFactory.delete(groupPolicyStub.$__getKernelOID());
-            throw e;
         }
 
         return groupPolicyStub;

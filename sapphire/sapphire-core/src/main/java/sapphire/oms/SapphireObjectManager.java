@@ -2,8 +2,6 @@ package sapphire.oms;
 
 import java.rmi.RemoteException;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import sapphire.common.AppObjectStub;
@@ -12,12 +10,12 @@ import sapphire.common.SapphireObjectNameModificationException;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
 import sapphire.common.SapphireReplicaID;
+import sapphire.policy.SapphirePolicy;
 import sapphire.runtime.EventHandler;
 
 public class SapphireObjectManager {
     private ConcurrentHashMap<SapphireObjectID, SapphireInstanceManager> sapphireObjects;
     private ConcurrentHashMap<String, SapphireInstanceManager> sapphireObjectsByName;
-    private Random oidGenerator;
 
     /**
      * Randomly generate a new sapphire object id
@@ -31,7 +29,6 @@ public class SapphireObjectManager {
     public SapphireObjectManager() {
         sapphireObjects = new ConcurrentHashMap<SapphireObjectID, SapphireInstanceManager>();
         sapphireObjectsByName = new ConcurrentHashMap<String, SapphireInstanceManager>();
-        oidGenerator = new Random(new Date().getTime());
     }
 
     /**
@@ -61,6 +58,16 @@ public class SapphireObjectManager {
             throw new SapphireObjectNotFoundException("Not a valid Sapphire object id.");
         }
         instance.setInstanceDispatcher(dispatcher);
+    }
+
+    public void setRootGroupPolicy(
+            SapphireObjectID oid, SapphirePolicy.SapphireGroupPolicy rootGroupPolicy)
+            throws SapphireObjectNotFoundException {
+        SapphireInstanceManager instanceManager = sapphireObjects.get(oid);
+        if (instanceManager == null) {
+            throw new SapphireObjectNotFoundException("Not a valid Sapphire object id.");
+        }
+        instanceManager.setRootGroupPolicy(rootGroupPolicy);
     }
 
     /**
@@ -104,21 +111,23 @@ public class SapphireObjectManager {
     }
 
     /**
-     * Removes the sapphire object
+     * Removes the sapphire object with the given ID.
      *
-     * @param sapphireObjId
+     * @param sapphireObjId sapphire object ID
      * @throws SapphireObjectNotFoundException
      */
     public void removeInstance(SapphireObjectID sapphireObjId)
-            throws SapphireObjectNotFoundException {
-        SapphireInstanceManager instance = sapphireObjects.get(sapphireObjId);
-        if (instance == null) {
-            throw new SapphireObjectNotFoundException("Not a valid Sapphire object id.");
+            throws SapphireObjectNotFoundException, RemoteException {
+        SapphireInstanceManager instanceManager = sapphireObjects.get(sapphireObjId);
+        if (instanceManager == null) {
+            throw new SapphireObjectNotFoundException(
+                    "Cannot find sapphire object with ID " + sapphireObjId);
         }
 
-        instance.clear();
-        if (instance.getName() != null) {
-            sapphireObjectsByName.remove(instance.getName());
+        instanceManager.clear();
+
+        if (instanceManager.getName() != null) {
+            sapphireObjectsByName.remove(instanceManager.getName());
         }
         sapphireObjects.remove(sapphireObjId);
     }
@@ -213,6 +222,7 @@ public class SapphireObjectManager {
      * @param sapphireObjId
      * @return
      * @throws SapphireObjectNotFoundException
+     * @deprecated
      */
     public EventHandler getInstanceDispatcher(SapphireObjectID sapphireObjId)
             throws SapphireObjectNotFoundException {

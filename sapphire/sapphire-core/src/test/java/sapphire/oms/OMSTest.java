@@ -22,6 +22,7 @@ import sapphire.common.AppObject;
 import sapphire.common.BaseTest;
 import sapphire.common.SapphireObjectID;
 import sapphire.common.SapphireUtils;
+import sapphire.kernel.common.GlobalKernelReferences;
 import sapphire.kernel.common.KernelOID;
 import sapphire.kernel.common.KernelObjectFactory;
 import sapphire.kernel.common.KernelObjectStub;
@@ -130,7 +131,8 @@ public class OMSTest extends BaseTest {
 
     @Test
     public void acquireSapphireObjectStubSuccessTest() throws Exception {
-        SO_Stub appObjstub = (SO_Stub) spiedOms.acquireSapphireObjectStub(group.getSapphireObjId());
+        SapphireObjectID sid = group.getSapphireObjId();
+        SO_Stub appObjstub = (SO_Stub) spiedOms.acquireSapphireObjectStub(sid);
         assertEquals(
                 1, getOmsSapphireInstance(spiedOms, group.getSapphireObjId()).getReferenceCount());
 
@@ -179,6 +181,7 @@ public class OMSTest extends BaseTest {
 
     @After
     public void tearDown() throws Exception {
+        GlobalKernelReferences.nodeServer.oms = spiedOms;
         deleteSapphireObject(spiedOms, group.getSapphireObjId());
     }
 }

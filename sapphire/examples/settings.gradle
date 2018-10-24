@@ -1,0 +1,3 @@
+// Settings specific to all examples subprojects go here.
+// NOTE: Unfortunately gradle doesn't seem to handle imports in this file correctly - not sure why?
+//       So imports are still explicitly in the root project's settings.gradle file.

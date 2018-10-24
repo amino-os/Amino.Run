@@ -74,6 +74,7 @@ public class Sapphire {
                     createPolicy(
                             sapphireObjId,
                             spec,
+                            null,
                             configMap,
                             policyNameChain,
                             processedPolicies,
@@ -132,6 +133,7 @@ public class Sapphire {
                     createPolicy(
                             sapphireObjId,
                             spec,
+                            null,
                             configMap,
                             policyNameChain,
                             processedPolicies,
@@ -201,6 +203,7 @@ public class Sapphire {
     public static List<SapphirePolicyContainer> createPolicy(
             SapphireObjectID sapphireObjId,
             SapphireObjectSpec spec,
+            AppObject appObject,
             Map<String, SapphirePolicyUpcalls.SapphirePolicyConfig> configMap,
             List<SapphirePolicyContainer> policyNameChain,
             List<SapphirePolicyContainer> processedPolicies,
@@ -266,7 +269,7 @@ public class Sapphire {
                     previousServerPolicyStub,
                     client);
         } else {
-            initAppStub(spec, serverPolicy, serverPolicyStub, client, appArgs);
+            initAppStub(spec, serverPolicy, serverPolicyStub, client, appArgs, appObject);
         }
 
         // Note that subList is non serializable; hence, the new list creation.
@@ -309,6 +312,7 @@ public class Sapphire {
             createPolicy(
                     sapphireObjId,
                     spec,
+                    null,
                     configMap,
                     nextPoliciesToCreate,
                     processedPolicies,
@@ -761,14 +765,22 @@ public class Sapphire {
             SapphireServerPolicy serverPolicy,
             SapphireServerPolicy serverPolicyStub,
             SapphireClientPolicy clientPolicy,
-            Object[] appArgs)
+            Object[] appArgs,
+            AppObject appObject)
             throws ClassNotFoundException, IllegalAccessException, CloneNotSupportedException {
 
         AppObjectStub appStub;
-        appStub = getAppStub(spec, serverPolicy, appArgs);
-        appStub.$__initialize(clientPolicy);
-        serverPolicy.$__initialize(appStub);
-        serverPolicyStub.$__initialize(appStub);
+        if (appObject != null) {
+            appObject = new AppObject(((AppObjectStub) appObject.getObject()).$__clone());
+            serverPolicyStub.$__initialize(appObject);
+            serverPolicy.$__initialize(appObject);
+        } else {
+            appStub = getAppStub(spec, serverPolicy, appArgs);
+            appStub.$__initialize(clientPolicy);
+            serverPolicy.$__initialize(appStub);
+            serverPolicyStub.$__initialize(appStub);
+        }
+
         serverPolicy.setSapphireObjectSpec(spec);
         serverPolicyStub.setSapphireObjectSpec(spec);
     }

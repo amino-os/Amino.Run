@@ -176,6 +176,8 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
                 AppObject actualAppObject = lastServerPolicy.sapphire_getAppObject();
                 if (actualAppObject == null) throw new Exception("Could not find AppObject");
 
+                Object[] appArgs = getGroup().getAppArgs();
+
                 // Create a new replica chain from already created policies before this policy and
                 // this policy.
                 List<SapphirePolicyContainer> processedPoliciesReplica =
@@ -189,7 +191,7 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
                         null,
                         null,
                         region,
-                        null);
+                        appArgs);
 
                 // Last policy in the returned chain is replica of this policy.
                 serverPolicy =
@@ -213,7 +215,7 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
                                 serverPolicy,
                                 serverPolicyStub,
                                 region,
-                                null);
+                                appArgs);
 
                 String ko = "";
                 if (nextPolicyList != null) {
@@ -489,6 +491,7 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
         protected ArrayList<Object> params;
         protected KernelOID oid;
         protected SapphireObjectID sapphireObjId;
+        protected Object[] appArgs;
 
         protected OMSServer oms() {
             return GlobalKernelReferences.nodeServer.oms;
@@ -524,6 +527,14 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 
         public void setSapphireObjId(SapphireObjectID sapphireId) {
             sapphireObjId = sapphireId;
+        }
+
+        public void setAppArgs(Object[] appArgs) {
+            this.appArgs = appArgs;
+        }
+
+        public Object[] getAppArgs() {
+            return this.appArgs;
         }
 
         public SapphireObjectID getSapphireObjId() {

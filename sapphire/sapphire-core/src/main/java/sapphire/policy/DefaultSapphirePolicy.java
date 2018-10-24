@@ -69,6 +69,7 @@ public class DefaultSapphirePolicy extends SapphirePolicy {
                 // TODO: Need to change it to proper exception
                 throw new RemoteException("Group object deleted");
             }
+            removeServer(server);
             servers.add(server);
         }
 

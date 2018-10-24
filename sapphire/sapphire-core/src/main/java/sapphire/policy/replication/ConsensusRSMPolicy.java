@@ -13,6 +13,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Logger;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
+import sapphire.kernel.common.GlobalKernelReferences;
 import sapphire.policy.DefaultSapphirePolicy;
 import sapphire.policy.util.consensus.raft.AlreadyVotedException;
 import sapphire.policy.util.consensus.raft.CandidateBehindException;
@@ -232,20 +233,37 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
             addServer(server);
 
             try {
-                ArrayList<String> regions = sapphire_getRegions();
-                // Register the first replica, which has already been created.
                 ServerPolicy consensusServer = (ServerPolicy) server;
-                // Create additional replicas, one per region. TODO:  Create N-1 replicas on
-                // different servers in the same zone.
-                for (int i = 1; i < regions.size(); i++) {
-                    InetSocketAddress newServerAddress = oms().getServerInRegion(regions.get(i));
-                    ServerPolicy replica =
-                            (ServerPolicy)
-                                    consensusServer.sapphire_replicate(
-                                            server.getProcessedPolicies());
-                    consensusServer.sapphire_pin_to_server(replica, newServerAddress);
+
+                if (region != null && !region.isEmpty()) {
+                    List<InetSocketAddress> servers =
+                            GlobalKernelReferences.nodeServer.oms.getServersInRegion(region);
+                    for (int i = 1; i < servers.size(); i++) {
+                        InetSocketAddress newServerAddress = servers.get(i);
+                        ServerPolicy replica =
+                                (ServerPolicy)
+                                        consensusServer.sapphire_replicate(
+                                                server.getProcessedPolicies());
+                        consensusServer.sapphire_pin_to_server(replica, newServerAddress);
+                    }
+                    consensusServer.sapphire_pin_to_server(server, servers.get(0));
+                } else {
+                    ArrayList<String> regions = sapphire_getRegions();
+
+                    // Create additional replicas, one per region. TODO:  Create N-1 replicas on
+                    // different servers in the same zone.
+
+                    for (int i = 1; i < regions.size(); i++) {
+                        InetSocketAddress newServerAddress =
+                                oms().getServerInRegion(regions.get(i));
+                        ServerPolicy replica =
+                                (ServerPolicy)
+                                        consensusServer.sapphire_replicate(
+                                                server.getProcessedPolicies());
+                        consensusServer.sapphire_pin_to_server(replica, newServerAddress);
+                    }
+                    consensusServer.sapphire_pin(server, regions.get(0));
                 }
-                consensusServer.sapphire_pin(server, regions.get(0));
 
                 addServer(server);
 

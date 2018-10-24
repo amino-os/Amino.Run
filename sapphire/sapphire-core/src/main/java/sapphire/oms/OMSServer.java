@@ -53,7 +53,8 @@ public interface OMSServer extends Remote {
     SapphirePolicy.SapphireGroupPolicy createGroupPolicy(
             Class<?> policyClass,
             SapphireObjectID sapphireObjId,
-            Map<String, SapphirePolicyUpcalls.SapphirePolicyConfig> configMap)
+            Map<String, SapphirePolicyUpcalls.SapphirePolicyConfig> configMap,
+            Object[] appArgs)
             throws RemoteException, ClassNotFoundException, KernelObjectNotCreatedException,
                     SapphireObjectNotFoundException;
 

@@ -6,6 +6,7 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
@@ -158,13 +159,24 @@ public class DHTPolicy2 extends DefaultSapphirePolicy {
                 DHTNode newNode = new DHTNode(id, dhtServer);
                 nodes.put(id, newNode);
 
+                boolean pinned = dhtServer.alreadyPinned();
+
                 for (int i = 1; i < regions.size(); i++) {
-                    InetSocketAddress newServerAddress = oms().getServerInRegion(regions.get(i));
                     SapphireServerPolicy replica =
-                            dhtServer.sapphire_replicate(server.getProcessedPolicies());
-                    dhtServer.sapphire_pin_to_server(replica, newServerAddress);
+                            dhtServer.sapphire_replicate(server.getProcessedPolicies(), region);
+                    if (pinned) {
+                        logger.log(Level.INFO, "Pinning DHT policy original chain was skipped.");
+                    } else {
+                        InetSocketAddress newServerAddress = oms().getServerInRegion(regions.get(i));
+                        dhtServer.sapphire_pin_to_server(replica, newServerAddress);
+                    }
                 }
-                dhtServer.sapphire_pin(server, regions.get(0));
+
+                if (pinned) {
+                    logger.log(Level.INFO, "Pinning DHT policy original chain was skipped.");
+                } else {
+                    dhtServer.sapphire_pin(server, regions.get(0));
+                }
             } catch (RemoteException e) {
                 e.printStackTrace();
                 throw new Error(

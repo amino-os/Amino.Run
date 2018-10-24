@@ -235,7 +235,7 @@ public class Sapphire {
             /* Create the Kernel Object for the Group Policy and get the Group Policy Stub from OMS */
             groupPolicyStub =
                     GlobalKernelReferences.nodeServer.oms.createGroupPolicy(
-                            sapphireGroupPolicyClass, sapphireObjId, configMap);
+                            sapphireGroupPolicyClass, sapphireObjId, configMap, appArgs);
         } else {
             groupPolicyStub = existingGroupPolicy;
         }
@@ -294,6 +294,8 @@ public class Sapphire {
 
         previousServerPolicy = serverPolicy;
         previousServerPolicyStub = (KernelObjectStub) serverPolicyStub;
+
+//        if (existingGroupPolicy == null) groupPolicy.onCreate(region, serverPolicyStub, configMap);
 
         if (nextPoliciesToCreate.size() != 0) {
             // TODO: hacks for demo
@@ -385,7 +387,7 @@ public class Sapphire {
         /* Create the Kernel Object for the Group Policy and get the Group Policy Stub from OMS */
         SapphireGroupPolicy groupPolicyStub =
                 GlobalKernelReferences.nodeServer.oms.createGroupPolicy(
-                        pc.groupPolicyClass, sapphireObjId, configMap);
+                        pc.groupPolicyClass, sapphireObjId, configMap, args);
 
         /* Register for a replica Id from OMS */
         SapphireReplicaID sapphireReplicaId =
@@ -497,13 +499,15 @@ public class Sapphire {
     public static SapphireGroupPolicy createGroupPolicy(
             Class<?> policyClass,
             SapphireObjectID sapphireObjId,
-            Map<String, SapphirePolicyUpcalls.SapphirePolicyConfig> configMap)
-            throws RemoteException, ClassNotFoundException, KernelObjectNotCreatedException,
-                    SapphireObjectNotFoundException {
+            Map<String, SapphirePolicyUpcalls.SapphirePolicyConfig> configMap,
+            Object[] appArgs)
+            throws ClassNotFoundException, KernelObjectNotCreatedException {
         SapphireGroupPolicy groupPolicyStub = (SapphireGroupPolicy) getPolicyStub(policyClass);
         try {
             SapphireGroupPolicy groupPolicy = initializeGroupPolicy(groupPolicyStub);
+            groupPolicyStub.setAppArgs(appArgs);
             groupPolicyStub.setSapphireObjId(sapphireObjId);
+            groupPolicy.setAppArgs(appArgs);
             groupPolicy.setSapphireObjId(sapphireObjId);
         } catch (KernelObjectNotFoundException e) {
             logger.severe(

@@ -149,6 +149,8 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
         }
 
         /** Creates a replica of this server and registers it with the group. */
+        // TODO: Consider cloning appObject with existing state for replica instead of creating a
+        // new appObject
         public SapphireServerPolicy sapphire_replicate(
                 List<SapphirePolicyContainer> processedPolicies, String region)
                 throws RemoteException {
@@ -164,8 +166,11 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
                 // TODO (merge):
                 // Class appObjectClass =
                 // sapphire_getAppObject().getObject().getClass().getSuperclass();
+                // TODO: Investigate whether checking actualAppOjbect from this server is needed.
                 AppObject actualAppObject = lastServerPolicy.sapphire_getAppObject();
                 if (actualAppObject == null) throw new Exception("Could not find AppObject");
+
+                Object[] appArgs = getGroup().getAppArgs();
 
                 // Create a new replica chain from already created policies before this policy and
                 // this policy.
@@ -180,7 +185,7 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
                         null,
                         null,
                         region,
-                        null);
+                        appArgs);
 
                 // Last policy in the returned chain is replica of this policy.
                 serverPolicy =
@@ -194,24 +199,16 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 
                 // Complete the chain by creating new instances of server policies and stub that
                 // should be created after this policy.
-                List<SapphirePolicyContainer> nextPolicyList =
-                        Sapphire.createPolicy(
-                                this.getGroup().sapphireObjId,
-                                spec,
-                                configMap,
-                                this.nextPolicies,
-                                processedPoliciesReplica,
-                                serverPolicy,
-                                serverPolicyStub,
-                                region,
-                                null);
-
-                String ko = "";
-                if (nextPolicyList != null) {
-                    for (SapphirePolicyContainer policyContainer : nextPolicyList) {
-                        ko += String.valueOf(policyContainer.getKernelOID()) + ",";
-                    }
-                }
+                Sapphire.createPolicy(
+                        this.getGroup().sapphireObjId,
+                        spec,
+                        configMap,
+                        this.nextPolicies,
+                        processedPoliciesReplica,
+                        serverPolicy,
+                        serverPolicyStub,
+                        region,
+                        appArgs);
 
                 getGroup().addServer((SapphireServerPolicy) serverPolicyStub);
             } catch (ClassNotFoundException e) {
@@ -479,6 +476,7 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
         protected ArrayList<Object> params;
         protected KernelOID oid;
         protected SapphireObjectID sapphireObjId;
+        protected Object[] appArgs;
 
         protected OMSServer oms() {
             return GlobalKernelReferences.nodeServer.oms;
@@ -518,6 +516,14 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 
         public SapphireObjectID getSapphireObjId() {
             return sapphireObjId;
+        }
+
+        public void setAppArgs(Object[] appArgs) {
+            this.appArgs = appArgs;
+        }
+
+        public Object[] getAppArgs() {
+            return this.appArgs;
         }
 
         protected SapphireServerPolicy addReplica(

@@ -329,20 +329,20 @@ public class OMSServerImpl implements OMSServer {
      *
      * @param policyClass
      * @param sapphireObjId
+     * @param configMap
+     * @param appArgs
      * @return Returns group policy object stub
-     * @throws RemoteException
      * @throws ClassNotFoundException
      * @throws KernelObjectNotCreatedException
-     * @throws SapphireObjectNotFoundException
      */
     @Override
     public SapphirePolicy.SapphireGroupPolicy createGroupPolicy(
             Class<?> policyClass,
             SapphireObjectID sapphireObjId,
-            Map<String, SapphirePolicyConfig> configMap)
-            throws RemoteException, ClassNotFoundException, KernelObjectNotCreatedException,
-                    SapphireObjectNotFoundException {
-        return Sapphire.createGroupPolicy(policyClass, sapphireObjId, configMap);
+            Map<String, SapphirePolicyConfig> configMap,
+            Object[] appArgs)
+            throws ClassNotFoundException, KernelObjectNotCreatedException {
+        return Sapphire.createGroupPolicy(policyClass, sapphireObjId, configMap, appArgs);
     }
 
     public static void main(String args[]) {

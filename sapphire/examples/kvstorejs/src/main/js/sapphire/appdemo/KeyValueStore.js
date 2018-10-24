@@ -17,6 +17,7 @@ class KeyValueStore {
     }
 }
 
+/*
 function test() {
     var store = new KeyValueStore();
     store.set("key1", "value1");
@@ -28,3 +29,4 @@ function test() {
 
 // For test purpose only
 //test();
+*/

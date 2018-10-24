@@ -125,9 +125,6 @@ public class GraalStubGenerator {
     // functions
     private static String codeStringFormat =
             "package %s;\n\n"
-                    + "import org.graalvm.polyglot.Value;\n"
-                    + "import jdk.nashorn.internal.runtime.regexp.joni.exception.SyntaxException;\n"
-                    + "\n"
                     + "import java.io.File;\n"
                     + "import java.net.InetSocketAddress;\n"
                     + "import java.nio.file.Files;\n"
@@ -141,27 +138,27 @@ public class GraalStubGenerator {
                     + "import sapphire.graal.io.SerializeValue;\n"
                     + "import sapphire.kernel.server.KernelServerImpl;\n"
                     + "import sapphire.oms.OMSServer;"
-                    + "\n"
+                    + "\n\n"
                     + "public final class %s%s extends sapphire.common.GraalObject implements sapphire.common.AppObjectStub {\n"
                     + "\n"
                     + "    sapphire.policy.SapphirePolicy.SapphireClientPolicy $__client = null;\n"
                     + "    boolean $__directInvocation = false;\n"
                     + "\n"
-                    + "    public static KeyValueStore_Stub getStub(String specYamlFile, String omsIP, String omsPort) throws Exception {\n"
+                    + "    public static %s%s getStub(String specYamlFile, String omsIP, String omsPort, String hostIP, String hostPort) throws Exception {\n"
                     + "        String spec = getSpec(specYamlFile);\n"
                     + "        Registry registry = LocateRegistry.getRegistry(omsIP, Integer.parseInt(omsPort));\n"
-                    + "        new KernelServerImpl(new InetSocketAddress(\"127.0.0.2\", 0), new InetSocketAddress(omsIP, Integer.parseInt(omsPort)));\n"
+                    + "        new KernelServerImpl(new InetSocketAddress(hostIP, Integer.parseInt(hostPort)), new InetSocketAddress(omsIP, Integer.parseInt(omsPort)));\n"
                     + "        OMSServer oms = (OMSServer) registry.lookup(\"SapphireOMS\");\n"
                     + "\n"
                     + "        SapphireObjectID oid = oms.createSapphireObject(spec);\n"
-                    + "        KeyValueStore_Stub store = (KeyValueStore_Stub)oms.acquireSapphireObjectStub(oid);\n"
-                    + "        store.$__initializeGraal(SapphireObjectSpec.fromYaml(spec));\n"
+                    + "        %s%s stub = (%s%s)oms.acquireSapphireObjectStub(oid);\n"
+                    + "        stub.$__initializeGraal(SapphireObjectSpec.fromYaml(spec));\n"
                     + "\n"
-                    + "        return store;\n"
+                    + "        return stub;\n"
                     + "    }\n"
                     + "\n"
                     + "    private static String getSpec(String specYamlFile) throws Exception {\n"
-                    + "        ClassLoader classLoader = new KeyValueStoreClient().getClass().getClassLoader();\n"
+                    + "        ClassLoader classLoader = new %s%s().getClass().getClassLoader();\n"
                     + "        File file = new File(classLoader.getResource(specYamlFile).getFile());\n"
                     + "        List<String> lines = Files.readAllLines(file.toPath());\n"
                     + "        return String.join(\"\\n\", lines);\n"
@@ -217,7 +214,6 @@ public class GraalStubGenerator {
                     + "                if ($__result instanceof SerializeValue) {\n"
                     + "                    $__result = deserializedSerializeValue((SerializeValue)$__result);\n"
                     + "                    $__result = ((org.graalvm.polyglot.Value)$__result).as(java.lang.Object.class);\n"
-                    + "                    System.out.println($__result);\n"
                     + "                }\n"
                     + "            } catch (sapphire.common.AppExceptionWrapper e) {\n"
                     + "                Exception ex = e.getException();\n"
@@ -231,7 +227,6 @@ public class GraalStubGenerator {
                     + "            }\n"
                     + "        }\n"
                     + "\n"
-                    + "        System.out.println($__result);\n"
                     + "        return ($__result);\n"
                     + "    }\n\n";
 
@@ -246,6 +241,14 @@ public class GraalStubGenerator {
                 String.format(
                         codeStringFormat,
                         packageName,
+                        className,
+                        stubSuffix,
+                        className,
+                        stubSuffix,
+                        className,
+                        stubSuffix,
+                        className,
+                        stubSuffix,
                         className,
                         stubSuffix,
                         className,

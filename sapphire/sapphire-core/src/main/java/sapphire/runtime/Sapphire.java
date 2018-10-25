@@ -186,19 +186,33 @@ public class Sapphire {
 
         return policyNameChain;
     }
+
     /**
      * Creates app object stub along with instantiation of policies and stubs, and returns processed
      * policies for given policyNameChain.
      *
+     * @param sapphireObjId Sapphire object Id
      * @param spec Sapphire object spec
+     * @param appObject App object
+     * @param configMap Sapphire policy configuration map
      * @param policyNameChain List of policies that need to be created
      * @param processedPolicies List of policies that were already created
      * @param previousServerPolicy ServerPolicy that was created just before and needs to be linked
      * @param previousServerPolicyStub ServerPolicyStub that was created just before and needs to be
      *     linked
-     * @param appArgs arguments for application object
+     * @param region Region
+     * @param appArgs Arguments for application object
      * @return processedPolicies
-     * @throws Exception
+     * @throws RemoteException
+     * @throws ClassNotFoundException
+     * @throws KernelObjectNotFoundException
+     * @throws KernelObjectNotCreatedException
+     * @throws SapphireObjectNotFoundException
+     * @throws SapphireObjectReplicaNotFoundException
+     * @throws InstantiationException
+     * @throws InvocationTargetException
+     * @throws IllegalAccessException
+     * @throws CloneNotSupportedException
      */
     public static List<SapphirePolicyContainer> createPolicy(
             SapphireObjectID sapphireObjId,
@@ -750,11 +764,12 @@ public class Sapphire {
     /**
      * Initializes server policy and stub with app object.
      *
-     * @param spec
+     * @param spec sapphire object spec
      * @param serverPolicy server policy
      * @param serverPolicyStub server policy stub
      * @param clientPolicy client policy
      * @param appArgs app arguments
+     * @param appObject app Object
      * @throws ClassNotFoundException
      * @throws IllegalAccessException
      * @throws CloneNotSupportedException

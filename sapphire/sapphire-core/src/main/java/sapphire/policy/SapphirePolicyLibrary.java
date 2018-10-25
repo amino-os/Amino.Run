@@ -276,13 +276,18 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
         public void sapphire_pin(SapphireServerPolicy serverPolicyStub, String region)
                 throws RemoteException, SapphireObjectNotFoundException,
                         SapphireObjectReplicaNotFoundException {
-            logger.info("Pinning Sapphire object " + oid.toString() + " to " + region);
+            logger.info(
+                    "Pinning Sapphire object "
+                            + serverPolicyStub.$__getKernelOID()
+                            + " to "
+                            + region);
             InetSocketAddress server = null;
             try {
                 server = oms().getServerInRegion(region);
             } catch (RemoteException e) {
-                logger.severe(e.getMessage());
-                throw new RemoteException("Could not contact oms to pin object.", e);
+                String msg = "Could not contact oms to pin object for region " + region;
+                logger.severe(msg);
+                throw new RemoteException(msg, e);
             }
             sapphire_pin_to_server(serverPolicyStub, server);
         }
@@ -312,8 +317,9 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
                         (SapphireServerPolicy)
                                 GlobalKernelReferences.nodeServer.getObject(serverOID);
             } catch (Exception e) {
-                logger.severe(e.getMessage());
-                throw new RemoteException("No server policy to pin to the server: " + server, e);
+                String msg = "No server policy to pin to the server: " + server;
+                logger.severe(msg);
+                throw new RemoteException(msg, e);
             }
 
             // Ensure that we start from the first Server Policy.

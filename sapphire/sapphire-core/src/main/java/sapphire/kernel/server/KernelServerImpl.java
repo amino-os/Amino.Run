@@ -158,13 +158,14 @@ public class KernelServerImpl implements KernelServer {
 
         if (realObj instanceof SapphireServerPolicyLibrary) {
             SapphireServerPolicyLibrary firstServerPolicy = (SapphireServerPolicyLibrary) realObj;
+            SapphirePolicy.SapphireServerPolicy serverPolicyStub = null;
 
             for (SapphirePolicyContainer spContainer : firstServerPolicy.getProcessedPolicies()) {
                 // Add Server Policy object in the same order as client side has created.
                 SapphireServerPolicyLibrary serverPolicy = spContainer.getServerPolicy();
 
                 // Added for setting the ReplicaId and registering handler for this replica to OMS.
-                SapphirePolicy.SapphireServerPolicy serverPolicyStub =
+                serverPolicyStub =
                         (SapphirePolicy.SapphireServerPolicy) spContainer.getServerPolicyStub();
                 ArrayList<Object> policyObjList = new ArrayList<>();
                 EventHandler policyHandler = new EventHandler(host, policyObjList);
@@ -186,6 +187,7 @@ public class KernelServerImpl implements KernelServer {
 
                 try {
                     serverPolicy.initialize();
+                    serverPolicy.getGroup().onMigrate(serverPolicyStub);
                 } catch (Exception e) {
                     String exceptionMsg =
                             "Initialization failed at copyKernelObject for KernelObject("
@@ -200,6 +202,9 @@ public class KernelServerImpl implements KernelServer {
             // app object.
             try {
                 firstServerPolicy.initialize();
+                // The last serverPolicy in the ProcessedPolicies will be the first one on the
+                // server. Hence passing serverPolicyStub which maps to the first ServerPolicy.
+                firstServerPolicy.getGroup().onMigrate(serverPolicyStub);
             } catch (Exception e) {
                 String exceptionMsg =
                         String.format(

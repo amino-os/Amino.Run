@@ -92,6 +92,9 @@ public class DefaultSapphirePolicy extends SapphirePolicy {
         }
 
         @Override
+        public void onMigrate(SapphireServerPolicy sapphireServerPolicy) throws RemoteException {}
+
+        @Override
         public void onCreate(
                 String region,
                 SapphireServerPolicy server,

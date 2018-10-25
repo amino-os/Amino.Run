@@ -91,5 +91,7 @@ public interface SapphirePolicyUpcalls {
         void onFailure(SapphireServerPolicy server) throws RemoteException;
 
         SapphireServerPolicy onRefRequest() throws RemoteException;
+
+        void onMigrate(SapphireServerPolicy server) throws RemoteException;
     }
 }

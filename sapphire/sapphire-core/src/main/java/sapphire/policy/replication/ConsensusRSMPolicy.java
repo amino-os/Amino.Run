@@ -176,12 +176,21 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
          * @param servers
          */
         public void initializeRaft(ConcurrentMap<UUID, ServerPolicy> servers) {
+            this.raftServer.start();
+            updateRaft(servers);
+        }
+
+        /**
+         * Update the RAFT protocol with the specified set of servers.
+         *
+         * @param servers
+         */
+        public void updateRaft(ConcurrentMap<UUID, ServerPolicy> servers) {
             for (UUID id : servers.keySet()) {
                 if (!id.equals(raftServer.getMyServerID())) {
                     this.raftServer.addServer(id, servers.get(id));
                 }
             }
-            this.raftServer.start();
         }
 
         // TODO: This method should be thread safe
@@ -231,10 +240,8 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
             // super.onCreate(server, annotations);
 
             super.onCreate(region, server, configMap);
-            addServer(server);
 
             try {
-                //                ServerPolicy consensusServer = (ServerPolicy) server;
                 KernelObjectStub directServer = (KernelObjectStub) server;
                 SapphireClientPolicy clientPolicy = directServer.$__getNextClientPolicy();
                 directServer.$__setNextClientPolicy(null);
@@ -277,21 +284,10 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
                 }
 
                 addServer(server);
+                // Need to initialize and update RaftServers created as part of
+                // GroupPolicy creation.
+                initAndUpdateRaftServers(true);
 
-                // Tell all the servers about one another
-                ConcurrentHashMap<UUID, ServerPolicy> allServers =
-                        new ConcurrentHashMap<UUID, ServerPolicy>();
-                // First get the self-assigned ID from each server
-                List<SapphireServerPolicy> servers = getServers();
-                for (SapphireServerPolicy i : servers) {
-                    ServerPolicy s = (ServerPolicy) i;
-                    allServers.put(s.getRaftServerId(), s);
-                }
-                // Now tell each server about the location and ID of all the servers, and start the
-                // RAFT protocol on each server.
-                for (ServerPolicy s : allServers.values()) {
-                    s.initializeRaft(allServers);
-                }
                 directServer.$__setNextClientPolicy(clientPolicy);
             } catch (RemoteException e) {
                 // TODO: Sapphire Group Policy Interface does not allow throwing exceptions, so in
@@ -303,6 +299,41 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
             } catch (SapphireObjectReplicaNotFoundException e) {
                 throw new Error("Failed to find sapphire object replica.", e);
             }
+        }
+
+        public void initAndUpdateRaftServers(boolean onCreate) throws RemoteException {
+            // Need to retrieve all the Servers which are part of this GroupPolicy.
+            ConcurrentHashMap<UUID, ServerPolicy> allServers =
+                    new ConcurrentHashMap<UUID, ServerPolicy>();
+            // First get the self-assigned ID from each server
+            List<SapphireServerPolicy> servers = getServers();
+            for (SapphireServerPolicy i : servers) {
+                ServerPolicy s = (ServerPolicy) i;
+                allServers.put(s.getRaftServerId(), s);
+            }
+            // Now tell each server about the location and ID of all the servers, and start the
+            // RAFT protocol on each server.
+            for (ServerPolicy s : allServers.values()) {
+                // If called during GroupPolicy creation, then the RaftServer needs to be started.
+                // Else when called during ServerPolicy migration, need to only update the
+                // existing raftServers on the particular raftServer migration.
+                if (onCreate) {
+                    s.initializeRaft(allServers);
+                } else {
+                    s.updateRaft(allServers);
+                }
+            }
+        }
+
+        @Override
+        public void onMigrate(SapphireServerPolicy serverPolicyStub) throws RemoteException {
+            // Update the GroupPolicy ServerList with the new ServerPolicy Stub after migration,
+            // as the ServerList will be having a copy of the initial replica ServerPolicy stub.
+            // Hence any values updated in ServerPolicyStub during migration will not visible
+            // at the GroupPolicy level.
+            addServer(serverPolicyStub);
+            // Need to update existing RaftServers on the ServerPolicy Migration.
+            initAndUpdateRaftServers(false);
         }
     }
 }

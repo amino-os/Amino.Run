@@ -121,12 +121,11 @@ public class DHTPolicy extends DefaultSapphirePolicy {
                 }
                 directServer.$__setNextClientPolicy(clientPolicy);
             } catch (RemoteException e) {
-                throw new Error(
-                        "Could not create new group policy because the oms is not available.");
+                throw new Error("Unknown exception occurred during replication in DHTPolicy.", e);
             } catch (SapphireObjectNotFoundException e) {
-                throw new Error("Could not find Sapphire object.");
+                throw new Error("Could not find Sapphire object.", e);
             } catch (SapphireObjectReplicaNotFoundException e) {
-                throw new Error("Could not find Sapphire object replica.");
+                throw new Error("Could not find Sapphire object replica.", e);
             }
         }
 

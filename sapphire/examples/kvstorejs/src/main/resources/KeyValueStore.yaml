@@ -1,0 +1,12 @@
+!!sapphire.app.SapphireObjectSpec
+constructorName: KeyValueStore
+dmList:
+- configs:
+  - !!sapphire.policy.dht.DHTPolicy$Config {numOfShards: 2}
+  name: sapphire.policy.dht.DHTPolicy
+- configs: []
+  name: sapphire.policy.scalability.LoadBalancedMasterSlaveSyncPolicy
+javaClassName: sapphire.appdemo.stubs.KeyValueStore_Stub
+lang: js
+name: KeyValueStore
+sourceFileLocation: /home/paas/development/DCAP-Sapphire/sapphire/examples/kvstorejs/src/main/js/sapphire/appdemo/KeyValueStore.js

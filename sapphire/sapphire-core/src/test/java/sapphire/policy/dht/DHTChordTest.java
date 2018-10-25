@@ -1,9 +1,5 @@
 package sapphire.policy.dht;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
@@ -13,6 +9,9 @@ import java.util.Map;
 import java.util.Random;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 public class DHTChordTest {
     private DHTChord dhtChord;

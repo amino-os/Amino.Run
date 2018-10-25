@@ -72,6 +72,10 @@ public class SapphireMultiPolicyChainTest extends MultiPolicyChainBaseTest {
         public void $__setNextClientPolicy(SapphirePolicy.SapphireClientPolicy clientPolicy) {
             $__nextClientPolicy = clientPolicy;
         }
+
+        public SapphirePolicy.SapphireClientPolicy $__getNextClientPolicy() {
+            return this.$__nextClientPolicy;
+        }
     }
 
     public static class DefaultServer_Stub extends DefaultSapphirePolicy.DefaultServerPolicy
@@ -101,6 +105,10 @@ public class SapphireMultiPolicyChainTest extends MultiPolicyChainBaseTest {
         public void $__setNextClientPolicy(SapphirePolicy.SapphireClientPolicy clientPolicy) {
             $__nextClientPolicy = clientPolicy;
         }
+
+        public SapphirePolicy.SapphireClientPolicy $__getNextClientPolicy() {
+            return this.$__nextClientPolicy;
+        }
     }
 
     public static class DHT2Group_Stub extends DHTPolicy2.DHTGroupPolicy
@@ -128,6 +136,10 @@ public class SapphireMultiPolicyChainTest extends MultiPolicyChainBaseTest {
 
         public void $__setNextClientPolicy(SapphirePolicy.SapphireClientPolicy clientPolicy) {
             $__nextClientPolicy = clientPolicy;
+        }
+
+        public SapphirePolicy.SapphireClientPolicy $__getNextClientPolicy() {
+            return this.$__nextClientPolicy;
         }
     }
 
@@ -157,6 +169,10 @@ public class SapphireMultiPolicyChainTest extends MultiPolicyChainBaseTest {
 
         public void $__setNextClientPolicy(SapphirePolicy.SapphireClientPolicy clientPolicy) {
             $__nextClientPolicy = clientPolicy;
+        }
+
+        public SapphirePolicy.SapphireClientPolicy $__getNextClientPolicy() {
+            return this.$__nextClientPolicy;
         }
     }
 

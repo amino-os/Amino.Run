@@ -9,6 +9,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
+import sapphire.kernel.common.KernelObjectStub;
 import sapphire.policy.DefaultSapphirePolicy;
 
 public class DHTPolicy extends DefaultSapphirePolicy {
@@ -85,6 +86,10 @@ public class DHTPolicy extends DefaultSapphirePolicy {
                 DHTServerPolicy dhtServer = (DHTServerPolicy) server;
 
                 boolean pinned = dhtServer.alreadyPinned();
+                KernelObjectStub directServer = (KernelObjectStub) server;
+                SapphireClientPolicy clientPolicy = directServer.$__getNextClientPolicy();
+                directServer.$__setNextClientPolicy(null);
+                dhtServer = (DHTPolicy.DHTServerPolicy) directServer;
 
                 if (pinned) {
                     // This policy chain was already pinned by downstream policy; hence, skipping.
@@ -114,6 +119,7 @@ public class DHTPolicy extends DefaultSapphirePolicy {
                         dhtServer.sapphire_pin_to_server(replica, newServerAddress);
                     }
                 }
+                directServer.$__setNextClientPolicy(clientPolicy);
             } catch (RemoteException e) {
                 throw new Error(
                         "Could not create new group policy because the oms is not available.");

@@ -10,6 +10,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
+import sapphire.kernel.common.KernelObjectStub;
 import sapphire.policy.DefaultSapphirePolicy;
 
 // TODO (Sungwook, 2018-10-2) Discard after updating original DHT policy to work with multi policy
@@ -160,6 +161,10 @@ public class DHTPolicy2 extends DefaultSapphirePolicy {
                 nodes.put(id, newNode);
 
                 boolean pinned = dhtServer.alreadyPinned();
+                KernelObjectStub directServer = (KernelObjectStub) server;
+                SapphireClientPolicy clientPolicy = directServer.$__getNextClientPolicy();
+                directServer.$__setNextClientPolicy(null);
+                dhtServer = (DHTServerPolicy) directServer;
 
                 for (int i = 1; i < regions.size(); i++) {
                     SapphireServerPolicy replica =
@@ -167,7 +172,8 @@ public class DHTPolicy2 extends DefaultSapphirePolicy {
                     if (pinned) {
                         logger.log(Level.INFO, "Pinning DHT policy original chain was skipped.");
                     } else {
-                        InetSocketAddress newServerAddress = oms().getServerInRegion(regions.get(i));
+                        InetSocketAddress newServerAddress =
+                                oms().getServerInRegion(regions.get(i));
                         dhtServer.sapphire_pin_to_server(replica, newServerAddress);
                     }
                 }
@@ -177,6 +183,8 @@ public class DHTPolicy2 extends DefaultSapphirePolicy {
                 } else {
                     dhtServer.sapphire_pin(server, regions.get(0));
                 }
+
+                directServer.$__setNextClientPolicy(clientPolicy);
             } catch (RemoteException e) {
                 e.printStackTrace();
                 throw new Error(
@@ -190,11 +198,26 @@ public class DHTPolicy2 extends DefaultSapphirePolicy {
 
         @Override
         public void addServer(SapphireServerPolicy server) {
-            groupSize++;
-            int id = groupSize;
+
+            int id = groupSize + 1;
             try {
                 DHTServerPolicy dhtServer = (DHTServerPolicy) server;
                 DHTNode newNode = new DHTNode(id, dhtServer);
+                for (DHTNode node : nodes.values()) {
+                    if (node.server == server) {
+                        nodes.remove(node.id);
+                        nodes.put(id - 1, newNode);
+
+                        logger.info(
+                                "Replaced node. NODES: "
+                                        + nodes.toString()
+                                        + " Group size = "
+                                        + groupSize);
+                        return;
+                    }
+                }
+
+                groupSize++;
                 nodes.put(id, newNode);
             } catch (Exception e) {
                 e.printStackTrace();

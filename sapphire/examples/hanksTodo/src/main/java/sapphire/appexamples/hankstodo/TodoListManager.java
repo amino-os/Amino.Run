@@ -8,6 +8,7 @@ import static sapphire.runtime.Sapphire.*;
 
 import sapphire.app.SapphireObjectSpec;
 import sapphire.policy.DefaultSapphirePolicy;
+import sapphire.policy.dht.DHTPolicy;
 import sapphire.policy.dht.DHTPolicy2;
 import sapphire.policy.replication.ConsensusRSMPolicy;
 import sapphire.runtime.SapphireConfiguration;
@@ -35,7 +36,7 @@ public class TodoListManager implements SapphireObject {
 					.setJavaClassName(TodoList.class.getName())
 					.addDMSpec(
 							DMSpec.newBuilder()
-									.setName(DHTPolicy2.class.getName())
+									.setName(DHTPolicy.class.getName())
 									.create())
 					.addDMSpec(
 							DMSpec.newBuilder()

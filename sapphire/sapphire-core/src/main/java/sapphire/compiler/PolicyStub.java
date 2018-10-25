@@ -147,9 +147,25 @@ public class PolicyStub extends Stub {
                 indenter.indent()
                         + "public void $__setNextClientPolicy(SapphirePolicy.SapphireClientPolicy clientPolicy) {"
                         + EOLN);
+
         buffer.append(
                 indenter.tIncrease()
                         + "this.$__nextClientPolicy = clientPolicy;"
+                        + EOLN
+                        + indenter.indent()
+                        + "}"
+                        + EOLN
+                        + EOLN);
+
+        /* Implementation for getNextClientPolicy */
+        buffer.append(
+                indenter.indent()
+                        + "public SapphirePolicy.SapphireClientPolicy $__getNextClientPolicy() {"
+                        + EOLN);
+
+        buffer.append(
+                indenter.tIncrease()
+                        + "return this.$__nextClientPolicy;"
                         + EOLN
                         + indenter.indent()
                         + "}"

@@ -78,6 +78,10 @@ public class ScaleUpFrontendPolicyTest extends BaseTest {
         public void $__setNextClientPolicy(SapphirePolicy.SapphireClientPolicy clientPolicy) {
             $__nextClientPolicy = clientPolicy;
         }
+
+        public SapphirePolicy.SapphireClientPolicy $__getNextClientPolicy() {
+            return this.$__nextClientPolicy;
+        }
     }
 
     public static class Server_Stub extends ScaleUpFrontendPolicy.ServerPolicy
@@ -105,6 +109,10 @@ public class ScaleUpFrontendPolicyTest extends BaseTest {
 
         public void $__setNextClientPolicy(SapphirePolicy.SapphireClientPolicy clientPolicy) {
             $__nextClientPolicy = clientPolicy;
+        }
+
+        public SapphirePolicy.SapphireClientPolicy $__getNextClientPolicy() {
+            return this.$__nextClientPolicy;
         }
     }
 

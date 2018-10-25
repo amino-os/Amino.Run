@@ -74,6 +74,10 @@ public class OMSTest extends BaseTest {
             $__nextClientPolicy = clientPolicy;
         }
 
+        public SapphirePolicy.SapphireClientPolicy $__getNextClientPolicy() {
+            return this.$__nextClientPolicy;
+        }
+
         public AppObject $__getAppObject() {
             return this.appObject;
         }
@@ -105,6 +109,10 @@ public class OMSTest extends BaseTest {
 
         public void $__setNextClientPolicy(SapphirePolicy.SapphireClientPolicy clientPolicy) {
             $__nextClientPolicy = clientPolicy;
+        }
+
+        public SapphirePolicy.SapphireClientPolicy $__getNextClientPolicy() {
+            return this.$__nextClientPolicy;
         }
 
         public AppObject $__getAppObject() {

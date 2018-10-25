@@ -59,13 +59,13 @@ public class HanksTodoMain {
             for (int i = 0; i < 5; i++) {
                 // Add to-do items.
                 System.out.println("Adding to do 1.1 at loop " + i);
-                td1.addToDo(1, Do1_1 + "<" + i + ">");
+                td1.addToDo("1", Do1_1 + "<" + i + ">");
                 System.out.println("Adding to do 1.2 at loop " + i);
-                td1.addToDo(1, Do1_2 + "<" + i + ">");
+                td1.addToDo("1", Do1_2 + "<" + i + ">");
                 System.out.println("Adding to do 2.1 at loop " + i);
-                td1.addToDo(2, Do2_1 + "<" + i + ">");
+                td1.addToDo("2", Do2_1 + "<" + i + ">");
                 System.out.println("Adding to do 2.2 at loop " + i);
-                td1.addToDo(2, Do2_2 + "<" + i + ">");
+                td1.addToDo("2", Do2_2 + "<" + i + ">");
             }
 
             String expectedTdString2 = "", expectedTdString1 = "";
@@ -85,11 +85,11 @@ public class HanksTodoMain {
             System.out.println("Please note expected String may display incorrect values depending on the policy.");
 
             TodoList getTd1 = tlm.getToDoList(ListName);
-            String testTdString2 = getTd1.getToDoString(2);
+            String testTdString2 = getTd1.getToDoString("2");
             System.out.println("Expect testTdString for 2: " + expectedTdString2);
             System.out.println("Actual testTdString for 2: " + testTdString2);
 
-            String testTdString1 = getTd1.getToDoString(1);
+            String testTdString1 = getTd1.getToDoString("1");
             System.out.println("Expect testTdString for 1: " + expectedTdString1);
             System.out.println("Actual testTdString for 1: " + testTdString1);
 

@@ -14,6 +14,7 @@ import java.util.logging.Logger;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
 import sapphire.kernel.common.GlobalKernelReferences;
+import sapphire.kernel.common.KernelObjectStub;
 import sapphire.policy.DefaultSapphirePolicy;
 import sapphire.policy.util.consensus.raft.AlreadyVotedException;
 import sapphire.policy.util.consensus.raft.CandidateBehindException;
@@ -233,17 +234,27 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
             addServer(server);
 
             try {
-                ServerPolicy consensusServer = (ServerPolicy) server;
+                //                ServerPolicy consensusServer = (ServerPolicy) server;
+                KernelObjectStub directServer = (KernelObjectStub) server;
+                SapphireClientPolicy clientPolicy = directServer.$__getNextClientPolicy();
+                directServer.$__setNextClientPolicy(null);
+
+                ServerPolicy consensusServer = (ServerPolicy) directServer;
 
                 if (region != null && !region.isEmpty()) {
                     List<InetSocketAddress> servers =
                             GlobalKernelReferences.nodeServer.oms.getServersInRegion(region);
                     for (int i = 1; i < servers.size(); i++) {
                         InetSocketAddress newServerAddress = servers.get(i);
+
+                        // Direct call to method as it should not go through the chain.
+
                         ServerPolicy replica =
                                 (ServerPolicy)
                                         consensusServer.sapphire_replicate(
                                                 server.getProcessedPolicies());
+
+                        // Direct call to method as it should not go through the chain.
                         consensusServer.sapphire_pin_to_server(replica, newServerAddress);
                     }
                     consensusServer.sapphire_pin_to_server(server, servers.get(0));
@@ -281,6 +292,7 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
                 for (ServerPolicy s : allServers.values()) {
                     s.initializeRaft(allServers);
                 }
+                directServer.$__setNextClientPolicy(clientPolicy);
             } catch (RemoteException e) {
                 // TODO: Sapphire Group Policy Interface does not allow throwing exceptions, so in
                 // the mean time convert to an Error.

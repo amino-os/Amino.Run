@@ -295,7 +295,8 @@ public class Sapphire {
         previousServerPolicy = serverPolicy;
         previousServerPolicyStub = (KernelObjectStub) serverPolicyStub;
 
-//        if (existingGroupPolicy == null) groupPolicy.onCreate(region, serverPolicyStub, configMap);
+        //        if (existingGroupPolicy == null) groupPolicy.onCreate(region, serverPolicyStub,
+        // configMap);
 
         if (nextPoliciesToCreate.size() != 0) {
             // TODO: hacks for demo

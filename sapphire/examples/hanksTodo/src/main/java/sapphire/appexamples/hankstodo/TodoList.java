@@ -19,7 +19,7 @@ public class TodoList implements SapphireObject {
 	 * @param id
 	 * @return
 	 */
-	public String addToDo(int id, String todo) {
+	public String addToDo(String id, String todo) {
 		System.out.println("TodoList>> id: " + id + " addToDo: " + todo);
 		toDos.add(todo);
 		return "OK!";
@@ -30,7 +30,7 @@ public class TodoList implements SapphireObject {
 	 * @param id
 	 * @return
 	 */
-	public String getToDoString(int id) {
+	public String getToDoString(String id) {
 		StringBuilder sb = new StringBuilder();
 
 		for (String toDo: toDos) {

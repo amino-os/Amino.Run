@@ -164,6 +164,10 @@ public class LoadBalancedMasterSlaveSyncPolicyIntegTest {
 
         @Override
         public void $__setNextClientPolicy(SapphirePolicy.SapphireClientPolicy clientPolicy) {}
+
+        public SapphirePolicy.SapphireClientPolicy $__getNextClientPolicy() {
+            return null;
+        }
     }
 
     private static class GroupMock extends LoadBalancedMasterSlaveSyncPolicy.GroupPolicy {}

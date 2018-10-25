@@ -1,4 +1,4 @@
-# What is DCAP
+# What is DCAP?
 
 DCAP, the Distributed Cloud Application Platform, is an open source,
 multilanguage development platform and distributed runtime environment

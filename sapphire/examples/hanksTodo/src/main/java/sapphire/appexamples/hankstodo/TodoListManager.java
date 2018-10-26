@@ -7,10 +7,8 @@ import sapphire.app.SapphireObject;
 import static sapphire.runtime.Sapphire.*;
 
 import sapphire.app.SapphireObjectSpec;
-import sapphire.policy.DefaultSapphirePolicy;
 import sapphire.policy.dht.DHTPolicy2;
 import sapphire.policy.replication.ConsensusRSMPolicy;
-import sapphire.runtime.SapphireConfiguration;
 
 import java.util.Hashtable;
 import java.util.Map;

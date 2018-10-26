@@ -34,11 +34,13 @@ public class SapphireInstanceManager {
      * <p>For example, given a sapphire object with DM list [DHT, MasterSlave], its outmost DM is
      * DHT. In this case, {@code rootGroupPolicy} is the DHT group policy.
      *
-     * <p>TODO(multi-dm): We actually need to maintain group policies of inner DMs too.
-     * We need to organize group policies, their relationships, and their healthiness into
-     * a table as described in the multi-DM design doc.
+     * <p>TODO(multi-dm): We actually need to maintain group policies of inner DMs too. We need to
+     * organize group policies, their relationships, and their healthiness into a table as described
+     * in the multi-DM design doc.
      *
-     *  @see <a href="https://docs.google.com/document/d/1g5SnzsnyGXzdZVDF_uj9MQJomQpHS-PMpfwnYn4RNDU/edit#heading=h.j9vsjm8kyruk">Multi-DM Design Doc</a>
+     * @see <a
+     *     href="https://docs.google.com/document/d/1g5SnzsnyGXzdZVDF_uj9MQJomQpHS-PMpfwnYn4RNDU/edit#heading=h.j9vsjm8kyruk">Multi-DM
+     *     Design Doc</a>
      */
     private SapphireGroupPolicy rootGroupPolicy;
 

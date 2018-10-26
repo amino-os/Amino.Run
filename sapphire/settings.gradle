@@ -8,9 +8,11 @@ include ':dependencies:javax.rmi'
 include ':dependencies:javax.activity'
 include ':dependencies:apache.harmony'
 
-// Sapphire demo app
-include ':examples:helloworld'
+// Sapphire example applications
+include ':examples' // Note: I can't seem to get gradle to include from subprojects, hence the lines below.
+include ':examples:example-minnietwitter'
 include ':examples:hanksTodo'
 include ':examples:hanksTodoRuby'
-include ':examples:example-minnietwitter'
+include ':examples:helloworld'
 include ':examples:kvstore'
+include ':examples:kvstorejs'

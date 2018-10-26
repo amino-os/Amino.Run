@@ -1,93 +1,25 @@
 apply plugin: 'java-library'
 
-dependencies {
-    compile project(':sapphire-core')
-}
-
-// Task for app stub generation
-task genStubs(type: JavaExec) {
-    main = "sapphire.compiler.StubGenerator"
-    classpath = sourceSets.main.runtimeClasspath
-    def pkgName = 'sapphire.demo'
+// Customize app stub generation for this example
+genStubs {
+    def pkg = 'sapphire.demo'
     def src = "$buildDir/classes/java/main/sapphire/demo/"
     def dst = "$projectDir/src/main/java/sapphire/demo/stubs/"
-    args src, pkgName, dst
+    args src, pkg, dst
     outputs.dir dst // Declare outputs, so gradle will run if they have been changed
     inputs.dir src   // Declare inputs, so gradle will run if they have been changed
 }
 
-clean {
-    delete genStubs.outputs // Add generated stubs to what the clean task must delete
-}
-
-task compileStubs(type: JavaCompile) {
-    inputs.dir genStubs.outputs // Try to convince gradle to only recompile stubs when they've been regenerated.
-    outputs.dir "$buildDir/classes/java/main/sapphire/appexamples/demo/stubs/" // ... or when someone messed with the compiled stubs
-    source = sourceSets.main.java.srcDirs
-    classpath = sourceSets.main.compileClasspath
-    destinationDir = sourceSets.main.output.classesDir
-    options.incremental = true
+// Customize stub compilation for this example
+compileStubs {
+    outputs.dir "$buildDir/classes/java/main/sapphire/appexamples/demo/stubs/"
 }
 
 jar.dependsOn compileStubs
 
-// task to start OMS
-task runoms(type: JavaExec) {
-    dependsOn jar
-    classpath = sourceSets.main.runtimeClasspath
-    jvmArgs '-Djava.util.logging.config.file=' + project.projectDir + '/../../logging.properties'
-    main = 'sapphire.oms.OMSServerImpl'
-    args project.property('omsIp'), project.property('omsPort')
-}
-
-// task to start kernel server (hosting the SO)
-task runks(type: JavaExec) {
-    classpath = sourceSets.main.runtimeClasspath
-    jvmArgs '-Djava.util.logging.config.file=' + project.projectDir + '/../../logging.properties'
-    main = 'sapphire.kernel.server.KernelServerImpl'
-    args project.property('kernelServerIp'), project.property('kernelServerPort'), project.property('omsIp'), project.property('omsPort'), "r0"
-}
-
-// task to start more kernel server (hosting the SO)
-task runks2(type: JavaExec) {
-    classpath = sourceSets.main.runtimeClasspath
-    jvmArgs '-Djava.util.logging.config.file=' + project.projectDir + '/../../logging.properties'
-    main = 'sapphire.kernel.server.KernelServerImpl'
-    args project.property('kernelServerIp'), project.property('kernelServerPort2'), project.property('omsIp'), project.property('omsPort'), "r0"
-}
-
-task runks3(type: JavaExec) {
-    classpath = sourceSets.main.runtimeClasspath
-    jvmArgs '-Djava.util.logging.config.file=' + project.projectDir + '/../../logging.properties'
-    main = 'sapphire.kernel.server.KernelServerImpl'
-    args project.property('kernelServerIp'), project.property('kernelServerPort3'), project.property('omsIp'), project.property('omsPort'), "r1"
-}
-
-task runks4(type: JavaExec) {
-    classpath = sourceSets.main.runtimeClasspath
-    jvmArgs '-Djava.util.logging.config.file=' + project.projectDir + '/../../logging.properties'
-    main = 'sapphire.kernel.server.KernelServerImpl'
-    args project.property('kernelServerIp'), project.property('kernelServerPort4'), project.property('omsIp'), project.property('omsPort'), "r1"
-}
-
-// task for run client
-task runapp(type: JavaExec) {
+// Customize runapp for this example
+runapp {
     main = "sapphire.demo.KeyValueStoreClient"
-    jvmArgs '-Djava.util.logging.config.file=' + project.projectDir + '/../../logging.properties'
-    classpath = sourceSets.main.runtimeClasspath
+    // This one doesn't take kernel server address params
     args project.property('omsIp'), project.property('omsPort')
-}
-
-// task for run javascript kvstore client
-task runjsapp(type: Exec) {
-    environment  JS_HOME: "${project.projectDir}/src/main/js/sapphire/demo"
-    environment  OMS_IP: "${project.property('omsIp')}"
-    environment  OMS_PORT: "${project.property('omsPort')}"
-    environment  KERNEL_SERVER_IP: "${project.property('embeddedKernelServerIp')}"
-    environment  KERNEL_SERVER_PORT: "${project.property('kernelServerPort')}"
-    def classpath = sourceSets.main.runtimeClasspath.asPath
-    
-    executable "$System.env.JAVA_HOME/bin/js"
-    args "--jvm", "--polyglot", "--jvm.classpath=${classpath}", 
-            "${project.projectDir}/src/main/js/sapphire/demo/KeyValueStoreClient.js"
 }

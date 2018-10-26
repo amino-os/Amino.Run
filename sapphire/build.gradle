@@ -17,8 +17,9 @@ buildscript {
          * Please update only after either the issue is fixed on Android side or fix the bug in the project for AAPT2.
          * https://issuetracker.google.com/issues/38454212
          * https://github.com/requery/requery/issues/467
+         * NOTE: Quinton: Apparently the above bugs have all been fixed.  Tentatively upgrading to gradle 3.2.0 to address an issue with v2.x
          */
-        classpath 'com.android.tools.build:gradle:2.3.3'
+        classpath 'com.android.tools.build:gradle:3.2.0'
     }
 }
 

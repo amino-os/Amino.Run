@@ -10,6 +10,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import sapphire.kernel.common.KernelOID;
+import sapphire.kernel.common.KernelObjectStub;
 import sapphire.kernel.common.ServerInfo;
 import sapphire.kernel.server.KernelServerImpl;
 import sapphire.oms.OMSServer;
@@ -71,13 +72,30 @@ public class DHTPolicyTest {
         Assert.assertEquals(requests.length, cnt);
     }
 
-    private static class ServerPolicy extends DHTPolicy.DHTServerPolicy {
+    private static class ServerPolicy extends DHTPolicy.DHTServerPolicy
+            implements KernelObjectStub {
         List<Object> requests = new ArrayList<>();
 
         @Override
         public KernelOID $__getKernelOID() {
             int oid = new Random().nextInt();
             return new KernelOID(oid);
+        }
+
+        @Override
+        public InetSocketAddress $__getHostname() {
+            return null;
+        }
+
+        @Override
+        public void $__updateHostname(InetSocketAddress hostname) {}
+
+        @Override
+        public void $__setNextClientPolicy(SapphirePolicy.SapphireClientPolicy clientPolicy) {}
+
+        @Override
+        public SapphirePolicy.SapphireClientPolicy $__getNextClientPolicy() {
+            return null;
         }
 
         // TODO (merge):

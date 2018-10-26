@@ -1,6 +1,5 @@
 package sapphire.multidm;
 
-import static java.lang.Thread.sleep;
 import static sapphire.kernel.IntegrationTestBase.*;
 
 import java.io.File;
@@ -22,7 +21,7 @@ import sapphire.oms.OMSServer;
  * Test <strong>multi-dm</strong> deployment managers, DHT & Consensus require multiple kernel
  * servers are covered here.
  */
-public class DHTAndConsensusMultiDMTest {
+public class MultiDMTestCases {
     OMSServer oms;
 
     @BeforeClass
@@ -38,15 +37,18 @@ public class DHTAndConsensusMultiDMTest {
                 new InetSocketAddress(hostIp, hostPort), new InetSocketAddress(omsIp, omsPort));
     }
 
-    private void runTest(SapphireObjectSpec spec) throws Exception {
+    private void runTest(SapphireObjectSpec spec, boolean consensus) throws Exception {
         SapphireObjectID sapphireObjId = oms.createSapphireObject(spec.toString());
-        sleep(5000);
         KVStore store = (KVStore) oms.acquireSapphireObjectStub(sapphireObjId);
+        // consensus DM needs some time to elect the leader other wise function call will fail
+        if (consensus) {
+            Thread.sleep(5000);
+        }
+
         for (int i = 0; i < 10; i++) {
             String key = "k1_" + i;
             String value = "v1_" + i;
             store.set(key, value);
-            sleep(500);
             Assert.assertEquals(value, store.get(key));
         }
     }
@@ -60,7 +62,19 @@ public class DHTAndConsensusMultiDMTest {
     public void testDHTNConsensusMultiDM() throws Exception {
         File file = getResourceFile("specs/multi-dm/DHTNConsensus.yaml");
         SapphireObjectSpec spec = readSapphireSpec(file);
-        runTest(spec);
+        runTest(spec, true);
+    }
+
+    /**
+     * Test sapphire object specifications in <code>src/test/resources/specs</code> directory.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testDHTNMasterSlaveMultiDM() throws Exception {
+        File file = getResourceFile("specs/multi-dm/DHTNMasterSlave.yaml");
+        SapphireObjectSpec spec = readSapphireSpec(file);
+        runTest(spec, false);
     }
 
     @AfterClass

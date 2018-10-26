@@ -66,9 +66,12 @@ public class StubGenerator {
         return filename.substring(0, extensionIndex);
     }
 
-    public static void generateStubs(String srcFolder, String packageName, String destFolder) {
+    public static void generateStubs(String srcFolder, String packageName, String destFolder) throws java.io.FileNotFoundException {
         File directory = new File(srcFolder);
         File[] fList = directory.listFiles();
+        if (fList == null) {
+            throw new java.io.FileNotFoundException("Failed to list files in source folder \'" + srcFolder + "\'");
+        }
         for (File file : fList) {
             if (file.isFile() && file.getName().endsWith(".class")) {
                 try {
@@ -119,7 +122,7 @@ public class StubGenerator {
      */
 
     /* TODO: Support for multiple packages for app stubs; right now you must run this for each app package that contains a SapphireObject */
-    public static void main(String args[]) {
+    public static void main(String args[]) throws java.io.FileNotFoundException {
         String src = args[0];
         String pkg = args[1];
         String dst = args[2];

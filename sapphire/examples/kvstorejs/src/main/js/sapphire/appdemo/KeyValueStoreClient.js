@@ -13,7 +13,7 @@ function main() {
     var ClientStub = Java.type("sapphire.appdemo.stubs.KeyValueStore_Stub")
     var kvs = ClientStub.getStub("KeyValueStore.yaml", omsIP, omsPort, hostIP, hostPort);
 
-    for (i=0; i<30; ++i) {
+    for (i=0; i<3000; ++i) {
         key = "key_" + i;
         val = "val_" + i;
         console.log(`client: setting ${key} = ${val}`)

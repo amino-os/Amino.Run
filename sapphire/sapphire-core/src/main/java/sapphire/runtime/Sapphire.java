@@ -336,9 +336,12 @@ public class Sapphire {
                     appArgs);
         }
 
-        // server policy stub at this moment has the full policy chain; safe to add to group
+        /**
+         * Added updation of GroupPolicy server list, to handle MultiPolicy scenarios so that the
+         * master copy of the PolicyChain has the entire Policy chain.
+         */
         if (existingGroupPolicy == null) {
-            groupPolicy.addServer(serverPolicyStub);
+            groupPolicy.updateServer(serverPolicyStub);
         }
 
         String ko = "";

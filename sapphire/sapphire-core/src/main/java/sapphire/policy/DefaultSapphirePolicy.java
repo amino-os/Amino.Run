@@ -72,6 +72,16 @@ public class DefaultSapphirePolicy extends SapphirePolicy {
         }
 
         @Override
+        public synchronized void updateServer(SapphireServerPolicy server) throws RemoteException {
+            if (servers == null) {
+                // TODO: Change the exception to proper one, similar to addServer exception.
+                throw new RemoteException("updateServer() failed, Group object deleted.");
+            }
+            servers.remove(server);
+            servers.add(server);
+        }
+
+        @Override
         public synchronized void removeServer(SapphireServerPolicy server) throws RemoteException {
             if (servers != null) {
                 servers.remove(server);
@@ -101,5 +111,8 @@ public class DefaultSapphirePolicy extends SapphirePolicy {
             super.onDestroy();
             servers = null;
         }
+
+        @Override
+        public void onMigrate(SapphireServerPolicy server) throws RemoteException {}
     }
 }

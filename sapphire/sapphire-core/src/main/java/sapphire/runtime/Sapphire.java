@@ -786,7 +786,9 @@ public class Sapphire {
 
         AppObjectStub appStub;
         if (appObject != null) {
-            appObject = new AppObject(((AppObjectStub) appObject.getObject()).$__clone());
+            appStub = (AppObjectStub) appObject.getObject();
+            appStub.$__initialize(true);
+            appObject = new AppObject(appStub.$__clone());
             serverPolicyStub.$__initialize(appObject);
             serverPolicy.$__initialize(appObject);
         } else {

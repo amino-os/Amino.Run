@@ -4,7 +4,7 @@ public class AppObject extends ObjectHandler {
 
     @Override
     protected Class<?> getClass(Object obj) {
-        if (super.isGraalObject()) {
+        if (isGraalObject(obj)) {
             return obj.getClass();
         }
 

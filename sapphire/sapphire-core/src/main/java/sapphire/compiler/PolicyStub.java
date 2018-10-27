@@ -365,8 +365,8 @@ public class PolicyStub extends Stub {
     }
 
     /**
-     * Returns the KernelRPC stub implementation code based on
-     * whether the method is a DM method or Application method.
+     * Returns the KernelRPC stub implementation code based on whether the method is a DM method or
+     * Application method.
      *
      * @param isDMMethod
      * @return Stub code for RPC call based on method type.

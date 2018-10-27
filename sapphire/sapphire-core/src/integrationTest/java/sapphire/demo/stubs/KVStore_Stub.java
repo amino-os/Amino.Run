@@ -13,6 +13,10 @@
  */
 package sapphire.demo.stubs;
 
+/* TODO: As there is no gradle task for this stub file generation, Changes in KVStore class need manual regeneration of
+this stub file using Sapphire Compiler. Hence, stub file is present in repo too. Better to have a gradle task to
+generate this stub automatically. Then, file be removed from repo.
+ */
 public final class KVStore_Stub extends sapphire.demo.KVStore
         implements sapphire.common.AppObjectStub {
 

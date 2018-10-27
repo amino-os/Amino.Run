@@ -32,6 +32,9 @@ public abstract class Stub implements RmicConstants {
     /** List of remote methods for the class */
     private final TreeSet<MethodStub> methods;
 
+    /** List of DM methods for the class */
+    private final TreeSet<MethodStub> dmMethods;
+
     /**
      * Creates <code>Stub</code> instance for specified type (app or kernel) and class.
      *
@@ -44,6 +47,18 @@ public abstract class Stub implements RmicConstants {
         String shortClassName = RMIUtil.getShortName(cls);
         stubName = shortClassName + stubSuffix;
         methods = getMethods();
+        dmMethods = getDMMethods();
+
+        /**
+         * If the DM class contains overrided methods the same will get added in the methods list
+         * also, from the base Class. Hence the corresponding base methods needs to be removed from
+         * the methods list.
+         */
+        for (MethodStub m : dmMethods) {
+            if (methods.contains(m)) {
+                methods.remove(m);
+            }
+        }
     }
 
     /**
@@ -67,7 +82,9 @@ public abstract class Stub implements RmicConstants {
                 + EOLN
                 + getStubAdditionalMethods()
                 + EOLN
-                + getMethodImplementations() //$NON-NLS-1$
+                + getMethodImplementations()
+                + EOLN
+                + getDMMethodImplementations() //$NON-NLS-1$
                 + indenter.decrease()
                 + '}'
                 + EOLN
@@ -99,12 +116,27 @@ public abstract class Stub implements RmicConstants {
     private String getMethodImplementations() {
         StringBuilder buffer = new StringBuilder();
         for (Iterator<MethodStub> i = methods.iterator(); i.hasNext(); ) {
-            buffer.append(EOLN + i.next().getStubImpl());
+            buffer.append(EOLN + i.next().getStubImpl(false));
+        }
+        return buffer.toString();
+    }
+
+    /**
+     * Returns remote DM methods implementation
+     *
+     * @return Stub DM method implementation code.
+     */
+    private String getDMMethodImplementations() {
+        StringBuilder buffer = new StringBuilder();
+        for (Iterator<MethodStub> i = dmMethods.iterator(); i.hasNext(); ) {
+            buffer.append(EOLN + i.next().getStubImpl(true));
         }
         return buffer.toString();
     }
 
     public abstract TreeSet<MethodStub> getMethods();
+
+    public abstract TreeSet<MethodStub> getDMMethods();
 
     public abstract String getPackageStatement();
 
@@ -118,7 +150,7 @@ public abstract class Stub implements RmicConstants {
 
     public abstract String getStubAdditionalMethods();
 
-    public abstract String getMethodContent(MethodStub m);
+    public abstract String getMethodContent(MethodStub m, boolean isDMMethod);
 
     /** Generates Stub code for a particular method. */
     public final class MethodStub implements Comparable<MethodStub> {
@@ -228,10 +260,10 @@ public abstract class Stub implements RmicConstants {
          *
          * @return Stub implementation for this method.
          */
-        String getStubImpl() {
+        String getStubImpl(boolean isDMMethod) {
             return (getStubImplHeader()
                     + indenter.hIncrease()
-                    + getMethodContent(this)
+                    + getMethodContent(this, isDMMethod)
                     + indenter.decrease()
                     + '}'
                     + EOLN);

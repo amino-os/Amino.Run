@@ -16,7 +16,7 @@ public class PolicyStub extends Stub {
     public TreeSet<MethodStub> getMethods() {
         TreeSet<MethodStub> ms = new TreeSet<MethodStub>();
 
-        Class<?> ancestorClass = stubClass;
+        Class<?> ancestorClass = stubClass.getSuperclass();
         while ((!ancestorClass.getSimpleName().equals("SapphireServerPolicyLibrary"))
                 && (!ancestorClass.getSimpleName().equals("SapphireGroupPolicyLibrary"))) {
 
@@ -30,6 +30,19 @@ public class PolicyStub extends Stub {
             ancestorClass = ancestorClass.getSuperclass();
         }
 
+        return ms;
+    }
+
+    @Override
+    public TreeSet<MethodStub> getDMMethods() {
+        TreeSet<MethodStub> ms = new TreeSet<MethodStub>();
+
+        Class<?> dmClass = stubClass;
+        for (Method m : dmClass.getDeclaredMethods()) {
+            if (Modifier.isPublic(m.getModifiers())) {
+                ms.add(new MethodStub((Method) m));
+            }
+        }
         return ms;
     }
 
@@ -194,6 +207,29 @@ public class PolicyStub extends Stub {
         buffer.append(indenter.tIncrease() + "}" + EOLN);
         buffer.append(indenter.indent() + "}" + EOLN + EOLN);
 
+        /* Implementation for makeKernelDMRPC */
+        buffer.append(
+                indenter.indent()
+                        + "public Object $__makeKernelDMRPC(java.lang.String method, java.util.ArrayList<Object> params) throws java.rmi.RemoteException, java.lang.Exception {"
+                        + EOLN);
+
+        buffer.append(
+                indenter.tIncrease()
+                        + "sapphire.kernel.common.KernelRPC rpc = new sapphire.kernel.common.KernelRPC($__oid, method, params);"
+                        + EOLN);
+        buffer.append(indenter.tIncrease() + "try {" + EOLN);
+        buffer.append(
+                indenter.tIncrease(2)
+                        + "return sapphire.kernel.common.GlobalKernelReferences.nodeServer.getKernelClient().makeKernelRPC(this, rpc);"
+                        + EOLN);
+        buffer.append(
+                indenter.tIncrease()
+                        + "} catch (sapphire.kernel.common.KernelObjectNotFoundException e) {"
+                        + EOLN);
+        buffer.append(indenter.tIncrease(2) + "throw new java.rmi.RemoteException();" + EOLN);
+        buffer.append(indenter.tIncrease() + "}" + EOLN);
+        buffer.append(indenter.indent() + "}" + EOLN + EOLN);
+
         /* Override $__initialize */
         /*
         buffer.append(indenter.indent() + "public void $__initialize(java.lang.String $param_String_1, java.util.ArrayList $param_ArrayList_2) { " + EOLN);
@@ -246,7 +282,7 @@ public class PolicyStub extends Stub {
      * @return Stub implementation code for this method.
      */
     @Override
-    public String getMethodContent(MethodStub m) {
+    public String getMethodContent(MethodStub m, boolean isDMMethod) {
         StringBuilder buffer = new StringBuilder("");
 
         // Construct list of parameters and String holding the method name
@@ -281,13 +317,13 @@ public class PolicyStub extends Stub {
             buffer.append(indenter.indent() + "try {" + EOLN);
             buffer.append(
                     indenter.tIncrease()
-                            + "$__result = $__makeKernelRPC($__method, $__params);"
+                            + getMethodRPCContent(isDMMethod)
                             + EOLN); //$NON-NLS-1$ //$NON-NLS-2$
 
         } else {
             buffer.append(
                     indenter.indent()
-                            + "$__result = $__makeKernelRPC($__method, $__params);"
+                            + getMethodRPCContent(isDMMethod)
                             + EOLN); //$NON-NLS-1$ //$NON-NLS-2$
         }
 
@@ -326,5 +362,20 @@ public class PolicyStub extends Stub {
                             + EOLN);
         }
         return buffer.toString();
+    }
+
+    /**
+     * Returns the KernelRPC stub implementation code based on
+     * whether the method is a DM method or Application method.
+     *
+     * @param isDMMethod
+     * @return Stub code for RPC call based on method type.
+     */
+    public String getMethodRPCContent(boolean isDMMethod) {
+        if (isDMMethod == true) {
+            return "$__result = $__makeKernelDMRPC($__method, $__params);";
+        } else {
+            return "$__result = $__makeKernelRPC($__method, $__params);";
+        }
     }
 }

@@ -33,6 +33,12 @@ public final class AppStub extends Stub {
     }
 
     @Override
+    public TreeSet<MethodStub> getDMMethods() {
+        TreeSet<MethodStub> ms = new TreeSet<MethodStub>();
+        return ms;
+    }
+
+    @Override
     public String getPackageStatement() {
         return ((packageName == null)
                 ? "" //$NON-NLS-1$
@@ -146,7 +152,7 @@ public final class AppStub extends Stub {
      * @return Stub implementation code for the methods.
      */
     @Override
-    public String getMethodContent(MethodStub m) {
+    public String getMethodContent(MethodStub m, boolean isDMMethod) {
         StringBuilder buffer = new StringBuilder("");
 
         buffer.append(indenter.indent() + "java.lang.Object $__result = null;" + EOLN);

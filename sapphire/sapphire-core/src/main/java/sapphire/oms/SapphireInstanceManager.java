@@ -71,6 +71,14 @@ public class SapphireInstanceManager {
     }
 
     /**
+     * Gets the root group policy object of this sapphire instance
+     * @return Sapphire Group Policy Object
+     */
+    public SapphireGroupPolicy getRootGroupPolicy() {
+        return rootGroupPolicy;
+    }
+
+    /**
      * Gets the event handler of this sapphire instance
      *
      * @return Returns event handler

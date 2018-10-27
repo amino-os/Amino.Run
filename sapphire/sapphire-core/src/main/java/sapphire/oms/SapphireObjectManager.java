@@ -60,6 +60,21 @@ public class SapphireObjectManager {
         instance.setInstanceDispatcher(dispatcher);
     }
 
+    /**
+     * Gets the root group policy object with sapphire object id
+     * @param oid
+     * @return Sapphire Group Policy Object
+     * @throws SapphireObjectNotFoundException
+     */
+    public SapphirePolicy.SapphireGroupPolicy getRootGroupPolicy(SapphireObjectID oid)
+            throws SapphireObjectNotFoundException {
+        SapphireInstanceManager instanceManager = sapphireObjects.get(oid);
+        if (instanceManager == null) {
+            throw new SapphireObjectNotFoundException("Not a valid Sapphire object id.");
+        }
+        return instanceManager.getRootGroupPolicy();
+    }
+
     public void setRootGroupPolicy(
             SapphireObjectID oid, SapphirePolicy.SapphireGroupPolicy rootGroupPolicy)
             throws SapphireObjectNotFoundException {

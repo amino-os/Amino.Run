@@ -342,7 +342,19 @@ public class OMSServerImpl implements OMSServer {
             Map<String, SapphirePolicyConfig> configMap)
             throws RemoteException, ClassNotFoundException, KernelObjectNotCreatedException,
                     SapphireObjectNotFoundException {
-        return Sapphire.createGroupPolicy(policyClass, sapphireObjId, configMap);
+        SapphirePolicy.SapphireGroupPolicy group =
+                Sapphire.createGroupPolicy(policyClass, sapphireObjId, configMap);
+
+        /* TODO: This rootGroupPolicy is used in sapphire object deletion. Need to handle for multiDM case. In case of
+        multiDM, multiple group policy objects are created in DM chain establishment. Currently, just ensuring not to
+        overwrite the outermost DM's group policy reference(i.e., first created group policy in chain).So that deletion
+        works for single DM case.
+         */
+        if (objectManager.getRootGroupPolicy(sapphireObjId) == null) {
+            objectManager.setRootGroupPolicy(sapphireObjId, group);
+        }
+
+        return group;
     }
 
     public static void main(String args[]) {

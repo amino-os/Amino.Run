@@ -275,7 +275,7 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
                 }
                 consensusServer.sapphire_pin(server, regions.get(0));
 
-                addServer(server);
+                super.addServer(server);
 
                 // Need to initialize and update RaftServers created as part of
                 // GroupPolicy creation.
@@ -293,6 +293,13 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
             }
         }
 
+        /**
+         * Handling needed for updating change in the raftServer location, when ServerPolicyStub is
+         * migrated to a different Kernel Server.
+         *
+         * @param serverPolicyStub
+         * @throws RemoteException
+         */
         @Override
         public void onMigrate(SapphireServerPolicy serverPolicyStub) throws RemoteException {
             // Update the GroupPolicy ServerList with the new ServerPolicy Stub after migration,
@@ -302,6 +309,18 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
             updateServer(serverPolicyStub);
             // Need to update existing RaftServers on the ServerPolicy Migration.
             initAndUpdateRaftServers(false);
+        }
+
+        /**
+         * Overriding addServer, as for ConsensusRSM Policy the server list has to be updated by
+         * removing the earlier server if exists, before adding the server.
+         *
+         * @param server
+         * @throws RemoteException
+         */
+        @Override
+        public void addServer(SapphireServerPolicy server) throws RemoteException {
+            updateServer(server);
         }
     }
 }

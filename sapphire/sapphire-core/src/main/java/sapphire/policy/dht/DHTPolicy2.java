@@ -177,7 +177,8 @@ public class DHTPolicy2 extends DefaultSapphirePolicy {
         }
 
         @Override
-        public void addServer(SapphireServerPolicy server) {
+        public void addServer(SapphireServerPolicy server) throws RemoteException {
+            super.addServer(server);
             groupSize++;
             int id = groupSize;
             try {

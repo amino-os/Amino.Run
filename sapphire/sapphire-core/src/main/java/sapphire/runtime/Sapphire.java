@@ -341,7 +341,7 @@ public class Sapphire {
          * master copy of the PolicyChain has the entire Policy chain.
          */
         if (existingGroupPolicy == null) {
-            groupPolicy.updateServer(serverPolicyStub);
+            groupPolicy.addServer(serverPolicyStub);
         }
 
         String ko = "";

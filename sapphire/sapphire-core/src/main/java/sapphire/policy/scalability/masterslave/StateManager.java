@@ -191,6 +191,7 @@ public final class StateManager {
                 lockingExecutor.shutdown();
                 lockingExecutor.awaitTermination(
                         config.getShutdownGracePeriodInMillis(), TimeUnit.MILLISECONDS);
+                lockingExecutor = null;
             }
         } catch (InterruptedException e) {
             logger.log(
@@ -214,6 +215,10 @@ public final class StateManager {
             logger.log(Level.FINE, "unable to {0} lock: {1}", new Object[] {mode, e});
         }
         return lockObtained;
+    }
+
+    public void halt() {
+        shutdownLockingExecutor();
     }
 
     @Override

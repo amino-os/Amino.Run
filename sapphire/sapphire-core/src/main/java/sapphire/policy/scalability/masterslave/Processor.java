@@ -174,6 +174,7 @@ public class Processor implements Closeable {
                             "processor shut down time out after {0} milliseconds",
                             config.getShutdownGracePeriodInMillis());
                 }
+                processor = null;
             } catch (Exception e) {
                 logger.log(
                         Level.SEVERE,

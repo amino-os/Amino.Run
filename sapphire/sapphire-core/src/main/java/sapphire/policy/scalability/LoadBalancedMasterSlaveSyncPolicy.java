@@ -39,11 +39,6 @@ public class LoadBalancedMasterSlaveSyncPolicy extends LoadBalancedMasterSlaveBa
         }
 
         @Override
-        public void initialize() {
-            this.start();
-        }
-
-        @Override
         public void start() {
             logger = Logger.getLogger(ServerPolicy.class.getName());
             GroupPolicy groupPolicy = (GroupPolicy) getGroup();
@@ -141,6 +136,17 @@ public class LoadBalancedMasterSlaveSyncPolicy extends LoadBalancedMasterSlaveBa
         protected void finalize() throws Throwable {
             if (commitExecutor != null) {
                 commitExecutor.close();
+                commitExecutor = null;
+            }
+
+            if (processor != null) {
+                processor.close();
+                processor = null;
+            }
+
+            if (stateMgr != null) {
+                stateMgr.halt();
+                stateMgr = null;
             }
             super.finalize();
         }

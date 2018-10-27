@@ -1,0 +1,11 @@
+# Configuration for running KVStore as a
+# sapphire object with ExplicitCaching policy.
+!!sapphire.app.SapphireObjectSpec
+constructorName: null
+dmList:
+- configs: []
+  name: sapphire.policy.cache.explicitcaching.ExplicitCachingPolicy
+javaClassName: sapphire.demo.KVStore
+lang: java
+name: null
+sourceFileLocation: null

@@ -13,6 +13,10 @@
  */
 package sapphire.demo.stubs;
 
+/* TODO: As there is no gradle task for this stub file generation, Changes in KVStore class need manual regeneration of
+this stub file using Sapphire Compiler. Hence, stub file is present in repo too. Better to have a gradle task to
+generate this stub automatically. Then, file be removed from repo.
+ */
 public final class KVStore_Stub extends sapphire.demo.KVStore
         implements sapphire.common.AppObjectStub {
 
@@ -121,6 +125,34 @@ public final class KVStore_Stub extends sapphire.demo.KVStore
         }
     }
 
+    // Implementation of saveCheckpoint()
+    public void saveCheckpoint() throws java.lang.Exception {
+        java.lang.Object $__result = null;
+        if ($__directInvocation) {
+            try {
+                super.saveCheckpoint();
+            } catch (java.lang.Exception e) {
+                throw new sapphire.common.AppExceptionWrapper(e);
+            }
+        } else {
+            java.util.ArrayList<Object> $__params = new java.util.ArrayList<Object>();
+            String $__method =
+                    "public void sapphire.demo.KVStore.saveCheckpoint() throws java.lang.Exception";
+            try {
+                $__result = $__client.onRPC($__method, $__params);
+            } catch (sapphire.common.AppExceptionWrapper e) {
+                Exception ex = e.getException();
+                if (ex instanceof java.lang.RuntimeException) {
+                    throw (java.lang.RuntimeException) ex;
+                } else {
+                    throw new java.lang.RuntimeException(ex);
+                }
+            } catch (java.lang.Exception e) {
+                throw new java.lang.RuntimeException(e);
+            }
+        }
+    }
+
     // Implementation of rollbackTransaction()
     public void rollbackTransaction() throws java.lang.Exception {
         java.lang.Object $__result = null;
@@ -139,6 +171,120 @@ public final class KVStore_Stub extends sapphire.demo.KVStore
             } catch (sapphire.common.AppExceptionWrapper e) {
                 Exception ex = e.getException();
                 if (ex instanceof java.lang.RuntimeException) {
+                    throw (java.lang.RuntimeException) ex;
+                } else {
+                    throw new java.lang.RuntimeException(ex);
+                }
+            } catch (java.lang.Exception e) {
+                throw new java.lang.RuntimeException(e);
+            }
+        }
+    }
+
+    // Implementation of restoreCheckpoint()
+    public void restoreCheckpoint() throws java.lang.Exception {
+        java.lang.Object $__result = null;
+        if ($__directInvocation) {
+            try {
+                super.restoreCheckpoint();
+            } catch (java.lang.Exception e) {
+                throw new sapphire.common.AppExceptionWrapper(e);
+            }
+        } else {
+            java.util.ArrayList<Object> $__params = new java.util.ArrayList<Object>();
+            String $__method =
+                    "public void sapphire.demo.KVStore.restoreCheckpoint() throws java.lang.Exception";
+            try {
+                $__result = $__client.onRPC($__method, $__params);
+            } catch (sapphire.common.AppExceptionWrapper e) {
+                Exception ex = e.getException();
+                if (ex instanceof java.lang.RuntimeException) {
+                    throw (java.lang.RuntimeException) ex;
+                } else {
+                    throw new java.lang.RuntimeException(ex);
+                }
+            } catch (java.lang.Exception e) {
+                throw new java.lang.RuntimeException(e);
+            }
+        }
+    }
+
+    // Implementation of push()
+    public void push() {
+        java.lang.Object $__result = null;
+        if ($__directInvocation) {
+            try {
+                super.push();
+            } catch (java.lang.Exception e) {
+                throw new sapphire.common.AppExceptionWrapper(e);
+            }
+        } else {
+            java.util.ArrayList<Object> $__params = new java.util.ArrayList<Object>();
+            String $__method = "public void sapphire.demo.KVStore.push()";
+            try {
+                $__result = $__client.onRPC($__method, $__params);
+            } catch (sapphire.common.AppExceptionWrapper e) {
+                Exception ex = e.getException();
+                if (ex instanceof java.lang.RuntimeException) {
+                    throw (java.lang.RuntimeException) ex;
+                } else {
+                    throw new java.lang.RuntimeException(ex);
+                }
+            } catch (java.lang.Exception e) {
+                throw new java.lang.RuntimeException(e);
+            }
+        }
+    }
+
+    // Implementation of pull()
+    public void pull() {
+        java.lang.Object $__result = null;
+        if ($__directInvocation) {
+            try {
+                super.pull();
+            } catch (java.lang.Exception e) {
+                throw new sapphire.common.AppExceptionWrapper(e);
+            }
+        } else {
+            java.util.ArrayList<Object> $__params = new java.util.ArrayList<Object>();
+            String $__method = "public void sapphire.demo.KVStore.pull()";
+            try {
+                $__result = $__client.onRPC($__method, $__params);
+            } catch (sapphire.common.AppExceptionWrapper e) {
+                Exception ex = e.getException();
+                if (ex instanceof java.lang.RuntimeException) {
+                    throw (java.lang.RuntimeException) ex;
+                } else {
+                    throw new java.lang.RuntimeException(ex);
+                }
+            } catch (java.lang.Exception e) {
+                throw new java.lang.RuntimeException(e);
+            }
+        }
+    }
+
+    // Implementation of migrateObject(InetSocketAddress)
+    public void migrateObject(java.net.InetSocketAddress $param_InetSocketAddress_1)
+            throws sapphire.policy.mobility.explicitmigration.MigrationException {
+        java.lang.Object $__result = null;
+        if ($__directInvocation) {
+            try {
+                super.migrateObject($param_InetSocketAddress_1);
+            } catch (java.lang.Exception e) {
+                throw new sapphire.common.AppExceptionWrapper(e);
+            }
+        } else {
+            java.util.ArrayList<Object> $__params = new java.util.ArrayList<Object>();
+            String $__method =
+                    "public void sapphire.demo.KVStore.migrateObject(java.net.InetSocketAddress) throws sapphire.policy.mobility.explicitmigration.MigrationException";
+            $__params.add($param_InetSocketAddress_1);
+            try {
+                $__result = $__client.onRPC($__method, $__params);
+            } catch (sapphire.common.AppExceptionWrapper e) {
+                Exception ex = e.getException();
+                if (ex instanceof sapphire.policy.mobility.explicitmigration.MigrationException) {
+                    throw (sapphire.policy.mobility.explicitmigration.MigrationException) ex;
+                } else if (ex instanceof java.lang.RuntimeException) {
                     throw (java.lang.RuntimeException) ex;
                 } else {
                     throw new java.lang.RuntimeException(ex);

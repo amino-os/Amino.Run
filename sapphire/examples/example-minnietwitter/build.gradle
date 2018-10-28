@@ -3,7 +3,7 @@ apply plugin: 'java-library'
 // Customize app stub generation for this example
 genStubs {
     def src = file(project.buildDir.toString() + '/classes/java/main/sapphire/appexamples/minnietwitter/')
-    def dst = file(project.projectDir.toString() + '/src/main/java/sapphire/minnietwitter/stubs/')
+    def dst = file(project.projectDir.toString() + '/src/main/java/sapphire/appexamples/minnietwitter/stubs/')
     def pkg = 'sapphire.appexamples.minnietwitter'
     args src.toString(), pkg, dst.toString()
     inputs.dir src

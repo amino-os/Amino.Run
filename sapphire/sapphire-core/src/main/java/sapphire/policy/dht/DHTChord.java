@@ -15,7 +15,7 @@ import java.util.TreeSet;
  *     paper</a>
  */
 public class DHTChord implements Serializable {
-    private int virtualNodeFactor = 5;
+    private int virtualNodeFactor = 20;
     private TreeSet<DHTNode> nodes = new TreeSet<>(new DHTNodeComparator());
     private static Random generator = new Random(System.currentTimeMillis());
 

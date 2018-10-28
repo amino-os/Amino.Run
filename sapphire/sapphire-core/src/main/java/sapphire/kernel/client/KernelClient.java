@@ -48,7 +48,6 @@ public class KernelClient {
             return server;
         } catch (Exception e) {
             logger.severe("Could not find Sapphire server on host: " + e.toString());
-            e.printStackTrace();
         }
         return null;
     }

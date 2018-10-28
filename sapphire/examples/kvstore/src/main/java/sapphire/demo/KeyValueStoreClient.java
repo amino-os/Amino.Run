@@ -21,7 +21,7 @@ public class KeyValueStoreClient {
         SapphireObjectID oid = oms.createSapphireObject(getSpec());
         KeyValueStore store = (KeyValueStore)oms.acquireSapphireObjectStub(oid);
 
-        for (int i=0; i<3000; ++i) {
+        for (int i=0; i<30; ++i) {
             String key = "key_" + i;
             String val = "val_" + i;
 
@@ -29,7 +29,6 @@ public class KeyValueStoreClient {
             store.set(key, val);
             val = String.valueOf(store.get(key));
             System.out.println(String.format("<Client> got value %s with key %s", val, key));
-            Thread.sleep(1000);
         }
     }
 

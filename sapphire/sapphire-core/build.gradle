@@ -75,7 +75,33 @@ genStubs {
     inputs.dir src   // Declare inputs, so gradle will run if they have been changed
 }
 
+// Task for Graal SO Stub Generation:
+// Run `gradlew genGraalStub` to generate stub files
+task genGraalStub(type: JavaExec) {
+    main = "sapphire.compiler.GraalStubGenerator"
+    classpath +=  files("$projectDir/build/libs/sapphire-core-1.0.0.jar")
+
+    def sapphireObjectPath = "$projectDir/src/test/resources/student.js"
+    def outPath = "$projectDir/src/test/java"
+    def packageName = "sapphire.stubs"
+    def sapphireClasses = "Student"
+    args sapphireObjectPath, outPath, packageName, sapphireClasses
+    outputs.dir outPath // Declare outputs, so gradle will run if they have been changed
+    inputs.dir sapphireObjectPath   // Declare inputs, so gradle will run if they have been changed
+}
+
+// Task for Graal stub compilation
+task compileGraalStub(type: JavaCompile) {
+    source = "$projectDir/src/test/java/sapphire/stubs"
+    classpath =  files("$projectDir/build/libs/sapphire-core-1.0.0.jar")
+    destinationDir = sourceSets.main.output.classesDir
+    options.incremental = true
+    inputs.dir genGraalStub.outputs
+}
+
 tasks.googleJavaFormat.mustRunAfter genStubs
+compileGraalStub.mustRunAfter genGraalStub
+compileTestJava.dependsOn compileGraalStub
 check.dependsOn tasks.googleJavaFormat
 check.dependsOn integTest
 integTest.mustRunAfter test

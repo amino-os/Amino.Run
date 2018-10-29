@@ -1,5 +1,6 @@
 package sapphire.runtime;
 
+import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -203,7 +204,7 @@ public class Sapphire {
      * @param region Region
      * @param appArgs Arguments for application object
      * @return processedPolicies
-     * @throws RemoteException
+     * @throws IOException
      * @throws ClassNotFoundException
      * @throws KernelObjectNotFoundException
      * @throws KernelObjectNotCreatedException
@@ -225,7 +226,7 @@ public class Sapphire {
             KernelObjectStub previousServerPolicyStub,
             String region,
             Object[] appArgs)
-            throws RemoteException, ClassNotFoundException, KernelObjectNotFoundException,
+            throws IOException, ClassNotFoundException, KernelObjectNotFoundException,
                     KernelObjectNotCreatedException, SapphireObjectNotFoundException,
                     SapphireObjectReplicaNotFoundException, InstantiationException,
                     InvocationTargetException, IllegalAccessException, CloneNotSupportedException {
@@ -773,6 +774,7 @@ public class Sapphire {
      * @throws ClassNotFoundException
      * @throws IllegalAccessException
      * @throws CloneNotSupportedException
+     * @throws IOException
      */
     // TODO (merge):
     private static void initAppStub(
@@ -782,13 +784,14 @@ public class Sapphire {
             SapphireClientPolicy clientPolicy,
             Object[] appArgs,
             AppObject appObject)
-            throws ClassNotFoundException, IllegalAccessException, CloneNotSupportedException {
+            throws ClassNotFoundException, IllegalAccessException, CloneNotSupportedException,
+                    IOException {
 
         AppObjectStub appStub;
         if (appObject != null) {
             appStub = (AppObjectStub) appObject.getObject();
             appStub.$__initialize(true);
-            appObject = new AppObject(appStub.$__clone());
+            appObject = (AppObject) Utils.ObjectCloner.deepCopy(appObject);
             serverPolicyStub.$__initialize(appObject);
             serverPolicy.$__initialize(appObject);
         } else {

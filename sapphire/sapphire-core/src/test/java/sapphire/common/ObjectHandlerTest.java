@@ -18,11 +18,11 @@ public class ObjectHandlerTest {
                 SapphireObjectSpec.newBuilder()
                         .setLang(Language.js)
                         .setConstructorName("Student")
-                        .setJavaClassName("sapphire.common.stubs.Student_Stub")
+                        .setJavaClassName("sapphire.stubs.Student_Stub")
                         .setSourceFileLocation(filename)
                         .create();
 
-        sapphire.common.stubs.Student_Stub graalObject = new sapphire.common.stubs.Student_Stub();
+        sapphire.stubs.Student_Stub graalObject = new sapphire.stubs.Student_Stub();
         graalObject.$__initializeGraal(spec, new Object[0]);
         ObjectHandler objHandler = new ObjectHandler(graalObject);
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();

@@ -18,8 +18,9 @@ import sapphire.kernel.server.KernelServerImpl;
 import sapphire.oms.OMSServer;
 
 /**
- * Test <strong>multi-dm</strong> deployment managers, DHT & Consensus require multiple kernel
- * servers are covered here.
+ * Test <strong>multi-dm</strong> deployment managers, DHT & Consensus , DHT & MasterSlave,
+ * AtleastOneRPC & DHT & Consensus , AtleastOneRPC & DHT & MasterSlave with multiple kernel servers
+ * are covered here.
  */
 public class MultiDMTestCases {
     OMSServer oms;
@@ -54,7 +55,8 @@ public class MultiDMTestCases {
     }
 
     /**
-     * Test sapphire object specifications in <code>src/test/resources/specs</code> directory.
+     * Test sapphire object specifications in <code>src/integrationTest/resources/specs/multi-dm
+     * </code> directory.
      *
      * @throws Exception
      */
@@ -66,7 +68,8 @@ public class MultiDMTestCases {
     }
 
     /**
-     * Test sapphire object specifications in <code>src/test/resources/specs</code> directory.
+     * Test sapphire object specifications in <code>src/integrationTest/resources/specs/multi-dm
+     * </code> directory.
      *
      * @throws Exception
      */
@@ -75,6 +78,32 @@ public class MultiDMTestCases {
         File file = getResourceFile("specs/multi-dm/DHTNMasterSlave.yaml");
         SapphireObjectSpec spec = readSapphireSpec(file);
         runTest(spec, false);
+    }
+
+    /**
+     * Test sapphire object specifications in <code>src/integrationTest/resources/specs/multi-dm
+     * </code> directory.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testAtleastRPCDHTNMasterSlaveMultiDM() throws Exception {
+        File file = getResourceFile("specs/multi-dm/AtleastRPCDHTNMasterSlave.yaml");
+        SapphireObjectSpec spec = readSapphireSpec(file);
+        runTest(spec, false);
+    }
+
+    /**
+     * Test sapphire object specifications in <code>src/integrationTest/resources/specs/multi-dm
+     * </code> directory.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testAtleastRPCDHTNConsensusMultiDM() throws Exception {
+        File file = getResourceFile("specs/multi-dm/AtleastRPCDHTNConsensus.yaml");
+        SapphireObjectSpec spec = readSapphireSpec(file);
+        runTest(spec, true);
     }
 
     @AfterClass

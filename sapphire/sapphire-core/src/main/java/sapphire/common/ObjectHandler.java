@@ -23,8 +23,6 @@ public class ObjectHandler implements Serializable {
         java,
     }
 
-    private boolean isGraalObject = false;
-
     private static Logger logger = Logger.getLogger(ObjectHandler.class.getName());
 
     /**
@@ -35,10 +33,6 @@ public class ObjectHandler implements Serializable {
 
     protected Class<?> getClass(Object obj) {
         return obj.getClass();
-    }
-
-    public boolean isGraalObject() {
-        return isGraalObject;
     }
 
     private void fillMethodTable(Object obj) {
@@ -52,10 +46,13 @@ public class ObjectHandler implements Serializable {
         }
     }
 
-    private boolean IsGraalObject() {
+    public boolean isGraalObject() {
         return (object instanceof GraalObject);
     }
 
+    public boolean isGraalObject(Object object) {
+        return (object instanceof GraalObject);
+    }
     /**
      * At creation time, we create the actual object, which happens to be the superclass of the
      * stub. We also inspect the methods of the object to set up a table we can use to look up the
@@ -66,8 +63,6 @@ public class ObjectHandler implements Serializable {
     public ObjectHandler(Object obj) {
         // TODO: get all the methods from all superclasses - careful about duplicates
         object = obj;
-
-        isGraalObject = IsGraalObject();
 
         fillMethodTable(obj);
         logger.fine("Created object " + obj.toString());
@@ -86,7 +81,7 @@ public class ObjectHandler implements Serializable {
         // Please refer to unit test
         // sapphire-core/src/test/java/sapphire/common/VarargsFunctionReflectionTest
         Object[] p = params.toArray();
-        return methods.get(method).invoke(object, isGraalObject ? new Object[] {p} : p);
+        return methods.get(method).invoke(object, isGraalObject() ? new Object[] {p} : p);
     }
 
     public Serializable getObject() {
@@ -98,9 +93,10 @@ public class ObjectHandler implements Serializable {
     }
 
     private void writeObject(ObjectOutputStream out) throws IOException {
-        if (isGraalObject) {
+        if (isGraalObject()) {
             out.writeUTF(ObjectType.graal.toString());
             // TODO: make language configurable.
+            out.writeUTF(Boolean.toString(((GraalAppObjectStub) object).$__directInvocation()));
             ((GraalObject) object).writeObject(out);
         } else {
             out.writeUTF(ObjectType.java.toString());
@@ -121,6 +117,7 @@ public class ObjectHandler implements Serializable {
 
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
         if (ObjectType.valueOf(in.readUTF()) == ObjectType.graal) {
+            boolean directInvocation = Boolean.valueOf(in.readUTF());
             GraalObject object = (GraalObject) GraalObject.readObject(in);
             Class<?> appObjectStubClass = Class.forName(object.getJavaClassName());
             // Construct the list of classes of the arguments as Class[]
@@ -136,7 +133,7 @@ public class ObjectHandler implements Serializable {
             }
 
             ((GraalObject) appStubObject).$__initializeGraal(object);
-
+            ((GraalAppObjectStub) appStubObject).$__initialize(directInvocation);
             fillMethodTable(appStubObject);
             this.object = appStubObject;
         } else {

@@ -1,6 +1,6 @@
 // Disable stub generation for dependencies
 subprojects {
     genStubs {
-        main = ''
+        onlyIf() { false } // Disable
     }
 }

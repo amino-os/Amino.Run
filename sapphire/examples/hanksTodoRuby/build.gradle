@@ -7,12 +7,7 @@ apply plugin: 'java'
 */
 // Customize app stub generation for this example - disable it for now - see above.
 genStubs {
-    def src = "/tmp"
-    def dst = "/tmp/stubs"
-    def pkg = ''
-    args src, pkg, dst
-    // outputs.dir '' // Declare outputs, so gradle will run if they have been changed
-    // inputs.dir ''   // Declare inputs, so gradle will run if they have been changed
+    onlyIf() { false } // Disable
 }
 // Customize stub compilation for this example
 compileStubs {

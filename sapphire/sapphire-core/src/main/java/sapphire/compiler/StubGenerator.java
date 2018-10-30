@@ -66,11 +66,13 @@ public class StubGenerator {
         return filename.substring(0, extensionIndex);
     }
 
-    public static void generateStubs(String srcFolder, String packageName, String destFolder) throws java.io.FileNotFoundException {
+    public static void generateStubs(String srcFolder, String packageName, String destFolder)
+            throws java.io.FileNotFoundException {
         File directory = new File(srcFolder);
         File[] fList = directory.listFiles();
         if (fList == null) {
-            throw new java.io.FileNotFoundException("Failed to list files in source folder \'" + srcFolder + "\'");
+            throw new java.io.FileNotFoundException(
+                    "Failed to list files in source folder \'" + srcFolder + "\'");
         }
         for (File file : fList) {
             if (file.isFile() && file.getName().endsWith(".class")) {

@@ -148,11 +148,6 @@ public class KernelServerImpl implements KernelServer {
             serverPolicy.onCreate(serverPolicy.getGroup(), serverPolicy.getConfigMap());
         }
 
-        // TODO (9/27/2018, Sungwook): Move uncoalesce logic to separate loop at the end of code.
-        objectManager.addObject(oid, object);
-        object.uncoalesce();
-        oms.registerKernelObject(oid, host);
-
         // To add Kernel Object to local object manager
         Serializable realObj = object.getObject();
 
@@ -173,10 +168,6 @@ public class KernelServerImpl implements KernelServer {
                 oms.setSapphireReplicaDispatcher(serverPolicy.getReplicaId(), policyHandler);
 
                 KernelOID koid = serverPolicy.$__getKernelOID();
-                if (oid == koid) {
-                    continue;
-                }
-
                 KernelObject newko = new KernelObject(serverPolicy);
 
                 objectManager.addObject(koid, newko);
@@ -194,19 +185,6 @@ public class KernelServerImpl implements KernelServer {
                     logger.severe(exceptionMsg);
                     throw new RemoteException(exceptionMsg, e);
                 }
-            }
-
-            // First server policy is initialized at the end as the order is executed backwards from
-            // app object.
-            try {
-                firstServerPolicy.initialize();
-            } catch (Exception e) {
-                String exceptionMsg =
-                        String.format(
-                                "Initialization for first server policy failed at copyKernelObject for KernelObject(%d)",
-                                oid.getID());
-                logger.severe(exceptionMsg);
-                throw new RemoteException(exceptionMsg, e);
             }
         } else {
             logger.log(Level.WARNING, "Added " + oid.getID() + " as unknown type.");

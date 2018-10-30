@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.Objects;
 import org.yaml.snakeyaml.Yaml;
 
-public class ServerSelectorSpec implements Serializable {
+public class NodeSelectorSpec implements Serializable {
     private Map<String, String> labels = new HashMap<>();
 
     public void addLabel(String key, String val) {
@@ -41,7 +41,7 @@ public class ServerSelectorSpec implements Serializable {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        ServerSelectorSpec that = (ServerSelectorSpec) o;
+        NodeSelectorSpec that = (NodeSelectorSpec) o;
         return Objects.equals(labels, that.labels);
     }
 

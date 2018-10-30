@@ -30,7 +30,7 @@ public class SapphireObjectSpecTest {
     }
 
     private SapphireObjectSpec createSpec() {
-        ServerSelectorSpec serverSelectorSpec = new ServerSelectorSpec();
+        NodeSelectorSpec serverSelectorSpec = new NodeSelectorSpec();
         serverSelectorSpec.addLabel(
                 ServerInfo.SERVER_TYPE.class.getSimpleName(), ServerInfo.SERVER_TYPE.DEVICE.name());
 

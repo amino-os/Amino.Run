@@ -3,9 +3,18 @@ class KeyValueStore {
         this.map = new Map();
     }
 
+    printall() {
+        console.log("\n\n***** begin dumping all data in kv store ***********")
+        for (let [k, v] of this.map) {
+            console.log(k, v);
+        }
+        console.log("***** finish dumping all data in kv store ***********\n\n")
+    }
+
     set(key, value) {
         this.map.set(key, value);
         console.log("set: " + key + " -> " + value);
+        this.printall();
         return true;
     }
 
@@ -29,5 +38,5 @@ function test() {
 }
 
 // For test purpose only
-//test();
+// test();
 */

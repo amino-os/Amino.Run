@@ -1,8 +1,5 @@
 package sapphire.oms;
 
-import static sapphire.kernel.common.ServerInfo.NODE_TYPE;
-
-import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -12,7 +9,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.json.JSONException;
+import sapphire.app.NodeSelectorSpec;
 import sapphire.kernel.common.GlobalKernelReferences;
 import sapphire.kernel.common.KernelServerNotFoundException;
 import sapphire.kernel.common.ServerInfo;
@@ -31,8 +28,10 @@ public class KernelServerManager {
     private ConcurrentHashMap<InetSocketAddress, KernelServer> servers;
     private ConcurrentHashMap<String, ArrayList<InetSocketAddress>> regions;
     private ConcurrentHashMap<InetSocketAddress, ResettableTimer> ksHeartBeatTimers;
+    private Set<ServerInfo> serverInfos;
 
-    public KernelServerManager() throws IOException, NotBoundException, JSONException {
+    public KernelServerManager() {
+        serverInfos = new ConcurrentHashMap<ServerInfo, ServerInfo>().newKeySet();
         servers = new ConcurrentHashMap<InetSocketAddress, KernelServer>();
         regions = new ConcurrentHashMap<String, ArrayList<InetSocketAddress>>();
         ksHeartBeatTimers = new ConcurrentHashMap<InetSocketAddress, ResettableTimer>();
@@ -54,6 +53,7 @@ public class KernelServerManager {
     public void removeKernelServer(ServerInfo srvInfo) {
         // removing from the servers list
         servers.remove(srvInfo.getHost());
+        serverInfos.remove(srvInfo);
 
         // removing from the regions map
         ArrayList<InetSocketAddress> serverList = regions.get(srvInfo.getRegion());
@@ -79,6 +79,7 @@ public class KernelServerManager {
                         + " in region "
                         + info.getRegion());
 
+        serverInfos.add(info);
         ArrayList<InetSocketAddress> serverList = regions.get(info.getRegion());
 
         if (null == serverList) {
@@ -134,16 +135,32 @@ public class KernelServerManager {
         throw new KernelServerNotFoundException("region exist but host does not exist");
     }
 
-    /** */
     public ArrayList<InetSocketAddress> getServers() {
         ArrayList<InetSocketAddress> nodes = new ArrayList<InetSocketAddress>();
-
         for (ArrayList<InetSocketAddress> addresses : this.regions.values()) {
             for (InetSocketAddress address : addresses) {
                 nodes.add(address);
             }
         }
 
+        return nodes;
+    }
+
+    /**
+     * Returns a list of addresses of servers whose labels match the given {@code NodeSelectorSpec}
+     *
+     * @param spec {@code NodeSelectorSpec} instance
+     * @return a list of {@code InetSocketAddress}
+     */
+    public List<InetSocketAddress> getServers(NodeSelectorSpec spec) {
+        List<InetSocketAddress> nodes = new ArrayList<>();
+        Set<String> orLabels = spec.getOrLabels();
+        Set<String> andLabels = spec.getAndLabels();
+        for (ServerInfo s : serverInfos) {
+            if (s.hasAllLabels(andLabels) && s.hasAnyLabel(orLabels)) {
+                nodes.add(s.getHost());
+            }
+        }
         return nodes;
     }
 
@@ -177,6 +194,7 @@ public class KernelServerManager {
      *
      * @param region
      * @return
+     * @deprecated Please use {@link #getServers(NodeSelectorSpec)}
      */
     public InetSocketAddress getFirstServerInRegion(String region) {
         return regions.get(region).get(0);
@@ -187,6 +205,7 @@ public class KernelServerManager {
      *
      * @param region
      * @return
+     * @deprecated Please use {@link #getServers(NodeSelectorSpec)}
      */
     public InetSocketAddress getRandomServerInRegion(String region) {
         ArrayList<InetSocketAddress> hosts = regions.get(region);
@@ -198,6 +217,7 @@ public class KernelServerManager {
      *
      * @param region
      * @return list of kernel server host addresses in the given region otherwise null
+     * @deprecated Please use {@link #getServers(NodeSelectorSpec)}
      */
     public ArrayList<InetSocketAddress> getServersInRegion(String region) {
         ArrayList<InetSocketAddress> servers = regions.get(region);

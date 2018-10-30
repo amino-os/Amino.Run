@@ -2,21 +2,14 @@ package sapphire.kernel.common;
 
 import java.io.Serializable;
 import java.net.InetSocketAddress;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
 
 /** {@code ServerInfo} contains meta data of a kernel server. */
 public class ServerInfo implements Serializable {
-    public enum NODE_TYPE {
-        DEVICE,
-        EDGE_SERVER,
-        CLOUD_SERVER
-    };
-
     private InetSocketAddress host;
     private String region;
-    private Map<String, String> labels = new HashMap<>();
+    private Set<String> labels = new HashSet<>();
 
     public ServerInfo(InetSocketAddress addr, String reg) {
         this.host = addr;
@@ -31,14 +24,58 @@ public class ServerInfo implements Serializable {
         return region;
     }
 
-    public void addLabels(Map<String, String> labelMap) {
-        if (labelMap == null) {
-            throw new NullPointerException("labelMap not be null");
+    public void addLabels(Set<String> labels) {
+        if (labels == null) {
+            throw new NullPointerException("Labels must not be null");
         }
-        this.labels.putAll(labelMap);
+        this.labels.addAll(labels);
     }
 
-    public Map<String, String> getLabels() {
-        return Collections.unmodifiableMap(labels);
+    public boolean hasLabel(String label) {
+        return labels.contains(label);
+    }
+
+    /**
+     * Checks if this server contains <strong>any</strong> label specified in the given label set.
+     * If the specified label set is {@code null} or empty, we consider there is not filter
+     * specified, and therefore we return {@code true}.
+     *
+     * @param labels a set of labels
+     * @return {@code true} if the server contains any label in the label set; {@code false}
+     *     otherwise. Returns {@code true} if the given label set is {@code null} or empty.
+     */
+    public boolean hasAnyLabel(Set<String> labels) {
+        if (labels == null || labels.isEmpty()) {
+            return true;
+        }
+
+        for (String s : labels) {
+            if (this.labels.contains(s)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Checks if the server contains <strong>all</strong> labels specified in the given label set.
+     * If the specified label set is {@code null} or empty, we consider there is not filter
+     * specified, and therefore we return {@code true}.
+     *
+     * @param labels a set of labels
+     * @return {@code true} if the server contains all labels in the label set; {@code false}
+     *     otherwise. Returns {@code true} if the given label set is {@code null} or empty.
+     */
+    public boolean hasAllLabels(Set<String> labels) {
+        if (labels == null || labels.isEmpty()) {
+            return true;
+        }
+
+        for (String s : labels) {
+            if (!this.labels.contains(s)) {
+                return false;
+            }
+        }
+        return true;
     }
 }

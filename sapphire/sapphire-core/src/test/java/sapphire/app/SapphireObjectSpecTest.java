@@ -3,6 +3,7 @@ package sapphire.app;
 import org.junit.Assert;
 import org.junit.Test;
 import sapphire.common.Utils;
+import sapphire.kernel.common.ServerInfo;
 import sapphire.policy.scalability.LoadBalancedFrontendPolicy;
 import sapphire.policy.scalability.ScaleUpFrontendPolicy;
 
@@ -29,6 +30,10 @@ public class SapphireObjectSpecTest {
     }
 
     private SapphireObjectSpec createSpec() {
+        ServerSelectorSpec serverSelectorSpec = new ServerSelectorSpec();
+        serverSelectorSpec.addLabel(
+                ServerInfo.SERVER_TYPE.class.getSimpleName(), ServerInfo.SERVER_TYPE.DEVICE.name());
+
         ScaleUpFrontendPolicy.Config scaleUpConfig = new ScaleUpFrontendPolicy.Config();
         scaleUpConfig.setReplicationRateInMs(100);
 
@@ -49,6 +54,7 @@ public class SapphireObjectSpecTest {
                 .setSourceFileLocation("src/main/js/college.js")
                 .setConstructorName("college")
                 .addDMSpec(dmSpec)
+                .setServerSelectorSpec(serverSelectorSpec)
                 .create();
     }
 }

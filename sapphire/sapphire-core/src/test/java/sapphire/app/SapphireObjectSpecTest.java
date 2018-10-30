@@ -32,7 +32,7 @@ public class SapphireObjectSpecTest {
     private SapphireObjectSpec createSpec() {
         NodeSelectorSpec serverSelectorSpec = new NodeSelectorSpec();
         serverSelectorSpec.addLabel(
-                ServerInfo.SERVER_TYPE.class.getSimpleName(), ServerInfo.SERVER_TYPE.DEVICE.name());
+                ServerInfo.NODE_TYPE.class.getSimpleName(), ServerInfo.NODE_TYPE.DEVICE.name());
 
         ScaleUpFrontendPolicy.Config scaleUpConfig = new ScaleUpFrontendPolicy.Config();
         scaleUpConfig.setReplicationRateInMs(100);

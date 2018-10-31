@@ -157,7 +157,7 @@ public class KernelServerManager {
         Set<String> orLabels = spec.getOrLabels();
         Set<String> andLabels = spec.getAndLabels();
         for (ServerInfo s : serverInfos) {
-            if (s.hasAllLabels(andLabels) && s.hasAnyLabel(orLabels)) {
+            if (s.containsAll(andLabels) && s.containsAny(orLabels)) {
                 nodes.add(s.getHost());
             }
         }

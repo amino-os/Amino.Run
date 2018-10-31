@@ -15,7 +15,7 @@ import org.yaml.snakeyaml.Yaml;
  * will consider support specifying {@code NodeSelectorSpec} at DM level in the future if necessary.
  *
  * <p>{@code NodeSelectorSpec} contains two label sets, a {@code orLabels} set and a {@code
- * andLabels} set. {@code orLabels} set and {@code andLabels} set are considered as filters used to
+ * andLabels} set. {@code orLabels} set and {@code andLabels} set are considered as selector used to
  * select nodes.
  *
  * <p>If {@code orLabels} set is not empty, then a node will be selected only if it contains any
@@ -25,7 +25,7 @@ import org.yaml.snakeyaml.Yaml;
  * all labels in {@code andLabels} set <strong>and</strong> some label in {@code orLabels} set.
  *
  * <p>By default, both {@code orLabels} set and {@code andLabels} set are empty which means no
- * filter will be applied.
+ * selector will be applied in which case all nodes will be returned.
  */
 public class NodeSelectorSpec implements Serializable {
     private Set<String> orLabels = new HashSet<>();

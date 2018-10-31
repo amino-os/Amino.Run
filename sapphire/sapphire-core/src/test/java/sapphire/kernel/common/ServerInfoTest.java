@@ -23,7 +23,7 @@ public class ServerInfoTest {
         ServerInfo server = createServer(numOfLabels);
         Set<String> labels = new HashSet<>();
         labels.add(LABEL_PREFIX + "0");
-        Assert.assertTrue(server.hasAnyLabel(labels));
+        Assert.assertTrue(server.containsAny(labels));
     }
 
     @Test
@@ -31,27 +31,27 @@ public class ServerInfoTest {
         ServerInfo server = createServer(numOfLabels);
         Set<String> labels = createLabels(numOfLabels);
         labels.add("non_existent_label");
-        Assert.assertTrue(server.hasAnyLabel(labels));
+        Assert.assertTrue(server.containsAny(labels));
     }
 
     @Test
     public void testHasAnyLabelWithEmptyLabels() {
         ServerInfo server = createServer(numOfLabels);
-        Assert.assertTrue(server.hasAnyLabel(Collections.emptySet()));
+        Assert.assertTrue(server.containsAny(Collections.emptySet()));
     }
 
     @Test
     public void testHasAnyLabelFailure() {
         ServerInfo server = createServer(numOfLabels);
         Set<String> labels = new HashSet<>(Arrays.asList(NON_EXISTENT_LABEL));
-        Assert.assertFalse(server.hasAnyLabel(labels));
+        Assert.assertFalse(server.containsAny(labels));
     }
 
     @Test
     public void testHasAllLabel() {
         ServerInfo server = createServer(numOfLabels);
         Set<String> labels = createLabels(numOfLabels);
-        Assert.assertTrue(server.hasAllLabels(labels));
+        Assert.assertTrue(server.containsAll(labels));
     }
 
     @Test
@@ -59,13 +59,13 @@ public class ServerInfoTest {
         ServerInfo server = createServer(numOfLabels);
         Set<String> labels = createLabels(numOfLabels);
         labels.add(NON_EXISTENT_LABEL);
-        Assert.assertFalse(server.hasAllLabels(labels));
+        Assert.assertFalse(server.containsAll(labels));
     }
 
     @Test
     public void testHasAllLabelsWithEmptyLabels() {
         ServerInfo server = createServer(numOfLabels);
-        Assert.assertTrue(server.hasAllLabels(Collections.emptySet()));
+        Assert.assertTrue(server.containsAll(Collections.emptySet()));
     }
 
     private ServerInfo createServer(int numOfLabels) {

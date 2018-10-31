@@ -31,20 +31,16 @@ public class ServerInfo implements Serializable {
         this.labels.addAll(labels);
     }
 
-    public boolean hasLabel(String label) {
-        return labels.contains(label);
-    }
-
     /**
      * Checks if this server contains <strong>any</strong> label specified in the given label set.
-     * If the specified label set is {@code null} or empty, we consider there is not filter
-     * specified, and therefore we return {@code true}.
+     * If the specified label set is {@code null} or empty, we consider no selector is specified,
+     * and therefore we return {@code true}.
      *
      * @param labels a set of labels
      * @return {@code true} if the server contains any label in the label set; {@code false}
      *     otherwise. Returns {@code true} if the given label set is {@code null} or empty.
      */
-    public boolean hasAnyLabel(Set<String> labels) {
+    public boolean containsAny(Set<String> labels) {
         if (labels == null || labels.isEmpty()) {
             return true;
         }
@@ -59,14 +55,14 @@ public class ServerInfo implements Serializable {
 
     /**
      * Checks if the server contains <strong>all</strong> labels specified in the given label set.
-     * If the specified label set is {@code null} or empty, we consider there is not filter
-     * specified, and therefore we return {@code true}.
+     * If the specified label set is {@code null} or empty, we consider no selector is specified,
+     * and therefore we return {@code true}.
      *
      * @param labels a set of labels
      * @return {@code true} if the server contains all labels in the label set; {@code false}
      *     otherwise. Returns {@code true} if the given label set is {@code null} or empty.
      */
-    public boolean hasAllLabels(Set<String> labels) {
+    public boolean containsAll(Set<String> labels) {
         if (labels == null || labels.isEmpty()) {
             return true;
         }

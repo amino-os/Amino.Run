@@ -3,18 +3,11 @@
 class HanksTodoMain
 
     def main
-        # Set system property in for Java Stub
-        system = Java.type("java.lang.System")
-        system.setProperty("RUBY_HOME", ENV['RUBY_HOME'])
-        fileName = ENV['RUBY_HOME'] + "/todo_list_manager.rb"
-
         # 1. Load TodoListManager_Stub class with GraalVM API.
-        # Eventually we will get TodoListManager_Stub from OMS.
-        omsClientClass = Java.type("sapphire.appexamples.hankstodo.stubs.Client_Stub")
+        omsClientClass = Java.type("sapphire.appexamples.hankstodo.stubs.TodoListManager_Stub")
 
-        # create new instance
-        omsClient = omsClientClass.new
-        tlm = omsClient.GetTodoListManager(ENV['KERNEL_SERVER_IP'], ENV['KERNEL_SERVER_PORT'], ENV['OMS_IP'], ENV['OMS_PORT'], "ruby", fileName)
+        # get Stub
+        tlm = omsClientClass.getStub("HanksTodoRuby.yaml", ENV['OMS_IP'], ENV['OMS_PORT'], ENV['KERNEL_SERVER_IP'], ENV['KERNEL_SERVER_PORT'])
 
         # create new TODO list
         t1 = tlm.newTodoList("Hanks")

@@ -6,9 +6,7 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.TimerTask;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import sapphire.app.SapphireObjectSpec;
@@ -41,6 +39,10 @@ import sapphire.runtime.Sapphire;
  */
 public class KernelServerImpl implements KernelServer {
     private static Logger logger = Logger.getLogger("sapphire.kernel.server.KernelServerImpl");
+    private static String LABEL_OPT = "--label";
+    private static String OPT_SEPARATOR = "=";
+    private static String LABEL_SEPARATOR = ",";
+
     private InetSocketAddress host;
     private String region;
     /** manager for kernel objects that live on this server */
@@ -393,62 +395,79 @@ public class KernelServerImpl implements KernelServer {
      *
      * @param args
      */
-    public static void main(String args[]) {
+    public static void main(String args[]) throws Exception {
+
         // Time Being for backward compatibility Region is optional in the configuration
         if (args.length < 4) {
-            System.out.println("Incorrect arguments to the kernel server");
-            System.out.println("[host ip] [host port] [oms ip] [oms port] [region]");
-            return;
+            printUsage();
+            System.exit(1);
         }
 
         InetSocketAddress host, omsHost;
-
-        try {
-            host = new InetSocketAddress(args[0], Integer.parseInt(args[1]));
-            omsHost = new InetSocketAddress(args[2], Integer.parseInt(args[3]));
-        } catch (NumberFormatException e) {
-            System.out.println("Incorrect arguments to the kernel server");
-            System.out.println("[host ip] [host port] [oms ip] [oms port]");
-            return;
-        }
-
+        host = new InetSocketAddress(args[0], Integer.parseInt(args[1]));
+        omsHost = new InetSocketAddress(args[2], Integer.parseInt(args[3]));
         System.setProperty("java.rmi.server.hostname", host.getAddress().getHostAddress());
 
-        try {
-            KernelServerImpl server = new KernelServerImpl(host, omsHost);
-            KernelServer stub = (KernelServer) UnicastRemoteObject.exportObject(server, 0);
-            Registry registry = LocateRegistry.createRegistry(Integer.parseInt(args[1]));
-            registry.rebind("SapphireKernelServer", stub);
+        KernelServerImpl server = new KernelServerImpl(host, omsHost);
+        KernelServer stub = (KernelServer) UnicastRemoteObject.exportObject(server, 0);
+        Registry registry = LocateRegistry.createRegistry(Integer.parseInt(args[1]));
+        registry.rebind("SapphireKernelServer", stub);
 
-            if (args.length > 4) {
-                server.setRegion(args[4]);
+        // TODO: remove region argument
+        // Keep it for the time being to maintain backward compatible
+        String region = host.toString();
+        String labelStr = "";
+        if (args.length > 4) {
+            if (!args[4].startsWith(LABEL_OPT)) {
+                region = args[4];
             } else {
-                // server.setRegion("default");
-                // TODO once we are sure we can comment below line & uncomment above line
-                server.setRegion(host.toString());
+                labelStr = args[4];
             }
-            final ServerInfo srvinfo = new ServerInfo(host, server.getRegion());
-            oms.registerKernelServer(srvinfo);
-            logger.info("Server ready!");
-            System.out.println("Server ready!");
-
-            ksHeartbeatSendTimer =
-                    new ResettableTimer(
-                            new TimerTask() {
-                                public void run() {
-                                    startheartbeat(srvinfo);
-                                }
-                            },
-                            KS_HEARTBEAT_PERIOD);
-
-            oms.heartbeatKernelServer(srvinfo);
-            ksHeartbeatSendTimer.start();
-            /* Start a thread that print memory stats */
-            server.getMemoryStatThread().start();
-
-        } catch (Exception e) {
-            logger.severe("Cannot start Sapphire Kernel Server");
-            e.printStackTrace();
         }
+        server.setRegion(region);
+
+        if (args.length > 5) {
+            labelStr = args[5];
+        }
+
+        ServerInfo srvinfo = new ServerInfo(host, server.getRegion());
+        Set<String> labels = parseLabel(labelStr);
+        labels.add(region);
+        srvinfo.addLabels(labels);
+        oms.registerKernelServer(srvinfo);
+        oms.heartbeatKernelServer(srvinfo);
+
+        ksHeartbeatSendTimer =
+                new ResettableTimer(
+                        new TimerTask() {
+                            public void run() {
+                                startheartbeat(srvinfo);
+                            }
+                        },
+                        KS_HEARTBEAT_PERIOD);
+        ksHeartbeatSendTimer.start();
+
+        /* Start a thread that print memory stats */
+        server.getMemoryStatThread().start();
+        System.out.println("Server ready!");
+    }
+
+    private static void printUsage() {
+        System.out.println("Usage:");
+        System.out.println(
+                String.format(
+                        "java -cp <classpath> %s hostIp hostPort omsIp omsPort [region] [--labels=comma,separated,labels",
+                        KernelServerImpl.class.getName()));
+    }
+
+    private static Set<String> parseLabel(String labelStr) {
+        Set<String> labels = new HashSet<>();
+        if (labelStr != null) {
+            String[] kv = labelStr.split(OPT_SEPARATOR);
+            if (kv.length > 1) {
+                labels.addAll(Arrays.asList(kv[1].split(LABEL_SEPARATOR)));
+            }
+        }
+        return labels;
     }
 }

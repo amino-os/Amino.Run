@@ -14,7 +14,6 @@ class KeyValueStore {
     set(key, value) {
         this.map.set(key, value);
         console.log("set: " + key + " -> " + value);
-        this.printall();
         return true;
     }
 

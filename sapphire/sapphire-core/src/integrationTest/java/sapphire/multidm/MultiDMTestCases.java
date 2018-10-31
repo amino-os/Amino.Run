@@ -10,6 +10,7 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import sapphire.app.SapphireObjectSpec;
 import sapphire.common.SapphireObjectID;
@@ -19,8 +20,8 @@ import sapphire.oms.OMSServer;
 
 /**
  * Test <strong>multi-dm</strong> deployment managers, DHT & Consensus , DHT & MasterSlave,
- * AtleastOneRPC & DHT & Consensus , AtleastOneRPC & DHT & MasterSlave with multiple kernel servers
- * are covered here.
+ * AtLeastOnceRPC & DHT & Consensus , AtLeastOnceRPC & DHT & MasterSlave with multiple kernel
+ * servers are covered here.
  */
 public class MultiDMTestCases {
     OMSServer oms;
@@ -86,8 +87,9 @@ public class MultiDMTestCases {
      *
      * @throws Exception
      */
+    @Ignore("Test is ignored will be removed once the multi DM issues are resolved")
     @Test
-    public void testAtleastRPCDHTNMasterSlaveMultiDM() throws Exception {
+    public void testAtleastOnceRPCDHTNMasterSlaveMultiDM() throws Exception {
         File file = getResourceFile("specs/multi-dm/AtleastRPCDHTNMasterSlave.yaml");
         SapphireObjectSpec spec = readSapphireSpec(file);
         runTest(spec, false);
@@ -99,8 +101,9 @@ public class MultiDMTestCases {
      *
      * @throws Exception
      */
+    @Ignore("Test is ignored will be removed once the multi DM issues are resolved")
     @Test
-    public void testAtleastRPCDHTNConsensusMultiDM() throws Exception {
+    public void testAtleastOnceRPCDHTNConsensusMultiDM() throws Exception {
         File file = getResourceFile("specs/multi-dm/AtleastRPCDHTNConsensus.yaml");
         SapphireObjectSpec spec = readSapphireSpec(file);
         runTest(spec, true);

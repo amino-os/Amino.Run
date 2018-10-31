@@ -8,6 +8,9 @@ import java.util.Set;
 /** {@code ServerInfo} contains meta data of a kernel server. */
 public class ServerInfo implements Serializable {
     private InetSocketAddress host;
+    // TODO: We need to make region a label too.
+    // Keep region here for the time being to make
+    // our codes backward compatible.
     private String region;
     private Set<String> labels = new HashSet<>();
 

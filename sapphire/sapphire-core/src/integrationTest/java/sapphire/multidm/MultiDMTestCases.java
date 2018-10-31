@@ -10,6 +10,7 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import sapphire.app.SapphireObjectSpec;
 import sapphire.common.SapphireObjectID;
@@ -18,7 +19,8 @@ import sapphire.kernel.server.KernelServerImpl;
 import sapphire.oms.OMSServer;
 
 /**
- * Test <strong>multi-dm</strong> deployment managers, DHT & Consensus require multiple kernel
+ * Test <strong>multi-dm</strong> deployment managers, DHT & Consensus , DHT & MasterSlave,
+ * AtLeastOnceRPC & DHT & Consensus , AtLeastOnceRPC & DHT & MasterSlave with multiple kernel
  * servers are covered here.
  */
 public class MultiDMTestCases {
@@ -54,7 +56,8 @@ public class MultiDMTestCases {
     }
 
     /**
-     * Test sapphire object specifications in <code>src/test/resources/specs</code> directory.
+     * Test sapphire object specifications in <code>src/integrationTest/resources/specs/multi-dm
+     * </code> directory.
      *
      * @throws Exception
      */
@@ -66,7 +69,8 @@ public class MultiDMTestCases {
     }
 
     /**
-     * Test sapphire object specifications in <code>src/test/resources/specs</code> directory.
+     * Test sapphire object specifications in <code>src/integrationTest/resources/specs/multi-dm
+     * </code> directory.
      *
      * @throws Exception
      */
@@ -75,6 +79,34 @@ public class MultiDMTestCases {
         File file = getResourceFile("specs/multi-dm/DHTNMasterSlave.yaml");
         SapphireObjectSpec spec = readSapphireSpec(file);
         runTest(spec, false);
+    }
+
+    /**
+     * Test sapphire object specifications in <code>src/integrationTest/resources/specs/multi-dm
+     * </code> directory.
+     *
+     * @throws Exception
+     */
+    @Ignore("Test is ignored will be removed once the multi DM issues are resolved")
+    @Test
+    public void testAtleastOnceRPCDHTNMasterSlaveMultiDM() throws Exception {
+        File file = getResourceFile("specs/multi-dm/AtleastRPCDHTNMasterSlave.yaml");
+        SapphireObjectSpec spec = readSapphireSpec(file);
+        runTest(spec, false);
+    }
+
+    /**
+     * Test sapphire object specifications in <code>src/integrationTest/resources/specs/multi-dm
+     * </code> directory.
+     *
+     * @throws Exception
+     */
+    @Ignore("Test is ignored will be removed once the multi DM issues are resolved")
+    @Test
+    public void testAtleastOnceRPCDHTNConsensusMultiDM() throws Exception {
+        File file = getResourceFile("specs/multi-dm/AtleastRPCDHTNConsensus.yaml");
+        SapphireObjectSpec spec = readSapphireSpec(file);
+        runTest(spec, true);
     }
 
     @AfterClass

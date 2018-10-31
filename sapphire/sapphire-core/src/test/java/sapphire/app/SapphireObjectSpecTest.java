@@ -3,7 +3,6 @@ package sapphire.app;
 import org.junit.Assert;
 import org.junit.Test;
 import sapphire.common.Utils;
-import sapphire.kernel.common.ServerInfo;
 import sapphire.policy.scalability.LoadBalancedFrontendPolicy;
 import sapphire.policy.scalability.ScaleUpFrontendPolicy;
 
@@ -31,8 +30,8 @@ public class SapphireObjectSpecTest {
 
     private SapphireObjectSpec createSpec() {
         NodeSelectorSpec serverSelectorSpec = new NodeSelectorSpec();
-        serverSelectorSpec.addLabel(
-                ServerInfo.NODE_TYPE.class.getSimpleName(), ServerInfo.NODE_TYPE.DEVICE.name());
+        serverSelectorSpec.addAndLabel("and_label");
+        serverSelectorSpec.addOrLabel("or_label");
 
         ScaleUpFrontendPolicy.Config scaleUpConfig = new ScaleUpFrontendPolicy.Config();
         scaleUpConfig.setReplicationRateInMs(100);

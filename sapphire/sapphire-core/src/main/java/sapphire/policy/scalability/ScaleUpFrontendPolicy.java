@@ -49,6 +49,7 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
 
     public static class ClientPolicy extends LoadBalancedFrontendPolicy.ClientPolicy {
         private final AtomicInteger replicaListSyncCtr = new AtomicInteger();
+        private static Logger logger = Logger.getLogger(ClientPolicy.class.getName());
 
         @Override
         public Object onRPC(String method, ArrayList<Object> params) throws Exception {
@@ -59,7 +60,26 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
                 }
             }
 
-            return super.onRPC(method, params);
+            final int MAX_RETRY = 5;
+            int retryCnt = 1, waitInMilliseconds = 50;
+            Exception lastException;
+            do {
+                try {
+                    return super.onRPC(method, params);
+                } catch (Exception e) {
+                    lastException = e;
+                    logger.warning(
+                            String.format(
+                                    "Failed to execute method %s: %s", method, e.getMessage()));
+                    Thread.sleep(waitInMilliseconds);
+                    waitInMilliseconds <<= 1;
+                }
+            } while (++retryCnt <= MAX_RETRY);
+
+            throw new Exception(
+                    String.format("Failed to execute method %s after retries", method),
+                    lastException);
+
         }
     }
 

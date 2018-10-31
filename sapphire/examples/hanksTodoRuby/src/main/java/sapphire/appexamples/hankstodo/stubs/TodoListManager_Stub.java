@@ -1,6 +1,6 @@
 package sapphire.appexamples.hankstodo.stubs;
 
-public final class TodoListManager_Stub extends sapphire.common.GraalObject implements sapphire.common.AppObjectStub {
+public final class TodoListManager_Stub extends sapphire.common.GraalObject implements sapphire.common.GraalAppObjectStub {
 
     sapphire.policy.SapphirePolicy.SapphireClientPolicy $__client = null;
     boolean $__directInvocation = false;
@@ -16,7 +16,7 @@ public final class TodoListManager_Stub extends sapphire.common.GraalObject impl
     }
 
     public Object $__clone() throws CloneNotSupportedException {
-        return super.clone();
+        return clone();
     }
 
     public void $__initializeGraal(sapphire.app.SapphireObjectSpec spec, java.lang.Object[] params){
@@ -26,6 +26,10 @@ public final class TodoListManager_Stub extends sapphire.common.GraalObject impl
             throw new java.lang.RuntimeException(e);
         }
 
+    }
+
+    public boolean $__directInvocation(){
+        return $__directInvocation;
     }
 
     public java.lang.Object newTodoList(Object... args) {

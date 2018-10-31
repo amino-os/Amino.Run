@@ -12,54 +12,17 @@ public class ObjectHandlerTest {
 
     @Test
     public void testGraalObject() throws Exception {
-        String JS_Code =
-                "class Student {"
-                        + "constructor() {"
-                        + "this.id = 0;"
-                        + "this.name = \"\";"
-                        + "this.buddies = [];"
-                        + "}"
-                        + "setId(id) {"
-                        + "this.id = id;"
-                        + "}"
-                        + "getId() {"
-                        + "return this.id;"
-                        + "}"
-                        + "setName(name) {"
-                        + "this.name = name;"
-                        + "}"
-                        + "getName() {"
-                        + "return this.name;"
-                        + "}"
-                        + "addBuddy(buddy) {"
-                        + "this.buddies.push(buddy);"
-                        + "}"
-                        + "getBuddies() {"
-                        + "return this.buddies;"
-                        + "}"
-                        + "}";
-        String filename = "student.js";
-
-        PrintWriter out = new PrintWriter("student.js");
-        out.println(JS_Code);
-        out.flush();
+        String filename = "./src/test/resources/student.js";
 
         SapphireObjectSpec spec =
                 SapphireObjectSpec.newBuilder()
                         .setLang(Language.js)
                         .setConstructorName("Student")
-                        .setJavaClassName("sapphire.common.GraalObject")
+                        .setJavaClassName("sapphire.stubs.Student_Stub")
                         .setSourceFileLocation(filename)
                         .create();
 
-        GraalObject graalObject =
-                GraalObject.newBuilder()
-                        .setSourceLocation(filename)
-                        .setConstructor("Student")
-                        .setJavaClassName("sapphire.common.GraalObject")
-                        .setLang(Language.js)
-                        .create();
-
+        sapphire.stubs.Student_Stub graalObject = new sapphire.stubs.Student_Stub();
         graalObject.$__initializeGraal(spec, new Object[0]);
         ObjectHandler objHandler = new ObjectHandler(graalObject);
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
@@ -74,8 +37,6 @@ public class ObjectHandlerTest {
 
         System.out.println("Original value is " + objHandler.getObject().toString());
         System.out.println("After SerDe, value is " + clone.getObject().toString());
-
-        (new File(filename)).delete();
 
         assert objHandler.getObject().toString().equals(clone.getObject().toString());
     }

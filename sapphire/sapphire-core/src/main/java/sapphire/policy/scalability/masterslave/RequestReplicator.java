@@ -53,7 +53,8 @@ public class RequestReplicator implements Replicator, Closeable {
             } catch (Exception e) {
                 logger.log(
                         Level.WARNING,
-                        String.format("failed to replicate request %s: %s", request, e.getMessage()));
+                        String.format(
+                                "failed to replicate request %s: %s", request, e.getMessage()));
             }
         }
         return response;
@@ -80,7 +81,9 @@ public class RequestReplicator implements Replicator, Closeable {
                         } catch (Exception e) {
                             logger.log(
                                     Level.WARNING,
-                                    String.format("failed to replicate request %s: %s", request, e.getMessage()));
+                                    String.format(
+                                            "failed to replicate request %s: %s",
+                                            request, e.getMessage()));
                         }
                         return response;
                     }

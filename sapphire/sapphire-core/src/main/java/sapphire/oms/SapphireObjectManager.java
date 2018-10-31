@@ -62,6 +62,7 @@ public class SapphireObjectManager {
 
     /**
      * Gets the root group policy object with sapphire object id
+     *
      * @param oid
      * @return Sapphire Group Policy Object
      * @throws SapphireObjectNotFoundException

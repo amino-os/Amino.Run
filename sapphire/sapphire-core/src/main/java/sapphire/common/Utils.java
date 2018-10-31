@@ -31,7 +31,8 @@ public class Utils {
         private
         ObjectCloner() {} // // so that nobody can accidentally creates an ObjectCloner object
 
-        public static Serializable deepCopy(Serializable oldObj) throws Exception {
+        public static Serializable deepCopy(Serializable oldObj)
+                throws IOException, ClassNotFoundException {
             ObjectOutputStream oos = null;
             ObjectInputStream ois = null;
             try {

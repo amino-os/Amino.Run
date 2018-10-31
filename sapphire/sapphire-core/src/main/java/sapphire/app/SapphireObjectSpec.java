@@ -58,6 +58,8 @@ public class SapphireObjectSpec implements Serializable {
     /** List of Deployment Managers to be applied on Sapphire object */
     private List<DMSpec> dmList = new ArrayList<>();
 
+    private NodeSelectorSpec serverSelectorSpec;
+
     public static Builder newBuilder() {
         return new Builder();
     }
@@ -114,6 +116,14 @@ public class SapphireObjectSpec implements Serializable {
         dmList.add(dmSpec);
     }
 
+    public NodeSelectorSpec getServerSelectorSpec() {
+        return serverSelectorSpec;
+    }
+
+    public void setServerSelectorSpec(NodeSelectorSpec serverSelectorSpec) {
+        this.serverSelectorSpec = serverSelectorSpec;
+    }
+
     public static SapphireObjectSpec fromYaml(String yamlString) {
         Yaml yaml = new Yaml();
         return yaml.loadAs(yamlString, SapphireObjectSpec.class);
@@ -134,16 +144,20 @@ public class SapphireObjectSpec implements Serializable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(lang, name, javaClassName, sourceFileLocation, constructorName, dmList);
+        return Objects.hash(
+                lang,
+                name,
+                javaClassName,
+                sourceFileLocation,
+                constructorName,
+                dmList,
+                serverSelectorSpec);
     }
 
     @Override
     public String toString() {
-        //        DumperOptions options = new DumperOptions();
-        //        options.setAllowReadOnlyProperties(true);
-        //        Yaml yaml = new Yaml(options);
-
-        return new Yaml().dump(this);
+        Yaml yaml = new Yaml();
+        return yaml.dump(this);
     }
 
     public static class Builder {
@@ -153,6 +167,7 @@ public class SapphireObjectSpec implements Serializable {
         private String sourceFileLocation;
         private String constructorName;
         private List<DMSpec> dmList = new ArrayList<>();
+        private NodeSelectorSpec serverSelectorSpec;
 
         public Builder setName(String name) {
             this.name = name;
@@ -188,6 +203,11 @@ public class SapphireObjectSpec implements Serializable {
             return this;
         }
 
+        public Builder setServerSelectorSpec(NodeSelectorSpec serverSelectorSpec) {
+            this.serverSelectorSpec = serverSelectorSpec;
+            return this;
+        }
+
         public SapphireObjectSpec create() {
             SapphireObjectSpec spec = new SapphireObjectSpec();
             spec.setName(name);
@@ -196,6 +216,7 @@ public class SapphireObjectSpec implements Serializable {
             spec.setSourceFileLocation(sourceFileLocation);
             spec.setConstructorName(constructorName);
             spec.setDmList(dmList);
+            spec.setServerSelectorSpec(serverSelectorSpec);
             return spec;
         }
     }

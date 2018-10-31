@@ -60,7 +60,24 @@ public class Deserializer implements AutoCloseable {
                 break;
             case OBJECT:
                 String className = in.readUTF();
-                out = context.eval(lang.toString(), className).newInstance();
+                try {
+                    // The parameter we pass for a function call may not be in same language, for example in
+                    // key value store example, key value store is implemented in javascript however we use java
+                    // client to pass in values. In this case the language is different thus this will throw exception.
+                    // This is temporary fix, if it fails we assume the input parameter is in java language, so
+                    // we try to construct it again in java. This may not work for if parameters are defined
+                    // in other languages.
+                    out = context.eval(lang.toString(), className).newInstance();
+                } catch (Exception e) {
+                    try {
+                        context.enter();
+                        out =
+                                Value.asValue(
+                                        Class.forName(className).getConstructor().newInstance());
+                    } catch (Exception e2) {
+                        throw new IOException(e2.getCause());
+                    }
+                }
 
                 // for(String key : out.getMemberKeys()) {
                 for (String key : getMemberVariables(out)) {

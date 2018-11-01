@@ -7,25 +7,18 @@ import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import sapphire.app.SapphireObjectSpec;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
 import sapphire.common.Utils;
 import sapphire.kernel.common.GlobalKernelReferences;
 import sapphire.kernel.common.KernelObjectStub;
 import sapphire.policy.DefaultSapphirePolicy;
-import sapphire.policy.scalability.masterslave.Lock;
-import sapphire.policy.scalability.masterslave.MethodInvocationRequest;
-import sapphire.policy.scalability.masterslave.MethodInvocationResponse;
-import sapphire.policy.scalability.masterslave.ReplicationRequest;
-import sapphire.policy.scalability.masterslave.ReplicationResponse;
+import sapphire.policy.scalability.masterslave.*;
 
 /**
  * Base class for LoadBalancedMasterSlave DM
@@ -173,13 +166,10 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultSapphirePolicy 
         private Map<String, String> nodeLabels;
 
         @Override
-        public void onCreate(
-                String region,
-                SapphireServerPolicy server,
-                Map<String, SapphirePolicyConfig> configMap)
+        public void onCreate(String region, SapphireServerPolicy server, SapphireObjectSpec spec)
                 throws RemoteException {
             logger = Logger.getLogger(this.getClass().getName());
-            super.onCreate(region, server, configMap);
+            super.onCreate(region, server, spec);
             logger.info(String.format("Creating master and slave instance in region %s", region));
 
             try {

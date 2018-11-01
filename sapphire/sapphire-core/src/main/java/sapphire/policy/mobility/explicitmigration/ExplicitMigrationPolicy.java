@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.Objects;
 import java.util.logging.Logger;
+import sapphire.app.SapphireObjectSpec;
+import sapphire.common.Utils;
 import sapphire.kernel.common.GlobalKernelReferences;
 import sapphire.kernel.common.KernelObjectMigratingException;
 import sapphire.kernel.server.KernelServerImpl;
@@ -79,10 +81,11 @@ public class ExplicitMigrationPolicy extends DefaultSapphirePolicy {
         private long minWaitIntervalInMillis = MINWAITINTERVALINMILLIS;
 
         @Override
-        public void onCreate(
-                SapphireGroupPolicy group, Map<String, SapphirePolicyConfig> configMap) {
-            super.onCreate(group, configMap);
+        public void onCreate(SapphireGroupPolicy group, SapphireObjectSpec spec) {
+            super.onCreate(group, spec);
 
+            Map<String, SapphirePolicyConfig> configMap =
+                    Utils.fromDMSpecListToFlatConfigMap(spec.getDmList());
             if (configMap != null) {
                 SapphirePolicyConfig config =
                         configMap.get(ExplicitMigrationPolicy.Config.class.getName());
@@ -128,9 +131,8 @@ public class ExplicitMigrationPolicy extends DefaultSapphirePolicy {
         private String migrateObjectMethodName = MIGRATEOBJECTMETHODNAME;
 
         @Override
-        public void onCreate(
-                SapphireGroupPolicy group, Map<String, SapphirePolicyConfig> configMap) {
-            super.onCreate(group, configMap);
+        public void onCreate(SapphireGroupPolicy group, SapphireObjectSpec spec) {
+            super.onCreate(group, spec);
 
             SapphirePolicyConfig config =
                     configMap.get(ExplicitMigrationPolicy.Config.class.getName());

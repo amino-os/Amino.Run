@@ -12,7 +12,6 @@ import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.util.ArrayList;
-import java.util.HashMap;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -198,7 +197,7 @@ public class ConsensusRSMPolicyTest extends BaseTest {
     public void omsNotAvailable() throws Exception {
         when(this.group.sapphire_getRegions()).thenThrow(new RemoteException());
         thrown.expect(Error.class);
-        this.group.onCreate("", this.server1, new HashMap<>());
+        this.group.onCreate("", this.server1, null);
     }
 
     /**

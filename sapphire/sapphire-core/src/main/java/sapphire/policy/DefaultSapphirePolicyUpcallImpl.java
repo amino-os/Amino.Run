@@ -5,6 +5,7 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import sapphire.app.SapphireObjectSpec;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
 import sapphire.policy.SapphirePolicy.SapphireServerPolicy;
@@ -56,15 +57,18 @@ public abstract class DefaultSapphirePolicyUpcallImpl extends SapphirePolicyLibr
             }
         }
 
+        @Deprecated
         public SapphireServerPolicy sapphire_replicate(
                 List<SapphirePolicyContainer> processedPolicies) throws RemoteException {
-            return super.sapphire_replicate(processedPolicies, "");
+            return super.sapphire_replicate(processedPolicies, "", null);
         }
 
         public SapphireServerPolicy sapphire_replicate(
-                List<SapphirePolicyContainer> processedPolicies, String region)
+                List<SapphirePolicyContainer> processedPolicies,
+                String region,
+                SapphireObjectSpec spec)
                 throws RemoteException {
-            return super.sapphire_replicate(processedPolicies, region);
+            return super.sapphire_replicate(processedPolicies, region, spec);
         }
 
         public void sapphire_pin(SapphireServerPolicy sapphireServerPolicy, String region)

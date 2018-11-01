@@ -2,13 +2,13 @@ package sapphire.policy.dht;
 
 import static org.mockito.Mockito.spy;
 import static org.powermock.api.mockito.PowerMockito.when;
-import static sapphire.policy.SapphirePolicyUpcalls.SapphirePolicyConfig;
 
 import java.net.InetSocketAddress;
 import java.util.*;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import sapphire.app.SapphireObjectSpec;
 import sapphire.kernel.common.KernelOID;
 import sapphire.kernel.common.ServerInfo;
 import sapphire.kernel.server.KernelServerImpl;
@@ -48,11 +48,10 @@ public class DHTPolicyTest {
     @Test
     public void test() throws Exception {
         DHTPolicy.DHTGroupPolicy group = new DHTPolicy.DHTGroupPolicy();
-        Map<String, SapphirePolicyConfig> configMap = new HashMap<>();
-        servers[0].onCreate(group, configMap);
-        servers[1].onCreate(group, configMap);
-        servers[2].onCreate(group, configMap);
-        group.onCreate("region-1", servers[0], configMap);
+        servers[0].onCreate(group, null);
+        servers[1].onCreate(group, null);
+        servers[2].onCreate(group, null);
+        group.onCreate("region-1", servers[0], null);
         group.addServer(servers[1]);
         group.addServer(servers[2]);
 
@@ -84,10 +83,8 @@ public class DHTPolicyTest {
         // @Override
         // public void onCreate(SapphirePolicy.SapphireGroupPolicy group, Annotation[] annotations)
         // {
-        public void onCreate(
-                SapphirePolicy.SapphireGroupPolicy group,
-                Map<String, SapphirePolicyConfig> configMap) {
-            super.onCreate(group, configMap);
+        public void onCreate(SapphirePolicy.SapphireGroupPolicy group, SapphireObjectSpec spec) {
+            super.onCreate(group, spec);
         }
 
         @Override
@@ -98,7 +95,9 @@ public class DHTPolicyTest {
 
         @Override
         public SapphirePolicy.SapphireServerPolicy sapphire_replicate(
-                List<SapphirePolicyContainer> processedPolicies, String region) {
+                List<SapphirePolicyContainer> processedPolicies,
+                String region,
+                SapphireObjectSpec spec) {
             return new ServerPolicy();
         }
 

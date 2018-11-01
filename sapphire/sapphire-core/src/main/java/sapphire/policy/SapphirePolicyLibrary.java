@@ -11,20 +11,9 @@ import java.util.logging.Logger;
 import org.apache.harmony.rmi.common.RMIUtil;
 import sapphire.app.Language;
 import sapphire.app.SapphireObjectSpec;
-import sapphire.common.AppObject;
-import sapphire.common.AppObjectStub;
-import sapphire.common.GraalObject;
-import sapphire.common.SapphireObjectID;
-import sapphire.common.SapphireObjectNotFoundException;
-import sapphire.common.SapphireObjectReplicaNotFoundException;
-import sapphire.common.SapphireReplicaID;
+import sapphire.common.*;
 import sapphire.compiler.GlobalStubConstants;
-import sapphire.kernel.common.GlobalKernelReferences;
-import sapphire.kernel.common.KernelOID;
-import sapphire.kernel.common.KernelObjectFactory;
-import sapphire.kernel.common.KernelObjectNotCreatedException;
-import sapphire.kernel.common.KernelObjectNotFoundException;
-import sapphire.kernel.common.KernelObjectStub;
+import sapphire.kernel.common.*;
 import sapphire.kernel.server.KernelObject;
 import sapphire.kernel.server.KernelServerImpl;
 import sapphire.oms.OMSServer;
@@ -34,6 +23,7 @@ import sapphire.runtime.Sapphire;
 public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
     public abstract static class SapphireClientPolicyLibrary
             implements SapphireClientPolicyUpcalls {
+
         /*
          * INTERNAL FUNCTIONS (Used by sapphire runtime system)
          */
@@ -45,9 +35,9 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
         protected AppObjectStub appObjectStub;
         protected KernelOID oid;
         protected SapphireReplicaID replicaId;
-        protected Map<String, SapphirePolicyConfig> configMap;
         protected SapphirePolicy.SapphireGroupPolicy group;
         protected SapphireObjectSpec spec;
+        protected Map<String, SapphirePolicyConfig> configMap;
 
         static Logger logger = Logger.getLogger("sapphire.policy.SapphirePolicyLibrary");
 
@@ -132,25 +122,19 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
         }
 
         @Override
-        public void onCreate(
-                SapphirePolicy.SapphireGroupPolicy group,
-                Map<String, SapphirePolicyConfig> configMap) {
+        public void onCreate(SapphirePolicy.SapphireGroupPolicy group, SapphireObjectSpec spec) {
             this.group = group;
-            this.configMap = configMap;
-        }
-
-        /**
-         * Returns configurations of this server policy.
-         *
-         * @return sapphire policy configuration map
-         */
-        public Map<String, SapphirePolicyConfig> getConfigMap() {
-            return this.configMap;
+            this.spec = spec;
+            if (spec != null && spec.getDmList() != null) {
+                this.configMap = Utils.fromDMSpecListToFlatConfigMap(spec.getDmList());
+            }
         }
 
         /** Creates a replica of this server and registers it with the group. */
         public SapphireServerPolicy sapphire_replicate(
-                List<SapphirePolicyContainer> processedPolicies, String region)
+                List<SapphirePolicyContainer> processedPolicies,
+                String region,
+                SapphireObjectSpec spec)
                 throws RemoteException {
             KernelObjectStub serverPolicyStub = null;
             SapphireServerPolicy serverPolicy = null;

@@ -9,8 +9,10 @@ import java.util.TimerTask;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
+import sapphire.app.SapphireObjectSpec;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
+import sapphire.common.Utils;
 import sapphire.kernel.common.KernelObjectStub;
 import sapphire.policy.util.ResettableTimer;
 
@@ -71,15 +73,17 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
         private transient volatile ResettableTimer timer; // Timer for limiting
 
         @Override
-        public void onCreate(
-                SapphireGroupPolicy group, Map<String, SapphirePolicyConfig> configMap) {
-            super.onCreate(group, configMap);
+        public void onCreate(SapphireGroupPolicy group, SapphireObjectSpec spec) {
+            super.onCreate(group, spec);
 
-            if (configMap != null) {
-                SapphirePolicyConfig config =
-                        configMap.get(ScaleUpFrontendPolicy.Config.class.getName());
-                if (config != null) {
-                    replicationRateInMs = ((Config) config).getReplicationRateInMs();
+            if (spec != null) {
+                configMap = Utils.fromDMSpecListToFlatConfigMap(spec.getDmList());
+                if (configMap != null) {
+                    SapphirePolicyConfig config =
+                            configMap.get(ScaleUpFrontendPolicy.Config.class.getName());
+                    if (config != null) {
+                        replicationRateInMs = ((Config) config).getReplicationRateInMs();
+                    }
                 }
             }
 
@@ -162,18 +166,19 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
         private transient ResettableTimer timer; // Timer for limiting
 
         @Override
-        public void onCreate(
-                String region,
-                SapphireServerPolicy server,
-                Map<String, SapphirePolicyConfig> configMap)
+        public void onCreate(String region, SapphireServerPolicy server, SapphireObjectSpec spec)
                 throws RemoteException {
-            super.onCreate(region, server, configMap);
+            super.onCreate(region, server, spec);
 
-            if (configMap != null) {
-                SapphirePolicyConfig config =
-                        configMap.get(ScaleUpFrontendPolicy.Config.class.getName());
-                if (config != null) {
-                    replicationRateInMs = ((Config) config).getReplicationRateInMs();
+            if (spec != null) {
+                Map<String, SapphirePolicyConfig> configMap =
+                        Utils.fromDMSpecListToFlatConfigMap(spec.getDmList());
+                if (configMap != null) {
+                    SapphirePolicyConfig config =
+                            configMap.get(ScaleUpFrontendPolicy.Config.class.getName());
+                    if (config != null) {
+                        replicationRateInMs = ((Config) config).getReplicationRateInMs();
+                    }
                 }
             }
 

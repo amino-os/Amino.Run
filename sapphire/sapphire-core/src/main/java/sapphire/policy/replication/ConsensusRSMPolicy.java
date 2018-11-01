@@ -6,11 +6,11 @@ import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Logger;
+import sapphire.app.SapphireObjectSpec;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
 import sapphire.policy.DefaultSapphirePolicy;
@@ -149,9 +149,8 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
         }
 
         @Override
-        public void onCreate(
-                SapphireGroupPolicy group, Map<String, SapphirePolicyConfig> configMap) {
-            super.onCreate(group, configMap);
+        public void onCreate(SapphireGroupPolicy group, SapphireObjectSpec spec) {
+            super.onCreate(group, spec);
             raftServer = new sapphire.policy.util.consensus.raft.Server(this);
         }
 
@@ -220,15 +219,12 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
         private static Logger logger = Logger.getLogger(GroupPolicy.class.getName());
 
         @Override
-        public void onCreate(
-                String region,
-                SapphireServerPolicy server,
-                Map<String, SapphirePolicyConfig> configMap)
+        public void onCreate(String region, SapphireServerPolicy server, SapphireObjectSpec spec)
                 throws RemoteException {
             // TODO(merged):
             // super.onCreate(server, annotations);
 
-            super.onCreate(region, server, configMap);
+            super.onCreate(region, server, spec);
             addServer(server);
 
             try {

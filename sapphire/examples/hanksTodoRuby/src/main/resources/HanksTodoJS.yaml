@@ -1,0 +1,10 @@
+!!sapphire.app.SapphireObjectSpec
+constructorName: TodoListManager
+dmList:
+- configs:
+  - !!sapphire.policy.dht.DHTPolicy$Config {numOfShards: 2}
+  name: sapphire.policy.dht.DHTPolicy
+javaClassName: sapphire.appexamples.hankstodo.stubs.TodoListManager_Stub
+lang: js
+name: TodoListManager
+sourceFileLocation: ./src/main/js/sapphire/appexamples/hankstodo/todo_list_manager.js

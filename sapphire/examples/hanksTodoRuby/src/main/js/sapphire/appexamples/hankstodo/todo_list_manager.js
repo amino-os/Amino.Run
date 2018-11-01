@@ -46,6 +46,7 @@ class TodoListManager {
     }
 }
 
+/*
 function test() {
     var c = new TodoListManager();
     c.newTodoList("todoList1");
@@ -65,3 +66,4 @@ function test() {
 
 // For test purpose only
 //test();
+*/

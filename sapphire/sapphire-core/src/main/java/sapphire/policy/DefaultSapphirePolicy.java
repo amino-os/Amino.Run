@@ -55,6 +55,8 @@ public class DefaultSapphirePolicy extends SapphirePolicy {
 
     public static class DefaultGroupPolicy extends SapphireGroupPolicy {
         private ArrayList<SapphireServerPolicy> servers = new ArrayList<SapphireServerPolicy>();
+        protected String region = "";
+        protected SapphireObjectSpec spec = null;
 
         @Override
         /**
@@ -89,7 +91,10 @@ public class DefaultSapphirePolicy extends SapphirePolicy {
 
         @Override
         public void onCreate(String region, SapphireServerPolicy server, SapphireObjectSpec spec)
-                throws RemoteException {}
+                throws RemoteException {
+            this.region = region;
+            this.spec = spec;
+        }
 
         @Override
         public synchronized void onDestroy() throws RemoteException {

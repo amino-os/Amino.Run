@@ -183,7 +183,9 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultSapphirePolicy 
             try {
                 List<InetSocketAddress> servers;
                 if (region != null && !region.isEmpty()) {
-                    servers = GlobalKernelReferences.nodeServer.oms.getServersInRegion(region);
+                    servers =
+                            GlobalKernelReferences.nodeServer.oms.getServers(
+                                    spec.getServerSelectorSpec());
                 } else {
                     servers = GlobalKernelReferences.nodeServer.oms.getServers();
                 }

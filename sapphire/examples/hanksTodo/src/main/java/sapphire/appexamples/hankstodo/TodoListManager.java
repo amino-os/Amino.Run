@@ -7,6 +7,7 @@ import sapphire.app.SapphireObject;
 import static sapphire.runtime.Sapphire.*;
 
 import sapphire.app.SapphireObjectSpec;
+import sapphire.common.SapphireObjectCreationException;
 import sapphire.policy.dht.DHTPolicy2;
 import sapphire.policy.replication.ConsensusRSMPolicy;
 
@@ -24,7 +25,7 @@ public class TodoListManager implements SapphireObject {
 		System.out.println("Input received: " + input);
 	}
 
-	public TodoList newTodoList(String id) {
+	public TodoList newTodoList(String id) throws SapphireObjectCreationException {
 		TodoList t = todoLists.get(id);
 		if (t == null) {
 			SapphireObjectSpec spec;

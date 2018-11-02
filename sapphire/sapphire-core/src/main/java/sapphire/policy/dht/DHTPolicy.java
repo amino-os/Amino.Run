@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.Objects;
 import java.util.logging.Logger;
+import sapphire.app.SapphireObjectSpec;
+import sapphire.common.Utils;
 import sapphire.policy.DefaultSapphirePolicy;
 
 public class DHTPolicy extends DefaultSapphirePolicy {
@@ -62,18 +64,19 @@ public class DHTPolicy extends DefaultSapphirePolicy {
         private DHTChord dhtChord;
 
         @Override
-        public void onCreate(
-                String region,
-                SapphireServerPolicy server,
-                Map<String, SapphirePolicyConfig> configMap)
+        public void onCreate(String region, SapphireServerPolicy server, SapphireObjectSpec spec)
                 throws RemoteException {
             dhtChord = new DHTChord();
-            super.onCreate(region, server, configMap);
+            super.onCreate(region, server, spec);
 
-            if (configMap != null) {
-                SapphirePolicyConfig config = configMap.get(DHTPolicy.Config.class.getName());
-                if (config != null) {
-                    this.numOfShards = ((Config) config).getNumOfShards();
+            if (spec != null) {
+                Map<String, SapphirePolicyConfig> configMap =
+                        Utils.fromDMSpecListToFlatConfigMap(spec.getDmList());
+                if (configMap != null) {
+                    SapphirePolicyConfig config = configMap.get(DHTPolicy.Config.class.getName());
+                    if (config != null) {
+                        this.numOfShards = ((Config) config).getNumOfShards();
+                    }
                 }
             }
 

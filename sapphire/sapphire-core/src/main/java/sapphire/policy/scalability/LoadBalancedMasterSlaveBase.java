@@ -15,6 +15,7 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import sapphire.app.SapphireObjectSpec;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
 import sapphire.common.Utils;
@@ -173,13 +174,10 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultSapphirePolicy 
         private Map<String, String> nodeLabels;
 
         @Override
-        public void onCreate(
-                String region,
-                SapphireServerPolicy server,
-                Map<String, SapphirePolicyConfig> configMap)
+        public void onCreate(String region, SapphireServerPolicy server, SapphireObjectSpec spec)
                 throws RemoteException {
             logger = Logger.getLogger(this.getClass().getName());
-            super.onCreate(region, server, configMap);
+            super.onCreate(region, server, spec);
             logger.info(String.format("Creating master and slave instance in region %s", region));
 
             try {

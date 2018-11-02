@@ -291,9 +291,11 @@ public class Utils {
             List<DMSpec> dmSpecList) {
         Map<String, SapphirePolicyConfig> map = new HashMap<>();
 
-        for (DMSpec dmSpec : dmSpecList) {
-            for (SapphirePolicyConfig config : dmSpec.getConfigs()) {
-                map.put(config.getClass().getName(), config);
+        if (dmSpecList != null) {
+            for (DMSpec dmSpec : dmSpecList) {
+                for (SapphirePolicyConfig config : dmSpec.getConfigs()) {
+                    map.put(config.getClass().getName(), config);
+                }
             }
         }
 

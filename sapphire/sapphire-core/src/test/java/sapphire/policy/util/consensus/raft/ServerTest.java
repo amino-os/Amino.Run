@@ -7,7 +7,6 @@ import static sapphire.common.UtilsTest.extractFieldValueOnInstance;
 import static sapphire.policy.util.consensus.raft.Server.State.FOLLOWER;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -36,8 +35,7 @@ public class ServerTest {
         for (int i = 0; i < SERVER_COUNT; i++) {
             serverPolicy[i] = spy(ConsensusRSMPolicy.ServerPolicy.class);
             serverPolicy[i].$__initialize(appObject);
-            ((ConsensusRSMPolicy.ServerPolicy) serverPolicy[i])
-                    .onCreate(groupPolicy, new HashMap<>());
+            ((ConsensusRSMPolicy.ServerPolicy) serverPolicy[i]).onCreate(groupPolicy, null);
             try {
                 raftServer[i] =
                         (Server) (extractFieldValueOnInstance(this.serverPolicy[i], "raftServer"));

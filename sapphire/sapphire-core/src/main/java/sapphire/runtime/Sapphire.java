@@ -274,7 +274,7 @@ public class Sapphire {
 
         /* Link everything together */
         client.setServer(serverPolicyStub);
-        client.onCreate(groupPolicyStub, configMap);
+        client.onCreate(groupPolicyStub, spec);
 
         if (previousServerPolicy != null) {
             initServerPolicy(
@@ -292,7 +292,7 @@ public class Sapphire {
                 new ArrayList<SapphirePolicyContainer>(
                         policyNameChain.subList(1, policyNameChain.size()));
 
-        serverPolicy.onCreate(groupPolicyStub, configMap);
+        serverPolicy.onCreate(groupPolicyStub, spec);
         serverPolicy.setNextPolicies(nextPoliciesToCreate);
 
         SapphirePolicyContainer processedPolicy =
@@ -309,7 +309,7 @@ public class Sapphire {
         serverPolicyStub.setProcessedPolicies(processedPoliciesSoFar);
 
         if (existingGroupPolicy == null) {
-            groupPolicy.onCreate(region, serverPolicyStub, configMap);
+            groupPolicy.onCreate(region, serverPolicyStub, spec);
         }
 
         previousServerPolicy = serverPolicy;
@@ -416,10 +416,10 @@ public class Sapphire {
 
         /* Link everything together */
         client.setServer(serverPolicyStub);
-        client.onCreate(groupPolicyStub, configMap);
+        client.onCreate(groupPolicyStub, spec);
         appStub.$__initialize(client);
-        serverPolicy.onCreate(groupPolicyStub, configMap);
-        groupPolicyStub.onCreate("", serverPolicyStub, configMap);
+        serverPolicy.onCreate(groupPolicyStub, spec);
+        groupPolicyStub.onCreate("", serverPolicyStub, spec);
 
         logger.info("Sapphire Object created: " + spec);
         return appStub;

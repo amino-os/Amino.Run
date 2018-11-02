@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
-import java.util.HashMap;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -48,9 +47,9 @@ public class LoadBalancedMasterSlaveSyncPolicyIntegTest {
         group.addServer(server2);
 
         client.setServer(server1);
-        client.onCreate(group, new HashMap<>());
-        server1.onCreate(group, new HashMap<>());
-        server2.onCreate(group, new HashMap<>());
+        client.onCreate(group, null);
+        server1.onCreate(group, null);
+        server2.onCreate(group, null);
         server1.start();
         server2.start();
     }

@@ -2,7 +2,7 @@ package sapphire.policy;
 
 import java.rmi.RemoteException;
 import java.util.ArrayList;
-import java.util.Map;
+import sapphire.app.SapphireObjectSpec;
 
 public class DefaultSapphirePolicy extends SapphirePolicy {
 
@@ -16,9 +16,8 @@ public class DefaultSapphirePolicy extends SapphirePolicy {
         public void onMembershipChange() {}
 
         @Override
-        public void onCreate(
-                SapphireGroupPolicy group, Map<String, SapphirePolicyConfig> configMap) {
-            super.onCreate(group, configMap);
+        public void onCreate(SapphireGroupPolicy group, SapphireObjectSpec spec) {
+            super.onCreate(group, spec);
         }
 
         @Override
@@ -49,8 +48,7 @@ public class DefaultSapphirePolicy extends SapphirePolicy {
         }
 
         @Override
-        public void onCreate(
-                SapphireGroupPolicy group, Map<String, SapphirePolicyConfig> configMap) {
+        public void onCreate(SapphireGroupPolicy group, SapphireObjectSpec spec) {
             this.group = (DefaultGroupPolicy) group;
         }
     }
@@ -90,10 +88,7 @@ public class DefaultSapphirePolicy extends SapphirePolicy {
         }
 
         @Override
-        public void onCreate(
-                String region,
-                SapphireServerPolicy server,
-                Map<String, SapphirePolicyConfig> configMap)
+        public void onCreate(String region, SapphireServerPolicy server, SapphireObjectSpec spec)
                 throws RemoteException {}
 
         @Override

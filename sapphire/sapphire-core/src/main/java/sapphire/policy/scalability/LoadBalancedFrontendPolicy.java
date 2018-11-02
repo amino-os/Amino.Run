@@ -11,8 +11,10 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Logger;
+import sapphire.app.SapphireObjectSpec;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
+import sapphire.common.Utils;
 import sapphire.policy.DefaultSapphirePolicy;
 
 /**
@@ -67,6 +69,18 @@ public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
         int replicaCount() default STATIC_REPLICA_COUNT;
     }
 
+    private static Config getConfig(SapphireObjectSpec spec) {
+        Config config = null;
+        if (spec != null) {
+            Map<String, SapphirePolicyConfig> configMap =
+                    Utils.fromDMSpecListToFlatConfigMap(spec.getDmList());
+            if (configMap != null) {
+                config = (Config) configMap.get(LoadBalancedFrontendPolicy.Config.class.getName());
+            }
+        }
+        return config;
+    }
+
     /**
      * LoadBalancedFrontend client policy. The client will LoadBalance among the Sapphire Server
      * replica objects. client side DM instance should randomise the order in which it performs
@@ -113,15 +127,12 @@ public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
         protected Semaphore limiter;
 
         @Override
-        public void onCreate(
-                SapphireGroupPolicy group, Map<String, SapphirePolicyConfig> configMap) {
-            super.onCreate(group, configMap);
-            if (configMap != null) {
-                SapphirePolicyConfig config =
-                        configMap.get(LoadBalancedFrontendPolicy.Config.class.getName());
-                if (config != null) {
-                    this.maxConcurrentReq = ((Config) config).getMaxConcurrentReq();
-                }
+        public void onCreate(SapphireGroupPolicy group, SapphireObjectSpec spec) {
+            super.onCreate(group, spec);
+
+            Config config = getConfig(spec);
+            if (config != null) {
+                this.maxConcurrentReq = config.getMaxConcurrentReq();
             }
 
             if (this.limiter == null) {
@@ -160,20 +171,15 @@ public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
         private int replicaCount = STATIC_REPLICA_COUNT; // we can read from config or annotations
 
         @Override
-        public void onCreate(
-                String region,
-                SapphireServerPolicy server,
-                Map<String, SapphirePolicyConfig> configMap)
+        public void onCreate(String region, SapphireServerPolicy server, SapphireObjectSpec spec)
                 throws RemoteException {
-            super.onCreate(region, server, configMap);
+            super.onCreate(region, server, spec);
 
-            if (configMap != null) {
-                SapphirePolicyConfig config =
-                        configMap.get(LoadBalancedFrontendPolicy.Config.class.getName());
-                if (config != null) {
-                    this.replicaCount = ((Config) config).getReplicaCount();
-                }
+            Config config = getConfig(spec);
+            if (config != null) {
+                this.replicaCount = config.getReplicaCount();
             }
+
             // count is compared below < STATIC_REPLICAS-1 excluding the present server
             int count = 0;
             int numnodes = 0; // num of nodes/servers in the selected region

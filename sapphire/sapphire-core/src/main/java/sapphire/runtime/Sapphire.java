@@ -653,27 +653,31 @@ public class Sapphire {
 
     private static AppObjectStub getAppStub(
             SapphireObjectSpec spec, SapphireServerPolicy serverPolicy, Object[] args)
-            throws IllegalAccessException, CloneNotSupportedException {
+            throws CloneNotSupportedException {
         AppObjectStub appObjectStub = serverPolicy.$__initialize(spec, args);
         // TODO(multi-lang): We may need to create a clone for non-java app object stub.
-        return spec.getLang() == Language.java ? extractAppStub(appObjectStub) : appObjectStub;
+        return spec.getLang() == Language.java ? createClientAppStub(appObjectStub) : appObjectStub;
     }
 
-    public static AppObjectStub extractAppStub(AppObjectStub appObject)
-            throws CloneNotSupportedException, IllegalAccessException {
-        // Return shallow copy of the kernel object
-        AppObjectStub obj = (AppObjectStub) appObject.$__clone();
+    public static AppObjectStub createClientAppStub(AppObjectStub template)
+            throws CloneNotSupportedException {
+        AppObjectStub obj = (AppObjectStub) template.$__clone();
 
-        // Replace all superclass fields with null
+        // clean up inherited fields from application object to be GC'd
         Field[] fields = obj.getClass().getSuperclass().getFields();
         for (Field f : fields) {
-            f.setAccessible(true);
-            f.set(obj, null);
+            if (!f.getType().isPrimitive()) {
+                f.setAccessible(true);
+                try {
+                    f.set(obj, null);
+                } catch (IllegalAccessException e) {
+                    // We set accessible so should not happen, but also
+                    // only for performance, so not critical to succeed
+                }
+            }
         }
 
-        // Replace the values in stub with new values - is this necessary?
-
-        // Update the directInvocation
+        // Route requests through DM
         obj.$__initialize(false);
         return obj;
     }

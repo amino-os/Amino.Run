@@ -1,7 +1,7 @@
 package sapphire.appexamples.hankstodo;
 
 public class Client {
-    public static void main(String... args){
+    public static void main(String... args) throws Exception{
         if (args.length < 4) {
             System.out.println("Incorrect arguments to the kernel server");
             System.out.println("[host ip] [host port] [oms ip] [oms port]");
@@ -17,7 +17,7 @@ public class Client {
         Test(hostIp, hostPort, omsIp, omsPort, sapphire.app.Language.ruby, "HanksTodoRuby.yaml");
     }
 
-    private static void Test(String hostIp, String hostPort, String omsIp, String omsPort, sapphire.app.Language lang, String fileName) {
+    private static void Test(String hostIp, String hostPort, String omsIp, String omsPort, sapphire.app.Language lang, String fileName) throws Exception{
         java.lang.System.out.println(String.format("**************Test %s*************", lang));
         sapphire.appexamples.hankstodo.stubs.TodoListManager_Stub tls;
         try {

@@ -43,7 +43,7 @@ public class DHTPolicy extends DefaultSapphirePolicy {
 
         @Override
         public Object onRPC(String method, ArrayList<Object> params) throws Exception {
-            DHTKey key = new DHTKey((String) params.get(0));
+            DHTKey key = new DHTKey(params.get(0).toString());
             if (dhtChord == null) {
                 dhtChord = ((DHTGroupPolicy) getGroup()).getChord();
             }

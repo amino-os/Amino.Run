@@ -76,12 +76,34 @@ public class ObjectHandler implements Serializable {
      * @return the return value from the method
      */
     public Object invoke(String method, ArrayList<Object> params) throws Exception {
-        // Note in graal sapphire object stub we use varargs (Object ...) as function parameters, so
-        // we need to wrap parameters with another object array.
-        // Please refer to unit test
-        // sapphire-core/src/test/java/sapphire/common/VarargsFunctionReflectionTest
+
         Object[] p = params.toArray();
-        return methods.get(method).invoke(object, isGraalObject() ? new Object[] {p} : p);
+        if (isGraalObject()) {
+            ArrayList<Object> inParams = new ArrayList<>();
+            for (Object o : params) {
+                if (o instanceof Value) {
+                    inParams.add(o);
+                } else {
+                    inParams.add(
+                            ((GraalObject) object).deserializedSerializeValue((SerializeValue) o));
+                }
+            }
+
+            // Note in graal sapphire object stub we use varargs (Object ...) as function
+            // parameters, so
+            // we need to wrap parameters with another object array.
+            // Please refer to unit test
+            // sapphire-core/src/test/java/sapphire/common/VarargsFunctionReflectionTest
+            p = new Object[] {inParams.toArray()};
+        }
+        Method m = methods.get(method);
+
+        if (m == null) {
+            throw new Exception(
+                    String.format("Could not find method %s, methods are %s", method, methods));
+        }
+
+        return m.invoke(object, p);
     }
 
     public Serializable getObject() {

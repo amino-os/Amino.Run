@@ -6,8 +6,9 @@ import java.nio.file.Files;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
-
+import org.graalvm.polyglot.Value;
 import sapphire.app.SapphireObjectSpec;
 import sapphire.common.SapphireObjectID;
 import sapphire.graal.io.SerializeValue;
@@ -57,6 +58,14 @@ public final class KeyValueStore_Stub extends sapphire.common.GraalObject implem
         return $__directInvocation;
     }
 
+    public java.util.List<SerializeValue> serializeParams(Object... args) throws Exception {
+        java.util.List<SerializeValue> res = new ArrayList<>();
+        for (Object o : args) {
+            res.add(SerializeValue.getSerializeValue(Value.asValue(o), getLanguage()));
+        }
+        return res;
+    }
+
     public void $__initializeGraal(sapphire.app.SapphireObjectSpec spec, java.lang.Object[] params){
         try {
             super.$__initializeGraal(spec, params);
@@ -66,7 +75,7 @@ public final class KeyValueStore_Stub extends sapphire.common.GraalObject implem
 
     }
 
-    public java.lang.Object printall(Object... args) {
+    public java.lang.Object printall(Object... args) throws java.lang.Exception{
         java.lang.Object $__result = null;
         if ($__directInvocation) {
             try {
@@ -78,8 +87,8 @@ public final class KeyValueStore_Stub extends sapphire.common.GraalObject implem
             }
         } else {
             java.util.ArrayList<Object> $__params = new java.util.ArrayList<Object>();
-            String $__method = "public java.lang.Object sapphire.appdemo.stubs.KeyValueStore_Stub.printall(java.lang.Object...)";
-            $__params.addAll(Arrays.asList(args));
+            String $__method = "public java.lang.Object sapphire.appdemo.stubs.KeyValueStore_Stub.printall(java.lang.Object...) throws java.lang.Exception";
+            $__params.addAll(serializeParams(args));
             try {
                 $__result = $__client.onRPC($__method, $__params);
                 if ($__result instanceof SerializeValue) {
@@ -101,7 +110,7 @@ public final class KeyValueStore_Stub extends sapphire.common.GraalObject implem
         return ($__result);
     }
 
-    public java.lang.Object set(Object... args) {
+    public java.lang.Object set(Object... args) throws java.lang.Exception{
         java.lang.Object $__result = null;
         if ($__directInvocation) {
             try {
@@ -113,8 +122,8 @@ public final class KeyValueStore_Stub extends sapphire.common.GraalObject implem
             }
         } else {
             java.util.ArrayList<Object> $__params = new java.util.ArrayList<Object>();
-            String $__method = "public java.lang.Object sapphire.appdemo.stubs.KeyValueStore_Stub.set(java.lang.Object...)";
-            $__params.addAll(Arrays.asList(args));
+            String $__method = "public java.lang.Object sapphire.appdemo.stubs.KeyValueStore_Stub.set(java.lang.Object...) throws java.lang.Exception";
+            $__params.addAll(serializeParams(args));
             try {
                 $__result = $__client.onRPC($__method, $__params);
                 if ($__result instanceof SerializeValue) {
@@ -136,7 +145,7 @@ public final class KeyValueStore_Stub extends sapphire.common.GraalObject implem
         return ($__result);
     }
 
-    public java.lang.Object get(Object... args) {
+    public java.lang.Object get(Object... args) throws java.lang.Exception{
         java.lang.Object $__result = null;
         if ($__directInvocation) {
             try {
@@ -148,8 +157,8 @@ public final class KeyValueStore_Stub extends sapphire.common.GraalObject implem
             }
         } else {
             java.util.ArrayList<Object> $__params = new java.util.ArrayList<Object>();
-            String $__method = "public java.lang.Object sapphire.appdemo.stubs.KeyValueStore_Stub.get(java.lang.Object...)";
-            $__params.addAll(Arrays.asList(args));
+            String $__method = "public java.lang.Object sapphire.appdemo.stubs.KeyValueStore_Stub.get(java.lang.Object...) throws java.lang.Exception";
+            $__params.addAll(serializeParams(args));
             try {
                 $__result = $__client.onRPC($__method, $__params);
                 if ($__result instanceof SerializeValue) {
@@ -171,7 +180,7 @@ public final class KeyValueStore_Stub extends sapphire.common.GraalObject implem
         return ($__result);
     }
 
-    public java.lang.Object contains(Object... args) {
+    public java.lang.Object contains(Object... args) throws java.lang.Exception{
         java.lang.Object $__result = null;
         if ($__directInvocation) {
             try {
@@ -183,8 +192,8 @@ public final class KeyValueStore_Stub extends sapphire.common.GraalObject implem
             }
         } else {
             java.util.ArrayList<Object> $__params = new java.util.ArrayList<Object>();
-            String $__method = "public java.lang.Object sapphire.appdemo.stubs.KeyValueStore_Stub.contains(java.lang.Object...)";
-            $__params.addAll(Arrays.asList(args));
+            String $__method = "public java.lang.Object sapphire.appdemo.stubs.KeyValueStore_Stub.contains(java.lang.Object...) throws java.lang.Exception";
+            $__params.addAll(serializeParams(args));
             try {
                 $__result = $__client.onRPC($__method, $__params);
                 if ($__result instanceof SerializeValue) {

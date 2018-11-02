@@ -55,3 +55,12 @@ subprojects {
         inputs.dir compileStubs
     }
 }
+
+// For the parent examples project itself, we disable inherited tasks that don't make sense at this level.
+genStubs {
+    onlyIf() { false } // Disable
+}
+
+compileStubs {
+    onlyIf() { false } // Disable
+}

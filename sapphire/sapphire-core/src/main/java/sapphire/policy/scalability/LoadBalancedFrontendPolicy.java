@@ -1,11 +1,5 @@
 package sapphire.policy.scalability;
 
-import sapphire.app.SapphireObjectSpec;
-import sapphire.common.SapphireObjectNotFoundException;
-import sapphire.common.SapphireObjectReplicaNotFoundException;
-import sapphire.common.Utils;
-import sapphire.policy.DefaultSapphirePolicy;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -17,6 +11,11 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Logger;
+import sapphire.app.SapphireObjectSpec;
+import sapphire.common.SapphireObjectNotFoundException;
+import sapphire.common.SapphireObjectReplicaNotFoundException;
+import sapphire.common.Utils;
+import sapphire.policy.DefaultSapphirePolicy;
 
 /**
  * Created by SrinivasChilveri on 2/19/18. Simple load balancing w/ static number of replicas and no
@@ -76,7 +75,7 @@ public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
             Map<String, SapphirePolicyConfig> configMap =
                     Utils.fromDMSpecListToFlatConfigMap(spec.getDmList());
             if (configMap != null) {
-                config = (Config)configMap.get(LoadBalancedFrontendPolicy.Config.class.getName());
+                config = (Config) configMap.get(LoadBalancedFrontendPolicy.Config.class.getName());
             }
         }
         return config;

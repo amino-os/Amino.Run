@@ -1,12 +1,5 @@
 package sapphire.policy.scalability;
 
-import sapphire.app.SapphireObjectSpec;
-import sapphire.common.SapphireObjectNotFoundException;
-import sapphire.common.SapphireObjectReplicaNotFoundException;
-import sapphire.common.Utils;
-import sapphire.kernel.common.KernelObjectStub;
-import sapphire.policy.util.ResettableTimer;
-
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -16,6 +9,12 @@ import java.util.TimerTask;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
+import sapphire.app.SapphireObjectSpec;
+import sapphire.common.SapphireObjectNotFoundException;
+import sapphire.common.SapphireObjectReplicaNotFoundException;
+import sapphire.common.Utils;
+import sapphire.kernel.common.KernelObjectStub;
+import sapphire.policy.util.ResettableTimer;
 
 /**
  * ScaleUpFrontEnd DM: Load-balancing w/ dynamic allocation of replicas and no consistency Created
@@ -53,9 +52,10 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
     private static Config getConfig(SapphireObjectSpec spec) {
         Config config = null;
         if (spec != null) {
-            Map<String, SapphirePolicyConfig> configMap = Utils.fromDMSpecListToFlatConfigMap(spec.getDmList());
+            Map<String, SapphirePolicyConfig> configMap =
+                    Utils.fromDMSpecListToFlatConfigMap(spec.getDmList());
             if (configMap != null) {
-                config = (Config)configMap.get(ScaleUpFrontendPolicy.Config.class.getName());
+                config = (Config) configMap.get(ScaleUpFrontendPolicy.Config.class.getName());
             }
         }
         return config;

@@ -4,7 +4,7 @@
 constructorName: null
 dmList:
 - configs:
-  - !!sapphire.policy.scalability.LoadBalancedFrontendPolicy$Config {maxConcurrentReq: 1}
+  - !!sapphire.policy.scalability.LoadBalancedFrontendPolicy$Config {maxConcurrentReq: 10}
   name: sapphire.policy.scalability.ScaleUpFrontendPolicy
 javaClassName: sapphire.demo.KVStore
 lang: java

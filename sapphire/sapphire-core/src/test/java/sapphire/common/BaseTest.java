@@ -194,7 +194,8 @@ public class BaseTest {
                                             invocation.getArguments()[1];
                             Object[] args = (Object[]) invocation.getArguments()[2];
 
-                            return Sapphire.extractAppStub(serverPolicy.$__initialize(spec, args));
+                            return Sapphire.createClientAppStub(
+                                    serverPolicy.$__initialize(spec, args));
                         }
                         if (!(invocation.getMethod().getName().equals("getPolicyStub")))
                             return invocation.callRealMethod();

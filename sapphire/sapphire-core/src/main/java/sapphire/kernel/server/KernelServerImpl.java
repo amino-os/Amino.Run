@@ -140,7 +140,7 @@ public class KernelServerImpl implements KernelServer {
             serverPolicyStub.setReplicaId(serverPolicy.getReplicaId());
             oms.setSapphireReplicaDispatcher(serverPolicy.getReplicaId(), policyHandler);
 
-            serverPolicy.onCreate(serverPolicy.getGroup(), serverPolicy.getConfigMap());
+            serverPolicy.onCreate(serverPolicy.getGroup(), serverPolicy.getSapphireObjectSpec());
         }
 
         // To add Kernel Object to local object manager

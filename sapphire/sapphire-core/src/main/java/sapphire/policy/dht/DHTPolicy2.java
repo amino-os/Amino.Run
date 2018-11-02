@@ -5,8 +5,8 @@ import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.logging.Logger;
+import sapphire.app.SapphireObjectSpec;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
 import sapphire.policy.DefaultSapphirePolicy;
@@ -23,8 +23,7 @@ public class DHTPolicy2 extends DefaultSapphirePolicy {
         DHTGroupPolicy group = null;
 
         @Override
-        public void onCreate(
-                SapphireGroupPolicy group, Map<String, SapphirePolicyConfig> configMap) {
+        public void onCreate(SapphireGroupPolicy group, SapphireObjectSpec spec) {
             this.group = (DHTGroupPolicy) group;
         }
 
@@ -102,8 +101,7 @@ public class DHTPolicy2 extends DefaultSapphirePolicy {
         private DHTGroupPolicy group = null;
 
         @Override
-        public void onCreate(
-                SapphireGroupPolicy group, Map<String, SapphirePolicyConfig> configMap) {
+        public void onCreate(SapphireGroupPolicy group, SapphireObjectSpec spec) {
             this.group = (DHTGroupPolicy) group;
         }
 
@@ -140,10 +138,7 @@ public class DHTPolicy2 extends DefaultSapphirePolicy {
         }
 
         @Override
-        public void onCreate(
-                String region,
-                SapphireServerPolicy server,
-                Map<String, SapphirePolicyConfig> configMap)
+        public void onCreate(String region, SapphireServerPolicy server, SapphireObjectSpec spec)
                 throws java.rmi.RemoteException {
             nodes = new HashMap<Integer, DHTNode>();
 

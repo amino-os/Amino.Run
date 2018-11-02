@@ -11,7 +11,6 @@ import static sapphire.common.UtilsTest.setFieldValueOnInstance;
 import java.net.InetSocketAddress;
 import java.rmi.registry.LocateRegistry;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -206,7 +205,7 @@ public class LoadBalancedFrontendPolicyTest extends BaseTest {
         // Expecting error message- Configured replicas count: 5, created replica count : 2
         thrown.expectMessage("Configured replicas count: 5, created replica count : 2");
         setFieldValueOnInstance(group1, "replicaCount", 5);
-        group1.onCreate("", this.server1, new HashMap<>());
+        group1.onCreate("", this.server1, null);
     }
 
     @After

@@ -99,8 +99,7 @@ public class DHTPolicy extends DefaultSapphirePolicy {
                     // TODO (Sungwook, 2018-10-2) Passing processedPolicies may not be necessary as
                     // they are already available.
                     SapphireServerPolicy replica =
-                            dhtServer.sapphire_replicate(
-                                    server.getProcessedPolicies(), region, spec);
+                            dhtServer.sapphire_replicate(server.getProcessedPolicies(), region);
 
                     // TODO: hack for demo. When we demo DHT + master slave, DHT
                     // is not the last DM, and therefore should not call sapphire_pin

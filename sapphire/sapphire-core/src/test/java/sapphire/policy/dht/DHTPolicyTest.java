@@ -79,10 +79,7 @@ public class DHTPolicyTest {
             return new KernelOID(oid);
         }
 
-        // TODO (merge):
-        // @Override
-        // public void onCreate(SapphirePolicy.SapphireGroupPolicy group, Annotation[] annotations)
-        // {
+        @Override
         public void onCreate(SapphirePolicy.SapphireGroupPolicy group, SapphireObjectSpec spec) {
             super.onCreate(group, spec);
         }
@@ -95,9 +92,7 @@ public class DHTPolicyTest {
 
         @Override
         public SapphirePolicy.SapphireServerPolicy sapphire_replicate(
-                List<SapphirePolicyContainer> processedPolicies,
-                String region,
-                SapphireObjectSpec spec) {
+                List<SapphirePolicyContainer> processedPolicies, String region) {
             return new ServerPolicy();
         }
 

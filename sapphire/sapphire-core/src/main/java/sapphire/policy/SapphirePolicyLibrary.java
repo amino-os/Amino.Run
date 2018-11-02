@@ -144,9 +144,7 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 
         /** Creates a replica of this server and registers it with the group. */
         public SapphireServerPolicy sapphire_replicate(
-                List<SapphirePolicyContainer> processedPolicies,
-                String region,
-                SapphireObjectSpec spec)
+                List<SapphirePolicyContainer> processedPolicies, String region)
                 throws RemoteException {
             KernelObjectStub serverPolicyStub = null;
             SapphireServerPolicy serverPolicy = null;

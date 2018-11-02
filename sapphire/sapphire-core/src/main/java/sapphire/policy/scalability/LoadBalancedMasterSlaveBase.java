@@ -7,7 +7,11 @@ import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -18,7 +22,11 @@ import sapphire.common.Utils;
 import sapphire.kernel.common.GlobalKernelReferences;
 import sapphire.kernel.common.KernelObjectStub;
 import sapphire.policy.DefaultSapphirePolicy;
-import sapphire.policy.scalability.masterslave.*;
+import sapphire.policy.scalability.masterslave.Lock;
+import sapphire.policy.scalability.masterslave.MethodInvocationRequest;
+import sapphire.policy.scalability.masterslave.MethodInvocationResponse;
+import sapphire.policy.scalability.masterslave.ReplicationRequest;
+import sapphire.policy.scalability.masterslave.ReplicationResponse;
 
 /**
  * Base class for LoadBalancedMasterSlave DM

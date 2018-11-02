@@ -38,7 +38,7 @@ dependencies {
     // https://github.com/Huawei-PaaS/DCAP-Sapphire/blob/master/docs/GettingStarted.md#quick-start
     // to set up GraalVM properly.
 
-    compile 'org.graalvm:graal-sdk:1.0.0-rc7'
+    compile 'org.graalvm:graal-sdk:1.0.0-rc5'
     compile 'org.yaml:snakeyaml:1.23'
     testCompile 'org.mockito:mockito-core:1.+'
     testCompile 'org.powermock:powermock:1.6.5'
@@ -59,6 +59,48 @@ dependencies {
 // consistent with the values used by Maven Publish Plugin
 group = project.property('mavenGroupId')
 version =  project.property('mavenVersion')
+
+/*
+   Return a string containing the GraalVM version, e.g. "1.0.0-rc5" returned by 'java -version'
+   NOTE: This is a very clunky way of executing 'java -version | grep GraalVM | awk {print $2}'
+         I could not find an easier way to do it in gradle - see below
+         Note that java outputs version info to stderr, not stdout
+*/
+def getGraalVmVersion = { ->
+    def javaErrOut = new PipedOutputStream()
+    def grepIn = new PipedInputStream(javaErrOut)
+    def grepOut = new PipedOutputStream()
+    def awkIn = new PipedInputStream(grepOut)
+    def awkOut = new ByteArrayOutputStream()
+    exec {
+        commandLine 'java', '-version'
+        errorOutput = javaErrOut
+    }
+    exec {
+        commandLine 'grep', 'GraalVM'
+        standardInput = grepIn
+        standardOutput = grepOut
+    }
+    exec {
+        commandLine 'awk', '{print $2}'
+        standardInput = awkIn
+        standardOutput = awkOut
+    }
+    return awkOut.toString().trim()
+}
+
+// Check that the installed GraalVM version matches the the standard version we use for this project.
+task checkGraalVmVersion {
+    inputs.property('graalVmVersion', null)
+    inputs.property('actualVersion', { getGraalVmVersion() })
+    doLast {
+        def requiredVersion = project.property('graalVmVersion')
+        def actualVersion =  getGraalVmVersion()
+        if (!requiredVersion.equals(actualVersion)) {
+            throw new GradleException("Incorrect GraalVM version '" + actualVersion + "' installed. Version '" + requiredVersion + "' required.")
+        }
+    }
+}
 
 task integTest(type: Test) {
     testClassesDirs = sourceSets.integrationTest.output.classesDirs
@@ -105,5 +147,6 @@ compileGraalStub.mustRunAfter genGraalStub
 compileTestJava.dependsOn compileGraalStub
 check.dependsOn tasks.googleJavaFormat
 check.dependsOn integTest
+compileJava.dependsOn checkGraalVmVersion
 integTest.mustRunAfter test
 jar.inputs.dir compileStubs.outputs // jar needs to be rebuilt if stubs got recompiled

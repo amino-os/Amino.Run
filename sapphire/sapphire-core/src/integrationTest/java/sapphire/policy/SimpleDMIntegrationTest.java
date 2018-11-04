@@ -9,12 +9,15 @@ import java.nio.file.Files;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.List;
+import java.util.concurrent.*;
 import org.junit.*;
 import sapphire.app.SapphireObjectSpec;
 import sapphire.common.SapphireObjectID;
 import sapphire.demo.KVStore;
 import sapphire.kernel.server.KernelServerImpl;
 import sapphire.oms.OMSServer;
+import sapphire.policy.serializability.TransactionAlreadyStartedException;
+import sapphire.policy.serializability.TransactionException;
 
 /**
  * Test <strong>simple</strong> deployment managers. Complex DMs, e.g. Consensus, that require
@@ -52,8 +55,9 @@ public class SimpleDMIntegrationTest {
             }
 
             SapphireObjectSpec spec = readSapphireSpec(f);
-            if (f.getName().startsWith("LockingTransaction")) {
-                runLockingTransactionTest(spec);
+            if (f.getName().startsWith("LockingTransaction")
+                    || f.getName().startsWith("OptConcurrentTransaction")) {
+                runTransactionTest(spec);
             } else if (f.getName().startsWith("ExplicitCaching")) {
                 runExplicitCachingTest(spec);
             } else if (f.getName().startsWith("ExplicitCheckpoint")) {
@@ -99,17 +103,149 @@ public class SimpleDMIntegrationTest {
         }
     }
 
-    private void runLockingTransactionTest(SapphireObjectSpec spec) throws Exception {
-        SapphireObjectID sapphireObjId = oms.createSapphireObject(spec.toString());
-        KVStore store = (KVStore) oms.acquireSapphireObjectStub(sapphireObjId);
-        for (int i = 0; i < 10; i++) {
-            String key = "k1_" + i;
-            String value = "v1_" + i;
-            store.startTransaction();
-            store.set(key, value);
-            store.commitTransaction();
-            Assert.assertEquals(value, store.get(key));
+    private void singleClientWithTwoThreadsConcurrentTransaction(KVStore client) throws Exception {
+        class CustomTask implements Callable<Void> {
+            private KVStore store;
+            private String key;
+            private String value;
+
+            public CustomTask(KVStore store, String key, String value) {
+                this.store = store;
+                this.key = key;
+                this.value = value;
+            }
+
+            @Override
+            public Void call() throws Exception {
+                store.startTransaction();
+                store.set(key, value);
+                store.commitTransaction();
+                return null;
+            }
         }
+
+        String key1 = "k1";
+        String value1 = "v1";
+        String key2 = "k2";
+        String value2 = "v2";
+
+        /* Create a thread pool */
+        ExecutorService executor = Executors.newFixedThreadPool(2);
+
+        CustomTask task1 = new CustomTask(client, key1, value1);
+        CustomTask task2 = new CustomTask(client, key2, value2);
+
+        FutureTask<Void> futureTask1 = new FutureTask<>(task1);
+        FutureTask<Void> futureTask2 = new FutureTask<>(task2);
+
+        executor.execute(futureTask1);
+        executor.execute(futureTask2);
+
+        /* Wait for the tasks to be executed and collect the result. One thread is expected to start the transaction.
+        Other thread fails to start the transaction with transaction already started exception. Verify the value if set
+        operation is successful, Otherwise verify the exception */
+        while (!futureTask1.isDone() && !futureTask2.isDone()) ;
+        try {
+            /* Collect the result */
+            futureTask1.get();
+            Assert.assertEquals(value1, client.get(key1));
+        } catch (ExecutionException e) {
+            /* Execution exception wraps the exception thrown by thread */
+            Assert.assertEquals(TransactionAlreadyStartedException.class, e.getCause().getClass());
+        }
+
+        try {
+            /* Collect the result */
+            futureTask2.get();
+            Assert.assertEquals(value2, client.get(key2));
+        } catch (ExecutionException e) {
+            /* Execution exception wraps the exception thrown by thread */
+            Assert.assertEquals(TransactionAlreadyStartedException.class, e.getCause().getClass());
+        }
+
+        /* shut down the executor service */
+        executor.shutdown();
+    }
+
+    private void TwoClientsConcurrentTransaction(KVStore client1, KVStore client2)
+            throws Exception {
+        class CustomTask implements Callable<Void> {
+            private KVStore store;
+            private String key;
+            private String value;
+
+            public CustomTask(KVStore store, String key, String value) {
+                this.store = store;
+                this.key = key;
+                this.value = value;
+            }
+
+            @Override
+            public Void call() throws Exception {
+                store.startTransaction();
+                for (int i = 0; i < 50; i++) {
+                    store.set(key, value);
+                }
+                store.commitTransaction();
+                return null;
+            }
+        }
+
+        String key1 = "k3";
+        String value1 = "v3";
+        String key2 = "k4";
+        String value2 = "v4";
+
+        /* Create a thread pool */
+        ExecutorService executor = Executors.newFixedThreadPool(2);
+
+        CustomTask task1 = new CustomTask(client1, key1, value1);
+        CustomTask task2 = new CustomTask(client2, key2, value2);
+
+        FutureTask<Void> futureTask1 = new FutureTask<>(task1);
+        FutureTask<Void> futureTask2 = new FutureTask<>(task2);
+
+        executor.execute(futureTask1);
+        executor.execute(futureTask2);
+
+        /* Wait for the tasks to be executed and collect the result. One thread or both the threads can succeed the
+        transaction. Verify whether set operation is successful or transaction exception has occurred */
+        while (!futureTask1.isDone() && !futureTask2.isDone()) ;
+        try {
+            /* Collect the result */
+            futureTask1.get();
+            Assert.assertEquals(value1, client1.get(key1));
+        } catch (ExecutionException e) {
+            /* Execution exception wraps the exception thrown by thread */
+            Assert.assertEquals(TransactionException.class, e.getCause().getClass());
+        }
+
+        try {
+            /* Collect the result */
+            futureTask2.get();
+            Assert.assertEquals(value2, client2.get(key2));
+        } catch (ExecutionException e) {
+            /* Execution exception wraps the exception thrown by thread */
+            Assert.assertEquals(TransactionException.class, e.getCause().getClass());
+        }
+
+        /* shut down the executor service */
+        executor.shutdown();
+    }
+
+    private void runTransactionTest(SapphireObjectSpec spec) throws Exception {
+        SapphireObjectID sapphireObjId = oms.createSapphireObject(spec.toString());
+        KVStore client1 = (KVStore) oms.acquireSapphireObjectStub(sapphireObjId);
+
+        /* Test 1: Single app client with 2 threads doing concurrent transactions. One succeeds and other fails the
+        transaction */
+        singleClientWithTwoThreadsConcurrentTransaction(client1);
+
+        KVStore client2 = (KVStore) oms.acquireSapphireObjectStub(sapphireObjId);
+
+        /* Test 2: Two app clients with a thread each doing concurrent transactions. Either one or both can succeed the
+        transaction */
+        TwoClientsConcurrentTransaction(client1, client2);
     }
 
     private void runExplicitMigration(SapphireObjectSpec spec) throws Exception {

@@ -2,6 +2,8 @@ package sapphire.policy.serializability;
 
 import java.util.ArrayList;
 import sapphire.policy.cache.CacheLeasePolicy;
+import sapphire.policy.cache.LeaseExpiredException;
+import sapphire.policy.cache.LeaseNotAvailableException;
 
 /**
  * Created by quinton on 1/21/18. Multi-RPC transactions w/ server-side locking, no concurrent
@@ -36,12 +38,13 @@ public class LockingTransactionPolicy extends CacheLeasePolicy {
                         } catch (Exception e) {
                             rollbackTransaction();
                             throw new Exception(
-                                    "Exception occurred inside transaction.  Transaction rolled back.",
+                                    "Exception occurred inside transaction. Transaction rolled back.",
                                     e);
                         }
                     } else { // Transaction has timed out.
                         rollbackTransaction();
-                        throw new Exception("Transaction timed out.  Transaction rolled back.");
+                        throw new TransactionException(
+                                "Transaction timed out.  Transaction rolled back.");
                     }
                 } else { // Outside of transactions, we invoke against the server
                     return getServer().onRPC(method, params);
@@ -66,15 +69,20 @@ public class LockingTransactionPolicy extends CacheLeasePolicy {
 
         public synchronized void startTransaction(ArrayList<Object> params) throws Exception {
             if (!transactionInProgress) {
-                if (!params.isEmpty()) {
-                    getNewLease((Integer) params.get(0));
-                } else {
-                    getNewLease(CacheLeasePolicy.DEFAULT_LEASE_PERIOD);
+                try {
+                    if (!params.isEmpty()) {
+                        getNewLease((Integer) params.get(0));
+                    } else {
+                        getNewLease(CacheLeasePolicy.DEFAULT_LEASE_PERIOD);
+                    }
+                } catch (LeaseNotAvailableException e) {
+                    throw new TransactionException(
+                            "Failed to start a transaction. Try again later.");
                 }
                 transactionInProgress = true;
             } else {
                 throw new TransactionAlreadyStartedException(
-                        "Transaction already started on Sapphire object.  Rollback or commit before starting a new transaction.");
+                        "Transaction already started on Sapphire object. Rollback or commit before starting a new transaction.");
             }
         }
 
@@ -82,23 +90,32 @@ public class LockingTransactionPolicy extends CacheLeasePolicy {
             if (transactionInProgress) {
                 if (!leaseStillValid()) {
                     rollbackTransaction();
-                    throw new Exception("Transaction timed out.  Transaction rolled back.");
+                    throw new TransactionException(
+                            "Transaction timed out. Transaction rolled back.");
                 } else {
                     sync(); // Copy the results of the transaction to the server.
                     releaseCurrentLease();
-                    transactionInProgress = false;
                 }
             } else {
-                throw new NoTransactionStartedException("No transaction to commit");
+                throw new NoTransactionStartedException("No transaction to commit.");
             }
         }
 
         public synchronized void rollbackTransaction() throws Exception {
             if (transactionInProgress) {
                 releaseCurrentLease();
-                transactionInProgress = false;
             } else {
-                throw new NoTransactionStartedException("No transaction to roll back");
+                throw new NoTransactionStartedException("No transaction to rollback.");
+            }
+        }
+
+        @Override
+        protected void releaseCurrentLease() throws Exception {
+            transactionInProgress = false;
+            try {
+                super.releaseCurrentLease();
+            } catch (LeaseExpiredException e) {
+                throw new TransactionException("Transaction timed out. Transaction rolled back.");
             }
         }
 

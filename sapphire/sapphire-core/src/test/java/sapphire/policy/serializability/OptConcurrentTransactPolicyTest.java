@@ -29,11 +29,11 @@ public class OptConcurrentTransactPolicyTest {
     private ArrayList<Object> noParams, oneParam, twoParam, threeParam;
     String
             startMethodName =
-                    "public void sapphire.policy.serializability.OptConcurrentTransactPolicyTest$OptConcurrentTransactionTest.startTransaction() throws java.lang.Exception",
+                    "public void sapphire.policy.serializability.OptConcurrentTransactPolicyTest$OptConcurrentTransactionTest.startTransaction() throws sapphire.policy.serializability.TransactionAlreadyStartedException,sapphire.policy.serializability.TransactionException",
             commitMethodName =
-                    "public void sapphire.policy.serializability.OptConcurrentTransactPolicyTest$OptConcurrentTransactionTest.commitTransaction() throws java.lang.Exception",
+                    "public void sapphire.policy.serializability.OptConcurrentTransactPolicyTest$OptConcurrentTransactionTest.commitTransaction() throws sapphire.policy.serializability.NoTransactionStartedException,sapphire.policy.serializability.TransactionException",
             rollbackMethodName =
-                    "public void sapphire.policy.serializability.OptConcurrentTransactPolicyTest$OptConcurrentTransactionTest.rollbackTransaction() throws java.lang.Exception",
+                    "public void sapphire.policy.serializability.OptConcurrentTransactPolicyTest$OptConcurrentTransactionTest.rollbackTransaction() throws sapphire.policy.serializability.NoTransactionStartedException,sapphire.policy.serializability.TransactionException",
             setMethodName =
                     "public void sapphire.policy.serializability.OptConcurrentTransactPolicyTest$OptConcurrentTransactionTest.setI(int)",
             getMethodName =
@@ -330,7 +330,7 @@ public class OptConcurrentTransactPolicyTest {
     public void rollbackTransactWhenTransactNotStarted() throws Exception {
 
         thrown.expect(NoTransactionStartedException.class);
-        thrown.expectMessage(containsString("No transaction to roll back."));
+        thrown.expectMessage(containsString("No transaction to rollback."));
         this.client1.onRPC(rollbackMethodName, noParams);
     }
 }

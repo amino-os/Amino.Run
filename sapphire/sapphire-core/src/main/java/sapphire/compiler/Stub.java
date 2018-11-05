@@ -116,7 +116,12 @@ public abstract class Stub implements RmicConstants {
     private String getMethodImplementations() {
         StringBuilder buffer = new StringBuilder();
         for (Iterator<MethodStub> i = methods.iterator(); i.hasNext(); ) {
-            buffer.append(EOLN + i.next().getStubImpl(false));
+            MethodStub m = i.next();
+            if (m.name.equals("onRPC")) {
+                buffer.append(EOLN + m.getStubImpl(false));
+            } else {
+                buffer.append(EOLN + m.getStubImpl(true));
+            }
         }
         return buffer.toString();
     }

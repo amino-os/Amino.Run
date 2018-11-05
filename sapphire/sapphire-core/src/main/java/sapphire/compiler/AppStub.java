@@ -32,6 +32,12 @@ public final class AppStub extends Stub {
         return ms;
     }
 
+    /**
+     * Method defined for overriding Base class abstract method. Is a dummy method in AppStub class,
+     * as no handling is needed in the AppStub, as this method handles DM class methods.
+     *
+     * @return List of DM methods
+     */
     @Override
     public TreeSet<MethodStub> getDMMethods() {
         TreeSet<MethodStub> ms = new TreeSet<MethodStub>();
@@ -149,6 +155,8 @@ public final class AppStub extends Stub {
     /**
      * Returns the stub implementation code section source for the methods
      *
+     * @param m : Method for which stub implementation code is needed.
+     * @param isDMMethod : Is not used as the same is not needed in AppStub class.
      * @return Stub implementation code for the methods.
      */
     @Override

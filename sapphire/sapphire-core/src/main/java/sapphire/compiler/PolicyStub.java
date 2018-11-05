@@ -16,7 +16,7 @@ public class PolicyStub extends Stub {
     public TreeSet<MethodStub> getMethods() {
         TreeSet<MethodStub> ms = new TreeSet<MethodStub>();
 
-        Class<?> ancestorClass = stubClass.getSuperclass();
+        Class<?> ancestorClass = stubClass;
         while ((!ancestorClass.getSimpleName().equals("SapphireServerPolicyLibrary"))
                 && (!ancestorClass.getSimpleName().equals("SapphireGroupPolicyLibrary"))) {
 
@@ -33,13 +33,19 @@ public class PolicyStub extends Stub {
         return ms;
     }
 
+    /**
+     * Method checks whether onRPC method has been overriden in the DM class. If overridden, then
+     * the onRPC method has to be Directly invoked on the DM instead of following the chain in the
+     * case of MultiDM scenarios.
+     *
+     * @return List of DM Class Methods
+     */
     @Override
     public TreeSet<MethodStub> getDMMethods() {
         TreeSet<MethodStub> ms = new TreeSet<MethodStub>();
-
         Class<?> dmClass = stubClass;
         for (Method m : dmClass.getDeclaredMethods()) {
-            if (Modifier.isPublic(m.getModifiers())) {
+            if (Modifier.isPublic(m.getModifiers()) && m.getName().equals("onRPC")) {
                 ms.add(new MethodStub((Method) m));
             }
         }

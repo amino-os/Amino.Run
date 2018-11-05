@@ -57,7 +57,7 @@ public class SimpleDMIntegrationTest {
             SapphireObjectSpec spec = readSapphireSpec(f);
             if (f.getName().startsWith("LockingTransaction")
                     || f.getName().startsWith("OptConcurrentTransaction")) {
-                runTransactionTest(spec);
+                runLockingAndOptimisticTransactionTest(spec);
             } else if (f.getName().startsWith("ExplicitCaching")) {
                 runExplicitCachingTest(spec);
             } else if (f.getName().startsWith("ExplicitCheckpoint")) {
@@ -128,6 +128,7 @@ public class SimpleDMIntegrationTest {
         String value1 = "v1";
         String key2 = "k2";
         String value2 = "v2";
+        int failedTransactionCount = 0;
 
         /* Create a thread pool */
         ExecutorService executor = Executors.newFixedThreadPool(2);
@@ -152,6 +153,7 @@ public class SimpleDMIntegrationTest {
         } catch (ExecutionException e) {
             /* Execution exception wraps the exception thrown by thread */
             Assert.assertEquals(TransactionAlreadyStartedException.class, e.getCause().getClass());
+            failedTransactionCount++;
         }
 
         try {
@@ -161,7 +163,11 @@ public class SimpleDMIntegrationTest {
         } catch (ExecutionException e) {
             /* Execution exception wraps the exception thrown by thread */
             Assert.assertEquals(TransactionAlreadyStartedException.class, e.getCause().getClass());
+            failedTransactionCount++;
         }
+
+        /* Both threads are never expected to fail. Atleast one thread must succeed. */
+        Assert.assertNotEquals(2, failedTransactionCount);
 
         /* shut down the executor service */
         executor.shutdown();
@@ -195,6 +201,7 @@ public class SimpleDMIntegrationTest {
         String value1 = "v3";
         String key2 = "k4";
         String value2 = "v4";
+        int failedTransactionCount = 0;
 
         /* Create a thread pool */
         ExecutorService executor = Executors.newFixedThreadPool(2);
@@ -218,6 +225,7 @@ public class SimpleDMIntegrationTest {
         } catch (ExecutionException e) {
             /* Execution exception wraps the exception thrown by thread */
             Assert.assertEquals(TransactionException.class, e.getCause().getClass());
+            failedTransactionCount++;
         }
 
         try {
@@ -227,13 +235,17 @@ public class SimpleDMIntegrationTest {
         } catch (ExecutionException e) {
             /* Execution exception wraps the exception thrown by thread */
             Assert.assertEquals(TransactionException.class, e.getCause().getClass());
+            failedTransactionCount++;
         }
+
+        /* Both threads are never expected to fail. Atleast one thread must succeed. */
+        Assert.assertNotEquals(2, failedTransactionCount);
 
         /* shut down the executor service */
         executor.shutdown();
     }
 
-    private void runTransactionTest(SapphireObjectSpec spec) throws Exception {
+    private void runLockingAndOptimisticTransactionTest(SapphireObjectSpec spec) throws Exception {
         SapphireObjectID sapphireObjId = oms.createSapphireObject(spec.toString());
         KVStore client1 = (KVStore) oms.acquireSapphireObjectStub(sapphireObjId);
 

@@ -1,5 +1,6 @@
 package sapphire.policy.serializability;
 
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doReturn;
@@ -11,7 +12,9 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.UUID;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.mockito.Matchers;
 import sapphire.common.AppObject;
 import sapphire.common.Utils;
@@ -24,6 +27,19 @@ public class LockingTransactionPolicyTest {
     private LockingTransactionTest so;
     private AppObject appObject;
     private ArrayList<Object> noParams, oneParam, twoParam;
+    String
+            startMethodName =
+                    "public void sapphire.policy.serializability.LockingTransactionImpl.startTransaction() throws sapphire.policy.serializability.TransactionAlreadyStartedException,sapphire.policy.serializability.TransactionException",
+            commitMethodName =
+                    "public void sapphire.policy.serializability.LockingTransactionImpl.commitTransaction() throws sapphire.policy.serializability.NoTransactionStartedException,sapphire.policy.serializability.TransactionException",
+            rollbackMethodName =
+                    "public void sapphire.policy.serializability.LockingTransactionImpl.rollbackTransaction() throws sapphire.policy.serializability.NoTransactionStartedException,sapphire.policy.serializability.TransactionException",
+            setMethodName =
+                    "public void sapphire.policy.serializability.LockingTransactionTest.setI(int)",
+            getMethodName =
+                    "public int sapphire.policy.serializability.LockingTransactionTest.getI()";
+
+    @Rule public ExpectedException thrown = ExpectedException.none();
 
     @Before
     public void setUp() throws Exception {
@@ -51,16 +67,6 @@ public class LockingTransactionPolicyTest {
 
     @Test
     public void startAndCommitTransaction() throws Exception {
-        String
-                startMethodName =
-                        "public void sapphire.policy.serializability.LockingTransactionImpl.startTransaction() throws java.lang.Exception",
-                commitMethodName =
-                        "public void sapphire.policy.serializability.LockingTransactionImpl.commitTransaction() throws java.lang.Exception",
-                setMethodName =
-                        "public void sapphire.policy.serializability.LockingTransactionTest.setI(int)",
-                getMethodName =
-                        "public int sapphire.policy.serializability.LockingTransactionTest.getI()";
-
         // Update the object to 1
         this.client.onRPC(setMethodName, oneParam);
         verify(this.server).onRPC(setMethodName, oneParam);
@@ -86,16 +92,6 @@ public class LockingTransactionPolicyTest {
 
     @Test
     public void startAndRollbackTransaction() throws Exception {
-        String
-                startMethodName =
-                        "public void sapphire.policy.serializability.LockingTransactionImpl.startTransaction() throws java.lang.Exception",
-                rollbackMethodName =
-                        "public void sapphire.policy.serializability.LockingTransactionImpl.rollbackTransaction() throws java.lang.Exception",
-                setMethodName =
-                        "public void sapphire.policy.serializability.LockingTransactionTest.setI(int)",
-                getMethodName =
-                        "public int sapphire.policy.serializability.LockingTransactionTest.getI()";
-
         // Update the object to 1
         this.client.onRPC(setMethodName, oneParam);
         verify(this.server).onRPC(setMethodName, oneParam);
@@ -126,6 +122,49 @@ public class LockingTransactionPolicyTest {
         assertEquals(1, so.getI());
 
         verify(this.server).onRPC(getMethodName, noParams);
+    }
+
+    @Test
+    public void startTransactionWithMultipleClients() throws Exception {
+        // Start transaction with first client
+        this.client.onRPC(startMethodName, noParams);
+
+        // Update the object to 2 from first client
+        this.client.onRPC(setMethodName, twoParam);
+        assertEquals(2, this.client.onRPC(getMethodName, noParams));
+
+        /* Create another client */
+        LockingTransactionPolicy.ClientPolicy client2 =
+                spy(LockingTransactionPolicy.ClientPolicy.class);
+        client2.setServer(this.server);
+
+        // Start a transaction from new client
+        thrown.expect(TransactionException.class);
+        thrown.expectMessage(containsString("Failed to start a transaction."));
+        client2.onRPC(startMethodName, noParams);
+    }
+
+    @Test
+    public void startTransactWithSingleClientWhenTransactIsInProgress() throws Exception {
+        this.client.onRPC(startMethodName, noParams);
+
+        thrown.expect(TransactionAlreadyStartedException.class);
+        thrown.expectMessage(containsString("Transaction already started on Sapphire object."));
+        this.client.onRPC(startMethodName, noParams);
+    }
+
+    @Test
+    public void commitTransactWhenTransactNotStarted() throws Exception {
+        thrown.expect(NoTransactionStartedException.class);
+        thrown.expectMessage(containsString("No transaction to commit."));
+        this.client.onRPC(commitMethodName, noParams);
+    }
+
+    @Test
+    public void rollbackTransactWhenTransactNotStarted() throws Exception {
+        thrown.expect(NoTransactionStartedException.class);
+        thrown.expectMessage(containsString("No transaction to rollback."));
+        this.client.onRPC(rollbackMethodName, noParams);
     }
 }
 

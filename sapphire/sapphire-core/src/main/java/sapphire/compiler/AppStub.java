@@ -251,7 +251,7 @@ public final class AppStub extends Stub {
                             + indenter.tIncrease(tabWidth + 2)
                             + "throw ("
                             + clz.getName()
-                            + ")ex;"
+                            + ") ex;"
                             + EOLN);
             if (i.hasNext()) {
                 buffer.append(indenter.tIncrease(tabWidth + 1) + "} else ");
@@ -268,6 +268,20 @@ public final class AppStub extends Stub {
                         + indenter.tIncrease(tabWidth + 1)
                         + '}'
                         + EOLN);
+
+        for (Iterator i = m.catches.iterator(); i.hasNext(); ) {
+            Class clz = (Class) i.next();
+            buffer.append(
+                    indenter.tIncrease(tabWidth)
+                            + "} catch (" //$NON-NLS-1$
+                            + clz.getName()
+                            + " e) {"
+                            + EOLN //$NON-NLS-1$
+                            + indenter.tIncrease(tabWidth + 1)
+                            + "throw e;"
+                            + EOLN); //$NON-NLS-1$
+        }
+
         buffer.append(
                 indenter.tIncrease(tabWidth)
                         + "} catch (java.lang.Exception e) {"

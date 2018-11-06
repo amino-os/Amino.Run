@@ -43,7 +43,7 @@ public class OptConcurrentTransactPolicy extends DefaultSapphirePolicy {
 
         if (null == digest) {
             throw new TransactionException(
-                    "Message Digest calculation exception. Start new transaction again.");
+                    "Message Digest calculation exception. Start a new transaction again.");
         }
 
         return digest;
@@ -74,7 +74,7 @@ public class OptConcurrentTransactPolicy extends DefaultSapphirePolicy {
                     } catch (Exception e) {
                         rollbackTransaction();
                         throw new TransactionException(
-                                "Exception occurred inside transaction.  Transaction rolled back.",
+                                "Exception occurred inside transaction. Transaction rolled back.",
                                 e);
                     }
                 } else {
@@ -139,7 +139,7 @@ public class OptConcurrentTransactPolicy extends DefaultSapphirePolicy {
                 cachedObject = null;
                 msgDigest = null;
             } else {
-                throw new NoTransactionStartedException("No transaction to roll back.");
+                throw new NoTransactionStartedException("No transaction to rollback.");
             }
         }
     }
@@ -161,7 +161,7 @@ public class OptConcurrentTransactPolicy extends DefaultSapphirePolicy {
             } else {
                 throw new TransactionException(
                         "Some other client updated the object. "
-                                + "Transaction is invalid now. Get app object and try again.");
+                                + "Transaction is invalid now. Start a new transaction again.");
             }
         }
 

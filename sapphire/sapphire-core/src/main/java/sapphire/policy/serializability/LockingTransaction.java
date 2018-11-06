@@ -12,5 +12,6 @@ public interface LockingTransaction extends Transaction {
      *
      * @param timeoutMillisec
      */
-    public void startTransaction(long timeoutMillisec);
+    public void startTransaction(long timeoutMillisec)
+            throws TransactionAlreadyStartedException, TransactionException;
 }

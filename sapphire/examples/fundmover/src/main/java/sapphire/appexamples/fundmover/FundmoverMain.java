@@ -74,13 +74,13 @@ public class FundmoverMain {
 
             BankAccount bankaccount = (BankAccount)omsserver.acquireSapphireObjectStub(bankAccountSapphireObjectID);
 
-            System.out.println("creating the fainance object...");
+            System.out.println("creating the finance object...");
 
             SapphireObjectID financeSapphireObjectID= omsserver.createSapphireObject(financeSpec.toString(),wallet,bankaccount);
 
             Finance finance = (Finance) omsserver.acquireSapphireObjectStub(financeSapphireObjectID);
 
-            System.out.println("trnasfering fund between 2 entities...");
+            System.out.println("transfering fund between 2 entities...");
 
             finance.transferFromWallet(30);
             System.out.println("checking the current balance after the transaction...");

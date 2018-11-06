@@ -73,7 +73,7 @@ public class BankAccount implements SapphireObject, TransactionManager {
     @Override
     public Vote vote(UUID transactionId) throws TransactionExecutionException {
         System.out.println("xa vote");
-            Vote vote = Vote.YES;
+        Vote vote = Vote.YES;
         try {
             Statement statement = this.conn.createStatement();
             try {

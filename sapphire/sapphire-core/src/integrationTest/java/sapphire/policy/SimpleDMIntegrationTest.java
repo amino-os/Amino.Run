@@ -24,13 +24,19 @@ import sapphire.policy.serializability.TransactionException;
  * multiple kernel servers are not covered here.
  */
 public class SimpleDMIntegrationTest {
+    private static String RESOURCE_PATH = "specs/simple-dm/";
+    private static String RESOURCE_REAL_PATH;
     private static String kstIp = "127.0.0.1";
     private static int ksPort = 22345;
     private OMSServer oms;
+    private SapphireObjectID sapphireObjId = null;
 
     @BeforeClass
     public static void bootstrap() throws Exception {
         startOmsAndKernelServers("r1");
+        ClassLoader loader = Thread.currentThread().getContextClassLoader();
+        URL url = loader.getResource(RESOURCE_PATH);
+        RESOURCE_REAL_PATH = url.getPath();
     }
 
     @Before
@@ -41,48 +47,9 @@ public class SimpleDMIntegrationTest {
                 new InetSocketAddress(hostIp, hostPort), new InetSocketAddress(omsIp, omsPort));
     }
 
-    /**
-     * Test sapphire object specifications in <code>src/test/resources/specs</code> directory.
-     *
-     * @throws Exception
-     */
-    @Test
-    public void testDMs() throws Exception {
-        File[] files = getResourceFiles("specs/simple-dm/");
-        for (File f : files) {
-            if (!f.getName().endsWith(".yaml")) {
-                continue;
-            }
-
-            SapphireObjectSpec spec = readSapphireSpec(f);
-            if (f.getName().startsWith("LockingTransaction")
-                    || f.getName().startsWith("OptConcurrentTransaction")) {
-                runLockingAndOptimisticTransactionTest(spec);
-            } else if (f.getName().startsWith("ExplicitCaching")) {
-                runExplicitCachingTest(spec);
-            } else if (f.getName().startsWith("ExplicitCheckpoint")) {
-                runExplicitCheckPointTest(spec);
-            } else if (f.getName().startsWith("PeriodicCheckpoint")) {
-                runPeriodicCheckpointTest(spec);
-            } else if (f.getName().startsWith("ExplicitMigration")) {
-                runExplicitMigration(spec);
-            } else {
-                runTest(spec);
-            }
-        }
-    }
-
-    /**
-     * Returns files from given subdirectory in resources.
-     *
-     * @param folder the path relative to src/test/resources
-     * @return a list of {@link File}s one for each file in src/test/resources/folder
-     */
-    private static File[] getResourceFiles(String folder) {
-        ClassLoader loader = Thread.currentThread().getContextClassLoader();
-        URL url = loader.getResource(folder);
-        String path = url.getPath();
-        return new File(path).listFiles();
+    private SapphireObjectSpec getSapphireObjectSpecForDM(String dmFileName) throws Exception {
+        File file = new File(RESOURCE_REAL_PATH + dmFileName);
+        return readSapphireSpec(file);
     }
 
     private SapphireObjectSpec readSapphireSpec(File file) throws Exception {
@@ -92,8 +59,15 @@ public class SimpleDMIntegrationTest {
         return spec;
     }
 
-    private void runTest(SapphireObjectSpec spec) throws Exception {
-        SapphireObjectID sapphireObjId = oms.createSapphireObject(spec.toString());
+    /**
+     * Generic test method to be used for a given DM
+     *
+     * @param dmFileName
+     * @throws Exception
+     */
+    private void runTest(String dmFileName) throws Exception {
+        SapphireObjectSpec spec = getSapphireObjectSpecForDM(dmFileName);
+        sapphireObjId = oms.createSapphireObject(spec.toString());
         KVStore store = (KVStore) oms.acquireSapphireObjectStub(sapphireObjId);
         for (int i = 0; i < 10; i++) {
             String key = "k1_" + i;
@@ -103,77 +77,16 @@ public class SimpleDMIntegrationTest {
         }
     }
 
-    private void singleClientWithTwoThreadsConcurrentTransaction(KVStore client) throws Exception {
-        class CustomTask implements Callable<Void> {
-            private KVStore store;
-            private String key;
-            private String value;
-
-            public CustomTask(KVStore store, String key, String value) {
-                this.store = store;
-                this.key = key;
-                this.value = value;
-            }
-
-            @Override
-            public Void call() throws Exception {
-                store.startTransaction();
-                store.set(key, value);
-                store.commitTransaction();
-                return null;
-            }
-        }
-
-        String key1 = "k1";
-        String value1 = "v1";
-        String key2 = "k2";
-        String value2 = "v2";
-        int failedTransactionCount = 0;
-
-        /* Create a thread pool */
-        ExecutorService executor = Executors.newFixedThreadPool(2);
-
-        CustomTask task1 = new CustomTask(client, key1, value1);
-        CustomTask task2 = new CustomTask(client, key2, value2);
-
-        FutureTask<Void> futureTask1 = new FutureTask<>(task1);
-        FutureTask<Void> futureTask2 = new FutureTask<>(task2);
-
-        executor.execute(futureTask1);
-        executor.execute(futureTask2);
-
-        /* Wait for the tasks to be executed and collect the result. One thread is expected to start the transaction.
-        Other thread fails to start the transaction with transaction already started exception. Verify the value if set
-        operation is successful, Otherwise verify the exception */
-        while (!futureTask1.isDone() && !futureTask2.isDone()) ;
-        try {
-            /* Collect the result */
-            futureTask1.get();
-            Assert.assertEquals(value1, client.get(key1));
-        } catch (ExecutionException e) {
-            /* Execution exception wraps the exception thrown by thread */
-            Assert.assertEquals(TransactionAlreadyStartedException.class, e.getCause().getClass());
-            failedTransactionCount++;
-        }
-
-        try {
-            /* Collect the result */
-            futureTask2.get();
-            Assert.assertEquals(value2, client.get(key2));
-        } catch (ExecutionException e) {
-            /* Execution exception wraps the exception thrown by thread */
-            Assert.assertEquals(TransactionAlreadyStartedException.class, e.getCause().getClass());
-            failedTransactionCount++;
-        }
-
-        /* Both threads are never expected to fail. Atleast one thread must succeed. */
-        Assert.assertNotEquals(2, failedTransactionCount);
-
-        /* shut down the executor service */
-        executor.shutdown();
-    }
-
-    private void TwoClientsConcurrentTransaction(KVStore client1, KVStore client2)
+    /**
+     * Method to execute two concurrent transactions on the given app client objects.
+     *
+     * @param client1
+     * @param client2
+     * @param expectedException
+     * @throws Exception
+     */
+    private void concurrentTransaction(
+            KVStore client1, KVStore client2, Class<? extends Exception> expectedException)
             throws Exception {
         class CustomTask implements Callable<Void> {
             private KVStore store;
@@ -197,10 +110,10 @@ public class SimpleDMIntegrationTest {
             }
         }
 
-        String key1 = "k3";
-        String value1 = "v3";
-        String key2 = "k4";
-        String value2 = "v4";
+        String key1 = "k1";
+        String value1 = "v1";
+        String key2 = "k2";
+        String value2 = "v2";
         int failedTransactionCount = 0;
 
         /* Create a thread pool */
@@ -216,15 +129,15 @@ public class SimpleDMIntegrationTest {
         executor.execute(futureTask2);
 
         /* Wait for the tasks to be executed and collect the result. One thread or both the threads can succeed the
-        transaction. Verify whether set operation is successful or transaction exception has occurred */
-        while (!futureTask1.isDone() && !futureTask2.isDone()) ;
+        transaction. Verify whether set operation is successful or expected exception has occurred */
+
         try {
             /* Collect the result */
             futureTask1.get();
             Assert.assertEquals(value1, client1.get(key1));
         } catch (ExecutionException e) {
             /* Execution exception wraps the exception thrown by thread */
-            Assert.assertEquals(TransactionException.class, e.getCause().getClass());
+            Assert.assertEquals(expectedException, e.getCause().getClass());
             failedTransactionCount++;
         }
 
@@ -234,7 +147,7 @@ public class SimpleDMIntegrationTest {
             Assert.assertEquals(value2, client2.get(key2));
         } catch (ExecutionException e) {
             /* Execution exception wraps the exception thrown by thread */
-            Assert.assertEquals(TransactionException.class, e.getCause().getClass());
+            Assert.assertEquals(expectedException, e.getCause().getClass());
             failedTransactionCount++;
         }
 
@@ -245,23 +158,142 @@ public class SimpleDMIntegrationTest {
         executor.shutdown();
     }
 
-    private void runLockingAndOptimisticTransactionTest(SapphireObjectSpec spec) throws Exception {
-        SapphireObjectID sapphireObjId = oms.createSapphireObject(spec.toString());
+    /**
+     * Test case with default DM
+     *
+     * @throws Exception
+     */
+    @Test
+    public void runDefaultDMTest() throws Exception {
+        runTest("NoDM.yaml");
+    }
+
+    /**
+     * Test case with atleast once RPC DM
+     *
+     * @throws Exception
+     */
+    @Test
+    public void runAtLeastOnceRpcDMTest() throws Exception {
+        runTest("AtLeastOnceDM.yaml");
+    }
+
+    /**
+     * Test case with cache upon lease DM
+     *
+     * @throws Exception
+     */
+    @Test
+    public void runCacheLeaseDMTest() throws Exception {
+        runTest("CacheLease.yaml");
+    }
+
+    /**
+     * Test case for durable serializable RPC DM
+     *
+     * @throws Exception
+     */
+    @Test
+    public void runDurableSerializableRPCDMTest() throws Exception {
+        runTest("DurableSerializableRPCDM.yaml");
+    }
+
+    /**
+     * Test case with serializable RPC DM
+     *
+     * @throws Exception
+     */
+    @Test
+    public void runSerializableRPCDMTest() throws Exception {
+        runTest("SerializableRPCDM.yaml");
+    }
+
+    /**
+     * Test case with immutable DM
+     *
+     * @throws Exception
+     */
+    @Test
+    public void runImmutableDMTest() throws Exception {
+        runTest("Immutable.yaml");
+    }
+
+    /**
+     * Test case with write through cache DM
+     *
+     * @throws Exception
+     */
+    @Test
+    public void runWriteThroughCacheDMTest() throws Exception {
+        runTest("WriteThroughCacheDM.yaml");
+    }
+
+    /**
+     * Test case with DHT DM
+     *
+     * @throws Exception
+     */
+    @Test
+    public void runDhtDMTest() throws Exception {
+        runTest("DHTDM.yaml");
+    }
+
+    /**
+     * Test case with locking transaction DM
+     *
+     * @throws Exception
+     */
+    @Test
+    public void runLockingTransactionDMTest() throws Exception {
+        SapphireObjectSpec spec = getSapphireObjectSpecForDM("LockingTransaction.yaml");
+        sapphireObjId = oms.createSapphireObject(spec.toString());
         KVStore client1 = (KVStore) oms.acquireSapphireObjectStub(sapphireObjId);
 
-        /* Test 1: Single app client with 2 threads doing concurrent transactions. One succeeds and other fails the
-        transaction */
-        singleClientWithTwoThreadsConcurrentTransaction(client1);
+        /* Test 1: Single app client with 2 threads doing concurrent transactions. One thread is expected to start the
+        transaction. Other fails with transaction already started exception. Verify the value set in successful
+        transaction thread. And verify the transaction already started exception for the failed one */
+        concurrentTransaction(client1, client1, TransactionAlreadyStartedException.class);
+
+        /* Get the second client stub */
+        KVStore client2 = (KVStore) oms.acquireSapphireObjectStub(sapphireObjId);
+
+        /* Test 2: Two app clients with a thread each doing concurrent transactions.One thread or both the threads can
+        succeed the transaction. Verify whether set operation is successful or transaction exception has occurred */
+        concurrentTransaction(client1, client2, TransactionException.class);
+    }
+
+    /**
+     * Test case with optimistic concurrent transaction DM
+     *
+     * @throws Exception
+     */
+    @Test
+    public void runOptimisticConcurrentTransactionDMTest() throws Exception {
+        SapphireObjectSpec spec = getSapphireObjectSpecForDM("OptConcurrentTransactionDM.yaml");
+        sapphireObjId = oms.createSapphireObject(spec.toString());
+        KVStore client1 = (KVStore) oms.acquireSapphireObjectStub(sapphireObjId);
+
+        /* Test 1: Single app client with 2 threads doing concurrent transactions. One thread is expected to start the
+        transaction. Other fails with transaction already started exception.Verify the value set in successful
+        transaction thread. And verify the transaction already started exception for the failed one */
+        concurrentTransaction(client1, client1, TransactionAlreadyStartedException.class);
 
         KVStore client2 = (KVStore) oms.acquireSapphireObjectStub(sapphireObjId);
 
-        /* Test 2: Two app clients with a thread each doing concurrent transactions. Either one or both can succeed the
-        transaction */
-        TwoClientsConcurrentTransaction(client1, client2);
+        /* Test 2: Two app clients with a thread each doing concurrent transactions.One thread or both the threads can
+        succeed the transaction. Verify whether set operation is successful or transaction exception has occurred */
+        concurrentTransaction(client1, client2, TransactionException.class);
     }
 
-    private void runExplicitMigration(SapphireObjectSpec spec) throws Exception {
-        SapphireObjectID sapphireObjId = oms.createSapphireObject(spec.toString());
+    /**
+     * Test case with explicit migration DM
+     *
+     * @throws Exception
+     */
+    @Test
+    public void runExplicitMigration() throws Exception {
+        SapphireObjectSpec spec = getSapphireObjectSpecForDM("ExplicitMigrationDM.yaml");
+        sapphireObjId = oms.createSapphireObject(spec.toString());
         KVStore store = (KVStore) oms.acquireSapphireObjectStub(sapphireObjId);
         String key0 = "k1";
         String value0 = "v1_0";
@@ -288,8 +320,15 @@ public class SimpleDMIntegrationTest {
         Assert.assertEquals(value1, store.get(key1));
     }
 
-    private void runExplicitCachingTest(SapphireObjectSpec spec) throws Exception {
-        SapphireObjectID sapphireObjId = oms.createSapphireObject(spec.toString());
+    /**
+     * Test case with explicit caching DM
+     *
+     * @throws Exception
+     */
+    @Test
+    public void runExplicitCachingTest() throws Exception {
+        SapphireObjectSpec spec = getSapphireObjectSpecForDM("ExplicitCachingDM.yaml");
+        sapphireObjId = oms.createSapphireObject(spec.toString());
         KVStore store = (KVStore) oms.acquireSapphireObjectStub(sapphireObjId);
 
         /* Cache the object */
@@ -315,8 +354,15 @@ public class SimpleDMIntegrationTest {
         }
     }
 
-    private void runExplicitCheckPointTest(SapphireObjectSpec spec) throws Exception {
-        SapphireObjectID sapphireObjId = oms.createSapphireObject(spec.toString());
+    /**
+     * Test case with explicit checkpoint DM
+     *
+     * @throws Exception
+     */
+    @Test
+    public void runExplicitCheckPointTest() throws Exception {
+        SapphireObjectSpec spec = getSapphireObjectSpecForDM("ExplicitCheckpointDM.yaml");
+        sapphireObjId = oms.createSapphireObject(spec.toString());
         KVStore store = (KVStore) oms.acquireSapphireObjectStub(sapphireObjId);
 
         String key = "k1";
@@ -339,8 +385,15 @@ public class SimpleDMIntegrationTest {
         Assert.assertEquals(value0, store.get(key));
     }
 
-    private void runPeriodicCheckpointTest(SapphireObjectSpec spec) throws Exception {
-        SapphireObjectID sapphireObjId = oms.createSapphireObject(spec.toString());
+    /**
+     * Test case with periodic checkpoint DM
+     *
+     * @throws Exception
+     */
+    @Test
+    public void runPeriodicCheckpointTest() throws Exception {
+        SapphireObjectSpec spec = getSapphireObjectSpecForDM("PeriodicCheckpointDM.yaml");
+        sapphireObjId = oms.createSapphireObject(spec.toString());
         KVStore store = (KVStore) oms.acquireSapphireObjectStub(sapphireObjId);
 
         String key = "k1";
@@ -364,6 +417,13 @@ public class SimpleDMIntegrationTest {
 
         /* verify the restore value */
         Assert.assertEquals(preValue, store.get(key));
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        if (sapphireObjId != null) {
+            oms.deleteSapphireObject(sapphireObjId);
+        }
     }
 
     @AfterClass

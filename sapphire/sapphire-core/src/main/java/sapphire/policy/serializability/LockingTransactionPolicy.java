@@ -77,7 +77,7 @@ public class LockingTransactionPolicy extends CacheLeasePolicy {
                     }
                 } catch (LeaseNotAvailableException e) {
                     throw new TransactionException(
-                            "Failed to start a transaction. Try again later.");
+                            "Failed to start a transaction. Try again later.", e);
                 }
                 transactionInProgress = true;
             } else {
@@ -115,7 +115,8 @@ public class LockingTransactionPolicy extends CacheLeasePolicy {
             try {
                 super.releaseCurrentLease();
             } catch (LeaseExpiredException e) {
-                throw new TransactionException("Transaction timed out. Transaction rolled back.");
+                throw new TransactionException(
+                        "Transaction timed out. Transaction rolled back.", e);
             }
         }
 

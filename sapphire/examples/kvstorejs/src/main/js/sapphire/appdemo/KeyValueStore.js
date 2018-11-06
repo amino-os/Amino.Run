@@ -1,3 +1,11 @@
+
+ // This is self-defined data type, which will be used by client to save in the key value store.
+ class TestData {
+     constructor() {
+         this.val = "hello";
+     }
+ }
+
 class KeyValueStore {
     constructor() {
         this.map = new Map();
@@ -8,6 +16,7 @@ class KeyValueStore {
         for (let [k, v] of this.map) {
             console.log(k, v);
         }
+
         console.log("***** finish dumping all data in kv store ***********\n\n")
     }
 

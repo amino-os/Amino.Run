@@ -2,6 +2,12 @@
  * Client for testing {@link KeyValueStore}
  */
 
+ class TestData {
+     constructor() {
+         this.val = "hello";
+     }
+ }
+
 function main() {
     // get init configurations
     var system = Java.type("java.lang.System");
@@ -14,9 +20,14 @@ function main() {
     var ClientStub = Java.type("sapphire.appdemo.stubs.KeyValueStore_Stub");
     var kvs = ClientStub.getStub("KeyValueStore.yaml", omsIP, omsPort, hostIP, hostPort);
 
-    for (i=0; i<30; ++i) {
+    for (i=0; i<6; ++i) {
         var key = "key_" + i;
+
+        // Try different data types.
         var val = "val_" + i;
+        if (i % 3 == 1) val = new TestData();
+        else if (i % 3 == 2) val = new Date();
+
         console.log(`client: setting ${key} = ${val}`);
         kvs.set(key, val);
         var v = kvs.get(key);

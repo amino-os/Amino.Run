@@ -3,12 +3,14 @@ package sapphire.policy.scalability;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.TimerTask;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
+import sapphire.app.NodeSelectorSpec;
 import sapphire.app.SapphireObjectSpec;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
@@ -229,8 +231,14 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
             }
 
             /* Get the list of available servers in region */
-            ArrayList<InetSocketAddress> fullKernelList;
-            fullKernelList = sapphire_getServersInRegion(region);
+            NodeSelectorSpec nodeSelector = spec.getServerSelectorSpec();
+            List<InetSocketAddress> fullKernelList = null;
+            if (nodeSelector != null) {
+                fullKernelList = oms().getServers(nodeSelector);
+            } else if (region != null) {
+                fullKernelList = sapphire_getServersInRegion(region);
+            }
+
             if (null == fullKernelList) {
                 throw new ScaleUpException("Scaleup failed. Couldn't fetch kernel server list.");
             }

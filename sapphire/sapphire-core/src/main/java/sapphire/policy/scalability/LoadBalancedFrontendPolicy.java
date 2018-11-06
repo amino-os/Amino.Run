@@ -7,10 +7,12 @@ import java.lang.annotation.Target;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Logger;
+import sapphire.app.NodeSelectorSpec;
 import sapphire.app.SapphireObjectSpec;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
@@ -173,7 +175,6 @@ public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
         @Override
         public void onCreate(String region, SapphireServerPolicy server, SapphireObjectSpec spec)
                 throws RemoteException {
-            super.onCreate(region, server, spec);
 
             Config config = getConfig(spec);
             if (config != null) {
@@ -195,8 +196,16 @@ public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
                 region = server.sapphire_getRegion();
                 InetSocketAddress addr =
                         server.sapphire_locate_kernel_object(server.$__getKernelOID());
-
-                ArrayList<InetSocketAddress> kernelServers = sapphire_getServersInRegion(region);
+                List<InetSocketAddress> kernelServers;
+                NodeSelectorSpec nodeSelector = null;
+                if (null != spec) {
+                    nodeSelector = spec.getServerSelectorSpec();
+                }
+                if (null != nodeSelector) { // spec takes priority over region
+                    kernelServers = oms().getServers(spec.getServerSelectorSpec());
+                } else {
+                    kernelServers = sapphire_getServersInRegion(region);
+                }
 
                 /* Create the replicas on different kernelServers belongs to same region*/
                 if (kernelServers != null) {

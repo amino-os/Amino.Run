@@ -29,9 +29,9 @@ public class SapphireObjectSpecTest {
     }
 
     private SapphireObjectSpec createSpec() {
-        NodeSelectorSpec serverSelectorSpec = new NodeSelectorSpec();
-        serverSelectorSpec.addAndLabel("and_label");
-        serverSelectorSpec.addOrLabel("or_label");
+        NodeSelectorSpec nodeSelectorSpec = new NodeSelectorSpec();
+        nodeSelectorSpec.addAndLabel("and_label");
+        nodeSelectorSpec.addOrLabel("or_label");
 
         ScaleUpFrontendPolicy.Config scaleUpConfig = new ScaleUpFrontendPolicy.Config();
         scaleUpConfig.setReplicationRateInMs(100);
@@ -53,7 +53,7 @@ public class SapphireObjectSpecTest {
                 .setSourceFileLocation("src/main/js/college.js")
                 .setConstructorName("college")
                 .addDMSpec(dmSpec)
-                .setServerSelectorSpec(serverSelectorSpec)
+                .setNodeSelectorSpec(nodeSelectorSpec)
                 .create();
     }
 }

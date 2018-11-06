@@ -12,10 +12,12 @@ import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.JSONException;
+import sapphire.app.NodeSelectorSpec;
 import sapphire.common.AppObjectStub;
 import sapphire.common.SapphireObjectCreationException;
 import sapphire.common.SapphireObjectID;
@@ -154,10 +156,22 @@ public class OMSServerImpl implements OMSServer {
      * @param region
      * @return
      * @throws RemoteException
+     * @deprecated Please use {@link #getServers(NodeSelectorSpec)}
      */
     @Override
     public ArrayList<InetSocketAddress> getServersInRegion(String region) throws RemoteException {
         return serverManager.getServersInRegion(region);
+    }
+
+    /**
+     * Gets all servers matching the specified node selector
+     *
+     * @param spec
+     * @return
+     * @throws RemoteException
+     */
+    public List<InetSocketAddress> getServers(NodeSelectorSpec spec) throws RemoteException {
+        return serverManager.getServers(spec);
     }
 
     /**
@@ -211,6 +225,7 @@ public class OMSServerImpl implements OMSServer {
         /* Invoke create sapphire object on the kernel server */
         try {
             AppObjectStub appObjStub = server.createSapphireObject(sapphireObjectSpec, args);
+            assert appObjStub != null;
             SapphirePolicy.SapphireClientPolicy clientPolicy = extractClientPolicy(appObjStub);
             SapphireObjectID sid = clientPolicy.getGroup().getSapphireObjId();
             objectManager.setInstanceObjectStub(sid, appObjStub);

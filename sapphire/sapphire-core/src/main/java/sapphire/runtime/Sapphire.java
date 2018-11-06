@@ -45,7 +45,8 @@ public class Sapphire {
      * @param args parameters to sapphire object constructor
      * @return sapphire object stub
      */
-    public static Object new_(SapphireObjectSpec spec, Object... args) {
+    public static Object new_(SapphireObjectSpec spec, Object... args)
+            throws SapphireObjectCreationException {
         AppObjectStub appStub = null;
         try {
             logger.info("Creating object for spec:" + spec);
@@ -86,8 +87,9 @@ public class Sapphire {
 
             appStub = policyList.get(0).getServerPolicy().sapphire_getAppObjectStub();
         } catch (Exception e) {
-            logger.log(
-                    Level.SEVERE, String.format("Failed to create sapphire object '%s'", spec), e);
+            String msg = String.format("Failed to create sapphire object '%s'", spec);
+            logger.log(Level.SEVERE, msg, e);
+            throw new SapphireObjectCreationException(msg, e);
         }
 
         return appStub;

@@ -120,8 +120,8 @@ public class SapphireObjectSpec implements Serializable {
         return serverSelectorSpec;
     }
 
-    public void setServerSelectorSpec(NodeSelectorSpec serverSelectorSpec) {
-        this.serverSelectorSpec = serverSelectorSpec;
+    public void setNodeSelectorSpec(NodeSelectorSpec nodeSelectorSpec) {
+        this.serverSelectorSpec = nodeSelectorSpec;
     }
 
     public static SapphireObjectSpec fromYaml(String yamlString) {
@@ -167,7 +167,7 @@ public class SapphireObjectSpec implements Serializable {
         private String sourceFileLocation;
         private String constructorName;
         private List<DMSpec> dmList = new ArrayList<>();
-        private NodeSelectorSpec serverSelectorSpec;
+        private NodeSelectorSpec nodeSelectorSpec;
 
         public Builder setName(String name) {
             this.name = name;
@@ -203,8 +203,8 @@ public class SapphireObjectSpec implements Serializable {
             return this;
         }
 
-        public Builder setServerSelectorSpec(NodeSelectorSpec serverSelectorSpec) {
-            this.serverSelectorSpec = serverSelectorSpec;
+        public Builder setNodeSelectorSpec(NodeSelectorSpec nodeSelectorSpec) {
+            this.nodeSelectorSpec = nodeSelectorSpec;
             return this;
         }
 
@@ -216,7 +216,7 @@ public class SapphireObjectSpec implements Serializable {
             spec.setSourceFileLocation(sourceFileLocation);
             spec.setConstructorName(constructorName);
             spec.setDmList(dmList);
-            spec.setServerSelectorSpec(serverSelectorSpec);
+            spec.setNodeSelectorSpec(nodeSelectorSpec);
             return spec;
         }
     }

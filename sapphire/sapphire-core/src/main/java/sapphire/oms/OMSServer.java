@@ -5,7 +5,9 @@ import java.rmi.NotBoundException;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import sapphire.app.NodeSelectorSpec;
 import sapphire.common.AppObjectStub;
 import sapphire.common.SapphireObjectCreationException;
 import sapphire.common.SapphireObjectID;
@@ -43,7 +45,10 @@ public interface OMSServer extends Remote {
 
     InetSocketAddress getServerInRegion(String region) throws RemoteException;
 
+    /** @deprecated Please use {@link #getServers(NodeSelectorSpec)} */
     ArrayList<InetSocketAddress> getServersInRegion(String region) throws RemoteException;
+
+    List<InetSocketAddress> getServers(NodeSelectorSpec spec) throws RemoteException;
 
     void registerKernelServer(ServerInfo info) throws RemoteException, NotBoundException;
 

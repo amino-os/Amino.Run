@@ -10,6 +10,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.harmony.rmi.common.RMIUtil;
 import sapphire.app.Language;
+import sapphire.app.NodeSelectorSpec;
 import sapphire.app.SapphireObjectSpec;
 import sapphire.common.AppObject;
 import sapphire.common.AppObjectStub;
@@ -494,6 +495,7 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
          * @param region
          * @return inet socket address of the server
          * @throws RemoteException
+         * @deprecated Please use {@link #sapphire_getServers(NodeSelectorSpec)}
          */
         public ArrayList<InetSocketAddress> sapphire_getServersInRegion(String region)
                 throws RemoteException {

@@ -32,8 +32,8 @@ public abstract class Stub implements RmicConstants {
     /** List of remote methods for the class */
     private final TreeSet<MethodStub> methods;
 
-    /** List of DM methods for the class */
-    private final TreeSet<MethodStub> dmMethods;
+    /** List of DM onRPC methods for the class */
+    private final TreeSet<MethodStub> dmRPCMethods;
 
     /**
      * Creates <code>Stub</code> instance for specified type (app or kernel) and class.
@@ -47,14 +47,14 @@ public abstract class Stub implements RmicConstants {
         String shortClassName = RMIUtil.getShortName(cls);
         stubName = shortClassName + stubSuffix;
         methods = getMethods();
-        dmMethods = getDMMethods();
+        dmRPCMethods = getDMRPCMethods();
 
         /**
-         * If the DM class contains overrided methods the same will get added in the methods list
-         * also, from the base Class. Hence the corresponding base methods needs to be removed from
-         * the methods list.
+         * If the DM class contains overrided onRPC methods the same will get added in the methods
+         * list also, from the base Class. Hence the corresponding base methods needs to be removed
+         * from the methods list.
          */
-        for (MethodStub m : dmMethods) {
+        for (MethodStub m : dmRPCMethods) {
             if (methods.contains(m)) {
                 methods.remove(m);
             }
@@ -84,7 +84,7 @@ public abstract class Stub implements RmicConstants {
                 + EOLN
                 + getMethodImplementations()
                 + EOLN
-                + getDMMethodImplementations() //$NON-NLS-1$
+                + getDMRPCMethodImplementations() //$NON-NLS-1$
                 + indenter.decrease()
                 + '}'
                 + EOLN
@@ -127,13 +127,13 @@ public abstract class Stub implements RmicConstants {
     }
 
     /**
-     * Returns remote DM methods implementation
+     * Returns remote DM onRPC method implementation
      *
-     * @return Stub DM method implementation code.
+     * @return Stub DM onRPC method implementation code.
      */
-    private String getDMMethodImplementations() {
+    private String getDMRPCMethodImplementations() {
         StringBuilder buffer = new StringBuilder();
-        for (Iterator<MethodStub> i = dmMethods.iterator(); i.hasNext(); ) {
+        for (Iterator<MethodStub> i = dmRPCMethods.iterator(); i.hasNext(); ) {
             buffer.append(EOLN + i.next().getStubImpl(true));
         }
         return buffer.toString();
@@ -141,7 +141,7 @@ public abstract class Stub implements RmicConstants {
 
     public abstract TreeSet<MethodStub> getMethods();
 
-    public abstract TreeSet<MethodStub> getDMMethods();
+    public abstract TreeSet<MethodStub> getDMRPCMethods();
 
     public abstract String getPackageStatement();
 

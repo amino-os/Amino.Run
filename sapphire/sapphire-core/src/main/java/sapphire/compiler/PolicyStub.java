@@ -38,10 +38,10 @@ public class PolicyStub extends Stub {
      * the onRPC method has to be Directly invoked on the DM instead of following the chain in the
      * case of MultiDM scenarios.
      *
-     * @return List of DM Class Methods
+     * @return List of DM Class onRPC Methods
      */
     @Override
-    public TreeSet<MethodStub> getDMMethods() {
+    public TreeSet<MethodStub> getDMRPCMethods() {
         TreeSet<MethodStub> ms = new TreeSet<MethodStub>();
         Class<?> dmClass = stubClass;
         for (Method m : dmClass.getDeclaredMethods()) {

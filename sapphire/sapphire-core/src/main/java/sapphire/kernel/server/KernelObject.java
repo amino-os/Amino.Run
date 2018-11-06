@@ -2,6 +2,7 @@ package sapphire.kernel.server;
 
 import java.util.ArrayList;
 import java.util.concurrent.Semaphore;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import sapphire.common.ObjectHandler;
 import sapphire.kernel.common.KernelObjectMigratingException;
@@ -41,7 +42,7 @@ public class KernelObject extends ObjectHandler {
         try {
             ret = super.invoke(method, params);
         } catch (Exception e) {
-            logger.severe(e.getMessage());
+            logger.log(Level.SEVERE, "Invocation failed for " + method, e);
             // Throwing the exception again so that the same exception is returned to the client.
             // The client is expected to take appropriate action based on this exception.
             throw e;

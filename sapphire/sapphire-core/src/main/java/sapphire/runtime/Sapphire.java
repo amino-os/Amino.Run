@@ -308,10 +308,6 @@ public class Sapphire {
         serverPolicy.setProcessedPolicies(processedPoliciesSoFar);
         serverPolicyStub.setProcessedPolicies(processedPoliciesSoFar);
 
-        if (existingGroupPolicy == null) {
-            groupPolicy.onCreate(region, serverPolicyStub, spec);
-        }
-
         previousServerPolicy = serverPolicy;
         previousServerPolicyStub = (KernelObjectStub) serverPolicyStub;
 
@@ -339,6 +335,7 @@ public class Sapphire {
 
         // server policy stub at this moment has the full policy chain; safe to add to group
         if (existingGroupPolicy == null) {
+            groupPolicy.onCreate(region, serverPolicyStub, spec);
             groupPolicy.addServer(serverPolicyStub);
         }
 

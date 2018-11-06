@@ -7,8 +7,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.logging.Logger;
 import sapphire.app.SapphireObjectSpec;
-import sapphire.common.SapphireObjectNotFoundException;
-import sapphire.common.SapphireObjectReplicaNotFoundException;
 import sapphire.policy.DefaultSapphirePolicy;
 
 // TODO (Sungwook, 2018-10-2) Discard after updating original DHT policy to work with multi policy
@@ -146,28 +144,27 @@ public class DHTPolicy2 extends DefaultSapphirePolicy {
                 ArrayList<String> regions = sapphire_getRegions();
 
                 // Add the first DHT node
-                groupSize++;
-                int id = groupSize;
+                addServer(server);
                 DHTServerPolicy dhtServer = (DHTServerPolicy) server;
-
-                DHTNode newNode = new DHTNode(id, dhtServer);
-                nodes.put(id, newNode);
 
                 for (int i = 1; i < regions.size(); i++) {
                     InetSocketAddress newServerAddress = oms().getServerInRegion(regions.get(i));
                     SapphireServerPolicy replica =
-                            dhtServer.sapphire_replicate(server.getProcessedPolicies());
-                    dhtServer.sapphire_pin_to_server(replica, newServerAddress);
+                            dhtServer.sapphire_replicate(
+                                    server.getProcessedPolicies(), regions.get(i));
+                    // TODO: This is hack to do test DHT + Consensus combination.
+                    // TODO: It should be resolved after adding the check for pinning by downstream
+                    // DMs
+                    // TODO: Note DHTPolicy2 will be removed after HanksTodo is tested for
+                    // DHT+Consensus
+                    //                    dhtServer.sapphire_pin_to_server(replica,
+                    // newServerAddress);
                 }
-                dhtServer.sapphire_pin(server, regions.get(0));
+                //                dhtServer.sapphire_pin(server, regions.get(0));
             } catch (RemoteException e) {
                 e.printStackTrace();
                 throw new Error(
                         "Could not create new group policy because the oms is not available.");
-            } catch (SapphireObjectNotFoundException e) {
-                throw new Error("Failed to find sapphire object.", e);
-            } catch (SapphireObjectReplicaNotFoundException e) {
-                throw new Error("Failed to find sapphire object replica.", e);
             }
         }
 

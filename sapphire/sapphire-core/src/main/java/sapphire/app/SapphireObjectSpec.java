@@ -58,7 +58,7 @@ public class SapphireObjectSpec implements Serializable {
     /** List of Deployment Managers to be applied on Sapphire object */
     private List<DMSpec> dmList = new ArrayList<>();
 
-    private NodeSelectorSpec serverSelectorSpec;
+    private NodeSelectorSpec nodeSelectorSpec;
 
     public static Builder newBuilder() {
         return new Builder();
@@ -116,12 +116,12 @@ public class SapphireObjectSpec implements Serializable {
         dmList.add(dmSpec);
     }
 
-    public NodeSelectorSpec getServerSelectorSpec() {
-        return serverSelectorSpec;
+    public NodeSelectorSpec getNodeSelectorSpec() {
+        return nodeSelectorSpec;
     }
 
     public void setNodeSelectorSpec(NodeSelectorSpec nodeSelectorSpec) {
-        this.serverSelectorSpec = nodeSelectorSpec;
+        this.nodeSelectorSpec = nodeSelectorSpec;
     }
 
     public static SapphireObjectSpec fromYaml(String yamlString) {
@@ -151,7 +151,7 @@ public class SapphireObjectSpec implements Serializable {
                 sourceFileLocation,
                 constructorName,
                 dmList,
-                serverSelectorSpec);
+                nodeSelectorSpec);
     }
 
     @Override

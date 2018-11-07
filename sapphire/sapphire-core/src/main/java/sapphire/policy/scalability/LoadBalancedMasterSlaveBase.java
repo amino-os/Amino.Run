@@ -185,7 +185,7 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultSapphirePolicy 
                 if (region != null && !region.isEmpty()) {
                     servers =
                             GlobalKernelReferences.nodeServer.oms.getServers(
-                                    spec.getServerSelectorSpec());
+                                    spec.getNodeSelectorSpec());
                 } else {
                     servers = GlobalKernelReferences.nodeServer.oms.getServers();
                 }

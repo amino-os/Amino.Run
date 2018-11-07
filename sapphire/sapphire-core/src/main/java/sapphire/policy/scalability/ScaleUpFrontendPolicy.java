@@ -231,7 +231,7 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
             }
 
             /* Get the list of available servers in region */
-            NodeSelectorSpec nodeSelector = spec.getServerSelectorSpec();
+            NodeSelectorSpec nodeSelector = spec.getNodeSelectorSpec();
             List<InetSocketAddress> fullKernelList = null;
             if (nodeSelector != null) {
                 fullKernelList = oms().getServers(nodeSelector);

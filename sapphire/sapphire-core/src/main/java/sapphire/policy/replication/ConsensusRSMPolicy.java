@@ -207,8 +207,6 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
 
         @Override
         public void onDestroy() {
-            // TODO (Sungwook, 2018-10-3): Investigate why manual testing with DHT2+Consensus only
-            // works when commenting out the below code.
             super.onDestroy();
             if (raftServer != null) {
                 raftServer.stop();

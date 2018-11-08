@@ -199,10 +199,10 @@ public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
                 List<InetSocketAddress> kernelServers;
                 NodeSelectorSpec nodeSelector = null;
                 if (null != spec) {
-                    nodeSelector = spec.getServerSelectorSpec();
+                    nodeSelector = spec.getNodeSelectorSpec();
                 }
                 if (null != nodeSelector) { // spec takes priority over region
-                    kernelServers = oms().getServers(spec.getServerSelectorSpec());
+                    kernelServers = oms().getServers(spec.getNodeSelectorSpec());
                 } else {
                     kernelServers = sapphire_getServersInRegion(region);
                 }

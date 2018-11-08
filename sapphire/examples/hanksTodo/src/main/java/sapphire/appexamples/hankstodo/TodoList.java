@@ -15,22 +15,22 @@ public class TodoList implements SapphireObject {
 	}
 
 	/**
-	 * TODO: id should not be required. This is in place just to mimic hash key that is passed to group policy for finding a responsible node.
+	 * TODO: With DHTPolicy, TODO item should add with id so that it can be pulled by id.
 	 * @param id
 	 * @return
 	 */
-	public String addToDo(int id, String todo) {
+	public String addToDo(String id, String todo) {
 		System.out.println("TodoList>> id: " + id + " addToDo: " + todo);
 		toDos.add(todo);
 		return "OK!";
 	}
 
 	/**
-	 * TODO: id should not be required. This is in place just to mimic hash key that is passed to group policy for finding a responsible node.
+	 * TODO: With DHTPolicy, TODOs should be picked up based on the input param - id.
 	 * @param id
 	 * @return
 	 */
-	public String getToDoString(int id) {
+	public String getToDoString(String id) {
 		StringBuilder sb = new StringBuilder();
 
 		for (String toDo: toDos) {

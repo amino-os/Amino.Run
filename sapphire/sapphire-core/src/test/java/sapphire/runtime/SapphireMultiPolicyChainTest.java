@@ -26,7 +26,7 @@ import sapphire.kernel.common.KernelObjectFactory;
 import sapphire.kernel.common.KernelObjectStub;
 import sapphire.kernel.server.KernelServerImpl;
 import sapphire.policy.*;
-import sapphire.policy.dht.DHTPolicy2;
+import sapphire.policy.dht.DHTPolicy;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({
@@ -103,14 +103,13 @@ public class SapphireMultiPolicyChainTest extends MultiPolicyChainBaseTest {
         }
     }
 
-    public static class DHT2Group_Stub extends DHTPolicy2.DHTGroupPolicy
-            implements KernelObjectStub {
+    public static class DHTGroup_Stub extends DHTPolicy.DHTGroupPolicy implements KernelObjectStub {
         sapphire.kernel.common.KernelOID $__oid = null;
         java.net.InetSocketAddress $__hostname = null;
         AppObject appObject = null;
         SapphirePolicy.SapphireClientPolicy $__nextClientPolicy = null;
 
-        public DHT2Group_Stub(sapphire.kernel.common.KernelOID oid) {
+        public DHTGroup_Stub(sapphire.kernel.common.KernelOID oid) {
             this.$__oid = oid;
         }
 
@@ -131,14 +130,14 @@ public class SapphireMultiPolicyChainTest extends MultiPolicyChainBaseTest {
         }
     }
 
-    public static class DHT2Server_Stub extends DHTPolicy2.DHTServerPolicy
+    public static class DHTServer_Stub extends DHTPolicy.DHTServerPolicy
             implements KernelObjectStub {
         KernelOID $__oid = null;
         InetSocketAddress $__hostname = null;
         AppObject appObject = null;
         SapphirePolicy.SapphireClientPolicy $__nextClientPolicy = null;
 
-        public DHT2Server_Stub(KernelOID oid) {
+        public DHTServer_Stub(KernelOID oid) {
             this.oid = oid;
             this.$__oid = oid;
         }
@@ -166,9 +165,9 @@ public class SapphireMultiPolicyChainTest extends MultiPolicyChainBaseTest {
 
         HashMap<String, Class> groupMap = new HashMap<String, Class>();
         HashMap<String, Class> serverMap = new HashMap<String, Class>();
-        groupMap.put("DHTPolicy2", SapphireMultiPolicyChainTest.DHT2Group_Stub.class);
+        groupMap.put("DHTPolicy", SapphireMultiPolicyChainTest.DHTGroup_Stub.class);
         groupMap.put("DefaultSapphirePolicy", SapphireMultiPolicyChainTest.DefaultGroup_Stub.class);
-        serverMap.put("DHTPolicy2", SapphireMultiPolicyChainTest.DHT2Server_Stub.class);
+        serverMap.put("DHTPolicy", SapphireMultiPolicyChainTest.DHTServer_Stub.class);
         serverMap.put(
                 "DefaultSapphirePolicy", SapphireMultiPolicyChainTest.DefaultServer_Stub.class);
 
@@ -176,7 +175,7 @@ public class SapphireMultiPolicyChainTest extends MultiPolicyChainBaseTest {
                 SapphireObjectSpec.newBuilder()
                         .setLang(Language.java)
                         .setJavaClassName("sapphire.app.SO")
-                        .addDMSpec(DMSpec.newBuilder().setName(DHTPolicy2.class.getName()).create())
+                        .addDMSpec(DMSpec.newBuilder().setName(DHTPolicy.class.getName()).create())
                         .addDMSpec(
                                 DMSpec.newBuilder()
                                         .setName(DefaultSapphirePolicy.class.getName())
@@ -184,7 +183,7 @@ public class SapphireMultiPolicyChainTest extends MultiPolicyChainBaseTest {
                         .create();
 
         configMaps = Utils.fromDMSpecListToConfigMap(spec.getDmList());
-        configMap = configMaps.get(DHTPolicy2.class.getName());
+        configMap = configMaps.get(DHTPolicy.class.getName());
 
         super.setUpMultiDM(spec, groupMap, serverMap);
     }
@@ -205,7 +204,7 @@ public class SapphireMultiPolicyChainTest extends MultiPolicyChainBaseTest {
         /* Register for a sapphire object Id from OMS */
         SapphireObjectID sapphireObjId = spiedOms.registerSapphireObject();
 
-        policyNameChain.add(new SapphirePolicyContainer("sapphire.policy.dht.DHTPolicy2", null));
+        policyNameChain.add(new SapphirePolicyContainer("sapphire.policy.dht.DHTPolicy", null));
         List<SapphirePolicyContainer> policyList =
                 Sapphire.createPolicy(
                         sapphireObjId,
@@ -232,7 +231,7 @@ public class SapphireMultiPolicyChainTest extends MultiPolicyChainBaseTest {
         /* Register for a sapphire object Id from OMS */
         SapphireObjectID sapphireObjId = spiedOms.registerSapphireObject();
 
-        policyNameChain.add(new SapphirePolicyContainer("sapphire.policy.dht.DHTPolicy2", null));
+        policyNameChain.add(new SapphirePolicyContainer("sapphire.policy.dht.DHTPolicy", null));
         policyNameChain.add(
                 new SapphirePolicyContainer("sapphire.policy.DefaultSapphirePolicy", null));
 

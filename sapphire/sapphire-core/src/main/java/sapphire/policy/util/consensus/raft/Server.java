@@ -353,7 +353,7 @@ public class Server
     }
 
     public Object applyToStateMachine(Object operation) throws java.lang.Exception {
-        logger.info(String.format("%s: applyToStateMachine(%s)", pState.myServerID, operation));
+        logger.fine(String.format("%s: applyToStateMachine(%s)", pState.myServerID, operation));
         if (vState.getState() == Server.State.LEADER) {
             return leader.applyToStateMachine(operation);
         } else {

@@ -3,7 +3,6 @@ package sapphire.appexamples.hankstodo;
 import java.net.InetSocketAddress;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
-import java.util.logging.Level;
 
 import sapphire.app.Language;
 import sapphire.app.SapphireObjectSpec;
@@ -16,91 +15,89 @@ import static java.lang.Thread.sleep;
 
 public class HanksTodoMain {
 
-    public HanksTodoMain() {
-    }
+    static final int REPEAT_CNT = 5;
+    static final int TODO_CNT = 10;
+    static final String SUBJECT_PREFIX = "Subject";
+    static final String TODO_PREFIX = "Task";
+
+    public HanksTodoMain() {}
 
     public static void main(String[] args) {
         String ListName = "New List 1";
-        String Do1_1 = "Do this 1.1";
-        String Do1_2 = "Do this 1.2";
-        String Do2_1 = "Do that 2.1";
-        String Do2_2 = "Do that 2.2";
 
         if (args.length < 4) {
             System.out.println("Incorrect arguments to the program");
-            System.out.println("usage: " + HanksTodoMain.class.getSimpleName() + " <host-ip> <host-port> <oms ip> <oms-port>");
+            System.out.println(
+                    "usage: "
+                            + HanksTodoMain.class.getSimpleName()
+                            + " <host-ip> <host-port> <oms ip> <oms-port>");
             System.exit(1);
         }
-        String hostIp = args[0], hostPort = args[1], omsIp = args[2], omsPort = args[3];
-        InetSocketAddress hostAddr = new InetSocketAddress(hostIp, Integer.parseInt(hostPort)), omsAddr = new InetSocketAddress(omsIp, Integer.parseInt(omsPort));
-
 
         Registry registry;
 
         try {
-            registry = LocateRegistry.getRegistry(args[0],Integer.parseInt(args[1]));
+            registry = LocateRegistry.getRegistry(args[0], Integer.parseInt(args[1]));
             OMSServer omsserver = (OMSServer) registry.lookup("SapphireOMS");
             System.out.println(omsserver);
 
-            KernelServer nodeServer = new KernelServerImpl(new InetSocketAddress(args[2], Integer.parseInt(args[3])), new InetSocketAddress(args[0], Integer.parseInt(args[1])));
+            KernelServer nodeServer =
+                    new KernelServerImpl(
+                            new InetSocketAddress(args[2], Integer.parseInt(args[3])),
+                            new InetSocketAddress(args[0], Integer.parseInt(args[1])));
 
-            SapphireObjectSpec spec = SapphireObjectSpec.newBuilder()
-                    .setLang(Language.java)
-                    .setJavaClassName("sapphire.appexamples.hankstodo.TodoListManager")
-                    .create();
+            SapphireObjectSpec spec =
+                    SapphireObjectSpec.newBuilder()
+                            .setLang(Language.java)
+                            .setJavaClassName("sapphire.appexamples.hankstodo.TodoListManager")
+                            .create();
 
             SapphireObjectID sapphireObjId = omsserver.createSapphireObject(spec.toString());
-            TodoListManager tlm = (TodoListManager)omsserver.acquireSapphireObjectStub(sapphireObjId);
+            TodoListManager tlm =
+                    (TodoListManager) omsserver.acquireSapphireObjectStub(sapphireObjId);
             System.out.println("Received tlm: " + tlm);
 
             TodoList td1 = tlm.newTodoList(ListName);
 
-            // Consensus policy needs some time after creating new Sapphire object; otherwise, leader election may fail.
-            sleep(12000);
+            // Consensus policy needs some time after creating new Sapphire object; otherwise,
+            // leader election may fail.
+            sleep(7000);
             System.out.println("new to do list for 1");
 
-            // TODO: Update code appropriately to work with DHTpolicy in a meaningful way.
-            for (int i = 0; i < 5; i++) {
+            for (int i = 0; i < REPEAT_CNT; i++) {
                 // Add to-do items.
-                System.out.println("Adding to do 1.1 at loop " + i);
-                td1.addToDo("1", Do1_1 + "<" + i + ">");
-                System.out.println("Adding to do 1.2 at loop " + i);
-                td1.addToDo("1", Do1_2 + "<" + i + ">");
-                System.out.println("Adding to do 2.1 at loop " + i);
-                td1.addToDo("2", Do2_1 + "<" + i + ">");
-                System.out.println("Adding to do 2.2 at loop " + i);
-                td1.addToDo("2", Do2_2 + "<" + i + ">");
-            }
-
-            String expectedTdString2 = "", expectedTdString1 = "";
-            for (int i = 0; i < 5; i++) {
-                expectedTdString2 +=
-                        String.format(
-                                "%s<%d> : %s<%d> : ",
-                                Do2_1, i, Do2_2, i);
-
-                expectedTdString1 +=
-                        String.format(
-                                "%s<%d> : %s<%d> : ",
-                                Do1_1, i, Do1_2, i);
+                for (int j = 0; j < TODO_CNT; j++) {
+                    String subject = SUBJECT_PREFIX + j;
+                    String content = String.format("%s%d<%d>", TODO_PREFIX, j, i);
+                    System.out.println(
+                            String.format(
+                                    "Adding %s. Content: %s at iteration %d", subject, content, i));
+                    td1.addToDo(subject, content);
+                }
             }
 
             // Retrieve to-do items.
-            System.out.println("Please note expected String may display incorrect values depending on the policy.");
+            System.out.println(
+                    "Please note expected String may display incorrect values depending on the policy.");
 
-            TodoList getTd1 = tlm.getToDoList(ListName);
-            String testTdString2 = getTd1.getToDoString("2");
-            System.out.println("Expect testTdString for 2: " + expectedTdString2);
-            System.out.println("Actual testTdString for 2: " + testTdString2);
+            TodoList getTd = tlm.getToDoList(ListName);
+            for (int i = 0; i < TODO_CNT; i++) {
+                String expected = "";
+                for (int j = 0; j < REPEAT_CNT; j++) {
+                    if (j != 0) {
+                        expected += ", ";
+                    }
+                    expected += String.format("%s%d<%d>", TODO_PREFIX, i, j);
+                }
+                String actual = getTd.getToDo(SUBJECT_PREFIX + i);
 
-            String testTdString1 = getTd1.getToDoString("1");
-            System.out.println("Expect testTdString for 1: " + expectedTdString1);
-            System.out.println("Actual testTdString for 1: " + testTdString1);
+                System.out.println(String.format("Expected for %d: %s", i, expected));
+                System.out.println(String.format("Actual   for %d: %s", i, actual));
+            }
 
             tlm.doSomething("Testing completed.");
 
-            //Delete the created SapphireObjects
-
+            // Delete the created SapphireObjects
             tlm.deleteTodoList(ListName);
             omsserver.deleteSapphireObject(sapphireObjId);
 

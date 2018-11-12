@@ -17,6 +17,7 @@ import java.util.UUID;
 public class BankAccount implements SapphireObject, TransactionManager {
     private int balance;
     private Boolean isDirty = false;
+    private Boolean isRollback = false;
 
     private static final String JDBC_DRIVER = "org.mariadb.jdbc.Driver";
     private static final String DB_URL="jdbc:mariadb://172.17.0.2/fundmover";
@@ -42,6 +43,7 @@ public class BankAccount implements SapphireObject, TransactionManager {
     public void credit(int amount) {
         this.balance += amount;
         this.isDirty = true;
+        this.isRollback=false;
     }
 
     public void debit(int amount) {
@@ -55,6 +57,7 @@ public class BankAccount implements SapphireObject, TransactionManager {
 
     @Override
     public void join(UUID transactionId) throws TransactionAlreadyStartedException {
+        System.out.println("[bank] xa join");
         try {
             this.ensureConnection();
             Statement statement = this.conn.createStatement();
@@ -72,8 +75,9 @@ public class BankAccount implements SapphireObject, TransactionManager {
 
     @Override
     public Vote vote(UUID transactionId) throws TransactionExecutionException {
-        System.out.println("xa vote");
+        System.out.println("[bank] xa vote");
         Vote vote = Vote.YES;
+        System.out.println(this.isDirty);
         try {
             Statement statement = this.conn.createStatement();
             try {
@@ -86,6 +90,7 @@ public class BankAccount implements SapphireObject, TransactionManager {
                 System.out.println(e.getMessage());
                 vote=Vote.NO;
             }
+
             String sql = "xa end '" + transactionId.toString() +"1'";
             statement.execute(sql);
             String sql2 = "xa prepare '" + transactionId.toString() + "1'";
@@ -100,7 +105,7 @@ public class BankAccount implements SapphireObject, TransactionManager {
 
     @Override
     public void commit(UUID transactionId) {
-        System.out.println("xa commit");
+        System.out.println("[bank] xa commit");
 
         try {
             Statement statement = this.conn.createStatement();
@@ -113,12 +118,18 @@ public class BankAccount implements SapphireObject, TransactionManager {
 
     @Override
     public void abort(UUID transactionId) {
-        System.out.println("xa abort");
+        System.out.println("[bank] xa abort");
 
         try {
             Statement statement = this.conn.createStatement();
-            String sql = "xa rollback '" + transactionId.toString()+"1'";
-            statement.execute(sql);
+            if (this.isDirty){
+                String sql = "xa end '" + transactionId.toString() +"1'";
+                statement.execute(sql);
+            }
+            if (this.isRollback) {
+                String sql = "xa rollback '" + transactionId.toString() + "1'";
+                statement.execute(sql);
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }

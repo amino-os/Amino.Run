@@ -15,6 +15,7 @@ import java.sql.*;
 public class Wallet implements SapphireObject, TransactionManager {
     private int balance;
     private Boolean isDirty = false;
+    private Boolean isRollback = false;
 
     private static final String JDBC_DRIVER = "org.mariadb.jdbc.Driver";
     private static final String DB_URL="jdbc:mariadb://172.17.0.2/fundmover";
@@ -49,11 +50,14 @@ public class Wallet implements SapphireObject, TransactionManager {
 
     public void debit(int amount) throws Exception {
         if (this.balance < amount) {
+            this.isDirty = true;
             throw new Exception("insufficient fund");
+
         }
 
         this.balance -= amount;
         this.isDirty = true;
+        this.isRollback=true;
     }
 
     public int getBalance() {
@@ -126,11 +130,19 @@ public class Wallet implements SapphireObject, TransactionManager {
     @Override
     public void abort(UUID transactionId) {
         System.out.println("[wallet] xa abort");
-
         try {
             Statement statement = this.conn.createStatement();
+            if (this.isDirty){
+                String sql = "xa end '" + transactionId.toString() +"2'";
+                statement.execute(sql);
+                this.isDirty=false;
+            }
+            if (this.isRollback){
             String sql = "xa rollback '" + transactionId.toString()+"2'";
             statement.execute(sql);
+            this.isRollback=false;
+            }
+
         } catch (SQLException e) {
             e.printStackTrace();
         }

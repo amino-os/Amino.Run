@@ -68,9 +68,7 @@ public class BankAccount implements SapphireObject, TransactionManager {
     }
 
     @Override
-    public void leave(UUID transactionId) {
-        System.out.println("[bank] xa leave");
-    }
+    public void leave(UUID transactionId) { }
 
     @Override
     public Vote vote(UUID transactionId) throws TransactionExecutionException {

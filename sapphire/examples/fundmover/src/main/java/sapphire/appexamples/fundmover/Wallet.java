@@ -14,8 +14,8 @@ import java.sql.*;
 
 public class Wallet implements SapphireObject, TransactionManager {
     private int balance;
-    private Boolean isDirty = false;
-    private Boolean isRollback = false;
+    private Boolean isStart = false;
+    private Boolean isCommit = false;
 
     private static final String JDBC_DRIVER = "org.mariadb.jdbc.Driver";
     private static final String DB_URL="jdbc:mariadb://172.17.0.2/fundmover";
@@ -44,21 +44,20 @@ public class Wallet implements SapphireObject, TransactionManager {
 
     public void credit(int amount) {
         this.balance += amount;
-        this.isDirty = true;
+        this.isStart = true;
         System.out.print("new balance "+this.balance);
     }
 
     public void debit(int amount) throws Exception {
         if (this.balance < amount) {
-            this.isDirty = true;
+            this.isStart = true;
             throw new Exception("insufficient fund");
 
         }
 
         this.balance -= amount;
-        this.isDirty = true;
-        this.isRollback=true;
-    }
+        this.isStart = true;
+         }
 
     public int getBalance() {
         return this.balance;
@@ -92,10 +91,10 @@ public class Wallet implements SapphireObject, TransactionManager {
             Statement statement = this.conn.createStatement();
 
              try {
-                 if (this.isDirty) {
+                 if (this.isStart) {
                      String updateSql = String.format("update Wallets set balance=%d where name='test'", this.balance);
                      statement.executeUpdate(updateSql);
-                     this.isDirty = false;
+                     this.isStart = false;
                  }
              } catch (Exception e){
                  System.out.println(e.getMessage());
@@ -104,6 +103,7 @@ public class Wallet implements SapphireObject, TransactionManager {
             String sql = "xa end '" + transactionId.toString() +"2'";
             statement.execute(sql);
             String sql2 = "xa prepare '" + transactionId.toString() + "2'";
+            this.isCommit=true;
             statement.execute(sql2);
         } catch (SQLException e) {
             e.printStackTrace();
@@ -122,6 +122,7 @@ public class Wallet implements SapphireObject, TransactionManager {
             Statement statement = this.conn.createStatement();
             String sql = "xa commit '" + transactionId.toString() + "2'";
             statement.execute(sql);
+            this.isCommit=false;
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -132,15 +133,15 @@ public class Wallet implements SapphireObject, TransactionManager {
         System.out.println("[wallet] xa abort");
         try {
             Statement statement = this.conn.createStatement();
-            if (this.isDirty){
+            if (this.isStart){
                 String sql = "xa end '" + transactionId.toString() +"2'";
                 statement.execute(sql);
-                this.isDirty=false;
+                this.isStart=false;
             }
-            if (this.isRollback){
+            if (this.isCommit){
             String sql = "xa rollback '" + transactionId.toString()+"2'";
             statement.execute(sql);
-            this.isRollback=false;
+            this.isCommit=false;
             }
 
         } catch (SQLException e) {

@@ -85,6 +85,7 @@ public class FundmoverMain {
             finance.transferFromWallet(30);
             System.out.println("checking the current balance after the transaction...");
             System.out.printf("finance details: %s\r\n", finance.getDetails());
+            // Verifying the rollback use case
             finance.transferFromWallet(80);
         }catch (Exception e) {
             System.out.println("---------- error accurred -----");

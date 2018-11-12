@@ -96,7 +96,7 @@ public class TwoPCCohortPolicy extends DefaultSapphirePolicy {
                     logger.log(Level.WARNING, "onRPC failed: ", e);
                     this.transactionManager.abort(transactionId);
                     // return null;
-                    // Throwing the Exception to trigger the roll back
+                    // Throwing the Exception which is  Triggred by the application
                     throw (e);
                 } finally {
                     this.transactionManager.leave(transactionId);

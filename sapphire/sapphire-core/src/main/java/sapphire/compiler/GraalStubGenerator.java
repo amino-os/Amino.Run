@@ -183,6 +183,7 @@ public class GraalStubGenerator {
                     + "    }\n\n"
                     + "    public java.util.List<SerializeValue> serializeParams(Object... args) throws Exception {\n"
                     + "        java.util.List<SerializeValue> res = new ArrayList<>();\n"
+                    + "        getContext().enter();\n"
                     + "        for (Object o : args) {\n"
                     + "            res.add(SerializeValue.getSerializeValue(Value.asValue(o), getLanguage()));\n"
                     + "        }\n"

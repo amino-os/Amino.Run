@@ -15,6 +15,7 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import sapphire.app.NodeSelectorSpec;
 import sapphire.app.SapphireObjectSpec;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
@@ -182,12 +183,21 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultSapphirePolicy 
 
             try {
                 List<InetSocketAddress> servers;
-                if (region != null && !region.isEmpty()) {
-                    servers =
-                            GlobalKernelReferences.nodeServer.oms.getServers(
-                                    spec.getNodeSelectorSpec());
+                NodeSelectorSpec nodeSelector = null;
+                if (null != spec) {
+                    nodeSelector = spec.getNodeSelectorSpec();
+                }
+
+                if (null != nodeSelector) {
+                    System.out.println("NodeSelctor is not null");
+
+                    servers = oms().getServers(nodeSelector);
                 } else {
-                    servers = GlobalKernelReferences.nodeServer.oms.getServers();
+                    if (region != null && !region.isEmpty()) {
+                        servers = GlobalKernelReferences.nodeServer.oms.getServersInRegion(region);
+                    } else {
+                        servers = GlobalKernelReferences.nodeServer.oms.getServers();
+                    }
                 }
 
                 if (servers.size() < NUM_OF_REPLICAS) {

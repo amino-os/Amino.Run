@@ -101,7 +101,9 @@ public class MultiPolicyChainBaseTest {
                     @Override
                     public Object answer(InvocationOnMock invocation) throws Throwable {
 
-                        if (invocation.getMethod().getName().equals("createStub")) {
+                        String methodName = invocation.getMethod().getName();
+
+                        if (methodName.equals("createStub") || methodName.equals("delete")) {
                             return invocation.callRealMethod();
                         }
 

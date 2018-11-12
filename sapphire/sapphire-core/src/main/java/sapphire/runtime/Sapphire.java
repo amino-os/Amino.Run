@@ -337,16 +337,10 @@ public class Sapphire {
 
         // server policy stub at this moment has the full policy chain; safe to add to group
         if (existingGroupPolicy == null) {
+            setIfAlreadyPinned(serverPolicyStub, processedPolicies, nextPoliciesToCreate.size());
             groupPolicy.onCreate(region, serverPolicyStub, spec);
             groupPolicy.addServer(serverPolicyStub);
         }
-
-        String ko = "";
-        for (SapphirePolicyContainer policyContainer : processedPolicies) {
-            ko += String.valueOf(policyContainer.getKernelOID()) + ",";
-        }
-
-        logger.log(Level.INFO, "OID from processed policies at " + policyName + " : " + ko);
 
         return processedPolicies;
     }
@@ -815,6 +809,41 @@ public class Sapphire {
         }
         Class<?>[] argClasses = new Class<?>[argClassesList.size()];
         return argClassesList.toArray(argClasses);
+    }
+
+    private static void setIfAlreadyPinned(
+            SapphireServerPolicy serverPolicyStub,
+            List<SapphirePolicyContainer> processedPolicies,
+            int sizeOfDownstreamPolicies) {
+        int idx = 0, size = processedPolicies.size();
+
+        // Indicates start of downstream policies.
+        int startIdx = size - sizeOfDownstreamPolicies;
+        try {
+            // Set whether the chain was already pinned or not from downstream policies.
+            for (SapphirePolicyContainer policyContainer : processedPolicies) {
+                if (idx >= startIdx) {
+                    // Start checking all the downstream policies only.
+                    SapphireServerPolicy sp = policyContainer.getServerPolicy();
+                    if (sp.wasAlreadyPinned()) {
+                        String msg =
+                                String.format(
+                                        "Sapphire Object was already pinned by %s. Set as already pinned for %s",
+                                        sp, serverPolicyStub);
+                        logger.log(Level.INFO, msg);
+                        serverPolicyStub.setAlreadyPinned(true);
+                    }
+                }
+                idx++;
+            }
+        } catch (Exception e) {
+            logger.log(
+                    Level.SEVERE,
+                    String.format(
+                            "Checking chain pinning failed. Size of processed policies = %d startIdx = %d",
+                            size, startIdx));
+            throw e;
+        }
     }
 
     private static class PolicyComponents {

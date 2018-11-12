@@ -157,6 +157,18 @@ public class SapphireMultiPolicyChainTest extends MultiPolicyChainBaseTest {
         public void $__setNextClientPolicy(SapphirePolicy.SapphireClientPolicy clientPolicy) {
             $__nextClientPolicy = clientPolicy;
         }
+
+        public void sapphire_pin(
+                SapphirePolicy.SapphireServerPolicy sapphireServerPolicy, String region) {
+            return;
+        }
+
+        /* This function is added here just to generate the stub for this function in all Policies server policy */
+        public void sapphire_pin_to_server(
+                SapphirePolicy.SapphireServerPolicy sapphireServerPolicy,
+                InetSocketAddress server) {
+            return;
+        }
     }
 
     @Before

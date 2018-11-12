@@ -7,6 +7,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.logging.Logger;
 import sapphire.app.SapphireObjectSpec;
+import sapphire.common.SapphireObjectNotFoundException;
+import sapphire.common.SapphireObjectReplicaNotFoundException;
 import sapphire.common.Utils;
 import sapphire.policy.DefaultSapphirePolicy;
 
@@ -66,6 +68,7 @@ public class DHTPolicy extends DefaultSapphirePolicy {
         @Override
         public void onCreate(String region, SapphireServerPolicy server, SapphireObjectSpec spec)
                 throws RemoteException {
+            InetSocketAddress newServerAddress = null;
             dhtChord = new DHTChord();
             super.onCreate(region, server, spec);
 
@@ -83,12 +86,12 @@ public class DHTPolicy extends DefaultSapphirePolicy {
             try {
                 ArrayList<String> regions = sapphire_getRegions();
                 DHTServerPolicy dhtServer = (DHTServerPolicy) server;
-                // TODO: hack for demo.
-                // Sungwook will raise another PR to address it shortly
-                // dhtServer.sapphire_pin(server, regions.get(0));
+                boolean pinned = dhtServer.wasAlreadyPinned();
+                if (!pinned) {
+                    dhtServer.sapphire_pin(server, regions.get(0));
+                }
 
                 // Create replicas based on annotation
-                InetSocketAddress newServerAddress = null;
                 for (int i = 1; i < numOfShards; i++) {
                     region = regions.get(i % regions.size());
                     if (region == null) {
@@ -101,20 +104,18 @@ public class DHTPolicy extends DefaultSapphirePolicy {
                     SapphireServerPolicy replica =
                             dhtServer.sapphire_replicate(server.getProcessedPolicies(), region);
 
-                    // TODO: hack for demo. When we demo DHT + master slave, DHT
-                    // is not the last DM, and therefore should not call sapphire_pin
-                    // to relocate server policy.
-                    // newServerAddress = oms().getServerInRegion(region);
-                    // dhtServer.sapphire_pin_to_server(replica,
-                    // newServerAddress);
-
-                    // TODO: Once the hack for demo is removed, only the below code will be needed
-                    // for creating the replica similar to other replication policies.
-                    // addReplica(dhtServer, newServerAddress, region);
+                    if (!pinned) {
+                        newServerAddress = oms().getServerInRegion(region);
+                        dhtServer.sapphire_pin_to_server(replica, newServerAddress);
+                    }
                 }
             } catch (RemoteException e) {
                 throw new Error(
                         "Could not create new group policy because the oms is not available.");
+            } catch (SapphireObjectNotFoundException e) {
+                throw new Error("Could not find Sapphire Object to pin to " + newServerAddress);
+            } catch (SapphireObjectReplicaNotFoundException e) {
+                throw new Error("Could not find replica to pin to " + newServerAddress);
             }
         }
 

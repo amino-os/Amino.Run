@@ -27,7 +27,6 @@ public class SimpleDMIntegrationTest {
     private static String RESOURCE_PATH = "specs/simple-dm/";
     private static String RESOURCE_REAL_PATH;
     private static String kstIp = "127.0.0.1";
-    private static int ksPort = 22345;
     private OMSServer oms;
     private SapphireObjectID sapphireObjId = null;
 
@@ -305,7 +304,7 @@ public class SimpleDMIntegrationTest {
         */
 
         /* Migrate SO to first server and verify the value */
-        store.migrateObject(new InetSocketAddress(ksIp, ks1Port));
+        store.migrateObject(new InetSocketAddress(ksIp, ksPort[0]));
         Assert.assertEquals(value0, store.get(key0));
 
         /* Add another key-value entry and verify */
@@ -315,7 +314,7 @@ public class SimpleDMIntegrationTest {
         Assert.assertEquals(value1, store.get(key1));
 
         /* Migrate SO to second server and verify the values */
-        store.migrateObject(new InetSocketAddress(ksIp, ks2Port));
+        store.migrateObject(new InetSocketAddress(ksIp, ksPort[1]));
         Assert.assertEquals(value0, store.get(key0));
         Assert.assertEquals(value1, store.get(key1));
     }

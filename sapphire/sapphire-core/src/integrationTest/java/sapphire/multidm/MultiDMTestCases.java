@@ -25,10 +25,12 @@ import sapphire.oms.OMSServer;
  */
 public class MultiDMTestCases {
     OMSServer oms;
+    private static String regionName = "";
+    private static String labels[] = {regionName};
 
     @BeforeClass
     public static void bootstrap() throws Exception {
-        startOmsAndKernelServers("");
+        startOmsAndKernelServers(regionName, labels);
     }
 
     @Before

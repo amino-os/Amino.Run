@@ -143,8 +143,11 @@ task compileGraalStub(type: JavaCompile) {
 
 tasks.googleJavaFormat.mustRunAfter genStubs
 tasks.googleJavaFormat.mustRunAfter genGraalStub
-compileGraalStub.mustRunAfter genGraalStub
+
+compileGraalStub.dependsOn genGraalStub
 compileTestJava.dependsOn compileGraalStub
+tasks.googleJavaFormat.dependsOn genStubs
+tasks.googleJavaFormat.dependsOn genGraalStub
 check.dependsOn tasks.googleJavaFormat
 check.dependsOn integTest
 compileJava.dependsOn checkGraalVmVersion

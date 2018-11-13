@@ -5,6 +5,9 @@ constructorName: null
 dmList:
 - configs: []
   name: sapphire.policy.checkpoint.periodiccheckpoint.PeriodicCheckpointPolicy
+nodeSelectorSpec:
+  andLabels: !!set {}
+  orLabels: !!set {}
 javaClassName: sapphire.demo.KVStore
 lang: java
 name: null

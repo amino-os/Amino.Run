@@ -34,7 +34,7 @@ public class ShiftPolicy extends DefaultSapphirePolicy {
                                 + this.LOAD
                                 + ". Shift policy triggered.");
                 OMSServer oms = GlobalKernelReferences.nodeServer.oms;
-                ArrayList<InetSocketAddress> servers = oms.getServers();
+                ArrayList<InetSocketAddress> servers = new ArrayList<>(oms.getServers(null));
 
                 KernelServerImpl localKernel = GlobalKernelReferences.nodeServer;
                 InetSocketAddress localAddress = localKernel.getLocalHost();

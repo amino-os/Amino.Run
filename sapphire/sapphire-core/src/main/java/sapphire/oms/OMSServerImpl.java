@@ -18,6 +18,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.JSONException;
 import sapphire.app.NodeSelectorSpec;
+import sapphire.app.SapphireObjectSpec;
 import sapphire.common.AppObjectStub;
 import sapphire.common.SapphireObjectCreationException;
 import sapphire.common.SapphireObjectID;
@@ -115,19 +116,6 @@ public class OMSServerImpl implements OMSServer {
     }
 
     /**
-     * Gets the list servers in the system
-     *
-     * @throws RemoteException
-     * @throws NumberFormatException
-     * @throws NotBoundException
-     */
-    @Override
-    public ArrayList<InetSocketAddress> getServers()
-            throws NumberFormatException, RemoteException, NotBoundException {
-        return serverManager.getServers();
-    }
-
-    /**
      * Gets the regions in the system
      *
      * @throws RemoteException
@@ -148,19 +136,6 @@ public class OMSServerImpl implements OMSServer {
     @Override
     public InetSocketAddress getServerInRegion(String region) throws RemoteException {
         return serverManager.getFirstServerInRegion(region);
-    }
-
-    /**
-     * Gets all servers in the specified region
-     *
-     * @param region
-     * @return
-     * @throws RemoteException
-     * @deprecated Please use {@link #getServers(NodeSelectorSpec)}
-     */
-    @Override
-    public ArrayList<InetSocketAddress> getServersInRegion(String region) throws RemoteException {
-        return serverManager.getServersInRegion(region);
     }
 
     /**
@@ -204,9 +179,10 @@ public class OMSServerImpl implements OMSServer {
     @Override
     public SapphireObjectID createSapphireObject(String sapphireObjectSpec, Object... args)
             throws RemoteException, SapphireObjectCreationException {
-        /* Get a random server in the first region */
-        InetSocketAddress host =
-                serverManager.getRandomServerInRegion(serverManager.getRegions().get(0));
+
+        SapphireObjectSpec spec = SapphireObjectSpec.fromYaml(sapphireObjectSpec);
+        /* Get a best server from the given spec */
+        InetSocketAddress host = serverManager.getBestSuitableServer(spec);
         if (host == null) {
             throw new SapphireObjectCreationException(
                     "Failed to create sapphire object. Kernel server is not available in the region");
@@ -403,7 +379,7 @@ public class OMSServerImpl implements OMSServer {
             registry.rebind("SapphireKernelServer", localKernelServerStub);
 
             logger.info("OMS ready");
-            for (Iterator<InetSocketAddress> it = oms.getServers().iterator(); it.hasNext(); ) {
+            for (Iterator<InetSocketAddress> it = oms.getServers(null).iterator(); it.hasNext(); ) {
                 InetSocketAddress address = it.next();
                 logger.fine("   " + address.getHostName().toString() + ":" + address.getPort());
             }

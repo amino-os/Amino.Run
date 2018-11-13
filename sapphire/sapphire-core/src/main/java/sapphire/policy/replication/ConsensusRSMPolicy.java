@@ -3,7 +3,6 @@ package sapphire.policy.replication;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.net.InetSocketAddress;
-import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,10 +10,10 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Logger;
+import sapphire.app.NodeSelectorSpec;
 import sapphire.app.SapphireObjectSpec;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
-import sapphire.kernel.common.GlobalKernelReferences;
 import sapphire.policy.DefaultSapphirePolicy;
 import sapphire.policy.util.consensus.raft.AlreadyVotedException;
 import sapphire.policy.util.consensus.raft.CandidateBehindException;
@@ -225,15 +224,25 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
             // super.onCreate(server, annotations);
 
             super.onCreate(region, server, spec);
+            List<InetSocketAddress> serversInRegion = null;
 
             try {
-                // TODO: Replace with labeling.
-                List<InetSocketAddress> serversInRegion;
-                if (region != null && !region.isEmpty()) {
-                    serversInRegion =
-                            GlobalKernelReferences.nodeServer.oms.getServersInRegion(region);
+
+                NodeSelectorSpec nodeSelector = null;
+                if (null != spec) {
+                    nodeSelector = spec.getNodeSelectorSpec();
+                }
+                if (null != nodeSelector) { // spec takes priority over region
+                    serversInRegion = oms().getServers(nodeSelector);
                 } else {
-                    serversInRegion = GlobalKernelReferences.nodeServer.oms.getServers();
+
+                    if (region != null && !region.isEmpty()) {
+                        nodeSelector = new NodeSelectorSpec();
+                        nodeSelector.addAndLabel(region);
+                        serversInRegion = oms().getServers(nodeSelector);
+                    } else {
+                        serversInRegion = oms().getServers(null);
+                    }
                 }
 
                 // Register the first replica, which has already been created.
@@ -275,8 +284,6 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
                 throw new Error("Failed to find sapphire object.", e);
             } catch (SapphireObjectReplicaNotFoundException e) {
                 throw new Error("Failed to find sapphire object replica.", e);
-            } catch (NotBoundException e) {
-                throw new Error("rmi operation not bound: ", e);
             }
         }
     }

@@ -25,7 +25,7 @@ import sapphire.policy.SapphirePolicyUpcalls;
 import sapphire.runtime.EventHandler;
 
 public interface OMSServer extends Remote {
-    public static final long KS_HEARTBEAT_TIMEOUT = 6000; // milliseconds
+    public static final long KS_HEARTBEAT_TIMEOUT = 6000000; // milliseconds
 
     KernelOID registerKernelObject(InetSocketAddress host) throws RemoteException;
 
@@ -38,15 +38,9 @@ public interface OMSServer extends Remote {
     InetSocketAddress lookupKernelObject(KernelOID oid)
             throws RemoteException, KernelObjectNotFoundException;
 
-    ArrayList<InetSocketAddress> getServers()
-            throws NumberFormatException, RemoteException, NotBoundException;
-
     ArrayList<String> getRegions() throws RemoteException;
 
     InetSocketAddress getServerInRegion(String region) throws RemoteException;
-
-    /** @deprecated Please use {@link #getServers(NodeSelectorSpec)} */
-    ArrayList<InetSocketAddress> getServersInRegion(String region) throws RemoteException;
 
     List<InetSocketAddress> getServers(NodeSelectorSpec spec) throws RemoteException;
 

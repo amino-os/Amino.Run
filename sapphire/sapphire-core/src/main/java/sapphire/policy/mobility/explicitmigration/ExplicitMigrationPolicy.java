@@ -161,7 +161,7 @@ public class ExplicitMigrationPolicy extends DefaultSapphirePolicy {
                     "Performing Explicit Migration of the object to Destination Kernel Server with address as "
                             + destinationAddr);
             OMSServer oms = GlobalKernelReferences.nodeServer.oms;
-            ArrayList<InetSocketAddress> servers = oms.getServers();
+            ArrayList<InetSocketAddress> servers = new ArrayList<>(oms.getServers(null));
 
             KernelServerImpl localKernel = GlobalKernelReferences.nodeServer;
             InetSocketAddress localAddress = localKernel.getLocalHost();

@@ -30,6 +30,7 @@ public class KernelServerManager {
     private ConcurrentHashMap<String, ArrayList<InetSocketAddress>> regions;
     private ConcurrentHashMap<InetSocketAddress, ResettableTimer> ksHeartBeatTimers;
     private Set<ServerInfo> serverInfos;
+    private static final Random randgen = new Random();
 
     public KernelServerManager() {
         serverInfos = new ConcurrentHashMap<ServerInfo, ServerInfo>().newKeySet();
@@ -205,9 +206,10 @@ public class KernelServerManager {
         if (spec != null) {
             nodeSelector = spec.getNodeSelectorSpec();
         }
+        // if nodeSelector is null then returns all the kernelserver's addresses
         List<InetSocketAddress> hosts = getServers(nodeSelector);
         // In future we can consider some other specific things to select the
         // best one among the list
-        return hosts.get(new Random().nextInt(hosts.size()));
+        return hosts.get(randgen.nextInt(hosts.size()));
     }
 }

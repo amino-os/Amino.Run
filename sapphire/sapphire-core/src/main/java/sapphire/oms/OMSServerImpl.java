@@ -379,6 +379,7 @@ public class OMSServerImpl implements OMSServer {
             registry.rebind("SapphireKernelServer", localKernelServerStub);
 
             logger.info("OMS ready");
+            // to get all the kernel server's addresses passing null in oms.getServers
             for (Iterator<InetSocketAddress> it = oms.getServers(null).iterator(); it.hasNext(); ) {
                 InetSocketAddress address = it.next();
                 logger.fine("   " + address.getHostName().toString() + ":" + address.getPort());

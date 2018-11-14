@@ -495,11 +495,12 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
          * @param region
          * @return inet socket address of the server
          * @throws RemoteException
-         * @deprecated Please use {@link #sapphire_getServers(NodeSelectorSpec)}
          */
         public ArrayList<InetSocketAddress> sapphire_getServersInRegion(String region)
                 throws RemoteException {
-            return oms().getServersInRegion(region);
+            NodeSelectorSpec nodeselector = new NodeSelectorSpec();
+            nodeselector.addAndLabel(region);
+            return new ArrayList<>(oms().getServers(nodeselector));
         }
 
         public void $__setKernelOID(KernelOID oid) {

@@ -167,7 +167,7 @@ public class OMSTest extends BaseTest {
 
     @Test
     public void getServerTest() throws Exception {
-        List<InetSocketAddress> servers = spiedOms.getServers();
+        List<InetSocketAddress> servers = spiedOms.getServers(null);
 
         /* Reference count must become 3 (Since three kernel server are added )  */
         assertEquals(new Integer(3), new Integer(servers.size()));

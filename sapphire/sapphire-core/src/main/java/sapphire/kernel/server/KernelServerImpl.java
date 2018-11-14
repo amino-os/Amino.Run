@@ -455,7 +455,7 @@ public class KernelServerImpl implements KernelServer {
         ksHeartbeatSendTimer.start();
     }
 
-    private static ServerInfo createServerInfo(
+    public static ServerInfo createServerInfo(
             InetSocketAddress host, String region, String labelStr) {
         ServerInfo srvInfo = new ServerInfo(host, region);
         Set<String> labels = parseLabel(labelStr);

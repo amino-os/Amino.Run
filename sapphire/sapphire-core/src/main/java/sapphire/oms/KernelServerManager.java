@@ -10,6 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import sapphire.app.NodeSelectorSpec;
+import sapphire.app.SapphireObjectSpec;
 import sapphire.kernel.common.GlobalKernelReferences;
 import sapphire.kernel.common.KernelServerNotFoundException;
 import sapphire.kernel.common.ServerInfo;
@@ -29,6 +30,7 @@ public class KernelServerManager {
     private ConcurrentHashMap<String, ArrayList<InetSocketAddress>> regions;
     private ConcurrentHashMap<InetSocketAddress, ResettableTimer> ksHeartBeatTimers;
     private Set<ServerInfo> serverInfos;
+    private static final Random randgen = new Random();
 
     public KernelServerManager() {
         serverInfos = new ConcurrentHashMap<ServerInfo, ServerInfo>().newKeySet();
@@ -135,17 +137,6 @@ public class KernelServerManager {
         throw new KernelServerNotFoundException("region exist but host does not exist");
     }
 
-    public ArrayList<InetSocketAddress> getServers() {
-        ArrayList<InetSocketAddress> nodes = new ArrayList<InetSocketAddress>();
-        for (ArrayList<InetSocketAddress> addresses : this.regions.values()) {
-            for (InetSocketAddress address : addresses) {
-                nodes.add(address);
-            }
-        }
-
-        return nodes;
-    }
-
     /**
      * Returns a list of addresses of servers whose labels match the given {@code NodeSelectorSpec}
      *
@@ -205,29 +196,20 @@ public class KernelServerManager {
     }
 
     /**
-     * Gets the random server in the given region
+     * Gets the best suitable server from the given NodeSelector
      *
-     * @param region
+     * @param spec
      * @return
-     * @deprecated Please use {@link #getServers(NodeSelectorSpec)}
      */
-    public InetSocketAddress getRandomServerInRegion(String region) {
-        ArrayList<InetSocketAddress> hosts = regions.get(region);
-        return hosts.get(new Random().nextInt(hosts.size()));
-    }
-
-    /**
-     * Gets all the servers in the region
-     *
-     * @param region
-     * @return list of kernel server host addresses in the given region otherwise null
-     * @deprecated Please use {@link #getServers(NodeSelectorSpec)}
-     */
-    public ArrayList<InetSocketAddress> getServersInRegion(String region) {
-        ArrayList<InetSocketAddress> servers = regions.get(region);
-        if (servers == null) {
-            return null;
+    public InetSocketAddress getBestSuitableServer(SapphireObjectSpec spec) {
+        NodeSelectorSpec nodeSelector = null;
+        if (spec != null) {
+            nodeSelector = spec.getNodeSelectorSpec();
         }
-        return new ArrayList<>(servers);
+        // if nodeSelector is null then returns all the kernelserver's addresses
+        List<InetSocketAddress> hosts = getServers(nodeSelector);
+        // In future we can consider some other specific things to select the
+        // best one among the list
+        return hosts.get(randgen.nextInt(hosts.size()));
     }
 }

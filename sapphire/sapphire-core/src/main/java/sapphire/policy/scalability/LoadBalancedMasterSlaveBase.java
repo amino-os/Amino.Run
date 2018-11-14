@@ -5,7 +5,6 @@ import static sapphire.policy.scalability.masterslave.MethodInvocationResponse.R
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
-import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,11 +14,11 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import sapphire.app.NodeSelectorSpec;
 import sapphire.app.SapphireObjectSpec;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
 import sapphire.common.Utils;
-import sapphire.kernel.common.GlobalKernelReferences;
 import sapphire.kernel.common.KernelObjectStub;
 import sapphire.policy.DefaultSapphirePolicy;
 import sapphire.policy.scalability.masterslave.Lock;
@@ -181,13 +180,22 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultSapphirePolicy 
             logger.info(String.format("Creating master and slave instance in region %s", region));
 
             try {
-                List<InetSocketAddress> servers;
-                if (region != null && !region.isEmpty()) {
-                    servers =
-                            GlobalKernelReferences.nodeServer.oms.getServers(
-                                    spec.getNodeSelectorSpec());
+                List<InetSocketAddress> servers = null;
+                NodeSelectorSpec nodeSelector = null;
+                if (null != spec) {
+                    nodeSelector = spec.getNodeSelectorSpec();
+                }
+                if (null != nodeSelector) { // spec takes priority over region
+                    servers = oms().getServers(nodeSelector);
                 } else {
-                    servers = GlobalKernelReferences.nodeServer.oms.getServers();
+
+                    if (region != null && !region.isEmpty()) {
+                        nodeSelector = new NodeSelectorSpec();
+                        nodeSelector.addAndLabel(region);
+                        servers = oms().getServers(nodeSelector);
+                    } else {
+                        servers = oms().getServers(null);
+                    }
                 }
 
                 if (servers.size() < NUM_OF_REPLICAS) {
@@ -225,8 +233,6 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultSapphirePolicy 
                 }
             } catch (RemoteException e) {
                 throw new RuntimeException("failed to create group: " + e, e);
-            } catch (NotBoundException e) {
-                throw new Error("rmi operation not bound: " + e, e);
             } catch (SapphireObjectNotFoundException e) {
                 throw new RuntimeException("Failed to find sapphire object: " + e, e);
             } catch (SapphireObjectReplicaNotFoundException e) {

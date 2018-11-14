@@ -38,15 +38,9 @@ public interface OMSServer extends Remote {
     InetSocketAddress lookupKernelObject(KernelOID oid)
             throws RemoteException, KernelObjectNotFoundException;
 
-    ArrayList<InetSocketAddress> getServers()
-            throws NumberFormatException, RemoteException, NotBoundException;
-
     ArrayList<String> getRegions() throws RemoteException;
 
     InetSocketAddress getServerInRegion(String region) throws RemoteException;
-
-    /** @deprecated Please use {@link #getServers(NodeSelectorSpec)} */
-    ArrayList<InetSocketAddress> getServersInRegion(String region) throws RemoteException;
 
     List<InetSocketAddress> getServers(NodeSelectorSpec spec) throws RemoteException;
 

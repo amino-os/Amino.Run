@@ -2,7 +2,6 @@ package sapphire.appexamples.fundmover;
 
 import sapphire.app.SapphireObject;
 
-import static java.lang.Thread.sleep;
 
 public class Finance implements SapphireObject {
     private Wallet wallet;

@@ -14,9 +14,6 @@ import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
-import java.rmi.server.UnicastRemoteObject;
-
-import static sapphire.runtime.Sapphire.new_;
 
 public class FundmoverMain {
     public static void main(String[] args) throws RemoteException {
@@ -88,7 +85,7 @@ public class FundmoverMain {
             // Verifying the rollback use case
             finance.transferFromWallet(80);
         }catch (Exception e) {
-            System.out.println("---------- error accurred -----");
+            System.out.println("---------- error occurred -----");
             System.out.println(e.toString());
         }
 

@@ -4,10 +4,7 @@ import sapphire.app.SapphireObject;
 import sapphire.policy.serializability.TransactionAlreadyStartedException;
 import sapphire.policy.transaction.TransactionExecutionException;
 import sapphire.policy.transaction.TransactionManager;
-import sapphire.policy.transaction.TwoPCCohortPolicy;
-import sapphire.policy.transaction.TwoPCExtResourceCohortPolicy;
 
-import java.io.Serializable;
 import java.util.UUID;
 
 import java.sql.*;
@@ -70,6 +67,7 @@ public class Wallet implements SapphireObject, TransactionManager {
         try {
             this.ensureConnection();
             Statement statement = this.conn.createStatement();
+            /* Additional character added  to make transaction id as unique @ Database */
             String sql = "xa start '" + transactionId.toString() + "2'";
             statement.execute(sql);
         } catch (SQLException e) {
@@ -98,6 +96,7 @@ public class Wallet implements SapphireObject, TransactionManager {
                  System.out.println(e.getMessage());
                  vote=Vote.NO;
              }
+            /* Additional character added  to make transaction id as unique @ Databases */
             String sql = "xa end '" + transactionId.toString() +"2'";
             statement.execute(sql);
             String sql2 = "xa prepare '" + transactionId.toString() + "2'";
@@ -118,6 +117,7 @@ public class Wallet implements SapphireObject, TransactionManager {
 
         try {
             Statement statement = this.conn.createStatement();
+            /* Additional character added  to make transaction id as unique @ Databases */
             String sql = "xa commit '" + transactionId.toString() + "2'";
             statement.execute(sql);
             this.isCommit=false;
@@ -131,6 +131,7 @@ public class Wallet implements SapphireObject, TransactionManager {
         System.out.println("[wallet] xa abort");
         try {
             Statement statement = this.conn.createStatement();
+            /* Additional character added  to make transaction id as unique @ Databases */
             if (this.isStart){
                 String sql = "xa end '" + transactionId.toString() +"2'";
                 statement.execute(sql);

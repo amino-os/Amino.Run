@@ -26,7 +26,6 @@ public class FundmoverMain {
         String hostIp = args[0], hostPort = args[1], omsIp = args[2], omsPort = args[3];
         InetSocketAddress hostAddr = new InetSocketAddress(hostIp, Integer.parseInt(hostPort)), omsAddr = new InetSocketAddress(omsIp, Integer.parseInt(omsPort));
 
-
         Registry registry;
         try{
             registry = LocateRegistry.getRegistry(args[0],Integer.parseInt(args[1]));
@@ -79,14 +78,20 @@ public class FundmoverMain {
 
             System.out.println("transfering fund between 2 entities...");
 
-            finance.transferFromWallet(30);
+            finance.transferFromWallet(40);
+            System.out.println("checking the current balance after the transaction...");
+            System.out.printf("finance details: %s\r\n", finance.getDetails());
+
+            finance.transferFromBank(20);
             System.out.println("checking the current balance after the transaction...");
             System.out.printf("finance details: %s\r\n", finance.getDetails());
             // Verifying the rollback use case
-            finance.transferFromWallet(80);
+            finance.transferFromWallet(85);
+
         }catch (Exception e) {
             System.out.println("---------- error occurred -----");
             System.out.println(e.toString());
+
         }
 
 

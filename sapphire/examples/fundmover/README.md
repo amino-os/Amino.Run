@@ -22,7 +22,7 @@
    docker ps
    If container is not up start the container 
    docker start mariadbdcap
-2. Use the password defined in Step 2 in Wallet.java and BackAccount.java files
+2. Use the password defined in Step 2 in Wallet.java  file
 3. Build App
    ../../gradlew build 
 4. Run OMS

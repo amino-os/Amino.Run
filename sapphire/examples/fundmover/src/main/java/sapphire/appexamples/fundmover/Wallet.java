@@ -42,19 +42,17 @@ public class Wallet implements SapphireObject, TransactionManager {
     public void credit(int amount) {
         this.balance += amount;
         this.isStart = true;
-        System.out.print("new balance "+this.balance);
     }
 
     public void debit(int amount) throws Exception {
         if (this.balance < amount) {
             this.isStart = true;
             throw new Exception("insufficient fund");
-
         }
 
         this.balance -= amount;
         this.isStart = true;
-         }
+    }
 
     public int getBalance() {
         return this.balance;
@@ -67,8 +65,7 @@ public class Wallet implements SapphireObject, TransactionManager {
         try {
             this.ensureConnection();
             Statement statement = this.conn.createStatement();
-            /* Additional character added  to make transaction id as unique @ Database */
-            String sql = "xa start '" + transactionId.toString() + "2'";
+            String sql = "xa start '" + transactionId.toString()+"'";
             statement.execute(sql);
         } catch (SQLException e) {
             e.printStackTrace();
@@ -81,7 +78,7 @@ public class Wallet implements SapphireObject, TransactionManager {
     @Override
     public Vote vote(UUID transactionId) throws TransactionExecutionException {
         System.out.println("[wallet] xa vote");
-         Vote vote = Vote.YES;
+        Vote vote = Vote.YES;
 
         try {
             Statement statement = this.conn.createStatement();
@@ -96,10 +93,9 @@ public class Wallet implements SapphireObject, TransactionManager {
                  System.out.println(e.getMessage());
                  vote=Vote.NO;
              }
-            /* Additional character added  to make transaction id as unique @ Databases */
-            String sql = "xa end '" + transactionId.toString() +"2'";
+            String sql = "xa end '" + transactionId.toString()+"'";
             statement.execute(sql);
-            String sql2 = "xa prepare '" + transactionId.toString() + "2'";
+            String sql2 = "xa prepare '" + transactionId.toString()+"'" ;
             this.isCommit=true;
             statement.execute(sql2);
         } catch (SQLException e) {
@@ -117,8 +113,7 @@ public class Wallet implements SapphireObject, TransactionManager {
 
         try {
             Statement statement = this.conn.createStatement();
-            /* Additional character added  to make transaction id as unique @ Databases */
-            String sql = "xa commit '" + transactionId.toString() + "2'";
+            String sql = "xa commit '" + transactionId.toString() +"'";
             statement.execute(sql);
             this.isCommit=false;
         } catch (SQLException e) {
@@ -131,14 +126,13 @@ public class Wallet implements SapphireObject, TransactionManager {
         System.out.println("[wallet] xa abort");
         try {
             Statement statement = this.conn.createStatement();
-            /* Additional character added  to make transaction id as unique @ Databases */
             if (this.isStart){
-                String sql = "xa end '" + transactionId.toString() +"2'";
+                String sql = "xa end '" + transactionId.toString()+"'" ;
                 statement.execute(sql);
                 this.isStart=false;
             }
             if (this.isCommit){
-            String sql = "xa rollback '" + transactionId.toString()+"2'";
+            String sql = "xa rollback '" + transactionId.toString()+"'";
             statement.execute(sql);
             this.isCommit=false;
             }

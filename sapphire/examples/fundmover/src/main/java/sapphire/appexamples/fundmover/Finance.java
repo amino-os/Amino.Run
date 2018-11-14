@@ -17,6 +17,11 @@ public class Finance implements SapphireObject {
         this.wallet.debit(amount);
 
     }
+    public void transferFromBank(int amount) throws Exception {
+        this.bankaccount.debit(amount);
+        this.wallet.credit(amount);
+
+    }
 
     public String getDetails() {
         return String.format("wallet balance = %d, bank balance = %d", this.wallet.getBalance(), this.bankaccount.getBalance());

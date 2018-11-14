@@ -28,8 +28,8 @@ import org.yaml.snakeyaml.Yaml;
  * selector will be applied in which case all nodes will be returned.
  */
 public class NodeSelectorSpec implements Serializable {
-    private Set<String> orLabels = new HashSet<>();
-    private Set<String> andLabels = new HashSet<>();
+    public Set<String> orLabels = new HashSet<>();
+    public Set<String> andLabels = new HashSet<>();
 
     public Set<String> getOrLabels() {
         return Collections.unmodifiableSet(orLabels);

@@ -7,8 +7,8 @@
 #Setup 
   Follow the Below step to build and configure the Maria DB
 
-1. docker build -t mariadbdcap:latest ./
-2. docker run --name mariadbdcap -e MYSQL_ROOT_PASSWORD=mysecretpw -d mariadb
+1. docker pull mariadb/server:latest
+2. docker run --name mariadbdcap -e MYSQL_ROOT_PASSWORD=mysecretpw -d mariadb/server:latest
    In Place of mysecretpw specify the password to be used 
 3. docker start mariadbdcap
 4. sudo docker exec -it mariadbdcap bash 

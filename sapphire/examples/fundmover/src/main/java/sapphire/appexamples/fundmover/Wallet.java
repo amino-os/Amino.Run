@@ -12,7 +12,6 @@ import java.sql.*;
 public class Wallet implements SapphireObject, TransactionManager {
     private int balance;
     private Boolean isStart = false;
-    private Boolean isCommit = false;
 
     private static final String JDBC_DRIVER = "org.mariadb.jdbc.Driver";
     private static final String DB_URL="jdbc:mariadb://172.17.0.2/fundmover";
@@ -21,13 +20,7 @@ public class Wallet implements SapphireObject, TransactionManager {
 
     transient private Connection conn;
 
-    public Wallet() {
-        try {
-            this.conn = DriverManager.getConnection(DB_URL, USER, PASS);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
+    public Wallet() {}
 
     private void ensureConnection() {
         if (this.conn == null) {
@@ -41,17 +34,13 @@ public class Wallet implements SapphireObject, TransactionManager {
 
     public void credit(int amount) {
         this.balance += amount;
-        this.isStart = true;
-    }
+        }
 
     public void debit(int amount) throws Exception {
         if (this.balance < amount) {
-            this.isStart = true;
             throw new Exception("insufficient fund");
         }
-
         this.balance -= amount;
-        this.isStart = true;
     }
 
     public int getBalance() {
@@ -61,28 +50,36 @@ public class Wallet implements SapphireObject, TransactionManager {
     @Override
     public void join(UUID transactionId) throws TransactionAlreadyStartedException {
         System.out.println("[wallet] xa join");
-
+        Statement statement=null;
         try {
             this.ensureConnection();
-            Statement statement = this.conn.createStatement();
+            statement = this.conn.createStatement();
             String sql = "xa start '" + transactionId.toString()+"'";
             statement.execute(sql);
+            this.isStart=true;
         } catch (SQLException e) {
             e.printStackTrace();
+        }finally {
+            try {
+                if (statement!=null){
+                    statement.close();
+                }
+            } catch (SQLException e) {}
         }
+
     }
 
     @Override
-    public void leave(UUID transactionId) { }
+    public void leave(UUID transactionId) {}
 
     @Override
     public Vote vote(UUID transactionId) throws TransactionExecutionException {
         System.out.println("[wallet] xa vote");
         Vote vote = Vote.YES;
-
+         Statement statement=null;
         try {
-            Statement statement = this.conn.createStatement();
-
+             this.ensureConnection();
+             statement = this.conn.createStatement();
              try {
                  if (this.isStart) {
                      String updateSql = String.format("update Wallets set balance=%d where name='test'", this.balance);
@@ -96,49 +93,68 @@ public class Wallet implements SapphireObject, TransactionManager {
             String sql = "xa end '" + transactionId.toString()+"'";
             statement.execute(sql);
             String sql2 = "xa prepare '" + transactionId.toString()+"'" ;
-            this.isCommit=true;
             statement.execute(sql2);
         } catch (SQLException e) {
             e.printStackTrace();
             vote=Vote.NO;
+        }finally {
+            try {
+                if (statement !=null){
+                    statement.close();
+                }
+            }catch (SQLException e) {}
         }
-
-
         return vote;
     }
 
     @Override
     public void commit(UUID transactionId) {
         System.out.println("[wallet] xa commit");
-
+        Statement statement=null;
         try {
-            Statement statement = this.conn.createStatement();
+            this.ensureConnection();
+            statement = this.conn.createStatement();
             String sql = "xa commit '" + transactionId.toString() +"'";
             statement.execute(sql);
-            this.isCommit=false;
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            try {
+                if (statement !=null){
+                    statement.close();
+                }
+            }catch (SQLException e)  {}
+            try {
+                this.conn.close();
+            } catch (SQLException e) {}
         }
     }
 
     @Override
     public void abort(UUID transactionId) {
         System.out.println("[wallet] xa abort");
+        Statement statement=null;
         try {
-            Statement statement = this.conn.createStatement();
+            this.ensureConnection();
+            statement = this.conn.createStatement();
             if (this.isStart){
                 String sql = "xa end '" + transactionId.toString()+"'" ;
                 statement.execute(sql);
                 this.isStart=false;
             }
-            if (this.isCommit){
             String sql = "xa rollback '" + transactionId.toString()+"'";
             statement.execute(sql);
-            this.isCommit=false;
-            }
-
         } catch (SQLException e) {
             e.printStackTrace();
+        }finally {
+            try {
+                if (statement !=null){
+                    statement.close();
+                }
+            }catch (SQLException e) {}
+            try {
+                this.conn.close();
+            } catch (SQLException e) {}
         }
     }
 }

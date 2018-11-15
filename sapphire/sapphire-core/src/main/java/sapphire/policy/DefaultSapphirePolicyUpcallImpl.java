@@ -83,7 +83,7 @@ public abstract class DefaultSapphirePolicyUpcallImpl extends SapphirePolicyLibr
         }
 
         public void sapphire_remove_replica() throws RemoteException {
-            super.sapphire_remove_replica();
+            super.sapphire_remove_replica(this.getProcessedPolicies());
         }
 
         public String sapphire_getRegion() {

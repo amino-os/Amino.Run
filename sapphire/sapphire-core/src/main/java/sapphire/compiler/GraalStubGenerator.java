@@ -278,6 +278,26 @@ public class GraalStubGenerator {
         out.print(code);
     }
 
+    // Ruby function name may contain !, ?, = which are invalid characters in java function
+    // name, so we need to replace them.
+    private static String[][] strsToReplace = {
+            {"!", "$exclamation$"},
+            {"?", "$question$"},
+            {"~", "$tilde$"},
+            {"<", "$less$"},
+            {">", "$greater$"},
+            //{"===", "=="},
+            {"=", "$equal$"}};
+    private String convertFunctionName(String functionName) {
+        for (String[] strs : strsToReplace) {
+            functionName = functionName.replace(strs[0], strs[1]);
+        }
+
+        if (functionName.equals("class")) functionName = "$_class";
+
+        return functionName;
+    }
+
     private String generateFunctions() {
         StringBuilder res = new StringBuilder();
         String className = getClassName();
@@ -295,6 +315,7 @@ public class GraalStubGenerator {
             System.out.println("got key " + m);
             if (prototype.getMember(m).canExecute() && !m.equals("constructor")) {
 
+                m = convertFunctionName(m);
                 String function =
                         String.format(functionStringFormat, m, m, packageName, className, m);
                 res.append(function);

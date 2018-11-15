@@ -286,7 +286,9 @@ public class GraalStubGenerator {
             {"~", "$tilde$"},
             {"<", "$less$"},
             {">", "$greater$"},
-            //{"===", "=="},
+            {"&", "$bitAnd$"},
+            {"^", "$bitOr$"},
+            {"|", "$or$"},
             {"=", "$equal$"}};
     private String convertFunctionName(String functionName) {
         for (String[] strs : strsToReplace) {

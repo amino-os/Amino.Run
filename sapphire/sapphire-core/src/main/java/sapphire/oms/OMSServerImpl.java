@@ -185,7 +185,7 @@ public class OMSServerImpl implements OMSServer {
         InetSocketAddress host = serverManager.getBestSuitableServer(spec);
         if (host == null) {
             throw new SapphireObjectCreationException(
-                    "Failed to create sapphire object. Kernel server is not available in the region");
+                    "Failed to create sapphire object. Kernel server is not available  with the given requirements");
         }
 
         /* Get the kernel server stub */

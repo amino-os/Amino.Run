@@ -10,7 +10,7 @@ genStubs {
     main = "sapphire.compiler.GraalStubGenerator"
     classpath =  files("$projectDir/../../sapphire-core/build/libs/sapphire-core-1.0.0.jar")
 
-    def sapphireObjectPath = "$projectDir/src/main/ruby/sapphire/appexamples/hankstodo/todo_list_manager.rb"
+    def sapphireObjectPath = "$projectDir/src/main/js/sapphire/appexamples/hankstodo/todo_list_manager.js"
     def outPath = "$projectDir/src/main/java"
     def packageName = "sapphire.appexamples.hankstodo.stubs"
     def sapphireClasses = "TodoListManager"

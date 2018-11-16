@@ -5,27 +5,28 @@ class TodoListManager {
     }
 
     newTodoList(name) {
-        console.log("new_todo_list");
+        console.log("newTodoList " + name);
         var b = this.map.has(name);
         if (!b) this.map.set(name, new Set());
         return b;
     }
 
     deleteTodoList(name) {
-        console.log("delete_todo_list");
+        console.log("deleteTodoList " + name);
         var b = this.map.has(name);
         if (b) this.map.delete(name);
         return b;
     }
 
     addTodo(todoListName, todoTaskName) {
-        console.log("add_todo");
+        console.log("addTodo " + todoListName + " " + todoTaskName);
+        if (!this.map.has(todoListName)) return "Could not find Todo list " + todoListName;
         this.map.get(todoListName).add(todoTaskName);
         return "OK_add_todo"
     }
 
     getTodos(todoListName) {
-        console.log("get_todos");
+        console.log("getTodos " + todoListName);
         var v = this.map.get(todoListName);
         var res = [];
         v.forEach(function(value) {
@@ -35,7 +36,7 @@ class TodoListManager {
     }
 
     completeTodo(todoListName, todoTaskName) {
-        console.log("complete_todo");
+        console.log("completeTodo " + todoListName + " " + todoTaskName);
 
         if (this.map.has(todoListName) && this.map.get(todoListName).has(todoTaskName)) {
             this.map.get(todoListName).delete(todoTaskName);

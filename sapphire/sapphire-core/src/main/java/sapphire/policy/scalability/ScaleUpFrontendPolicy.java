@@ -205,25 +205,6 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
             timer.cancel();
         }
 
-        protected SapphireServerPolicy addReplica(
-                SapphireServerPolicy replicaSource, InetSocketAddress dest)
-                throws RemoteException, SapphireObjectNotFoundException,
-                        SapphireObjectReplicaNotFoundException {
-            SapphireServerPolicy replica =
-                    replicaSource.sapphire_replicate(replicaSource.getProcessedPolicies());
-            try {
-                replica.sapphire_pin_to_server(replica, dest);
-                updateReplicaHostName(replica, dest);
-            } catch (Exception e) {
-                try {
-                    removeReplica(replica);
-                } catch (Exception innerException) {
-                }
-                throw e;
-            }
-            return replica;
-        }
-
         public void scaleUpReplica(String region) throws ScaleUpException, RemoteException {
             if (!replicaCreateLimiter.tryAcquire()) {
                 throw new ScaleUpException(
@@ -257,7 +238,7 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
             if (!fullKernelList.isEmpty()) {
                 try {
                     /* create a replica on the first server in the list */
-                    addReplica(servers.get(0), fullKernelList.get(0));
+                    addReplica(servers.get(0), fullKernelList.get(0), region);
                 } catch (SapphireObjectNotFoundException e) {
                     throw new ScaleUpException(
                             "Failed to find sapphire object. Probably deleted.", e);

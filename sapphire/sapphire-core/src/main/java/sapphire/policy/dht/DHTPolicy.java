@@ -107,6 +107,10 @@ public class DHTPolicy extends DefaultSapphirePolicy {
                     // newServerAddress = oms().getServerInRegion(region);
                     // dhtServer.sapphire_pin_to_server(replica,
                     // newServerAddress);
+
+                    // TODO: Once the hack for demo is removed, only the below code will be needed
+                    // for creating the replica similar to other replication policies.
+                    // addReplica(dhtServer, newServerAddress, region);
                 }
             } catch (RemoteException e) {
                 throw new Error(

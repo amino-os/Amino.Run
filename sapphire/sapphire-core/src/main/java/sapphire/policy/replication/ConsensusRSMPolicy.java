@@ -251,11 +251,7 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
                 // different servers in the same zone.
                 for (int i = 1; i < serversInRegion.size(); i++) {
                     InetSocketAddress newServerAddress = serversInRegion.get(i);
-                    ServerPolicy replica =
-                            (ServerPolicy)
-                                    consensusServer.sapphire_replicate(
-                                            server.getProcessedPolicies());
-                    consensusServer.sapphire_pin_to_server(replica, newServerAddress);
+                    addReplica(consensusServer, newServerAddress, region);
                 }
                 consensusServer.sapphire_pin_to_server(server, serversInRegion.get(0));
 

@@ -520,11 +520,11 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
         }
 
         protected SapphireServerPolicy addReplica(
-                SapphireServerPolicy replicaSource, InetSocketAddress dest)
+                SapphireServerPolicy replicaSource, InetSocketAddress dest, String region)
                 throws RemoteException, SapphireObjectNotFoundException,
                         SapphireObjectReplicaNotFoundException {
             SapphireServerPolicy replica =
-                    replicaSource.sapphire_replicate(replicaSource.getProcessedPolicies());
+                    replicaSource.sapphire_replicate(replicaSource.getProcessedPolicies(), region);
             try {
                 replicaSource.sapphire_pin_to_server(replica, dest);
                 updateReplicaHostName(replica, dest);

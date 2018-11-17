@@ -31,11 +31,13 @@ import sapphire.policy.scalability.ServerOverLoadException;
 public class ScaleUpFrontendDMIntegTest {
     private static final int TASK_COUNT = 50;
     private static final int PARALLEL_THREAD_COUNT = 5;
+    private static final String regionName = "IND";
+    private static final String[] labels = {regionName};
     OMSServer oms;
 
     @BeforeClass
     public static void bootstrap() throws Exception {
-        startOmsAndKernelServers("IND");
+        startOmsAndKernelServers(regionName, labels);
     }
 
     @Before

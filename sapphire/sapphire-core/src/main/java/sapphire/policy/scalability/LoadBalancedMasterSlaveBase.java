@@ -20,6 +20,7 @@ import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
 import sapphire.common.Utils;
 import sapphire.kernel.common.KernelObjectStub;
+import sapphire.kernel.common.KernelServerNotFoundException;
 import sapphire.policy.DefaultSapphirePolicy;
 import sapphire.policy.scalability.masterslave.Lock;
 import sapphire.policy.scalability.masterslave.MethodInvocationRequest;
@@ -234,13 +235,17 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultSapphirePolicy 
                 throw new RuntimeException("Failed to find sapphire object: " + e, e);
             } catch (SapphireObjectReplicaNotFoundException e) {
                 throw new RuntimeException("Failed to find sapphire object replica: " + e, e);
+            } catch (KernelServerNotFoundException e) {
+                throw new RuntimeException("No matching servers found", e);
             }
         }
 
         /**
-         * Returns a server from the given {@code servers} list but not in {@code unavailable} list.
-         * If no available server can be found, then return the {@code index % servers.size()}th
-         * server in the {@code servers} list.
+         * TODO: THIS FUNCTION NEEDS TO BE REWRITTEN - IT DOESNT MAKE SENSE. It also crashes with a
+         * divide by zero exception if servers is empty. Returns a server from the given {@code
+         * servers} list but not in {@code unavailable} list. Also adds that server to the
+         * unavailable list, except caveats below. If no available server can be found, then return
+         * the {@code index % servers.size()}th server in the {@code servers} list.
          *
          * @param index index of the server
          * @param servers a list of servers
@@ -249,7 +254,8 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultSapphirePolicy 
          *     server list if no available server can be found.
          */
         InetSocketAddress getAvailable(
-                int index, List<InetSocketAddress> servers, List<InetSocketAddress> unavailable) {
+                int index, List<InetSocketAddress> servers, List<InetSocketAddress> unavailable)
+                throws KernelServerNotFoundException {
             for (InetSocketAddress s : servers) {
                 if (!unavailable.contains(s)) {
                     unavailable.add(s);
@@ -257,7 +263,10 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultSapphirePolicy 
                 }
             }
 
-            return servers.get(index % servers.size());
+            if (0 < servers.size()) {
+                return servers.get(index % servers.size());
+            }
+            throw new KernelServerNotFoundException("No kernel servers exist");
         }
 
         /**

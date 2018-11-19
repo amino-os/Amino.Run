@@ -208,6 +208,11 @@ public class KernelServerManager {
         }
         // if nodeSelector is null then returns all the kernelserver's addresses
         List<InetSocketAddress> hosts = getServers(nodeSelector);
+
+        if (hosts.size() <= 0) {
+            logger.log(Level.SEVERE, "Could not find kernel server forthe given requirements");
+            return null;
+        }
         // In future we can consider some other specific things to select the
         // best one among the list
         return hosts.get(randgen.nextInt(hosts.size()));

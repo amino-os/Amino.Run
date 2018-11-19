@@ -14,16 +14,20 @@ public class ExplicitCachingPolicy extends DefaultSapphirePolicy {
         private AppObject cachedCopy = null;
 
         private void pull() {
-            this.cachedCopy = ((ExplicitCachingServerPolicy) this.getServer()).getCopy();
+            AppObject appObject = ((ExplicitCachingServerPolicy) this.getServer()).getCopy();
+            if (!(appObject.getObject() instanceof ExplicitCacher)) {
+                throw new IllegalArgumentException("should be subclass of ExplicitCacher");
+            }
+
+            this.cachedCopy = appObject;
         }
 
         private void push() {
-            ((ExplicitCachingServerPolicy) this.getServer()).syncCopy(this.cachedCopy);
-        }
-
-        // for unit test use
-        void setCopy(AppObject copy) {
-            this.cachedCopy = copy;
+            if (this.cachedCopy != null) {
+                ((ExplicitCachingServerPolicy) this.getServer())
+                        .syncCopy(this.cachedCopy.getObject());
+                this.cachedCopy = null;
+            }
         }
 
         // for unit test use
@@ -43,29 +47,19 @@ public class ExplicitCachingPolicy extends DefaultSapphirePolicy {
 
         @Override
         public Object onRPC(String method, ArrayList<Object> params) throws Exception {
-            // almost every op goes against local cache, except for pull/push
+            // All the operations between pull/push calls goes against local cache
             if (this.isPull(method)) {
-                this.cachedCopy = ((ExplicitCachingServerPolicy) this.getServer()).getCopy();
+                this.pull();
                 return null;
-            }
-
-            if (this.isPush(method)) {
-                if (this.cachedCopy != null) {
-                    ((ExplicitCachingServerPolicy) this.getServer())
-                            .syncCopy(this.cachedCopy.getObject());
-                }
+            } else if (this.isPush(method)) {
+                this.push();
                 return null;
+            } else if (this.cachedCopy != null) {
+                return this.cachedCopy.invoke(method, params);
             }
 
-            if (this.cachedCopy == null) {
-                this.cachedCopy = ((ExplicitCachingServerPolicy) this.getServer()).getCopy();
-            }
-
-            if (!(this.cachedCopy.getObject() instanceof ExplicitCacher)) {
-                throw new IllegalArgumentException("should be subclass of ExcplicitCacher");
-            }
-
-            return this.cachedCopy.invoke(method, params);
+            /* When app object is explicitly not pulled, rpc calls are directed to server */
+            return this.getServer().onRPC(method, params);
         }
     }
 

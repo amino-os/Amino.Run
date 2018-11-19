@@ -18,14 +18,14 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import sapphire.app.SapphireObjectServer;
 import sapphire.app.SapphireObjectSpec;
 import sapphire.common.SapphireObjectID;
 import sapphire.demo.KVStore;
 import sapphire.kernel.server.KernelServerImpl;
-import sapphire.oms.OMSServer;
 
 public class LoadBalancedMasterSlaveDMIntegTest {
-    OMSServer oms;
+    SapphireObjectServer sapphireObjectServer;
 
     @BeforeClass
     public static void bootstrap() throws Exception {
@@ -35,14 +35,14 @@ public class LoadBalancedMasterSlaveDMIntegTest {
     @Before
     public void setUp() throws Exception {
         Registry registry = LocateRegistry.getRegistry(omsIp, omsPort);
-        oms = (OMSServer) registry.lookup("SapphireOMS");
+        sapphireObjectServer = (SapphireObjectServer) registry.lookup("SapphireOMS");
         new KernelServerImpl(
                 new InetSocketAddress(hostIp, hostPort), new InetSocketAddress(omsIp, omsPort));
     }
 
     private void runTest(SapphireObjectSpec spec) throws Exception {
-        SapphireObjectID sapphireObjId = oms.createSapphireObject(spec.toString());
-        KVStore store = (KVStore) oms.acquireSapphireObjectStub(sapphireObjId);
+        SapphireObjectID sapphireObjId = sapphireObjectServer.createSapphireObject(spec.toString());
+        KVStore store = (KVStore) sapphireObjectServer.acquireSapphireObjectStub(sapphireObjId);
         for (int i = 0; i < 10; i++) {
             String key = "k1_" + i;
             String value = "v1_" + i;

@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Random;
 
 import sapphire.app.Language;
+import sapphire.app.SapphireObjectServer;
 import sapphire.app.SapphireObjectSpec;
 import sapphire.common.SapphireObjectID;
 import sapphire.kernel.server.KernelServer;
@@ -76,7 +77,7 @@ public class MinnieTwitterMain {
 
         try {
             registry = LocateRegistry.getRegistry(omsAddr.getHostName(), omsAddr.getPort());
-            OMSServer server = (OMSServer) registry.lookup("SapphireOMS");
+            SapphireObjectServer server = (SapphireObjectServer) registry.lookup("SapphireOMS");
 
             KernelServer nodeServer = new KernelServerImpl(hostAddr, omsAddr);
 
@@ -147,7 +148,7 @@ public class MinnieTwitterMain {
 
         try {
             registry = LocateRegistry.getRegistry(omsAddr.getHostString(), omsAddr.getPort());
-            OMSServer server = (OMSServer) registry.lookup("SapphireOMS");
+            SapphireObjectServer server = (SapphireObjectServer) registry.lookup("SapphireOMS");
 
             KernelServer nodeServer = new KernelServerImpl(hostAddr, omsAddr);
 

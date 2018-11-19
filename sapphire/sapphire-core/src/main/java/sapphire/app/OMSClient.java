@@ -13,7 +13,6 @@ import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.graal.io.SerializeValue;
 import sapphire.kernel.server.KernelServer;
 import sapphire.kernel.server.KernelServerImpl;
-import sapphire.oms.OMSServer;
 
 /**
  * TODO(multi-lang): Implement OMSClient
@@ -26,7 +25,7 @@ import sapphire.oms.OMSServer;
  * </code>
  */
 public class OMSClient {
-    private OMSServer omsserver;
+    private SapphireObjectServer server;
 
     /**
      * Create OMS client object.
@@ -39,7 +38,7 @@ public class OMSClient {
     public OMSClient(InetSocketAddress host, InetSocketAddress omsHost)
             throws RemoteException, NotBoundException {
         Registry registry = LocateRegistry.getRegistry(omsHost.getHostName(), omsHost.getPort());
-        omsserver = (OMSServer) registry.lookup("SapphireOMS");
+        server = (SapphireObjectServer) registry.lookup("SapphireOMS");
         KernelServer nodeServer = new KernelServerImpl(host, omsHost);
     }
     /**
@@ -71,7 +70,7 @@ public class OMSClient {
             }
             serializableObjects[i] = args[i];
         }
-        return omsserver.createSapphireObject(spec.toString(), serializableObjects);
+        return server.createSapphireObject(spec.toString(), serializableObjects);
     }
 
     /**
@@ -85,6 +84,6 @@ public class OMSClient {
      */
     public AppObjectStub acquireSapphireObjectStub(SapphireObjectID sapphireObjId)
             throws RemoteException, SapphireObjectNotFoundException {
-        return omsserver.acquireSapphireObjectStub(sapphireObjId);
+        return server.acquireSapphireObjectStub(sapphireObjId);
     }
 }

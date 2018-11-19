@@ -8,10 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import sapphire.app.NodeSelectorSpec;
-import sapphire.common.AppObjectStub;
-import sapphire.common.SapphireObjectCreationException;
 import sapphire.common.SapphireObjectID;
-import sapphire.common.SapphireObjectNameModificationException;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
 import sapphire.common.SapphireReplicaID;
@@ -64,22 +61,6 @@ public interface OMSServer extends Remote {
     void setSapphireReplicaDispatcher(SapphireReplicaID replicaId, EventHandler dispatcher)
             throws RemoteException, SapphireObjectNotFoundException,
                     SapphireObjectReplicaNotFoundException;
-
-    SapphireObjectID createSapphireObject(String sapphireObjectSpec, Object... args)
-            throws RemoteException, SapphireObjectCreationException;
-
-    AppObjectStub acquireSapphireObjectStub(SapphireObjectID sapphireObjId)
-            throws RemoteException, SapphireObjectNotFoundException;
-
-    AppObjectStub attachToSapphireObject(String sapphireObjName)
-            throws RemoteException, SapphireObjectNotFoundException;
-
-    boolean detachFromSapphireObject(String sapphireObjName)
-            throws RemoteException, SapphireObjectNotFoundException;
-
-    void setSapphireObjectName(SapphireObjectID sapphireObjId, String sapphireObjName)
-            throws RemoteException, SapphireObjectNotFoundException,
-                    SapphireObjectNameModificationException;
 
     boolean deleteSapphireObject(SapphireObjectID sapphireObjId)
             throws RemoteException, SapphireObjectNotFoundException;

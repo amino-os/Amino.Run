@@ -11,11 +11,11 @@ import java.rmi.registry.Registry;
 import java.util.List;
 import java.util.concurrent.*;
 import org.junit.*;
+import sapphire.app.SapphireObjectServer;
 import sapphire.app.SapphireObjectSpec;
 import sapphire.common.SapphireObjectID;
 import sapphire.demo.KVStore;
 import sapphire.kernel.server.KernelServerImpl;
-import sapphire.oms.OMSServer;
 import sapphire.policy.serializability.TransactionAlreadyStartedException;
 import sapphire.policy.serializability.TransactionException;
 
@@ -27,7 +27,7 @@ public class SimpleDMIntegrationTest {
     private static String RESOURCE_PATH = "specs/simple-dm/";
     private static String RESOURCE_REAL_PATH;
     private static String kstIp = "127.0.0.1";
-    private OMSServer oms;
+    private SapphireObjectServer sapphireObjectServer;
     private SapphireObjectID sapphireObjId = null;
 
     @BeforeClass
@@ -41,7 +41,7 @@ public class SimpleDMIntegrationTest {
     @Before
     public void setUp() throws Exception {
         Registry registry = LocateRegistry.getRegistry(omsIp, omsPort);
-        oms = (OMSServer) registry.lookup("SapphireOMS");
+        sapphireObjectServer = (SapphireObjectServer) registry.lookup("SapphireOMS");
         new KernelServerImpl(
                 new InetSocketAddress(hostIp, hostPort), new InetSocketAddress(omsIp, omsPort));
     }
@@ -66,8 +66,8 @@ public class SimpleDMIntegrationTest {
      */
     private void runTest(String dmFileName) throws Exception {
         SapphireObjectSpec spec = getSapphireObjectSpecForDM(dmFileName);
-        sapphireObjId = oms.createSapphireObject(spec.toString());
-        KVStore store = (KVStore) oms.acquireSapphireObjectStub(sapphireObjId);
+        sapphireObjId = sapphireObjectServer.createSapphireObject(spec.toString());
+        KVStore store = (KVStore) sapphireObjectServer.acquireSapphireObjectStub(sapphireObjId);
         for (int i = 0; i < 10; i++) {
             String key = "k1_" + i;
             String value = "v1_" + i;
@@ -245,8 +245,8 @@ public class SimpleDMIntegrationTest {
     @Test
     public void runLockingTransactionDMTest() throws Exception {
         SapphireObjectSpec spec = getSapphireObjectSpecForDM("LockingTransaction.yaml");
-        sapphireObjId = oms.createSapphireObject(spec.toString());
-        KVStore client1 = (KVStore) oms.acquireSapphireObjectStub(sapphireObjId);
+        sapphireObjId = sapphireObjectServer.createSapphireObject(spec.toString());
+        KVStore client1 = (KVStore) sapphireObjectServer.acquireSapphireObjectStub(sapphireObjId);
 
         /* Test 1: Single app client with 2 threads doing concurrent transactions. One thread is expected to start the
         transaction. Other fails with transaction already started exception. Verify the value set in successful
@@ -254,7 +254,7 @@ public class SimpleDMIntegrationTest {
         concurrentTransaction(client1, client1, TransactionAlreadyStartedException.class);
 
         /* Get the second client stub */
-        KVStore client2 = (KVStore) oms.acquireSapphireObjectStub(sapphireObjId);
+        KVStore client2 = (KVStore) sapphireObjectServer.acquireSapphireObjectStub(sapphireObjId);
 
         /* Test 2: Two app clients with a thread each doing concurrent transactions.One thread or both the threads can
         succeed the transaction. Verify whether set operation is successful or transaction exception has occurred */
@@ -269,15 +269,15 @@ public class SimpleDMIntegrationTest {
     @Test
     public void runOptimisticConcurrentTransactionDMTest() throws Exception {
         SapphireObjectSpec spec = getSapphireObjectSpecForDM("OptConcurrentTransactionDM.yaml");
-        sapphireObjId = oms.createSapphireObject(spec.toString());
-        KVStore client1 = (KVStore) oms.acquireSapphireObjectStub(sapphireObjId);
+        sapphireObjId = sapphireObjectServer.createSapphireObject(spec.toString());
+        KVStore client1 = (KVStore) sapphireObjectServer.acquireSapphireObjectStub(sapphireObjId);
 
         /* Test 1: Single app client with 2 threads doing concurrent transactions. One thread is expected to start the
         transaction. Other fails with transaction already started exception.Verify the value set in successful
         transaction thread. And verify the transaction already started exception for the failed one */
         concurrentTransaction(client1, client1, TransactionAlreadyStartedException.class);
 
-        KVStore client2 = (KVStore) oms.acquireSapphireObjectStub(sapphireObjId);
+        KVStore client2 = (KVStore) sapphireObjectServer.acquireSapphireObjectStub(sapphireObjId);
 
         /* Test 2: Two app clients with a thread each doing concurrent transactions.One thread or both the threads can
         succeed the transaction. Verify whether set operation is successful or transaction exception has occurred */
@@ -292,8 +292,8 @@ public class SimpleDMIntegrationTest {
     @Test
     public void runExplicitMigration() throws Exception {
         SapphireObjectSpec spec = getSapphireObjectSpecForDM("ExplicitMigrationDM.yaml");
-        sapphireObjId = oms.createSapphireObject(spec.toString());
-        KVStore store = (KVStore) oms.acquireSapphireObjectStub(sapphireObjId);
+        sapphireObjId = sapphireObjectServer.createSapphireObject(spec.toString());
+        KVStore store = (KVStore) sapphireObjectServer.acquireSapphireObjectStub(sapphireObjId);
         String key0 = "k1";
         String value0 = "v1_0";
         store.set(key0, value0);
@@ -327,8 +327,8 @@ public class SimpleDMIntegrationTest {
     @Test
     public void runExplicitCachingTest() throws Exception {
         SapphireObjectSpec spec = getSapphireObjectSpecForDM("ExplicitCachingDM.yaml");
-        sapphireObjId = oms.createSapphireObject(spec.toString());
-        KVStore store = (KVStore) oms.acquireSapphireObjectStub(sapphireObjId);
+        sapphireObjId = sapphireObjectServer.createSapphireObject(spec.toString());
+        KVStore store = (KVStore) sapphireObjectServer.acquireSapphireObjectStub(sapphireObjId);
 
         /* Cache the object */
         store.pull();
@@ -361,8 +361,8 @@ public class SimpleDMIntegrationTest {
     @Test
     public void runExplicitCheckPointTest() throws Exception {
         SapphireObjectSpec spec = getSapphireObjectSpecForDM("ExplicitCheckpointDM.yaml");
-        sapphireObjId = oms.createSapphireObject(spec.toString());
-        KVStore store = (KVStore) oms.acquireSapphireObjectStub(sapphireObjId);
+        sapphireObjId = sapphireObjectServer.createSapphireObject(spec.toString());
+        KVStore store = (KVStore) sapphireObjectServer.acquireSapphireObjectStub(sapphireObjId);
 
         String key = "k1";
         String value0 = "v1_0";
@@ -392,8 +392,8 @@ public class SimpleDMIntegrationTest {
     @Test
     public void runPeriodicCheckpointTest() throws Exception {
         SapphireObjectSpec spec = getSapphireObjectSpecForDM("PeriodicCheckpointDM.yaml");
-        sapphireObjId = oms.createSapphireObject(spec.toString());
-        KVStore store = (KVStore) oms.acquireSapphireObjectStub(sapphireObjId);
+        sapphireObjId = sapphireObjectServer.createSapphireObject(spec.toString());
+        KVStore store = (KVStore) sapphireObjectServer.acquireSapphireObjectStub(sapphireObjId);
 
         String key = "k1";
         String preValue = null;
@@ -421,7 +421,7 @@ public class SimpleDMIntegrationTest {
     @After
     public void tearDown() throws Exception {
         if (sapphireObjId != null) {
-            oms.deleteSapphireObject(sapphireObjId);
+            sapphireObjectServer.deleteSapphireObject(sapphireObjId);
         }
     }
 

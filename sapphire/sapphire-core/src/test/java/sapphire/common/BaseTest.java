@@ -18,6 +18,7 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.powermock.api.mockito.PowerMockito;
 import sapphire.app.SO;
+import sapphire.app.SapphireObjectServer;
 import sapphire.app.SapphireObjectSpec;
 import sapphire.app.stubs.SO_Stub;
 import sapphire.kernel.common.GlobalKernelReferences;
@@ -50,6 +51,7 @@ public class BaseTest {
     protected SO_Stub soStub;
     protected SO so;
     protected OMSServer spiedOms;
+    protected SapphireObjectServer sapphireObjServer;
     protected KernelServer spiedKs1;
     protected KernelServer spiedKs2;
     protected KernelServer spiedKs3;
@@ -65,6 +67,7 @@ public class BaseTest {
         OMSServerImpl spiedOms = startSpiedOms();
         KernelServerImpl.oms = spiedOms;
         this.spiedOms = spiedOms;
+        sapphireObjServer = spiedOms;
 
         int kernelPort1 = 10001;
         int kernelPort2 = 10002;

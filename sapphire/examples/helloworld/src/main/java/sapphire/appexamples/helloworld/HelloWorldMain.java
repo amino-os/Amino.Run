@@ -6,6 +6,7 @@ import java.rmi.registry.Registry;
 
 import sapphire.app.DMSpec;
 import sapphire.app.Language;
+import sapphire.app.SapphireObjectServer;
 import sapphire.app.SapphireObjectSpec;
 import sapphire.common.SapphireObjectID;
 import sapphire.kernel.server.KernelServer;
@@ -29,7 +30,7 @@ public class HelloWorldMain {
 
         try {
             Registry registry = LocateRegistry.getRegistry(args[0], Integer.parseInt(args[1]));
-            OMSServer server = (OMSServer) registry.lookup("SapphireOMS");
+            SapphireObjectServer server = (SapphireObjectServer) registry.lookup("SapphireOMS");
 
             KernelServer nodeServer = new KernelServerImpl(new InetSocketAddress(args[2], Integer.parseInt(args[3])), new InetSocketAddress(args[0], Integer.parseInt(args[1])));
 

@@ -112,9 +112,9 @@ public class KSTest extends BaseTest {
                         .create();
         super.setUp(spec, Server_Stub.class, Group_Stub.class);
 
-        SapphireObjectID sapphireObjId = spiedOms.createSapphireObject(spec.toString());
+        SapphireObjectID sapphireObjId = sapphireObjServer.createSapphireObject(spec.toString());
 
-        soStub = (SO_Stub) spiedOms.acquireSapphireObjectStub(sapphireObjId);
+        soStub = (SO_Stub) sapphireObjServer.acquireSapphireObjectStub(sapphireObjId);
         client =
                 (DefaultSapphirePolicy.DefaultClientPolicy)
                         extractFieldValueOnInstance(soStub, "$__client");

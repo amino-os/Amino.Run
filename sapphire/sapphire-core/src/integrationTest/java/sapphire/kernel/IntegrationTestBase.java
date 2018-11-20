@@ -7,7 +7,9 @@ import java.io.IOException;
 import java.net.Socket;
 import java.nio.file.Files;
 import java.util.List;
+import org.junit.Assert;
 import sapphire.app.SapphireObjectSpec;
+import sapphire.demo.KVStore;
 
 public class IntegrationTestBase {
     public static String omsIp = "127.0.0.1";
@@ -58,6 +60,31 @@ public class IntegrationTestBase {
         }
     }
 
+    /**
+     * Wait the specified time for a key in the store to have a desired value
+     *
+     * @param store
+     * @param key
+     * @param desiredValue
+     * @param timeoutMs How long to try for, in ms. If <= 0, use the default.
+     * @throws InterruptedException
+     */
+    public static void waitForValue(KVStore store, String key, Object desiredValue, long timeoutMs)
+            throws InterruptedException {
+        long DEFAULT_TIMEOUT_MS = 1000;
+        long DEFAULT_SLEEP_BETWEEN_TRIES_MS = 100;
+        if (timeoutMs <= 0) {
+            timeoutMs = DEFAULT_TIMEOUT_MS;
+        }
+        long startTime = System.currentTimeMillis();
+        Object value;
+        do {
+            sleep(DEFAULT_SLEEP_BETWEEN_TRIES_MS);
+            value = store.get(key);
+        } while (!desiredValue.equals(value)
+                && (System.currentTimeMillis() - startTime) < timeoutMs);
+        Assert.assertEquals(value, desiredValue);
+    }
     /**
      * start the OMS process
      *

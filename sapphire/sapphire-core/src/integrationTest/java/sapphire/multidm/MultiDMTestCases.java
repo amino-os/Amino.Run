@@ -53,6 +53,7 @@ public class MultiDMTestCases {
             String key = "k1_" + i;
             String value = "v1_" + i;
             store.set(key, value);
+            waitForValue(store, key, value, -1);
             Assert.assertEquals(value, store.get(key));
         }
     }
@@ -89,8 +90,8 @@ public class MultiDMTestCases {
      *
      * @throws Exception
      */
-    @Ignore("Test is ignored will be removed once the multi DM issues are resolved")
     @Test
+    @Ignore("Test is ignored will be removed once the multi DM issues are resolved")
     public void testAtleastOnceRPCDHTNMasterSlaveMultiDM() throws Exception {
         File file = getResourceFile("specs/multi-dm/AtleastRPCDHTNMasterSlave.yaml");
         SapphireObjectSpec spec = readSapphireSpec(file);
@@ -103,8 +104,8 @@ public class MultiDMTestCases {
      *
      * @throws Exception
      */
-    @Ignore("Test is ignored will be removed once the multi DM issues are resolved")
     @Test
+    @Ignore("Test is ignored will be removed once the multi DM issues are resolved")
     public void testAtleastOnceRPCDHTNConsensusMultiDM() throws Exception {
         File file = getResourceFile("specs/multi-dm/AtleastRPCDHTNConsensus.yaml");
         SapphireObjectSpec spec = readSapphireSpec(file);

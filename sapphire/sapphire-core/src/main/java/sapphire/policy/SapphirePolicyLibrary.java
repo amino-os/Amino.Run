@@ -508,27 +508,14 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
         }
 
         /**
-         * Gets the list of inet sock address of the servers in the specified region
+         * Gets the list of servers in from spec or region.
          *
-         * @param region
-         * @return inet socket address of the server
-         * @throws RemoteException
-         */
-        public ArrayList<InetSocketAddress> sapphire_getServersInRegion(String region)
-                throws RemoteException {
-            NodeSelectorSpec nodeselector = new NodeSelectorSpec();
-            nodeselector.addAndLabel(region);
-            return new ArrayList<>(oms().getServers(nodeselector));
-        }
-
-        /**
-         * Gets the list of servers in from the given node selector or region.
-         *
+         * @param spec
          * @param region
          * @return list of server addresses
          * @throws RemoteException
          */
-        // TODO: Remove region parameter after nodeSelector is applied to all DMs and scripts.
+        // TODO: Remove region parameter after spec is applied to all DMs and scripts.
         public List<InetSocketAddress> sapphire_getAddressList(
                 SapphireObjectSpec spec, String region) throws RemoteException {
             List<InetSocketAddress> serversInRegion;

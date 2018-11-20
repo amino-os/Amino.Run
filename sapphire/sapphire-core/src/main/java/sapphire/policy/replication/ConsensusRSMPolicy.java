@@ -233,9 +233,10 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
                 // Create additional replicas, one per region. TODO:  Create N-1 replicas on
                 // different servers in the same zone.
                 for (int i = 1; i < addressList.size(); i++) {
-                    InetSocketAddress newServerAddress = addressList.get(i);
-                    addReplica(consensusServer, newServerAddress, region);
+                    addReplica(consensusServer, addressList.get(i), region);
                 }
+
+                // The first in the addressList is for primary policy chain.
                 consensusServer.sapphire_pin_to_server(server, addressList.get(0));
 
                 addServer(server);

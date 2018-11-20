@@ -51,6 +51,7 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
         protected SapphirePolicy.SapphireGroupPolicy group;
         protected SapphireObjectSpec spec;
         protected Map<String, SapphirePolicyConfig> configMap;
+        protected boolean alreadyPinned;
 
         static Logger logger = Logger.getLogger("sapphire.policy.SapphirePolicyLibrary");
 
@@ -203,13 +204,6 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
                                 region,
                                 null);
 
-                String ko = "";
-                if (nextPolicyList != null) {
-                    for (SapphirePolicyContainer policyContainer : nextPolicyList) {
-                        ko += String.valueOf(policyContainer.getKernelOID()) + ",";
-                    }
-                }
-
                 getGroup().addServer((SapphireServerPolicy) serverPolicyStub);
             } catch (ClassNotFoundException e) {
                 // TODO Auto-generated catch block
@@ -290,7 +284,6 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
                 SapphireServerPolicy serverPolicyStub, InetSocketAddress server)
                 throws RemoteException, SapphireObjectNotFoundException,
                         SapphireObjectReplicaNotFoundException {
-
             KernelOID serverOID = serverPolicyStub.$__getKernelOID();
             SapphireServerPolicy serverPolicy;
             try {
@@ -319,24 +312,41 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 
             logger.info(
                     "(Starting) Pinning Sapphire object "
+                            + serverPolicyStub
+                            + " "
                             + serverPolicy.$__getKernelOID()
                             + " to "
                             + server);
             try {
                 kernel().moveKernelObjectToServer(serverPolicy, server);
             } catch (KernelObjectNotFoundException e) {
-                logger.severe(e.getMessage());
-                throw new Error("Could not find myself on this server!", e);
+                String msg = "Could not find myself on this server!";
+                logger.severe(msg);
+                throw new Error(msg, e);
             } catch (SapphireObjectNotFoundException e) {
-                logger.severe(e.getMessage());
-                throw new Error("Could not find Sapphire object on this server!", e);
+                String msg = "Could not find Sapphire object on this server!";
+                logger.severe(msg);
+                throw new Error(msg, e);
             } catch (SapphireObjectReplicaNotFoundException e) {
-                logger.severe(e.getMessage());
-                throw new Error("Could not find Sapphire replica on this server!", e);
+                String msg = "Could not find Sapphire replica on this server!";
+                logger.severe(msg);
+                throw new Error(msg, e);
+            }
+
+            try {
+                serverPolicy.setAlreadyPinned(true);
+            } catch (Exception e) {
+                String msg =
+                        "Exception occurred while checking if already pinned at "
+                                + serverPolicyStub;
+                logger.severe(msg);
+                throw new Error(msg, e);
             }
 
             logger.info(
                     "(Complete) Pinning Sapphire object "
+                            + serverPolicyStub
+                            + " "
                             + serverPolicy.$__getKernelOID()
                             + " to "
                             + server);
@@ -468,6 +478,14 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
                 throw new Error("Could not find myself on this server!");
             }
             return addr;
+        }
+
+        public boolean isAlreadyPinned() {
+            return this.alreadyPinned;
+        }
+
+        public void setAlreadyPinned(boolean alreadyPinned) {
+            this.alreadyPinned = alreadyPinned;
         }
     }
 

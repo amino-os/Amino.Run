@@ -14,7 +14,6 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import sapphire.app.NodeSelectorSpec;
 import sapphire.app.SapphireObjectSpec;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
@@ -181,40 +180,23 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultSapphirePolicy 
             logger.info(String.format("Creating master and slave instance in region %s", region));
 
             try {
-                List<InetSocketAddress> servers = null;
-                NodeSelectorSpec nodeSelector = null;
-                if (null != spec) {
-                    nodeSelector = spec.getNodeSelectorSpec();
-                }
-                if (null != nodeSelector) { // spec takes priority over region
-                    servers = oms().getServers(nodeSelector);
-                } else {
-
-                    if (region != null && !region.isEmpty()) {
-                        nodeSelector = new NodeSelectorSpec();
-                        nodeSelector.addAndLabel(region);
-                        servers = oms().getServers(nodeSelector);
-                    } else {
-                        servers = oms().getServers(null);
-                    }
-                }
-
-                if (servers.size() < NUM_OF_REPLICAS) {
+                List<InetSocketAddress> addressList = sapphire_getAddressList(spec, region);
+                if (addressList.size() < NUM_OF_REPLICAS) {
                     logger.warning(
                             String.format(
                                     "Number of kernel servers (%s) is less than "
                                             + "number of replicas (%s). We will run both master replica "
                                             + "and slave replica on the same server which will decrease "
                                             + "availability.",
-                                    servers.size(), NUM_OF_REPLICAS));
+                                    addressList.size(), NUM_OF_REPLICAS));
                 }
 
                 logger.info(
                         String.format(
-                                "Creating master and slave instances in servers: %s", servers));
+                                "Creating master and slave instances in servers: %s", addressList));
 
                 List<InetSocketAddress> unavailable = new ArrayList<InetSocketAddress>();
-                InetSocketAddress dest = getAvailable(0, servers, unavailable);
+                InetSocketAddress dest = getAvailable(0, addressList, unavailable);
                 ServerBase s = (ServerBase) server;
                 s.sapphire_pin_to_server(server, dest);
                 updateReplicaHostName(s, dest);
@@ -222,7 +204,7 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultSapphirePolicy 
                 logger.info("Created master on " + dest);
 
                 for (int i = 0; i < NUM_OF_REPLICAS - 1; i++) {
-                    dest = getAvailable(i + 1, servers, unavailable);
+                    dest = getAvailable(i + 1, addressList, unavailable);
                     ServerBase replica = (ServerBase) addReplica(s, dest, region);
                     removeServer(replica);
                     addServer(replica);

@@ -10,7 +10,6 @@ import java.util.TimerTask;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
-import sapphire.app.NodeSelectorSpec;
 import sapphire.app.SapphireObjectSpec;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
@@ -212,15 +211,9 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
             }
 
             /* Get the list of available servers in region */
-            NodeSelectorSpec nodeSelector = spec.getNodeSelectorSpec();
-            List<InetSocketAddress> fullKernelList = null;
-            if (nodeSelector != null) {
-                fullKernelList = oms().getServers(nodeSelector);
-            } else if (region != null) {
-                fullKernelList = sapphire_getServersInRegion(region);
-            }
+            List<InetSocketAddress> addressList = sapphire_getAddressList(spec, region);
 
-            if (null == fullKernelList) {
+            if (null == addressList) {
                 throw new ScaleUpException("Scaleup failed. Couldn't fetch kernel server list.");
             }
 
@@ -233,12 +226,12 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
             }
 
             /* Remove the servers which already have replicas of this sapphire object */
-            fullKernelList.removeAll(sappObjReplicatedKernelList);
+            addressList.removeAll(sappObjReplicatedKernelList);
 
-            if (!fullKernelList.isEmpty()) {
+            if (!addressList.isEmpty()) {
                 try {
                     /* create a replica on the first server in the list */
-                    addReplica(servers.get(0), fullKernelList.get(0), region);
+                    addReplica(servers.get(0), addressList.get(0), region);
                 } catch (SapphireObjectNotFoundException e) {
                     throw new ScaleUpException(
                             "Failed to find sapphire object. Probably deleted.", e);

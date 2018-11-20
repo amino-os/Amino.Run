@@ -8,6 +8,7 @@ import java.util.*;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import sapphire.app.NodeSelectorSpec;
 import sapphire.app.SapphireObjectSpec;
 import sapphire.kernel.common.KernelOID;
 import sapphire.kernel.common.ServerInfo;
@@ -20,9 +21,12 @@ import sapphire.policy.SapphirePolicyContainer;
 public class DHTPolicyTest {
     private OMSServer oms;
     private ServerPolicy[] servers = new ServerPolicy[3];
-    private InetSocketAddress address1 = new InetSocketAddress("127.0.0.1", 30001);
-    private InetSocketAddress address2 = new InetSocketAddress("127.0.0.1", 30002);
-    private InetSocketAddress address3 = new InetSocketAddress("127.0.0.1", 30003);
+    private InetSocketAddress[] addresses =
+            new InetSocketAddress[] {
+                new InetSocketAddress("127.0.0.1", 30001),
+                new InetSocketAddress("127.0.0.1", 30002),
+                new InetSocketAddress("127.0.0.1", 30003)
+            };
     private Object[] requests = new Object[] {"r1", "r2", "r3", "r4", "r5"};
 
     @Before
@@ -35,14 +39,13 @@ public class DHTPolicyTest {
                 new ArrayList<>(Arrays.asList("region-1", "region-2", "region-3"));
         oms = spy(OMSServerImpl.class);
         KernelServerImpl.oms = oms;
-        oms.registerKernelServer(new ServerInfo(address1, "region-1"));
-        oms.registerKernelServer(new ServerInfo(address2, "region-2"));
-        oms.registerKernelServer(new ServerInfo(address2, "region-3"));
-
-        when(oms.getRegions()).thenReturn(regions);
-        when(oms.getServerInRegion("region-1")).thenReturn(address1);
-        when(oms.getServerInRegion("region-2")).thenReturn(address2);
-        when(oms.getServerInRegion("region-3")).thenReturn(address3);
+        for (int i = 0; i < regions.size(); i++) {
+            oms.registerKernelServer(new ServerInfo(addresses[i], regions.get(i)));
+            NodeSelectorSpec nodeSelector = new NodeSelectorSpec();
+            nodeSelector.addAndLabel(regions.get(i));
+            List<InetSocketAddress> addressList = new ArrayList<>(Arrays.asList(addresses[i]));
+            when(oms.getServers(nodeSelector)).thenReturn(addressList);
+        }
     }
 
     @Test

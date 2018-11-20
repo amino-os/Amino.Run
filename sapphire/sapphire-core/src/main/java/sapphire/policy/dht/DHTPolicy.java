@@ -86,7 +86,7 @@ public class DHTPolicy extends DefaultSapphirePolicy {
             try {
                 ArrayList<String> regions = sapphire_getRegions();
                 DHTServerPolicy dhtServer = (DHTServerPolicy) server;
-                boolean pinned = dhtServer.wasAlreadyPinned();
+                boolean pinned = dhtServer.isAlreadyPinned();
                 if (!pinned) {
                     dhtServer.sapphire_pin(server, regions.get(0));
                 }

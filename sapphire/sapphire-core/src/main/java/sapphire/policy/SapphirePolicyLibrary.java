@@ -334,8 +334,6 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
             }
 
             try {
-                this.setAlreadyPinned(true);
-                serverPolicyStub.setAlreadyPinned(true);
                 serverPolicy.setAlreadyPinned(true);
             } catch (Exception e) {
                 String msg =
@@ -482,7 +480,7 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
             return addr;
         }
 
-        public boolean wasAlreadyPinned() {
+        public boolean isAlreadyPinned() {
             return this.alreadyPinned;
         }
 

@@ -528,7 +528,7 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
                     nodeSelector.addAndLabel(region);
                     serversInRegion = oms().getServers(nodeSelector);
                 } else {
-                    serversInRegion = oms().getServers(null);
+                    serversInRegion = oms().getServersInDefaultRegion();
                 }
             }
             return serversInRegion;

@@ -163,6 +163,15 @@ public class KernelServerManager {
         return new ArrayList<String>(regions.keySet());
     }
 
+    /**
+     * Gets default region, which will be the first region in regions HashMap
+     *
+     * @return First region in regions HashMap
+     */
+    public String getDefaultRegion() {
+        return (String) regions.keySet().toArray()[0];
+    }
+
     public KernelServer getServer(InetSocketAddress address) {
         if (address.equals(GlobalKernelReferences.nodeServer.getLocalHost())) {
             return GlobalKernelReferences.nodeServer;

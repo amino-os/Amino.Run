@@ -314,14 +314,6 @@ public class Sapphire {
         previousServerPolicyStub = (KernelObjectStub) serverPolicyStub;
 
         if (nextPoliciesToCreate.size() != 0) {
-            // TODO: hacks for demo
-            if (policyName != null && policyName.contains("DHT")) {
-                if (region == null || region.isEmpty()) {
-                    List<String> regions = GlobalKernelReferences.nodeServer.oms.getRegions();
-                    logger.info("Regions available for DHT: " + regions);
-                    region = regions.get(0);
-                }
-            }
             createPolicy(
                     sapphireObjId,
                     spec,

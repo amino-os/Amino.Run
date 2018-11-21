@@ -139,6 +139,18 @@ public class OMSServerImpl implements OMSServer {
     }
 
     /**
+     * Gets all servers in the default region
+     *
+     * @return List of servers in the default region
+     * @throws RemoteException
+     */
+    public List<InetSocketAddress> getServersInDefaultRegion() throws RemoteException {
+        NodeSelectorSpec spec = new NodeSelectorSpec();
+        spec.addAndLabel(serverManager.getDefaultRegion());
+        return serverManager.getServers(spec);
+    }
+
+    /**
      * Gets all servers matching the specified node selector
      *
      * @param spec

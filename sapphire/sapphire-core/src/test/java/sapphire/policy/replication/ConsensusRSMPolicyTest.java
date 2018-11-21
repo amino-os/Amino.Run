@@ -109,7 +109,6 @@ public class ConsensusRSMPolicyTest extends BaseTest {
 
     @Before
     public void setUp() throws Exception {
-        this.serversInSameRegion = false;
 
         SapphireObjectSpec spec =
                 SapphireObjectSpec.newBuilder()

@@ -9,11 +9,12 @@ import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.List;
 import org.graalvm.polyglot.Value;
+import sapphire.app.SapphireObjectServer;
 import sapphire.app.SapphireObjectSpec;
 import sapphire.common.SapphireObjectID;
 import sapphire.graal.io.SerializeValue;
 import sapphire.kernel.server.KernelServerImpl;
-import sapphire.oms.OMSServer;
+
 
 public final class KeyValueStore_Stub extends sapphire.common.GraalObject implements sapphire.common.GraalAppObjectStub {
 
@@ -24,10 +25,10 @@ public final class KeyValueStore_Stub extends sapphire.common.GraalObject implem
         String spec = getSpec(specYamlFile);
         Registry registry = LocateRegistry.getRegistry(omsIP, Integer.parseInt(omsPort));
         new KernelServerImpl(new InetSocketAddress(hostIP, Integer.parseInt(hostPort)), new InetSocketAddress(omsIP, Integer.parseInt(omsPort)));
-        OMSServer oms = (OMSServer) registry.lookup("SapphireOMS");
+        SapphireObjectServer server = (SapphireObjectServer) registry.lookup("SapphireOMS");
 
-        SapphireObjectID oid = oms.createSapphireObject(spec);
-        KeyValueStore_Stub stub = (KeyValueStore_Stub)oms.acquireSapphireObjectStub(oid);
+        SapphireObjectID oid = server.createSapphireObject(spec);
+        KeyValueStore_Stub stub = (KeyValueStore_Stub)server.acquireSapphireObjectStub(oid);
         stub.$__initializeGraal(SapphireObjectSpec.fromYaml(spec));
 
         return stub;

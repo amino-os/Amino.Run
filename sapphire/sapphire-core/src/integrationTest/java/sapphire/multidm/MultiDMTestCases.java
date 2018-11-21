@@ -12,11 +12,11 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+import sapphire.app.SapphireObjectServer;
 import sapphire.app.SapphireObjectSpec;
 import sapphire.common.SapphireObjectID;
 import sapphire.demo.KVStore;
 import sapphire.kernel.server.KernelServerImpl;
-import sapphire.oms.OMSServer;
 
 /**
  * Test <strong>multi-dm</strong> deployment managers, DHT & Consensus , DHT & MasterSlave,
@@ -24,7 +24,7 @@ import sapphire.oms.OMSServer;
  * servers are covered here.
  */
 public class MultiDMTestCases {
-    OMSServer oms;
+    SapphireObjectServer sapphireObjectServer;
     private static String regionName = "";
     private static String labels[] = {regionName};
 
@@ -36,14 +36,14 @@ public class MultiDMTestCases {
     @Before
     public void setUp() throws Exception {
         Registry registry = LocateRegistry.getRegistry(omsIp, omsPort);
-        oms = (OMSServer) registry.lookup("SapphireOMS");
+        sapphireObjectServer = (SapphireObjectServer) registry.lookup("SapphireOMS");
         new KernelServerImpl(
                 new InetSocketAddress(hostIp, hostPort), new InetSocketAddress(omsIp, omsPort));
     }
 
     private void runTest(SapphireObjectSpec spec, boolean consensus) throws Exception {
-        SapphireObjectID sapphireObjId = oms.createSapphireObject(spec.toString());
-        KVStore store = (KVStore) oms.acquireSapphireObjectStub(sapphireObjId);
+        SapphireObjectID sapphireObjId = sapphireObjectServer.createSapphireObject(spec.toString());
+        KVStore store = (KVStore) sapphireObjectServer.acquireSapphireObjectStub(sapphireObjId);
         // consensus DM needs some time to elect the leader other wise function call will fail
         if (consensus) {
             Thread.sleep(5000);

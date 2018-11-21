@@ -5,6 +5,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
 import sapphire.app.Language;
+import sapphire.app.SapphireObjectServer;
 import sapphire.app.SapphireObjectSpec;
 import sapphire.common.SapphireObjectID;
 import sapphire.kernel.server.KernelServer;
@@ -38,8 +39,8 @@ public class HanksTodoMain {
 
         try {
             registry = LocateRegistry.getRegistry(args[0], Integer.parseInt(args[1]));
-            OMSServer omsserver = (OMSServer) registry.lookup("SapphireOMS");
-            System.out.println(omsserver);
+            SapphireObjectServer server = (SapphireObjectServer) registry.lookup("SapphireOMS");
+            System.out.println(server);
 
             KernelServer nodeServer =
                     new KernelServerImpl(
@@ -52,9 +53,8 @@ public class HanksTodoMain {
                             .setJavaClassName("sapphire.appexamples.hankstodo.TodoListManager")
                             .create();
 
-            SapphireObjectID sapphireObjId = omsserver.createSapphireObject(spec.toString());
-            TodoListManager tlm =
-                    (TodoListManager) omsserver.acquireSapphireObjectStub(sapphireObjId);
+            SapphireObjectID sapphireObjId = server.createSapphireObject(spec.toString());
+            TodoListManager tlm = (TodoListManager) server.acquireSapphireObjectStub(sapphireObjId);
             System.out.println("Received tlm: " + tlm);
 
             TodoList td1 = tlm.newTodoList(ListName);
@@ -99,7 +99,7 @@ public class HanksTodoMain {
 
             // Delete the created SapphireObjects
             tlm.deleteTodoList(ListName);
-            omsserver.deleteSapphireObject(sapphireObjId);
+            server.deleteSapphireObject(sapphireObjId);
 
         } catch (Exception e) {
             // TODO Auto-generated catch block

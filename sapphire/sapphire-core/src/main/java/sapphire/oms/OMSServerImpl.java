@@ -18,6 +18,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.JSONException;
 import sapphire.app.NodeSelectorSpec;
+import sapphire.app.SapphireObjectServer;
 import sapphire.app.SapphireObjectSpec;
 import sapphire.common.AppObjectStub;
 import sapphire.common.SapphireObjectCreationException;
@@ -43,7 +44,7 @@ import sapphire.runtime.Sapphire;
  *
  * @author iyzhang
  */
-public class OMSServerImpl implements OMSServer {
+public class OMSServerImpl implements OMSServer, SapphireObjectServer {
 
     private static Logger logger = Logger.getLogger("sapphire.oms.OMSServerImpl");
 

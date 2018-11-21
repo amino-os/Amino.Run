@@ -1,5 +1,6 @@
 package sapphire.demo;
 
+import sapphire.app.SapphireObjectServer;
 import sapphire.common.SapphireObjectID;
 import sapphire.kernel.server.KernelServerImpl;
 import sapphire.oms.OMSServer;
@@ -16,10 +17,10 @@ import java.util.List;
  */
 public class KeyValueStoreClient {
     public static void main(String[] args) throws Exception {
-        OMSServer oms = getOMS(args[0], args[1]);
+        SapphireObjectServer server = getSapphireObjectServer(args[0], args[1]);
 
-        SapphireObjectID oid = oms.createSapphireObject(getSpec());
-        KeyValueStore store = (KeyValueStore)oms.acquireSapphireObjectStub(oid);
+        SapphireObjectID oid = server.createSapphireObject(getSpec());
+        KeyValueStore store = (KeyValueStore)server.acquireSapphireObjectStub(oid);
 
         for (int i=0; i<30; ++i) {
             String key = "key_" + i;
@@ -32,11 +33,11 @@ public class KeyValueStoreClient {
         }
     }
 
-    private static OMSServer getOMS(String omsIp, String omsPort) throws Exception {
+    private static SapphireObjectServer getSapphireObjectServer(String omsIp, String omsPort) throws Exception {
         new KernelServerImpl(new InetSocketAddress("127.0.0.2", 11111), new InetSocketAddress(omsIp, Integer.parseInt(omsPort)));
         Registry registry = LocateRegistry.getRegistry(omsIp, Integer.parseInt(omsPort));
-        OMSServer omsserver = (OMSServer) registry.lookup("SapphireOMS");
-        return omsserver;
+        SapphireObjectServer server = (SapphireObjectServer) registry.lookup("SapphireOMS");
+        return server;
     }
 
     private static String getSpec() throws Exception {

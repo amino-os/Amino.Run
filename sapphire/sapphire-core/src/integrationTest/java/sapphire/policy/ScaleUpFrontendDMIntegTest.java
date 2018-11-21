@@ -18,12 +18,12 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import sapphire.app.SapphireObjectServer;
 import sapphire.app.SapphireObjectSpec;
 import sapphire.common.SapphireObjectID;
 import sapphire.demo.KVStore;
 import sapphire.kernel.common.KernelObjectMigratingException;
 import sapphire.kernel.server.KernelServerImpl;
-import sapphire.oms.OMSServer;
 import sapphire.policy.scalability.LoadBalancedFrontendPolicy;
 import sapphire.policy.scalability.ScaleUpException;
 import sapphire.policy.scalability.ServerOverLoadException;
@@ -33,7 +33,7 @@ public class ScaleUpFrontendDMIntegTest {
     private static final int PARALLEL_THREAD_COUNT = 5;
     private static final String regionName = "IND";
     private static final String[] labels = {regionName};
-    OMSServer oms;
+    SapphireObjectServer sapphireObjectServer;
 
     @BeforeClass
     public static void bootstrap() throws Exception {
@@ -43,14 +43,14 @@ public class ScaleUpFrontendDMIntegTest {
     @Before
     public void setUp() throws Exception {
         Registry registry = LocateRegistry.getRegistry(omsIp, omsPort);
-        oms = (OMSServer) registry.lookup("SapphireOMS");
+        sapphireObjectServer = (SapphireObjectServer) registry.lookup("SapphireOMS");
         new KernelServerImpl(
                 new InetSocketAddress(hostIp, hostPort), new InetSocketAddress(omsIp, omsPort));
     }
 
     private void runTest(SapphireObjectSpec spec) throws Exception {
-        SapphireObjectID sapphireObjId = oms.createSapphireObject(spec.toString());
-        KVStore store = (KVStore) oms.acquireSapphireObjectStub(sapphireObjId);
+        SapphireObjectID sapphireObjId = sapphireObjectServer.createSapphireObject(spec.toString());
+        KVStore store = (KVStore) sapphireObjectServer.acquireSapphireObjectStub(sapphireObjId);
         String key = "k";
         String value = "v";
         List<FutureTask<Object>> taskList = new ArrayList<FutureTask<Object>>();

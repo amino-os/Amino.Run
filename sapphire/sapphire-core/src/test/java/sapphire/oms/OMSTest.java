@@ -120,9 +120,9 @@ public class OMSTest extends BaseTest {
                         .setJavaClassName("sapphire.app.SO")
                         .create();
         super.setUp(spec, Server_Stub.class, Group_Stub.class);
-        SapphireObjectID sapphireObjId = spiedOms.createSapphireObject(spec.toString());
+        SapphireObjectID sapphireObjId = sapphireObjServer.createSapphireObject(spec.toString());
 
-        soStub = (SO_Stub) spiedOms.acquireSapphireObjectStub(sapphireObjId);
+        soStub = (SO_Stub) sapphireObjServer.acquireSapphireObjectStub(sapphireObjId);
         client =
                 (DefaultSapphirePolicy.DefaultClientPolicy)
                         extractFieldValueOnInstance(soStub, "$__client");
@@ -132,7 +132,7 @@ public class OMSTest extends BaseTest {
     @Test
     public void acquireSapphireObjectStubSuccessTest() throws Exception {
         SapphireObjectID sid = group.getSapphireObjId();
-        SO_Stub appObjstub = (SO_Stub) spiedOms.acquireSapphireObjectStub(sid);
+        SO_Stub appObjstub = (SO_Stub) sapphireObjServer.acquireSapphireObjectStub(sid);
         assertEquals(
                 1, getOmsSapphireInstance(spiedOms, group.getSapphireObjId()).getReferenceCount());
 
@@ -145,9 +145,9 @@ public class OMSTest extends BaseTest {
 
     @Test
     public void attachAndDetactSapphireObjectSuccessTest() throws Exception {
-        spiedOms.setSapphireObjectName(group.getSapphireObjId(), "MySapphireObject");
+        sapphireObjServer.setSapphireObjectName(group.getSapphireObjId(), "MySapphireObject");
 
-        SO_Stub appObjstub = (SO_Stub) spiedOms.attachToSapphireObject("MySapphireObject");
+        SO_Stub appObjstub = (SO_Stub) sapphireObjServer.attachToSapphireObject("MySapphireObject");
 
         /* Reference count must become 2. Once user created it and other attached to it */
         assertEquals(
@@ -160,7 +160,7 @@ public class OMSTest extends BaseTest {
         assertEquals(new Integer(100), so.getI());
 
         /* Reference count must become 1(decrement by 1) upon detach */
-        spiedOms.detachFromSapphireObject("MySapphireObject");
+        sapphireObjServer.detachFromSapphireObject("MySapphireObject");
         assertEquals(
                 1, getOmsSapphireInstance(spiedOms, group.getSapphireObjId()).getReferenceCount());
     }

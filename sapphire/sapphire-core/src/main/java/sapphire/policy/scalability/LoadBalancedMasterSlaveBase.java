@@ -180,7 +180,8 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultSapphirePolicy 
             logger.info(String.format("Creating master and slave instance in region %s", region));
 
             try {
-                List<InetSocketAddress> addressList = sapphire_getAddressList(spec, region);
+                List<InetSocketAddress> addressList =
+                        sapphire_getAddressList(spec.getNodeSelectorSpec(), region);
                 if (addressList.size() < NUM_OF_REPLICAS) {
                     logger.warning(
                             String.format(

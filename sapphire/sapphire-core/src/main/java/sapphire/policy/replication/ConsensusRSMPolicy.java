@@ -226,7 +226,8 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
             List<InetSocketAddress> addressList = null;
 
             try {
-                addressList = sapphire_getAddressList(spec, region);
+
+                addressList = sapphire_getAddressList(spec.getNodeSelectorSpec(), region);
 
                 // Register the first replica, which has already been created.
                 ServerPolicy consensusServer = (ServerPolicy) server;

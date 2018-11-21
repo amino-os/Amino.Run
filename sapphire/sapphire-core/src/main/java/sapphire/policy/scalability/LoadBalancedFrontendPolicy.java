@@ -195,7 +195,8 @@ public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
                 region = server.sapphire_getRegion();
                 InetSocketAddress addr =
                         server.sapphire_locate_kernel_object(server.$__getKernelOID());
-                List<InetSocketAddress> addressList = sapphire_getAddressList(spec, region);
+                List<InetSocketAddress> addressList =
+                        sapphire_getAddressList(spec.getNodeSelectorSpec(), region);
 
                 /* Create the replicas on different kernelServers belongs to same region*/
                 if (addressList != null) {

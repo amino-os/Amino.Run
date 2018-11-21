@@ -10,7 +10,6 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Logger;
-import sapphire.app.NodeSelectorSpec;
 import sapphire.app.SapphireObjectSpec;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
@@ -224,36 +223,22 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
             // super.onCreate(server, annotations);
 
             super.onCreate(region, server, spec);
-            List<InetSocketAddress> serversInRegion = null;
+            List<InetSocketAddress> addressList = null;
 
             try {
 
-                NodeSelectorSpec nodeSelector = null;
-                if (null != spec) {
-                    nodeSelector = spec.getNodeSelectorSpec();
-                }
-                if (null != nodeSelector) { // spec takes priority over region
-                    serversInRegion = oms().getServers(nodeSelector);
-                } else {
-
-                    if (region != null && !region.isEmpty()) {
-                        nodeSelector = new NodeSelectorSpec();
-                        nodeSelector.addAndLabel(region);
-                        serversInRegion = oms().getServers(nodeSelector);
-                    } else {
-                        serversInRegion = oms().getServers(null);
-                    }
-                }
+                addressList = sapphire_getAddressList(spec.getNodeSelectorSpec(), region);
 
                 // Register the first replica, which has already been created.
                 ServerPolicy consensusServer = (ServerPolicy) server;
                 // Create additional replicas, one per region. TODO:  Create N-1 replicas on
                 // different servers in the same zone.
-                for (int i = 1; i < serversInRegion.size(); i++) {
-                    InetSocketAddress newServerAddress = serversInRegion.get(i);
-                    addReplica(consensusServer, newServerAddress, region);
+                for (int i = 1; i < addressList.size(); i++) {
+                    addReplica(consensusServer, addressList.get(i), region);
                 }
-                consensusServer.sapphire_pin_to_server(server, serversInRegion.get(0));
+
+                // The first in the addressList is for primary policy chain.
+                consensusServer.sapphire_pin_to_server(server, addressList.get(0));
 
                 addServer(server);
 

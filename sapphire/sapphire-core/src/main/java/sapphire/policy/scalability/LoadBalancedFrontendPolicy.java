@@ -12,7 +12,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Logger;
-import sapphire.app.NodeSelectorSpec;
 import sapphire.app.SapphireObjectSpec;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
@@ -196,25 +195,17 @@ public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
                 region = server.sapphire_getRegion();
                 InetSocketAddress addr =
                         server.sapphire_locate_kernel_object(server.$__getKernelOID());
-                List<InetSocketAddress> kernelServers;
-                NodeSelectorSpec nodeSelector = null;
-                if (null != spec) {
-                    nodeSelector = spec.getNodeSelectorSpec();
-                }
-                if (null != nodeSelector) { // spec takes priority over region
-                    kernelServers = oms().getServers(spec.getNodeSelectorSpec());
-                } else {
-                    kernelServers = sapphire_getServersInRegion(region);
-                }
+                List<InetSocketAddress> addressList =
+                        sapphire_getAddressList(spec.getNodeSelectorSpec(), region);
 
                 /* Create the replicas on different kernelServers belongs to same region*/
-                if (kernelServers != null) {
+                if (addressList != null) {
 
-                    kernelServers.remove(addr);
-                    numnodes = kernelServers.size();
+                    addressList.remove(addr);
+                    numnodes = addressList.size();
 
                     for (count = 0; count < numnodes && count < replicaCount - 1; count++) {
-                        addReplica(server, kernelServers.get(count), region);
+                        addReplica(server, addressList.get(count), region);
                     }
                 }
 
@@ -235,7 +226,6 @@ public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
                                     + ", created replica count : "
                                     + count);
                 }
-
             } catch (RemoteException e) {
                 logger.severe("Received RemoteException may be oms is down ");
                 throw new Error(

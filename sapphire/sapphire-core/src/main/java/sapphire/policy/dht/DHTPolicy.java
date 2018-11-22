@@ -3,10 +3,13 @@ package sapphire.policy.dht;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import sapphire.app.SapphireObjectSpec;
+import sapphire.common.NoKernelServerFoundException;
 import sapphire.common.SapphireObjectNotFoundException;
 import sapphire.common.SapphireObjectReplicaNotFoundException;
 import sapphire.common.Utils;
@@ -64,6 +67,9 @@ public class DHTPolicy extends DefaultSapphirePolicy {
         private static Logger logger = Logger.getLogger(DHTGroupPolicy.class.getName());
         private int numOfShards = DEFAULT_NUM_OF_SHARDS;
         private DHTChord dhtChord;
+        private List<InetSocketAddress> addressList;
+        private int crntServerAddress = 0;
+        private DHTServerPolicy dhtServerPolicy;
 
         @Override
         public void onCreate(String region, SapphireServerPolicy server, SapphireObjectSpec spec)
@@ -85,10 +91,12 @@ public class DHTPolicy extends DefaultSapphirePolicy {
 
             try {
                 ArrayList<String> regions = sapphire_getRegions();
-                DHTServerPolicy dhtServer = (DHTServerPolicy) server;
-                boolean pinned = dhtServer.isAlreadyPinned();
+                dhtServerPolicy = (DHTServerPolicy) server;
+                boolean pinned = dhtServerPolicy.isAlreadyPinned();
+
                 if (!pinned) {
-                    dhtServer.sapphire_pin(server, regions.get(0));
+                    addressList = sapphire_getAddressList(spec.getNodeSelectorSpec(), region);
+                    pin_to_server(server);
                 }
 
                 // Create replicas based on annotation
@@ -102,11 +110,11 @@ public class DHTPolicy extends DefaultSapphirePolicy {
                     // TODO (Sungwook, 2018-10-2) Passing processedPolicies may not be necessary as
                     // they are already available.
                     SapphireServerPolicy replica =
-                            dhtServer.sapphire_replicate(server.getProcessedPolicies(), region);
+                            dhtServerPolicy.sapphire_replicate(
+                                    server.getProcessedPolicies(), region);
 
                     if (!pinned) {
-                        newServerAddress = oms().getServerInRegion(region);
-                        dhtServer.sapphire_pin_to_server(replica, newServerAddress);
+                        pin_to_server(replica);
                     }
                 }
             } catch (RemoteException e) {
@@ -116,6 +124,8 @@ public class DHTPolicy extends DefaultSapphirePolicy {
                 throw new Error("Could not find Sapphire Object to pin to " + newServerAddress);
             } catch (SapphireObjectReplicaNotFoundException e) {
                 throw new Error("Could not find replica to pin to " + newServerAddress);
+            } catch (NoKernelServerFoundException e) {
+                throw new Error("No kernel servers were found");
             }
         }
 
@@ -139,6 +149,36 @@ public class DHTPolicy extends DefaultSapphirePolicy {
         public SapphireServerPolicy onRefRequest() {
             // TODO
             return null;
+        }
+
+        /**
+         * Pin to one of the kernel servers.
+         *
+         * @param serverPolicy
+         * @throws NoKernelServerFoundException
+         * @throws RemoteException
+         * @throws SapphireObjectNotFoundException
+         * @throws SapphireObjectReplicaNotFoundException
+         */
+        private void pin_to_server(SapphireServerPolicy serverPolicy)
+                throws NoKernelServerFoundException, RemoteException,
+                        SapphireObjectNotFoundException, SapphireObjectReplicaNotFoundException {
+            if (addressList == null || addressList.isEmpty()) {
+                String msg =
+                        String.format(
+                                "No kernel servers were found at %s for %s & %s",
+                                dhtServerPolicy, spec.getNodeSelectorSpec(), region);
+                logger.log(Level.SEVERE, msg);
+                throw new NoKernelServerFoundException();
+            }
+            dhtServerPolicy.sapphire_pin_to_server(
+                    serverPolicy, addressList.get(crntServerAddress));
+
+            // Switch to another server for distribution with round robin fashion.
+            crntServerAddress++;
+            if (crntServerAddress >= addressList.size()) {
+                crntServerAddress = 0;
+            }
         }
     }
 }

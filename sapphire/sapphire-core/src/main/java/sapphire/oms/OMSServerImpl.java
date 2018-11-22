@@ -128,18 +128,6 @@ public class OMSServerImpl implements OMSServer, SapphireObjectServer {
     }
 
     /**
-     * Gets a server in the specified region
-     *
-     * @param region
-     * @return
-     * @throws RemoteException
-     */
-    @Override
-    public InetSocketAddress getServerInRegion(String region) throws RemoteException {
-        return serverManager.getFirstServerInRegion(region);
-    }
-
-    /**
      * Gets all servers matching the specified node selector
      *
      * @param spec

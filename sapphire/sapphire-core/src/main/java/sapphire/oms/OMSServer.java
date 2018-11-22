@@ -37,8 +37,6 @@ public interface OMSServer extends Remote {
 
     ArrayList<String> getRegions() throws RemoteException;
 
-    InetSocketAddress getServerInRegion(String region) throws RemoteException;
-
     List<InetSocketAddress> getServers(NodeSelectorSpec spec) throws RemoteException;
 
     void registerKernelServer(ServerInfo info) throws RemoteException, NotBoundException;

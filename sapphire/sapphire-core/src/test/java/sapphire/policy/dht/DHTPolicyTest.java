@@ -54,7 +54,9 @@ public class DHTPolicyTest {
         servers[0].onCreate(group, null);
         servers[1].onCreate(group, null);
         servers[2].onCreate(group, null);
-        group.onCreate("region-1", servers[0], null);
+
+        SapphireObjectSpec spec = new SapphireObjectSpec();
+        group.onCreate("region-1", servers[0], spec);
         group.addServer(servers[1]);
         group.addServer(servers[2]);
 
@@ -98,9 +100,6 @@ public class DHTPolicyTest {
                 List<SapphirePolicyContainer> processedPolicies, String region) {
             return new ServerPolicy();
         }
-
-        @Override
-        public void sapphire_pin(SapphirePolicy.SapphireServerPolicy serverPolicy, String region) {}
 
         @Override
         public void sapphire_pin_to_server(

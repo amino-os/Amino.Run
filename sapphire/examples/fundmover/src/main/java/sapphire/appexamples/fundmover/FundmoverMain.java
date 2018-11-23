@@ -2,11 +2,11 @@ package sapphire.appexamples.fundmover;
 
 import sapphire.app.DMSpec;
 import sapphire.app.Language;
+import sapphire.app.SapphireObjectServer;
 import sapphire.app.SapphireObjectSpec;
 import sapphire.common.SapphireObjectID;
 import sapphire.kernel.server.KernelServer;
 import sapphire.kernel.server.KernelServerImpl;
-import sapphire.oms.OMSServer;
 import sapphire.policy.transaction.TwoPCCoordinatorPolicy;
 import  sapphire.policy.transaction.TwoPCExtResourceCohortPolicy;
 
@@ -29,8 +29,8 @@ public class FundmoverMain {
         Registry registry;
         try{
             registry = LocateRegistry.getRegistry(args[0],Integer.parseInt(args[1]));
-            OMSServer omsserver = (OMSServer) registry.lookup("SapphireOMS");
-            System.out.println(omsserver);
+            SapphireObjectServer server = (SapphireObjectServer) registry.lookup("SapphireOMS");
+            System.out.println(server);
 
             KernelServer nodeServer = new KernelServerImpl(new InetSocketAddress(args[2], Integer.parseInt(args[3])), new InetSocketAddress(args[0], Integer.parseInt(args[1])));
 
@@ -60,21 +60,21 @@ public class FundmoverMain {
                                    .create())
                            .create();
 
-            SapphireObjectID walletSapphireObjectID= omsserver.createSapphireObject(walletSpec.toString());
+            SapphireObjectID walletSapphireObjectID = server.createSapphireObject(walletSpec.toString());
 
-            Wallet wallet = (Wallet)omsserver.acquireSapphireObjectStub(walletSapphireObjectID);;
+            Wallet wallet = (Wallet)server.acquireSapphireObjectStub(walletSapphireObjectID);;
 
             wallet.credit(100);
 
-            SapphireObjectID bankAccountSapphireObjectID= omsserver.createSapphireObject(bankAccountSpec.toString());
+            SapphireObjectID bankAccountSapphireObjectID = server.createSapphireObject(bankAccountSpec.toString());
 
-            BankAccount bankaccount = (BankAccount)omsserver.acquireSapphireObjectStub(bankAccountSapphireObjectID);
+            BankAccount bankaccount = (BankAccount)server.acquireSapphireObjectStub(bankAccountSapphireObjectID);
 
             System.out.println("creating the finance object...");
 
-            SapphireObjectID financeSapphireObjectID= omsserver.createSapphireObject(financeSpec.toString(),wallet,bankaccount);
+            SapphireObjectID financeSapphireObjectID = server.createSapphireObject(financeSpec.toString(),wallet,bankaccount);
 
-            Finance finance = (Finance) omsserver.acquireSapphireObjectStub(financeSapphireObjectID);
+            Finance finance = (Finance) server.acquireSapphireObjectStub(financeSapphireObjectID);
 
             System.out.println("transfering fund between 2 entities...");
 

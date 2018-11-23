@@ -20,7 +20,12 @@ COPY  ./ /DCAP-Sapphire/
 
 WORKDIR /DCAP-Sapphire/sapphire
 
-RUN echo "org.gradle.java.home=/${GRAAL_VERSION}" >> gradle.properties
+# Setting Graalvm home 
+
+ENV GRAALVM_HOME=/$GRAAL_VERSION
+ENV JAVA_HOME=$GRAALVM_HOME
+ENV PATH=$GRAALVM_HOME/bin:$PATH
+
 
 # Downloading project related dependencies 
 RUN bash gradlew build 
@@ -29,11 +34,6 @@ RUN bash gradlew build
 RUN rm -r  /DCAP-Sapphire  && \
     apt-get --yes remove oracle-java8-installer && \
     apt-get --yes autoremove 
-
-# Setting Graalvm home 
-ENV GRAALVM_HOME=/$GRAAL_VERSION
-ENV JAVA_HOME=$GRAALVM_HOME
-ENV PATH=$GRAALVM_HOME/bin:$PATH
 
 
 

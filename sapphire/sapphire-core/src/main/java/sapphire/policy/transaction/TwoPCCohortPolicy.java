@@ -71,7 +71,6 @@ public class TwoPCCohortPolicy extends DefaultSapphirePolicy {
             UUID transactionId = tx.getTransaction();
             String rpcMethod = tx.getInnerRPCMethod();
             ArrayList<Object> rpcParams = tx.getInnerRPCParams();
-
             if (TwoPCPrimitive.isVoteRequest(rpcMethod)) {
                 return this.transactionManager.vote(transactionId);
             }
@@ -96,7 +95,9 @@ public class TwoPCCohortPolicy extends DefaultSapphirePolicy {
                 } catch (Exception e) {
                     logger.log(Level.WARNING, "onRPC failed: ", e);
                     this.transactionManager.abort(transactionId);
-                    return null;
+                    // return null;
+                    // Throwing the Exception which is  Triggred by the application
+                    throw (e);
                 } finally {
                     this.transactionManager.leave(transactionId);
                 }

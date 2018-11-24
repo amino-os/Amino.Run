@@ -163,12 +163,30 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
          * @param servers
          */
         public void initializeRaft(ConcurrentMap<UUID, ServerPolicy> servers) {
-            for (UUID id : servers.keySet()) {
-                if (!id.equals(raftServer.getMyServerID())) {
-                    this.raftServer.addServer(id, servers.get(id));
+            // Need to update each raft server about all all the other raft servers.
+            for (ServerPolicy s : servers.values()) {
+                for (UUID id : servers.keySet()) {
+                    if (!id.equals(s.getRaftServerId())) {
+                        s.addRaftServer(id, servers.get(id));
+                    }
+                }
+
+                // After updation of the raft servers, need to start the current raft Server,
+                // which is the newly added raft server.
+                if (this.getRaftServerId().equals(s.getRaftServerId())) {
+                    this.raftServer.start();
                 }
             }
-            this.raftServer.start();
+        }
+
+        /**
+         * Add a remote raft server, to the current raft server's otherServers Map.
+         *
+         * @param id: Remote raft server's UUID
+         * @param server: Remote raft server
+         */
+        public void addRaftServer(UUID id, RemoteRaftServer server) {
+            this.raftServer.addServer(id, server);
         }
 
         // TODO: This method should be thread safe
@@ -209,43 +227,22 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
         @Override
         public void onCreate(String region, SapphireServerPolicy server, SapphireObjectSpec spec)
                 throws RemoteException {
-            // TODO(merged):
-            // super.onCreate(server, annotations);
 
             super.onCreate(region, server, spec);
             List<InetSocketAddress> addressList = null;
 
             try {
-
                 addressList = sapphire_getAddressList(spec.getNodeSelectorSpec(), region);
 
                 // Register the first replica, which has already been created.
                 ServerPolicy consensusServer = (ServerPolicy) server;
-                // Create additional replicas, one per region. TODO:  Create N-1 replicas on
-                // different servers in the same zone.
+                // Create additional replicas as per the nodeSelector spec.
                 for (int i = 1; i < addressList.size(); i++) {
                     addReplica(consensusServer, addressList.get(i), region);
                 }
 
                 // The first in the addressList is for primary policy chain.
                 consensusServer.sapphire_pin_to_server(server, addressList.get(0));
-
-                addServer(server);
-
-                // Tell all the servers about one another
-                ConcurrentHashMap<UUID, ServerPolicy> allServers =
-                        new ConcurrentHashMap<UUID, ServerPolicy>();
-                // First get the self-assigned ID from each server
-                List<SapphireServerPolicy> servers = getServers();
-                for (SapphireServerPolicy i : servers) {
-                    ServerPolicy s = (ServerPolicy) i;
-                    allServers.put(s.getRaftServerId(), s);
-                }
-                // Now tell each server about the location and ID of all the servers, and start the
-                // RAFT protocol on each server.
-                for (ServerPolicy s : allServers.values()) {
-                    s.initializeRaft(allServers);
-                }
             } catch (RemoteException e) {
                 // TODO: Sapphire Group Policy Interface does not allow throwing exceptions, so in
                 // the mean time convert to an Error.
@@ -256,6 +253,26 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
             } catch (SapphireObjectReplicaNotFoundException e) {
                 throw new Error("Failed to find sapphire object replica.", e);
             }
+        }
+
+        @Override
+        public void addServer(SapphireServerPolicy server) throws RemoteException {
+            super.addServer(server);
+
+            // Tell all the servers about one another
+            ConcurrentHashMap<UUID, ServerPolicy> allServers =
+                    new ConcurrentHashMap<UUID, ServerPolicy>();
+            // First get the self-assigned ID from each server
+            List<SapphireServerPolicy> servers = getServers();
+            for (SapphireServerPolicy i : servers) {
+                ServerPolicy s = (ServerPolicy) i;
+                allServers.put(s.getRaftServerId(), s);
+            }
+
+            // Now tell each server about the location and ID of all the servers,
+            // and start the RAFT protocol on the current server.
+            ServerPolicy s = (ServerPolicy) server;
+            s.initializeRaft(allServers);
         }
     }
 }

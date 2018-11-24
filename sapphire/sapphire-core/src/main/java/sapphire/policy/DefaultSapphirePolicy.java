@@ -65,7 +65,18 @@ public class DefaultSapphirePolicy extends SapphirePolicy {
                 // TODO: Need to change it to proper exception
                 throw new RemoteException("Group object deleted");
             }
-            servers.add(server);
+
+            /**
+             * If server exists in the servers list then the current one has to be removed before
+             * adding the new ServerPolicyStub, so that any modified fields are updated. Applicable
+             * in scenarios like Migration and Multi-DM replica creation.
+             */
+            if (servers.contains(server) == true) {
+                servers.remove(server);
+                servers.add(server);
+            } else {
+                servers.add(server);
+            }
         }
 
         @Override

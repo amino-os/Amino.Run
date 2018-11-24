@@ -207,8 +207,6 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultSapphirePolicy 
                 for (int i = 0; i < NUM_OF_REPLICAS - 1; i++) {
                     dest = getAvailable(i + 1, addressList, unavailable);
                     ServerBase replica = (ServerBase) addReplica(s, dest, region);
-                    removeServer(replica);
-                    addServer(replica);
                     replica.start();
                     logger.info("created slave on " + dest);
                 }

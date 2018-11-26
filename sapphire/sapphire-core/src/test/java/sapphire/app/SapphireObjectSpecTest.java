@@ -30,8 +30,8 @@ public class SapphireObjectSpecTest {
 
     private SapphireObjectSpec createSpec() {
         NodeSelectorSpec nodeSelectorSpec = new NodeSelectorSpec();
-        nodeSelectorSpec.addAndLabel("and_label");
-        nodeSelectorSpec.addOrLabel("or_label");
+        nodeSelectorSpec.addAndLabel("and_label", "and_label");
+        nodeSelectorSpec.addOrLabel("or_label", "or_label");
 
         ScaleUpFrontendPolicy.Config scaleUpConfig = new ScaleUpFrontendPolicy.Config();
         scaleUpConfig.setReplicationRateInMs(100);

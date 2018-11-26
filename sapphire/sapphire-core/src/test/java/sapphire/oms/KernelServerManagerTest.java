@@ -1,9 +1,8 @@
 package sapphire.oms;
 
 import java.net.InetSocketAddress;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,7 +25,7 @@ public class KernelServerManagerTest {
     @Test
     public void testAndLabelSetWithSingleLabel() {
         NodeSelectorSpec spec = new NodeSelectorSpec();
-        spec.addAndLabel(LABEL1_PREFIX + "1");
+        spec.addAndLabel(LABEL1_PREFIX + "1", LABEL1_PREFIX + "1");
         List<InetSocketAddress> result = manager.getServers(spec);
         Assert.assertEquals(1, result.size());
         Assert.assertEquals(1, result.get(0).getPort());
@@ -35,8 +34,8 @@ public class KernelServerManagerTest {
     @Test
     public void testAndLabelSetWithMultiLabels() {
         NodeSelectorSpec spec = new NodeSelectorSpec();
-        spec.addAndLabel(LABEL1_PREFIX + "1");
-        spec.addAndLabel(LABEL2_PREFIX + "1");
+        spec.addAndLabel(LABEL1_PREFIX + "1", LABEL1_PREFIX + "1");
+        spec.addAndLabel(LABEL2_PREFIX + "1", LABEL2_PREFIX + "1");
         List<InetSocketAddress> result = manager.getServers(spec);
         Assert.assertEquals(1, result.size());
         Assert.assertEquals(1, result.get(0).getPort());
@@ -45,7 +44,7 @@ public class KernelServerManagerTest {
     @Test
     public void testAndLabelSetWithNonExistingLabel() {
         NodeSelectorSpec spec = new NodeSelectorSpec();
-        spec.addAndLabel(NON_EXISTENT_LABEL);
+        spec.addAndLabel(NON_EXISTENT_LABEL, NON_EXISTENT_LABEL);
         List<InetSocketAddress> result = manager.getServers(spec);
         Assert.assertEquals(0, result.size());
     }
@@ -53,7 +52,7 @@ public class KernelServerManagerTest {
     @Test
     public void testOrLabelSetWithSingleLabel() throws Exception {
         NodeSelectorSpec spec = new NodeSelectorSpec();
-        spec.addOrLabel(LABEL1_PREFIX + "1");
+        spec.addOrLabel(LABEL1_PREFIX + "1", LABEL1_PREFIX + "1");
         List<InetSocketAddress> result = manager.getServers(spec);
         Assert.assertEquals(1, result.size());
         Assert.assertEquals(1, result.get(0).getPort());
@@ -62,8 +61,8 @@ public class KernelServerManagerTest {
     @Test
     public void testOrLabelSetWithNonExistingLabel() throws Exception {
         NodeSelectorSpec spec = new NodeSelectorSpec();
-        spec.addOrLabel(LABEL1_PREFIX + "1");
-        spec.addOrLabel(NON_EXISTENT_LABEL);
+        spec.addOrLabel(LABEL1_PREFIX + "1", LABEL1_PREFIX + "1");
+        spec.addOrLabel(NON_EXISTENT_LABEL, NON_EXISTENT_LABEL);
         List<InetSocketAddress> result = manager.getServers(spec);
         Assert.assertEquals(1, result.size());
         Assert.assertEquals(1, result.get(0).getPort());
@@ -79,8 +78,8 @@ public class KernelServerManagerTest {
     @Test
     public void testAndLabelSetOrLabelSetFailure1() throws Exception {
         NodeSelectorSpec spec = new NodeSelectorSpec();
-        spec.addAndLabel(NON_EXISTENT_LABEL);
-        spec.addOrLabel(LABEL1_PREFIX + "1");
+        spec.addAndLabel(NON_EXISTENT_LABEL, NON_EXISTENT_LABEL);
+        spec.addOrLabel(LABEL1_PREFIX + "1", LABEL1_PREFIX + "1");
         List<InetSocketAddress> result = manager.getServers(spec);
         Assert.assertEquals(0, result.size());
     }
@@ -88,8 +87,8 @@ public class KernelServerManagerTest {
     @Test
     public void testAndLabelSetOrLabelSetFailure2() throws Exception {
         NodeSelectorSpec spec = new NodeSelectorSpec();
-        spec.addAndLabel(LABEL1_PREFIX + "1");
-        spec.addOrLabel(NON_EXISTENT_LABEL);
+        spec.addAndLabel(LABEL1_PREFIX + "1", LABEL1_PREFIX + "1");
+        spec.addOrLabel(NON_EXISTENT_LABEL, NON_EXISTENT_LABEL);
         List<InetSocketAddress> result = manager.getServers(spec);
         Assert.assertEquals(0, result.size());
     }
@@ -97,10 +96,10 @@ public class KernelServerManagerTest {
     @Test
     public void testAndLabelSetOrLabelSetSuccess() throws Exception {
         NodeSelectorSpec spec = new NodeSelectorSpec();
-        spec.addAndLabel(LABEL1_PREFIX + "1");
-        spec.addAndLabel(LABEL2_PREFIX + "1");
-        spec.addOrLabel(NON_EXISTENT_LABEL);
-        spec.addOrLabel(LABEL1_PREFIX + "1");
+        spec.addAndLabel(LABEL1_PREFIX + "1", LABEL1_PREFIX + "1");
+        spec.addAndLabel(LABEL2_PREFIX + "1", LABEL2_PREFIX + "1");
+        spec.addOrLabel(NON_EXISTENT_LABEL, NON_EXISTENT_LABEL);
+        spec.addOrLabel(LABEL1_PREFIX + "1", LABEL1_PREFIX + "1");
         List<InetSocketAddress> result = manager.getServers(spec);
         Assert.assertEquals(1, result.size());
         Assert.assertEquals(1, result.get(0).getPort());
@@ -109,9 +108,9 @@ public class KernelServerManagerTest {
     private void registerServers(KernelServerManager manager, int numOfServers) throws Exception {
         for (int i = 0; i < numOfServers; i++) {
             ServerInfo s = new ServerInfo(new InetSocketAddress(i), "region_" + i);
-            Set<String> labels = new HashSet<>();
-            labels.add(LABEL1_PREFIX + i);
-            labels.add(LABEL2_PREFIX + i);
+            HashMap labels = new HashMap();
+            labels.put(LABEL1_PREFIX + i, LABEL1_PREFIX + i);
+            labels.put(LABEL2_PREFIX + i, LABEL2_PREFIX + i);
             s.addLabels(labels);
             manager.registerKernelServer(s);
         }

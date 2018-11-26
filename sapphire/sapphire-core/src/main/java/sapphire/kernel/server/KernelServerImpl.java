@@ -33,7 +33,7 @@ import sapphire.runtime.Sapphire;
  */
 public class KernelServerImpl implements KernelServer {
     private static Logger logger = Logger.getLogger("sapphire.kernel.server.KernelServerImpl");
-    private static String LABEL_OPT = "--label";
+    private static String LABEL_OPT = "--labels:";
     private static String OPT_SEPARATOR = "=";
     private static String LABEL_SEPARATOR = ",";
 
@@ -458,8 +458,8 @@ public class KernelServerImpl implements KernelServer {
     public static ServerInfo createServerInfo(
             InetSocketAddress host, String region, String labelStr) {
         ServerInfo srvInfo = new ServerInfo(host, region);
-        Set<String> labels = parseLabel(labelStr);
-        labels.add(region);
+        HashMap labels = parseLabel(labelStr);
+        labels.put("region", region);
         srvInfo.addLabels(labels);
         return srvInfo;
     }
@@ -468,16 +468,32 @@ public class KernelServerImpl implements KernelServer {
         System.out.println("Usage:");
         System.out.println(
                 String.format(
-                        "java -cp <classpath> %s hostIp hostPort omsIp omsPort [region] [--labels=comma,separated,labels",
+                        "java -cp <classpath> %s hostIp hostPort omsIp omsPort [region] [--labels:comma,separated,key=value",
                         KernelServerImpl.class.getName()));
     }
 
-    private static Set<String> parseLabel(String labelStr) {
-        Set<String> labels = new HashSet<>();
-        if (labelStr != null) {
-            String[] kv = labelStr.split(OPT_SEPARATOR);
-            if (kv.length > 1) {
-                labels.addAll(Arrays.asList(kv[1].split(LABEL_SEPARATOR)));
+    private static HashMap parseLabel(String data) {
+        HashMap labels = new HashMap();
+        if (data != null) {
+            boolean b = data.startsWith(LABEL_OPT);
+            if (b) {
+                String actualdata = data.substring(LABEL_OPT.length());
+                String[] maps = actualdata.split(LABEL_SEPARATOR);
+
+                if (maps.length < 1) {
+                    return labels;
+                }
+                for (int i = 0; i < maps.length; i += 1) {
+
+                    String[] kv = maps[i].split(OPT_SEPARATOR);
+                    // not allowed empty values
+                    if (kv.length % 2 != 0) {
+                        return labels;
+                    }
+                    for (int j = 0; j < maps.length; j += 2) {
+                        labels.put(kv[j], kv[j + 1]);
+                    }
+                }
             }
         }
         return labels;

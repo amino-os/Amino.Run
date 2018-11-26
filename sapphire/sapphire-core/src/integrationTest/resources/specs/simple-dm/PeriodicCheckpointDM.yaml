@@ -6,8 +6,8 @@ dmList:
 - configs: []
   name: sapphire.policy.checkpoint.periodiccheckpoint.PeriodicCheckpointPolicy
 nodeSelectorSpec:
-  andLabels: !!set {}
-  orLabels: !!set {}
+  andLabels: !!map {}
+  orLabels: !!map {}
 javaClassName: sapphire.demo.KVStore
 lang: java
 name: null

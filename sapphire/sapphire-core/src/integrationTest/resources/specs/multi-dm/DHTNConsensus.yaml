@@ -9,8 +9,8 @@ dmList:
 - configs: []
   name: sapphire.policy.replication.ConsensusRSMPolicy
 nodeSelectorSpec:
-  andLabels: !!set {}
-  orLabels: !!set {}
+  andLabels: !!map {}
+  orLabels: !!map {}
 javaClassName: sapphire.demo.KVStore
 lang: java
 name: null

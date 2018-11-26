@@ -13,7 +13,7 @@ public class NodeSelectorSpecTest {
     @Test
     public void testAddNullOrLabel() {
         NodeSelectorSpec spec = new NodeSelectorSpec();
-        spec.addOrLabel(null);
+        spec.addOrLabel(null, null);
     }
 
     @Test
@@ -25,6 +25,6 @@ public class NodeSelectorSpecTest {
     @Test
     public void testAddNullAndLabel() {
         NodeSelectorSpec spec = new NodeSelectorSpec();
-        spec.addAndLabel(null);
+        spec.addAndLabel(null, null);
     }
 }

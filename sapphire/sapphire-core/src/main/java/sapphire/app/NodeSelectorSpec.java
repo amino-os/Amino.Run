@@ -1,10 +1,7 @@
 package sapphire.app;
 
 import java.io.Serializable;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import org.yaml.snakeyaml.Yaml;
 
 /**
@@ -14,79 +11,81 @@ import org.yaml.snakeyaml.Yaml;
  * <p>At present we only support specifying {@code NodeSelectorSpec} at sapphire object level. We
  * will consider support specifying {@code NodeSelectorSpec} at DM level in the future if necessary.
  *
- * <p>{@code NodeSelectorSpec} contains two label sets, a {@code orLabels} set and a {@code
- * andLabels} set. {@code orLabels} set and {@code andLabels} set are considered as selector used to
+ * <p>{@code NodeSelectorSpec} contains two label maps, a {@code orLabels} map and a {@code
+ * andLabels} map. {@code orLabels} map and {@code andLabels} map are considered as selector used to
  * select nodes.
  *
- * <p>If {@code orLabels} set is not empty, then a node will be selected only if it contains any
- * label specified in {@code orLabels} set. If {@code andLabels} set is not empty, then a node will
- * be selected only if it contains all labels specified in {@code andLabels} set. If both {@code
+ * <p>If {@code orLabels} map is not empty, then a node will be selected only if it contains any
+ * label specified in {@code orLabels} map. If {@code andLabels} map is not empty, then a node will
+ * be selected only if it contains all labels specified in {@code andLabels} map. If both {@code
  * orLabels} and {@code andLabels} are specified, then a node will be selected only if it contains
- * all labels in {@code andLabels} set <strong>and</strong> some label in {@code orLabels} set.
+ * all labels in {@code andLabels} map <strong>and</strong> some label in {@code orLabels} map.
  *
- * <p>By default, both {@code orLabels} set and {@code andLabels} set are empty which means no
+ * <p>By default, both {@code orLabels} map and {@code andLabels} map are empty which means no
  * selector will be applied in which case all nodes will be returned.
  */
 public class NodeSelectorSpec implements Serializable {
-    public Set<String> orLabels = new HashSet<>();
-    public Set<String> andLabels = new HashSet<>();
+    public HashMap orLabels = new HashMap();
+    public HashMap andLabels = new HashMap();
 
-    public Set<String> getOrLabels() {
-        return Collections.unmodifiableSet(orLabels);
+    public HashMap getOrLabels() {
+        return orLabels;
     }
 
-    public Set<String> getAndLabels() {
-        return Collections.unmodifiableSet(andLabels);
-    }
-
-    /**
-     * Adds the label into {@code andLabels} set Null label or empty label is ignored.
-     *
-     * @param label a label
-     */
-    public void addAndLabel(String label) {
-        if (label == null || label.isEmpty()) {
-            return;
-        }
-        this.andLabels.add(label);
+    public HashMap getAndLabels() {
+        return andLabels;
     }
 
     /**
-     * Adds the given label set into the {@code andLabels} set Null label set is ignored.
+     * Adds the key & value into {@code andLabels} map Null key/value or empty key/value is ignored.
      *
-     * @param andLabels a label set
+     * @param key
+     * @param value
      */
-    public void addAndLabels(Set<String> andLabels) {
-        if (andLabels == null) {
+    public void addAndLabel(String key, String value) {
+        if (key == null || key.isEmpty() || value == null || value.isEmpty()) {
             return;
         }
-        this.andLabels.addAll(andLabels);
+        this.andLabels.put(key, value);
     }
 
     /**
-     * Adds the label into {@code orLabels} set. Null label or empty label is ignored.
+     * Adds the given key & value into the {@code andLabels} map Null key/value is ignored.
      *
-     * @param label a label
+     * @param keyValues
      */
-    public void addOrLabel(String label) {
-        if (label == null || label.isEmpty()) {
+    public void addAndLabels(HashMap keyValues) {
+        if (keyValues == null) {
             return;
         }
-
-        this.orLabels.add(label);
+        this.andLabels.putAll(keyValues);
     }
 
     /**
-     * Adds the given label set into the {@code orLabels} set Null label set is ignored.
+     * Adds the label into {@code orLabels} map. Null key/value or empty key/value is ignored.
      *
-     * @param orLabels a label set
+     * @param key
+     * @param value
      */
-    public void addOrLabels(Set<String> orLabels) {
-        if (orLabels == null) {
+    public void addOrLabel(String key, String value) {
+        if (key == null || key.isEmpty() || value == null || value.isEmpty()) {
             return;
         }
 
-        this.orLabels.addAll(orLabels);
+        this.orLabels.put(key, value);
+    }
+
+    /**
+     * Adds the given label map into the {@code orLabels} map Null keyValues map is ignored.
+     *
+     * @param keyValues
+     */
+    public void addOrLabels(HashMap keyValues) {
+        if (keyValues == null) {
+            return;
+        }
+
+        this.orLabels.putAll(keyValues);
     }
 
     @Override

@@ -350,25 +350,27 @@ public class OMSServerImpl implements OMSServer, SapphireObjectServer {
     }
 
     public static void main(String args[]) {
-        if (args.length != 2) {
+        if (args.length != 3) {
             System.out.println("Invalid arguments to OMS.");
-            System.out.println("[IP] [port]");
+            System.out.println("[IP] [port] [rmiport]");
             return;
         }
 
         int port = 1099;
+        int rmiPort = 0;
         try {
             port = Integer.parseInt(args[1]);
+            rmiPort = Integer.parseInt(args[2]);
         } catch (NumberFormatException e) {
             System.out.println("Invalid arguments to OMS.");
-            System.out.println("[IP] [port]");
+            System.out.println("[IP] [port] [rmiport]");
             return;
         }
 
         System.setProperty("java.rmi.server.hostname", args[0]);
         try {
             OMSServerImpl oms = new OMSServerImpl();
-            OMSServer omsStub = (OMSServer) UnicastRemoteObject.exportObject(oms, 0);
+            OMSServer omsStub = (OMSServer) UnicastRemoteObject.exportObject(oms, rmiPort);
             Registry registry = LocateRegistry.createRegistry(port);
             registry.rebind("SapphireOMS", omsStub);
 
@@ -376,7 +378,7 @@ public class OMSServerImpl implements OMSServer, SapphireObjectServer {
             KernelServer localKernelServer =
                     new KernelServerImpl(new InetSocketAddress(args[0], port), oms);
             KernelServer localKernelServerStub =
-                    (KernelServer) UnicastRemoteObject.exportObject(localKernelServer, 0);
+                    (KernelServer) UnicastRemoteObject.exportObject(localKernelServer, rmiPort);
             registry.rebind("SapphireKernelServer", localKernelServerStub);
 
             logger.info("OMS ready");

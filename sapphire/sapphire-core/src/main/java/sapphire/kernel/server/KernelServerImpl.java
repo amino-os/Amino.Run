@@ -392,7 +392,7 @@ public class KernelServerImpl implements KernelServer {
      */
     public static void main(String args[]) {
         try {
-            if (args.length < 4) {
+            if (args.length < 5) {
                 printUsage();
                 System.exit(1);
             }
@@ -402,25 +402,34 @@ public class KernelServerImpl implements KernelServer {
             omsHost = new InetSocketAddress(args[2], Integer.parseInt(args[3]));
             System.setProperty("java.rmi.server.hostname", host.getAddress().getHostAddress());
 
+            int rmiPort = 0;
+            try {
+                rmiPort = Integer.parseInt(args[4]);
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid arguments to kernel server.");
+                System.out.println(
+                        "[KernelServerIP] [KernelServerport] [OMSIp] [OMSPort] [rmiport]");
+                return;
+            }
             // TODO: remove region argument
             // Keep it for the time being to maintain backward compatible
             String region = host.toString();
             String labelStr = "";
-            if (args.length > 4) {
-                if (!args[4].startsWith(LABEL_OPT)) {
-                    region = args[4];
+            if (args.length > 5) {
+                if (!args[5].startsWith(LABEL_OPT)) {
+                    region = args[5];
                 } else {
-                    labelStr = args[4];
+                    labelStr = args[5];
                 }
             }
 
-            if (args.length > 5) {
-                labelStr = args[5];
+            if (args.length > 6) {
+                labelStr = args[6];
             }
 
             // Bind server in registry
             KernelServerImpl server = new KernelServerImpl(host, omsHost);
-            KernelServer stub = (KernelServer) UnicastRemoteObject.exportObject(server, 0);
+            KernelServer stub = (KernelServer) UnicastRemoteObject.exportObject(server, rmiPort);
             Registry registry = LocateRegistry.createRegistry(Integer.parseInt(args[1]));
             registry.rebind("SapphireKernelServer", stub);
             server.setRegion(region);

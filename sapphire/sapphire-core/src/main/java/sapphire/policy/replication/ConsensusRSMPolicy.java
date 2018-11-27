@@ -163,17 +163,21 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
          * @param servers
          */
         public void initializeRaft(ConcurrentMap<UUID, ServerPolicy> servers) {
-            // Need to update each raft server about all all the other raft servers.
+            // Need to update each raft server about all the other raft servers.
+            UUID raftId = null;
             for (ServerPolicy s : servers.values()) {
+                raftId = s.getRaftServerId();
                 for (UUID id : servers.keySet()) {
-                    if (!id.equals(s.getRaftServerId())) {
+                    if ((!id.equals(raftId))
+                            && ((id.equals(this.getRaftServerId()))
+                                    || (raftId.equals(this.getRaftServerId())))) {
                         s.addRaftServer(id, servers.get(id));
                     }
                 }
 
                 // After updation of the raft servers, need to start the current raft Server,
                 // which is the newly added raft server.
-                if (this.getRaftServerId().equals(s.getRaftServerId())) {
+                if (this.getRaftServerId().equals(raftId)) {
                     this.raftServer.start();
                 }
             }
@@ -269,7 +273,7 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
                 allServers.put(s.getRaftServerId(), s);
             }
 
-            // Now tell each server about the location and ID of all the servers,
+            // Now tell each server about the location and ID of the new raft server,
             // and start the RAFT protocol on the current server.
             ServerPolicy s = (ServerPolicy) server;
             s.initializeRaft(allServers);

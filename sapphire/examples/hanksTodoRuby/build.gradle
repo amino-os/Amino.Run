@@ -14,7 +14,7 @@ genStubs {
     def outPath = "$projectDir/src/main/java"
     def packageName = "sapphire.appexamples.hankstodo.stubs"
     def sapphireClasses = "TodoListManager"
-    //args sapphireObjectPath, outPath, packageName, sapphireClasses
+    args sapphireObjectPath, outPath, packageName, sapphireClasses
     outputs.dir "$projectDir/src/main/java/sapphire/appexamples/hankstodo/stubs" // Declare outputs, so gradle will run if they have been changed
     inputs.dir sapphireObjectPath   // Declare inputs, so gradle will run if they have been changed
 }

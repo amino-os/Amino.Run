@@ -202,11 +202,11 @@ public class GraalStubGenerator {
                     + " }\n";
 
     // String format following these inputs:
-    // functionName
-    // functionName
+    // functionName: this is function name in java stub, if there is special chars in ruby the char will be replaced.
+    // functionName: this is function name in original SO object in native language.
     // packageName
     // className
-    // functionName
+    // functionName: this is function name in java stub.
     private static String functionStringFormat =
             "    public java.lang.Object %s(Object... args) throws java.lang.Exception{\n"
                     + "        java.lang.Object $__result = null;\n"

@@ -1,5 +1,7 @@
 package sapphire.appexamples.hankstodo;
 
+import sapphire.app.Language;
+
 public class Client {
     public static void main(String... args) throws Exception{
         if (args.length < 4) {
@@ -34,5 +36,7 @@ public class Client {
         java.lang.System.out.println("Response from SO for completeTodo --> " + tls.completeTodo("Hanks","Hanks first Task" ));
         java.lang.System.out.println("Response from SO for getTodos --> " + tls.getTodos("Hanks"));
         java.lang.System.out.println("Response from SO for deleteTodoList --> " + tls.deleteTodoList("Hanks"));
+        if (lang == Language.ruby)
+            java.lang.System.out.println("Response from SO for testSpecialChar --> " + tls.testSpacialCharInFunctionName$question$("Test special char in function name"));
     }
 }

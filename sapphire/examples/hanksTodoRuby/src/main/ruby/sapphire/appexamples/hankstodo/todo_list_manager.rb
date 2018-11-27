@@ -108,6 +108,10 @@ class TodoListManager < Manager
         return nil
     end
 
+    def testSpacialCharInFunctionName?(str)
+        return str;
+    end
+
     def completeTodo(name, todo)
         list = nil
         @todo_lists.each { |lst|

@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.rmi.RemoteException;
 import java.util.*;
 import java.util.logging.Level;
@@ -346,100 +344,6 @@ public class Sapphire {
     }
 
     /**
-     * An internal helper method for sapphire object creation.
-     *
-     * <p>// TODO(multi-lang): Remove annotations from parameter list. // We pass in both
-     * annotations and DMSpec temporarily to make // existing codes happy.
-     *
-     * @param spec
-     * @param args
-     * @param pc
-     * @param annotations
-     * @param configMap
-     * @return
-     * @throws Exception
-     */
-    private static Object newHelper_(
-            SapphireObjectSpec spec,
-            Object[] args,
-            PolicyComponents pc,
-            Annotation[] annotations,
-            Map<String, SapphirePolicyUpcalls.SapphirePolicyConfig> configMap)
-            throws Exception {
-        /* Register for a sapphire object Id from OMS */
-        SapphireObjectID sapphireObjId =
-                GlobalKernelReferences.nodeServer.oms.registerSapphireObject();
-
-        /* Create the Kernel Object for the Group Policy and get the Group Policy Stub from OMS */
-        SapphireGroupPolicy groupPolicyStub =
-                GlobalKernelReferences.nodeServer.oms.createGroupPolicy(
-                        pc.groupPolicyClass, sapphireObjId, configMap);
-
-        /* Register for a replica Id from OMS */
-        SapphireReplicaID sapphireReplicaId =
-                GlobalKernelReferences.nodeServer.oms.registerSapphireReplica(sapphireObjId);
-
-        /* Create the Kernel Object for the Server Policy, and get the Server Policy Stub */
-        final SapphireServerPolicy serverPolicyStub =
-                (SapphireServerPolicy) getPolicyStub(pc.serverPolicyClass);
-
-        /* Create the Client Policy Object */
-        SapphireClientPolicy client = (SapphireClientPolicy) pc.clientPolicyClass.newInstance();
-
-        /* Initialize the server policy and return a local pointer to the object itself */
-        SapphireServerPolicy serverPolicy = initializeServerPolicy(serverPolicyStub);
-        serverPolicyStub.setReplicaId(sapphireReplicaId);
-        serverPolicy.setReplicaId(sapphireReplicaId);
-
-        EventHandler replicaHandler =
-                new EventHandler(
-                        GlobalKernelReferences.nodeServer.getLocalHost(),
-                        new ArrayList() {
-                            {
-                                add(serverPolicyStub);
-                            }
-                        });
-
-        /* Register the handler for this replica to OMS */
-        GlobalKernelReferences.nodeServer.oms.setSapphireReplicaDispatcher(
-                sapphireReplicaId, replicaHandler);
-
-        /* Create the App Object and return the App Stub */
-        AppObjectStub appStub = getAppStub(spec, serverPolicy, args);
-
-        /* Link everything together */
-        client.setServer(serverPolicyStub);
-        client.onCreate(groupPolicyStub, spec);
-        appStub.$__initialize(client);
-        serverPolicy.onCreate(groupPolicyStub, spec);
-        groupPolicyStub.onCreate("", serverPolicyStub, spec);
-
-        logger.info("Sapphire Object created: " + spec);
-        return appStub;
-    }
-
-    private static PolicyComponents getPolicyComponents(Class<?> policy) {
-        PolicyComponents pc = new PolicyComponents();
-        Class<?>[] policyClasses = policy.getDeclaredClasses();
-        for (Class<?> c : policyClasses) {
-            if (SapphireServerPolicy.class.isAssignableFrom(c)) {
-                pc.serverPolicyClass = c;
-                continue;
-            }
-            if (SapphireClientPolicy.class.isAssignableFrom(c)) {
-                pc.clientPolicyClass = c;
-                continue;
-            }
-            if (SapphireGroupPolicy.class.isAssignableFrom(c)) {
-                pc.groupPolicyClass = c;
-                continue;
-            }
-        }
-
-        return pc;
-    }
-
-    /**
      * Deletes the given sapphire object
      *
      * @param stub
@@ -511,27 +415,6 @@ public class Sapphire {
         return null;
     }
 
-    // TODO: Not needed with the usage of annotations for multi policy chain declaration.
-    // TODO: Can be removed.
-    /* Returns the policy used by the Sapphire Object */
-    private static Class<?> getPolicy(Type[] genericInterfaces) throws Exception {
-
-        for (Type t : genericInterfaces) {
-            if (t instanceof ParameterizedType) {
-                ParameterizedType extInterfaceType = (ParameterizedType) t;
-                Class<?> tClass = (Class<?>) extInterfaceType.getRawType();
-
-                if (!tClass.getName().equals("sapphire.app.SapphireObject")) continue;
-
-                Type[] tt = extInterfaceType.getActualTypeArguments();
-                return (Class<?>) tt[0];
-            } else if (!((Class<?>) t).getName().equals("sapphire.app.SapphireObject")) continue;
-            else return DefaultSapphirePolicy.class;
-        }
-        // Shouldn't get here
-        throw new Exception("The Object doesn't implement the SapphireObject interface.");
-    }
-
     /**
      * Constructs a policy map for each client, server and group policy based on input policy name.
      *
@@ -574,27 +457,6 @@ public class Sapphire {
             policyMap.put("sapphireGroupPolicyClass", DefaultGroupPolicy.class);
 
         return policyMap;
-    }
-
-    /**
-     * Returns a list of sapphire policy classes - one for each DM.
-     *
-     * @param dmList a list of DMs
-     * @return a list of sapphire policy classes
-     * @throws Exception
-     */
-    private static List<Class<?>> getPolicies(List<DMSpec> dmList) throws Exception {
-        if (dmList == null || dmList.isEmpty()) {
-            return Arrays.asList(DefaultSapphirePolicy.class);
-        }
-
-        List<Class<?>> policyClasses = new ArrayList<>();
-        for (DMSpec dm : dmList) {
-            Class<?> clazz = Class.forName(dm.getName());
-            policyClasses.add(clazz);
-        }
-
-        return policyClasses;
     }
 
     public static KernelObjectStub getPolicyStub(Class<?> policyClass, KernelOID oid)
@@ -856,11 +718,5 @@ public class Sapphire {
                             size, startIdx));
             throw e;
         }
-    }
-
-    private static class PolicyComponents {
-        private Class<?> clientPolicyClass = DefaultClientPolicy.class;
-        private Class<?> groupPolicyClass = DefaultGroupPolicy.class;
-        private Class<?> serverPolicyClass = DefaultServerPolicy.class;
     }
 }

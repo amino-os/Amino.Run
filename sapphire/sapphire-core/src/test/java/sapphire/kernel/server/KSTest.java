@@ -165,5 +165,4 @@ public class KSTest extends BaseTest {
                     e.getClass().getName(), "sapphire.kernel.common.KernelObjectNotFoundException");
         }
     }
-
 }

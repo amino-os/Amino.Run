@@ -5,8 +5,6 @@ import static sapphire.common.SapphireUtils.deleteSapphireObject;
 import static sapphire.common.SapphireUtils.getOmsSapphireInstance;
 import static sapphire.common.UtilsTest.extractFieldValueOnInstance;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
 import java.rmi.registry.LocateRegistry;
 import java.util.HashMap;
@@ -219,19 +217,19 @@ public class OMSTest extends BaseTest {
         assertEquals(1, arr.length);
     }
 
-   /*
-    @Test
-    public void getInstanceDispatcherTest() throws Exception {
-        OMSServerImpl omsImpl = (OMSServerImpl) spiedOms;
-        Field field = omsImpl.getClass().getDeclaredField("objectManager");
-        field.setAccessible(true);
-        Method method =
-                field.getClass()
-                        .getClass()
-                        .getDeclaredMethod("getInstanceDispatcher", SapphireObjectID.class);
-        Object obj = method.invoke(field, group.getSapphireObjId());
-    }
-*/
+    /*
+        @Test
+        public void getInstanceDispatcherTest() throws Exception {
+            OMSServerImpl omsImpl = (OMSServerImpl) spiedOms;
+            Field field = omsImpl.getClass().getDeclaredField("objectManager");
+            field.setAccessible(true);
+            Method method =
+                    field.getClass()
+                            .getClass()
+                            .getDeclaredMethod("getInstanceDispatcher", SapphireObjectID.class);
+            Object obj = method.invoke(field, group.getSapphireObjId());
+        }
+    */
     @After
     public void tearDown() throws Exception {
 

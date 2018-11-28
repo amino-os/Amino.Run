@@ -1,7 +1,7 @@
 
 FROM dcap/sapphire_base:0.1
 
-COPY ./ /DCAP-Sapphire/sapphire
+COPY ./ /DCAP-Sapphire/
 
 WORKDIR /DCAP-Sapphire/sapphire
 

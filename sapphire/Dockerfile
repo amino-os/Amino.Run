@@ -16,7 +16,7 @@ RUN  wget $GRAAL_URL && \
      tar -xzf $GRAAL_VERSION-linux-amd64.tar.gz && \
      rm $GRAAL_VERSION-linux-amd64.tar.gz
 
-COPY  ./ /DCAP-Sapphire/
+COPY  ./ /DCAP-Sapphire/sapphire
 
 WORKDIR /DCAP-Sapphire/sapphire
 

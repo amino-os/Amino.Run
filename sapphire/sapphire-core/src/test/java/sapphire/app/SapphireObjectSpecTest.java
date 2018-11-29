@@ -1,5 +1,6 @@
 package sapphire.app;
 
+import java.util.*;
 import org.junit.Assert;
 import org.junit.Test;
 import sapphire.common.Utils;
@@ -30,8 +31,29 @@ public class SapphireObjectSpecTest {
 
     private SapphireObjectSpec createSpec() {
         NodeSelectorSpec nodeSelectorSpec = new NodeSelectorSpec();
-        nodeSelectorSpec.addAndLabel("and_label", "and_label");
-        nodeSelectorSpec.addOrLabel("or_label", "or_label");
+
+        Map<String, String> matchLabels = new HashMap<>();
+        matchLabels.put("key1", "value1");
+        nodeSelectorSpec.setMatchLabels(matchLabels);
+
+        nodeSelectorSpec.addMatchLabelsItem("and_label", "and_label");
+        nodeSelectorSpec.addMatchLabelsItem("or_label", "or_label");
+
+        List<NodeSelectorRequirement> matchExp = new ArrayList<NodeSelectorRequirement>();
+
+        String[] values1 = {"val1", "val2", "val3"};
+        List<String> vals1 = Arrays.asList(values1);
+        NodeSelectorRequirement matchExpItem1 =
+                new NodeSelectorRequirement("key1", Utils.NotIn, vals1);
+
+        matchExp.add(matchExpItem1);
+        nodeSelectorSpec.setMatchExpressions(matchExp);
+
+        String[] values2 = {"val4", "val5", "val6"};
+        List<String> vals2 = Arrays.asList(values2);
+        NodeSelectorRequirement matchExpItem2 =
+                new NodeSelectorRequirement("key2", Utils.In, vals2);
+        nodeSelectorSpec.addMatchExpressionsItem(matchExpItem2);
 
         ScaleUpFrontendPolicy.Config scaleUpConfig = new ScaleUpFrontendPolicy.Config();
         scaleUpConfig.setReplicationRateInMs(100);

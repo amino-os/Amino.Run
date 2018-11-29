@@ -6,8 +6,8 @@ dmList:
   - !!sapphire.policy.dht.DHTPolicy$Config {numOfShards: 3}
   name: sapphire.policy.dht.DHTPolicy
 nodeSelectorSpec:
-  andLabels: !!map {}
-  orLabels: !!map {}
+  matchLabels: !!map {}
+  matchExpressions: []
 javaClassName: sapphire.demo.KVStore
 lang: java
 name: null

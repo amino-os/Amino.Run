@@ -136,7 +136,7 @@ public class IntegrationTestBase {
                         + region
                         + " ";
         if (null != labels && labels.length > 0) {
-            cmd += "--labels " + String.join(",", labels);
+            cmd += "--labels:" + String.join(",", labels);
         }
         System.out.printf("Starting kernel server with command line \'%s\'\n", cmd);
         Process process = Runtime.getRuntime().exec(cmd);

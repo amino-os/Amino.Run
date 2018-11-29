@@ -525,7 +525,7 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
             } else {
                 if (region != null && !region.isEmpty()) {
                     nodeSelector = new NodeSelectorSpec();
-                    nodeSelector.addAndLabel("region", region);
+                    nodeSelector.addMatchLabelsItem("region", region);
                     serversInRegion = oms().getServers(nodeSelector);
                 } else {
                     serversInRegion = oms().getServers(null);

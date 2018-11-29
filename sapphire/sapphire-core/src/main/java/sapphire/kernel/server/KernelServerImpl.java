@@ -458,7 +458,7 @@ public class KernelServerImpl implements KernelServer {
     public static ServerInfo createServerInfo(
             InetSocketAddress host, String region, String labelStr) {
         ServerInfo srvInfo = new ServerInfo(host, region);
-        HashMap labels = parseLabel(labelStr);
+        Map labels = parseLabel(labelStr);
         labels.put("region", region);
         srvInfo.addLabels(labels);
         return srvInfo;
@@ -472,27 +472,24 @@ public class KernelServerImpl implements KernelServer {
                         KernelServerImpl.class.getName()));
     }
 
-    private static HashMap parseLabel(String data) {
-        HashMap labels = new HashMap();
-        if (data != null) {
-            boolean b = data.startsWith(LABEL_OPT);
-            if (b) {
-                String actualdata = data.substring(LABEL_OPT.length());
-                String[] maps = actualdata.split(LABEL_SEPARATOR);
+    private static Map<String, String> parseLabel(String data) {
+        Map<String, String> labels = new HashMap<String, String>();
+        if ((data != null) && data.startsWith(LABEL_OPT)) {
+            String actualdata = data.substring(LABEL_OPT.length());
+            String[] maps = actualdata.split(LABEL_SEPARATOR);
 
-                if (maps.length < 1) {
-                    return labels;
+            if (maps.length < 1) {
+                return labels;
+            }
+            for (int i = 0; i < maps.length; i++) {
+                String[] kv = maps[i].split(OPT_SEPARATOR);
+                // not allowed empty values
+                if (kv.length % 2 != 0) {
+                    logger.warning("something wrong in the labels");
+                    continue;
                 }
-                for (int i = 0; i < maps.length; i += 1) {
-
-                    String[] kv = maps[i].split(OPT_SEPARATOR);
-                    // not allowed empty values
-                    if (kv.length % 2 != 0) {
-                        return labels;
-                    }
-                    for (int j = 0; j < maps.length; j += 2) {
-                        labels.put(kv[j], kv[j + 1]);
-                    }
+                for (int j = 0; j < maps.length; j += 2) {
+                    labels.put(kv[j], kv[j + 1]);
                 }
             }
         }

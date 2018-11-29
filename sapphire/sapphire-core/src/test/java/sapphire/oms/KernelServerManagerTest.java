@@ -23,49 +23,30 @@ public class KernelServerManagerTest {
     }
 
     @Test
-    public void testAndLabelSetWithSingleLabel() {
+    public void testmatchLabelSetWithSingleLabel() {
         NodeSelectorSpec spec = new NodeSelectorSpec();
-        spec.addAndLabel(LABEL1_PREFIX + "1", LABEL1_PREFIX + "1");
+        spec.addMatchLabelsItem(LABEL1_PREFIX + "1", LABEL1_PREFIX + "1");
         List<InetSocketAddress> result = manager.getServers(spec);
         Assert.assertEquals(1, result.size());
         Assert.assertEquals(1, result.get(0).getPort());
     }
 
     @Test
-    public void testAndLabelSetWithMultiLabels() {
+    public void testmatchLabelSetWithMultiLabels() {
         NodeSelectorSpec spec = new NodeSelectorSpec();
-        spec.addAndLabel(LABEL1_PREFIX + "1", LABEL1_PREFIX + "1");
-        spec.addAndLabel(LABEL2_PREFIX + "1", LABEL2_PREFIX + "1");
+        spec.addMatchLabelsItem(LABEL1_PREFIX + "1", LABEL1_PREFIX + "1");
+        spec.addMatchLabelsItem(LABEL2_PREFIX + "1", LABEL2_PREFIX + "1");
         List<InetSocketAddress> result = manager.getServers(spec);
         Assert.assertEquals(1, result.size());
         Assert.assertEquals(1, result.get(0).getPort());
     }
 
     @Test
-    public void testAndLabelSetWithNonExistingLabel() {
+    public void testmatchLabelSetWithNonExistingLabel() {
         NodeSelectorSpec spec = new NodeSelectorSpec();
-        spec.addAndLabel(NON_EXISTENT_LABEL, NON_EXISTENT_LABEL);
+        spec.addMatchLabelsItem(NON_EXISTENT_LABEL, NON_EXISTENT_LABEL);
         List<InetSocketAddress> result = manager.getServers(spec);
         Assert.assertEquals(0, result.size());
-    }
-
-    @Test
-    public void testOrLabelSetWithSingleLabel() throws Exception {
-        NodeSelectorSpec spec = new NodeSelectorSpec();
-        spec.addOrLabel(LABEL1_PREFIX + "1", LABEL1_PREFIX + "1");
-        List<InetSocketAddress> result = manager.getServers(spec);
-        Assert.assertEquals(1, result.size());
-        Assert.assertEquals(1, result.get(0).getPort());
-    }
-
-    @Test
-    public void testOrLabelSetWithNonExistingLabel() throws Exception {
-        NodeSelectorSpec spec = new NodeSelectorSpec();
-        spec.addOrLabel(LABEL1_PREFIX + "1", LABEL1_PREFIX + "1");
-        spec.addOrLabel(NON_EXISTENT_LABEL, NON_EXISTENT_LABEL);
-        List<InetSocketAddress> result = manager.getServers(spec);
-        Assert.assertEquals(1, result.size());
-        Assert.assertEquals(1, result.get(0).getPort());
     }
 
     @Test
@@ -73,36 +54,6 @@ public class KernelServerManagerTest {
         NodeSelectorSpec spec = new NodeSelectorSpec();
         List<InetSocketAddress> result = manager.getServers(spec);
         Assert.assertEquals(10, result.size());
-    }
-
-    @Test
-    public void testAndLabelSetOrLabelSetFailure1() throws Exception {
-        NodeSelectorSpec spec = new NodeSelectorSpec();
-        spec.addAndLabel(NON_EXISTENT_LABEL, NON_EXISTENT_LABEL);
-        spec.addOrLabel(LABEL1_PREFIX + "1", LABEL1_PREFIX + "1");
-        List<InetSocketAddress> result = manager.getServers(spec);
-        Assert.assertEquals(0, result.size());
-    }
-
-    @Test
-    public void testAndLabelSetOrLabelSetFailure2() throws Exception {
-        NodeSelectorSpec spec = new NodeSelectorSpec();
-        spec.addAndLabel(LABEL1_PREFIX + "1", LABEL1_PREFIX + "1");
-        spec.addOrLabel(NON_EXISTENT_LABEL, NON_EXISTENT_LABEL);
-        List<InetSocketAddress> result = manager.getServers(spec);
-        Assert.assertEquals(0, result.size());
-    }
-
-    @Test
-    public void testAndLabelSetOrLabelSetSuccess() throws Exception {
-        NodeSelectorSpec spec = new NodeSelectorSpec();
-        spec.addAndLabel(LABEL1_PREFIX + "1", LABEL1_PREFIX + "1");
-        spec.addAndLabel(LABEL2_PREFIX + "1", LABEL2_PREFIX + "1");
-        spec.addOrLabel(NON_EXISTENT_LABEL, NON_EXISTENT_LABEL);
-        spec.addOrLabel(LABEL1_PREFIX + "1", LABEL1_PREFIX + "1");
-        List<InetSocketAddress> result = manager.getServers(spec);
-        Assert.assertEquals(1, result.size());
-        Assert.assertEquals(1, result.get(0).getPort());
     }
 
     private void registerServers(KernelServerManager manager, int numOfServers) throws Exception {

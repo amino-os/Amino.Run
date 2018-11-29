@@ -42,7 +42,7 @@ public class DHTPolicyTest {
         for (int i = 0; i < regions.size(); i++) {
             oms.registerKernelServer(new ServerInfo(addresses[i], regions.get(i)));
             NodeSelectorSpec nodeSelector = new NodeSelectorSpec();
-            nodeSelector.addAndLabel("region", regions.get(i));
+            nodeSelector.addMatchLabelsItem("region", regions.get(i));
             List<InetSocketAddress> addressList = new ArrayList<>(Arrays.asList(addresses[i]));
             when(oms.getServers(nodeSelector)).thenReturn(addressList);
         }

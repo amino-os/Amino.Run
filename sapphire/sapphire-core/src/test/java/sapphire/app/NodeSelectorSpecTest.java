@@ -5,26 +5,26 @@ import org.junit.Test;
 public class NodeSelectorSpecTest {
 
     @Test
-    public void testAddNullOrLabels() {
+    public void testNullMatchLabels() {
         NodeSelectorSpec spec = new NodeSelectorSpec();
-        spec.addOrLabels(null);
+        spec.setMatchLabels(null);
     }
 
     @Test
-    public void testAddNullOrLabel() {
+    public void testaddMatchLabelsIteml() {
         NodeSelectorSpec spec = new NodeSelectorSpec();
-        spec.addOrLabel(null, null);
+        spec.addMatchLabelsItem(null, null);
     }
 
     @Test
-    public void testAddNullAndLabels() {
+    public void testsetMatchExpressions() {
         NodeSelectorSpec spec = new NodeSelectorSpec();
-        spec.addAndLabels(null);
+        spec.setMatchExpressions(null);
     }
 
     @Test
-    public void testAddNullAndLabel() {
+    public void testaddMatchExpressionsItem() {
         NodeSelectorSpec spec = new NodeSelectorSpec();
-        spec.addAndLabel(null, null);
+        spec.addMatchExpressionsItem(null);
     }
 }

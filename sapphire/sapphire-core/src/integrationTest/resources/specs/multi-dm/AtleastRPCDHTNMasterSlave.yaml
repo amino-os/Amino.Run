@@ -11,8 +11,8 @@ dmList:
 - configs: []
   name: sapphire.policy.scalability.LoadBalancedMasterSlaveSyncPolicy
 nodeSelectorSpec:
-  andLabels: !!map {}
-  orLabels: !!map {}
+  matchLabels: !!map {}
+  matchExpressions: []
 javaClassName: sapphire.demo.KVStore
 lang: java
 name: null

@@ -2,7 +2,9 @@ package sapphire.app;
 
 import java.io.Serializable;
 import java.util.*;
+import java.util.logging.Logger;
 import org.yaml.snakeyaml.Yaml;
+import sapphire.common.Utils;
 
 /**
  * Specification for node selection. Users use {@code NodeSelectorSpec} to specify on which nodes
@@ -11,99 +13,126 @@ import org.yaml.snakeyaml.Yaml;
  * <p>At present we only support specifying {@code NodeSelectorSpec} at sapphire object level. We
  * will consider support specifying {@code NodeSelectorSpec} at DM level in the future if necessary.
  *
- * <p>{@code NodeSelectorSpec} contains two label maps, a {@code orLabels} map and a {@code
- * andLabels} map. {@code orLabels} map and {@code andLabels} map are considered as selector used to
- * select nodes.
+ * <p>{@code NodeSelectorSpec} contains matchLabels of type map, a {@code matchLabels} map and a
+ * {@code matchExpressions} NodeSelectorRequirement. {@code matchLabels} map and {@code
+ * matchExpressions} NodeSelectorRequirement are considered as selector used to select nodes.
+ * currently matchLabels only used in future we will use the matchExpressions (list of
+ * NodeSelectorRequirement)
  *
- * <p>If {@code orLabels} map is not empty, then a node will be selected only if it contains any
- * label specified in {@code orLabels} map. If {@code andLabels} map is not empty, then a node will
- * be selected only if it contains all labels specified in {@code andLabels} map. If both {@code
- * orLabels} and {@code andLabels} are specified, then a node will be selected only if it contains
- * all labels in {@code andLabels} map <strong>and</strong> some label in {@code orLabels} map.
+ * <p>If {@code matchLabels} map is not empty, then a node will be selected only if it contains all
+ * label specified in {@code matchLabels} map.
  *
- * <p>By default, both {@code orLabels} map and {@code andLabels} map are empty which means no
- * selector will be applied in which case all nodes will be returned.
+ * <p>By default, both {@code matchLabels} map and {@code matchExpressions} list of
+ * NodeSelectorRequirement are empty which means no selector will be applied in which case all nodes
+ * will be returned.
  */
 public class NodeSelectorSpec implements Serializable {
-    public HashMap orLabels = new HashMap();
-    public HashMap andLabels = new HashMap();
 
-    public HashMap getOrLabels() {
-        return orLabels;
+    private Map<String, String> matchLabels = null;
+    private List<NodeSelectorRequirement> matchExpressions = null;
+    private static Logger logger = Logger.getLogger(NodeSelectorSpec.class.getName());
+
+    public Map<String, String> getMatchLabels() {
+        return matchLabels;
     }
 
-    public HashMap getAndLabels() {
-        return andLabels;
+    public void setMatchLabels(Map<String, String> matchLabels) {
+        if (matchLabels == null || matchLabels.isEmpty()) {
+            logger.warning("null or empty matchLabels are not allowed");
+            return;
+        }
+        Set<Map.Entry<String, String>> entries = matchLabels.entrySet();
+        for (Map.Entry<String, String> entry : entries) {
+            if (!Utils.validateLabelKey(entry.getKey())
+                    || !Utils.validateLabelValue(entry.getValue())) {
+                logger.warning("validateLabelValue /validateLabelValue failed ");
+                return;
+            }
+        }
+        this.matchLabels = matchLabels;
     }
 
-    /**
-     * Adds the key & value into {@code andLabels} map Null key/value or empty key/value is ignored.
-     *
-     * @param key
-     * @param value
-     */
-    public void addAndLabel(String key, String value) {
+    public void addMatchLabelsItem(String key, String value) {
         if (key == null || key.isEmpty() || value == null || value.isEmpty()) {
+            logger.warning("null or empty key/value are not allowed");
             return;
         }
-        this.andLabels.put(key, value);
+        if (!Utils.validateLabelKey(key) || !Utils.validateLabelValue(value)) {
+            logger.warning("validateLabelValue /validateLabelValue failed ");
+            return;
+        }
+
+        if (this.matchLabels == null) {
+            this.matchLabels = new HashMap<String, String>();
+        }
+        this.matchLabels.put(key, value);
+        return;
     }
 
-    /**
-     * Adds the given key & value into the {@code andLabels} map Null key/value is ignored.
-     *
-     * @param keyValues
-     */
-    public void addAndLabels(HashMap keyValues) {
-        if (keyValues == null) {
-            return;
-        }
-        this.andLabels.putAll(keyValues);
+    public List<NodeSelectorRequirement> getMatchExpressions() {
+        return matchExpressions;
     }
 
-    /**
-     * Adds the label into {@code orLabels} map. Null key/value or empty key/value is ignored.
-     *
-     * @param key
-     * @param value
-     */
-    public void addOrLabel(String key, String value) {
-        if (key == null || key.isEmpty() || value == null || value.isEmpty()) {
+    public void setMatchExpressions(List<NodeSelectorRequirement> matchExpressions) {
+        if (matchExpressions == null || matchExpressions.isEmpty()) {
+            logger.warning("null or empty matchExpressions are not allowed");
             return;
         }
 
-        this.orLabels.put(key, value);
+        for (int i = 0; i < matchExpressions.size(); i++) {
+            NodeSelectorRequirement matchExpressionsItem = matchExpressions.get(i);
+            if (!Utils.validateNodeSelectRequirement(
+                    matchExpressionsItem.key,
+                    matchExpressionsItem.operator,
+                    matchExpressionsItem.values)) {
+                logger.warning("validateNodeSelectRequirement failed");
+                return;
+            }
+        }
+
+        this.matchExpressions = matchExpressions;
     }
 
-    /**
-     * Adds the given label map into the {@code orLabels} map Null keyValues map is ignored.
-     *
-     * @param keyValues
-     */
-    public void addOrLabels(HashMap keyValues) {
-        if (keyValues == null) {
+    public void addMatchExpressionsItem(NodeSelectorRequirement matchExpressionsItem) {
+        if (matchExpressionsItem == null) {
+            return;
+        }
+        if (!Utils.validateNodeSelectRequirement(
+                matchExpressionsItem.key,
+                matchExpressionsItem.operator,
+                matchExpressionsItem.values)) {
+            logger.warning("validateNodeSelectRequirement failed");
             return;
         }
 
-        this.orLabels.putAll(keyValues);
+        if (this.matchExpressions == null) {
+            this.matchExpressions = new ArrayList<NodeSelectorRequirement>();
+        }
+        this.matchExpressions.add(matchExpressionsItem);
+        return;
+    }
+
+    @Override
+    public boolean equals(java.lang.Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        NodeSelectorSpec specSelector = (NodeSelectorSpec) o;
+        return Objects.equals(this.matchExpressions, specSelector.matchExpressions)
+                && Objects.equals(this.matchLabels, specSelector.matchLabels);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(matchExpressions, matchLabels);
     }
 
     @Override
     public String toString() {
         Yaml yaml = new Yaml();
         return yaml.dump(this);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        NodeSelectorSpec that = (NodeSelectorSpec) o;
-        return Objects.equals(orLabels, that.orLabels) && Objects.equals(andLabels, that.andLabels);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(orLabels, andLabels);
     }
 }

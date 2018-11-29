@@ -3,8 +3,8 @@
 constructorName: null
 javaClassName: sapphire.demo.KVStore
 nodeSelectorSpec:
-  andLabels: !!map {}
-  orLabels: !!map {}
+  matchLabels: !!map {}
+  matchExpressions: []
 lang: java
 name: null
 sourceFileLocation: null

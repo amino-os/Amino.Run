@@ -6,6 +6,8 @@ import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 import sapphire.kernel.common.KernelOID;
@@ -174,6 +176,78 @@ public class UtilsTest {
 
         Clazz clazz = new Clazz();
         Assert.assertFalse(Utils.isImmutableMethod(clazz.getClass(), "mutable", params));
+    }
+
+    @Test
+    public void testvalidateNodeSelectRequirement_nullKey() {
+        String key = null;
+        String[] values = {"abc"};
+        List<String> vals = Arrays.asList(values);
+        Assert.assertFalse(Utils.validateNodeSelectRequirement(key, Utils.In, vals));
+    }
+
+    @Test
+    public void testvalidateNodeSelectRequirement_nullOp() {
+        String key = "key";
+        String[] values = {key};
+        List<String> vals = Arrays.asList(values);
+        Assert.assertFalse(Utils.validateNodeSelectRequirement(key, null, vals));
+    }
+
+    @Test
+    public void testvalidateNodeSelectRequirement_InvOp() {
+        String key = "key";
+        String[] values = {key};
+        List<String> vals = Arrays.asList(values);
+        Assert.assertFalse(Utils.validateNodeSelectRequirement(key, key, vals));
+    }
+
+    @Test
+    public void testvalidateNodeSelectRequirement_valZeroInOP() {
+        String key = "key";
+        String[] values = {};
+        List<String> vals = Arrays.asList(values);
+        Assert.assertFalse(Utils.validateNodeSelectRequirement(key, Utils.In, vals));
+    }
+
+    @Test
+    public void testvalidateNodeSelectRequirement_valZeroEqlOP() {
+        String key = "key";
+        String[] values = {};
+        List<String> vals = Arrays.asList(values);
+        Assert.assertFalse(Utils.validateNodeSelectRequirement(key, Utils.Equals, vals));
+    }
+
+    @Test
+    public void testvalidateNodeSelectRequirement_val2EqlOP() {
+        String key = "key";
+        String[] values = {"key", "key2"};
+        List<String> vals = Arrays.asList(values);
+        Assert.assertFalse(Utils.validateNodeSelectRequirement(key, Utils.Equals, vals));
+    }
+
+    @Test
+    public void testvalidateNodeSelectRequirement_val2ExistsOP() {
+        String key = "key";
+        String[] values = {"key", "key2"};
+        List<String> vals = Arrays.asList(values);
+        Assert.assertFalse(Utils.validateNodeSelectRequirement(key, Utils.GreaterThan, vals));
+    }
+
+    @Test
+    public void testvalidateNodeSelectRequirement_Invval1ExistsOP() {
+        String key = "key";
+        String[] values = {"key"};
+        List<String> vals = Arrays.asList(values);
+        Assert.assertFalse(Utils.validateNodeSelectRequirement(key, Utils.GreaterThan, vals));
+    }
+
+    @Test
+    public void testvalidateNodeSelectRequirement_Succ() {
+        String key = "key";
+        String[] values = {key};
+        List<String> vals = Arrays.asList(values);
+        Assert.assertTrue(Utils.validateNodeSelectRequirement(key, Utils.In, vals));
     }
 
     private static class Clazz {

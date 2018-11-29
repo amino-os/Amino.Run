@@ -120,11 +120,6 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
         }
 
         @Override
-        public void initialize() {
-            this.initializeRaftServer();
-        }
-
-        @Override
         public int appendEntries(
                 int term,
                 UUID leader,
@@ -161,11 +156,6 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
          * this.raftServer.addServer(consensusServer.getRaftServer().getMyServerID(),
          * consensusServer.getRaftServer()); } }
          */
-
-        /** Initialize the local RAFT Server instance. */
-        public void initializeRaftServer() {
-            raftServer = new sapphire.policy.util.consensus.raft.Server(this);
-        }
 
         /**
          * Initialize the RAFT protocol with the specified set of servers.

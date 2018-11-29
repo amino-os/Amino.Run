@@ -1,11 +1,8 @@
 package sapphire.policy.atleastoncerpc;
 
 import java.util.ArrayList;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.FutureTask;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import sapphire.common.AppExceptionWrapper;
 import sapphire.policy.DefaultSapphirePolicy;
 
 // AtLeastOnceRPC: automatically retry RPCs for bounded amount of time
@@ -22,34 +19,24 @@ public class AtLeastOnceRPCPolicy extends DefaultSapphirePolicy {
             this.timeoutMilliSeconds = timeoutMilliSeconds;
         }
 
-        private Object doOnRPC(String method, ArrayList<Object> params) throws Exception {
-            try {
-                return super.onRPC(method, params);
-            } catch (Exception e) {
-                return this.onRPC(method, params);
-            }
-        }
-
         @Override
-        public Object onRPC(String method, ArrayList<Object> params)
-                throws TimeoutException, ExecutionException, InterruptedException {
-            FutureTask<?> timeoutTask = null;
-            final AtLeastOnceRPCClientPolicy clientPolicy = this;
-            final String method_ = method;
-            final ArrayList<Object> params_ = params;
-
-            timeoutTask =
-                    new FutureTask<Object>(
-                            new Callable<Object>() {
-                                @Override
-                                public Object call() throws Exception {
-                                    return clientPolicy.doOnRPC(method_, params_);
-                                }
-                            });
-
-            new Thread(timeoutTask).start();
-            Object result = timeoutTask.get(this.timeoutMilliSeconds, TimeUnit.MILLISECONDS);
-            return result;
+        public Object onRPC(String method, ArrayList<Object> params) throws Exception {
+            long startTime = System.currentTimeMillis();
+            Exception lastException = null;
+            do { // Retry until timeout expires
+                try {
+                    return super.onRPC(method, params);
+                } catch (AppExceptionWrapper e) {
+                    throw e; // Don't retry on application exceptions
+                } catch (Exception e) {
+                    lastException = e; // So we can throw this after the timeout.
+                    continue; // Retry all non-application exceptions, e.g. network failures.
+                }
+            } while (System.currentTimeMillis() - startTime < timeoutMilliSeconds);
+            TimeoutException e =
+                    new TimeoutException("Retry timeout exceeded in AtLeastOnceRPCPolicy");
+            e.initCause(lastException); // Legacy constructor lacks cause argument;
+            throw e;
         }
     }
 

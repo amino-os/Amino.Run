@@ -202,7 +202,8 @@ public class GraalStubGenerator {
                     + " }\n";
 
     // String format following these inputs:
-    // functionName: this is function name in java stub, if there is special chars in ruby the char will be replaced.
+    // functionName: this is function name in java stub, if there is special chars in ruby the char
+    // will be replaced.
     // functionName: this is function name in original SO object in native language.
     // packageName
     // className
@@ -281,15 +282,17 @@ public class GraalStubGenerator {
     // Ruby function name may contain !, ?, = which are invalid characters in java function
     // name, so we need to replace them.
     private static String[][] strsToReplace = {
-            {"!", "$exclamation$"},
-            {"?", "$question$"},
-            {"~", "$tilde$"},
-            {"<", "$less$"},
-            {">", "$greater$"},
-            {"&", "$bitAnd$"},
-            {"^", "$bitOr$"},
-            {"|", "$or$"},
-            {"=", "$equal$"}};
+        {"!", "$exclamation$"},
+        {"?", "$question$"},
+        {"~", "$tilde$"},
+        {"<", "$less$"},
+        {">", "$greater$"},
+        {"&", "$bitAnd$"},
+        {"^", "$bitOr$"},
+        {"|", "$or$"},
+        {"=", "$equal$"}
+    };
+
     private String convertFunctionName(String functionName) {
         for (String[] strs : strsToReplace) {
             functionName = functionName.replace(strs[0], strs[1]);
@@ -319,7 +322,13 @@ public class GraalStubGenerator {
 
                 String convertFunctionName = convertFunctionName(m);
                 String function =
-                        String.format(functionStringFormat, convertFunctionName, m, packageName, className, convertFunctionName);
+                        String.format(
+                                functionStringFormat,
+                                convertFunctionName,
+                                m,
+                                packageName,
+                                className,
+                                convertFunctionName);
                 res.append(function);
             }
         }

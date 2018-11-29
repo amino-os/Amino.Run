@@ -6,7 +6,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-
 import sapphire.policy.DefaultSapphirePolicy;
 
 // AtLeastOnceRPC: automatically retry RPCs for bounded amount of time
@@ -32,7 +31,8 @@ public class AtLeastOnceRPCPolicy extends DefaultSapphirePolicy {
         }
 
         @Override
-        public Object onRPC(String method, ArrayList<Object> params) throws TimeoutException, ExecutionException, InterruptedException {
+        public Object onRPC(String method, ArrayList<Object> params)
+                throws TimeoutException, ExecutionException, InterruptedException {
             FutureTask<?> timeoutTask = null;
             final AtLeastOnceRPCClientPolicy clientPolicy = this;
             final String method_ = method;

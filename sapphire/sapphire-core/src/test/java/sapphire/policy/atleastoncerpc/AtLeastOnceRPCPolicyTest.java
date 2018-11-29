@@ -67,8 +67,10 @@ public class AtLeastOnceRPCPolicyTest {
         Object result = null;
         try {
             result = this.clientPolicy.onRPC("foo", new ArrayList<Object>());
-        }
-        catch(ExecutionException e) { // Sometimes the TimeoutException is wrapped in one or more ExecutionExceptions.
+        } catch (
+                ExecutionException
+                        e) { // Sometimes the TimeoutException is wrapped in one or more
+                             // ExecutionExceptions.
             while (e != null) {
                 if (e.getCause() instanceof TimeoutException) {
                     throw (TimeoutException) e.getCause();

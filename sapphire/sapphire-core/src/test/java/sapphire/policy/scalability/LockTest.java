@@ -15,8 +15,10 @@ public class LockTest {
         Lock lock = new Lock(clientId, lockTimeoutInMillis);
         // sleep for less than lockTimeout
         Thread.sleep(Math.max(0, lockTimeoutInMillis - 20));
-        // Note: sleep is not accurate, so we check below against currentTimeMillis to avoid false failures.
-        Assert.assertFalse("lock should not expire within timeout",
+        // Note: sleep is not accurate, so we check below against currentTimeMillis to avoid false
+        // failures.
+        Assert.assertFalse(
+                "lock should not expire within timeout",
                 System.currentTimeMillis() - startTime < lockTimeoutInMillis && lock.isExpired());
     }
 
@@ -34,16 +36,21 @@ public class LockTest {
         Lock lock = new Lock(clientId, lockTimeoutInMillis);
         // sleep for less than lockTimeout
         Thread.sleep(Math.max(0, lockTimeoutInMillis - 20));
-        // Note: sleep is not accurate, so we check below against currentTimeMillis to avoid false failures.
-        Assert.assertTrue("renew should succeed within timeout",
-                System.currentTimeMillis() - startTime < lockTimeoutInMillis && lock.renew(clientId));
+        // Note: sleep is not accurate, so we check below against currentTimeMillis to avoid false
+        // failures.
+        Assert.assertTrue(
+                "renew should succeed within timeout",
+                System.currentTimeMillis() - startTime < lockTimeoutInMillis
+                        && lock.renew(clientId));
     }
 
     @Test
     public void testLockRenewFailedWithInvalidClientId() throws Exception {
         Lock lock = new Lock(clientId, lockTimeoutInMillis);
-        Assert.assertFalse("renew should fail because client id does not match", lock.renew("invalidclient"));
-        Assert.assertEquals("client id of the lock should not change", clientId, lock.getClientId());
+        Assert.assertFalse(
+                "renew should fail because client id does not match", lock.renew("invalidclient"));
+        Assert.assertEquals(
+                "client id of the lock should not change", clientId, lock.getClientId());
     }
 
     @Test
@@ -81,7 +88,9 @@ public class LockTest {
         // sleep for less than lockTimeout
         Lock lock = new Lock(clientId, Math.max(0, lockTimeoutInMillis - 20));
         Assert.assertFalse(
-                "obtain lock should fail if lock is not expired", System.currentTimeMillis() - startTime < lockTimeoutInMillis && lock.obtain(newClientId));
+                "obtain lock should fail if lock is not expired",
+                System.currentTimeMillis() - startTime < lockTimeoutInMillis
+                        && lock.obtain(newClientId));
         if (System.currentTimeMillis() - startTime < lockTimeoutInMillis) {
             Assert.assertEquals("lock client id should not changed", clientId, lock.getClientId());
         }

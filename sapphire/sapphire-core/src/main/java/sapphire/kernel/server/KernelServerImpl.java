@@ -216,28 +216,17 @@ public class KernelServerImpl implements KernelServer {
             return;
         }
 
-        List<SapphirePolicy.SapphireServerPolicy> serverPoliciesToRemove =
-                new ArrayList<SapphirePolicy.SapphireServerPolicy>();
         KernelOID oid = serverPolicy.$__getKernelOID();
 
         /**
-         * Create a list of ServerPolicy and associated ServerPolicies in the chain, which needs to
-         * be explicitly removed from the local KernelServer. The associated ServerPolicy
-         * KernelObjects will be moved to the new Server when the first KernelObject is moved. The
-         * remaining KernelObject in the local KernelServer should be explicitly removed. The new
-         * KernelServer address needs to be registered with the OMS explicitly for these associated
-         * KernelObjects.
+         * The associated ServerPolicy KernelObjects will be moved to the new Server when the first
+         * KernelObject is moved. The associated KernelObjects in the local KernelServer should be
+         * explicitly removed. These KernelObjects with new KernelServer address are registered with
+         * the OMS.
          */
-        // Add the firstServerPolicy to the list.
-        serverPoliciesToRemove.add(serverPolicy);
-        // Add the ServerPolicies in the chain to the list, so that the associated
-        // KernelObjects are removed from the local KernelServer.
-        while (serverPolicy.getNextServerPolicy() != null) {
-            serverPolicy = serverPolicy.getNextServerPolicy();
-            serverPoliciesToRemove.add(serverPolicy);
-        }
-
         KernelObject object = objectManager.lookupObject(oid);
+        // TODO: Coalesce only the first server policy is enough ?? Moving complete chain of
+        // associated server policies.
         object.coalesce();
 
         logger.fine("Moving object " + oid.toString() + " to " + host.toString());
@@ -261,16 +250,15 @@ public class KernelServerImpl implements KernelServer {
                     "Failed to create policy stub object on destination server.", e);
         }
 
-        // Register the moved associated KernelObjects to OMS with the new KernelServer address.
-        // Then, remove the associated KernelObjects from the local KernelServer.
-        for (SapphirePolicy.SapphireServerPolicy serverPolicyToRemove : serverPoliciesToRemove) {
+        // Remove the associated KernelObjects from the local KernelServer.
+        for (; serverPolicy != null; serverPolicy = serverPolicy.getNextServerPolicy()) {
             try {
-                serverPolicyToRemove.onDestroy();
-                objectManager.removeObject(serverPolicyToRemove.$__getKernelOID());
+                serverPolicy.onDestroy();
+                objectManager.removeObject(serverPolicy.$__getKernelOID());
             } catch (KernelObjectNotFoundException e) {
                 String msg =
                         "Could not find object to remove in this server. Oid:"
-                                + serverPolicyToRemove.$__getKernelOID().getID();
+                                + serverPolicy.$__getKernelOID().getID();
                 logger.warning(msg);
             }
         }

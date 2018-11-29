@@ -67,8 +67,6 @@ public class DHTPolicy extends DefaultSapphirePolicy {
         private static Logger logger = Logger.getLogger(DHTGroupPolicy.class.getName());
         private int numOfShards = DEFAULT_NUM_OF_SHARDS;
         private DHTChord dhtChord;
-        private List<InetSocketAddress> addressList;
-        private int crntServerAddress = 0;
         private DHTServerPolicy dhtServerPolicy;
 
         @Override
@@ -95,9 +93,12 @@ public class DHTPolicy extends DefaultSapphirePolicy {
                 boolean pinned = dhtServerPolicy.isAlreadyPinned();
 
                 if (!pinned) {
-                    addressList = sapphire_getAddressList(spec.getNodeSelectorSpec(), region);
-                    pin_to_server(server);
+                    pin_to_server(server, regions.get(0));
                 }
+
+                // TODO: Current implementation assumes shards are spread out across regions.
+                // This assumption may not be true if the policy wants to locate all shards per
+                // region.
 
                 // Create replicas based on annotation
                 for (int i = 1; i < numOfShards; i++) {
@@ -105,16 +106,15 @@ public class DHTPolicy extends DefaultSapphirePolicy {
                     if (region == null) {
                         throw new IllegalStateException("no region available for DHT DM");
                     }
-                    logger.info(String.format("Creating shard %s in region %s", i, region));
 
-                    // TODO (Sungwook, 2018-10-2) Passing processedPolicies may not be necessary as
-                    // they are already available.
+                    logger.info(String.format("Creating shard %s in region %s", i, region));
                     SapphireServerPolicy replica =
                             dhtServerPolicy.sapphire_replicate(
                                     server.getProcessedPolicies(), region);
 
+                    // TODO: update addReplica() to use pinned and update below to use addReplica()
                     if (!pinned) {
-                        pin_to_server(replica);
+                        pin_to_server(replica, region);
                     }
                 }
             } catch (RemoteException e) {
@@ -160,9 +160,11 @@ public class DHTPolicy extends DefaultSapphirePolicy {
          * @throws SapphireObjectNotFoundException
          * @throws SapphireObjectReplicaNotFoundException
          */
-        private void pin_to_server(SapphireServerPolicy serverPolicy)
+        private void pin_to_server(SapphireServerPolicy serverPolicy, String region)
                 throws NoKernelServerFoundException, RemoteException,
                         SapphireObjectNotFoundException, SapphireObjectReplicaNotFoundException {
+            List<InetSocketAddress> addressList;
+            addressList = sapphire_getAddressList(spec.getNodeSelectorSpec(), region);
             if (addressList == null || addressList.isEmpty()) {
                 String msg =
                         String.format(
@@ -171,14 +173,7 @@ public class DHTPolicy extends DefaultSapphirePolicy {
                 logger.log(Level.SEVERE, msg);
                 throw new NoKernelServerFoundException();
             }
-            dhtServerPolicy.sapphire_pin_to_server(
-                    serverPolicy, addressList.get(crntServerAddress));
-
-            // Switch to another server for distribution with round robin fashion.
-            crntServerAddress++;
-            if (crntServerAddress >= addressList.size()) {
-                crntServerAddress = 0;
-            }
+            dhtServerPolicy.sapphire_pin_to_server(serverPolicy, addressList.get(0));
         }
     }
 }

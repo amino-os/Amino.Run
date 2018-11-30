@@ -472,6 +472,8 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
         protected KernelOID oid;
         protected SapphireObjectID sapphireObjId;
 
+        static Logger logger = Logger.getLogger("sapphire.policy.SapphirePolicyLibrary");
+
         protected OMSServer oms() {
             return GlobalKernelReferences.nodeServer.oms;
         }
@@ -527,19 +529,48 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
             return sapphireObjId;
         }
 
+        /**
+         * Creates a replica based on replicaSource and pin to the dest host if not pinned before.
+         *
+         * @param replicaSource server policy where the replica creation operation will be
+         *     performed.
+         * @param dest
+         * @param region
+         * @param pinned whether the policy chain was already pinned by downstream policy.
+         * @return newly created replica.
+         * @throws RemoteException
+         * @throws SapphireObjectNotFoundException
+         * @throws SapphireObjectReplicaNotFoundException
+         */
         protected SapphireServerPolicy addReplica(
-                SapphireServerPolicy replicaSource, InetSocketAddress dest, String region)
+                SapphireServerPolicy replicaSource,
+                InetSocketAddress dest,
+                String region,
+                boolean pinned)
                 throws RemoteException, SapphireObjectNotFoundException,
                         SapphireObjectReplicaNotFoundException {
             SapphireServerPolicy replica =
                     replicaSource.sapphire_replicate(replicaSource.getProcessedPolicies(), region);
+            if (pinned) {
+                // This chain was already pinned by the downstream policy; hence, skips pinning.
+                return replica;
+            }
+
             try {
                 replicaSource.sapphire_pin_to_server(replica, dest);
                 updateReplicaHostName(replica, dest);
             } catch (Exception e) {
+                String msgDetail =
+                        String.format(
+                                "Region:%s Dest:%s ReplicaSrc:%s", region, dest, replicaSource);
+                logger.log(Level.SEVERE, "Repica pinning failed. " + msgDetail, e);
                 try {
                     removeReplica(replica);
                 } catch (Exception innerException) {
+                    logger.log(
+                            Level.WARNING,
+                            "Replica removal failed after pinning has failed. " + msgDetail,
+                            e);
                 }
                 throw e;
             }

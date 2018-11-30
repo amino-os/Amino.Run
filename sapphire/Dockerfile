@@ -26,6 +26,8 @@ ENV GRAALVM_HOME=/$GRAAL_VERSION
 ENV JAVA_HOME=$GRAALVM_HOME
 ENV PATH=$GRAALVM_HOME/bin:$PATH
 
+# Install GraalVM Ruby component package
+RUN gu install ruby
 
 # Downloading project related dependencies 
 RUN bash gradlew build 

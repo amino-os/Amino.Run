@@ -71,12 +71,10 @@ public class DefaultSapphirePolicy extends SapphirePolicy {
              * adding the new ServerPolicyStub, so that any modified fields are updated. Applicable
              * in scenarios like Migration and Multi-DM replica creation.
              */
-            if (servers.contains(server) == true) {
+            if (servers.contains(server)) {
                 servers.remove(server);
-                servers.add(server);
-            } else {
-                servers.add(server);
             }
+            servers.add(server);
         }
 
         @Override

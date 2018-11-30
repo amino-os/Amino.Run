@@ -234,6 +234,8 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
 
                 // Register the first replica, which has already been created.
                 ServerPolicy consensusServer = (ServerPolicy) server;
+                // Create additional replicas, one per region. TODO:  Create N-1 replicas on
+                // different servers in the same zone.
                 // Create additional replicas as per the nodeSelector spec.
                 for (int i = 1; i < addressList.size(); i++) {
                     addReplica(consensusServer, addressList.get(i), region);

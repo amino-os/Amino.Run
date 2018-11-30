@@ -185,17 +185,6 @@ public class KernelServerManager {
     }
 
     /**
-     * Gets the first server in the region
-     *
-     * @param region
-     * @return
-     * @deprecated Please use {@link #getServers(NodeSelectorSpec)}
-     */
-    public InetSocketAddress getFirstServerInRegion(String region) {
-        return regions.get(region).get(0);
-    }
-
-    /**
      * Gets the best suitable server from the given NodeSelector
      *
      * @param spec

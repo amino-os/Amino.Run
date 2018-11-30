@@ -14,6 +14,7 @@ import org.junit.*;
 import sapphire.app.SapphireObjectServer;
 import sapphire.app.SapphireObjectSpec;
 import sapphire.common.SapphireObjectID;
+import sapphire.demo.Coordinator;
 import sapphire.demo.KVStore;
 import sapphire.kernel.server.KernelServerImpl;
 import sapphire.policy.serializability.TransactionAlreadyStartedException;
@@ -416,6 +417,42 @@ public class SimpleDMIntegrationTest {
 
         /* verify the restore value */
         Assert.assertEquals(preValue, store.get(key));
+    }
+
+    @Test
+    public void runTwoPCCohortTest() throws Exception {
+        SapphireObjectSpec kvStoreSpec = getSapphireObjectSpecForDM("TwoPCCohortDM.yaml");
+        SapphireObjectID store1SapphireObjectID =
+                sapphireObjectServer.createSapphireObject(kvStoreSpec.toString());
+        KVStore store1 =
+                (KVStore) sapphireObjectServer.acquireSapphireObjectStub(store1SapphireObjectID);
+        SapphireObjectID store2SapphireObjectID =
+                sapphireObjectServer.createSapphireObject(kvStoreSpec.toString());
+        KVStore store2 =
+                (KVStore) sapphireObjectServer.acquireSapphireObjectStub(store1SapphireObjectID);
+        String key1 = "k1";
+        String value1 = "v1";
+        String key2 = "k2";
+        String value2 = "v2";
+        store1.set(key2, value2);
+        store1.set(key1, value1);
+        store2.set(key2, value2);
+        SapphireObjectSpec coordinatoreSpec = getSapphireObjectSpecForDM("TwoPCCoordinatorDM.yaml");
+        SapphireObjectID coordinatorSapphireObjectID =
+                sapphireObjectServer.createSapphireObject(
+                        coordinatoreSpec.toString(), store1, store2);
+        Coordinator coordinator =
+                (Coordinator)
+                        sapphireObjectServer.acquireSapphireObjectStub(coordinatorSapphireObjectID);
+
+        try {
+            coordinator.migrate(key1);
+            Assert.assertEquals(store2.get(key1), value1);
+            // Verifying the Rollback Usecase
+            coordinator.migrate(key2);
+        } catch (Exception e) {
+            Assert.assertEquals(store1.get(key2), value2);
+        }
     }
 
     @After

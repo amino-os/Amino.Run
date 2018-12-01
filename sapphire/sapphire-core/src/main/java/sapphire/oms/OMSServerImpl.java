@@ -47,6 +47,7 @@ import sapphire.runtime.Sapphire;
 public class OMSServerImpl implements OMSServer, SapphireObjectServer {
 
     private static Logger logger = Logger.getLogger("sapphire.oms.OMSServerImpl");
+    private static String SERVICE_PORT = "--servicePort";
 
     private GlobalKernelObjectManager kernelObjectManager;
     private KernelServerManager serverManager;
@@ -338,25 +339,29 @@ public class OMSServerImpl implements OMSServer, SapphireObjectServer {
     }
 
     public static void main(String args[]) {
-        if (args.length != 2) {
+        if (args.length < 2) {
             System.out.println("Invalid arguments to OMS.");
-            System.out.println("[IP] [port]");
+            System.out.println("[IP] [port] [servicePort]");
             return;
         }
 
         int port = 1099;
+        int servicePort = 0;
         try {
             port = Integer.parseInt(args[1]);
+            if (args.length > 2) {
+                servicePort = Integer.parseInt(parseServicePort(args[2]));
+            }
         } catch (NumberFormatException e) {
             System.out.println("Invalid arguments to OMS.");
-            System.out.println("[IP] [port]");
+            System.out.println("[IP] [port] [servicePort]");
             return;
         }
 
         System.setProperty("java.rmi.server.hostname", args[0]);
         try {
             OMSServerImpl oms = new OMSServerImpl();
-            OMSServer omsStub = (OMSServer) UnicastRemoteObject.exportObject(oms, 0);
+            OMSServer omsStub = (OMSServer) UnicastRemoteObject.exportObject(oms, servicePort);
             Registry registry = LocateRegistry.createRegistry(port);
             registry.rebind("SapphireOMS", omsStub);
 
@@ -364,7 +369,7 @@ public class OMSServerImpl implements OMSServer, SapphireObjectServer {
             KernelServer localKernelServer =
                     new KernelServerImpl(new InetSocketAddress(args[0], port), oms);
             KernelServer localKernelServerStub =
-                    (KernelServer) UnicastRemoteObject.exportObject(localKernelServer, 0);
+                    (KernelServer) UnicastRemoteObject.exportObject(localKernelServer, servicePort);
             registry.rebind("SapphireKernelServer", localKernelServerStub);
 
             logger.info("OMS ready");
@@ -474,5 +479,13 @@ public class OMSServerImpl implements OMSServer, SapphireObjectServer {
      */
     public ArrayList<KernelOID> getAllKernelObjects() throws RemoteException {
         return kernelObjectManager.getAllKernelObjects();
+    }
+
+    private static String parseServicePort(String servicePort) {
+        String port = null;
+        if (servicePort != null) {
+            port = servicePort.substring(SERVICE_PORT.length() + 1);
+        }
+        return port;
     }
 }

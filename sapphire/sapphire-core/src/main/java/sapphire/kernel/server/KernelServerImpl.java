@@ -36,6 +36,7 @@ public class KernelServerImpl implements KernelServer {
     private static String LABEL_OPT = "--label";
     private static String OPT_SEPARATOR = "=";
     private static String LABEL_SEPARATOR = ",";
+    private static String SERVICE_PORT = "--servicePort";
 
     private InetSocketAddress host;
     private String region;
@@ -402,25 +403,26 @@ public class KernelServerImpl implements KernelServer {
             omsHost = new InetSocketAddress(args[2], Integer.parseInt(args[3]));
             System.setProperty("java.rmi.server.hostname", host.getAddress().getHostAddress());
 
+            int servicePort = 0;
             // TODO: remove region argument
             // Keep it for the time being to maintain backward compatible
             String region = host.toString();
             String labelStr = "";
             if (args.length > 4) {
-                if (!args[4].startsWith(LABEL_OPT)) {
-                    region = args[4];
-                } else {
-                    labelStr = args[4];
+                for (int i = 4; i < args.length; i++) {
+                    if (args[i].startsWith(LABEL_OPT)) {
+                        labelStr = args[i];
+                    } else if (args[i].startsWith(SERVICE_PORT)) {
+                        servicePort = Integer.parseInt(parseServicePort(args[i]));
+                    } else {
+                        region = args[i];
+                    }
                 }
             }
-
-            if (args.length > 5) {
-                labelStr = args[5];
-            }
-
             // Bind server in registry
             KernelServerImpl server = new KernelServerImpl(host, omsHost);
-            KernelServer stub = (KernelServer) UnicastRemoteObject.exportObject(server, 0);
+            KernelServer stub =
+                    (KernelServer) UnicastRemoteObject.exportObject(server, servicePort);
             Registry registry = LocateRegistry.createRegistry(Integer.parseInt(args[1]));
             registry.rebind("SapphireKernelServer", stub);
             server.setRegion(region);
@@ -468,7 +470,7 @@ public class KernelServerImpl implements KernelServer {
         System.out.println("Usage:");
         System.out.println(
                 String.format(
-                        "java -cp <classpath> %s hostIp hostPort omsIp omsPort [region] [--labels=comma,separated,labels",
+                        "java -cp <classpath> %s hostIp hostPort omsIp omsPort [region] [--labels=comma,separated,labels] [--servicePort=portnumber]",
                         KernelServerImpl.class.getName()));
     }
 
@@ -481,5 +483,13 @@ public class KernelServerImpl implements KernelServer {
             }
         }
         return labels;
+    }
+
+    private static String parseServicePort(String servicePort) {
+        String port = null;
+        if (servicePort != null) {
+            port = servicePort.substring(SERVICE_PORT.length() + 1);
+        }
+        return port;
     }
 }

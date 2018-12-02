@@ -159,7 +159,6 @@ public class KernelServerImpl implements KernelServer {
             logger.log(Level.INFO, "Added " + koid.getID() + " as SapphireServerPolicyLibrary");
 
             try {
-                // serverPolicy.initialize();
                 serverPolicy.onCreate(
                         serverPolicy.getGroup(), serverPolicy.getSapphireObjectSpec());
             } catch (Exception e) {

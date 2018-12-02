@@ -251,7 +251,7 @@ public class KernelServerImpl implements KernelServer {
         }
 
         // Remove the associated KernelObjects from the local KernelServer.
-        for (; serverPolicy != null; serverPolicy = serverPolicy.getNextServerPolicy()) {
+        do {
             try {
                 serverPolicy.onDestroy();
                 objectManager.removeObject(serverPolicy.$__getKernelOID());
@@ -261,7 +261,7 @@ public class KernelServerImpl implements KernelServer {
                                 + serverPolicy.$__getKernelOID().getID();
                 logger.warning(msg);
             }
-        }
+        } while ((serverPolicy = serverPolicy.getNextServerPolicy()) != null);
     }
 
     /**

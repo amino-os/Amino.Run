@@ -172,6 +172,7 @@ public class ServerTest {
         }
         raftServer[0].become(Server.State.CANDIDATE, FOLLOWER);
         Thread.sleep(100);
+        assertEquals("LEADER", raftServer[0].vState.getState().toString());
 
         String methodName = "public java.lang.String java.lang.Object.toString()";
         ArrayList<Object> args = new ArrayList<Object>();
@@ -184,9 +185,33 @@ public class ServerTest {
         raftServer[0].applyToStateMachine(obj);
         Thread.sleep(100);
 
-        assertEquals(1, raftServer[0].pState.log().size());
-        assertEquals(1, raftServer[1].pState.log().size());
-        assertEquals(1, raftServer[2].pState.log().size());
+        raftServer[0].applyToStateMachine(obj);
+        Thread.sleep(100);
+
+        // Verifying the entries on other raftServers, with that on the leader.
+        for (int i = 0; i < raftServer[0].pState.log().size(); i++) {
+            LogEntry leaderEntry = raftServer[0].pState.log().get(i);
+            LogEntry entry1 = raftServer[1].pState.log().get(i);
+            LogEntry entry2 = raftServer[2].pState.log().get(i);
+
+            // Matching Operation
+            assertEquals(leaderEntry.operation, entry1.operation);
+            // Matching Term
+            assertEquals(leaderEntry.term, entry1.term);
+
+            // Matching Operation
+            assertEquals(leaderEntry.operation, entry2.operation);
+            // Matching Term
+            assertEquals(leaderEntry.term, entry2.term);
+        }
+
+        Thread.sleep(1000);
+        // Verifying that post applying the logs, all clients are at the same
+        // LastApplied and CommitIndex.
+        assertEquals(raftServer[0].vState.getLastApplied(), raftServer[1].vState.getLastApplied());
+        assertEquals(raftServer[0].vState.getCommitIndex(), raftServer[1].vState.getCommitIndex());
+        assertEquals(raftServer[0].vState.getLastApplied(), raftServer[2].vState.getLastApplied());
+        assertEquals(raftServer[0].vState.getCommitIndex(), raftServer[2].vState.getCommitIndex());
     }
 
     @Test

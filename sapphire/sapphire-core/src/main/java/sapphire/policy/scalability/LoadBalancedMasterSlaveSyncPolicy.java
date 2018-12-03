@@ -46,7 +46,7 @@ public class LoadBalancedMasterSlaveSyncPolicy extends LoadBalancedMasterSlaveBa
             RequestReplicator replicator = new RequestReplicator(config, groupPolicy);
             replicator.open();
 
-            commitExecutor = new Committer(appObject, nextServerKernelObject, 0L, config);
+            commitExecutor = new Committer(appObject, 0L, config);
             commitExecutor.open();
             processor = new Processor(config, groupPolicy, commitExecutor, replicator);
             processor.open();

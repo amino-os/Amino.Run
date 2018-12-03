@@ -7,7 +7,7 @@ dmList:
   name: sapphire.policy.serializability.SerializableRPCPolicy
 nodeSelectorSpec:
   matchLabels: !!map {}
-  matchExpressions: []
+  nodeAffinity: null
 javaClassName: sapphire.demo.KVStore
 lang: java
 name: null

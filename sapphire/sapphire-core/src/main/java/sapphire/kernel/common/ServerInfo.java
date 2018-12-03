@@ -6,7 +6,10 @@ import java.util.*;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.logging.Logger;
+import sapphire.app.NodeAffinity;
 import sapphire.app.NodeSelectorRequirement;
+import sapphire.app.NodeSelectorTerm;
+import sapphire.common.LabelUtils;
 
 /** {@code ServerInfo} contains meta data of a kernel server. */
 public class ServerInfo implements Serializable {
@@ -59,7 +62,6 @@ public class ServerInfo implements Serializable {
                 return true;
             }
         }
-
         return false;
     }
 
@@ -89,7 +91,43 @@ public class ServerInfo implements Serializable {
         }
         return true;
     }
-    // TODO need to implement
+
+    public boolean matchNodeAffinity(NodeAffinity nodeAffinity) {
+        if (nodeAffinity == null) {
+            return true;
+        }
+        List<NodeSelectorTerm> terms = nodeAffinity.getRequireExpressions();
+        if ((terms == null) || (terms.size() == 0)) {
+            return true;
+        }
+        for (int i = 0; i < terms.size(); i++) {
+            NodeSelectorTerm term = terms.get(i);
+            List<NodeSelectorRequirement> MatchExpressions = term.getMatchExpressions();
+            List<NodeSelectorRequirement> MatchFields = term.getMatchFields();
+
+            // nil or empty term selects no objects
+            if (MatchExpressions == null && MatchFields == null) {
+                continue;
+            }
+            if (MatchExpressions.size() == 0 && MatchFields.size() == 0) {
+                continue;
+            }
+            if (MatchExpressions.size() != 0) {
+                if (!matchExpressions(MatchExpressions)) {
+                    continue;
+                }
+            }
+            if (MatchFields.size() != 0) {
+                if (!matchExpressions(MatchFields)) {
+                    continue;
+                }
+            }
+            return true;
+        }
+        return false;
+    }
+
+    // TODO need to validate & change the implement
     /**
      * Checks if the server contains <strong>all</strong> labels specified in the given label map.
      * If the specified label map is {@code null} or empty, we consider no selector is specified,
@@ -99,7 +137,69 @@ public class ServerInfo implements Serializable {
      * @return {@code true} if the server matches all matchExprs in the list; {@code false}
      *     otherwise. Returns {@code true} if the given matchExprs is {@code null} or empty.
      */
-    public boolean matchLabelExpressions(List<NodeSelectorRequirement> matchExprs) {
+
+    // There is a match in the following cases:
+    // (1) The operator is Exists and Labels has the Requirement's key.
+    // (2) The operator is In, Labels has the Requirement's key and Labels'
+    //     value for that key is in Requirement's value set.
+    // (3) The operator is NotIn, Labels has the Requirement's key and
+    //     Labels' value for that key is not in Requirement's value set.
+    // (4) The operator is DoesNotExist or NotIn and Labels does not have the
+    //     Requirement's key.
+    // (5) The operator is GreaterThanOperator or LessThanOperator, and Labels has
+    //     the Requirement's key and the corresponding value satisfies mathematical inequality.
+
+    public boolean matchExpressions(List<NodeSelectorRequirement> matchExprs) {
+        if ((matchExprs == null) || (matchExprs.size() == 0)) {
+            return true;
+        }
+
+        for (int i = 0; i < matchExprs.size(); i++) {
+            NodeSelectorRequirement matchExpItem = matchExprs.get(i);
+
+            switch (matchExpItem.operator) {
+                case LabelUtils.In:
+                case LabelUtils.Equals:
+                case LabelUtils.DoubleEquals:
+                    if (!this.labels.containsKey(matchExpItem.key)) {
+                        return false;
+                    }
+                    return matchExpItem.values.contains(this.labels.get(matchExpItem.key));
+                case LabelUtils.NotIn:
+                case LabelUtils.NotEquals:
+                    if (!this.labels.containsKey(matchExpItem.key)) {
+                        logger.warning("keys doesn't match");
+                        return true;
+                    }
+                    return !matchExpItem.values.contains(this.labels.get(matchExpItem.key));
+                case LabelUtils.Exists:
+                    return this.labels.containsKey(matchExpItem.key);
+                case LabelUtils.DoesNotExist:
+                    return !this.labels.containsKey(matchExpItem.key);
+                case LabelUtils.GreaterThan:
+                case LabelUtils.LessThan:
+                    if (!this.labels.containsKey(matchExpItem.key)) {
+                        return false;
+                    }
+                    long lsValue = Integer.parseInt(this.labels.get(matchExpItem.key));
+
+                    // There should be only one strValue in r.strValues, and can be converted to a
+                    // integer.
+                    if (matchExpItem.values.size() != 1) {
+                        logger.warning(
+                                "Invalid values count %+v of requirement %#v, for 'Gt', 'Lt' operators, exactly one value is required"
+                                        + matchExpItem.values.size()
+                                        + matchExpItem);
+                        return false;
+                    }
+                    long rValue = Integer.parseInt(matchExpItem.values.get(0));
+
+                    return ((matchExpItem.operator == LabelUtils.GreaterThan && lsValue > rValue)
+                            || (matchExpItem.operator == LabelUtils.LessThan && lsValue < rValue));
+                default:
+                    return false;
+            }
+        }
         return true;
     }
 }

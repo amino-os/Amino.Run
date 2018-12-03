@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.*;
 import java.util.logging.Logger;
 import org.yaml.snakeyaml.Yaml;
-import sapphire.common.Utils;
+import sapphire.common.LabelUtils;
 
 /**
  * Specification for node selection. Users use {@code NodeSelectorSpec} to specify on which nodes
@@ -14,52 +14,53 @@ import sapphire.common.Utils;
  * will consider support specifying {@code NodeSelectorSpec} at DM level in the future if necessary.
  *
  * <p>{@code NodeSelectorSpec} contains matchLabels of type map, a {@code matchLabels} map and a
- * {@code matchExpressions} NodeSelectorRequirement. {@code matchLabels} map and {@code
- * matchExpressions} NodeSelectorRequirement are considered as selector used to select nodes.
- * currently matchLabels only used in future we will use the matchExpressions (list of
- * NodeSelectorRequirement)
+ * {@code nodeAffinity} NodeAffinity. {@code matchLabels} map and {@code nodeAffinity} NodeAffinity
+ * are considered as selector used to select nodes.
  *
  * <p>If {@code matchLabels} map is not empty, then a node will be selected only if it contains all
  * label specified in {@code matchLabels} map.
  *
- * <p>By default, both {@code matchLabels} map and {@code matchExpressions} list of
- * NodeSelectorRequirement are empty which means no selector will be applied in which case all nodes
- * will be returned.
+ * <p>By default, both {@code matchLabels} map and {@code nodeAffinity} NodeAffinity are empty which
+ * means no selector will be applied in which case all nodes will be returned.
  */
 public class NodeSelectorSpec implements Serializable {
 
     private Map<String, String> matchLabels = null;
-    private List<NodeSelectorRequirement> matchExpressions = null;
+    private NodeAffinity nodeAffinity = null;
+
     private static Logger logger = Logger.getLogger(NodeSelectorSpec.class.getName());
 
     public Map<String, String> getMatchLabels() {
         return matchLabels;
     }
 
-    public void setMatchLabels(Map<String, String> matchLabels) {
+    public void setMatchLabels(Map<String, String> matchLabels) throws IllegalArgumentException {
         if (matchLabels == null || matchLabels.isEmpty()) {
-            logger.warning("null or empty matchLabels are not allowed");
+            this.matchLabels = matchLabels;
             return;
         }
         Set<Map.Entry<String, String>> entries = matchLabels.entrySet();
         for (Map.Entry<String, String> entry : entries) {
-            if (!Utils.validateLabelKey(entry.getKey())
-                    || !Utils.validateLabelValue(entry.getValue())) {
+            if (!LabelUtils.validateLabelKey(entry.getKey())
+                    || !LabelUtils.validateLabelValue(entry.getValue())) {
                 logger.warning("validateLabelValue /validateLabelValue failed ");
-                return;
+                throw new IllegalArgumentException(
+                        "invalid matchLabels are not allowed" + matchLabels);
             }
         }
         this.matchLabels = matchLabels;
     }
 
-    public void addMatchLabelsItem(String key, String value) {
+    public void addMatchLabelsItem(String key, String value) throws IllegalArgumentException {
         if (key == null || key.isEmpty() || value == null || value.isEmpty()) {
             logger.warning("null or empty key/value are not allowed");
-            return;
+            throw new IllegalArgumentException(
+                    "null or empty key/value are not allowed key:" + key + "value:" + value);
         }
-        if (!Utils.validateLabelKey(key) || !Utils.validateLabelValue(value)) {
+        if (!LabelUtils.validateLabelKey(key) || !LabelUtils.validateLabelValue(value)) {
             logger.warning("validateLabelValue /validateLabelValue failed ");
-            return;
+            throw new IllegalArgumentException(
+                    "Invalid input Argument are not allowed key:" + key + "value:" + value);
         }
 
         if (this.matchLabels == null) {
@@ -69,47 +70,18 @@ public class NodeSelectorSpec implements Serializable {
         return;
     }
 
-    public List<NodeSelectorRequirement> getMatchExpressions() {
-        return matchExpressions;
+    public NodeAffinity getNodeAffinity() {
+        return nodeAffinity;
     }
 
-    public void setMatchExpressions(List<NodeSelectorRequirement> matchExpressions) {
-        if (matchExpressions == null || matchExpressions.isEmpty()) {
-            logger.warning("null or empty matchExpressions are not allowed");
-            return;
+    public void setNodeAffinity(NodeAffinity nodeAffinity) throws IllegalArgumentException {
+        if (!LabelUtils.validateNodeAffinity(nodeAffinity)) {
+            logger.warning("null or empty nodeAffinity or invalid nodeAffinity are not allowed");
+            throw new IllegalArgumentException(
+                    "Invalid input Argument not allowed " + nodeAffinity);
         }
 
-        for (int i = 0; i < matchExpressions.size(); i++) {
-            NodeSelectorRequirement matchExpressionsItem = matchExpressions.get(i);
-            if (!Utils.validateNodeSelectRequirement(
-                    matchExpressionsItem.key,
-                    matchExpressionsItem.operator,
-                    matchExpressionsItem.values)) {
-                logger.warning("validateNodeSelectRequirement failed");
-                return;
-            }
-        }
-
-        this.matchExpressions = matchExpressions;
-    }
-
-    public void addMatchExpressionsItem(NodeSelectorRequirement matchExpressionsItem) {
-        if (matchExpressionsItem == null) {
-            return;
-        }
-        if (!Utils.validateNodeSelectRequirement(
-                matchExpressionsItem.key,
-                matchExpressionsItem.operator,
-                matchExpressionsItem.values)) {
-            logger.warning("validateNodeSelectRequirement failed");
-            return;
-        }
-
-        if (this.matchExpressions == null) {
-            this.matchExpressions = new ArrayList<NodeSelectorRequirement>();
-        }
-        this.matchExpressions.add(matchExpressionsItem);
-        return;
+        this.nodeAffinity = nodeAffinity;
     }
 
     @Override
@@ -121,13 +93,13 @@ public class NodeSelectorSpec implements Serializable {
             return false;
         }
         NodeSelectorSpec specSelector = (NodeSelectorSpec) o;
-        return Objects.equals(this.matchExpressions, specSelector.matchExpressions)
+        return Objects.equals(this.nodeAffinity, specSelector.nodeAffinity)
                 && Objects.equals(this.matchLabels, specSelector.matchLabels);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(matchExpressions, matchLabels);
+        return Objects.hash(nodeAffinity, matchLabels);
     }
 
     @Override

@@ -1,5 +1,6 @@
 package sapphire.app;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 public class NodeSelectorSpecTest {
@@ -7,24 +8,32 @@ public class NodeSelectorSpecTest {
     @Test
     public void testNullMatchLabels() {
         NodeSelectorSpec spec = new NodeSelectorSpec();
-        spec.setMatchLabels(null);
+        try {
+            spec.setMatchLabels(null);
+        } catch (Exception e) {
+            Assert.fail("Should not assert");
+        }
     }
 
     @Test
     public void testaddMatchLabelsIteml() {
         NodeSelectorSpec spec = new NodeSelectorSpec();
-        spec.addMatchLabelsItem(null, null);
+        try {
+            spec.addMatchLabelsItem(null, null);
+            Assert.fail("Should not execute this because should throw Exception");
+        } catch (IllegalArgumentException e) {
+        } catch (Exception e) {
+            Assert.fail("Should not execute this because should throw IllegalArgumentException");
+        }
     }
 
     @Test
     public void testsetMatchExpressions() {
         NodeSelectorSpec spec = new NodeSelectorSpec();
-        spec.setMatchExpressions(null);
-    }
-
-    @Test
-    public void testaddMatchExpressionsItem() {
-        NodeSelectorSpec spec = new NodeSelectorSpec();
-        spec.addMatchExpressionsItem(null);
+        try {
+            spec.setNodeAffinity(null);
+        } catch (Exception e) {
+            Assert.fail("Should not assert");
+        }
     }
 }

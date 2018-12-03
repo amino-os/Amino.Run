@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.*;
 import java.util.logging.Logger;
 import org.yaml.snakeyaml.Yaml;
-import sapphire.common.Utils;
+import sapphire.common.LabelUtils;
 
 public class NodeSelectorRequirement implements Serializable {
 
@@ -16,10 +16,11 @@ public class NodeSelectorRequirement implements Serializable {
 
     public NodeSelectorRequirement() {}
 
-    public NodeSelectorRequirement(String key, String Operator, List<String> vals) {
-        if (!Utils.validateNodeSelectRequirement(key, Operator, vals)) {
+    public NodeSelectorRequirement(String key, String Operator, List<String> vals)
+            throws IllegalArgumentException {
+        if (!LabelUtils.validateNodeSelectRequirement(key, Operator, vals)) {
             logger.warning("validateNodeSelectRequirement failed");
-            return;
+            throw new IllegalArgumentException("Invalid input Argument");
         }
         this.key = key;
         this.operator = Operator;
@@ -30,10 +31,10 @@ public class NodeSelectorRequirement implements Serializable {
         return key;
     }
 
-    public void setKey(String key) {
-        if (!Utils.validateLabelKey(key)) {
+    public void setKey(String key) throws IllegalArgumentException {
+        if (!LabelUtils.validateLabelKey(key)) {
             logger.warning("setKey failed because it is null or empty or validation failed" + key);
-            return;
+            throw new IllegalArgumentException("Invalid input Argument" + key);
         }
         this.key = key;
     }
@@ -42,10 +43,10 @@ public class NodeSelectorRequirement implements Serializable {
         return operator;
     }
 
-    public void setOperator(String operator) {
-        if (!Utils.validateOperator(operator)) {
+    public void setOperator(String operator) throws IllegalArgumentException {
+        if (!LabelUtils.validateOperator(operator)) {
             logger.warning("validateOperator failed");
-            return;
+            throw new IllegalArgumentException("Invalid input Argument" + operator);
         }
         this.operator = operator;
     }
@@ -54,24 +55,25 @@ public class NodeSelectorRequirement implements Serializable {
         return values;
     }
 
-    public void setValues(List<String> values) {
+    public void setValues(List<String> values) throws IllegalArgumentException {
         if (values == null || values.isEmpty()) {
             logger.warning("setValues failed because it is null or empty" + values);
-            return;
+            throw new IllegalArgumentException("Invalid input Argument" + values);
         }
         for (int i = 0; i < values.size(); i++) {
-            if (!Utils.validateLabelValue(values.get(i))) {
-                logger.warning("setValues failed because validation failed" + values);
-                return;
+            if (!LabelUtils.validateLabelValue(values.get(i))) {
+                logger.warning("setValues failed because validation failed" + values.get(i));
+                throw new IllegalArgumentException(
+                        "Invalid input Label value Argument" + values.get(i));
             }
         }
         this.values = values;
     }
 
-    public void addValuesItem(String valuesItem) {
-        if (!Utils.validateLabelValue(valuesItem)) {
-            logger.warning("addValuesItem failed because it is null or empty" + values);
-            return;
+    public void addValuesItem(String valuesItem) throws IllegalArgumentException {
+        if (!LabelUtils.validateLabelValue(valuesItem)) {
+            logger.warning("addValuesItem failed because it is null or empty" + valuesItem);
+            throw new IllegalArgumentException("Invalid input Label value Argument" + valuesItem);
         }
         if (this.values == null) {
             this.values = new ArrayList<String>();

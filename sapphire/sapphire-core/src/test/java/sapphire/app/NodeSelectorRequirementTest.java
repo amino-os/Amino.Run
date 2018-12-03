@@ -4,31 +4,55 @@ import java.util.Arrays;
 import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
-import sapphire.common.Utils;
+import sapphire.common.LabelUtils;
 
 public class NodeSelectorRequirementTest {
     @Test
     public void testNullsetKey() {
         NodeSelectorRequirement spec = new NodeSelectorRequirement();
-        spec.setKey(null);
+        try {
+            spec.setKey(null);
+            Assert.fail("Should not execute this because should throw Exception");
+        } catch (IllegalArgumentException e) {
+        } catch (Exception e) {
+            Assert.fail("Should not execute this because should throw IllegalArgumentException");
+        }
     }
 
     @Test
     public void testsetOperator() {
         NodeSelectorRequirement spec = new NodeSelectorRequirement();
-        spec.setOperator(null);
+        try {
+            spec.setOperator(null);
+            Assert.fail("Should not execute this because should throw Exception");
+        } catch (IllegalArgumentException e) {
+        } catch (Exception e) {
+            Assert.fail("Should not execute this because should throw IllegalArgumentException");
+        }
     }
 
     @Test
     public void testsetValues() {
         NodeSelectorRequirement spec = new NodeSelectorRequirement();
-        spec.setValues(null);
+        try {
+            spec.setValues(null);
+            Assert.fail("Should not execute this because should throw Exception");
+        } catch (IllegalArgumentException e) {
+        } catch (Exception e) {
+            Assert.fail("Should not execute this because should throw IllegalArgumentException");
+        }
     }
 
     @Test
     public void testaddValuesItem() {
         NodeSelectorRequirement spec = new NodeSelectorRequirement();
-        spec.addValuesItem(null);
+        try {
+            spec.addValuesItem(null);
+            Assert.fail("Should not execute this because should throw Exception");
+        } catch (IllegalArgumentException e) {
+        } catch (Exception e) {
+            Assert.fail("Should not execute this because should throw IllegalArgumentException");
+        }
     }
 
     @Test
@@ -38,11 +62,11 @@ public class NodeSelectorRequirementTest {
         List<String> vals = Arrays.asList(values);
         NodeSelectorRequirement matchExp = new NodeSelectorRequirement();
         matchExp.setKey(key);
-        matchExp.setOperator(Utils.Equals);
+        matchExp.setOperator(LabelUtils.Equals);
         matchExp.setValues(vals);
 
         Assert.assertTrue(matchExp.getKey().equals(key));
-        Assert.assertTrue(matchExp.getOperator().equals(Utils.Equals));
+        Assert.assertTrue(matchExp.getOperator().equals(LabelUtils.Equals));
         Assert.assertTrue(matchExp.getValues().equals(vals));
     }
 }

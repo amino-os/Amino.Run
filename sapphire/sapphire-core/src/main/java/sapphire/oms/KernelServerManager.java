@@ -9,7 +9,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import sapphire.app.NodeSelectorRequirement;
+import sapphire.app.NodeAffinity;
 import sapphire.app.NodeSelectorSpec;
 import sapphire.app.SapphireObjectSpec;
 import sapphire.kernel.common.GlobalKernelReferences;
@@ -147,15 +147,15 @@ public class KernelServerManager {
     public List<InetSocketAddress> getServers(NodeSelectorSpec spec) {
         List<InetSocketAddress> nodes = new ArrayList<>();
         Map matchLabels = null;
-        List<NodeSelectorRequirement> matchExpr = null;
+        NodeAffinity nodeAffinity = null;
 
         if (null != spec) {
             matchLabels = spec.getMatchLabels();
-            matchExpr = spec.getMatchExpressions();
+            nodeAffinity = spec.getNodeAffinity();
         }
-        // match labels & Expressions
+        // match labels & nodeAffinity
         for (ServerInfo s : serverInfos) {
-            if (s.containsAll(matchLabels) && s.matchLabelExpressions(matchExpr)) {
+            if (s.containsAll(matchLabels) && s.matchNodeAffinity(nodeAffinity)) {
                 nodes.add(s.getHost());
             }
         }

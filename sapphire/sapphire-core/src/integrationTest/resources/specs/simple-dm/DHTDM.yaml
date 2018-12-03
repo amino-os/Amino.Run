@@ -7,7 +7,7 @@ dmList:
   name: sapphire.policy.dht.DHTPolicy
 nodeSelectorSpec:
   matchLabels: !!map {}
-  matchExpressions: []
+  nodeAffinity: null
 javaClassName: sapphire.demo.KVStore
 lang: java
 name: null

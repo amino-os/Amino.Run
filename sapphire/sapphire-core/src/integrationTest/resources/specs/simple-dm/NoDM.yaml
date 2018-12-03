@@ -4,7 +4,7 @@ constructorName: null
 javaClassName: sapphire.demo.KVStore
 nodeSelectorSpec:
   matchLabels: !!map {}
-  matchExpressions: []
+  nodeAffinity: null
 lang: java
 name: null
 sourceFileLocation: null

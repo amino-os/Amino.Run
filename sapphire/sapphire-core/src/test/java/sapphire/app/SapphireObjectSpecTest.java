@@ -3,6 +3,7 @@ package sapphire.app;
 import java.util.*;
 import org.junit.Assert;
 import org.junit.Test;
+import sapphire.common.LabelUtils;
 import sapphire.common.Utils;
 import sapphire.policy.scalability.LoadBalancedFrontendPolicy;
 import sapphire.policy.scalability.ScaleUpFrontendPolicy;
@@ -44,16 +45,35 @@ public class SapphireObjectSpecTest {
         String[] values1 = {"val1", "val2", "val3"};
         List<String> vals1 = Arrays.asList(values1);
         NodeSelectorRequirement matchExpItem1 =
-                new NodeSelectorRequirement("key1", Utils.NotIn, vals1);
+                new NodeSelectorRequirement("key1", LabelUtils.NotIn, vals1);
 
-        matchExp.add(matchExpItem1);
-        nodeSelectorSpec.setMatchExpressions(matchExp);
-
-        String[] values2 = {"val4", "val5", "val6"};
-        List<String> vals2 = Arrays.asList(values2);
+        List<String> vals2 = Arrays.asList(values1);
         NodeSelectorRequirement matchExpItem2 =
-                new NodeSelectorRequirement("key2", Utils.In, vals2);
-        nodeSelectorSpec.addMatchExpressionsItem(matchExpItem2);
+                new NodeSelectorRequirement("key1", LabelUtils.NotIn, vals2);
+
+        List<NodeSelectorRequirement> MatchExpressions1 = Arrays.asList(matchExpItem1);
+
+        List<NodeSelectorRequirement> MatchExpressions2 = Arrays.asList(matchExpItem2);
+
+        NodeSelectorTerm term1 = new NodeSelectorTerm();
+        term1.setMatchExpressions(MatchExpressions1);
+
+        NodeSelectorTerm term2 = new NodeSelectorTerm();
+        term2.setMatchExpressions(MatchExpressions2);
+
+        PreferredSchedulingTerm prefterm = new PreferredSchedulingTerm();
+        prefterm.setNodeSelectorTerm(term2);
+        prefterm.setweight(1);
+
+        List<PreferredSchedulingTerm> PreferSchedulingterms = Arrays.asList(prefterm);
+
+        List<NodeSelectorTerm> RequireExpressions = Arrays.asList(term1);
+
+        NodeAffinity nodeAffinity = new NodeAffinity();
+        nodeAffinity.setPreferScheduling(PreferSchedulingterms);
+        nodeAffinity.setRequireExpressions(RequireExpressions);
+
+        nodeSelectorSpec.setNodeAffinity(nodeAffinity);
 
         ScaleUpFrontendPolicy.Config scaleUpConfig = new ScaleUpFrontendPolicy.Config();
         scaleUpConfig.setReplicationRateInMs(100);

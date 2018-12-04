@@ -163,28 +163,12 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
          * @param servers
          */
         public void initializeRaft(ConcurrentMap<UUID, ServerPolicy> servers) {
-            // The raftServer peerList has to be updated with details of peer raftServers.
-            // Also, need to update peer raft servers about the newly added raft server.
-            UUID raftServerId = null;
-            for (ServerPolicy s : servers.values()) {
-                raftServerId = s.getRaftServerId();
-                if (!raftServerId.equals(this.getRaftServerId())) {
-                    s.addRaftServer(this.getRaftServerId(), servers.get(this.getRaftServerId()));
-                    this.addRaftServer(raftServerId, servers.get(raftServerId));
+            for (UUID id : servers.keySet()) {
+                if (!id.equals(raftServer.getMyServerID())) {
+                    this.raftServer.addServer(id, servers.get(id));
                 }
             }
-            // After updating the peerList, the raftServer needs to be started.
             this.raftServer.start();
-        }
-
-        /**
-         * Add a remote raft server, to the current raft server's otherServers Map.
-         *
-         * @param id: Remote raft server's UUID
-         * @param server: Remote raft server
-         */
-        public void addRaftServer(UUID id, RemoteRaftServer server) {
-            this.raftServer.addServer(id, server);
         }
 
         // TODO: This method should be thread safe
@@ -236,13 +220,29 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
                 ServerPolicy consensusServer = (ServerPolicy) server;
                 // Create additional replicas, one per region. TODO:  Create N-1 replicas on
                 // different servers in the same zone.
-                // Create additional replicas as per the nodeSelector spec.
                 for (int i = 1; i < addressList.size(); i++) {
                     addReplica(consensusServer, addressList.get(i), region);
                 }
 
                 // The first in the addressList is for primary policy chain.
                 consensusServer.sapphire_pin_to_server(server, addressList.get(0));
+
+                addServer(server);
+
+                // Tell all the servers about one another
+                ConcurrentHashMap<UUID, ServerPolicy> allServers =
+                        new ConcurrentHashMap<UUID, ServerPolicy>();
+                // First get the self-assigned ID from each server
+                List<SapphireServerPolicy> servers = getServers();
+                for (SapphireServerPolicy i : servers) {
+                    ServerPolicy s = (ServerPolicy) i;
+                    allServers.put(s.getRaftServerId(), s);
+                }
+                // Now tell each server about the location and ID of all the servers, and start the
+                // RAFT protocol on each server.
+                for (ServerPolicy s : allServers.values()) {
+                    s.initializeRaft(allServers);
+                }
             } catch (RemoteException e) {
                 // TODO: Sapphire Group Policy Interface does not allow throwing exceptions, so in
                 // the mean time convert to an Error.
@@ -253,27 +253,6 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
             } catch (SapphireObjectReplicaNotFoundException e) {
                 throw new Error("Failed to find sapphire object replica.", e);
             }
-        }
-
-        @Override
-        public void addServer(SapphireServerPolicy server) throws RemoteException {
-            super.addServer(server);
-
-            // Get details of all raftServers in this group.
-            ConcurrentHashMap<UUID, ServerPolicy> allServers =
-                    new ConcurrentHashMap<UUID, ServerPolicy>();
-            // First get the self-assigned ID from each server
-            List<SapphireServerPolicy> servers = getServers();
-            for (SapphireServerPolicy i : servers) {
-                ServerPolicy s = (ServerPolicy) i;
-                allServers.put(s.getRaftServerId(), s);
-            }
-
-            // Now update the peerList of newly created raftServer about the peer raftServers
-            // and update the peer raftServers about the newly created raftServer.
-            // Then start the RAFT protocol on the newly created server.
-            ServerPolicy s = (ServerPolicy) server;
-            s.initializeRaft(allServers);
         }
     }
 }

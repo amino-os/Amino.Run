@@ -46,9 +46,6 @@ public interface SapphirePolicyUpcalls {
          */
         void onCreate(SapphireGroupPolicy group, SapphireObjectSpec spec);
 
-        // initialize is called after migration.
-        void initialize();
-
         void onDestroy();
 
         SapphireGroupPolicy getGroup();

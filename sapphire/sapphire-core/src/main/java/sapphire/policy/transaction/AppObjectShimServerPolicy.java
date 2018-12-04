@@ -18,9 +18,6 @@ public class AppObjectShimServerPolicy implements SapphireServerPolicyUpcalls {
     public void onCreate(SapphirePolicy.SapphireGroupPolicy group, SapphireObjectSpec spec) {}
 
     @Override
-    public void initialize() {}
-
-    @Override
     public void onDestroy() {}
 
     @Override

@@ -20,9 +20,6 @@ public class DefaultSapphirePolicy extends SapphirePolicy {
             super.onCreate(group, spec);
         }
 
-        @Override
-        public void initialize() {}
-
         public void onDestroy() {
             super.onDestroy();
         }

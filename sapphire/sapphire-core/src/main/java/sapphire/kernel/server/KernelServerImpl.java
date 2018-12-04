@@ -128,63 +128,48 @@ public class KernelServerImpl implements KernelServer {
                     KernelObjectStubNotCreatedException, SapphireObjectNotFoundException,
                     SapphireObjectReplicaNotFoundException {
         logger.log(Level.INFO, "Adding object " + oid);
-        if (object.getObject() instanceof SapphirePolicy.SapphireServerPolicy) {
-            /* Set the policy object handlers of new host */
-            SapphirePolicy.SapphireServerPolicy serverPolicy =
-                    (SapphirePolicy.SapphireServerPolicy) object.getObject();
-            SapphirePolicy.SapphireServerPolicy serverPolicyStub =
-                    (SapphirePolicy.SapphireServerPolicy)
-                            Sapphire.getPolicyStub(serverPolicy.getClass(), oid);
-            ArrayList<Object> policyObjList = new ArrayList<>();
-            EventHandler policyHandler = new EventHandler(host, policyObjList);
-            policyObjList.add(serverPolicyStub);
-
-            serverPolicyStub.setReplicaId(serverPolicy.getReplicaId());
-            oms.setSapphireReplicaDispatcher(serverPolicy.getReplicaId(), policyHandler);
-
-            serverPolicy.onCreate(serverPolicy.getGroup(), serverPolicy.getSapphireObjectSpec());
-        }
 
         // To add Kernel Object to local object manager
         Serializable realObj = object.getObject();
 
-        if (realObj instanceof SapphireServerPolicyLibrary) {
-            SapphireServerPolicyLibrary firstServerPolicy = (SapphireServerPolicyLibrary) realObj;
-
-            for (SapphirePolicyContainer spContainer : firstServerPolicy.getProcessedPolicies()) {
-                // Add Server Policy object in the same order as client side has created.
-                SapphireServerPolicyLibrary serverPolicy = spContainer.getServerPolicy();
-
-                // Added for setting the ReplicaId and registering handler for this replica to OMS.
-                SapphirePolicy.SapphireServerPolicy serverPolicyStub =
-                        (SapphirePolicy.SapphireServerPolicy) spContainer.getServerPolicyStub();
-                ArrayList<Object> policyObjList = new ArrayList<>();
-                EventHandler policyHandler = new EventHandler(host, policyObjList);
-                policyObjList.add(serverPolicyStub);
-                serverPolicyStub.setReplicaId(serverPolicy.getReplicaId());
-                oms.setSapphireReplicaDispatcher(serverPolicy.getReplicaId(), policyHandler);
-
-                KernelOID koid = serverPolicy.$__getKernelOID();
-                KernelObject newko = new KernelObject(serverPolicy);
-
-                objectManager.addObject(koid, newko);
-                newko.uncoalesce();
-                oms.registerKernelObject(koid, host);
-                logger.log(Level.INFO, "Added " + koid.getID() + " as SapphireServerPolicyLibrary");
-
-                try {
-                    serverPolicy.initialize();
-                } catch (Exception e) {
-                    String exceptionMsg =
-                            "Initialization failed at copyKernelObject for KernelObject("
-                                    + koid.getID()
-                                    + ").  ";
-                    logger.severe(exceptionMsg);
-                    throw new RemoteException(exceptionMsg, e);
-                }
-            }
-        } else {
+        if (!(realObj instanceof SapphireServerPolicyLibrary)) {
             logger.log(Level.WARNING, "Added " + oid.getID() + " as unknown type.");
+            return;
+        }
+
+        SapphireServerPolicyLibrary firstServerPolicy = (SapphireServerPolicyLibrary) realObj;
+
+        for (SapphirePolicyContainer spContainer : firstServerPolicy.getProcessedPolicies()) {
+            // Add Server Policy object in the same order as client side has created.
+            SapphireServerPolicyLibrary serverPolicy = spContainer.getServerPolicy();
+
+            // Added for setting the ReplicaId and registering handler for this replica to OMS.
+            SapphirePolicy.SapphireServerPolicy serverPolicyStub =
+                    (SapphirePolicy.SapphireServerPolicy) spContainer.getServerPolicyStub();
+            ArrayList<Object> policyObjList = new ArrayList<>();
+            EventHandler policyHandler = new EventHandler(host, policyObjList);
+            policyObjList.add(serverPolicyStub);
+            serverPolicyStub.setReplicaId(serverPolicy.getReplicaId());
+            oms.setSapphireReplicaDispatcher(serverPolicy.getReplicaId(), policyHandler);
+
+            KernelOID koid = serverPolicy.$__getKernelOID();
+            KernelObject newko = new KernelObject(serverPolicy);
+
+            objectManager.addObject(koid, newko);
+            oms.registerKernelObject(koid, host);
+            logger.log(Level.INFO, "Added " + koid.getID() + " as SapphireServerPolicyLibrary");
+
+            try {
+                serverPolicy.onCreate(
+                        serverPolicy.getGroup(), serverPolicy.getSapphireObjectSpec());
+            } catch (Exception e) {
+                String exceptionMsg =
+                        "Initialization failed at copyKernelObject for KernelObject("
+                                + koid.getID()
+                                + ").  ";
+                logger.severe(exceptionMsg);
+                throw new RemoteException(exceptionMsg, e);
+            }
         }
     }
 

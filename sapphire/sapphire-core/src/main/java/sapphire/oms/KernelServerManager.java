@@ -218,6 +218,8 @@ public class KernelServerManager {
         }
         // In future we can consider some other specific things to select the
         // best one among the list
+        // TODO need to apply nodeSelector.PreferScheduling here and choose more
+        // weighted node
         return hosts.get(randgen.nextInt(hosts.size()));
     }
 }

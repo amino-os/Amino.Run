@@ -9,6 +9,9 @@ public class NodeSelectorTerm implements Serializable {
     // A list of node selector requirements by node's labels.
     public List<NodeSelectorRequirement> MatchExpressions = null;
     // A list of node selector requirements by node's fields.
+    // TODO currently its not used as we don't have a separate Node Fields
+    // for each KS, once we add node fields for each ks then we can consider
+    // this parameter for selection of the KS/Node
     public List<NodeSelectorRequirement> MatchFields = null;
 
     public void setMatchExpressions(List<NodeSelectorRequirement> MatchExpressions) {

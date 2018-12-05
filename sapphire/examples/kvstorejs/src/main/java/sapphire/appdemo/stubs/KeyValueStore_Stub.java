@@ -15,7 +15,6 @@ import sapphire.common.SapphireObjectID;
 import sapphire.graal.io.SerializeValue;
 import sapphire.kernel.server.KernelServerImpl;
 
-
 public final class KeyValueStore_Stub extends sapphire.common.GraalObject implements sapphire.common.GraalAppObjectStub {
 
     sapphire.policy.SapphirePolicy.SapphireClientPolicy $__client = null;
@@ -61,6 +60,7 @@ public final class KeyValueStore_Stub extends sapphire.common.GraalObject implem
 
     public java.util.List<SerializeValue> serializeParams(Object... args) throws Exception {
         java.util.List<SerializeValue> res = new ArrayList<>();
+        getContext().enter();
         for (Object o : args) {
             res.add(SerializeValue.getSerializeValue(Value.asValue(o), getLanguage()));
         }

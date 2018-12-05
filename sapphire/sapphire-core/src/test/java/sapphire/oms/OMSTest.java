@@ -1,10 +1,11 @@
 package sapphire.oms;
 
 import static org.junit.Assert.assertEquals;
-import static sapphire.common.SapphireUtils.deleteSapphireObject;
 import static sapphire.common.SapphireUtils.getOmsSapphireInstance;
 import static sapphire.common.UtilsTest.extractFieldValueOnInstance;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
 import java.rmi.registry.LocateRegistry;
 import java.util.HashMap;
@@ -21,6 +22,7 @@ import sapphire.app.SapphireObjectSpec;
 import sapphire.common.AppObject;
 import sapphire.common.BaseTest;
 import sapphire.common.SapphireObjectID;
+import sapphire.common.SapphireReplicaID;
 import sapphire.common.SapphireUtils;
 import sapphire.kernel.common.GlobalKernelReferences;
 import sapphire.kernel.common.KernelOID;
@@ -47,6 +49,8 @@ import sapphire.sampleSO.stubs.SO_Stub;
 })
 public class OMSTest extends BaseTest {
     @Rule public ExpectedException thrown = ExpectedException.none();
+    OMSServerImpl omsImpl;
+    Object fieldValue;
 
     public static class DefaultSO extends SO implements SapphireObject {}
 
@@ -141,6 +145,10 @@ public class OMSTest extends BaseTest {
                 (DefaultSapphirePolicy.DefaultClientPolicy)
                         extractFieldValueOnInstance(soStub, "$__client");
         so = ((SO) (server1.sapphire_getAppObject().getObject()));
+        omsImpl = (OMSServerImpl) spiedOms;
+        Field field = OMSServerImpl.class.getDeclaredField("objectManager");
+        field.setAccessible(true);
+        fieldValue = field.get(omsImpl);
     }
 
     @Test
@@ -184,56 +192,90 @@ public class OMSTest extends BaseTest {
         List<InetSocketAddress> servers = spiedOms.getServers(null);
 
         /* Reference count must become 3 (Since three kernel server are added )  */
-        assertEquals(3, servers.size());
+        assertEquals(new Integer(3), new Integer(servers.size()));
     }
 
     @Test
     public void mainTest() throws Exception {
-
         OMSServerImpl.main(new String[] {"127.0.0.1", "10005"});
+        // with service port as optional parameter
+        OMSServerImpl.main(new String[] {"127.0.0.1", "10005", "--servicePort=33333"});
+        // this gives NumberFormatException
+        OMSServerImpl.main(new String[] {"127.0.0.1", "port", "--servicePort=33333"});
     }
 
     @Test
     public void getAllKernalObjectTest() throws Exception {
-        OMSServerImpl omsImpl = (OMSServerImpl) spiedOms;
         ArrayList<KernelOID> arr = omsImpl.getAllKernelObjects();
         assertEquals(2, arr.size());
     }
 
     @Test
-    public void getAllSapphireObjectsTest() throws Exception {
-        OMSServerImpl omsImpl = (OMSServerImpl) spiedOms;
-        ArrayList<SapphireObjectID> arr = omsImpl.getAllSapphireObjects();
-        assertEquals(1, arr.size());
+    public void getAllAndUnRegisterSapphireObjectTest() throws Exception {
+        omsImpl.unRegisterSapphireObject(group.getSapphireObjId());
+        ArrayList<SapphireObjectID> afterUnregister = omsImpl.getAllSapphireObjects();
+        assertEquals(0, afterUnregister.size());
     }
 
-    /*
-
-    */
     @Test
-    public void getSapphireReplicasByIdTest() throws Exception {
-        OMSServerImpl omsImpl = (OMSServerImpl) spiedOms;
+    public void getAndUnRegisterSapphireReplicaTest() throws Exception {
+        omsImpl.unRegisterSapphireReplica(server1.getReplicaId());
         EventHandler[] arr = omsImpl.getSapphireReplicasById(group.getSapphireObjId());
-        assertEquals(1, arr.length);
+        assertEquals(0, arr.length);
     }
 
-    /*
-        @Test
-        public void getInstanceDispatcherTest() throws Exception {
-            OMSServerImpl omsImpl = (OMSServerImpl) spiedOms;
-            Field field = omsImpl.getClass().getDeclaredField("objectManager");
-            field.setAccessible(true);
-            Method method =
-                    field.getClass()
-                            .getClass()
-                            .getDeclaredMethod("getInstanceDispatcher", SapphireObjectID.class);
-            Object obj = method.invoke(field, group.getSapphireObjId());
-        }
-    */
+    @Test
+    public void setAndGetInstanceDispatcherTest() throws Exception {
+        Method setMethod =
+                fieldValue
+                        .getClass()
+                        .getDeclaredMethod(
+                                "setInstanceDispatcher",
+                                SapphireObjectID.class,
+                                EventHandler.class);
+        EventHandler eventHandler =
+                new EventHandler(
+                        GlobalKernelReferences.nodeServer.getLocalHost(),
+                        new ArrayList() {
+                            {
+                                add(server1);
+                            }
+                        });
+        setMethod.invoke(fieldValue, group.getSapphireObjId(), eventHandler);
+        Method getMethod =
+                fieldValue
+                        .getClass()
+                        .getDeclaredMethod("getInstanceDispatcher", SapphireObjectID.class);
+        assertEquals(eventHandler, getMethod.invoke(fieldValue, group.getSapphireObjId()));
+    }
+
+    @Test
+    public void setAndGetReplicaDispatcherTest() throws Exception {
+        Method setMethod =
+                fieldValue
+                        .getClass()
+                        .getDeclaredMethod(
+                                "setReplicaDispatcher",
+                                SapphireReplicaID.class,
+                                EventHandler.class);
+        EventHandler eventHandler =
+                new EventHandler(
+                        GlobalKernelReferences.nodeServer.getLocalHost(),
+                        new ArrayList() {
+                            {
+                                add(server1);
+                            }
+                        });
+        setMethod.invoke(fieldValue, server1.getReplicaId(), eventHandler);
+        Method getMethod =
+                fieldValue
+                        .getClass()
+                        .getDeclaredMethod("getReplicaDispatcher", SapphireReplicaID.class);
+        assertEquals(eventHandler, getMethod.invoke(fieldValue, server1.getReplicaId()));
+    }
+
     @After
     public void tearDown() throws Exception {
-
         GlobalKernelReferences.nodeServer.oms = spiedOms;
-        deleteSapphireObject(spiedOms, group.getSapphireObjId());
     }
 }

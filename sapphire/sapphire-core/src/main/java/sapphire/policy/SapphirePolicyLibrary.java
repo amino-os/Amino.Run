@@ -53,7 +53,7 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
         protected Map<String, SapphirePolicyConfig> configMap;
         protected boolean alreadyPinned;
 
-        static Logger logger = Logger.getLogger("sapphire.policy.SapphirePolicyLibrary");
+        static Logger logger = Logger.getLogger(SapphireServerPolicyLibrary.class.getName());
 
         // SeverPolicy calls Kernel object in the chain - this is transparent call which will either
         // invoke method in the next server policy or app object.
@@ -472,7 +472,7 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
         protected KernelOID oid;
         protected SapphireObjectID sapphireObjId;
 
-        static Logger logger = Logger.getLogger("sapphire.policy.SapphirePolicyLibrary");
+        static Logger logger = Logger.getLogger(SapphireGroupPolicyLibrary.class.getName());
 
         protected OMSServer oms() {
             return GlobalKernelReferences.nodeServer.oms;

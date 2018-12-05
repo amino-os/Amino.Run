@@ -534,8 +534,8 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
          *
          * @param replicaSource server policy where the replica creation operation will be
          *     performed.
-         * @param dest
-         * @param region
+         * @param dest address for KernelServer that will host this replica.
+         * @param region region where this replica needs to be located within.
          * @param pinned whether the policy chain was already pinned by downstream policy.
          * @return newly created replica.
          * @throws RemoteException
@@ -563,7 +563,7 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
                 String msgDetail =
                         String.format(
                                 "Region:%s Dest:%s ReplicaSrc:%s", region, dest, replicaSource);
-                logger.log(Level.SEVERE, "Repica pinning failed. " + msgDetail, e);
+                logger.log(Level.SEVERE, "Replica pinning failed. " + msgDetail, e);
                 try {
                     removeReplica(replica);
                 } catch (Exception innerException) {

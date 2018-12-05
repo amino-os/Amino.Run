@@ -233,9 +233,9 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
             if (!addressList.isEmpty()) {
                 try {
                     /**
-                     * create a replica on the first server in the list. Pinned flag is false as
-                     * this is run-time addition that should pin SO to a server (pinning will be
-                     * done by downstream policy of the new replica if there is one).
+                     * create a replica on the first server in the list. create..list. Pinned flag
+                     * is set to false for now but may need to be updated properly when run-time
+                     * addition is supported.
                      */
                     addReplica(servers.get(0), addressList.get(0), region, false);
                 } catch (SapphireObjectNotFoundException e) {

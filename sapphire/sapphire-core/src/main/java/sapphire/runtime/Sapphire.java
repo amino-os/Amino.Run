@@ -280,7 +280,7 @@ public class Sapphire {
                     previousServerPolicyStub,
                     client);
         } else {
-            initAppStub(spec, serverPolicy, serverPolicyStub, client, appArgs, appObject);
+            initAppStub(spec, serverPolicy, client, appArgs, appObject);
         }
 
         // Note that subList is non serializable; hence, the new list creation.
@@ -601,17 +601,9 @@ public class Sapphire {
             KernelObjectStub prevServerPolicyStub,
             SapphireClientPolicy clientPolicy)
             throws IOException, ClassNotFoundException {
-        serverPolicyStub.$__initialize(prevServerPolicy.sapphire_getAppObject());
-        serverPolicy.$__initialize(prevServerPolicy.sapphire_getAppObject());
-        serverPolicyStub.setSapphireObjectSpec(prevServerPolicy.getSapphireObjectSpec());
         serverPolicy.setSapphireObjectSpec(prevServerPolicy.getSapphireObjectSpec());
 
         /* Previous server policy stub object acts as Sapphire Object(SO) to the current server policy */
-        /* NOTE: Since we make the copy of the prev server stub object before pinning the chain, it might happen that
-        policy object is pinned to some other server. Then, the host name field in this copied instance would not be
-        correct. Eventually, it gets corrected upon the first RPC invocation (i.e., when it hits
-        KernelClient.makeKernelRPC->lookupAndTryMakeKernelRPC)
-        */
         serverPolicy.$__initialize(
                 new AppObject(Utils.ObjectCloner.deepCopy(prevServerPolicyStub)));
         serverPolicy.setNextServerPolicy(prevServerPolicy);
@@ -625,12 +617,10 @@ public class Sapphire {
      *
      * @param spec sapphire object spec
      * @param serverPolicy server policy
-     * @param serverPolicyStub server policy stub
      * @param clientPolicy client policy
      * @param appArgs app arguments
      * @param appObject app Object
      * @throws ClassNotFoundException
-     * @throws IllegalAccessException
      * @throws CloneNotSupportedException
      * @throws IOException
      */
@@ -638,27 +628,22 @@ public class Sapphire {
     private static void initAppStub(
             SapphireObjectSpec spec,
             SapphireServerPolicy serverPolicy,
-            SapphireServerPolicy serverPolicyStub,
             SapphireClientPolicy clientPolicy,
             Object[] appArgs,
             AppObject appObject)
-            throws ClassNotFoundException, IllegalAccessException, CloneNotSupportedException,
-                    IOException {
+            throws ClassNotFoundException, CloneNotSupportedException, IOException {
 
         AppObjectStub appStub;
         if (appObject != null) {
             appObject = (AppObject) Utils.ObjectCloner.deepCopy(appObject);
-            serverPolicyStub.$__initialize(appObject);
             serverPolicy.$__initialize(appObject);
         } else {
             appStub = getAppStub(spec, serverPolicy, appArgs);
             appStub.$__initialize(clientPolicy);
             serverPolicy.$__initialize(appStub);
-            serverPolicyStub.$__initialize(appStub);
         }
 
         serverPolicy.setSapphireObjectSpec(spec);
-        serverPolicyStub.setSapphireObjectSpec(spec);
     }
 
     public static Class<?>[] getParamsClasses(Object[] params) throws ClassNotFoundException {

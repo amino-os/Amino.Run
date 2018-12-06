@@ -152,6 +152,9 @@ public class DHTPolicy extends DefaultSapphirePolicy {
          * @throws SapphireObjectNotFoundException
          * @throws SapphireObjectReplicaNotFoundException
          */
+        // TODO: Consider moving to SapphirePolicyLibrary so that other DMs can use this. Note that
+        // some DMs may want a different behavior for exception e.g., null list should be fine if
+        // the DM can switch to another label.
         private InetSocketAddress getAddress(String region)
                 throws NoKernelServerFoundException, RemoteException {
             List<InetSocketAddress> addressList =
@@ -165,6 +168,7 @@ public class DHTPolicy extends DefaultSapphirePolicy {
                 throw new NoKernelServerFoundException();
             }
 
+            // TODO: this behavior may need to be changed since it always returns the first address.
             return addressList.get(0);
         }
     }

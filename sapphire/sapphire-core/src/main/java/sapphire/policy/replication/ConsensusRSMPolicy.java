@@ -222,8 +222,11 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
                 if (!pinned) {
                     addressList = sapphire_getAddressList(spec.getNodeSelectorSpec(), region);
                     // The first in the addressList is for primary policy chain.
+                    // TODO: Improve node allocation so that other servers can be used instead of
+                    // the first one in the region.
                     consensusServer.sapphire_pin_to_server(server, addressList.get(0));
                 }
+                
                 // Create additional replicas, one per region. TODO:  Create N-1 replicas on
                 // different servers in the same zone.
                 for (int i = 1; i < addressList.size(); i++) {

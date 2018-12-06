@@ -46,8 +46,10 @@ public class KVStore
         return this.kvStore.get(key);
     }
 
-    public void remove(String key) {
+    public Serializable remove(String key) {
+        Serializable value = this.kvStore.get(key);
         this.kvStore.remove(key);
+        return value;
     }
 
     @Override

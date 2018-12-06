@@ -445,12 +445,30 @@ public class SimpleDMIntegrationTest {
                 (Coordinator)
                         sapphireObjectServer.acquireSapphireObjectStub(coordinatorSapphireObjectID);
 
+        /* During the invocation of migrate method for every participant method invocation ,
+           Two PC Coordinator DM's server policy initiates  invocation in following sequence
+           1.join before Method invocation
+           2.method invocation
+           3.leave after invocation
+           4.vote after all participant invocation is completed
+           5.commit or abort invoked  depending on state of vote */
         try {
+
+            /* Test1: Verifying the positive flow
+               key1 migrated from store1 to store2*/
+
             coordinator.migrate(key1);
             Assert.assertEquals(store2.get(key1), value1);
-            // Verifying the Rollback Usecase
+        } catch (Exception e) {
+        }
+        try {
+            /*
+             Test2: Verifying the rollback use case ,
+             Try to migrate key2 from store 1 to store 2 ,key2 already present in store 2 migration fails ,
+             exception thrown and rollback triggered*/
             coordinator.migrate(key2);
         } catch (Exception e) {
+            /* Verifying the value of store1  to check the rollback */
             Assert.assertEquals(store1.get(key2), value2);
         }
     }

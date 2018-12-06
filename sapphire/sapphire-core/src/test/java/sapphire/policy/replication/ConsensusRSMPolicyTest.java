@@ -1,6 +1,5 @@
 package sapphire.policy.replication;
 
-import static java.lang.Thread.sleep;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.*;
@@ -10,6 +9,8 @@ import static sapphire.common.UtilsTest.extractFieldValueOnInstance;
 import static sapphire.policy.util.consensus.raft.RaftUtil.getOperation;
 import static sapphire.policy.util.consensus.raft.RaftUtil.getRaftlog;
 import static sapphire.policy.util.consensus.raft.RaftUtil.getTerm;
+import static sapphire.policy.util.consensus.raft.RaftUtil.verifyCommitIndex;
+import static sapphire.policy.util.consensus.raft.RaftUtil.verifyLeaderElected;
 import static sapphire.policy.util.consensus.raft.ServerTest.*;
 
 import java.net.InetSocketAddress;
@@ -38,14 +39,14 @@ import sapphire.policy.SapphirePolicy;
 import sapphire.policy.util.consensus.raft.LeaderException;
 import sapphire.policy.util.consensus.raft.LogEntry;
 import sapphire.policy.util.consensus.raft.RemoteRaftServer;
+import sapphire.policy.util.consensus.raft.Server;
+
 
 /** Created by terryz on 4/9/18. */
 @RunWith(PowerMockRunner.class)
 public class ConsensusRSMPolicyTest extends BaseTest {
-    // ServerTest st = new ServerTest();
-    sapphire.policy.util.consensus.raft.Server raftServer1;
-    sapphire.policy.util.consensus.raft.Server raftServer2;
-    sapphire.policy.util.consensus.raft.Server raftServer3;
+    final int SERVER_COUNT = 3;
+    Server raftServer[] = new Server[SERVER_COUNT];
 
     public static class ConsensusSO extends SO {}
 
@@ -147,29 +148,28 @@ public class ConsensusRSMPolicyTest extends BaseTest {
         this.client.setServer(this.server1);
 
         /* Make server3 as raft leader */
-        raftServer1 =
+        raftServer[0] =
                 (sapphire.policy.util.consensus.raft.Server)
                         extractFieldValueOnInstance(server1, "raftServer");
-        raftServer2 =
+        raftServer[1] =
                 (sapphire.policy.util.consensus.raft.Server)
                         extractFieldValueOnInstance(server2, "raftServer");
-        raftServer3 =
+        raftServer[2] =
                 (sapphire.policy.util.consensus.raft.Server)
                         extractFieldValueOnInstance(server3, "raftServer");
-        makeFollower(raftServer1);
-        makeFollower(raftServer2);
-        makeLeader(raftServer3);
+        makeFollower(raftServer[0]);
+        makeFollower(raftServer[1]);
+        makeLeader(raftServer[2]);
+        verifyLeaderElected(3, raftServer);
 
-        RemoteRaftServer leaderViewOfRaftServer1 = getCurrentLeader(raftServer1);
+        RemoteRaftServer leaderViewOfRaftServer1 = getCurrentLeader(raftServer[0]);
         while (leaderViewOfRaftServer1 == null) {
-            sleep(100);
-            leaderViewOfRaftServer1 = getCurrentLeader(raftServer1);
+            leaderViewOfRaftServer1 = getCurrentLeader(raftServer[0]);
         }
 
-        RemoteRaftServer leaderViewOfRaftServer2 = getCurrentLeader(raftServer2);
+        RemoteRaftServer leaderViewOfRaftServer2 = getCurrentLeader(raftServer[1]);
         while (leaderViewOfRaftServer2 == null) {
-            sleep(100);
-            leaderViewOfRaftServer2 = getCurrentLeader(raftServer2);
+            leaderViewOfRaftServer2 = getCurrentLeader(raftServer[1]);
         }
 
         assert (leaderViewOfRaftServer1 == this.server3);
@@ -185,7 +185,6 @@ public class ConsensusRSMPolicyTest extends BaseTest {
         assertNotNull(Utils.ObjectCloner.deepCopy(group));
 
         ConsensusRSMPolicy.ServerPolicy server = new ConsensusRSMPolicy.ServerPolicy();
-        // server.onCreate(group, new Annotation[] {});
         assertNotNull(Utils.ObjectCloner.deepCopy(server));
     }
 
@@ -197,14 +196,18 @@ public class ConsensusRSMPolicyTest extends BaseTest {
         ConsensusRSMPolicy.ServerPolicy server3 = (ConsensusRSMPolicy.ServerPolicy) this.server3;
 
         server3.applyToStateMachine(rpc);
-        sleep(1000);
         verify(server3, times(1)).apply(Matchers.anyObject());
+        // Verifying post applyToStateMachine, that clients have the same commitIndex
+        verifyCommitIndex(3, raftServer[2], raftServer[0]);
+        verifyCommitIndex(3, raftServer[2], raftServer[1]);
         // Verifying that all clients see the same resulting value
         assertEquals(so3.getVal(), so1.getVal());
         assertEquals(so3.getVal(), so2.getVal());
 
         server3.applyToStateMachine(rpc);
-        sleep(1000);
+        // Verifying post applyToStateMachine, that clients have the same commitIndex
+        verifyCommitIndex(3, raftServer[2], raftServer[0]);
+        verifyCommitIndex(3, raftServer[2], raftServer[1]);
         // Verifying that all clients see the same resulting value
         assertEquals(so3.getVal(), so1.getVal());
         assertEquals(so3.getVal(), so2.getVal());
@@ -213,10 +216,10 @@ public class ConsensusRSMPolicyTest extends BaseTest {
          * Verifying that all clients see the same event log (i.e. operation and term as seen by
          * different clients in their respective logs, is same for the same index position.)
          */
-        for (int i = 0; i < getRaftlog(raftServer3).size(); i++) {
-            LogEntry leaderEntry = (LogEntry) getRaftlog(raftServer3).get(i);
-            LogEntry entry1 = (LogEntry) getRaftlog(raftServer1).get(i);
-            LogEntry entry2 = (LogEntry) getRaftlog(raftServer2).get(i);
+        for (int i = 0; i < getRaftlog(raftServer[2]).size(); i++) {
+            LogEntry leaderEntry = (LogEntry) getRaftlog(raftServer[2]).get(i);
+            LogEntry entry1 = (LogEntry) getRaftlog(raftServer[0]).get(i);
+            LogEntry entry2 = (LogEntry) getRaftlog(raftServer[1]).get(i);
 
             // Matching Operation
             assertEquals(getOperation(leaderEntry), getOperation(entry1));
@@ -252,7 +255,6 @@ public class ConsensusRSMPolicyTest extends BaseTest {
                 .when(this.server1)
                 .onRPC(method, params);
         thrown.expect(RemoteException.class);
-        thrown.expectMessage("Raft leader is not elected");
         this.client.onRPC(method, params);
     }
 
@@ -264,7 +266,6 @@ public class ConsensusRSMPolicyTest extends BaseTest {
     public void onRPCWithLeader() throws Exception {
         String method = "public void sapphire.app.TestSO.incVal()";
         ArrayList<Object> params = new ArrayList<Object>();
-        sleep(1000);
         client.onRPC(method, params);
     }
 
@@ -292,7 +293,6 @@ public class ConsensusRSMPolicyTest extends BaseTest {
         doThrow(RemoteException.class).when(this.server2).onRPC(method, params);
         doThrow(RemoteException.class).when(this.server3).onRPC(method, params);
         thrown.expect(RemoteException.class);
-        thrown.expectMessage("Failed to connect atleast one server");
         this.client.onRPC(method, params);
     }
 
@@ -309,7 +309,6 @@ public class ConsensusRSMPolicyTest extends BaseTest {
                 .when(this.server2)
                 .onRPC(method, params);
         thrown.expect(RemoteException.class);
-        thrown.expectMessage("Raft leader is not elected");
         this.client.onRPC(method, params);
     }
 

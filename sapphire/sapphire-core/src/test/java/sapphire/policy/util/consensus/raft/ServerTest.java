@@ -4,6 +4,8 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static sapphire.common.UtilsTest.extractFieldValueOnInstance;
+import static sapphire.policy.util.consensus.raft.RaftUtil.verifyCommitIndex;
+import static sapphire.policy.util.consensus.raft.RaftUtil.verifyLeaderElected;
 import static sapphire.policy.util.consensus.raft.Server.State.FOLLOWER;
 
 import java.util.ArrayList;
@@ -171,8 +173,7 @@ public class ServerTest {
             s.start();
         }
         raftServer[0].become(Server.State.CANDIDATE, FOLLOWER);
-        Thread.sleep(100);
-        assertEquals("LEADER", raftServer[0].vState.getState().toString());
+        verifyLeaderElected(3, raftServer);
 
         String methodName = "public java.lang.String java.lang.Object.toString()";
         ArrayList<Object> args = new ArrayList<Object>();
@@ -183,10 +184,12 @@ public class ServerTest {
         assertEquals(0, raftServer[2].pState.log().size());
 
         raftServer[0].applyToStateMachine(obj);
-        Thread.sleep(100);
+        verifyCommitIndex(3, raftServer[0], raftServer[1]);
+        verifyCommitIndex(3, raftServer[0], raftServer[2]);
 
         raftServer[0].applyToStateMachine(obj);
-        Thread.sleep(100);
+        verifyCommitIndex(3, raftServer[0], raftServer[1]);
+        verifyCommitIndex(3, raftServer[0], raftServer[2]);
 
         // Verifying the entries on other raftServers, with that on the leader.
         for (int i = 0; i < raftServer[0].pState.log().size(); i++) {
@@ -205,13 +208,9 @@ public class ServerTest {
             assertEquals(leaderEntry.term, entry2.term);
         }
 
-        Thread.sleep(1000);
-        // Verifying that post applying the logs, all clients are at the same
-        // LastApplied and CommitIndex.
+        // Verifying that post applying the logs, all clients are at the same LastApplied.
         assertEquals(raftServer[0].vState.getLastApplied(), raftServer[1].vState.getLastApplied());
-        assertEquals(raftServer[0].vState.getCommitIndex(), raftServer[1].vState.getCommitIndex());
         assertEquals(raftServer[0].vState.getLastApplied(), raftServer[2].vState.getLastApplied());
-        assertEquals(raftServer[0].vState.getCommitIndex(), raftServer[2].vState.getCommitIndex());
     }
 
     @Test
@@ -220,7 +219,7 @@ public class ServerTest {
             s.start();
         }
         raftServer[0].become(Server.State.CANDIDATE, FOLLOWER);
-        Thread.sleep(100);
+        verifyLeaderElected(3, raftServer);
 
         thrown.expect(AlreadyVotedException.class);
         raftServer[2].requestVote(1, raftServer[1].getMyServerID(), -1, -1);

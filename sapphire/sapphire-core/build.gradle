@@ -44,6 +44,8 @@ dependencies {
     testCompile 'org.powermock:powermock:1.6.5'
     testCompile 'org.powermock:powermock-module-junit4:1.6.5'
     testCompile 'org.powermock:powermock-api-mockito:1.6.5'
+    testCompile 'com.github.stefanbirkner:system-rules:1.2.0'
+
     // TODO: quinton: the following 2 lines shouldn't be necessary
     // But if removed, 4 integration tests fail with the following types of exception.
     // Try to figure out why, and fix the problem so that these lines can be removed.

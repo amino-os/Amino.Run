@@ -1,8 +1,15 @@
 package sapphire.kernel.server;
 
 import static junit.framework.TestCase.assertEquals;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.spy;
 import static org.powermock.api.mockito.PowerMockito.mock;
+import static org.powermock.api.mockito.PowerMockito.when;
 import static sapphire.common.UtilsTest.extractFieldValueOnInstance;
+import static sapphire.common.UtilsTest.setFieldValueOnInstance;
 
 import java.lang.reflect.Field;
 import java.net.InetSocketAddress;
@@ -12,6 +19,7 @@ import java.util.HashMap;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.ExpectedSystemExit;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.powermock.api.mockito.PowerMockito;
@@ -29,6 +37,8 @@ import sapphire.kernel.common.KernelObjectStub;
 import sapphire.kernel.common.KernelRPC;
 import sapphire.kernel.common.KernelRPCException;
 import sapphire.kernel.common.ServerInfo;
+import sapphire.oms.KernelServerManager;
+import sapphire.oms.OMSServerImpl;
 import sapphire.policy.DefaultSapphirePolicy;
 import sapphire.policy.SapphirePolicy;
 import sapphire.policy.util.ResettableTimer;
@@ -47,6 +57,7 @@ import sapphire.sampleSO.stubs.SO_Stub;
 })
 public class KSTest extends BaseTest {
     @Rule public ExpectedException thrown = ExpectedException.none();
+    @Rule public final ExpectedSystemExit exit = ExpectedSystemExit.none();
 
     public static class DefaultSO extends SO implements SapphireObject {}
 
@@ -125,6 +136,15 @@ public class KSTest extends BaseTest {
                     }
                 });
 
+        KernelServerManager serverManager =
+                (KernelServerManager) extractFieldValueOnInstance(spiedOms, "serverManager");
+        KernelServerManager spiedServerManager = spy(serverManager);
+        setFieldValueOnInstance(spiedOms, "serverManager", spiedServerManager);
+        InetSocketAddress address = new InetSocketAddress("127.0.0.1", 10003);
+        doReturn(address)
+                .when(spiedServerManager)
+                .getBestSuitableServer(any(SapphireObjectSpec.class));
+
         SapphireObjectID sapphireObjId = sapphireObjServer.createSapphireObject(spec.toString());
 
         soStub = (SO_Stub) sapphireObjServer.acquireSapphireObjectStub(sapphireObjId);
@@ -164,5 +184,32 @@ public class KSTest extends BaseTest {
             assertEquals(
                     e.getClass().getName(), "sapphire.kernel.common.KernelObjectNotFoundException");
         }
+    }
+
+    @Test
+    public void testMain() throws Exception {
+        PowerMockito.mockStatic(LocateRegistry.class);
+        when(LocateRegistry.getRegistry(anyString(), anyInt())).thenCallRealMethod();
+        when(LocateRegistry.createRegistry(anyInt())).thenCallRealMethod();
+        OMSServerImpl.main(new String[] {"127.0.0.1", "10006"});
+        KernelServerImpl.main(
+                new String[] {
+                    "127.0.0.1",
+                    "10001",
+                    "127.0.0.1",
+                    "10006",
+                    "IND",
+                    "--labels=label",
+                    "--servicePort=10010"
+                });
+        // for testing negative scenario with only 3 arguments
+        KernelServerImpl.main(new String[] {"127.0.0.1", "10001", "127.0.0.1"});
+    }
+
+    @Test
+    public void getAllKernelObjectOidsTest() throws Exception {
+        KernelObjectManager kom =
+                (KernelObjectManager) extractFieldValueOnInstance(spiedKs3, "objectManager");
+        assertEquals(2, kom.getAllKernelObjectOids().length);
     }
 }

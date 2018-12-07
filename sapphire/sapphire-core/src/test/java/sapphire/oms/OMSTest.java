@@ -8,8 +8,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
 import java.rmi.registry.LocateRegistry;
-import java.util.HashMap;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import org.junit.*;
 import org.junit.rules.ExpectedException;
@@ -192,12 +192,12 @@ public class OMSTest extends BaseTest {
         List<InetSocketAddress> servers = spiedOms.getServers(null);
 
         /* Reference count must become 3 (Since three kernel server are added )  */
+
         assertEquals(new Integer(3), new Integer(servers.size()));
     }
 
     @Test
     public void mainTest() throws Exception {
-        OMSServerImpl.main(new String[] {"127.0.0.1", "10005"});
         // with service port as optional parameter
         OMSServerImpl.main(new String[] {"127.0.0.1", "10005", "--servicePort=33333"});
         // this gives NumberFormatException

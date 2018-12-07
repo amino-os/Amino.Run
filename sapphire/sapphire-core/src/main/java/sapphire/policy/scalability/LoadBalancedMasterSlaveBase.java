@@ -197,16 +197,23 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultSapphirePolicy 
                                 "Creating master and slave instances in servers: %s", addressList));
 
                 List<InetSocketAddress> unavailable = new ArrayList<InetSocketAddress>();
-                InetSocketAddress dest = getAvailable(0, addressList, unavailable);
+                boolean pinned = server.isAlreadyPinned();
                 ServerBase s = (ServerBase) server;
-                s.sapphire_pin_to_server(server, dest);
-                updateReplicaHostName(s, dest);
+                InetSocketAddress dest = null;
+
+                if (!pinned) {
+                    dest = getAvailable(0, addressList, unavailable);
+                    s.sapphire_pin_to_server(server, dest);
+                    updateReplicaHostName(s, dest);
+                    logger.info("Created master on " + dest);
+                }
                 s.start();
-                logger.info("Created master on " + dest);
 
                 for (int i = 0; i < NUM_OF_REPLICAS - 1; i++) {
-                    dest = getAvailable(i + 1, addressList, unavailable);
-                    ServerBase replica = (ServerBase) addReplica(s, dest, region);
+                    if (!pinned) {
+                        dest = getAvailable(i + 1, addressList, unavailable);
+                    }
+                    ServerBase replica = (ServerBase) addReplica(s, dest, region, pinned);
                     removeServer(replica);
                     addServer(replica);
                     replica.start();

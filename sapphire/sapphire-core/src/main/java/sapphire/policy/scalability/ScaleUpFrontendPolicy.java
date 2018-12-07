@@ -204,6 +204,7 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
             timer.cancel();
         }
 
+        // TODO: Verify it works in multi-DM scenario.
         public void scaleUpReplica(String region) throws ScaleUpException, RemoteException {
             if (!replicaCreateLimiter.tryAcquire()) {
                 throw new ScaleUpException(
@@ -231,8 +232,12 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
 
             if (!addressList.isEmpty()) {
                 try {
-                    /* create a replica on the first server in the list */
-                    addReplica(servers.get(0), addressList.get(0), region);
+                    /**
+                     * create a replica on the first server in the list. create..list. Pinned flag
+                     * is set to false for now but may need to be updated properly when run-time
+                     * addition is supported.
+                     */
+                    addReplica(servers.get(0), addressList.get(0), region, false);
                 } catch (SapphireObjectNotFoundException e) {
                     throw new ScaleUpException(
                             "Failed to find sapphire object. Probably deleted.", e);
@@ -246,6 +251,7 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
             }
         }
 
+        // TODO: Verify it works in multi-DM scenario.
         public synchronized void scaleDownReplica(SapphireServerPolicy server)
                 throws RemoteException, ScaleDownException {
             ArrayList<SapphireServerPolicy> serverList = getServers();

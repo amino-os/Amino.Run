@@ -213,22 +213,25 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
             // super.onCreate(server, annotations);
 
             super.onCreate(region, server, spec);
-            List<InetSocketAddress> addressList = null;
+            List<InetSocketAddress> addressList = new ArrayList<>();
 
             try {
-
-                addressList = sapphire_getAddressList(spec.getNodeSelectorSpec(), region);
-
-                // Register the first replica, which has already been created.
+                boolean pinned = server.isAlreadyPinned();
                 ServerPolicy consensusServer = (ServerPolicy) server;
+
+                if (!pinned) {
+                    addressList = sapphire_getAddressList(spec.getNodeSelectorSpec(), region);
+                    // The first in the addressList is for primary policy chain.
+                    // TODO: Improve node allocation so that other servers can be used instead of
+                    // the first one in the region.
+                    consensusServer.sapphire_pin_to_server(server, addressList.get(0));
+                }
+                
                 // Create additional replicas, one per region. TODO:  Create N-1 replicas on
                 // different servers in the same zone.
                 for (int i = 1; i < addressList.size(); i++) {
-                    addReplica(consensusServer, addressList.get(i), region);
+                    addReplica(consensusServer, addressList.get(i), region, pinned);
                 }
-
-                // The first in the addressList is for primary policy chain.
-                consensusServer.sapphire_pin_to_server(server, addressList.get(0));
 
                 addServer(server);
 

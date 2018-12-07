@@ -27,10 +27,7 @@ import org.mockito.Matchers;
 import org.powermock.modules.junit4.PowerMockRunner;
 import sapphire.app.DMSpec;
 import sapphire.app.Language;
-import sapphire.app.SO;
 import sapphire.app.SapphireObjectSpec;
-import sapphire.app.TestSO;
-import sapphire.app.stubs.TestSO_Stub;
 import sapphire.common.*;
 import sapphire.kernel.common.KernelOID;
 import sapphire.kernel.common.KernelObjectStub;
@@ -40,7 +37,9 @@ import sapphire.policy.util.consensus.raft.LeaderException;
 import sapphire.policy.util.consensus.raft.LogEntry;
 import sapphire.policy.util.consensus.raft.RemoteRaftServer;
 import sapphire.policy.util.consensus.raft.Server;
-
+import sapphire.sampleSO.SO;
+import sapphire.sampleSO.TestSO;
+import sapphire.sampleSO.stubs.TestSO_Stub;
 
 /** Created by terryz on 4/9/18. */
 @RunWith(PowerMockRunner.class)
@@ -111,7 +110,7 @@ public class ConsensusRSMPolicyTest extends BaseTest {
         SapphireObjectSpec spec =
                 SapphireObjectSpec.newBuilder()
                         .setLang(Language.java)
-                        .setJavaClassName("sapphire.app.TestSO")
+                        .setJavaClassName("sapphire.sampleSO.TestSO")
                         .addDMSpec(
                                 DMSpec.newBuilder()
                                         .setName(ConsensusRSMPolicy.class.getName())
@@ -190,7 +189,7 @@ public class ConsensusRSMPolicyTest extends BaseTest {
 
     @Test
     public void applyToStateMachine() throws Exception {
-        String method = "public void sapphire.app.TestSO.incVal()";
+        String method = "public void sapphire.sampleSO.TestSO.incVal()";
         ArrayList<Object> params = new ArrayList<Object>();
         ConsensusRSMPolicy.RPC rpc = new ConsensusRSMPolicy.RPC(method, params);
         ConsensusRSMPolicy.ServerPolicy server3 = (ConsensusRSMPolicy.ServerPolicy) this.server3;
@@ -248,7 +247,7 @@ public class ConsensusRSMPolicyTest extends BaseTest {
      */
     @Test
     public void onRPCWithoutLeader() throws Exception {
-        String method = "public void sapphire.app.TestSO.incVal()";
+        String method = "public void sapphire.sampleSO.TestSO.incVal()";
         ArrayList<Object> params = new ArrayList<Object>();
 
         doThrow(new LeaderException("leaderException", null))
@@ -264,7 +263,7 @@ public class ConsensusRSMPolicyTest extends BaseTest {
      */
     @Test
     public void onRPCWithLeader() throws Exception {
-        String method = "public void sapphire.app.TestSO.incVal()";
+        String method = "public void sapphire.sampleSO.TestSO.incVal()";
         ArrayList<Object> params = new ArrayList<Object>();
         client.onRPC(method, params);
     }
@@ -275,7 +274,7 @@ public class ConsensusRSMPolicyTest extends BaseTest {
      */
     @Test
     public void clientOnRPC() throws Exception {
-        String method = "public void sapphire.app.TestSO.incVal()";
+        String method = "public void sapphire.sampleSO.TestSO.incVal()";
         ArrayList<Object> params = new ArrayList<Object>();
 
         doThrow(RemoteException.class).when(this.server1).onRPC(method, params);
@@ -286,7 +285,7 @@ public class ConsensusRSMPolicyTest extends BaseTest {
     /** If onRPC fails to happen on any of the servers, throw RemoteException. */
     @Test
     public void onRPCServersUnreachable() throws Exception {
-        String method = "public void sapphire.app.TestSO.incVal()";
+        String method = "public void sapphire.sampleSO.TestSO.incVal()";
         ArrayList<Object> params = new ArrayList<Object>();
 
         doThrow(RemoteException.class).when(this.server1).onRPC(method, params);
@@ -302,7 +301,7 @@ public class ConsensusRSMPolicyTest extends BaseTest {
      */
     @Test
     public void onRPCToFollowerWithoutLeader() throws Exception {
-        String method = "public void sapphire.app.TestSO.incVal()";
+        String method = "public void sapphire.sampleSO.TestSO.incVal()";
         ArrayList<Object> params = new ArrayList<Object>();
         doThrow(RemoteException.class).when(this.server1).onRPC(method, params);
         doThrow(new LeaderException("LeaderException", null))
@@ -318,7 +317,7 @@ public class ConsensusRSMPolicyTest extends BaseTest {
      */
     @Test
     public void onRPCToFollowerWithLeader() throws Exception {
-        String method = "public void sapphire.app.TestSO.incVal()";
+        String method = "public void sapphire.sampleSO.TestSO.incVal()";
         ArrayList<Object> params = new ArrayList<Object>();
         doThrow(RemoteException.class).when(this.server1).onRPC(method, params);
         doThrow(

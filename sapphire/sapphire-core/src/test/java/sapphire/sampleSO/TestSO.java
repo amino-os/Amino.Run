@@ -1,4 +1,6 @@
-package sapphire.app;
+package sapphire.sampleSO;
+
+import sapphire.app.SapphireObject;
 
 public class TestSO implements SapphireObject {
     public Integer i = 0;

@@ -19,12 +19,8 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
-import sapphire.app.SO;
 import sapphire.app.SapphireObjectServer;
 import sapphire.app.SapphireObjectSpec;
-import sapphire.app.TestSO;
-import sapphire.app.stubs.SO_Stub;
-import sapphire.app.stubs.TestSO_Stub;
 import sapphire.kernel.common.GlobalKernelReferences;
 import sapphire.kernel.common.KernelOID;
 import sapphire.kernel.common.KernelObjectFactory;
@@ -38,6 +34,10 @@ import sapphire.oms.OMSServerImpl;
 import sapphire.policy.DefaultSapphirePolicy;
 import sapphire.policy.SapphirePolicy;
 import sapphire.runtime.Sapphire;
+import sapphire.sampleSO.SO;
+import sapphire.sampleSO.TestSO;
+import sapphire.sampleSO.stubs.SO_Stub;
+import sapphire.sampleSO.stubs.TestSO_Stub;
 
 /**
  * This is the base test class with a setup to create a spied instance of oms, 3 kernel servers. And

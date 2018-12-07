@@ -1,10 +1,11 @@
-package sapphire.app;
+package sapphire.sampleSO;
 
 /** Created by Venugopal Reddy K on 6/9/18. */
+import sapphire.app.SapphireObject;
 import sapphire.runtime.SapphireConfiguration;
 
 @SapphireConfiguration(Policies = "sapphire.policy.DefaultSapphirePolicy")
-public class SO {
+public class SO implements SapphireObject {
     public Integer i = 1;
 
     public Integer getI() {

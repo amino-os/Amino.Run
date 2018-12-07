@@ -249,12 +249,6 @@ public class CacheLeasePolicy extends DefaultSapphirePolicy {
         public void syncObject(UUID lease, Serializable object) {
             appObject.setObject(object);
         }
-
-        @Override
-        public void onMembershipChange() {
-            // TODO Auto-generated method stub
-
-        }
     }
 
     /**

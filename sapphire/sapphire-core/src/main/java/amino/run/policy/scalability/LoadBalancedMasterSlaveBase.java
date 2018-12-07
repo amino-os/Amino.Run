@@ -213,6 +213,13 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultSapphirePolicy 
                         dest = getAvailable(i + 1, addressList, unavailable);
                     }
                     ServerBase replica = (ServerBase) addReplica(s, dest, region, pinned);
+                    // TODO: Quinton: Why are removeServer and then addServer called here?
+                    // May have been added because sapphire_replicate also has addServer() with
+                    // serverStub having the hostname of the one which replicated it. But after pin
+                    // host name would have changed. So calling remove and then add here would fix
+                    // that.
+                    // TODO: Clean all of this up, or at least comment clearly why wierd stuff is
+                    // being done.
                     removeServer(replica);
                     addServer(replica);
                     replica.start();

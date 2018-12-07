@@ -42,6 +42,10 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
 
     public static class ClientPolicy extends DefaultSapphirePolicy.DefaultClientPolicy {
         public Object onRPC(String method, ArrayList<Object> params) throws Exception {
+            /* TODO: Note that this is currently the only DM that calls {@link setServer}.
+             * setServer should only ever be called by the kernel.  Remove calls to setServer and keep
+             * track of the master via a separate mechanism.
+             */
             Object ret = null;
 
             try {
@@ -108,7 +112,6 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
         }
     }
 
-    // TODO: ServerPolicy needs to be Serializable
     public static class ServerPolicy extends DefaultSapphirePolicy.DefaultServerPolicy
             implements StateMachineApplier, RemoteRaftServer {
         static Logger logger = Logger.getLogger(ServerPolicy.class.getCanonicalName());
@@ -203,16 +206,12 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
         }
     }
 
-    // TODO: Group policy needs to be Serializable
     public static class GroupPolicy extends DefaultSapphirePolicy.DefaultGroupPolicy {
         private static Logger logger = Logger.getLogger(GroupPolicy.class.getName());
 
         @Override
         public void onCreate(String region, SapphireServerPolicy server, SapphireObjectSpec spec)
                 throws RemoteException {
-            // TODO(merged):
-            // super.onCreate(server, annotations);
-
             super.onCreate(region, server, spec);
             List<InetSocketAddress> addressList = new ArrayList<>();
 
@@ -234,6 +233,20 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
                     addReplica(consensusServer, addressList.get(i), region, pinned);
                 }
 
+                // The first in the addressList is for primary policy chain.
+                // consensusServer.sapphire_pin_to_server(server, addressList.get(0));
+                // TODO: Quinton: This should not be necessary here.  It is probably here as a hack
+                // because
+                // addServer is not being invoked correctly elsewhere.
+                // Indeed, in Sapphire.createPolicies, addServer is called after onCreate.
+                // So actually addServer is called twice for this server, once here and once in
+                // createPolicies.
+                // That's probably causing things not to work correctly.
+                // No wait!! It's actually being called three times.  Once above in super.onCreate
+                // also.
+                // Incredible! Need to fix all of this.
+                // addServer should be called from
+                // onCreate, and when group members are added/replaced.
                 addServer(server);
 
                 // Tell all the servers about one another

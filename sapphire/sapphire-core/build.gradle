@@ -151,17 +151,29 @@ task genIntegTestStubs(type :JavaExec){
     inputs.dir src   // Declare inputs, so gradle will run if they have been change
 
 }
+task compileIntegTestStubs (type: JavaCompile){
+    source = sourceSets.integrationTest.java.srcDirs
+    classpath = sourceSets.integrationTest.compileClasspath
+    destinationDir = sourceSets.integrationTest.output.classesDir
+    options.incremental = true
+    inputs.dir genIntegTestStubs.outputs
+
+
+}
 tasks.googleJavaFormat.mustRunAfter genStubs
 tasks.googleJavaFormat.mustRunAfter genIntegTestStubs
 tasks.googleJavaFormat.mustRunAfter genGraalStub
 
 compileGraalStub.dependsOn genGraalStub
 compileTestJava.dependsOn compileGraalStub
+compileIntegTestStubs.dependsOn genIntegTestStubs
 tasks.googleJavaFormat.dependsOn genStubs
 tasks.googleJavaFormat.dependsOn genGraalStub
 tasks.googleJavaFormat.dependsOn genIntegTestStubs
 check.dependsOn tasks.googleJavaFormat
 check.dependsOn integTest
 compileJava.dependsOn checkGraalVmVersion
+genIntegTestStubs.mustRunAfter compileIntegrationTestJava
+compileIntegrationTestJava.mustRunAfter compileIntegTestStubs
 integTest.mustRunAfter test
 jar.inputs.dir compileStubs.outputs // jar needs to be rebuilt if stubs got recompiled

@@ -9,8 +9,8 @@ public class Coordinator implements SapphireObject {
     private KVStore store2;
 
     public Coordinator(KVStore s1, KVStore s2) {
-        this.store1 = store1;
-        this.store2 = store2;
+        this.store1 = s1;
+        this.store2 = s2;
     }
 
     /* migrate  method  moves the specified key value pair from  store 1 to store2 ,

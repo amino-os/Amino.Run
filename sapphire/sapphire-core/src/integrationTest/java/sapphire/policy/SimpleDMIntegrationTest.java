@@ -429,14 +429,15 @@ public class SimpleDMIntegrationTest {
         SapphireObjectID store2SapphireObjectID =
                 sapphireObjectServer.createSapphireObject(kvStoreSpec.toString());
         KVStore store2 =
-                (KVStore) sapphireObjectServer.acquireSapphireObjectStub(store1SapphireObjectID);
+                (KVStore) sapphireObjectServer.acquireSapphireObjectStub(store2SapphireObjectID);
         String key1 = "k1";
         String value1 = "v1";
         String key2 = "k2";
         String value2 = "v2";
+        String value3 = "v3";
         store1.set(key2, value2);
         store1.set(key1, value1);
-        store2.set(key2, value2);
+        store2.set(key2, value3);
         SapphireObjectSpec coordinatoreSpec = getSapphireObjectSpecForDM("TwoPCCoordinatorDM.yaml");
         SapphireObjectID coordinatorSapphireObjectID =
                 sapphireObjectServer.createSapphireObject(
@@ -448,7 +449,7 @@ public class SimpleDMIntegrationTest {
         /* During the invocation of migrate method for every participant method invocation ,
         Two PC Coordinator DM's server policy initiates  invocation in following sequence
         1.join before method invocation
-        2.method invocation
+        2.actual method invocation
         3.leave after method invocation
         4.vote after all participant method invocation is completed
         5.commit or abort invoked  depending on state of vote */
@@ -457,16 +458,20 @@ public class SimpleDMIntegrationTest {
         key1 migrated from store1 to store2*/
 
         coordinator.migrate(key1);
+        /* Verifying the value of store1 and store2 */
+        Assert.assertEquals(store1.get(key1), null);
         Assert.assertEquals(store2.get(key1), value1);
 
         try {
             /* Test2: Verifying the rollback use case ,
             Try to migrate key2 from store1 to store2 ,key2 already present in store2 migrate fails ,
             exception thrown and rollback triggered*/
+
             coordinator.migrate(key2);
         } catch (Exception e) {
-            /* Verifying the value of store1  to check the rollback */
+            /* Verifying the value of store1 and store2  to check the rollback */
             Assert.assertEquals(store1.get(key2), value2);
+            Assert.assertEquals(store2.get(key2), value3);
         }
     }
 

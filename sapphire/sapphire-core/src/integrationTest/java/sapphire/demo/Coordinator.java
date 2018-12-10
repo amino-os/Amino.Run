@@ -14,7 +14,7 @@ public class Coordinator implements SapphireObject {
     }
 
     /* migrate  method  moves the specified key value pair from  store 1 to store2 ,
-      if store holds the specified  key then exception will thrown
+      if store holds the specified  key then exception will be thrown
       Two PC Coordinator DM catches the exception and triggers  the abort on all
       Participants
 

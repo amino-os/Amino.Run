@@ -47,8 +47,7 @@ public class KVStore
     }
 
     public Serializable remove(String key) {
-        Serializable value = this.kvStore.get(key);
-        this.kvStore.remove(key);
+        Serializable value = this.kvStore.remove(key);
         return value;
     }
 
@@ -89,7 +88,7 @@ public class KVStore
 
     @Override
     public Vote vote(UUID transactionId) throws TransactionExecutionException {
-        return null;
+        return Vote.YES;
     }
 
     @Override

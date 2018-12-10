@@ -92,6 +92,15 @@ public class ServerInfo implements Serializable {
         return true;
     }
 
+    /**
+     * Checks if the server contains <strong>all</strong> labels specified in the given
+     * nodeAffinity. If the specified nodeAffinity is {@code null} or empty, we consider no selector
+     * is specified, and therefore we return {@code true}.
+     *
+     * @param nodeAffinity NodeAffinity
+     * @return {@code true} if the server contains all labels in the nodeAffinity; {@code false}
+     *     otherwise. Returns {@code true} if the given nodeAffinity is {@code null} or empty.
+     */
     public boolean matchNodeAffinity(NodeAffinity nodeAffinity) {
         if (nodeAffinity == null) {
             return true;
@@ -109,16 +118,17 @@ public class ServerInfo implements Serializable {
             if (MatchExpressions == null && MatchFields == null) {
                 continue;
             }
-            if (MatchExpressions.size() == 0 && MatchFields.size() == 0) {
+            if ((MatchExpressions != null && MatchExpressions.size() == 0)
+                    && (MatchFields != null && MatchFields.size() == 0)) {
                 continue;
             }
-            if (MatchExpressions.size() != 0) {
+            if (MatchExpressions != null && MatchExpressions.size() != 0) {
                 if (!matchExpressions(MatchExpressions)) {
                     continue;
                 }
             }
-            if (MatchFields.size() != 0) {
-                if (!matchExpressions(MatchFields)) {
+            if (MatchFields != null && MatchFields.size() != 0) {
+                if (!matchFileds(MatchFields)) {
                     continue;
                 }
             }
@@ -127,15 +137,13 @@ public class ServerInfo implements Serializable {
         return false;
     }
 
-    // TODO need to validate & change the implement
     /**
      * Checks if the server contains <strong>all</strong> labels specified in the given label map.
      * If the specified label map is {@code null} or empty, we consider no selector is specified,
      * and therefore we return {@code true}.
      *
-     * @param matchExprs a list of NodeSelectorRequirement
-     * @return {@code true} if the server matches all matchExprs in the list; {@code false}
-     *     otherwise. Returns {@code true} if the given matchExprs is {@code null} or empty.
+     * @param matchExpItem NodeSelectorRequirement
+     * @return {@code true} if the server matches matchExpItem; {@code false} otherwise.
      */
 
     // There is a match in the following cases:
@@ -149,55 +157,120 @@ public class ServerInfo implements Serializable {
     // (5) The operator is GreaterThanOperator or LessThanOperator, and Labels has
     //     the Requirement's key and the corresponding value satisfies mathematical inequality.
 
+    public boolean matcheLabelSelector(NodeSelectorRequirement matchExpItem) {
+
+        switch (matchExpItem.operator) {
+            case LabelUtils.In:
+            case LabelUtils.Equals:
+            case LabelUtils.DoubleEquals:
+                if (!this.labels.containsKey(matchExpItem.key)) {
+                    return false;
+                }
+                return matchExpItem.values.contains(this.labels.get(matchExpItem.key));
+            case LabelUtils.NotIn:
+            case LabelUtils.NotEquals:
+                if (!this.labels.containsKey(matchExpItem.key)) {
+                    logger.warning("keys doesn't match");
+                    return true;
+                }
+                return !matchExpItem.values.contains(this.labels.get(matchExpItem.key));
+            case LabelUtils.Exists:
+                return this.labels.containsKey(matchExpItem.key);
+            case LabelUtils.DoesNotExist:
+                return !this.labels.containsKey(matchExpItem.key);
+            case LabelUtils.GreaterThan:
+            case LabelUtils.LessThan:
+                if (!this.labels.containsKey(matchExpItem.key)) {
+                    return false;
+                }
+                long lsValue = Integer.parseInt(this.labels.get(matchExpItem.key));
+
+                // There should be only one strValue in r.strValues, and can be converted to a
+                // integer.
+                if (matchExpItem.values.size() != 1) {
+                    logger.warning(
+                            "Invalid values count %+v of requirement %#v, for 'Gt', 'Lt' operators, exactly one value is required"
+                                    + matchExpItem.values.size()
+                                    + matchExpItem);
+                    return false;
+                }
+                long rValue = Integer.parseInt(matchExpItem.values.get(0));
+
+                return ((matchExpItem.operator == LabelUtils.GreaterThan && lsValue > rValue)
+                        || (matchExpItem.operator == LabelUtils.LessThan && lsValue < rValue));
+            default:
+                return false;
+        }
+    }
+
+    /**
+     * Checks if the server contains <strong>all</strong> labels specified in the given label map.
+     * If the specified label map is {@code null} or empty, we consider no selector is specified,
+     * and therefore we return {@code true}.
+     *
+     * @param matchExprs a list of NodeSelectorRequirement
+     * @return {@code true} if the server matches all matchExprs in the list; {@code false}
+     *     otherwise. Returns {@code true} if the given matchExprs is {@code null} or empty.
+     */
+    // returns true if all its Requirements match the input Labels.
+    // If any Requirement does not match, false is returned.
     public boolean matchExpressions(List<NodeSelectorRequirement> matchExprs) {
         if ((matchExprs == null) || (matchExprs.size() == 0)) {
             return true;
         }
-
         for (int i = 0; i < matchExprs.size(); i++) {
             NodeSelectorRequirement matchExpItem = matchExprs.get(i);
+            if (!matcheLabelSelector(matchExpItem)) {
+                logger.warning("matcheLabelSelector  failed for matchExpItem:" + matchExpItem);
+                return false;
+            }
+        }
+        return true;
+    }
 
-            switch (matchExpItem.operator) {
-                case LabelUtils.In:
-                case LabelUtils.Equals:
-                case LabelUtils.DoubleEquals:
-                    if (!this.labels.containsKey(matchExpItem.key)) {
-                        return false;
-                    }
-                    return matchExpItem.values.contains(this.labels.get(matchExpItem.key));
-                case LabelUtils.NotIn:
-                case LabelUtils.NotEquals:
-                    if (!this.labels.containsKey(matchExpItem.key)) {
-                        logger.warning("keys doesn't match");
-                        return true;
-                    }
-                    return !matchExpItem.values.contains(this.labels.get(matchExpItem.key));
-                case LabelUtils.Exists:
-                    return this.labels.containsKey(matchExpItem.key);
-                case LabelUtils.DoesNotExist:
-                    return !this.labels.containsKey(matchExpItem.key);
-                case LabelUtils.GreaterThan:
-                case LabelUtils.LessThan:
-                    if (!this.labels.containsKey(matchExpItem.key)) {
-                        return false;
-                    }
-                    long lsValue = Integer.parseInt(this.labels.get(matchExpItem.key));
+    /**
+     * Checks if the server contains <strong>all</strong> labels specified in the given label map.
+     * If the specified label map is {@code null} or empty, we consider no selector is specified,
+     * and therefore we return {@code true}.
+     *
+     * @param matchFieldItem NodeSelectorRequirement
+     * @return {@code true} if the server matches matchFieldItem; {@code false} otherwise.
+     */
+    public boolean matcheFieldSelector(NodeSelectorRequirement matchFieldItem) {
+        if (matchFieldItem.values.size() > 1) {
+            logger.warning("matcheFieldSelector  only single value is allowed:" + matchFieldItem);
+            return false;
+        }
+        switch (matchFieldItem.operator) {
+            case LabelUtils.In:
+                return matchFieldItem.values.get(0).equals(this.labels.get(matchFieldItem.key));
+            case LabelUtils.NotIn:
+                return !matchFieldItem.values.get(0).equals(this.labels.get(matchFieldItem.key));
+            default:
+                return false;
+        }
+    }
 
-                    // There should be only one strValue in r.strValues, and can be converted to a
-                    // integer.
-                    if (matchExpItem.values.size() != 1) {
-                        logger.warning(
-                                "Invalid values count %+v of requirement %#v, for 'Gt', 'Lt' operators, exactly one value is required"
-                                        + matchExpItem.values.size()
-                                        + matchExpItem);
-                        return false;
-                    }
-                    long rValue = Integer.parseInt(matchExpItem.values.get(0));
-
-                    return ((matchExpItem.operator == LabelUtils.GreaterThan && lsValue > rValue)
-                            || (matchExpItem.operator == LabelUtils.LessThan && lsValue < rValue));
-                default:
-                    return false;
+    /**
+     * Checks if the server contains <strong>all</strong> labels specified in the given label map.
+     * If the specified label map is {@code null} or empty, we consider no selector is specified,
+     * and therefore we return {@code true}.
+     *
+     * @param matchFields a list of NodeSelectorRequirement
+     * @return {@code true} if the server matches all matchExprs in the list; {@code false}
+     *     otherwise. Returns {@code true} if the given matchExprs is {@code null} or empty.
+     */
+    // returns true if all its Requirements match the Labels.
+    // If any Requirement does not match, false is returned.
+    public boolean matchFileds(List<NodeSelectorRequirement> matchFields) {
+        if ((matchFields == null) || (matchFields.size() == 0)) {
+            return true;
+        }
+        for (int i = 0; i < matchFields.size(); i++) {
+            NodeSelectorRequirement matchFieldItem = matchFields.get(i);
+            if (!matcheFieldSelector(matchFieldItem)) {
+                logger.warning("matcheFieldSelector  failed for matchFieldItem:" + matchFieldItem);
+                return false;
             }
         }
         return true;

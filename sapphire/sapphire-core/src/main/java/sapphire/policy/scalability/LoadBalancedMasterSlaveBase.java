@@ -204,7 +204,7 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultSapphirePolicy 
                 if (!pinned) {
                     dest = getAvailable(0, addressList, unavailable);
                     s.sapphire_pin_to_server(server, dest);
-                    updateReplicaHostName(s, dest);
+                    ((KernelObjectStub) s).$__updateHostname(dest);
                     logger.info("Created master on " + dest);
                 }
                 s.start();

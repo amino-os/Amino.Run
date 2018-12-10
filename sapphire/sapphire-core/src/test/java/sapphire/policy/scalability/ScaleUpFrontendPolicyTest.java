@@ -5,8 +5,8 @@ import static sapphire.common.SapphireUtils.deleteSapphireObject;
 import static sapphire.common.UtilsTest.extractFieldValueOnInstance;
 
 import java.net.InetSocketAddress;
-import java.rmi.registry.LocateRegistry;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -20,7 +20,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
-import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import sapphire.app.*;
 import sapphire.app.SO;
@@ -28,26 +27,15 @@ import sapphire.app.stubs.SO_Stub;
 import sapphire.common.AppObject;
 import sapphire.common.BaseTest;
 import sapphire.common.SapphireObjectID;
-import sapphire.common.SapphireUtils;
 import sapphire.kernel.common.KernelOID;
-import sapphire.kernel.common.KernelObjectFactory;
 import sapphire.kernel.common.KernelObjectStub;
-import sapphire.kernel.server.KernelServerImpl;
 import sapphire.policy.DefaultSapphirePolicy;
 import sapphire.policy.SapphirePolicy;
-import sapphire.runtime.Sapphire;
 
 /** ScaleupFrontend DM test cases */
 
 /** Created by Venugopal Reddy K 00900280 on 16/4/18. */
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({
-    KernelServerImpl.class,
-    Sapphire.class,
-    KernelObjectFactory.class,
-    LocateRegistry.class,
-    SapphireUtils.class
-})
 public class ScaleUpFrontendPolicyTest extends BaseTest {
     @Rule public ExpectedException thrown = ExpectedException.none();
 
@@ -129,7 +117,19 @@ public class ScaleUpFrontendPolicyTest extends BaseTest {
                                         .addConfig(lbConfig)
                                         .create())
                         .create();
-        super.setUp(spec, Server_Stub.class, Group_Stub.class);
+
+        super.setUp(
+                spec,
+                new HashMap<String, Class>() {
+                    {
+                        put("ScaleUpFrontendPolicy", Group_Stub.class);
+                    }
+                },
+                new HashMap<String, Class>() {
+                    {
+                        put("ScaleUpFrontendPolicy", Server_Stub.class);
+                    }
+                });
 
         SapphireObjectID sapphireObjId = sapphireObjServer.createSapphireObject(spec.toString());
         soStub = (SO_Stub) sapphireObjServer.acquireSapphireObjectStub(sapphireObjId);

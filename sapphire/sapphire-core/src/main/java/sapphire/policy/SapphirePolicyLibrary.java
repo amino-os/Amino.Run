@@ -260,16 +260,12 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
             // update the Hostname.
             List<SapphirePolicyContainer> processedPolicyList = serverPolicy.getProcessedPolicies();
             Iterator<SapphirePolicyContainer> itr = processedPolicyList.iterator();
-            SapphirePolicyContainer container;
-            KernelObjectStub tempServerPolicyStub;
-            SapphireServerPolicy tempServerPolicy;
             while (itr.hasNext()) {
-                container = itr.next();
-                tempServerPolicyStub = container.getServerPolicyStub();
-                tempServerPolicy = container.getServerPolicy();
-                tempServerPolicyStub.$__updateHostname(server);
-                /* AppObject holds the previous DM's server policy stub(instead of So stub) in case of DM chain.
-                Update host name in the server stub within AppObject */
+                SapphirePolicyContainer container = itr.next();
+                SapphireServerPolicy tempServerPolicy = container.getServerPolicy();
+                container.getServerPolicyStub().$__updateHostname(server);
+                /* AppObject holds the previous DM's server policy stub(instead of So stub) in case of DM chain on the
+                server side. Update host name in the server stub within AppObject */
                 if (tempServerPolicy.sapphire_getAppObject().getObject()
                         instanceof KernelObjectStub) {
                     ((KernelObjectStub) tempServerPolicy.sapphire_getAppObject().getObject())

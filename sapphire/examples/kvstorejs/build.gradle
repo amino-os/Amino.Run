@@ -7,19 +7,15 @@ dependencies {
 // Task for app stub generation
 genStubs {
     main = "sapphire.compiler.GraalStubGenerator"
-    classpath +=  files("$projectDir/../../sapphire-core/build/libs/sapphire-core-1.0.0.jar")
+    classpath =  files("$projectDir/../../sapphire-core/build/libs/sapphire-core-1.0.0.jar")
 
     def sapphireObjectPath = "$projectDir/src/main/js/sapphire/appdemo/KeyValueStore.js"
     def outPath = "$projectDir/src/main/java"
     def packageName = "sapphire.appdemo.stubs"
     def sapphireClasses = "KeyValueStore"
     args sapphireObjectPath, outPath, packageName, sapphireClasses
-    outputs.dir outPath // Declare outputs, so gradle will run if they have been changed
+    outputs.dir "$projectDir/src/main/java/sapphire/appdemo/stubs" // Declare outputs, so gradle will run if they have been changed
     inputs.dir sapphireObjectPath   // Declare inputs, so gradle will run if they have been changed
-}
-
-clean {
-    delete genStubs.outputs // Add generated stubs to what the clean task must delete
 }
 
 jar.dependsOn compileStubs
@@ -47,3 +43,6 @@ runapp {
     environment  YAML_FILE:  "KeyValueStore.yaml"
     main = 'sapphire.appdemo.KeyValueStoreClient'
 }
+
+compileJava.dependsOn genStubs
+runapp.dependsOn compileStubs

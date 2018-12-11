@@ -140,40 +140,16 @@ task compileGraalStub(type: JavaCompile) {
     options.incremental = true
     inputs.dir genGraalStub.outputs
 }
-task genIntegTestStubs(type :JavaExec){
-    main = "sapphire.compiler.StubGenerator"
-    classpath = sourceSets.integrationTest.runtimeClasspath
-    def pkg = 'sapphire.demo'
-    def src = file(project.buildDir.toString() + '/classes/java/integrationTest/sapphire/demo')
-    def dst = file(project.projectDir.toString() + '/src/integrationTest/java/sapphire/demo/stubs')
-    args src.toString(), pkg, dst.toString()
-    outputs.dir dst // Declare outputs, so gradle will run if they have been changed
-    inputs.dir src   // Declare inputs, so gradle will run if they have been change
 
-}
-task compileIntegTestStubs (type: JavaCompile){
-    source = sourceSets.integrationTest.java.srcDirs
-    classpath = sourceSets.integrationTest.compileClasspath
-    destinationDir = sourceSets.integrationTest.output.classesDir
-    options.incremental = true
-    inputs.dir genIntegTestStubs.outputs
-
-
-}
 tasks.googleJavaFormat.mustRunAfter genStubs
-tasks.googleJavaFormat.mustRunAfter genIntegTestStubs
 tasks.googleJavaFormat.mustRunAfter genGraalStub
 
 compileGraalStub.dependsOn genGraalStub
 compileTestJava.dependsOn compileGraalStub
-compileIntegTestStubs.dependsOn genIntegTestStubs
 tasks.googleJavaFormat.dependsOn genStubs
 tasks.googleJavaFormat.dependsOn genGraalStub
-tasks.googleJavaFormat.dependsOn genIntegTestStubs
 check.dependsOn tasks.googleJavaFormat
 check.dependsOn integTest
 compileJava.dependsOn checkGraalVmVersion
-genIntegTestStubs.mustRunAfter compileIntegrationTestJava
-compileIntegrationTestJava.mustRunAfter compileIntegTestStubs
 integTest.mustRunAfter test
 jar.inputs.dir compileStubs.outputs // jar needs to be rebuilt if stubs got recompiled

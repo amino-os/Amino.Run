@@ -48,12 +48,7 @@ public abstract class DefaultSapphirePolicyUpcallImpl extends SapphirePolicyLibr
     public abstract static class DefaultSapphireServerPolicyUpcallImpl
             extends SapphireServerPolicyLibrary {
         public Object onRPC(String method, ArrayList<Object> params) throws Exception {
-            if (nextServerKernelObject == null) {
-                /* The default behavior is to just invoke the method on the Sapphire Object this Server Policy Object manages */
-                return appObject.invoke(method, params);
-            } else {
-                return nextServerKernelObject.invoke(method, params);
-            }
+            return appObject.invoke(method, params);
         }
 
         @Deprecated

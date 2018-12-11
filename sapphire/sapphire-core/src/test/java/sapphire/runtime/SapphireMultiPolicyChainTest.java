@@ -6,7 +6,6 @@ import static sapphire.common.SapphireUtils.deleteSapphireObject;
 import static sapphire.policy.SapphirePolicyUpcalls.SapphirePolicyConfig;
 
 import java.net.InetSocketAddress;
-import java.rmi.registry.LocateRegistry;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -14,7 +13,6 @@ import java.util.Map;
 import org.junit.*;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
-import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import sapphire.app.DMSpec;
 import sapphire.app.Language;
@@ -22,21 +20,12 @@ import sapphire.app.SO;
 import sapphire.app.SapphireObjectSpec;
 import sapphire.common.*;
 import sapphire.kernel.common.KernelOID;
-import sapphire.kernel.common.KernelObjectFactory;
 import sapphire.kernel.common.KernelObjectStub;
-import sapphire.kernel.server.KernelServerImpl;
 import sapphire.policy.*;
 import sapphire.policy.dht.DHTPolicy;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({
-    KernelServerImpl.class,
-    Sapphire.class,
-    KernelObjectFactory.class,
-    LocateRegistry.class,
-    SapphireUtils.class
-})
-public class SapphireMultiPolicyChainTest extends MultiPolicyChainBaseTest {
+public class SapphireMultiPolicyChainTest extends BaseTest {
 
     @Rule public ExpectedException thrown = ExpectedException.none();
 
@@ -197,7 +186,7 @@ public class SapphireMultiPolicyChainTest extends MultiPolicyChainBaseTest {
         configMaps = Utils.fromDMSpecListToConfigMap(spec.getDmList());
         configMap = configMaps.get(DHTPolicy.class.getName());
 
-        super.setUpMultiDM(spec, groupMap, serverMap);
+        super.setUp(spec, groupMap, serverMap);
     }
 
     @Test
@@ -221,7 +210,6 @@ public class SapphireMultiPolicyChainTest extends MultiPolicyChainBaseTest {
                 Sapphire.createPolicy(
                         sapphireObjId,
                         spec,
-                        null,
                         configMap,
                         policyNameChain,
                         processedPolicies,
@@ -251,7 +239,6 @@ public class SapphireMultiPolicyChainTest extends MultiPolicyChainBaseTest {
                 Sapphire.createPolicy(
                         sapphireObjId,
                         spec,
-                        null,
                         configMap,
                         policyNameChain,
                         processedPolicies,

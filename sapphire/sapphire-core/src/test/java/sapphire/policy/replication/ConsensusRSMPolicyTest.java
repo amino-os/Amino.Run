@@ -10,8 +10,8 @@ import static sapphire.policy.util.consensus.raft.ServerTest.*;
 
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
 import java.util.ArrayList;
+import java.util.HashMap;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -19,7 +19,6 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Matchers;
-import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import sapphire.app.DMSpec;
 import sapphire.app.Language;
@@ -28,24 +27,14 @@ import sapphire.app.SapphireObjectSpec;
 import sapphire.app.stubs.SO_Stub;
 import sapphire.common.*;
 import sapphire.kernel.common.KernelOID;
-import sapphire.kernel.common.KernelObjectFactory;
 import sapphire.kernel.common.KernelObjectStub;
-import sapphire.kernel.server.KernelServerImpl;
 import sapphire.policy.DefaultSapphirePolicy;
 import sapphire.policy.SapphirePolicy;
 import sapphire.policy.util.consensus.raft.LeaderException;
 import sapphire.policy.util.consensus.raft.RemoteRaftServer;
-import sapphire.runtime.Sapphire;
 
 /** Created by terryz on 4/9/18. */
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({
-    KernelServerImpl.class,
-    Sapphire.class,
-    KernelObjectFactory.class,
-    LocateRegistry.class,
-    SapphireUtils.class
-})
 public class ConsensusRSMPolicyTest extends BaseTest {
     sapphire.policy.util.consensus.raft.Server raftServer1;
     sapphire.policy.util.consensus.raft.Server raftServer2;
@@ -120,7 +109,18 @@ public class ConsensusRSMPolicyTest extends BaseTest {
                                         .setName(ConsensusRSMPolicy.class.getName())
                                         .create())
                         .create();
-        super.setUp(spec, Server_Stub.class, Group_Stub.class);
+        super.setUp(
+                spec,
+                new HashMap<String, Class>() {
+                    {
+                        put("ConsensusRSMPolicy", Group_Stub.class);
+                    }
+                },
+                new HashMap<String, Class>() {
+                    {
+                        put("ConsensusRSMPolicy", Server_Stub.class);
+                    }
+                });
 
         SapphireObjectID sapphireObjId = sapphireObjServer.createSapphireObject(spec.toString());
         soStub = (SO_Stub) sapphireObjServer.acquireSapphireObjectStub(sapphireObjId);

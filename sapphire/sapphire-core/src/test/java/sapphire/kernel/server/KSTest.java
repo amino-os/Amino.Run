@@ -7,6 +7,7 @@ import java.lang.reflect.Field;
 import java.net.InetSocketAddress;
 import java.rmi.registry.LocateRegistry;
 import java.util.ArrayList;
+import java.util.HashMap;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -110,7 +111,18 @@ public class KSTest extends BaseTest {
                         .setLang(Language.java)
                         .setJavaClassName("sapphire.app.SO")
                         .create();
-        super.setUp(spec, Server_Stub.class, Group_Stub.class);
+        super.setUp(
+                spec,
+                new HashMap<String, Class>() {
+                    {
+                        put("DefaultSapphirePolicy", Group_Stub.class);
+                    }
+                },
+                new HashMap<String, Class>() {
+                    {
+                        put("DefaultSapphirePolicy", Server_Stub.class);
+                    }
+                });
 
         SapphireObjectID sapphireObjId = sapphireObjServer.createSapphireObject(spec.toString());
 

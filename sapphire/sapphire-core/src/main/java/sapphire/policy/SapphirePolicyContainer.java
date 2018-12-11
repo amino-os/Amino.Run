@@ -1,7 +1,6 @@
 package sapphire.policy;
 
 import java.io.Serializable;
-import sapphire.kernel.common.KernelOID;
 import sapphire.kernel.common.KernelObjectStub;
 
 /** Contains Sapphire policies. */
@@ -10,20 +9,11 @@ public class SapphirePolicyContainer implements Serializable {
     private SapphirePolicy.SapphireGroupPolicy getGroupPolicyStub;
     private SapphirePolicy.SapphireServerPolicy serverPolicy;
     private KernelObjectStub serverPolicyStub;
-    private int oid;
 
     public SapphirePolicyContainer(
             String policyName, SapphirePolicy.SapphireGroupPolicy getGroupPolicyStub) {
         this.policyName = policyName;
         this.getGroupPolicyStub = getGroupPolicyStub;
-    }
-
-    public int getKernelOID() {
-        return oid;
-    }
-
-    public void setKernelOID(KernelOID kernelOID) {
-        this.oid = kernelOID.getID();
     }
 
     public String getPolicyName() {

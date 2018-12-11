@@ -9,8 +9,8 @@ import static sapphire.common.UtilsTest.extractFieldValueOnInstance;
 import static sapphire.common.UtilsTest.setFieldValueOnInstance;
 
 import java.net.InetSocketAddress;
-import java.rmi.registry.LocateRegistry;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -22,31 +22,19 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
-import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import sapphire.app.*;
 import sapphire.app.SO;
 import sapphire.app.stubs.SO_Stub;
 import sapphire.common.BaseTest;
 import sapphire.common.SapphireObjectID;
-import sapphire.common.SapphireUtils;
 import sapphire.kernel.common.KernelOID;
-import sapphire.kernel.common.KernelObjectFactory;
 import sapphire.kernel.common.KernelObjectStub;
-import sapphire.kernel.server.KernelServerImpl;
 import sapphire.policy.DefaultSapphirePolicy;
 import sapphire.policy.SapphirePolicy;
-import sapphire.runtime.Sapphire;
 
 /** Created by Vishwajeet on 2/4/18. */
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({
-    KernelServerImpl.class,
-    Sapphire.class,
-    KernelObjectFactory.class,
-    LocateRegistry.class,
-    SapphireUtils.class
-})
 public class LoadBalancedFrontendPolicyTest extends BaseTest {
     int exceptionExpected = 0;
 
@@ -125,7 +113,18 @@ public class LoadBalancedFrontendPolicyTest extends BaseTest {
                                         .addConfig(config)
                                         .create())
                         .create();
-        super.setUp(spec, Server_Stub.class, Group_Stub.class);
+        super.setUp(
+                spec,
+                new HashMap<String, Class>() {
+                    {
+                        put("LoadBalancedFrontendPolicy", Group_Stub.class);
+                    }
+                },
+                new HashMap<String, Class>() {
+                    {
+                        put("LoadBalancedFrontendPolicy", Server_Stub.class);
+                    }
+                });
 
         SapphireObjectID sapphireObjId = sapphireObjServer.createSapphireObject(spec.toString());
         soStub = (SO_Stub) sapphireObjServer.acquireSapphireObjectStub(sapphireObjId);

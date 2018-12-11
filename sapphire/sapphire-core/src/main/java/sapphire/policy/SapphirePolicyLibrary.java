@@ -27,7 +27,6 @@ import sapphire.kernel.common.KernelObjectFactory;
 import sapphire.kernel.common.KernelObjectNotCreatedException;
 import sapphire.kernel.common.KernelObjectNotFoundException;
 import sapphire.kernel.common.KernelObjectStub;
-import sapphire.kernel.server.KernelObject;
 import sapphire.kernel.server.KernelServerImpl;
 import sapphire.oms.OMSServer;
 import sapphire.policy.SapphirePolicy.SapphireServerPolicy;
@@ -54,10 +53,6 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
         protected boolean alreadyPinned;
 
         static Logger logger = Logger.getLogger(SapphireServerPolicyLibrary.class.getName());
-
-        // SeverPolicy calls Kernel object in the chain - this is transparent call which will either
-        // invoke method in the next server policy or app object.
-        protected KernelObject nextServerKernelObject;
 
         // ServerPolicy that comes after the current policy in the server side chain - this order is
         // reverse in the client side.
@@ -107,10 +102,6 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
             return this.nextServerPolicy;
         }
 
-        public void setNextServerKernelObject(KernelObject sapphireServerPolicy) {
-            this.nextServerKernelObject = sapphireServerPolicy;
-        }
-
         public void setNextServerPolicy(SapphireServerPolicy sapphireServerPolicy) {
             this.nextServerPolicy = sapphireServerPolicy;
         }
@@ -153,16 +144,6 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 
             // Construct list of policies that will come after this policy on the server side.
             try {
-                // Find the appStub which only exists in the last server policy (first in client
-                // side).
-                SapphireServerPolicy lastServerPolicy = (SapphireServerPolicy) this;
-
-                // TODO (merge):
-                // Class appObjectClass =
-                // sapphire_getAppObject().getObject().getClass().getSuperclass();
-                AppObject actualAppObject = lastServerPolicy.sapphire_getAppObject();
-                if (actualAppObject == null) throw new Exception("Could not find AppObject");
-
                 // Create a new replica chain from already created policies before this policy and
                 // this policy.
                 List<SapphirePolicyContainer> processedPoliciesReplica =
@@ -170,7 +151,6 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
                 Sapphire.createPolicy(
                         this.getGroup().sapphireObjId,
                         spec,
-                        actualAppObject,
                         configMap,
                         processedPolicies,
                         processedPoliciesReplica,
@@ -195,7 +175,6 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
                         Sapphire.createPolicy(
                                 this.getGroup().sapphireObjId,
                                 spec,
-                                null,
                                 configMap,
                                 this.nextPolicies,
                                 processedPoliciesReplica,
@@ -281,10 +260,17 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
             // update the Hostname.
             List<SapphirePolicyContainer> processedPolicyList = serverPolicy.getProcessedPolicies();
             Iterator<SapphirePolicyContainer> itr = processedPolicyList.iterator();
-            KernelObjectStub tempServerPolicyStub = null;
             while (itr.hasNext()) {
-                tempServerPolicyStub = itr.next().getServerPolicyStub();
-                tempServerPolicyStub.$__updateHostname(server);
+                SapphirePolicyContainer container = itr.next();
+                SapphireServerPolicy tempServerPolicy = container.getServerPolicy();
+                container.getServerPolicyStub().$__updateHostname(server);
+                /* AppObject holds the previous DM's server policy stub(instead of So stub) in case of DM chain on the
+                server side. Update host name in the server stub within AppObject */
+                if (tempServerPolicy.sapphire_getAppObject().getObject()
+                        instanceof KernelObjectStub) {
+                    ((KernelObjectStub) tempServerPolicy.sapphire_getAppObject().getObject())
+                            .$__updateHostname(server);
+                }
             }
 
             logger.info(

@@ -14,7 +14,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import sapphire.common.AppObject;
-import sapphire.kernel.server.KernelObject;
 import sapphire.policy.scalability.LoadBalancedMasterSlaveBase;
 import sapphire.runtime.exception.AppExecutionException;
 import sapphire.runtime.exception.SapphireException;
@@ -37,18 +36,12 @@ public class Committer implements Closeable {
     private final AppObject appObject;
     private final Configuration config;
     private ExecutorService executor;
-    private final KernelObject nextKernelObject;
 
     // TODO (Terry): remove indexOfLargestCommittedEntry from constructor
-    public Committer(
-            AppObject appObject,
-            KernelObject kernelObject,
-            long indexOfLargestCommittedEntry,
-            Configuration config) {
+    public Committer(AppObject appObject, long indexOfLargestCommittedEntry, Configuration config) {
         this.appObject = appObject;
         this.indexOfLargestCommittedEntry = indexOfLargestCommittedEntry;
         this.config = config;
-        this.nextKernelObject = kernelObject;
     }
 
     /** Initializes Committer. */
@@ -95,54 +88,26 @@ public class Committer implements Closeable {
                         new Callable<Object>() {
                             @Override
                             public Object call() throws Exception {
-                                // todo: consider to treat appObject and nextKO the same way
-                                if (nextKernelObject == null) {
-                                    synchronized (appObject) {
-                                        try {
-
-                                            Object result =
-                                                    appObject.invoke(
-                                                            request.getMethodName(),
-                                                            request.getParams());
-                                            logger.log(
-                                                    Level.FINER,
-                                                    "result for request {0}: {1}",
-                                                    new Object[] {request, result});
-                                            return result;
-                                        } catch (Exception e) {
-                                            logger.log(
-                                                    Level.SEVERE,
-                                                    String.format(
-                                                            "failed to invoke write request %s on app object: "
-                                                                    + "%s",
-                                                            request, e),
-                                                    e);
-                                            throw e;
-                                        }
-                                    }
-                                } else {
-                                    synchronized (nextKernelObject) {
-                                        try {
-
-                                            Object result =
-                                                    nextKernelObject.invoke(
-                                                            request.getMethodName(),
-                                                            request.getParams());
-                                            logger.log(
-                                                    Level.FINER,
-                                                    "result for request {0}: {1}",
-                                                    new Object[] {request, result});
-                                            return result;
-                                        } catch (Exception e) {
-                                            logger.log(
-                                                    Level.SEVERE,
-                                                    String.format(
-                                                            "failed to invoke write request %s on kernel object: "
-                                                                    + "%s",
-                                                            request, e),
-                                                    e);
-                                            throw e;
-                                        }
+                                synchronized (appObject) {
+                                    try {
+                                        Object result =
+                                                appObject.invoke(
+                                                        request.getMethodName(),
+                                                        request.getParams());
+                                        logger.log(
+                                                Level.FINER,
+                                                "result for request {0}: {1}",
+                                                new Object[] {request, result});
+                                        return result;
+                                    } catch (Exception e) {
+                                        logger.log(
+                                                Level.SEVERE,
+                                                String.format(
+                                                        "failed to invoke write request %s on app object: "
+                                                                + "%s",
+                                                        request, e),
+                                                e);
+                                        throw e;
                                     }
                                 }
                             }
@@ -193,54 +158,26 @@ public class Committer implements Closeable {
                             logger.log(Level.SEVERE, msg);
                             throw new IllegalStateException(msg);
                         } else {
-                            // todo: consider to treat appObject and nextKO the same way
-                            if (nextKernelObject == null) {
-                                synchronized (appObject) {
-                                    try {
-                                        Object result =
-                                                appObject.invoke(
-                                                        request.getMethodName(),
-                                                        request.getParams());
-                                        markCommitted(entryIndex);
-                                        logger.log(
-                                                Level.FINER,
-                                                "result for request {0}: {1}",
-                                                new Object[] {request, result});
-                                        return result;
-                                    } catch (Exception e) {
-                                        logger.log(
-                                                Level.SEVERE,
-                                                String.format(
-                                                        "failed to invoke write request %s on app object: "
-                                                                + "%s",
-                                                        request, e),
-                                                e);
-                                        throw e;
-                                    }
-                                }
-                            } else {
-                                synchronized (nextKernelObject) {
-                                    try {
-                                        Object result =
-                                                nextKernelObject.invoke(
-                                                        request.getMethodName(),
-                                                        request.getParams());
-                                        markCommitted(entryIndex);
-                                        logger.log(
-                                                Level.FINER,
-                                                "result for request {0}: {1}",
-                                                new Object[] {request, result});
-                                        return result;
-                                    } catch (Exception e) {
-                                        logger.log(
-                                                Level.SEVERE,
-                                                String.format(
-                                                        "failed to invoke write request %s on kernel object: "
-                                                                + "%s",
-                                                        request, e),
-                                                e);
-                                        throw e;
-                                    }
+                            synchronized (appObject) {
+                                try {
+                                    Object result =
+                                            appObject.invoke(
+                                                    request.getMethodName(), request.getParams());
+                                    markCommitted(entryIndex);
+                                    logger.log(
+                                            Level.FINER,
+                                            "result for request {0}: {1}",
+                                            new Object[] {request, result});
+                                    return result;
+                                } catch (Exception e) {
+                                    logger.log(
+                                            Level.SEVERE,
+                                            String.format(
+                                                    "failed to invoke write request %s on app object: "
+                                                            + "%s",
+                                                    request, e),
+                                            e);
+                                    throw e;
                                 }
                             }
                         }

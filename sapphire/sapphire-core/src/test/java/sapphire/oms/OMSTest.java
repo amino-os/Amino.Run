@@ -7,6 +7,7 @@ import static sapphire.common.UtilsTest.extractFieldValueOnInstance;
 
 import java.net.InetSocketAddress;
 import java.rmi.registry.LocateRegistry;
+import java.util.HashMap;
 import java.util.List;
 import org.junit.*;
 import org.junit.rules.ExpectedException;
@@ -119,7 +120,18 @@ public class OMSTest extends BaseTest {
                         .setLang(Language.java)
                         .setJavaClassName("sapphire.app.SO")
                         .create();
-        super.setUp(spec, Server_Stub.class, Group_Stub.class);
+        super.setUp(
+                spec,
+                new HashMap<String, Class>() {
+                    {
+                        put("DefaultSapphirePolicy", Group_Stub.class);
+                    }
+                },
+                new HashMap<String, Class>() {
+                    {
+                        put("DefaultSapphirePolicy", Server_Stub.class);
+                    }
+                });
         SapphireObjectID sapphireObjId = sapphireObjServer.createSapphireObject(spec.toString());
 
         soStub = (SO_Stub) sapphireObjServer.acquireSapphireObjectStub(sapphireObjId);

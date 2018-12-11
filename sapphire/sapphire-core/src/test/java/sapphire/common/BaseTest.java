@@ -14,9 +14,11 @@ import static sapphire.common.UtilsTest.extractFieldValueOnInstance;
 
 import java.net.InetSocketAddress;
 import java.rmi.registry.LocateRegistry;
+import java.util.HashMap;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
 import sapphire.app.SO;
 import sapphire.app.SapphireObjectServer;
 import sapphire.app.SapphireObjectSpec;
@@ -42,6 +44,14 @@ import sapphire.runtime.Sapphire;
  */
 
 /** Created by Venugopal Reddy K on 12/9/18. */
+@PrepareForTest({
+    KernelServerImpl.class,
+    Sapphire.class,
+    KernelObjectFactory.class,
+    LocateRegistry.class,
+    SapphireUtils.class,
+    Utils.ObjectCloner.class
+})
 public class BaseTest {
     protected DefaultSapphirePolicy.DefaultClientPolicy client;
     protected DefaultSapphirePolicy.DefaultServerPolicy server1;
@@ -58,7 +68,10 @@ public class BaseTest {
 
     protected boolean serversInSameRegion = true;
 
-    public void setUp(SapphireObjectSpec spec, Class<?> serverClass, Class<?> groupClass)
+    public void setUp(
+            SapphireObjectSpec spec,
+            HashMap<String, Class> groupMap,
+            HashMap<String, Class> serverMap)
             throws Exception {
         PowerMockito.mockStatic(LocateRegistry.class);
         when(LocateRegistry.getRegistry(anyString(), anyInt())).thenReturn(dummyRegistry);
@@ -93,6 +106,19 @@ public class BaseTest {
         addHost(spiedKs2);
         addHost(spiedKs1);
 
+        PowerMockito.mockStatic(
+                Utils.ObjectCloner.class,
+                new Answer<Object>() {
+                    @Override
+                    public Object answer(InvocationOnMock invocation) throws Throwable {
+                        if (invocation.getMethod().getName().equals("deepCopy")
+                                && !(invocation.getArguments()[0] instanceof AppObject)) {
+                            return invocation.getArguments()[0];
+                        }
+                        return invocation.callRealMethod();
+                    }
+                });
+
         // Stub static kernel object factory methods
         mockStatic(
                 KernelObjectFactory.class,
@@ -101,18 +127,12 @@ public class BaseTest {
 
                     @Override
                     public Object answer(InvocationOnMock invocation) throws Throwable {
-                        if (invocation.getMethod().getName().equals("createStub")) {
-                            Class<?> policy = (Class) invocation.getArguments()[0];
-                            if (policy.getName().contains("Server")) {
-                                invocation.getArguments()[0] = serverClass;
-                            } else {
-                                assert (policy.getName().contains("Group"));
-                                invocation.getArguments()[0] = groupClass;
-                            }
-
+                        if (!invocation.getMethod().getName().equals("delete")
+                                && !invocation.getMethod().getName().equals("create")) {
                             return invocation.callRealMethod();
-                        } else if (!(invocation.getMethod().getName().equals("create"))) {
-                            assert (invocation.getMethod().getName().equals("delete"));
+                        }
+
+                        if (invocation.getMethod().getName().equals("delete")) {
                             KernelOID oid = (KernelOID) invocation.getArguments()[0];
                             InetSocketAddress host = spiedOms.lookupKernelObject(oid);
 
@@ -132,9 +152,15 @@ public class BaseTest {
                             return ret;
                         }
 
+                        assert (invocation.getMethod().getName().equals("create"));
                         KernelObjectStub stub = null;
                         KernelObjectStub spiedStub = null;
                         String policyObjectName = (String) invocation.getArguments()[0];
+                        String temp[] = policyObjectName.split("\\$")[0].split("\\.");
+                        String policyName = temp[temp.length - 1];
+                        Class<?> groupClass = groupMap.get(policyName);
+                        Class<?> serverClass = serverMap.get(policyName);
+
                         if (policyObjectName.contains("Server")) {
                             invocation.getArguments()[0] = serverClass.getName();
                             ++i;

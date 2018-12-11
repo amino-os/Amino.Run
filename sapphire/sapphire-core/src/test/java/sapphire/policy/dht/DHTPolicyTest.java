@@ -10,6 +10,7 @@ import org.junit.Before;
 import org.junit.Test;
 import sapphire.app.NodeSelectorSpec;
 import sapphire.app.SapphireObjectSpec;
+import sapphire.common.LabelUtils;
 import sapphire.kernel.common.KernelOID;
 import sapphire.kernel.common.ServerInfo;
 import sapphire.kernel.server.KernelServerImpl;
@@ -40,9 +41,11 @@ public class DHTPolicyTest {
         oms = spy(OMSServerImpl.class);
         KernelServerImpl.oms = oms;
         for (int i = 0; i < regions.size(); i++) {
-            oms.registerKernelServer(new ServerInfo(addresses[i], regions.get(i)));
+            String Labelstr = LabelUtils.LABEL_OPT + LabelUtils.REGION_KEY + "=" + regions.get(i);
+            ServerInfo srvinfo = KernelServerImpl.createServerInfo(addresses[i], Labelstr);
+            oms.registerKernelServer(srvinfo);
             NodeSelectorSpec nodeSelector = new NodeSelectorSpec();
-            nodeSelector.addMatchLabelsItem("region", regions.get(i));
+            nodeSelector.addMatchLabelsItem(LabelUtils.REGION_KEY, regions.get(i));
             List<InetSocketAddress> addressList = new ArrayList<>(Arrays.asList(addresses[i]));
             when(oms.getServers(nodeSelector)).thenReturn(addressList);
         }

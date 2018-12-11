@@ -157,10 +157,11 @@ public class KernelServerManagerTest {
 
     private void registerServers(KernelServerManager manager, int numOfServers) throws Exception {
         for (int i = 0; i < numOfServers; i++) {
-            ServerInfo s = new ServerInfo(new InetSocketAddress(i), "region_" + i);
+            ServerInfo s = new ServerInfo(new InetSocketAddress(i));
             HashMap labels = new HashMap();
             labels.put(LABEL1_PREFIX + i, LABEL1_PREFIX + i);
             labels.put(LABEL2_PREFIX + i, LABEL2_PREFIX + i);
+            labels.put("region", "region_" + i);
             s.addLabels(labels);
             manager.registerKernelServer(s);
         }

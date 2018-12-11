@@ -11,7 +11,7 @@ public class ServerInfoTest {
 
     @Test(expected = NullPointerException.class)
     public void addLabelsWithNull() {
-        ServerInfo server = new ServerInfo(null, null);
+        ServerInfo server = new ServerInfo(null);
         server.addLabels(null);
     }
 
@@ -67,7 +67,7 @@ public class ServerInfoTest {
     }
 
     private ServerInfo createServer(int numOfLabels) {
-        ServerInfo server = new ServerInfo(null, null);
+        ServerInfo server = new ServerInfo(null);
         server.addLabels(createLabels(numOfLabels));
         return server;
     }

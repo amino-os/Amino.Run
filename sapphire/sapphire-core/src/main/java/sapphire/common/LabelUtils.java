@@ -46,6 +46,11 @@ public class LabelUtils {
 
     public static final Pattern labelValueRegexp = Pattern.compile("^" + labelValueFmt + "$");
 
+    public static String DEFAULT_REGION = "default";
+    public static String REGION_KEY = "region";
+    public static String LABEL_OPT = "--labels:";
+    public static String OPT_SEPARATOR = "=";
+    public static String LABEL_SEPARATOR = ",";
     /**
      * Validates the given key,operator & vales are valid or not.
      *

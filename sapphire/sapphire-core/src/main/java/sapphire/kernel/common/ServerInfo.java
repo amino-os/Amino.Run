@@ -14,16 +14,12 @@ import sapphire.common.LabelUtils;
 /** {@code ServerInfo} contains meta data of a kernel server. */
 public class ServerInfo implements Serializable {
     private InetSocketAddress host;
-    // TODO: We need to make region a label too.
-    // Keep region here for the time being to make
-    // our codes backward compatible.
-    private String region;
+
     private Map<String, String> labels = new HashMap<String, String>();
     private static Logger logger = Logger.getLogger(ServerInfo.class.getName());
 
-    public ServerInfo(InetSocketAddress addr, String reg) {
+    public ServerInfo(InetSocketAddress addr) {
         this.host = addr;
-        this.region = reg;
     }
 
     public InetSocketAddress getHost() {
@@ -31,7 +27,7 @@ public class ServerInfo implements Serializable {
     }
 
     public String getRegion() {
-        return region;
+        return labels.get(LabelUtils.REGION_KEY);
     }
 
     public void addLabels(Map keyValues) {
@@ -228,6 +224,9 @@ public class ServerInfo implements Serializable {
         return true;
     }
 
+    // TODO here we should consider the Node Fields as per  k8s, currently just implemented based on
+    // the
+    // Node/KS labels
     /**
      * Checks if the server contains <strong>all</strong> labels specified in the given label map.
      * If the specified label map is {@code null} or empty, we consider no selector is specified,

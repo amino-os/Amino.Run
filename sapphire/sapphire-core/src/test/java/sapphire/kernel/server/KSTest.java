@@ -21,6 +21,7 @@ import sapphire.app.SapphireObject;
 import sapphire.app.SapphireObjectSpec;
 import sapphire.app.stubs.SO_Stub;
 import sapphire.common.BaseTest;
+import sapphire.common.LabelUtils;
 import sapphire.common.SapphireObjectID;
 import sapphire.common.SapphireUtils;
 import sapphire.kernel.common.KernelOID;
@@ -125,7 +126,10 @@ public class KSTest extends BaseTest {
     public void testHeartbeat() throws Exception {
         Field field = PowerMockito.field(KernelServerImpl.class, "ksHeartbeatSendTimer");
         field.set(KernelServerImpl.class, mock(ResettableTimer.class));
-        ServerInfo srvinfo = new ServerInfo(new InetSocketAddress("127.0.0.1", 10001), "IND");
+        String Labelstr = LabelUtils.LABEL_OPT + LabelUtils.REGION_KEY + "=IND";
+        ServerInfo srvinfo =
+                KernelServerImpl.createServerInfo(
+                        new InetSocketAddress("127.0.0.1", 10001), Labelstr);
         KernelServerImpl.startheartbeat(srvinfo);
     }
 

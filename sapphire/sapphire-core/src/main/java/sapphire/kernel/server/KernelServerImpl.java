@@ -225,9 +225,19 @@ public class KernelServerImpl implements KernelServer {
          * the OMS.
          */
         KernelObject object = objectManager.lookupObject(oid);
-        // TODO: Coalesce only the first server policy is enough ?? Moving complete chain of
-        // associated server policies.
+
+        /* Coalesce all the server policies in chain before moving them */
         object.coalesce();
+        SapphirePolicy.SapphireServerPolicy nextPolicy = serverPolicy;
+        while ((nextPolicy = nextPolicy.getNextServerPolicy()) != null) {
+            try {
+                objectManager.lookupObject(nextPolicy.$__getKernelOID()).coalesce();
+            } catch (KernelObjectNotFoundException e) {
+                logger.warning(
+                        "Could not find object in this server. Oid:"
+                                + nextPolicy.$__getKernelOID().getID());
+            }
+        }
 
         logger.fine("Moving object " + oid.toString() + " to " + host.toString());
 

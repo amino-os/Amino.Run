@@ -175,7 +175,7 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultSapphirePolicy 
         @Override
         public void onCreate(String region, SapphireServerPolicy server, SapphireObjectSpec spec)
                 throws RemoteException {
-            logger = Logger.getLogger(this.getClass().getName());
+            logger = Logger.getLogger(GroupBase.class.getName());
             super.onCreate(region, server, spec);
             logger.info(String.format("Creating master and slave instance in region %s", region));
 

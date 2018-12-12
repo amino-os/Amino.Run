@@ -7,8 +7,7 @@ import sapphire.policy.serializability.TransactionAlreadyStartedException;
 
 /** 2PC Coordinator based on thread local storage */
 public class TLS2PCCoordinator implements TwoPCCoordinator {
-    private static Logger logger =
-            Logger.getLogger("sapphire.policy.transaction.TLS2PCCoordinator");
+    private static Logger logger = Logger.getLogger(TLS2PCCoordinator.class.getName());
 
     private final TransactionValidator validator;
     private final TwoPCLocalParticipants localParticipantsManager = new TwoPCLocalParticipants();

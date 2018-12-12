@@ -164,8 +164,7 @@ public class CacheLeasePolicy extends DefaultSapphirePolicy {
      * @author iyzhang
      */
     public static class CacheLeaseServerPolicy extends DefaultServerPolicy {
-        private static Logger logger =
-                Logger.getLogger("sapphire.policy.cache.CacheLeasePolicy.CacheLeaseServerPolicy");
+        private static Logger logger = Logger.getLogger(CacheLeaseServerPolicy.class.getName());
         private UUID lease;
         private Date leaseTimeout;
 

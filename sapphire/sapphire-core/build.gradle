@@ -140,7 +140,7 @@ task compileGraalStub(type: JavaCompile) {
     options.incremental = true
     inputs.dir genGraalStub.outputs
 }
-task genIntegTestStubs(type :JavaExec){
+task genIntegTestStubs(type :JavaExec) {
     main = "sapphire.compiler.StubGenerator"
     classpath = sourceSets.main.runtimeClasspath
     classpath += files("$projectDir/build/classes/java/integrationTest/")
@@ -149,11 +149,10 @@ task genIntegTestStubs(type :JavaExec){
     def dst = file(project.projectDir.toString() + '/src/integrationTest/java/sapphire/demo/stubs')
     args src.toString(), pkg, dst.toString()
     outputs.dir dst // Declare outputs, so gradle will run if they have been changed
-    inputs.dir src   // Declare inputs, so gradle will run if they have been change
-
+    inputs.dir src // Declare inputs, so gradle will run if they have been change
 }
 
-task compileIntegTestDemoPkg (type: JavaCompile){
+task compileIntegTestDemoPkg(type: JavaCompile) {
     source = file(project.buildDir.toString() + '/src/integrationTest/java/sapphire/demo/')
     classpath = sourceSets.integrationTest.compileClasspath
     destinationDir =file(project.buildDir.toString() + '/classes/java/integrationTest/sapphire/demo')

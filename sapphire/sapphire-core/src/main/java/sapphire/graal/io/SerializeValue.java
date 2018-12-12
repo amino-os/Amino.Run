@@ -33,4 +33,9 @@ public class SerializeValue implements java.io.Serializable {
         Deserializer de = new Deserializer(new ByteArrayInputStream(serializedVal.getData()), c);
         return de.deserialize();
     }
+
+    @Override
+    public String toString(){
+        return new String(this.data);
+    }
 }

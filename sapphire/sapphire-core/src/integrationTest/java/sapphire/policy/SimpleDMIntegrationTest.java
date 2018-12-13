@@ -14,6 +14,7 @@ import org.junit.*;
 import sapphire.app.SapphireObjectServer;
 import sapphire.app.SapphireObjectSpec;
 import sapphire.common.SapphireObjectID;
+import sapphire.demo.Coordinator;
 import sapphire.demo.KVStore;
 import sapphire.kernel.server.KernelServerImpl;
 import sapphire.policy.serializability.TransactionAlreadyStartedException;
@@ -416,6 +417,62 @@ public class SimpleDMIntegrationTest {
 
         /* verify the restore value */
         Assert.assertEquals(preValue, store.get(key));
+    }
+
+    @Test
+    public void runTwoPCCohortTest() throws Exception {
+        SapphireObjectSpec kvStoreSpec = getSapphireObjectSpecForDM("TwoPCCohortDM.yaml");
+        SapphireObjectID store1SapphireObjectID =
+                sapphireObjectServer.createSapphireObject(kvStoreSpec.toString());
+        KVStore store1 =
+                (KVStore) sapphireObjectServer.acquireSapphireObjectStub(store1SapphireObjectID);
+        SapphireObjectID store2SapphireObjectID =
+                sapphireObjectServer.createSapphireObject(kvStoreSpec.toString());
+        KVStore store2 =
+                (KVStore) sapphireObjectServer.acquireSapphireObjectStub(store2SapphireObjectID);
+        String key1 = "k1";
+        String value1 = "v1";
+        String key2 = "k2";
+        String value2 = "v2";
+        String value3 = "v3";
+        store1.set(key2, value2);
+        store1.set(key1, value1);
+        store2.set(key2, value3);
+        SapphireObjectSpec coordinatoreSpec = getSapphireObjectSpecForDM("TwoPCCoordinatorDM.yaml");
+        SapphireObjectID coordinatorSapphireObjectID =
+                sapphireObjectServer.createSapphireObject(
+                        coordinatoreSpec.toString(), store1, store2);
+        Coordinator coordinator =
+                (Coordinator)
+                        sapphireObjectServer.acquireSapphireObjectStub(coordinatorSapphireObjectID);
+
+        /* During the invocation of migrate method for every participant method invocation ,
+        Two PC Coordinator DM's server policy initiates  invocation in following sequence
+        1.join before method invocation
+        2.actual method invocation
+        3.leave after method invocation
+        4.vote after all participant method invocation is completed
+        5.commit or abort invoked  depending on state of vote */
+
+        /* Test1: Verifying the positive flow
+        key1 migrated from store1 to store2*/
+
+        coordinator.migrate(key1);
+        /* Verifying the value of store1 and store2 */
+        Assert.assertEquals(store1.get(key1), null);
+        Assert.assertEquals(store2.get(key1), value1);
+
+        try {
+            /* Test2: Verifying the rollback use case ,
+            Try to migrate key2 from store1 to store2 ,key2 already present in store2 migrate fails ,
+            exception thrown and rollback triggered*/
+
+            coordinator.migrate(key2);
+        } catch (Exception e) {
+            /* Verifying the value of store1 and store2  to check the rollback */
+            Assert.assertEquals(store1.get(key2), value2);
+            Assert.assertEquals(store2.get(key2), value3);
+        }
     }
 
     @After

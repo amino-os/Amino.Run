@@ -45,7 +45,7 @@ public class DHTPolicy extends DefaultSapphirePolicy {
     }
 
     public static class DHTClientPolicy extends DefaultClientPolicy {
-        private static Logger logger = Logger.getLogger(DHTPolicy.DHTClientPolicy.class.getName());
+        private static Logger logger = Logger.getLogger(DHTClientPolicy.class.getName());
         private DHTChord dhtChord;
 
         @Override

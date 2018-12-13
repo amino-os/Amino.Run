@@ -32,7 +32,7 @@ import sapphire.runtime.Sapphire;
  * @author iyzhang
  */
 public class KernelServerImpl implements KernelServer {
-    private static Logger logger = Logger.getLogger("sapphire.kernel.server.KernelServerImpl");
+    private static Logger logger = Logger.getLogger(KernelServerImpl.class.getName());
     private static String LABEL_OPT = "--label";
     private static String OPT_SEPARATOR = "=";
     private static String LABEL_SEPARATOR = ",";

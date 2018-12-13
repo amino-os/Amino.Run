@@ -24,7 +24,7 @@ import sapphire.policy.util.ResettableTimer;
  * @author iyzhang
  */
 public class KernelServerManager {
-    Logger logger = Logger.getLogger("sapphire.oms.KernelServerManager");
+    Logger logger = Logger.getLogger(KernelServerManager.class.getName());
 
     private ConcurrentHashMap<InetSocketAddress, KernelServer> servers;
     private ConcurrentHashMap<String, ArrayList<InetSocketAddress>> regions;

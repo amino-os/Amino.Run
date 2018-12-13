@@ -9,8 +9,7 @@ import java.util.logging.Logger;
 
 /** Transaction Manager based on thread local storage context */
 public class TLSTransactionManager implements TransactionManager, Serializable {
-    private static Logger logger =
-            Logger.getLogger("sapphire.policy.transaction.TLSTransactionManager");
+    private static Logger logger = Logger.getLogger(TLSTransactionManager.class.getName());
 
     private final TwoPCLocalStatus localStatusManager = new TwoPCLocalStatus();
     private final TwoPCLocalParticipants localParticipantsManager = new TwoPCLocalParticipants();

@@ -11,7 +11,7 @@ import sapphire.app.Language;
 public class GraalContext {
     private static Context context;
     private static String sapphireObjectPath;
-    private static Logger logger = Logger.getLogger("sapphire.kernel.server.KernelServerImpl");
+    private static Logger logger = Logger.getLogger(GraalContext.class.getName());
 
     public static void main(String[] args) throws Exception {
         getContext();

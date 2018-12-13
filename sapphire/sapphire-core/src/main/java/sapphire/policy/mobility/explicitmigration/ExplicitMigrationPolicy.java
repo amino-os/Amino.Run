@@ -72,8 +72,7 @@ public class ExplicitMigrationPolicy extends DefaultSapphirePolicy {
     }
 
     public static class ClientPolicy extends DefaultClientPolicy {
-        private static Logger logger =
-                Logger.getLogger(ExplicitMigrationPolicy.ClientPolicy.class.getName());
+        private static Logger logger = Logger.getLogger(ClientPolicy.class.getName());
 
         // Maximum time interval for wait before timing out (in milliseconds)
         private long retryTimeoutInMillis = RETRYTIMEOUTINMILLIS;
@@ -126,8 +125,7 @@ public class ExplicitMigrationPolicy extends DefaultSapphirePolicy {
     }
 
     public static class ServerPolicy extends DefaultServerPolicy {
-        private static Logger logger =
-                Logger.getLogger(ExplicitMigrationPolicy.ServerPolicy.class.getName());
+        private static Logger logger = Logger.getLogger(ServerPolicy.class.getName());
         private String migrateObjectMethodName = MIGRATEOBJECTMETHODNAME;
 
         @Override

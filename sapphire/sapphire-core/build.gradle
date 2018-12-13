@@ -153,9 +153,9 @@ task genIntegTestStubs(type :JavaExec) {
 }
 
 task compileIntegTestDemoPkg(type: JavaCompile) {
-    source = file(project.buildDir.toString() + '/src/integrationTest/java/sapphire/demo/')
+    source = file(project.projectDir.toString() + '/src/integrationTest/java/sapphire/demo/')
     classpath = sourceSets.integrationTest.compileClasspath
-    destinationDir =file(project.buildDir.toString() + '/classes/java/integrationTest/sapphire/demo')
+    destinationDir = file(project.buildDir.toString() + '/classes/java/integrationTest/')
     options.incremental = true
 }
 

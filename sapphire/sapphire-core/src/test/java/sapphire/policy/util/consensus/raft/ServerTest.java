@@ -1,11 +1,10 @@
 package sapphire.policy.util.consensus.raft;
 
+import static java.lang.Thread.sleep;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static sapphire.common.UtilsTest.extractFieldValueOnInstance;
-import static sapphire.policy.util.consensus.raft.RaftUtil.verifyCommitIndex;
-import static sapphire.policy.util.consensus.raft.RaftUtil.verifyLeaderElected;
 import static sapphire.policy.util.consensus.raft.Server.State.FOLLOWER;
 
 import java.util.ArrayList;
@@ -29,6 +28,74 @@ public class ServerTest {
             new SapphirePolicy.SapphireServerPolicy[SERVER_COUNT];
     Server raftServer[] = new Server[SERVER_COUNT];
     private AppObject appObject;
+
+    /**
+     * Below methods have been written for the purpose of unit tests only. The reason for creating
+     * this is to use the methods provided in "sapphire.policy.util.consensus.raft.Server" which has
+     * default access.
+     */
+    public static List getRaftlog(Server r) throws Exception {
+        return r.pState.log();
+    }
+
+    public static Object getOperation(LogEntry l) throws Exception {
+        return l.operation;
+    }
+
+    public static Integer getTerm(LogEntry l) throws Exception {
+        return l.term;
+    }
+
+    public static int verifyLeaderElected(Server[] s) throws java.lang.Exception {
+        int count = 0;
+        int maxRetries = 10;
+        while (count < maxRetries) {
+            for (int i = 0; i < s.length; i++) {
+                if (s[i].getState() == Server.State.LEADER) {
+                    verifyLeaderViewOnRafts(s, i);
+                    return i;
+                }
+            }
+            count++;
+            sleep(500);
+        }
+        return -1;
+    }
+
+    public static void verifyLeaderViewOnRafts(Server[] s, int indx) throws java.lang.Exception {
+        int count = 0;
+        int verifiedCount = 0;
+        int maxRetries = 3;
+        while (count < maxRetries) {
+            for (int j = 0; j < s.length; j++) {
+                if (j != indx) {
+                    RemoteRaftServer leaderViewOfRaftServer = getCurrentLeader(s[j]);
+                    if (leaderViewOfRaftServer != null) {
+                        verifiedCount++;
+                    }
+                }
+            }
+            if (verifiedCount == s.length - 1) {
+                break;
+            }
+            count++;
+            verifiedCount = 0;
+            sleep(500);
+        }
+    }
+
+    public static void verifyLastApplied(Server r1, Server r2)
+            throws Exception, InterruptedException {
+        int count = 0;
+        int maxRetries = 5;
+        while (count < maxRetries) {
+            if (r1.pState.log().size() - 1 == r2.vState.getLastApplied()) {
+                break;
+            }
+            count++;
+            sleep(500);
+        }
+    }
 
     @Before
     public void setUp() throws Exception {
@@ -173,7 +240,7 @@ public class ServerTest {
             s.start();
         }
         raftServer[0].become(Server.State.CANDIDATE, FOLLOWER);
-        verifyLeaderElected(3, raftServer);
+        assertTrue(raftServer[verifyLeaderElected(raftServer)].equals(raftServer[0]));
 
         String methodName = "public java.lang.String java.lang.Object.toString()";
         ArrayList<Object> args = new ArrayList<Object>();
@@ -184,12 +251,12 @@ public class ServerTest {
         assertEquals(0, raftServer[2].pState.log().size());
 
         raftServer[0].applyToStateMachine(obj);
-        verifyCommitIndex(3, raftServer[0], raftServer[1]);
-        verifyCommitIndex(3, raftServer[0], raftServer[2]);
+        verifyLastApplied(raftServer[0], raftServer[1]);
+        verifyLastApplied(raftServer[0], raftServer[2]);
 
         raftServer[0].applyToStateMachine(obj);
-        verifyCommitIndex(3, raftServer[0], raftServer[1]);
-        verifyCommitIndex(3, raftServer[0], raftServer[2]);
+        verifyLastApplied(raftServer[0], raftServer[1]);
+        verifyLastApplied(raftServer[0], raftServer[2]);
 
         // Verifying the entries on other raftServers, with that on the leader.
         for (int i = 0; i < raftServer[0].pState.log().size(); i++) {
@@ -219,7 +286,8 @@ public class ServerTest {
             s.start();
         }
         raftServer[0].become(Server.State.CANDIDATE, FOLLOWER);
-        verifyLeaderElected(3, raftServer);
+        verifyLeaderElected(raftServer);
+        assertTrue(raftServer[verifyLeaderElected(raftServer)].equals(raftServer[0]));
 
         thrown.expect(AlreadyVotedException.class);
         raftServer[2].requestVote(1, raftServer[1].getMyServerID(), -1, -1);

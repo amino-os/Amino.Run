@@ -16,6 +16,14 @@ public class SO implements SapphireObject {
         i = value;
     }
 
+    public void incI() {
+        i++;
+    }
+
+    public void decI() {
+        i--;
+    }
+
     public Integer getIDelayed() {
         try {
             Thread.sleep(15);

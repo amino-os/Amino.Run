@@ -35,9 +35,7 @@ import sapphire.policy.DefaultSapphirePolicy;
 import sapphire.policy.SapphirePolicy;
 import sapphire.runtime.Sapphire;
 import sapphire.sampleSO.SO;
-import sapphire.sampleSO.TestSO;
 import sapphire.sampleSO.stubs.SO_Stub;
-import sapphire.sampleSO.stubs.TestSO_Stub;
 
 /**
  * This is the base test class with a setup to create a spied instance of oms, 3 kernel servers. And
@@ -61,11 +59,9 @@ public class BaseTest {
     protected DefaultSapphirePolicy.DefaultServerPolicy server3;
     protected DefaultSapphirePolicy.DefaultGroupPolicy group;
     protected SO_Stub soStub;
-    protected TestSO_Stub soStub1;
+    protected SO_Stub soStub1;
     protected SO so;
-    protected TestSO so1;
-    protected TestSO so2;
-    protected TestSO so3;
+    protected SO so1;
     protected OMSServer spiedOms;
     protected SapphireObjectServer sapphireObjServer;
     protected KernelServer spiedKs1;

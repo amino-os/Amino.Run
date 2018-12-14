@@ -2,15 +2,11 @@ package sapphire.policy.replication;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
 import static org.powermock.api.mockito.PowerMockito.when;
 import static sapphire.common.SapphireUtils.deleteSapphireObject;
 import static sapphire.common.UtilsTest.extractFieldValueOnInstance;
-import static sapphire.policy.util.consensus.raft.RaftUtil.getOperation;
-import static sapphire.policy.util.consensus.raft.RaftUtil.getRaftlog;
-import static sapphire.policy.util.consensus.raft.RaftUtil.getTerm;
-import static sapphire.policy.util.consensus.raft.RaftUtil.verifyCommitIndex;
-import static sapphire.policy.util.consensus.raft.RaftUtil.verifyLeaderElected;
 import static sapphire.policy.util.consensus.raft.ServerTest.*;
 
 import java.net.InetSocketAddress;
@@ -35,17 +31,16 @@ import sapphire.policy.DefaultSapphirePolicy;
 import sapphire.policy.SapphirePolicy;
 import sapphire.policy.util.consensus.raft.LeaderException;
 import sapphire.policy.util.consensus.raft.LogEntry;
-import sapphire.policy.util.consensus.raft.RemoteRaftServer;
 import sapphire.policy.util.consensus.raft.Server;
 import sapphire.sampleSO.SO;
-import sapphire.sampleSO.TestSO;
-import sapphire.sampleSO.stubs.TestSO_Stub;
+import sapphire.sampleSO.stubs.SO_Stub;
 
 /** Created by terryz on 4/9/18. */
 @RunWith(PowerMockRunner.class)
 public class ConsensusRSMPolicyTest extends BaseTest {
     final int SERVER_COUNT = 3;
     Server raftServer[] = new Server[SERVER_COUNT];
+    SO so2, so3;
 
     public static class ConsensusSO extends SO {}
 
@@ -110,7 +105,7 @@ public class ConsensusRSMPolicyTest extends BaseTest {
         SapphireObjectSpec spec =
                 SapphireObjectSpec.newBuilder()
                         .setLang(Language.java)
-                        .setJavaClassName("sapphire.sampleSO.TestSO")
+                        .setJavaClassName("sapphire.sampleSO.SO")
                         .addDMSpec(
                                 DMSpec.newBuilder()
                                         .setName(ConsensusRSMPolicy.class.getName())
@@ -130,13 +125,13 @@ public class ConsensusRSMPolicyTest extends BaseTest {
                 });
 
         SapphireObjectID sapphireObjId = sapphireObjServer.createSapphireObject(spec.toString());
-        soStub1 = (TestSO_Stub) sapphireObjServer.acquireSapphireObjectStub(sapphireObjId);
+        soStub1 = (SO_Stub) sapphireObjServer.acquireSapphireObjectStub(sapphireObjId);
         client =
                 (DefaultSapphirePolicy.DefaultClientPolicy)
                         extractFieldValueOnInstance(soStub1, "$__client");
-        so1 = ((TestSO) (server1.sapphire_getAppObject().getObject()));
-        so2 = ((TestSO) (server2.sapphire_getAppObject().getObject()));
-        so3 = ((TestSO) (server3.sapphire_getAppObject().getObject()));
+        so1 = ((SO) (server1.sapphire_getAppObject().getObject()));
+        so2 = ((SO) (server2.sapphire_getAppObject().getObject()));
+        so3 = ((SO) (server3.sapphire_getAppObject().getObject()));
 
         /* Ensure the order of servers is same as in server list in group */
         ArrayList<SapphirePolicy.SapphireServerPolicy> servers =
@@ -159,20 +154,7 @@ public class ConsensusRSMPolicyTest extends BaseTest {
         makeFollower(raftServer[0]);
         makeFollower(raftServer[1]);
         makeLeader(raftServer[2]);
-        verifyLeaderElected(3, raftServer);
-
-        RemoteRaftServer leaderViewOfRaftServer1 = getCurrentLeader(raftServer[0]);
-        while (leaderViewOfRaftServer1 == null) {
-            leaderViewOfRaftServer1 = getCurrentLeader(raftServer[0]);
-        }
-
-        RemoteRaftServer leaderViewOfRaftServer2 = getCurrentLeader(raftServer[1]);
-        while (leaderViewOfRaftServer2 == null) {
-            leaderViewOfRaftServer2 = getCurrentLeader(raftServer[1]);
-        }
-
-        assert (leaderViewOfRaftServer1 == this.server3);
-        assert (leaderViewOfRaftServer2 == this.server3);
+        assertTrue(raftServer[verifyLeaderElected(raftServer)].equals(raftServer[2]));
     }
 
     @Test
@@ -189,27 +171,27 @@ public class ConsensusRSMPolicyTest extends BaseTest {
 
     @Test
     public void applyToStateMachine() throws Exception {
-        String method = "public void sapphire.sampleSO.TestSO.incVal()";
+        String method = "public void sapphire.sampleSO.SO.incI()";
         ArrayList<Object> params = new ArrayList<Object>();
         ConsensusRSMPolicy.RPC rpc = new ConsensusRSMPolicy.RPC(method, params);
         ConsensusRSMPolicy.ServerPolicy server3 = (ConsensusRSMPolicy.ServerPolicy) this.server3;
 
         server3.applyToStateMachine(rpc);
         verify(server3, times(1)).apply(Matchers.anyObject());
-        // Verifying post applyToStateMachine, that clients have the same commitIndex
-        verifyCommitIndex(3, raftServer[2], raftServer[0]);
-        verifyCommitIndex(3, raftServer[2], raftServer[1]);
+        // Verifying post applyToStateMachine, that clients have the same lastApplied
+        verifyLastApplied(raftServer[2], raftServer[0]);
+        verifyLastApplied(raftServer[2], raftServer[1]);
         // Verifying that all clients see the same resulting value
-        assertEquals(so3.getVal(), so1.getVal());
-        assertEquals(so3.getVal(), so2.getVal());
+        assertEquals(so3.getI(), so1.getI());
+        assertEquals(so3.getI(), so2.getI());
 
         server3.applyToStateMachine(rpc);
-        // Verifying post applyToStateMachine, that clients have the same commitIndex
-        verifyCommitIndex(3, raftServer[2], raftServer[0]);
-        verifyCommitIndex(3, raftServer[2], raftServer[1]);
+        // Verifying post applyToStateMachine, that clients have the same lastApplied
+        verifyLastApplied(raftServer[2], raftServer[0]);
+        verifyLastApplied(raftServer[2], raftServer[1]);
         // Verifying that all clients see the same resulting value
-        assertEquals(so3.getVal(), so1.getVal());
-        assertEquals(so3.getVal(), so2.getVal());
+        assertEquals(so3.getI(), so1.getI());
+        assertEquals(so3.getI(), so2.getI());
 
         /**
          * Verifying that all clients see the same event log (i.e. operation and term as seen by
@@ -247,7 +229,7 @@ public class ConsensusRSMPolicyTest extends BaseTest {
      */
     @Test
     public void onRPCWithoutLeader() throws Exception {
-        String method = "public void sapphire.sampleSO.TestSO.incVal()";
+        String method = "public void sapphire.sampleSO.SO.incI()";
         ArrayList<Object> params = new ArrayList<Object>();
 
         doThrow(new LeaderException("leaderException", null))
@@ -263,7 +245,7 @@ public class ConsensusRSMPolicyTest extends BaseTest {
      */
     @Test
     public void onRPCWithLeader() throws Exception {
-        String method = "public void sapphire.sampleSO.TestSO.incVal()";
+        String method = "public void sapphire.sampleSO.SO.incI()";
         ArrayList<Object> params = new ArrayList<Object>();
         client.onRPC(method, params);
     }
@@ -274,7 +256,7 @@ public class ConsensusRSMPolicyTest extends BaseTest {
      */
     @Test
     public void clientOnRPC() throws Exception {
-        String method = "public void sapphire.sampleSO.TestSO.incVal()";
+        String method = "public void sapphire.sampleSO.SO.incI()";
         ArrayList<Object> params = new ArrayList<Object>();
 
         doThrow(RemoteException.class).when(this.server1).onRPC(method, params);
@@ -285,7 +267,7 @@ public class ConsensusRSMPolicyTest extends BaseTest {
     /** If onRPC fails to happen on any of the servers, throw RemoteException. */
     @Test
     public void onRPCServersUnreachable() throws Exception {
-        String method = "public void sapphire.sampleSO.TestSO.incVal()";
+        String method = "public void sapphire.sampleSO.SO.incI()";
         ArrayList<Object> params = new ArrayList<Object>();
 
         doThrow(RemoteException.class).when(this.server1).onRPC(method, params);
@@ -301,7 +283,7 @@ public class ConsensusRSMPolicyTest extends BaseTest {
      */
     @Test
     public void onRPCToFollowerWithoutLeader() throws Exception {
-        String method = "public void sapphire.sampleSO.TestSO.incVal()";
+        String method = "public void sapphire.sampleSO.SO.incI()";
         ArrayList<Object> params = new ArrayList<Object>();
         doThrow(RemoteException.class).when(this.server1).onRPC(method, params);
         doThrow(new LeaderException("LeaderException", null))
@@ -317,7 +299,7 @@ public class ConsensusRSMPolicyTest extends BaseTest {
      */
     @Test
     public void onRPCToFollowerWithLeader() throws Exception {
-        String method = "public void sapphire.sampleSO.TestSO.incVal()";
+        String method = "public void sapphire.sampleSO.SO.incI()";
         ArrayList<Object> params = new ArrayList<Object>();
         doThrow(RemoteException.class).when(this.server1).onRPC(method, params);
         doThrow(

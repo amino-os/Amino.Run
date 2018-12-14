@@ -33,7 +33,8 @@ public class SimpleDMIntegrationTest {
 
     @BeforeClass
     public static void bootstrap() throws Exception {
-        startOmsAndKernelServers("r1");
+        String labels = KernelServerImpl.REGION_KEY + "=r1";
+        startOmsAndKernelServers(labels);
         ClassLoader loader = Thread.currentThread().getContextClassLoader();
         URL url = loader.getResource(RESOURCE_PATH);
         RESOURCE_REAL_PATH = url.getPath();

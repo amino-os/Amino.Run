@@ -137,7 +137,10 @@ public class KSTest extends BaseTest {
     public void testHeartbeat() throws Exception {
         Field field = PowerMockito.field(KernelServerImpl.class, "ksHeartbeatSendTimer");
         field.set(KernelServerImpl.class, mock(ResettableTimer.class));
-        ServerInfo srvinfo = new ServerInfo(new InetSocketAddress("127.0.0.1", 10001), "IND");
+        String Labelstr = KernelServerImpl.LABEL_OPT + KernelServerImpl.REGION_KEY + "=IND";
+        ServerInfo srvinfo =
+                KernelServerImpl.createServerInfo(
+                        new InetSocketAddress("127.0.0.1", 10001), Labelstr);
         KernelServerImpl.startheartbeat(srvinfo);
     }
 

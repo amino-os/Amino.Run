@@ -33,10 +33,12 @@ import sapphire.runtime.Sapphire;
  */
 public class KernelServerImpl implements KernelServer {
     private static Logger logger = Logger.getLogger(KernelServerImpl.class.getName());
-    private static String LABEL_OPT = "--label";
-    private static String OPT_SEPARATOR = "=";
-    private static String LABEL_SEPARATOR = ",";
-    private static String SERVICE_PORT = "--servicePort";
+    public static String LABEL_OPT = "--labels:";
+    public static String OPT_SEPARATOR = "=";
+    public static String LABEL_SEPARATOR = ",";
+    public static String SERVICE_PORT = "--servicePort";
+    public static String DEFAULT_REGION = "default-region";
+    public static String REGION_KEY = "region";
 
     private InetSocketAddress host;
     private String region;
@@ -387,9 +389,6 @@ public class KernelServerImpl implements KernelServer {
             System.setProperty("java.rmi.server.hostname", host.getAddress().getHostAddress());
 
             int servicePort = 0;
-            // TODO: remove region argument
-            // Keep it for the time being to maintain backward compatible
-            String region = host.toString();
             String labelStr = "";
             if (args.length > 4) {
                 for (int i = 4; i < args.length; i++) {
@@ -397,8 +396,6 @@ public class KernelServerImpl implements KernelServer {
                         labelStr = args[i];
                     } else if (args[i].startsWith(SERVICE_PORT)) {
                         servicePort = Integer.parseInt(parseServicePort(args[i]));
-                    } else {
-                        region = args[i];
                     }
                 }
             }
@@ -408,11 +405,11 @@ public class KernelServerImpl implements KernelServer {
                     (KernelServer) UnicastRemoteObject.exportObject(server, servicePort);
             Registry registry = LocateRegistry.createRegistry(Integer.parseInt(args[1]));
             registry.rebind("SapphireKernelServer", stub);
-            server.setRegion(region);
 
             // Register against OMS
-            ServerInfo srvInfo = createServerInfo(host, region, labelStr);
+            ServerInfo srvInfo = createServerInfo(host, labelStr);
             oms.registerKernelServer(srvInfo);
+            server.setRegion(srvInfo.getRegion());
 
             // Start heartbeat timer
             startHeartbeats(srvInfo);
@@ -440,11 +437,12 @@ public class KernelServerImpl implements KernelServer {
         ksHeartbeatSendTimer.start();
     }
 
-    public static ServerInfo createServerInfo(
-            InetSocketAddress host, String region, String labelStr) {
-        ServerInfo srvInfo = new ServerInfo(host, region);
-        Set<String> labels = parseLabel(labelStr);
-        labels.add(region);
+    public static ServerInfo createServerInfo(InetSocketAddress host, String labelStr) {
+        Map<String, String> labels = parseLabel(labelStr);
+        if (!labels.containsKey(KernelServerImpl.REGION_KEY)) {
+            labels.put(KernelServerImpl.REGION_KEY, KernelServerImpl.DEFAULT_REGION);
+        }
+        ServerInfo srvInfo = new ServerInfo(host);
         srvInfo.addLabels(labels);
         return srvInfo;
     }
@@ -453,16 +451,29 @@ public class KernelServerImpl implements KernelServer {
         System.out.println("Usage:");
         System.out.println(
                 String.format(
-                        "java -cp <classpath> %s hostIp hostPort omsIp omsPort [region] [--labels=comma,separated,labels] [--servicePort=portnumber]",
+                        "java -cp <classpath> %s hostIp hostPort omsIp omsPort [--labels:comma,separated,key=value] [--servicePort=portnumber]",
                         KernelServerImpl.class.getName()));
     }
 
-    private static Set<String> parseLabel(String labelStr) {
-        Set<String> labels = new HashSet<>();
-        if (labelStr != null) {
-            String[] kv = labelStr.split(OPT_SEPARATOR);
-            if (kv.length > 1) {
-                labels.addAll(Arrays.asList(kv[1].split(LABEL_SEPARATOR)));
+    private static Map<String, String> parseLabel(String data) {
+        Map<String, String> labels = new HashMap<String, String>();
+        if ((data != null) && data.startsWith(KernelServerImpl.LABEL_OPT)) {
+            String actualdata = data.substring(KernelServerImpl.LABEL_OPT.length());
+            String[] maps = actualdata.split(KernelServerImpl.LABEL_SEPARATOR);
+
+            if (maps.length < 1) {
+                return labels;
+            }
+            for (int i = 0; i < maps.length; i++) {
+                String[] kv = maps[i].split(KernelServerImpl.OPT_SEPARATOR);
+                // not allowed empty values
+                if (kv.length % 2 != 0) {
+                    logger.warning("something wrong in the labels");
+                    continue;
+                }
+                for (int j = 0; j < kv.length; j += 2) {
+                    labels.put(kv[j], kv[j + 1]);
+                }
             }
         }
         return labels;

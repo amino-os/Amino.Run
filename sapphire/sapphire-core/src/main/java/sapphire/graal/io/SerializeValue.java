@@ -35,7 +35,7 @@ public class SerializeValue implements java.io.Serializable {
     }
 
     @Override
-    public String toString(){
+    public String toString() {
         return new String(this.data);
     }
 }

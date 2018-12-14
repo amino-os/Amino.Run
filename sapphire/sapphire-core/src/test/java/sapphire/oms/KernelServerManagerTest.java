@@ -1,9 +1,8 @@
 package sapphire.oms;
 
 import java.net.InetSocketAddress;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -106,12 +105,24 @@ public class KernelServerManagerTest {
         Assert.assertEquals(1, result.get(0).getPort());
     }
 
+    @Test
+    public void testAndLabelSetOrLabelSetNRegionSuccess() throws Exception {
+        NodeSelectorSpec spec = new NodeSelectorSpec();
+        spec.addAndLabel(LABEL1_PREFIX + "1");
+        spec.addAndLabel("region_1");
+        spec.addOrLabel(LABEL1_PREFIX + "1");
+        List<InetSocketAddress> result = manager.getServers(spec);
+        Assert.assertEquals(1, result.size());
+        Assert.assertEquals(1, result.get(0).getPort());
+    }
+
     private void registerServers(KernelServerManager manager, int numOfServers) throws Exception {
         for (int i = 0; i < numOfServers; i++) {
-            ServerInfo s = new ServerInfo(new InetSocketAddress(i), "region_" + i);
-            Set<String> labels = new HashSet<>();
-            labels.add(LABEL1_PREFIX + i);
-            labels.add(LABEL2_PREFIX + i);
+            ServerInfo s = new ServerInfo(new InetSocketAddress(i));
+            HashMap labels = new HashMap();
+            labels.put(LABEL1_PREFIX + i, LABEL1_PREFIX + i);
+            labels.put(LABEL2_PREFIX + i, LABEL2_PREFIX + i);
+            labels.put("region", "region_" + i);
             s.addLabels(labels);
             manager.registerKernelServer(s);
         }

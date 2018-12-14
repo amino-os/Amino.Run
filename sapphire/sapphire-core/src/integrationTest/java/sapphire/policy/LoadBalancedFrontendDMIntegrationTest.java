@@ -26,7 +26,8 @@ public class LoadBalancedFrontendDMIntegrationTest {
 
     @BeforeClass
     public static void bootstrap() throws Exception {
-        startOmsAndKernelServers("IND");
+        String labels = KernelServerImpl.REGION_KEY + "=IND";
+        startOmsAndKernelServers(labels);
     }
 
     @Before

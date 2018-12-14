@@ -26,11 +26,11 @@ import sapphire.kernel.server.KernelServerImpl;
 public class MultiDMTestCases {
     SapphireObjectServer sapphireObjectServer;
     private static String regionName = "";
-    private static String labels[] = {regionName};
 
     @BeforeClass
     public static void bootstrap() throws Exception {
-        startOmsAndKernelServers(regionName, labels);
+        String labels = KernelServerImpl.REGION_KEY + "=" + regionName;
+        startOmsAndKernelServers(labels);
     }
 
     @Before

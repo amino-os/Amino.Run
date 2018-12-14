@@ -1,9 +1,6 @@
 package sapphire.kernel.common;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -14,7 +11,7 @@ public class ServerInfoTest {
 
     @Test(expected = NullPointerException.class)
     public void addLabelsWithNull() {
-        ServerInfo server = new ServerInfo(null, null);
+        ServerInfo server = new ServerInfo(null);
         server.addLabels(null);
     }
 
@@ -69,8 +66,8 @@ public class ServerInfoTest {
     }
 
     private ServerInfo createServer(int numOfLabels) {
-        ServerInfo server = new ServerInfo(null, null);
-        server.addLabels(createLabels(numOfLabels));
+        ServerInfo server = new ServerInfo(null);
+        server.addLabels(createLabelsKS(numOfLabels));
         return server;
     }
 
@@ -78,6 +75,14 @@ public class ServerInfoTest {
         Set<String> labels = new HashSet<>();
         for (int i = 0; i < numOfLabels; i++) {
             labels.add(LABEL_PREFIX + i);
+        }
+        return labels;
+    }
+
+    private HashMap createLabelsKS(int numOfLabels) {
+        HashMap labels = new HashMap();
+        for (int i = 0; i < numOfLabels; i++) {
+            labels.put(LABEL_PREFIX + i, LABEL_PREFIX + i);
         }
         return labels;
     }

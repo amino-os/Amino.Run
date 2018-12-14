@@ -81,9 +81,8 @@ public class SapphireUtils {
         setFieldValueOnInstance(ks, "client", spiedKernelClient);*/
 
         KernelServerImpl spiedKs = spy(ks);
-        ServerInfo serverInfo =
-                KernelServerImpl.createServerInfo(
-                        spiedKs.getLocalHost(), spiedKs.getRegion(), null);
+        String Labelstr = KernelServerImpl.LABEL_OPT + KernelServerImpl.REGION_KEY + "=" + region;
+        ServerInfo serverInfo = KernelServerImpl.createServerInfo(spiedKs.getLocalHost(), Labelstr);
         spiedOms.registerKernelServer(serverInfo);
 
         addHostOnOmsKernelServerManager(spiedOms, spiedKs);

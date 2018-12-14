@@ -33,12 +33,12 @@ public class ScaleUpFrontendDMIntegTest {
     private static final int TASK_COUNT = 50;
     private static final int PARALLEL_THREAD_COUNT = 5;
     private static final String regionName = "IND";
-    private static final String[] labels = {regionName};
     SapphireObjectServer sapphireObjectServer;
 
     @BeforeClass
     public static void bootstrap() throws Exception {
-        startOmsAndKernelServers(regionName, labels);
+        String labels = KernelServerImpl.REGION_KEY + "=" + regionName;
+        startOmsAndKernelServers(labels);
     }
 
     @Before

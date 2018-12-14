@@ -40,7 +40,10 @@ public class DHTPolicyTest {
         oms = Mockito.spy(OMSServerImpl.class);
         KernelServerImpl.oms = oms;
         for (int i = 0; i < regions.size(); i++) {
-            oms.registerKernelServer(new ServerInfo(addresses[i], regions.get(i)));
+            String Labelstr =
+                    KernelServerImpl.LABEL_OPT + KernelServerImpl.REGION_KEY + "=" + regions.get(i);
+            ServerInfo srvinfo = KernelServerImpl.createServerInfo(addresses[i], Labelstr);
+            oms.registerKernelServer(srvinfo);
             NodeSelectorSpec nodeSelector = new NodeSelectorSpec();
             nodeSelector.addAndLabel(regions.get(i));
             List<InetSocketAddress> addressList = new ArrayList<>(Arrays.asList(addresses[i]));

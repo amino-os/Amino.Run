@@ -73,6 +73,7 @@ public class Sapphire {
                             sapphireObjId,
                             spec,
                             configMap,
+                            new boolean[1],
                             policyNameChain,
                             processedPolicies,
                             previousServerPolicy,
@@ -132,6 +133,7 @@ public class Sapphire {
                             sapphireObjId,
                             spec,
                             configMap,
+                            new boolean[1],
                             policyNameChain,
                             processedPolicies,
                             previousServerPolicy,
@@ -213,6 +215,7 @@ public class Sapphire {
             SapphireObjectID sapphireObjId,
             SapphireObjectSpec spec,
             Map<String, SapphirePolicyUpcalls.SapphirePolicyConfig> configMap,
+            boolean[] chainPinned,
             List<SapphirePolicyContainer> policyNameChain,
             List<SapphirePolicyContainer> processedPolicies,
             SapphireServerPolicy previousServerPolicy,
@@ -227,7 +230,6 @@ public class Sapphire {
         String policyName = policyNameChain.get(0).getPolicyName();
         SapphireGroupPolicy existingGroupPolicy = policyNameChain.get(0).getGroupPolicyStub();
         AppObject appObject = null;
-        AppObjectStub appStub = null;
 
         /* Get the annotations added for the Application class. */
 
@@ -273,12 +275,7 @@ public class Sapphire {
         client.onCreate(groupPolicyStub, spec);
 
         if (previousServerPolicy != null) {
-            initServerPolicy(
-                    serverPolicy,
-                    serverPolicyStub,
-                    previousServerPolicy,
-                    previousServerPolicyStub,
-                    client);
+            initServerPolicy(serverPolicy, previousServerPolicy, previousServerPolicyStub, client);
         } else {
             initAppStub(spec, serverPolicy, client, appArgs, appObject);
         }
@@ -319,6 +316,7 @@ public class Sapphire {
                     sapphireObjId,
                     spec,
                     configMap,
+                    chainPinned,
                     nextPoliciesToCreate,
                     processedPolicies,
                     previousServerPolicy,
@@ -329,8 +327,9 @@ public class Sapphire {
 
         // server policy stub at this moment has the full policy chain; safe to add to group
         if (existingGroupPolicy == null) {
-            setIfAlreadyPinned(serverPolicyStub, processedPolicies, nextPoliciesToCreate.size());
+            serverPolicyStub.setAlreadyPinned(chainPinned[0]);
             groupPolicy.onCreate(region, serverPolicyStub, spec);
+            chainPinned[0] = true;
             groupPolicy.addServer(serverPolicyStub);
         }
 
@@ -587,7 +586,6 @@ public class Sapphire {
      * Connects the link between server policy in the chain.
      *
      * @param serverPolicy server policy
-     * @param serverPolicyStub server policy stub
      * @param prevServerPolicy previous server policy
      * @param prevServerPolicyStub previous server policy stub
      * @param clientPolicy client policy
@@ -596,7 +594,6 @@ public class Sapphire {
      */
     private static void initServerPolicy(
             SapphireServerPolicy serverPolicy,
-            SapphireServerPolicy serverPolicyStub,
             SapphireServerPolicy prevServerPolicy,
             KernelObjectStub prevServerPolicyStub,
             SapphireClientPolicy clientPolicy)
@@ -606,9 +603,6 @@ public class Sapphire {
         /* Previous server policy stub object acts as Sapphire Object(SO) to the current server policy */
         serverPolicy.$__initialize(
                 new AppObject(Utils.ObjectCloner.deepCopy(prevServerPolicyStub)));
-        serverPolicy.setNextServerPolicy(prevServerPolicy);
-
-        prevServerPolicy.setPreviousServerPolicy(serverPolicy);
         prevServerPolicyStub.$__setNextClientPolicy(clientPolicy);
     }
 
@@ -653,52 +647,5 @@ public class Sapphire {
         }
         Class<?>[] argClasses = new Class<?>[argClassesList.size()];
         return argClassesList.toArray(argClasses);
-    }
-
-    /**
-     * Checks the downstream policies by going through processedPolicies and sets the given
-     * serverPolicyStub as being already pinned if any of downstream policies have set it as already
-     * pinned. Note 'pinned' means the chain was migrated to a target Kernel Server by
-     * sapphire_pin_to_server() at SapphirePolicyLibrary
-     *
-     * @param serverPolicyStub Stub to set as already pinned if downstream has already pinned.
-     * @param processedPolicies All of the policies created in this policy chain.
-     * @param sizeOfDownStreamPolicies number of policy instances that need to be checked if already
-     *     pinned.
-     */
-    private static void setIfAlreadyPinned(
-            SapphireServerPolicy serverPolicyStub,
-            List<SapphirePolicyContainer> processedPolicies,
-            int sizeOfDownStreamPolicies) {
-        int idx = 0, size = processedPolicies.size();
-
-        // Indicates start of downstream policies.
-        int startIdx = size - sizeOfDownStreamPolicies;
-        try {
-            // Set whether the chain was already pinned or not from downstream policies.
-            for (SapphirePolicyContainer policyContainer : processedPolicies) {
-                if (idx >= startIdx) {
-                    // Start checking all the downstream policies only.
-                    SapphireServerPolicy sp = policyContainer.getServerPolicy();
-                    if (sp.isAlreadyPinned()) {
-                        String msg =
-                                String.format(
-                                        "Sapphire Object was already pinned by %s. Set as already pinned for %s",
-                                        sp, serverPolicyStub);
-                        logger.log(Level.INFO, msg);
-                        serverPolicyStub.setAlreadyPinned(true);
-                        return;
-                    }
-                }
-                idx++;
-            }
-        } catch (Exception e) {
-            logger.log(
-                    Level.SEVERE,
-                    String.format(
-                            "Checking chain pinning failed. Size of processed policies = %d startIdx = %d",
-                            size, startIdx));
-            throw e;
-        }
     }
 }

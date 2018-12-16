@@ -229,7 +229,11 @@ public class KernelServerImpl implements KernelServer {
         /* Coalesce all the server policies in chain before moving them */
         object.coalesce();
         SapphirePolicy.SapphireServerPolicy nextPolicy = serverPolicy;
-        while ((nextPolicy = nextPolicy.getNextServerPolicy()) != null) {
+        Object appObjectStub;
+        while ((nextPolicy.sapphire_getAppObject() != null)
+                && ((appObjectStub = nextPolicy.sapphire_getAppObject().getObject()) != null)
+                && (appObjectStub instanceof KernelObjectStub)) {
+            nextPolicy = (SapphirePolicy.SapphireServerPolicy) appObjectStub;
             try {
                 objectManager.lookupObject(nextPolicy.$__getKernelOID()).coalesce();
             } catch (KernelObjectNotFoundException e) {
@@ -261,17 +265,21 @@ public class KernelServerImpl implements KernelServer {
         }
 
         // Remove the associated KernelObjects from the local KernelServer.
+        appObjectStub = serverPolicy;
         do {
+            serverPolicy = (SapphirePolicy.SapphireServerPolicy) appObjectStub;
             try {
-                serverPolicy.onDestroy();
                 objectManager.removeObject(serverPolicy.$__getKernelOID());
+                serverPolicy.onDestroy();
             } catch (KernelObjectNotFoundException e) {
                 String msg =
                         "Could not find object to remove in this server. Oid:"
                                 + serverPolicy.$__getKernelOID().getID();
                 logger.warning(msg);
             }
-        } while ((serverPolicy = serverPolicy.getNextServerPolicy()) != null);
+        } while ((serverPolicy.sapphire_getAppObject() != null)
+                && ((appObjectStub = serverPolicy.sapphire_getAppObject().getObject()) != null)
+                && (appObjectStub instanceof KernelObjectStub));
     }
 
     /**

@@ -90,7 +90,6 @@ public class PolicyStub extends Stub {
         StringBuilder buffer = new StringBuilder();
         buffer.append(indenter.indent() + "sapphire.kernel.common.KernelOID $__oid = null;" + EOLN);
         buffer.append(indenter.indent() + "java.net.InetSocketAddress $__hostname = null;" + EOLN);
-        buffer.append(indenter.indent() + "AppObject appObject = null;" + EOLN);
         buffer.append(
                 indenter.indent()
                         + "SapphirePolicy.SapphireClientPolicy $__nextClientPolicy = null;"
@@ -169,17 +168,6 @@ public class PolicyStub extends Stub {
         buffer.append(
                 indenter.tIncrease()
                         + "this.$__nextClientPolicy = clientPolicy;"
-                        + EOLN
-                        + indenter.indent()
-                        + "}"
-                        + EOLN
-                        + EOLN);
-
-        /* Implementation for getAppObject */
-        buffer.append(indenter.indent() + "public AppObject $__getAppObject() {" + EOLN);
-        buffer.append(
-                indenter.tIncrease()
-                        + "return this.appObject;"
                         + EOLN
                         + indenter.indent()
                         + "}"

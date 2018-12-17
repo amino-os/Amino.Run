@@ -1,12 +1,14 @@
 package sapphire.policy.replication;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
 import static org.powermock.api.mockito.PowerMockito.when;
 import static sapphire.common.SapphireUtils.deleteSapphireObject;
 import static sapphire.common.UtilsTest.extractFieldValueOnInstance;
+import static sapphire.policy.util.consensus.raft.Server.LEADER_HEARTBEAT_TIMEOUT;
 import static sapphire.policy.util.consensus.raft.ServerTest.*;
 
 import java.net.InetSocketAddress;
@@ -308,6 +310,37 @@ public class ConsensusRSMPolicyTest extends BaseTest {
                 .when(this.server2)
                 .onRPC(method, params);
         this.client.onRPC(method, params);
+    }
+
+    /**
+     * Leader in the consensus setup is failed and election of a new leader from amongst the running
+     * raft servers is verified.
+     */
+    @Test
+    public void testNodeFailure() throws Exception {
+        Server newRaftServer[] = new Server[SERVER_COUNT - 1];
+        // Verifying leader already exists
+        int indx = verifyLeaderElected(raftServer);
+        Server initialLeader = raftServer[indx];
+
+        // Verifying the leader raftServer is same as that made in Setup
+        assertTrue(initialLeader.equals(raftServer[2]));
+
+        // Failing the current leader raftServer by calling stop
+        initialLeader.stop();
+
+        // Creating a new array with the running raftServers
+        System.arraycopy(raftServer, 0, newRaftServer, 0, 2);
+
+        // Waiting for LEADER_HEARTBEAT_TIMEOUT before re- election starts
+        Thread.sleep(LEADER_HEARTBEAT_TIMEOUT);
+        // Verifying that new leader has been elected from amongst the running raftServers
+        // upon failure of the initial leader.
+        int indx1 = verifyLeaderElected(newRaftServer);
+        Server newLeader = raftServer[indx1];
+        assertNotNull(newLeader);
+        // Verifying the new leader is not same as the initial one
+        assertNotEquals(initialLeader, newLeader);
     }
 
     @After

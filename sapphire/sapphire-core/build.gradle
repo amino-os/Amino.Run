@@ -44,6 +44,7 @@ dependencies {
     testCompile 'org.powermock:powermock:1.6.5'
     testCompile 'org.powermock:powermock-module-junit4:1.6.5'
     testCompile 'org.powermock:powermock-api-mockito:1.6.5'
+    // Added to use the ExpectedSystemExit rule to test code that calls System.exit(), added in KSTest.java
     testCompile 'com.github.stefanbirkner:system-rules:1.2.0'
 
     // TODO: quinton: the following 2 lines shouldn't be necessary

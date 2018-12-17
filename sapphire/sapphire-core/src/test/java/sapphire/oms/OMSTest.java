@@ -1,6 +1,7 @@
 package sapphire.oms;
 
 import static org.junit.Assert.assertEquals;
+import static sapphire.common.SapphireUtils.deleteSapphireObject;
 import static sapphire.common.SapphireUtils.getOmsSapphireInstance;
 import static sapphire.common.UtilsTest.extractFieldValueOnInstance;
 
@@ -13,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import org.junit.*;
 import org.junit.rules.ExpectedException;
+import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
@@ -21,6 +23,7 @@ import sapphire.app.SapphireObject;
 import sapphire.app.SapphireObjectSpec;
 import sapphire.common.AppObject;
 import sapphire.common.BaseTest;
+import sapphire.common.IgnoreAfter;
 import sapphire.common.SapphireObjectID;
 import sapphire.common.SapphireReplicaID;
 import sapphire.common.SapphireUtils;
@@ -49,6 +52,8 @@ import sapphire.sampleSO.stubs.SO_Stub;
 })
 public class OMSTest extends BaseTest {
     @Rule public ExpectedException thrown = ExpectedException.none();
+    @Rule public TestName methodName = new TestName();
+
     OMSServerImpl omsImpl;
     Object fieldValue;
 
@@ -211,6 +216,7 @@ public class OMSTest extends BaseTest {
     }
 
     @Test
+    @IgnoreAfter
     public void getAllAndUnRegisterSapphireObjectTest() throws Exception {
         omsImpl.unRegisterSapphireObject(group.getSapphireObjId());
         ArrayList<SapphireObjectID> afterUnregister = omsImpl.getAllSapphireObjects();
@@ -277,5 +283,13 @@ public class OMSTest extends BaseTest {
     @After
     public void tearDown() throws Exception {
         GlobalKernelReferences.nodeServer.oms = spiedOms;
+        Method method = getClass().getMethod(methodName.getMethodName());
+        // because sapphire object will be deleted in getAllAndUnRegisterSapphireObjectTest.So no
+        // need to delete it again
+        if (method.isAnnotationPresent(IgnoreAfter.class)) {
+            System.out.println("sapphire object already deleted");
+        } else {
+            deleteSapphireObject(spiedOms, group.getSapphireObjId());
+        }
     }
 }

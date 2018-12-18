@@ -17,10 +17,8 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import sapphire.app.Language;
-import sapphire.app.SO;
 import sapphire.app.SapphireObject;
 import sapphire.app.SapphireObjectSpec;
-import sapphire.app.stubs.SO_Stub;
 import sapphire.common.BaseTest;
 import sapphire.common.SapphireObjectID;
 import sapphire.common.SapphireUtils;
@@ -34,6 +32,8 @@ import sapphire.policy.DefaultSapphirePolicy;
 import sapphire.policy.SapphirePolicy;
 import sapphire.policy.util.ResettableTimer;
 import sapphire.runtime.Sapphire;
+import sapphire.sampleSO.SO;
+import sapphire.sampleSO.stubs.SO_Stub;
 
 /** Created by Vishwajeet on 11/9/18. */
 @RunWith(PowerMockRunner.class)
@@ -109,7 +109,7 @@ public class KSTest extends BaseTest {
         SapphireObjectSpec spec =
                 SapphireObjectSpec.newBuilder()
                         .setLang(Language.java)
-                        .setJavaClassName("sapphire.app.SO")
+                        .setJavaClassName("sapphire.sampleSO.SO")
                         .create();
         super.setUp(
                 spec,
@@ -143,7 +143,7 @@ public class KSTest extends BaseTest {
 
     @Test
     public void testMakeKernelRPC() throws Exception {
-        String method = "public java.lang.Integer sapphire.app.SO.getI()";
+        String method = "public java.lang.Integer sapphire.sampleSO.SO.getI()";
         ArrayList<Object> params = new ArrayList<Object>();
         KernelRPC rpc = new KernelRPC(server1.$__getKernelOID(), method, params);
         thrown.expect(KernelRPCException.class);

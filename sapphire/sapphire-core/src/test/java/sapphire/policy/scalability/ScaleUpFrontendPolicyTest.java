@@ -22,8 +22,6 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.powermock.modules.junit4.PowerMockRunner;
 import sapphire.app.*;
-import sapphire.app.SO;
-import sapphire.app.stubs.SO_Stub;
 import sapphire.common.AppObject;
 import sapphire.common.BaseTest;
 import sapphire.common.SapphireObjectID;
@@ -31,6 +29,8 @@ import sapphire.kernel.common.KernelOID;
 import sapphire.kernel.common.KernelObjectStub;
 import sapphire.policy.DefaultSapphirePolicy;
 import sapphire.policy.SapphirePolicy;
+import sapphire.sampleSO.SO;
+import sapphire.sampleSO.stubs.SO_Stub;
 
 /** ScaleupFrontend DM test cases */
 
@@ -109,7 +109,7 @@ public class ScaleUpFrontendPolicyTest extends BaseTest {
         SapphireObjectSpec spec =
                 SapphireObjectSpec.newBuilder()
                         .setLang(Language.java)
-                        .setJavaClassName("sapphire.app.SO")
+                        .setJavaClassName("sapphire.sampleSO.SO")
                         .addDMSpec(
                                 DMSpec.newBuilder()
                                         .setName(ScaleUpFrontendPolicy.class.getName())
@@ -140,7 +140,7 @@ public class ScaleUpFrontendPolicyTest extends BaseTest {
 
     @Test
     public void clientTest() throws Exception {
-        String methodName = "public java.lang.Integer sapphire.app.SO.getI()";
+        String methodName = "public java.lang.Integer sapphire.sampleSO.SO.getI()";
         ArrayList<Object> params = new ArrayList<Object>();
 
         AtomicInteger syncCtrCurr =
@@ -162,7 +162,7 @@ public class ScaleUpFrontendPolicyTest extends BaseTest {
 
     @Test
     public void serverScaleUpTest() throws Exception {
-        final String methodName = "public java.lang.Integer sapphire.app.SO.getI()";
+        final String methodName = "public java.lang.Integer sapphire.sampleSO.SO.getI()";
         final ArrayList<Object> params = new ArrayList<Object>();
         Integer max = (Integer) extractFieldValueOnInstance(this.server1, "maxConcurrentReq");
 

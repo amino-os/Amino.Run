@@ -197,8 +197,6 @@ public class SapphireMultiPolicyChainTest extends BaseTest {
 
     @Test
     public void testCreatePolicy() throws Exception {
-        SapphirePolicy.SapphireServerPolicy previousServerPolicy = null;
-        KernelObjectStub previousServerPolicyStub = null;
         List<SapphirePolicyContainer> policyNameChain = new ArrayList<SapphirePolicyContainer>();
         List<SapphirePolicyContainer> processedPolicies = new ArrayList<SapphirePolicyContainer>();
 
@@ -214,8 +212,6 @@ public class SapphireMultiPolicyChainTest extends BaseTest {
                         new boolean[1],
                         policyNameChain,
                         processedPolicies,
-                        previousServerPolicy,
-                        previousServerPolicyStub,
                         "",
                         null);
 
@@ -224,8 +220,6 @@ public class SapphireMultiPolicyChainTest extends BaseTest {
 
     @Test
     public void testCreatePolicyTwoPolicies() throws Exception {
-        SapphirePolicy.SapphireServerPolicy previousServerPolicy = null;
-        KernelObjectStub previousServerPolicyStub = null;
         List<SapphirePolicyContainer> policyNameChain = new ArrayList<SapphirePolicyContainer>();
         List<SapphirePolicyContainer> processedPolicies = new ArrayList<SapphirePolicyContainer>();
 
@@ -244,8 +238,6 @@ public class SapphireMultiPolicyChainTest extends BaseTest {
                         new boolean[1],
                         policyNameChain,
                         processedPolicies,
-                        previousServerPolicy,
-                        previousServerPolicyStub,
                         "",
                         null);
 

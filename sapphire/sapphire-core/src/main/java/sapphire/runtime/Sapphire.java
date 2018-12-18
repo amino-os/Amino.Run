@@ -61,9 +61,6 @@ public class Sapphire {
                 policyNameChain.add(new SapphirePolicyContainer(defaultPolicyName, null));
             }
 
-            SapphireServerPolicy previousServerPolicy = null;
-            KernelObjectStub previousServerPolicyStub = null;
-
             /* Register for a sapphire object Id from OMS */
             SapphireObjectID sapphireObjId =
                     GlobalKernelReferences.nodeServer.oms.registerSapphireObject();
@@ -76,8 +73,6 @@ public class Sapphire {
                             new boolean[1],
                             policyNameChain,
                             processedPolicies,
-                            previousServerPolicy,
-                            previousServerPolicyStub,
                             "",
                             args);
 
@@ -136,8 +131,6 @@ public class Sapphire {
                             new boolean[1],
                             policyNameChain,
                             processedPolicies,
-                            previousServerPolicy,
-                            previousServerPolicyStub,
                             "",
                             args);
 
@@ -196,9 +189,6 @@ public class Sapphire {
      * @param chainPinned Flag indicating chain is pinned
      * @param policyNameChain List of policies that need to be created
      * @param processedPolicies List of policies that were already created
-     * @param previousServerPolicy ServerPolicy that was created just before and needs to be linked
-     * @param previousServerPolicyStub ServerPolicyStub that was created just before and needs to be
-     *     linked
      * @param region Region
      * @param appArgs Arguments for application object
      * @return processedPolicies
@@ -219,8 +209,6 @@ public class Sapphire {
             boolean[] chainPinned,
             List<SapphirePolicyContainer> policyNameChain,
             List<SapphirePolicyContainer> processedPolicies,
-            SapphireServerPolicy previousServerPolicy,
-            KernelObjectStub previousServerPolicyStub,
             String region,
             Object[] appArgs)
             throws IOException, ClassNotFoundException, KernelObjectNotFoundException,
@@ -263,9 +251,6 @@ public class Sapphire {
         SapphireClientPolicy client =
                 (SapphireClientPolicy) sapphireClientPolicyClass.newInstance();
 
-        /* Retreive the groupPolicy from the groupPolicyStub */
-        SapphireGroupPolicy groupPolicy = (SapphireGroupPolicy) groupPolicyStub;
-
         /* Initialize the server policy and return a local pointer to the object itself */
         SapphireServerPolicy serverPolicy = initializeServerPolicy(serverPolicyStub);
 
@@ -275,8 +260,17 @@ public class Sapphire {
         client.setServer(serverPolicyStub);
         client.onCreate(groupPolicyStub, spec);
 
-        if (previousServerPolicy != null) {
-            initServerPolicy(serverPolicy, previousServerPolicy, previousServerPolicyStub, client);
+        SapphirePolicyContainer prevContainer = null;
+        /* Check and get the previous DM's container if available. So that, server side and client side chain links can
+        be updated between the current DM and previous DM. If the previous DM's container is not available,
+        then DM/Policy being created is either for single DM based SO or It is the first DM/Policy in Multi DM based SO
+        (i.e., last mile server policy to SO */
+        if (!processedPolicies.isEmpty()) {
+            prevContainer = processedPolicies.get(processedPolicies.size() - 1);
+        }
+
+        if (prevContainer != null) {
+            initServerPolicy(serverPolicy, prevContainer, client);
         } else {
             initAppStub(spec, serverPolicy, client, appArgs, appObject);
         }
@@ -301,9 +295,6 @@ public class Sapphire {
         serverPolicy.setProcessedPolicies(processedPoliciesSoFar);
         serverPolicyStub.setProcessedPolicies(processedPoliciesSoFar);
 
-        previousServerPolicy = serverPolicy;
-        previousServerPolicyStub = (KernelObjectStub) serverPolicyStub;
-
         if (nextPoliciesToCreate.size() != 0) {
             // TODO: hacks for demo
             if (policyName != null && policyName.contains("DHT")) {
@@ -320,8 +311,6 @@ public class Sapphire {
                     chainPinned,
                     nextPoliciesToCreate,
                     processedPolicies,
-                    previousServerPolicy,
-                    previousServerPolicyStub,
                     region,
                     appArgs);
         }
@@ -329,9 +318,9 @@ public class Sapphire {
         // server policy stub at this moment has the full policy chain; safe to add to group
         if (existingGroupPolicy == null) {
             serverPolicyStub.setAlreadyPinned(chainPinned[0]);
-            groupPolicy.onCreate(region, serverPolicyStub, spec);
+            groupPolicyStub.onCreate(region, serverPolicyStub, spec);
             chainPinned[0] = true;
-            groupPolicy.addServer(serverPolicyStub);
+            groupPolicyStub.addServer(serverPolicyStub);
         }
 
         return processedPolicies;
@@ -587,19 +576,19 @@ public class Sapphire {
      * Connects the link between server policy in the chain.
      *
      * @param serverPolicy server policy
-     * @param prevServerPolicy previous server policy
-     * @param prevServerPolicyStub previous server policy stub
+     * @param prevContainer previous DM's container
      * @param clientPolicy client policy
      * @throws IOException
      * @throws ClassNotFoundException
      */
     private static void initServerPolicy(
             SapphireServerPolicy serverPolicy,
-            SapphireServerPolicy prevServerPolicy,
-            KernelObjectStub prevServerPolicyStub,
+            SapphirePolicyContainer prevContainer,
             SapphireClientPolicy clientPolicy)
             throws IOException, ClassNotFoundException {
-        serverPolicy.setSapphireObjectSpec(prevServerPolicy.getSapphireObjectSpec());
+        serverPolicy.setSapphireObjectSpec(prevContainer.getServerPolicy().getSapphireObjectSpec());
+
+        KernelObjectStub prevServerPolicyStub = prevContainer.getServerPolicyStub();
 
         /* Previous server policy stub object acts as Sapphire Object(SO) to the current server policy */
         serverPolicy.$__initialize(

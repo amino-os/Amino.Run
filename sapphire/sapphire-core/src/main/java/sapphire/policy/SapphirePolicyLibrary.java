@@ -131,8 +131,6 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
                         null,
                         processedPolicies,
                         processedPoliciesReplica,
-                        null,
-                        null,
                         region,
                         null);
 
@@ -156,8 +154,6 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
                                 new boolean[1],
                                 this.nextPolicies,
                                 processedPoliciesReplica,
-                                serverPolicy,
-                                serverPolicyStub,
                                 region,
                                 null);
 

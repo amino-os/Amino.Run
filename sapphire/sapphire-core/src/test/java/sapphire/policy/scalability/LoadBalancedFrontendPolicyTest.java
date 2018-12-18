@@ -24,14 +24,14 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.powermock.modules.junit4.PowerMockRunner;
 import sapphire.app.*;
-import sapphire.app.SO;
-import sapphire.app.stubs.SO_Stub;
 import sapphire.common.BaseTest;
 import sapphire.common.SapphireObjectID;
 import sapphire.kernel.common.KernelOID;
 import sapphire.kernel.common.KernelObjectStub;
 import sapphire.policy.DefaultSapphirePolicy;
 import sapphire.policy.SapphirePolicy;
+import sapphire.sampleSO.SO;
+import sapphire.sampleSO.stubs.SO_Stub;
 
 /** Created by Vishwajeet on 2/4/18. */
 @RunWith(PowerMockRunner.class)
@@ -106,7 +106,7 @@ public class LoadBalancedFrontendPolicyTest extends BaseTest {
         SapphireObjectSpec spec =
                 SapphireObjectSpec.newBuilder()
                         .setLang(Language.java)
-                        .setJavaClassName("sapphire.app.SO")
+                        .setJavaClassName("sapphire.sampleSO.SO")
                         .addDMSpec(
                                 DMSpec.newBuilder()
                                         .setName(LoadBalancedFrontendPolicy.class.getName())
@@ -141,7 +141,7 @@ public class LoadBalancedFrontendPolicyTest extends BaseTest {
      */
     @Test
     public void testRandomLoadBalance() throws Exception {
-        String methodName = "public java.lang.Integer sapphire.app.SO.getIDelayed()";
+        String methodName = "public java.lang.Integer sapphire.sampleSO.SO.getIDelayed()";
         ArrayList<Object> params = new ArrayList<Object>();
 
         this.client.onRPC(methodName, params);
@@ -157,7 +157,7 @@ public class LoadBalancedFrontendPolicyTest extends BaseTest {
      */
     @Test
     public void testMaxConcurrentRequests() throws Exception {
-        final String methodName = "public java.lang.Integer sapphire.app.SO.getIDelayed()";
+        final String methodName = "public java.lang.Integer sapphire.sampleSO.SO.getIDelayed()";
         final ArrayList<Object> params = new ArrayList<Object>();
         Integer max = (Integer) extractFieldValueOnInstance(this.server1, "maxConcurrentReq");
 

@@ -15,10 +15,8 @@ import org.junit.runner.RunWith;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import sapphire.app.Language;
-import sapphire.app.SO;
 import sapphire.app.SapphireObject;
 import sapphire.app.SapphireObjectSpec;
-import sapphire.app.stubs.SO_Stub;
 import sapphire.common.AppObject;
 import sapphire.common.BaseTest;
 import sapphire.common.SapphireObjectID;
@@ -31,6 +29,8 @@ import sapphire.kernel.server.KernelServerImpl;
 import sapphire.policy.DefaultSapphirePolicy;
 import sapphire.policy.SapphirePolicy;
 import sapphire.runtime.Sapphire;
+import sapphire.sampleSO.SO;
+import sapphire.sampleSO.stubs.SO_Stub;
 
 /** OMS API test cases */
 
@@ -118,7 +118,7 @@ public class OMSTest extends BaseTest {
         SapphireObjectSpec spec =
                 SapphireObjectSpec.newBuilder()
                         .setLang(Language.java)
-                        .setJavaClassName("sapphire.app.SO")
+                        .setJavaClassName("sapphire.sampleSO.SO")
                         .create();
         super.setUp(
                 spec,

@@ -16,13 +16,13 @@ import org.junit.runner.RunWith;
 import org.powermock.modules.junit4.PowerMockRunner;
 import sapphire.app.DMSpec;
 import sapphire.app.Language;
-import sapphire.app.SO;
 import sapphire.app.SapphireObjectSpec;
 import sapphire.common.*;
 import sapphire.kernel.common.KernelOID;
 import sapphire.kernel.common.KernelObjectStub;
 import sapphire.policy.*;
 import sapphire.policy.dht.DHTPolicy;
+import sapphire.sampleSO.SO;
 
 @RunWith(PowerMockRunner.class)
 public class SapphireMultiPolicyChainTest extends BaseTest {
@@ -175,7 +175,7 @@ public class SapphireMultiPolicyChainTest extends BaseTest {
         spec =
                 SapphireObjectSpec.newBuilder()
                         .setLang(Language.java)
-                        .setJavaClassName("sapphire.app.SO")
+                        .setJavaClassName("sapphire.sampleSO.SO")
                         .addDMSpec(DMSpec.newBuilder().setName(DHTPolicy.class.getName()).create())
                         .addDMSpec(
                                 DMSpec.newBuilder()

@@ -376,11 +376,10 @@ public class OMSServerImpl implements OMSServer, SapphireObjectServer {
             // to get all the kernel server's addresses passing null in oms.getServers
             for (Iterator<InetSocketAddress> it = oms.getServers(null).iterator(); it.hasNext(); ) {
                 InetSocketAddress address = it.next();
-                logger.fine(
-                        "   " + address.getHostName().toString() + ":" + address.getPort());
+                logger.fine("   " + address.getHostName().toString() + ":" + address.getPort());
             }
         } catch (Exception e) {
-            logger.severe("Server exception: " + e.toString()); 
+            logger.severe("Server exception: " + e.toString());
             e.printStackTrace();
         }
     }

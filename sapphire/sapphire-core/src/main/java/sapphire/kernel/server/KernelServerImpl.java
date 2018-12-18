@@ -229,11 +229,17 @@ public class KernelServerImpl implements KernelServer {
         /* Coalesce all the server policies in chain before moving them */
         object.coalesce();
         SapphirePolicy.SapphireServerPolicy nextPolicy = serverPolicy;
-        Object appObjectStub;
+
+        /* Below objectStub variable temporarily holds
+        Either AppObjectStub(in case of the last mile server policy to SO).
+        Or KernelObjectStub(in case of multiDM, all intermediate DMs except the last mile server policy to SO).
+        If the AppObject is pointing to KernelObjectStub, i.e. having intermediate DMs, need to get those kernel objects
+        and coalesce them. */
+        Object objectStub;
         while ((nextPolicy.sapphire_getAppObject() != null)
-                && ((appObjectStub = nextPolicy.sapphire_getAppObject().getObject()) != null)
-                && (appObjectStub instanceof KernelObjectStub)) {
-            nextPolicy = (SapphirePolicy.SapphireServerPolicy) appObjectStub;
+                && ((objectStub = nextPolicy.sapphire_getAppObject().getObject()) != null)
+                && (objectStub instanceof KernelObjectStub)) {
+            nextPolicy = (SapphirePolicy.SapphireServerPolicy) objectStub;
             try {
                 objectManager.lookupObject(nextPolicy.$__getKernelOID()).coalesce();
             } catch (KernelObjectNotFoundException e) {
@@ -265,9 +271,9 @@ public class KernelServerImpl implements KernelServer {
         }
 
         // Remove the associated KernelObjects from the local KernelServer.
-        appObjectStub = serverPolicy;
+        objectStub = serverPolicy;
         do {
-            serverPolicy = (SapphirePolicy.SapphireServerPolicy) appObjectStub;
+            serverPolicy = (SapphirePolicy.SapphireServerPolicy) objectStub;
             try {
                 objectManager.removeObject(serverPolicy.$__getKernelOID());
                 serverPolicy.onDestroy();
@@ -278,8 +284,8 @@ public class KernelServerImpl implements KernelServer {
                 logger.warning(msg);
             }
         } while ((serverPolicy.sapphire_getAppObject() != null)
-                && ((appObjectStub = serverPolicy.sapphire_getAppObject().getObject()) != null)
-                && (appObjectStub instanceof KernelObjectStub));
+                && ((objectStub = serverPolicy.sapphire_getAppObject().getObject()) != null)
+                && (objectStub instanceof KernelObjectStub));
     }
 
     /**

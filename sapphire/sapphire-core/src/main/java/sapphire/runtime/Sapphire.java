@@ -193,6 +193,7 @@ public class Sapphire {
      * @param sapphireObjId Sapphire object Id
      * @param spec Sapphire object spec
      * @param configMap Sapphire policy configuration map
+     * @param chainPinned Flag indicating chain is pinned
      * @param policyNameChain List of policies that need to be created
      * @param processedPolicies List of policies that were already created
      * @param previousServerPolicy ServerPolicy that was created just before and needs to be linked

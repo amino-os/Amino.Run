@@ -61,7 +61,6 @@ public class BaseTest {
     protected SO_Stub soStub;
     protected SO_Stub soStub1;
     protected SO so;
-    protected SO so1;
     protected OMSServer spiedOms;
     protected SapphireObjectServer sapphireObjServer;
     protected KernelServer spiedKs1;

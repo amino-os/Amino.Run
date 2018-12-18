@@ -59,18 +59,20 @@ public class ServerTest {
             count++;
             sleep(500);
         }
-        return -1;
+        throw new Exception("Raft Leader not elected for long time.");
     }
 
-    public static void verifyLeaderViewOnRafts(Server[] s, int indx) throws java.lang.Exception {
+    public static void verifyLeaderViewOnRafts(Server[] s, int leaderIndex)
+            throws java.lang.Exception {
         int count = 0;
         int verifiedCount = 0;
         int maxRetries = 3;
         while (count < maxRetries) {
             for (int j = 0; j < s.length; j++) {
-                if (j != indx) {
-                    RemoteRaftServer leaderViewOfRaftServer = getCurrentLeader(s[j]);
-                    if (leaderViewOfRaftServer != null) {
+                if (j != leaderIndex) {
+                    UUID leaderViewOfRaftServer = s[j].vState.currentLeader;
+                    UUID leaderServer = s[leaderIndex].getMyServerID();
+                    if (leaderViewOfRaftServer == leaderServer) {
                         verifiedCount++;
                     }
                 }
@@ -84,17 +86,18 @@ public class ServerTest {
         }
     }
 
-    public static void verifyLastApplied(Server r1, Server r2)
+    public static void verifyLastApplied(Server leader, Server follower)
             throws Exception, InterruptedException {
         int count = 0;
         int maxRetries = 5;
         while (count < maxRetries) {
-            if (r1.pState.log().size() - 1 == r2.vState.getLastApplied()) {
-                break;
+            if (leader.pState.log().size() - 1 == follower.vState.getLastApplied()) {
+                return;
             }
             count++;
             sleep(500);
         }
+        throw new Exception("Applying log on server failed.");
     }
 
     @Before
@@ -240,7 +243,7 @@ public class ServerTest {
             s.start();
         }
         raftServer[0].become(Server.State.CANDIDATE, FOLLOWER);
-        assertTrue(raftServer[verifyLeaderElected(raftServer)].equals(raftServer[0]));
+        assertTrue(raftServer[verifyLeaderElected(raftServer)] == raftServer[0]);
 
         String methodName = "public java.lang.String java.lang.Object.toString()";
         ArrayList<Object> args = new ArrayList<Object>();
@@ -287,7 +290,7 @@ public class ServerTest {
         }
         raftServer[0].become(Server.State.CANDIDATE, FOLLOWER);
         verifyLeaderElected(raftServer);
-        assertTrue(raftServer[verifyLeaderElected(raftServer)].equals(raftServer[0]));
+        assertTrue(raftServer[verifyLeaderElected(raftServer)] == raftServer[0]);
 
         thrown.expect(AlreadyVotedException.class);
         raftServer[2].requestVote(1, raftServer[1].getMyServerID(), -1, -1);

@@ -1,7 +1,6 @@
 package sapphire.policy.replication;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
@@ -42,7 +41,7 @@ import sapphire.sampleSO.stubs.SO_Stub;
 public class ConsensusRSMPolicyTest extends BaseTest {
     final int SERVER_COUNT = 3;
     Server raftServer[] = new Server[SERVER_COUNT];
-    SO so2, so3;
+    SO so1, so2, so3;
 
     public static class ConsensusSO extends SO {}
 
@@ -156,7 +155,7 @@ public class ConsensusRSMPolicyTest extends BaseTest {
         makeFollower(raftServer[0]);
         makeFollower(raftServer[1]);
         makeLeader(raftServer[2]);
-        assertTrue(raftServer[verifyLeaderElected(raftServer)].equals(raftServer[2]));
+        assertTrue(raftServer[verifyLeaderElected(raftServer)] == raftServer[2]);
     }
 
     @Test
@@ -179,10 +178,13 @@ public class ConsensusRSMPolicyTest extends BaseTest {
         ConsensusRSMPolicy.ServerPolicy server3 = (ConsensusRSMPolicy.ServerPolicy) this.server3;
 
         server3.applyToStateMachine(rpc);
-        verify(server3, times(1)).apply(Matchers.anyObject());
+
         // Verifying post applyToStateMachine, that clients have the same lastApplied
         verifyLastApplied(raftServer[2], raftServer[0]);
         verifyLastApplied(raftServer[2], raftServer[1]);
+
+        verify(server3, times(1)).apply(Matchers.anyObject());
+
         // Verifying that all clients see the same resulting value
         assertEquals(so3.getI(), so1.getI());
         assertEquals(so3.getI(), so2.getI());
@@ -319,28 +321,19 @@ public class ConsensusRSMPolicyTest extends BaseTest {
     @Test
     public void testNodeFailure() throws Exception {
         Server newRaftServer[] = new Server[SERVER_COUNT - 1];
-        // Verifying leader already exists
-        int indx = verifyLeaderElected(raftServer);
-        Server initialLeader = raftServer[indx];
-
-        // Verifying the leader raftServer is same as that made in Setup
-        assertTrue(initialLeader.equals(raftServer[2]));
 
         // Failing the current leader raftServer by calling stop
-        initialLeader.stop();
+        raftServer[2].stop();
 
         // Creating a new array with the running raftServers
-        System.arraycopy(raftServer, 0, newRaftServer, 0, 2);
+        newRaftServer[0] = raftServer[0];
+        newRaftServer[1] = raftServer[1];
 
         // Waiting for LEADER_HEARTBEAT_TIMEOUT before re- election starts
         Thread.sleep(LEADER_HEARTBEAT_TIMEOUT);
-        // Verifying that new leader has been elected from amongst the running raftServers
+        // Verifying that new leader has been elected from amongst the running raftServers,
         // upon failure of the initial leader.
-        int indx1 = verifyLeaderElected(newRaftServer);
-        Server newLeader = raftServer[indx1];
-        assertNotNull(newLeader);
-        // Verifying the new leader is not same as the initial one
-        assertNotEquals(initialLeader, newLeader);
+        verifyLeaderElected(newRaftServer);
     }
 
     @After

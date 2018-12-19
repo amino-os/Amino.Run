@@ -25,7 +25,6 @@ import sapphire.common.AppObject;
 import sapphire.common.BaseTest;
 import sapphire.common.IgnoreAfter;
 import sapphire.common.SapphireObjectID;
-import sapphire.common.SapphireReplicaID;
 import sapphire.common.SapphireUtils;
 import sapphire.kernel.common.GlobalKernelReferences;
 import sapphire.kernel.common.KernelOID;
@@ -52,10 +51,12 @@ import sapphire.sampleSO.stubs.SO_Stub;
 })
 public class OMSTest extends BaseTest {
     @Rule public ExpectedException thrown = ExpectedException.none();
+    // To make the current test name available inside test methods
     @Rule public TestName methodName = new TestName();
 
+    // To access the methods in SapphireObjectManager through Reflection
     OMSServerImpl omsImpl;
-    Object fieldValue;
+    SapphireObjectManager fieldValue;
 
     public static class DefaultSO extends SO implements SapphireObject {}
 
@@ -151,9 +152,14 @@ public class OMSTest extends BaseTest {
                         extractFieldValueOnInstance(soStub, "$__client");
         so = ((SO) (server1.sapphire_getAppObject().getObject()));
         omsImpl = (OMSServerImpl) spiedOms;
+
+        // In order to access the methods in SapphireObjectManager, reflection is used to get the
+        // SapphireObjectManager instance from OMSServerImpl
         Field field = OMSServerImpl.class.getDeclaredField("objectManager");
+
+        // To access the private field
         field.setAccessible(true);
-        fieldValue = field.get(omsImpl);
+        fieldValue = (SapphireObjectManager) field.get(omsImpl);
     }
 
     @Test
@@ -197,48 +203,42 @@ public class OMSTest extends BaseTest {
         List<InetSocketAddress> servers = spiedOms.getServers(null);
 
         /* Reference count must become 3 (Since three kernel server are added )  */
-
         assertEquals(new Integer(3), new Integer(servers.size()));
     }
 
     @Test
     public void mainTest() throws Exception {
-        // with service port as optional parameter
-        OMSServerImpl.main(new String[] {"127.0.0.1", "10005", "--servicePort=33333"});
         // this gives NumberFormatException
-        OMSServerImpl.main(new String[] {"127.0.0.1", "port", "--servicePort=33333"});
+        OMSServerImpl.main(new String[] {localIP, "port", "--servicePort=10010"});
     }
 
     @Test
     public void getAllKernalObjectTest() throws Exception {
         ArrayList<KernelOID> arr = omsImpl.getAllKernelObjects();
-        assertEquals(2, arr.size());
+        assertEquals(new Integer(2), new Integer(arr.size()));
     }
 
     @Test
-    @IgnoreAfter
+    @IgnoreAfter // Added to ignore @After for this particular testcase
     public void getAllAndUnRegisterSapphireObjectTest() throws Exception {
+        // As only one sapphire object is created during setUp(), after unregister, number of
+        // sapphireobjects should be zero
         omsImpl.unRegisterSapphireObject(group.getSapphireObjId());
         ArrayList<SapphireObjectID> afterUnregister = omsImpl.getAllSapphireObjects();
-        assertEquals(0, afterUnregister.size());
+        assertEquals(new Integer(0), new Integer(afterUnregister.size()));
     }
 
     @Test
     public void getAndUnRegisterSapphireReplicaTest() throws Exception {
+        // As only one sapphire replica is created during setUp(), after unregister, number of
+        // sapphireReplicas should be zero
         omsImpl.unRegisterSapphireReplica(server1.getReplicaId());
         EventHandler[] arr = omsImpl.getSapphireReplicasById(group.getSapphireObjId());
-        assertEquals(0, arr.length);
+        assertEquals(new Integer(0), new Integer(arr.length));
     }
 
     @Test
     public void setAndGetInstanceDispatcherTest() throws Exception {
-        Method setMethod =
-                fieldValue
-                        .getClass()
-                        .getDeclaredMethod(
-                                "setInstanceDispatcher",
-                                SapphireObjectID.class,
-                                EventHandler.class);
         EventHandler eventHandler =
                 new EventHandler(
                         GlobalKernelReferences.nodeServer.getLocalHost(),
@@ -247,23 +247,12 @@ public class OMSTest extends BaseTest {
                                 add(server1);
                             }
                         });
-        setMethod.invoke(fieldValue, group.getSapphireObjId(), eventHandler);
-        Method getMethod =
-                fieldValue
-                        .getClass()
-                        .getDeclaredMethod("getInstanceDispatcher", SapphireObjectID.class);
-        assertEquals(eventHandler, getMethod.invoke(fieldValue, group.getSapphireObjId()));
+        fieldValue.setInstanceDispatcher(group.getSapphireObjId(), eventHandler);
+        assertEquals(eventHandler, fieldValue.getInstanceDispatcher(group.getSapphireObjId()));
     }
 
     @Test
     public void setAndGetReplicaDispatcherTest() throws Exception {
-        Method setMethod =
-                fieldValue
-                        .getClass()
-                        .getDeclaredMethod(
-                                "setReplicaDispatcher",
-                                SapphireReplicaID.class,
-                                EventHandler.class);
         EventHandler eventHandler =
                 new EventHandler(
                         GlobalKernelReferences.nodeServer.getLocalHost(),
@@ -272,12 +261,8 @@ public class OMSTest extends BaseTest {
                                 add(server1);
                             }
                         });
-        setMethod.invoke(fieldValue, server1.getReplicaId(), eventHandler);
-        Method getMethod =
-                fieldValue
-                        .getClass()
-                        .getDeclaredMethod("getReplicaDispatcher", SapphireReplicaID.class);
-        assertEquals(eventHandler, getMethod.invoke(fieldValue, server1.getReplicaId()));
+        fieldValue.setReplicaDispatcher(server1.getReplicaId(), eventHandler);
+        assertEquals(eventHandler, fieldValue.getReplicaDispatcher(server1.getReplicaId()));
     }
 
     @After

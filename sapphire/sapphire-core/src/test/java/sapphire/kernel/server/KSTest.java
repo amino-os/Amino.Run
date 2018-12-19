@@ -33,6 +33,7 @@ import sapphire.common.SapphireObjectID;
 import sapphire.common.SapphireUtils;
 import sapphire.kernel.common.KernelOID;
 import sapphire.kernel.common.KernelObjectFactory;
+import sapphire.kernel.common.KernelObjectNotFoundException;
 import sapphire.kernel.common.KernelObjectStub;
 import sapphire.kernel.common.KernelRPC;
 import sapphire.kernel.common.KernelRPCException;
@@ -57,6 +58,7 @@ import sapphire.sampleSO.stubs.SO_Stub;
 })
 public class KSTest extends BaseTest {
     @Rule public ExpectedException thrown = ExpectedException.none();
+    // Added to allow SystemExit in order to prevent termination of code
     @Rule public final ExpectedSystemExit exit = ExpectedSystemExit.none();
 
     public static class DefaultSO extends SO implements SapphireObject {}
@@ -136,11 +138,15 @@ public class KSTest extends BaseTest {
                     }
                 });
 
+        // Mocked getBestSuitableServer in KernelServerManager to always return spiedKs3 as the
+        // bestsuitableServer in order to get exact result from
+        // KernelObjectManager.getAllKernelObjectOids. If not mocked, random
+        // server will be choosen each time making the results random.
         KernelServerManager serverManager =
                 (KernelServerManager) extractFieldValueOnInstance(spiedOms, "serverManager");
         KernelServerManager spiedServerManager = spy(serverManager);
         setFieldValueOnInstance(spiedOms, "serverManager", spiedServerManager);
-        InetSocketAddress address = new InetSocketAddress("127.0.0.1", 10003);
+        InetSocketAddress address = new InetSocketAddress(localIP, kernelPort3);
         doReturn(address)
                 .when(spiedServerManager)
                 .getBestSuitableServer(any(SapphireObjectSpec.class));
@@ -158,7 +164,7 @@ public class KSTest extends BaseTest {
     public void testHeartbeat() throws Exception {
         Field field = PowerMockito.field(KernelServerImpl.class, "ksHeartbeatSendTimer");
         field.set(KernelServerImpl.class, mock(ResettableTimer.class));
-        ServerInfo srvinfo = new ServerInfo(new InetSocketAddress("127.0.0.1", 10001), "IND");
+        ServerInfo srvinfo = new ServerInfo(new InetSocketAddress(localIP, kernelPort1), "IND");
         KernelServerImpl.startheartbeat(srvinfo);
     }
 
@@ -173,17 +179,12 @@ public class KSTest extends BaseTest {
         spiedKs3.makeKernelRPC(rpc);
     }
 
-    @Test
+    @Test(expected = KernelObjectNotFoundException.class)
     public void removeObjectTest() throws Exception {
         KernelServerImpl ks = (KernelServerImpl) spiedKs3;
         ks.deleteKernelObject(client.getServer().$__getKernelOID());
-        try {
-            KernelObject object = ks.getKernelObject(client.getServer().$__getKernelOID());
-        } catch (Exception e) {
-
-            assertEquals(
-                    e.getClass().getName(), "sapphire.kernel.common.KernelObjectNotFoundException");
-        }
+        // should throw KernelObjectNotFoundException as it is deleted
+        ks.getKernelObject(client.getServer().$__getKernelOID());
     }
 
     @Test
@@ -191,25 +192,31 @@ public class KSTest extends BaseTest {
         PowerMockito.mockStatic(LocateRegistry.class);
         when(LocateRegistry.getRegistry(anyString(), anyInt())).thenCallRealMethod();
         when(LocateRegistry.createRegistry(anyInt())).thenCallRealMethod();
-        OMSServerImpl.main(new String[] {"127.0.0.1", "10006"});
+        OMSServerImpl.main(
+                new String[] {localIP, Integer.toString(omsPort), "--servicePort=10010"});
         KernelServerImpl.main(
                 new String[] {
-                    "127.0.0.1",
-                    "10001",
-                    "127.0.0.1",
-                    "10006",
+                    localIP,
+                    Integer.toString(kernelPort1),
+                    localIP,
+                    Integer.toString(omsPort),
                     "IND",
                     "--labels=label",
                     "--servicePort=10010"
                 });
         // for testing negative scenario with only 3 arguments
-        KernelServerImpl.main(new String[] {"127.0.0.1", "10001", "127.0.0.1"});
+        KernelServerImpl.main(new String[] {localIP, Integer.toString(kernelPort1), localIP});
     }
 
     @Test
     public void getAllKernelObjectOidsTest() throws Exception {
+        // used spiedKs3 here because in setUp(), getBestSuitableServer is mocked in such a way that
+        // it should always return spiedKs3. If other KernelServers are used,
+        // KernelObjectManager.getAllKernelObjectOids() will return null.
         KernelObjectManager kom =
                 (KernelObjectManager) extractFieldValueOnInstance(spiedKs3, "objectManager");
-        assertEquals(2, kom.getAllKernelObjectOids().length);
+        // As KernelObjectManager.addObject is called twice, One during
+        // createSapphireObject and the other in BaseTest.java, length returned should be 2.
+        assertEquals(new Integer(2), new Integer(kom.getAllKernelObjectOids().length));
     }
 }

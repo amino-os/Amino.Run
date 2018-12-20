@@ -46,6 +46,9 @@ public interface OMSServer extends Remote {
             throws RemoteException, ClassNotFoundException, KernelObjectNotCreatedException,
                     MicroServiceNotFoundException;
 
+    void deleteGroupPolicy(MicroServiceID microServiceId, KernelOID groupOid)
+            throws RemoteException, MicroServiceNotFoundException;
+
     MicroServiceID registerMicroService() throws RemoteException;
 
     ReplicaID registerReplica(MicroServiceID microServiceId)

@@ -86,11 +86,8 @@ public abstract class DefaultUpcallImpl extends Library {
 
         @Override
         public void terminate() throws RemoteException {
-            super.terminate(this.getProcessedPolicies());
+            super.terminate();
         }
-
-        @Override
-        public void onDestroy() {}
     }
 
     public abstract static class GroupPolicy extends GroupPolicyLibrary {
@@ -107,11 +104,6 @@ public abstract class DefaultUpcallImpl extends Library {
         public Policy.ServerPolicy onRefRequest() throws RemoteException {
             ArrayList<Policy.ServerPolicy> servers = getServers();
             return servers.get(new Random().nextInt(servers.size()));
-        }
-
-        @Override
-        public void onDestroy() throws RemoteException {
-            super.onDestroy();
         }
     }
 }

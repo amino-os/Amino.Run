@@ -152,8 +152,10 @@ public class OMSTest extends BaseTest {
                                 add(group);
                             }
                         });
-        fieldValue.setInstanceDispatcher(microServiceId, groupHandler);
-        assertEquals(groupHandler, fieldValue.getInstanceDispatcher(microServiceId));
+        fieldValue.addGroupDispatcher(microServiceId, group.$__getKernelOID(), groupHandler);
+        assertEquals(
+                groupHandler,
+                fieldValue.getGroupDispatcher(microServiceId, group.$__getKernelOID()));
 
         /* Register a replica to this SO, check if it is added, set handler, get it back and verify if it is same */
         ReplicaID replicaId = omsImpl.registerReplica(microServiceId);

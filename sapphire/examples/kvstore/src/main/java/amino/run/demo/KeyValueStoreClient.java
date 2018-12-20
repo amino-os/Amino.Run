@@ -51,6 +51,8 @@ public class KeyValueStoreClient {
             val = String.valueOf(store.get(key));
             System.out.println(String.format("<Client> got value %s with key %s", val, key));
         }
+
+        registry.delete(oid);
     }
 
     private static Registry getRegistry(String omsIp, int omsPort) throws Exception {

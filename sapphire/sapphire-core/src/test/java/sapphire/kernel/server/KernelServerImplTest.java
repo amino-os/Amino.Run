@@ -27,7 +27,7 @@ public class KernelServerImplTest {
 
     @Test
     public void testParseLabels4() throws Exception {
-        Map labels = parseLabels("--labels=a=b");
+        Map labels = parseLabels("--labels a=b");
         Assert.assertEquals(1, labels.size());
         Assert.assertTrue(labels.containsKey("a"));
         Assert.assertTrue(labels.containsValue("b"));
@@ -35,7 +35,7 @@ public class KernelServerImplTest {
 
     @Test
     public void testParseLabels5() throws Exception {
-        Map labels = parseLabels("--labels=a=b,c=d,e=f");
+        Map labels = parseLabels("--labels a=b,c=d,e=f");
         Assert.assertEquals(3, labels.size());
         Assert.assertTrue(labels.containsKey("a"));
         Assert.assertTrue(labels.containsValue("b"));
@@ -47,7 +47,7 @@ public class KernelServerImplTest {
 
     @Test
     public void testParseLabels6() throws Exception {
-        Map labels = parseLabels("--labels=a=b,");
+        Map labels = parseLabels("--labels a=b,");
         Assert.assertEquals(1, labels.size());
         Assert.assertTrue(labels.containsKey("a"));
         Assert.assertTrue(labels.containsValue("b"));

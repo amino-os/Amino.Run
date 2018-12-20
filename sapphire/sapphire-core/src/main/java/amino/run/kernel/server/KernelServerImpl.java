@@ -34,7 +34,7 @@ import java.util.logging.Logger;
  */
 public class KernelServerImpl implements KernelServer {
     private static Logger logger = Logger.getLogger(KernelServerImpl.class.getName());
-    public static String LABEL_OPT = "--labels=";
+    public static String LABEL_OPT = "--labels";
     public static String OPT_SEPARATOR = "=";
     public static String LABEL_SEPARATOR = ",";
     public static String SERVICE_PORT = "--servicePort";
@@ -468,7 +468,7 @@ public class KernelServerImpl implements KernelServer {
         System.out.println("Usage:");
         System.out.println(
                 String.format(
-                        "java -cp <classpath> %s hostIp hostPort omsIp omsPort [--labels=comma separated key value as key1=val1,key2=val2] [--servicePort=portnumber]",
+                        "java -cp <classpath> %s hostIp hostPort omsIp omsPort [--labels comma separated key value as key1=val1,key2=val2] [--servicePort=portnumber]",
                         KernelServerImpl.class.getName()));
     }
 
@@ -489,7 +489,7 @@ public class KernelServerImpl implements KernelServer {
                     continue;
                 }
                 for (int j = 0; j < kv.length; j += 2) {
-                    labels.put(kv[j], kv[j + 1]);
+                    labels.put(kv[j].trim(), kv[j + 1].trim());
                 }
             }
         }

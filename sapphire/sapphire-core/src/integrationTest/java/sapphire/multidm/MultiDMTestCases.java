@@ -14,6 +14,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import sapphire.app.SapphireObjectServer;
 import sapphire.app.SapphireObjectSpec;
+import sapphire.common.LabelUtils;
 import sapphire.common.SapphireObjectID;
 import sapphire.demo.KVStore;
 import sapphire.kernel.server.KernelServerImpl;
@@ -29,7 +30,7 @@ public class MultiDMTestCases {
 
     @BeforeClass
     public static void bootstrap() throws Exception {
-        String labels = KernelServerImpl.REGION_KEY + "=" + regionName;
+        String labels = LabelUtils.REGION_KEY + "=" + regionName;
         startOmsAndKernelServers(labels);
     }
 

@@ -13,6 +13,7 @@ import java.util.concurrent.*;
 import org.junit.*;
 import sapphire.app.SapphireObjectServer;
 import sapphire.app.SapphireObjectSpec;
+import sapphire.common.LabelUtils;
 import sapphire.common.SapphireObjectID;
 import sapphire.demo.Coordinator;
 import sapphire.demo.KVStore;
@@ -33,7 +34,7 @@ public class SimpleDMIntegrationTest {
 
     @BeforeClass
     public static void bootstrap() throws Exception {
-        String labels = KernelServerImpl.REGION_KEY + "=r1";
+        String labels = LabelUtils.REGION_KEY + "=r1";
         startOmsAndKernelServers(labels);
         ClassLoader loader = Thread.currentThread().getContextClassLoader();
         URL url = loader.getResource(RESOURCE_PATH);

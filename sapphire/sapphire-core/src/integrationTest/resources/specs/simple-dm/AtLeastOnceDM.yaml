@@ -5,9 +5,7 @@ constructorName: null
 dmList:
 - configs: []
   name: sapphire.policy.atleastoncerpc.AtLeastOnceRPCPolicy
-nodeSelectorSpec:
-  andLabels: !!set {}
-  orLabels: !!set {}
+nodeSelectorSpec: null
 javaClassName: sapphire.demo.KVStore
 lang: java
 name: null

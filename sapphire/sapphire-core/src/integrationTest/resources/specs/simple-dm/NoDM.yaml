@@ -2,9 +2,7 @@
 !!sapphire.app.SapphireObjectSpec
 constructorName: null
 javaClassName: sapphire.demo.KVStore
-nodeSelectorSpec:
-  andLabels: !!set {}
-  orLabels: !!set {}
+nodeSelectorSpec: null
 lang: java
 name: null
 sourceFileLocation: null

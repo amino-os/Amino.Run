@@ -13,6 +13,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import sapphire.app.SapphireObjectServer;
 import sapphire.app.SapphireObjectSpec;
+import sapphire.common.LabelUtils;
 import sapphire.common.SapphireObjectID;
 import sapphire.demo.KVStore;
 import sapphire.kernel.server.KernelServerImpl;
@@ -26,7 +27,7 @@ public class LoadBalancedFrontendDMIntegrationTest {
 
     @BeforeClass
     public static void bootstrap() throws Exception {
-        String labels = KernelServerImpl.REGION_KEY + "=IND";
+        String labels = LabelUtils.REGION_KEY + "=IND";
         startOmsAndKernelServers(labels);
     }
 

@@ -7,14 +7,14 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import sapphire.app.SapphireObjectSpec;
-import sapphire.common.AppObjectStub;
-import sapphire.common.SapphireObjectCreationException;
-import sapphire.common.SapphireObjectNotFoundException;
-import sapphire.common.SapphireObjectReplicaNotFoundException;
+import sapphire.common.*;
 import sapphire.kernel.client.KernelClient;
 import sapphire.kernel.common.*;
 import sapphire.oms.OMSServer;
@@ -33,12 +33,6 @@ import sapphire.runtime.Sapphire;
  */
 public class KernelServerImpl implements KernelServer {
     private static Logger logger = Logger.getLogger(KernelServerImpl.class.getName());
-    public static String LABEL_OPT = "--labels";
-    public static String OPT_SEPARATOR = "=";
-    public static String LABEL_SEPARATOR = ",";
-    public static String SERVICE_PORT = "--servicePort";
-    public static String DEFAULT_REGION = "default-region";
-    public static String REGION_KEY = "region";
 
     private InetSocketAddress host;
     private String region;
@@ -392,9 +386,9 @@ public class KernelServerImpl implements KernelServer {
             String labelStr = "";
             if (args.length > 4) {
                 for (int i = 4; i < args.length; i++) {
-                    if (args[i].startsWith(LABEL_OPT)) {
+                    if (args[i].startsWith(LabelUtils.LABEL_OPT)) {
                         labelStr = args[i];
-                    } else if (args[i].startsWith(SERVICE_PORT)) {
+                    } else if (args[i].startsWith(LabelUtils.SERVICE_PORT)) {
                         servicePort = Integer.parseInt(parseServicePort(args[i]));
                     }
                 }
@@ -439,8 +433,8 @@ public class KernelServerImpl implements KernelServer {
 
     public static ServerInfo createServerInfo(InetSocketAddress host, String labelStr) {
         Map<String, String> labels = parseLabel(labelStr);
-        if (!labels.containsKey(KernelServerImpl.REGION_KEY)) {
-            labels.put(KernelServerImpl.REGION_KEY, KernelServerImpl.DEFAULT_REGION);
+        if (!labels.containsKey(LabelUtils.REGION_KEY)) {
+            labels.put(LabelUtils.REGION_KEY, LabelUtils.DEFAULT_REGION);
         }
         ServerInfo srvInfo = new ServerInfo(host);
         srvInfo.addLabels(labels);
@@ -457,15 +451,15 @@ public class KernelServerImpl implements KernelServer {
 
     private static Map<String, String> parseLabel(String data) {
         Map<String, String> labels = new HashMap<String, String>();
-        if ((data != null) && data.startsWith(KernelServerImpl.LABEL_OPT)) {
-            String actualdata = data.substring(KernelServerImpl.LABEL_OPT.length());
-            String[] maps = actualdata.split(KernelServerImpl.LABEL_SEPARATOR);
+        if ((data != null) && data.startsWith(LabelUtils.LABEL_OPT)) {
+            String actualdata = data.substring(LabelUtils.LABEL_OPT.length());
+            String[] maps = actualdata.split(LabelUtils.LABEL_SEPARATOR);
 
             if (maps.length < 1) {
                 return labels;
             }
             for (int i = 0; i < maps.length; i++) {
-                String[] kv = maps[i].split(KernelServerImpl.OPT_SEPARATOR);
+                String[] kv = maps[i].split(LabelUtils.OPT_SEPARATOR);
                 // not allowed empty values
                 if (kv.length % 2 != 0) {
                     logger.warning("something wrong in the labels");
@@ -482,7 +476,7 @@ public class KernelServerImpl implements KernelServer {
     private static String parseServicePort(String servicePort) {
         String port = null;
         if (servicePort != null) {
-            port = servicePort.substring(SERVICE_PORT.length() + 1);
+            port = servicePort.substring(LabelUtils.SERVICE_PORT.length() + 1);
         }
         return port;
     }

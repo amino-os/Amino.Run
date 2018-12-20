@@ -9,8 +9,8 @@ import java.nio.file.Files;
 import java.util.List;
 import org.junit.Assert;
 import sapphire.app.SapphireObjectSpec;
+import sapphire.common.LabelUtils;
 import sapphire.demo.KVStore;
-import sapphire.kernel.server.KernelServerImpl;
 
 public class IntegrationTestBase {
     public static String omsIp = "127.0.0.1";
@@ -134,7 +134,7 @@ public class IntegrationTestBase {
                         + omsPort
                         + " ";
         if (null != labels && labels.length() > 0) {
-            cmd += KernelServerImpl.LABEL_OPT + labels;
+            cmd += LabelUtils.LABEL_OPT + labels;
         }
         System.out.printf("Starting kernel server with command line \'%s\'\n", cmd);
         Process process = Runtime.getRuntime().exec(cmd);

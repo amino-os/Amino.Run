@@ -4,12 +4,15 @@ import static org.mockito.Mockito.spy;
 import static org.powermock.api.mockito.PowerMockito.when;
 
 import java.net.InetSocketAddress;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Random;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import sapphire.app.NodeSelectorSpec;
-import sapphire.app.SapphireObjectSpec;
+import sapphire.app.*;
+import sapphire.common.LabelUtils;
 import sapphire.kernel.common.KernelOID;
 import sapphire.kernel.common.ServerInfo;
 import sapphire.kernel.server.KernelServerImpl;
@@ -40,12 +43,23 @@ public class DHTPolicyTest {
         oms = spy(OMSServerImpl.class);
         KernelServerImpl.oms = oms;
         for (int i = 0; i < regions.size(); i++) {
-            String Labelstr =
-                    KernelServerImpl.LABEL_OPT + KernelServerImpl.REGION_KEY + "=" + regions.get(i);
+            String Labelstr = LabelUtils.LABEL_OPT + LabelUtils.REGION_KEY + "=" + regions.get(i);
             ServerInfo srvinfo = KernelServerImpl.createServerInfo(addresses[i], Labelstr);
             oms.registerKernelServer(srvinfo);
             NodeSelectorSpec nodeSelector = new NodeSelectorSpec();
-            nodeSelector.addAndLabel(regions.get(i));
+            NodeSelectorTerm term = new NodeSelectorTerm();
+            KsAffinity affinity = new KsAffinity();
+            String[] vals = {regions.get(i)};
+            List<String> valsList = Arrays.asList(vals);
+
+            NodeSelectorRequirement requirement =
+                    new NodeSelectorRequirement(LabelUtils.REGION_KEY, LabelUtils.Equals, valsList);
+            List<NodeSelectorRequirement> requirementList = Arrays.asList(requirement);
+
+            term.setMatchExpressions(requirementList);
+            List<NodeSelectorTerm> terms = Arrays.asList(term);
+            affinity.setRequireExpressions(terms);
+            nodeSelector.setNodeAffinity(affinity);
             List<InetSocketAddress> addressList = new ArrayList<>(Arrays.asList(addresses[i]));
             when(oms.getServers(nodeSelector)).thenReturn(addressList);
         }

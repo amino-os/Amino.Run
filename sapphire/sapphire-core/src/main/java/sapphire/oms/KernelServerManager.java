@@ -9,8 +9,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import sapphire.app.NodeSelectorSpec;
-import sapphire.app.SapphireObjectSpec;
+import sapphire.app.*;
 import sapphire.kernel.common.GlobalKernelReferences;
 import sapphire.kernel.common.KernelServerNotFoundException;
 import sapphire.kernel.common.ServerInfo;
@@ -145,14 +144,14 @@ public class KernelServerManager {
      */
     public List<InetSocketAddress> getServers(NodeSelectorSpec spec) {
         List<InetSocketAddress> nodes = new ArrayList<>();
-        Set<String> orLabels = null;
-        Set<String> andLabels = null;
+        KsAffinity affinity = null;
+
         if (null != spec) {
-            orLabels = spec.getOrLabels();
-            andLabels = spec.getAndLabels();
+            affinity = spec.getNodeAffinity();
         }
+        // match nodeAffinity
         for (ServerInfo s : serverInfos) {
-            if (s.containsAll(andLabels) && s.containsAny(orLabels)) {
+            if (s.matchNodeAffinity(affinity)) {
                 nodes.add(s.getHost());
             }
         }
@@ -185,6 +184,86 @@ public class KernelServerManager {
     }
 
     /**
+     * Gets the ServerInfo for a given host
+     *
+     * @param host InetSocketAddress *
+     * @return ServerInfo
+     */
+    public ServerInfo getServerInfo(InetSocketAddress host) {
+        for (ServerInfo s : serverInfos) {
+            if (s.getHost().equals(host)) return s;
+        }
+        return null;
+    }
+
+    /**
+     * Gets the best suitable server from the given NodeSelector & List of Suitable hosts
+     *
+     * @param host InetSocketAddress
+     * @param PrefTerms List of PreferredSchedulingTerm
+     * @return int priority of the node
+     */
+    public int getPriorityForHost(InetSocketAddress host, List<PreferredSchedulingTerm> PrefTerms) {
+        int priority = 0;
+        if ((PrefTerms == null) || (PrefTerms.size() == 0)) {
+            return 0;
+        }
+        ServerInfo s = getServerInfo(host);
+        if (s != null) {
+            for (int i = 0; i < PrefTerms.size(); i++) {
+                PreferredSchedulingTerm Prefterm = PrefTerms.get(i);
+                NodeSelectorTerm term = Prefterm.getNodeSelectorTerm();
+                int weight = Prefterm.getweight();
+
+                if (s.matchExpressions(term.getMatchExpressions())) {
+                    priority += weight;
+                }
+            }
+        }
+        return priority;
+    }
+    /**
+     * Gets the best suitable server from the given NodeSelector & List of Suitable hosts
+     *
+     * @param hosts List of InetSocketAddress
+     * @param nodeSelector NodeSelectorSpec
+     * @return InetSocketAddress
+     */
+    public InetSocketAddress chooseBestAmong(
+            List<InetSocketAddress> hosts, NodeSelectorSpec nodeSelector) {
+        KsAffinity nodeAffinity = null;
+        InetSocketAddress finalHost = null;
+        List<PreferredSchedulingTerm> PrefTerms = null;
+        if (nodeSelector != null) {
+            nodeAffinity = nodeSelector.getNodeAffinity();
+            if (nodeAffinity != null) {
+                PrefTerms = nodeAffinity.getPreferScheduling();
+            }
+        }
+        Map<InetSocketAddress, Integer> hostsdata = new HashMap<InetSocketAddress, Integer>();
+        if (PrefTerms != null && PrefTerms.size() > 0) {
+            for (int i = 0; i < hosts.size(); i++) {
+                int priority = getPriorityForHost(hosts.get(i), PrefTerms);
+                hostsdata.put(hosts.get(i), Integer.valueOf(priority));
+            }
+        }
+        if (hostsdata.size() > 0) {
+            // choose the host which has more priority
+            int maxScore = 0;
+            Set<Map.Entry<InetSocketAddress, Integer>> entries = hostsdata.entrySet();
+            for (Map.Entry<InetSocketAddress, Integer> entry : entries) {
+                if (entry.getValue().intValue() > maxScore) {
+                    maxScore = entry.getValue().intValue();
+                    finalHost = entry.getKey();
+                }
+            }
+            return finalHost;
+        } else {
+            // choose randomly as all hosts are having same priority
+            return hosts.get(randgen.nextInt(hosts.size()));
+        }
+    }
+    /**
      * Gets the best suitable server from the given NodeSelector
      *
      * @param spec
@@ -204,6 +283,8 @@ public class KernelServerManager {
         }
         // In future we can consider some other specific things to select the
         // best one among the list
-        return hosts.get(randgen.nextInt(hosts.size()));
+
+        InetSocketAddress host = chooseBestAmong(hosts, nodeSelector);
+        return host;
     }
 }

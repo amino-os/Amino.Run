@@ -20,6 +20,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import sapphire.app.SapphireObjectServer;
 import sapphire.app.SapphireObjectSpec;
+import sapphire.common.LabelUtils;
 import sapphire.common.SapphireObjectID;
 import sapphire.demo.KVStore;
 import sapphire.kernel.common.KernelObjectMigratingException;
@@ -36,7 +37,7 @@ public class ScaleUpFrontendDMIntegTest {
 
     @BeforeClass
     public static void bootstrap() throws Exception {
-        String labels = KernelServerImpl.REGION_KEY + "=" + regionName;
+        String labels = LabelUtils.REGION_KEY + "=" + regionName;
         startOmsAndKernelServers(labels);
     }
 

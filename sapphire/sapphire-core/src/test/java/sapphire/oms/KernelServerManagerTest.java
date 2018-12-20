@@ -1,12 +1,14 @@
 package sapphire.oms;
 
 import java.net.InetSocketAddress;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import sapphire.app.NodeSelectorSpec;
+import sapphire.app.*;
+import sapphire.common.LabelUtils;
 import sapphire.kernel.common.ServerInfo;
 
 public class KernelServerManagerTest {
@@ -23,52 +25,6 @@ public class KernelServerManagerTest {
     }
 
     @Test
-    public void testAndLabelSetWithSingleLabel() {
-        NodeSelectorSpec spec = new NodeSelectorSpec();
-        spec.addAndLabel(LABEL1_PREFIX + "1");
-        List<InetSocketAddress> result = manager.getServers(spec);
-        Assert.assertEquals(1, result.size());
-        Assert.assertEquals(1, result.get(0).getPort());
-    }
-
-    @Test
-    public void testAndLabelSetWithMultiLabels() {
-        NodeSelectorSpec spec = new NodeSelectorSpec();
-        spec.addAndLabel(LABEL1_PREFIX + "1");
-        spec.addAndLabel(LABEL2_PREFIX + "1");
-        List<InetSocketAddress> result = manager.getServers(spec);
-        Assert.assertEquals(1, result.size());
-        Assert.assertEquals(1, result.get(0).getPort());
-    }
-
-    @Test
-    public void testAndLabelSetWithNonExistingLabel() {
-        NodeSelectorSpec spec = new NodeSelectorSpec();
-        spec.addAndLabel(NON_EXISTENT_LABEL);
-        List<InetSocketAddress> result = manager.getServers(spec);
-        Assert.assertEquals(0, result.size());
-    }
-
-    @Test
-    public void testOrLabelSetWithSingleLabel() throws Exception {
-        NodeSelectorSpec spec = new NodeSelectorSpec();
-        spec.addOrLabel(LABEL1_PREFIX + "1");
-        List<InetSocketAddress> result = manager.getServers(spec);
-        Assert.assertEquals(1, result.size());
-        Assert.assertEquals(1, result.get(0).getPort());
-    }
-
-    @Test
-    public void testOrLabelSetWithNonExistingLabel() throws Exception {
-        NodeSelectorSpec spec = new NodeSelectorSpec();
-        spec.addOrLabel(LABEL1_PREFIX + "1");
-        spec.addOrLabel(NON_EXISTENT_LABEL);
-        List<InetSocketAddress> result = manager.getServers(spec);
-        Assert.assertEquals(1, result.size());
-        Assert.assertEquals(1, result.get(0).getPort());
-    }
-
-    @Test
     public void testEmptyLabelSet() throws Exception {
         NodeSelectorSpec spec = new NodeSelectorSpec();
         List<InetSocketAddress> result = manager.getServers(spec);
@@ -76,44 +32,100 @@ public class KernelServerManagerTest {
     }
 
     @Test
-    public void testAndLabelSetOrLabelSetFailure1() throws Exception {
+    public void testNodeAffinityWithMatchExpressionsNotInOp() throws Exception {
         NodeSelectorSpec spec = new NodeSelectorSpec();
-        spec.addAndLabel(NON_EXISTENT_LABEL);
-        spec.addOrLabel(LABEL1_PREFIX + "1");
+        KsAffinity nodeAffinity = new KsAffinity();
+        NodeSelectorTerm term = new NodeSelectorTerm();
+
+        String[] values = {"val1", "val2", "val3"};
+        List<String> vals1 = Arrays.asList(values);
+        try {
+            NodeSelectorRequirement matchExpItem =
+                    new NodeSelectorRequirement("key1", LabelUtils.NotIn, vals1);
+            List<NodeSelectorRequirement> MatchExpressions1 = Arrays.asList(matchExpItem);
+
+            term.setMatchExpressions(MatchExpressions1);
+            List<NodeSelectorTerm> RequireExpressions = Arrays.asList(term);
+
+            nodeAffinity.setRequireExpressions(RequireExpressions);
+
+            spec.setNodeAffinity(nodeAffinity);
+        } catch (Exception e) {
+            Assert.fail();
+        }
         List<InetSocketAddress> result = manager.getServers(spec);
-        Assert.assertEquals(0, result.size());
+        Assert.assertEquals(10, result.size());
     }
 
     @Test
-    public void testAndLabelSetOrLabelSetFailure2() throws Exception {
+    public void testNodeAffinityWithMatchExpressionsInOp() throws Exception {
         NodeSelectorSpec spec = new NodeSelectorSpec();
-        spec.addAndLabel(LABEL1_PREFIX + "1");
-        spec.addOrLabel(NON_EXISTENT_LABEL);
-        List<InetSocketAddress> result = manager.getServers(spec);
-        Assert.assertEquals(0, result.size());
-    }
+        KsAffinity nodeAffinity = new KsAffinity();
+        NodeSelectorTerm term = new NodeSelectorTerm();
 
-    @Test
-    public void testAndLabelSetOrLabelSetSuccess() throws Exception {
-        NodeSelectorSpec spec = new NodeSelectorSpec();
-        spec.addAndLabel(LABEL1_PREFIX + "1");
-        spec.addAndLabel(LABEL2_PREFIX + "1");
-        spec.addOrLabel(NON_EXISTENT_LABEL);
-        spec.addOrLabel(LABEL1_PREFIX + "1");
+        String[] values = {"label1_0", "val2", "val3"};
+        List<String> vals1 = Arrays.asList(values);
+        try {
+            NodeSelectorRequirement matchExpItem =
+                    new NodeSelectorRequirement("label1_0", LabelUtils.In, vals1);
+            List<NodeSelectorRequirement> MatchExpressions1 = Arrays.asList(matchExpItem);
+
+            term.setMatchExpressions(MatchExpressions1);
+            List<NodeSelectorTerm> RequireExpressions = Arrays.asList(term);
+
+            nodeAffinity.setRequireExpressions(RequireExpressions);
+
+            spec.setNodeAffinity(nodeAffinity);
+        } catch (Exception e) {
+            Assert.fail();
+        }
         List<InetSocketAddress> result = manager.getServers(spec);
         Assert.assertEquals(1, result.size());
-        Assert.assertEquals(1, result.get(0).getPort());
     }
 
     @Test
-    public void testAndLabelSetOrLabelSetNRegionSuccess() throws Exception {
+    public void testNodeAffinityWithMatchExpressionsNotInOpPriority() throws Exception {
         NodeSelectorSpec spec = new NodeSelectorSpec();
-        spec.addAndLabel(LABEL1_PREFIX + "1");
-        spec.addAndLabel("region_1");
-        spec.addOrLabel(LABEL1_PREFIX + "1");
+        KsAffinity nodeAffinity = new KsAffinity();
+        NodeSelectorTerm term = new NodeSelectorTerm();
+        NodeSelectorTerm Prioterm = new NodeSelectorTerm();
+        PreferredSchedulingTerm prefterm = new PreferredSchedulingTerm();
+
+        String[] values = {"val1", "val2", "val3"};
+        List<String> vals1 = Arrays.asList(values);
+
+        String[] values2 = {"label1_5", "val2", "val3"};
+        List<String> vals2 = Arrays.asList(values2);
+
+        try {
+            NodeSelectorRequirement matchExpItem1 =
+                    new NodeSelectorRequirement("key1", LabelUtils.NotIn, vals1);
+            List<NodeSelectorRequirement> MatchExpressions1 = Arrays.asList(matchExpItem1);
+            term.setMatchExpressions(MatchExpressions1);
+            List<NodeSelectorTerm> RequireExpressions = Arrays.asList(term);
+            NodeSelectorRequirement matchExpItem2 =
+                    new NodeSelectorRequirement("label1_5", LabelUtils.In, vals2);
+            List<NodeSelectorRequirement> MatchExpressions2 = Arrays.asList(matchExpItem2);
+
+            // label1_5 is used for priority
+            Prioterm.setMatchExpressions(MatchExpressions2);
+            prefterm.setNodeSelectorTerm(Prioterm);
+            prefterm.setweight(1);
+
+            List<PreferredSchedulingTerm> PreferScheduling = Arrays.asList(prefterm);
+            nodeAffinity.setRequireExpressions(RequireExpressions);
+
+            nodeAffinity.setPreferScheduling(PreferScheduling);
+
+            spec.setNodeAffinity(nodeAffinity);
+        } catch (Exception e) {
+            Assert.fail();
+        }
         List<InetSocketAddress> result = manager.getServers(spec);
-        Assert.assertEquals(1, result.size());
-        Assert.assertEquals(1, result.get(0).getPort());
+        Assert.assertEquals(10, result.size());
+        InetSocketAddress host = manager.chooseBestAmong(result, spec);
+        ServerInfo s = manager.getServerInfo(host);
+        Assert.assertTrue(s.getRegion().equals("region_5"));
     }
 
     private void registerServers(KernelServerManager manager, int numOfServers) throws Exception {

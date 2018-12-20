@@ -1,11 +1,10 @@
 package sapphire.app;
 
 import java.io.Serializable;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Objects;
-import java.util.Set;
+import java.util.logging.Logger;
 import org.yaml.snakeyaml.Yaml;
+import sapphire.common.LabelUtils;
 
 /**
  * Specification for node selection. Users use {@code NodeSelectorSpec} to specify on which nodes
@@ -14,79 +13,26 @@ import org.yaml.snakeyaml.Yaml;
  * <p>At present we only support specifying {@code NodeSelectorSpec} at sapphire object level. We
  * will consider support specifying {@code NodeSelectorSpec} at DM level in the future if necessary.
  *
- * <p>{@code NodeSelectorSpec} contains two label sets, a {@code orLabels} set and a {@code
- * andLabels} set. {@code orLabels} set and {@code andLabels} set are considered as selector used to
- * select nodes.
+ * <p>{@code NodeSelectorSpec} contains a {@code ksAffinity} KsAffinity is considered as selector
+ * used to select nodes.
  *
- * <p>If {@code orLabels} set is not empty, then a node will be selected only if it contains any
- * label specified in {@code orLabels} set. If {@code andLabels} set is not empty, then a node will
- * be selected only if it contains all labels specified in {@code andLabels} set. If both {@code
- * orLabels} and {@code andLabels} are specified, then a node will be selected only if it contains
- * all labels in {@code andLabels} set <strong>and</strong> some label in {@code orLabels} set.
- *
- * <p>By default, both {@code orLabels} set and {@code andLabels} set are empty which means no
- * selector will be applied in which case all nodes will be returned.
+ * <p>By default {@code ksAffinity} KsAffinity is empty which means no selector will be applied in
+ * which case all nodes will be returned.
  */
 public class NodeSelectorSpec implements Serializable {
-    public Set<String> orLabels = new HashSet<>();
-    public Set<String> andLabels = new HashSet<>();
+    private KsAffinity ksAffinity = null;
+    private static Logger logger = Logger.getLogger(NodeSelectorSpec.class.getName());
 
-    public Set<String> getOrLabels() {
-        return Collections.unmodifiableSet(orLabels);
+    public KsAffinity getNodeAffinity() {
+        return ksAffinity;
     }
 
-    public Set<String> getAndLabels() {
-        return Collections.unmodifiableSet(andLabels);
-    }
-
-    /**
-     * Adds the label into {@code andLabels} set Null label or empty label is ignored.
-     *
-     * @param label a label
-     */
-    public void addAndLabel(String label) {
-        if (label == null || label.isEmpty()) {
-            return;
+    public void setNodeAffinity(KsAffinity ksAffinity) throws IllegalArgumentException {
+        if (!LabelUtils.validateNodeAffinity(ksAffinity)) {
+            logger.severe("null or empty nodeAffinity or invalid nodeAffinity are not allowed");
+            throw new IllegalArgumentException("Invalid input Argument not allowed " + ksAffinity);
         }
-        this.andLabels.add(label);
-    }
-
-    /**
-     * Adds the given label set into the {@code andLabels} set Null label set is ignored.
-     *
-     * @param andLabels a label set
-     */
-    public void addAndLabels(Set<String> andLabels) {
-        if (andLabels == null) {
-            return;
-        }
-        this.andLabels.addAll(andLabels);
-    }
-
-    /**
-     * Adds the label into {@code orLabels} set. Null label or empty label is ignored.
-     *
-     * @param label a label
-     */
-    public void addOrLabel(String label) {
-        if (label == null || label.isEmpty()) {
-            return;
-        }
-
-        this.orLabels.add(label);
-    }
-
-    /**
-     * Adds the given label set into the {@code orLabels} set Null label set is ignored.
-     *
-     * @param orLabels a label set
-     */
-    public void addOrLabels(Set<String> orLabels) {
-        if (orLabels == null) {
-            return;
-        }
-
-        this.orLabels.addAll(orLabels);
+        this.ksAffinity = ksAffinity;
     }
 
     @Override
@@ -100,11 +46,11 @@ public class NodeSelectorSpec implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         NodeSelectorSpec that = (NodeSelectorSpec) o;
-        return Objects.equals(orLabels, that.orLabels) && Objects.equals(andLabels, that.andLabels);
+        return Objects.equals(this.ksAffinity, that.ksAffinity);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(orLabels, andLabels);
+        return Objects.hash(ksAffinity);
     }
 }

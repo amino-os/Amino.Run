@@ -2,24 +2,12 @@ package sapphire.policy;
 
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.harmony.rmi.common.RMIUtil;
-import sapphire.app.Language;
-import sapphire.app.NodeSelectorSpec;
-import sapphire.app.SapphireObjectSpec;
-import sapphire.common.AppObject;
-import sapphire.common.AppObjectStub;
-import sapphire.common.GraalObject;
-import sapphire.common.SapphireObjectID;
-import sapphire.common.SapphireObjectNotFoundException;
-import sapphire.common.SapphireObjectReplicaNotFoundException;
-import sapphire.common.SapphireReplicaID;
-import sapphire.common.Utils;
+import sapphire.app.*;
+import sapphire.common.*;
 import sapphire.compiler.GlobalStubConstants;
 import sapphire.kernel.common.GlobalKernelReferences;
 import sapphire.kernel.common.KernelOID;
@@ -489,9 +477,24 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
                 serversInRegion = oms().getServers(nodeSelector);
             } else {
                 if (region != null && !region.isEmpty()) {
-                    nodeSelector = new NodeSelectorSpec();
-                    nodeSelector.addAndLabel(region);
-                    serversInRegion = oms().getServers(nodeSelector);
+                    NodeSelectorSpec spec = new NodeSelectorSpec();
+                    KsAffinity nodeAffinity = new KsAffinity();
+                    NodeSelectorTerm term = new NodeSelectorTerm();
+                    String[] values = {region};
+
+                    List<String> valsList = Arrays.asList(values);
+                    NodeSelectorRequirement req =
+                            new NodeSelectorRequirement(
+                                    LabelUtils.REGION_KEY, LabelUtils.Equals, valsList);
+
+                    List<NodeSelectorRequirement> reqList = Arrays.asList(req);
+                    term.setMatchExpressions(reqList);
+
+                    List<NodeSelectorTerm> RequireExpressions = Arrays.asList(term);
+                    nodeAffinity.setRequireExpressions(RequireExpressions);
+
+                    spec.setNodeAffinity(nodeAffinity);
+                    serversInRegion = oms().getServers(spec);
                 } else {
                     serversInRegion = oms().getServers(null);
                 }

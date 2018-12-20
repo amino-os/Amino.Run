@@ -131,7 +131,7 @@ task genUnitTestStubs(type :JavaExec){
 
 task compileSampleSO(type: JavaCompile) {
     source = file(project.projectDir.toString() + '/src/test/java/amino/run/sampleSO')
-    classpath =  files("$projectDir/build/libs/sapphire-core-1.0.0.jar")
+    classpath = files(sourceSets.main.output.classesDir)
     destinationDir = file(project.buildDir.toString() + '/classes/java/test/')
     options.incremental = true
 }
@@ -140,7 +140,7 @@ task compileSampleSO(type: JavaCompile) {
 // Run `gradlew genGraalStub` to generate stub files
 task genGraalStub(type: JavaExec) {
     main = "amino.run.compiler.GraalStubGenerator"
-    classpath +=  files("$projectDir/build/libs/sapphire-core-1.0.0.jar")
+    classpath += files(sourceSets.main.output.classesDir)
     def sapphireObjectPath = "$projectDir/src/test/resources/student.js"
     def outPath = "$projectDir/src/test/java"
     def packageName = "amino.run.stubs"
@@ -153,7 +153,7 @@ task genGraalStub(type: JavaExec) {
 // Task for Graal stub compilation
 task compileGraalStub(type: JavaCompile) {
     source = "$projectDir/src/test/java/amino/run/stubs"
-    classpath =  files("$projectDir/build/libs/sapphire-core-1.0.0.jar")
+    classpath = files(sourceSets.main.output.classesDir)
     // TODO: Quinton: Remove: classpath = files(sourceSets.main.output.classesDir)
     destinationDir = sourceSets.main.output.classesDir
     options.incremental = true
@@ -178,10 +178,14 @@ task compileIntegTestDemoPkg(type: JavaCompile) {
     options.incremental = true
 }
 
+tasks.matching {(it.name != 'compileJava') && (it.name != 'checkGraalVmVersion')}.all {
+    task -> task.dependsOn compileJava
+}
+tasks.googleJavaFormat.mustRunAfter compileJava
 tasks.googleJavaFormat.mustRunAfter genStubs
-tasks.googleJavaFormat.mustRunAfter genIntegTestStubs
 tasks.googleJavaFormat.mustRunAfter genGraalStub
 tasks.googleJavaFormat.mustRunAfter genUnitTestStubs
+tasks.googleJavaFormat.mustRunAfter genIntegTestStubs
 
 compileGraalStub.dependsOn genGraalStub
 compileTestJava.dependsOn compileGraalStub
@@ -189,10 +193,6 @@ genUnitTestStubs.dependsOn compileSampleSO
 compileTestJava.dependsOn genUnitTestStubs
 genIntegTestStubs.dependsOn compileIntegTestDemoPkg
 compileIntegrationTestJava.dependsOn genIntegTestStubs
-
-tasks.googleJavaFormat.dependsOn genStubs
-tasks.googleJavaFormat.dependsOn genGraalStub
-tasks.googleJavaFormat.dependsOn genIntegTestStubs
 
 check.dependsOn tasks.googleJavaFormat
 check.dependsOn integTest

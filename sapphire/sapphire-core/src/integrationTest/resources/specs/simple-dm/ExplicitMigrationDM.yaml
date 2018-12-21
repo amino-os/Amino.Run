@@ -5,9 +5,7 @@ constructorName: null
 dmList:
 - configs: []
   name: amino.run.policy.mobility.explicitmigration.ExplicitMigrationPolicy
-nodeSelectorSpec:
-  andLabels: !!set {}
-  orLabels: !!set {}
+nodeSelectorSpec: null
 javaClassName: amino.run.demo.KVStore
 lang: java
 name: null

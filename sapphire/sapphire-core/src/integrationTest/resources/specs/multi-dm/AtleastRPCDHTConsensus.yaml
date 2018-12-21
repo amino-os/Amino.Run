@@ -10,9 +10,7 @@ dmList:
   name: amino.run.policy.dht.DHTPolicy
 - configs: []
   name: amino.run.policy.replication.ConsensusRSMPolicy
-nodeSelectorSpec:
-  andLabels: !!set {}
-  orLabels: !!set {}
+nodeSelectorSpec: null
 javaClassName: amino.run.demo.KVStore
 lang: java
 name: null

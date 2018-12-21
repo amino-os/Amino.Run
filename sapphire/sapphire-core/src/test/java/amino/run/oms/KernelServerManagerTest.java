@@ -1,10 +1,14 @@
 package amino.run.oms;
 
+import static amino.run.kernel.server.KernelServerImpl.REGION_KEY;
+
 import amino.run.app.NodeSelectorSpec;
+import amino.run.app.NodeSelectorTerm;
+import amino.run.app.Operator;
+import amino.run.app.Requirement;
 import amino.run.kernel.common.ServerInfo;
 import java.net.InetSocketAddress;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -24,8 +28,16 @@ public class KernelServerManagerTest {
 
     @Test
     public void testAndLabelSetWithSingleLabel() {
-        NodeSelectorSpec spec = new NodeSelectorSpec();
-        spec.addAndLabel(LABEL1_PREFIX + "1");
+        NodeSelectorSpec spec =
+                new NodeSelectorSpec()
+                        .addRequireExpressions(
+                                new NodeSelectorTerm()
+                                        .add(
+                                                new Requirement(
+                                                        LABEL1_PREFIX + "1",
+                                                        Operator.Equal,
+                                                        Collections.singletonList(
+                                                                LABEL1_PREFIX + "1"))));
         List<InetSocketAddress> result = manager.getServers(spec);
         Assert.assertEquals(1, result.size());
         Assert.assertEquals(1, result.get(0).getPort());
@@ -33,9 +45,22 @@ public class KernelServerManagerTest {
 
     @Test
     public void testAndLabelSetWithMultiLabels() {
-        NodeSelectorSpec spec = new NodeSelectorSpec();
-        spec.addAndLabel(LABEL1_PREFIX + "1");
-        spec.addAndLabel(LABEL2_PREFIX + "1");
+        NodeSelectorSpec spec =
+                new NodeSelectorSpec()
+                        .addRequireExpressions(
+                                new NodeSelectorTerm()
+                                        .add( // requirement 1
+                                                new Requirement(
+                                                        LABEL1_PREFIX + "1",
+                                                        Operator.Equal,
+                                                        Collections.singletonList(
+                                                                LABEL1_PREFIX + "1")))
+                                        .add( // requirement 2
+                                                new Requirement(
+                                                        LABEL1_PREFIX + "1",
+                                                        Operator.Equal,
+                                                        Collections.singletonList(
+                                                                LABEL1_PREFIX + "1"))));
         List<InetSocketAddress> result = manager.getServers(spec);
         Assert.assertEquals(1, result.size());
         Assert.assertEquals(1, result.get(0).getPort());
@@ -43,26 +68,42 @@ public class KernelServerManagerTest {
 
     @Test
     public void testAndLabelSetWithNonExistingLabel() {
-        NodeSelectorSpec spec = new NodeSelectorSpec();
-        spec.addAndLabel(NON_EXISTENT_LABEL);
+        NodeSelectorSpec spec =
+                new NodeSelectorSpec()
+                        .addRequireExpressions(
+                                new NodeSelectorTerm()
+                                        .add(
+                                                new Requirement(
+                                                        NON_EXISTENT_LABEL,
+                                                        Operator.Equal,
+                                                        Collections.singletonList(
+                                                                NON_EXISTENT_LABEL))));
         List<InetSocketAddress> result = manager.getServers(spec);
         Assert.assertEquals(0, result.size());
     }
 
-    @Test
-    public void testOrLabelSetWithSingleLabel() throws Exception {
-        NodeSelectorSpec spec = new NodeSelectorSpec();
-        spec.addOrLabel(LABEL1_PREFIX + "1");
-        List<InetSocketAddress> result = manager.getServers(spec);
-        Assert.assertEquals(1, result.size());
-        Assert.assertEquals(1, result.get(0).getPort());
-    }
-
+    // this testcase also tests OR scenario
     @Test
     public void testOrLabelSetWithNonExistingLabel() throws Exception {
-        NodeSelectorSpec spec = new NodeSelectorSpec();
-        spec.addOrLabel(LABEL1_PREFIX + "1");
-        spec.addOrLabel(NON_EXISTENT_LABEL);
+        NodeSelectorSpec spec =
+                new NodeSelectorSpec()
+                        .addRequireExpressions( // term 1
+                                new NodeSelectorTerm()
+                                        .add(
+                                                new Requirement(
+                                                        LABEL1_PREFIX + "1",
+                                                        Operator.Equal,
+                                                        Collections.singletonList(
+                                                                LABEL1_PREFIX + "1"))))
+                        .addRequireExpressions( // term 2
+                                new NodeSelectorTerm()
+                                        .add(
+                                                new Requirement(
+                                                        NON_EXISTENT_LABEL,
+                                                        Operator.Equal,
+                                                        Collections.singletonList(
+                                                                NON_EXISTENT_LABEL))));
+
         List<InetSocketAddress> result = manager.getServers(spec);
         Assert.assertEquals(1, result.size());
         Assert.assertEquals(1, result.get(0).getPort());
@@ -76,30 +117,85 @@ public class KernelServerManagerTest {
     }
 
     @Test
-    public void testAndLabelSetOrLabelSetFailure1() throws Exception {
-        NodeSelectorSpec spec = new NodeSelectorSpec();
-        spec.addAndLabel(NON_EXISTENT_LABEL);
-        spec.addOrLabel(LABEL1_PREFIX + "1");
+    public void testAndRequirementsFailure() throws Exception {
+        NodeSelectorSpec spec =
+                new NodeSelectorSpec()
+                        .addRequireExpressions(
+                                new NodeSelectorTerm()
+                                        .add( // requirement 1
+                                                new Requirement(
+                                                        LABEL1_PREFIX + "1",
+                                                        Operator.Equal,
+                                                        Collections.singletonList(
+                                                                LABEL1_PREFIX + "1")))
+                                        .add( // requirement 1
+                                                new Requirement(
+                                                        NON_EXISTENT_LABEL,
+                                                        Operator.Equal,
+                                                        Collections.singletonList(
+                                                                NON_EXISTENT_LABEL))));
+
         List<InetSocketAddress> result = manager.getServers(spec);
         Assert.assertEquals(0, result.size());
     }
 
     @Test
-    public void testAndLabelSetOrLabelSetFailure2() throws Exception {
-        NodeSelectorSpec spec = new NodeSelectorSpec();
-        spec.addAndLabel(LABEL1_PREFIX + "1");
-        spec.addOrLabel(NON_EXISTENT_LABEL);
+    public void testORRequirementsFailure() throws Exception {
+        NodeSelectorSpec spec =
+                new NodeSelectorSpec()
+                        .addRequireExpressions( // term 1
+                                new NodeSelectorTerm()
+                                        .add(
+                                                new Requirement(
+                                                        NON_EXISTENT_LABEL,
+                                                        Operator.Equal,
+                                                        Collections.singletonList(
+                                                                NON_EXISTENT_LABEL))))
+                        .addRequireExpressions( // term 2
+                                new NodeSelectorTerm()
+                                        .add(
+                                                new Requirement(
+                                                        NON_EXISTENT_LABEL,
+                                                        Operator.Equal,
+                                                        Collections.singletonList(
+                                                                NON_EXISTENT_LABEL))));
         List<InetSocketAddress> result = manager.getServers(spec);
         Assert.assertEquals(0, result.size());
     }
 
     @Test
-    public void testAndLabelSetOrLabelSetSuccess() throws Exception {
-        NodeSelectorSpec spec = new NodeSelectorSpec();
-        spec.addAndLabel(LABEL1_PREFIX + "1");
-        spec.addAndLabel(LABEL2_PREFIX + "1");
-        spec.addOrLabel(NON_EXISTENT_LABEL);
-        spec.addOrLabel(LABEL1_PREFIX + "1");
+    public void testAndRequirementORRequirementSuccess() throws Exception {
+        NodeSelectorSpec spec =
+                new NodeSelectorSpec()
+                        .addRequireExpressions( // term 1
+                                new NodeSelectorTerm()
+                                        .add(
+                                                new Requirement(
+                                                        LABEL1_PREFIX + "1",
+                                                        Operator.Equal,
+                                                        Collections.singletonList(
+                                                                LABEL1_PREFIX + "1")))
+                                        .add(
+                                                new Requirement(
+                                                        LABEL2_PREFIX + "1",
+                                                        Operator.Equal,
+                                                        Collections.singletonList(
+                                                                LABEL2_PREFIX + "1"))))
+                        .addRequireExpressions( // term 2
+                                new NodeSelectorTerm()
+                                        .add(
+                                                new Requirement(
+                                                        LABEL1_PREFIX + "1",
+                                                        Operator.Equal,
+                                                        Collections.singletonList(
+                                                                LABEL1_PREFIX + "1")))
+                                        .add(
+                                                new Requirement(
+                                                        NON_EXISTENT_LABEL,
+                                                        Operator.Equal,
+                                                        Collections.singletonList(
+                                                                NON_EXISTENT_LABEL))));
+
         List<InetSocketAddress> result = manager.getServers(spec);
         Assert.assertEquals(1, result.size());
         Assert.assertEquals(1, result.get(0).getPort());
@@ -107,10 +203,29 @@ public class KernelServerManagerTest {
 
     @Test
     public void testAndLabelSetOrLabelSetNRegionSuccess() throws Exception {
-        NodeSelectorSpec spec = new NodeSelectorSpec();
-        spec.addAndLabel(LABEL1_PREFIX + "1");
-        spec.addAndLabel("region_1");
-        spec.addOrLabel(LABEL1_PREFIX + "1");
+        NodeSelectorSpec spec =
+                new NodeSelectorSpec()
+                        .addRequireExpressions( // term 1
+                                new NodeSelectorTerm()
+                                        .add(
+                                                new Requirement(
+                                                        LABEL1_PREFIX + "1",
+                                                        Operator.Equal,
+                                                        Collections.singletonList(
+                                                                LABEL1_PREFIX + "1")))
+                                        .add(
+                                                new Requirement(
+                                                        REGION_KEY,
+                                                        Operator.In,
+                                                        Collections.singletonList("region_1"))))
+                        .addRequireExpressions(
+                                new NodeSelectorTerm()
+                                        .add(
+                                                new Requirement(
+                                                        LABEL1_PREFIX + "1",
+                                                        Operator.Equal,
+                                                        Collections.singletonList(
+                                                                LABEL1_PREFIX + "1"))));
         List<InetSocketAddress> result = manager.getServers(spec);
         Assert.assertEquals(1, result.size());
         Assert.assertEquals(1, result.get(0).getPort());
@@ -122,7 +237,7 @@ public class KernelServerManagerTest {
             HashMap labels = new HashMap();
             labels.put(LABEL1_PREFIX + i, LABEL1_PREFIX + i);
             labels.put(LABEL2_PREFIX + i, LABEL2_PREFIX + i);
-            labels.put("region", "region_" + i);
+            labels.put(REGION_KEY, "region_" + i);
             s.addLabels(labels);
             manager.registerKernelServer(s);
         }

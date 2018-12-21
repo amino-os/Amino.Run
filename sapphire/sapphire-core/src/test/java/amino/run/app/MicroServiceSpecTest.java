@@ -29,10 +29,6 @@ public class MicroServiceSpecTest {
     }
 
     private MicroServiceSpec createSpec() {
-        NodeSelectorSpec nodeSelectorSpec = new NodeSelectorSpec();
-        nodeSelectorSpec.addAndLabel("and_label");
-        nodeSelectorSpec.addOrLabel("or_label");
-
         ScaleUpFrontendPolicy.Config scaleUpConfig = new ScaleUpFrontendPolicy.Config();
         scaleUpConfig.setReplicationRateInMs(100);
 
@@ -53,7 +49,7 @@ public class MicroServiceSpecTest {
                 .setSourceFileLocation("src/main/js/college.js")
                 .setConstructorName("college")
                 .addDMSpec(dmSpec)
-                .setNodeSelectorSpec(nodeSelectorSpec)
+                .setNodeSelectorSpec(new NodeSelectorSpec())
                 .create();
     }
 }

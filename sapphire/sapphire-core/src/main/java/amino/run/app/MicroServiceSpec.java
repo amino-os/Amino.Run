@@ -1,5 +1,6 @@
 package amino.run.app;
 
+import amino.run.app.labelselector.Labels;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +24,7 @@ import org.yaml.snakeyaml.Yaml;
  *                                      .setName("soname")
  *                                      .setLang(Language.Java)
  *                                      .addDMSpec(dm)
+ *                                      .setLabels(labels)
  *                                      .create();
  * </code> Yaml of one MicroService Object Specification Example: <code>
  * !!amino.run.app.MicroServiceSpec
@@ -37,6 +39,8 @@ import org.yaml.snakeyaml.Yaml;
  * lang: js
  * name: com.org.College
  * sourceFileLocation: src/main/js/college.js
+ * microServiceLabels:
+ *   labels: {key1: value1, key2: value2}
  * </code>
  */
 public class MicroServiceSpec implements Serializable {
@@ -57,6 +61,9 @@ public class MicroServiceSpec implements Serializable {
 
     /** List of Deployment Managers to be applied on microservice */
     private List<DMSpec> dmList = new ArrayList<DMSpec>();
+
+    /** List of tags (key-value) applied on Sapphire object */
+    private Labels microServiceLabels;
 
     private NodeSelectorSpec nodeSelectorSpec;
 
@@ -124,6 +131,14 @@ public class MicroServiceSpec implements Serializable {
         this.nodeSelectorSpec = nodeSelectorSpec;
     }
 
+    public Labels getMicroServiceLabels() {
+        return microServiceLabels;
+    }
+
+    public void setMicroServiceLabels(Labels labels) {
+        this.microServiceLabels = labels;
+    }
+
     public static MicroServiceSpec fromYaml(String yamlString) {
         Yaml yaml = new Yaml();
         return yaml.loadAs(yamlString, MicroServiceSpec.class);
@@ -139,7 +154,8 @@ public class MicroServiceSpec implements Serializable {
                 && Objects.equals(javaClassName, that.javaClassName)
                 && Objects.equals(sourceFileLocation, that.sourceFileLocation)
                 && Objects.equals(constructorName, that.constructorName)
-                && Objects.equals(dmList, that.dmList);
+                && Objects.equals(dmList, that.dmList)
+                && Objects.equals(microServiceLabels, that.microServiceLabels);
     }
 
     @Override
@@ -151,7 +167,8 @@ public class MicroServiceSpec implements Serializable {
                 sourceFileLocation,
                 constructorName,
                 dmList,
-                nodeSelectorSpec);
+                nodeSelectorSpec,
+                microServiceLabels);
     }
 
     @Override
@@ -168,6 +185,7 @@ public class MicroServiceSpec implements Serializable {
         private String constructorName;
         private List<DMSpec> dmList = new ArrayList<DMSpec>();
         private NodeSelectorSpec nodeSelectorSpec;
+        private Labels labels = Labels.newBuilder().create();
 
         public Builder setName(String name) {
             this.name = name;
@@ -208,6 +226,11 @@ public class MicroServiceSpec implements Serializable {
             return this;
         }
 
+        public Builder setLabels(Labels labels) {
+            this.labels = labels;
+            return this;
+        }
+
         public MicroServiceSpec create() {
             MicroServiceSpec spec = new MicroServiceSpec();
             spec.setName(name);
@@ -217,6 +240,7 @@ public class MicroServiceSpec implements Serializable {
             spec.setConstructorName(constructorName);
             spec.setDmList(dmList);
             spec.setNodeSelectorSpec(nodeSelectorSpec);
+            spec.setMicroServiceLabels(labels);
             return spec;
         }
     }

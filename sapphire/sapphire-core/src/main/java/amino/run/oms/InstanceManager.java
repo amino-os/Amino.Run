@@ -1,5 +1,6 @@
 package amino.run.oms;
 
+import amino.run.app.MicroServiceSpec;
 import amino.run.common.AppObjectStub;
 import amino.run.common.MicroServiceID;
 import amino.run.common.MicroServiceNotFoundException;
@@ -26,6 +27,8 @@ public class InstanceManager {
     private AppObjectStub objectStub;
     private HashMap<ReplicaID, EventHandler> replicaDispatchers;
     private Random oidGenerator;
+    private MicroServiceSpec spec;
+
     /**
      * Root group policy is the <strong>outmost</strong> group policy of this microservice.
      *
@@ -111,6 +114,24 @@ public class InstanceManager {
      */
     public void setInstanceObjectStub(AppObjectStub objStub) {
         objectStub = objStub;
+    }
+
+    /**
+     * Gets saphhire object specifications
+     *
+     * @return Returns object stub
+     */
+    public MicroServiceSpec getMicroServiceSpec() {
+        return spec;
+    }
+
+    /**
+     * Sets saphhire object specifications
+     *
+     * @param spec
+     */
+    public void setMicroServiceSpec(MicroServiceSpec spec) {
+        this.spec = spec;
     }
 
     /**

@@ -1,7 +1,5 @@
 package sapphire.oms;
 
-import static sapphire.policy.SapphirePolicyUpcalls.SapphirePolicyConfig;
-
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.InetSocketAddress;
@@ -13,7 +11,6 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.JSONException;
@@ -318,13 +315,11 @@ public class OMSServerImpl implements OMSServer, SapphireObjectServer {
      */
     @Override
     public SapphirePolicy.SapphireGroupPolicy createGroupPolicy(
-            Class<?> policyClass,
-            SapphireObjectID sapphireObjId,
-            Map<String, SapphirePolicyConfig> configMap)
+            Class<?> policyClass, SapphireObjectID sapphireObjId)
             throws RemoteException, ClassNotFoundException, KernelObjectNotCreatedException,
                     SapphireObjectNotFoundException {
         SapphirePolicy.SapphireGroupPolicy group =
-                Sapphire.createGroupPolicy(policyClass, sapphireObjId, configMap);
+                Sapphire.createGroupPolicy(policyClass, sapphireObjId);
 
         /* TODO: This rootGroupPolicy is used in sapphire object deletion. Need to handle for multiDM case. In case of
         multiDM, multiple group policy objects are created in DM chain establishment. Currently, just ensuring not to

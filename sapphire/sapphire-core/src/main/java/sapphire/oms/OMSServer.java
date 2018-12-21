@@ -6,7 +6,6 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import sapphire.app.NodeSelectorSpec;
 import sapphire.common.SapphireObjectID;
 import sapphire.common.SapphireObjectNotFoundException;
@@ -18,7 +17,6 @@ import sapphire.kernel.common.KernelObjectNotFoundException;
 import sapphire.kernel.common.KernelServerNotFoundException;
 import sapphire.kernel.common.ServerInfo;
 import sapphire.policy.SapphirePolicy;
-import sapphire.policy.SapphirePolicyUpcalls;
 import sapphire.runtime.EventHandler;
 
 public interface OMSServer extends Remote {
@@ -45,9 +43,7 @@ public interface OMSServer extends Remote {
             throws RemoteException, NotBoundException, KernelServerNotFoundException;
 
     SapphirePolicy.SapphireGroupPolicy createGroupPolicy(
-            Class<?> policyClass,
-            SapphireObjectID sapphireObjId,
-            Map<String, SapphirePolicyUpcalls.SapphirePolicyConfig> configMap)
+            Class<?> policyClass, SapphireObjectID sapphireObjId)
             throws RemoteException, ClassNotFoundException, KernelObjectNotCreatedException,
                     SapphireObjectNotFoundException;
 

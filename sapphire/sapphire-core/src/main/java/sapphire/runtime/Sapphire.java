@@ -53,8 +53,6 @@ public class Sapphire {
 
             List<SapphirePolicyContainer> processedPolicies = new ArrayList<>();
             List<SapphirePolicyContainer> policyNameChain = getPolicyNameChain(spec);
-            Map<String, SapphirePolicyUpcalls.SapphirePolicyConfig> configMap =
-                    Utils.fromDMSpecListToFlatConfigMap(spec.getDmList());
 
             if (policyNameChain.size() == 0) {
                 String defaultPolicyName = DefaultSapphirePolicy.class.getName();
@@ -69,7 +67,6 @@ public class Sapphire {
                     createPolicy(
                             sapphireObjId,
                             spec,
-                            configMap,
                             new boolean[1],
                             policyNameChain,
                             processedPolicies,
@@ -110,9 +107,6 @@ public class Sapphire {
                 policyNameChain.add(new SapphirePolicyContainer(defaultPolicyName, null));
             }
 
-            SapphireServerPolicy previousServerPolicy = null;
-            KernelObjectStub previousServerPolicyStub = null;
-
             SapphireObjectSpec spec =
                     SapphireObjectSpec.newBuilder()
                             .setLang(Language.java)
@@ -127,7 +121,6 @@ public class Sapphire {
                     createPolicy(
                             sapphireObjId,
                             spec,
-                            configMap,
                             new boolean[1],
                             policyNameChain,
                             processedPolicies,
@@ -185,7 +178,6 @@ public class Sapphire {
      *
      * @param sapphireObjId Sapphire object Id
      * @param spec Sapphire object spec
-     * @param configMap Sapphire policy configuration map
      * @param chainPinned Flag indicating chain is pinned
      * @param policyNameChain List of policies that need to be created
      * @param processedPolicies List of policies that were already created
@@ -205,7 +197,6 @@ public class Sapphire {
     public static List<SapphirePolicyContainer> createPolicy(
             SapphireObjectID sapphireObjId,
             SapphireObjectSpec spec,
-            Map<String, SapphirePolicyUpcalls.SapphirePolicyConfig> configMap,
             boolean[] chainPinned,
             List<SapphirePolicyContainer> policyNameChain,
             List<SapphirePolicyContainer> processedPolicies,
@@ -236,7 +227,7 @@ public class Sapphire {
             /* Create the Kernel Object for the Group Policy and get the Group Policy Stub from OMS */
             groupPolicyStub =
                     GlobalKernelReferences.nodeServer.oms.createGroupPolicy(
-                            sapphireGroupPolicyClass, sapphireObjId, configMap);
+                            sapphireGroupPolicyClass, sapphireObjId);
         } else {
             groupPolicyStub = existingGroupPolicy;
             /* Get the app object to be cloned from the base server */
@@ -307,7 +298,6 @@ public class Sapphire {
             createPolicy(
                     sapphireObjId,
                     spec,
-                    configMap,
                     chainPinned,
                     nextPoliciesToCreate,
                     processedPolicies,
@@ -362,7 +352,6 @@ public class Sapphire {
      *
      * @param policyClass
      * @param sapphireObjId
-     * @param configMap
      * @return Returns group policy object stub
      * @throws RemoteException
      * @throws ClassNotFoundException
@@ -370,9 +359,7 @@ public class Sapphire {
      * @throws SapphireObjectNotFoundException
      */
     public static SapphireGroupPolicy createGroupPolicy(
-            Class<?> policyClass,
-            SapphireObjectID sapphireObjId,
-            Map<String, SapphirePolicyUpcalls.SapphirePolicyConfig> configMap)
+            Class<?> policyClass, SapphireObjectID sapphireObjId)
             throws RemoteException, ClassNotFoundException, KernelObjectNotCreatedException,
                     SapphireObjectNotFoundException {
         SapphireGroupPolicy groupPolicyStub = (SapphireGroupPolicy) getPolicyStub(policyClass);
@@ -586,8 +573,6 @@ public class Sapphire {
             SapphirePolicyContainer prevContainer,
             SapphireClientPolicy clientPolicy)
             throws IOException, ClassNotFoundException {
-        serverPolicy.setSapphireObjectSpec(prevContainer.getServerPolicy().getSapphireObjectSpec());
-
         KernelObjectStub prevServerPolicyStub = prevContainer.getServerPolicyStub();
 
         /* Previous server policy stub object acts as Sapphire Object(SO) to the current server policy */
@@ -616,7 +601,6 @@ public class Sapphire {
             Object[] appArgs,
             AppObject appObject)
             throws ClassNotFoundException, CloneNotSupportedException, IOException {
-
         AppObjectStub appStub;
         if (appObject != null) {
             appObject = (AppObject) Utils.ObjectCloner.deepCopy(appObject);
@@ -626,8 +610,6 @@ public class Sapphire {
             appStub.$__initialize(clientPolicy);
             serverPolicy.$__initialize(appStub);
         }
-
-        serverPolicy.setSapphireObjectSpec(spec);
     }
 
     public static Class<?>[] getParamsClasses(Object[] params) throws ClassNotFoundException {

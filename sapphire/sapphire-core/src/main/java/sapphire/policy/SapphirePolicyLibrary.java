@@ -127,7 +127,6 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
                 Sapphire.createPolicy(
                         this.getGroup().sapphireObjId,
                         spec,
-                        configMap,
                         null,
                         processedPolicies,
                         processedPoliciesReplica,
@@ -150,7 +149,6 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
                         Sapphire.createPolicy(
                                 this.getGroup().sapphireObjId,
                                 spec,
-                                configMap,
                                 new boolean[1],
                                 this.nextPolicies,
                                 processedPoliciesReplica,

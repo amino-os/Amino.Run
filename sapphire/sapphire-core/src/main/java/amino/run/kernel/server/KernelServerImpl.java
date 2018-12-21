@@ -9,6 +9,7 @@ import amino.run.common.MicroServiceNotFoundException;
 import amino.run.common.MicroServiceReplicaNotFoundException;
 import amino.run.kernel.client.KernelClient;
 import amino.run.kernel.common.*;
+import amino.run.kernel.common.metric.KernelServerMetricClient;
 import amino.run.oms.OMSServer;
 import amino.run.policy.Library;
 import amino.run.policy.Policy;
@@ -431,6 +432,9 @@ public class KernelServerImpl implements KernelServer {
             // Start a thread that print memory stats
             server.getMemoryStatThread().start();
 
+            // Initialize Metric client
+            server.initializeMetricClient();
+
             // Log being used in examples gradle task "run", hence modify accordingly.
             logger.info(String.format("Kernel server ready at port(%s)!", ksArgs.kernelServerPort));
         } catch (Exception e) {
@@ -438,6 +442,16 @@ public class KernelServerImpl implements KernelServer {
                     "Failed to start kernel server: " + e.getMessage() + System.lineSeparator());
             printUsage(parser);
         }
+    }
+
+    private void initializeMetricClient() {
+        // TODO: Metric client creation needs metric server deployed and configured on OMS.
+        // OMS will expose RPC API to get metric server information which will
+        // be used by each kernel server to create Metric Client.
+        // If Metric Server is not configured on OMS, Kernel server will use MetricLoggerClient
+        // for Kernel server metric.
+        GlobalKernelReferences.metricClient = new KernelServerMetricClient();
+        GlobalKernelReferences.metricClient.initialize();
     }
 
     private void startHeartbeats(final ServerInfo srvInfo)

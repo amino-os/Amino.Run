@@ -147,7 +147,7 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultPolicy {
          */
         public MethodInvocationResponse onRPC(MethodInvocationRequest request) {
             try {
-                Object ret = getAppObject().invoke(request.getMethodName(), request.getParams());
+                Object ret = super.onRPC(request.getMethodName(), request.getParams());
                 return new MethodInvocationResponse(
                         MethodInvocationResponse.ReturnCode.SUCCESS, ret);
             } catch (Exception e) {

@@ -1,12 +1,16 @@
 package amino.run.policy;
 
+import amino.run.app.DMSpec;
+import amino.run.app.MicroServiceSpec;
 import amino.run.common.MicroServiceNotFoundException;
 import amino.run.common.MicroServiceReplicaNotFoundException;
 import amino.run.common.ReplicaID;
 import amino.run.kernel.common.KernelObjectStub;
+import amino.run.kernel.common.metric.metricHandler.MicroServiceMetricsHandler;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 
@@ -14,6 +18,15 @@ public class DefaultPolicy extends Policy {
 
     public static class DefaultServerPolicy extends ServerPolicy {
         private GroupPolicy group;
+        protected MicroServiceMetricsHandler metricHandler;
+
+        @Override
+        public Object onRPC(String method, ArrayList<Object> params) throws Exception {
+            if (metricHandler != null) {
+                return metricHandler.onRPC(method, params);
+            }
+            return super.onRPC(method, params);
+        }
 
         @Override
         public GroupPolicy getGroup() {
@@ -26,10 +39,34 @@ public class DefaultPolicy extends Policy {
         @Override
         public void onCreate(GroupPolicy group) {
             this.group = group;
+            // get micro service specification information from group policy
+            MicroServiceSpec spec = group.getSpec();
+            if (isEntryPolicy(spec)) {
+                metricHandler = MicroServiceMetricsHandler.create(this, spec);
+            }
         }
 
         @Override
         public void onDestroy() {}
+
+        // method to identify first DM in RPC call flow
+        private boolean isEntryPolicy(MicroServiceSpec spec) {
+            // condition added to handle annotation based MicroService deployment
+            if (spec == null) {
+                return false;
+            }
+
+            List<DMSpec> dmList = spec.getDmList();
+            // handle metric collection for default policy
+            if (dmList == null || dmList.isEmpty()) {
+                return true;
+            }
+
+            // check for last DM
+            DMSpec lastDM = dmList.get(dmList.size() - 1);
+            String dmName = lastDM.getName();
+            return this.getClass().getName().contains(dmName);
+        }
     }
 
     public static class DefaultClientPolicy extends ClientPolicy {

@@ -5,25 +5,24 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.apache.harmony.rmi.common.RMIUtil;
-import sapphire.common.AppObjectStub;
-import sapphire.compiler.GlobalStubConstants;
 import sapphire.app.DMSpec;
 import sapphire.app.SapphireObjectSpec;
-import sapphire.app.Language;
+import sapphire.common.AppObjectStub;
+import sapphire.compiler.GlobalStubConstants;
 
 /**
  * Host Sapphire Object Specification.
  *
- * <p>Represntation of Host language Sapphire Object Spec.
+ * <p>Implementation of SapphireSpec for objects in languages that support java reflections.
  */
-class HostSapphireSpec implements SapphireSpec {
+class JVMReflectSapphireSpec implements SapphireSpec {
 
     private Class<?> c;
     private Class<?> stubClass;
     private Map<String, Method> methodCache;
     private List<DMSpec> DmList;
 
-    protected HostSapphireSpec(SapphireObjectSpec s) {
+    protected JVMReflectSapphireSpec(SapphireObjectSpec s) {
         if (s.getName() != null
                 || s.getSourceFileLocation() != null
                 || s.getConstructorName() != null) {

@@ -8,18 +8,18 @@ import java.util.List;
 import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.Source;
 import org.graalvm.polyglot.Value;
+import sapphire.app.DMSpec;
+import sapphire.app.Language;
+import sapphire.app.SapphireObjectSpec;
 import sapphire.common.AppObjectStub;
 import sapphire.graal.io.GraalContext;
-import sapphire.app.DMSpec;
-import sapphire.app.SapphireObjectSpec;
-import sapphire.app.Language;
 
 /**
  * Host Sapphire Object Specification.
  *
- * <p>Represntation of Graalvm Guest language Sapphire Object Spec.
+ * <p>Implementation of SapphireSpec for objects from languages managed by GraalVM
  */
-class GuestSapphireSpec implements SapphireSpec {
+class GraalVMSapphireSpec implements SapphireSpec {
 
     private Language lang;
     private String name;
@@ -29,7 +29,7 @@ class GuestSapphireSpec implements SapphireSpec {
     private String javaClassName;
     private List<DMSpec> DmList;
 
-    protected GuestSapphireSpec(SapphireObjectSpec s) throws IOException {
+    protected GraalVMSapphireSpec(SapphireObjectSpec s) throws IOException {
         lang = s.getLang();
         name = s.getName();
         sourceFileLocation = s.getSourceFileLocation();

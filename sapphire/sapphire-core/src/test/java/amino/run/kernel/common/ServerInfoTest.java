@@ -18,51 +18,52 @@ public class ServerInfoTest {
     @Test
     public void testHasAnyLabel() {
         ServerInfo server = createServer(numOfLabels);
-        Set<String> labels = new HashSet<String>();
-        labels.add(LABEL_PREFIX + "0");
+        Map<String, String> labels = new HashMap<String, String>();
+        labels.put(LABEL_PREFIX + "0", LABEL_PREFIX + "0");
         Assert.assertTrue(server.containsAny(labels));
     }
 
     @Test
     public void testHasAnyLabelWithNonExistentLabel() {
         ServerInfo server = createServer(numOfLabels);
-        Set<String> labels = createLabels(numOfLabels);
-        labels.add("non_existent_label");
+        Map<String, String> labels = createLabels(numOfLabels);
+        labels.put("non_existent_label", "non_existent_label");
         Assert.assertTrue(server.containsAny(labels));
     }
 
     @Test
     public void testHasAnyLabelWithEmptyLabels() {
         ServerInfo server = createServer(numOfLabels);
-        Assert.assertTrue(server.containsAny(Collections.<String>emptySet()));
+        Assert.assertTrue(server.containsAny(Collections.EMPTY_MAP));
     }
 
     @Test
     public void testHasAnyLabelFailure() {
         ServerInfo server = createServer(numOfLabels);
-        Set<String> labels = new HashSet<String>(Arrays.asList(NON_EXISTENT_LABEL));
+        Map<String, String> labels = new HashMap<String, String>();
+        labels.put(NON_EXISTENT_LABEL, NON_EXISTENT_LABEL);
         Assert.assertFalse(server.containsAny(labels));
     }
 
     @Test
     public void testHasAllLabel() {
         ServerInfo server = createServer(numOfLabels);
-        Set<String> labels = createLabels(numOfLabels);
+        Map<String, String> labels = createLabels(numOfLabels);
         Assert.assertTrue(server.containsAll(labels));
     }
 
     @Test
     public void testHasAllLabelFailure() {
         ServerInfo server = createServer(numOfLabels);
-        Set<String> labels = createLabels(numOfLabels);
-        labels.add(NON_EXISTENT_LABEL);
+        Map<String, String> labels = createLabels(numOfLabels);
+        labels.put(NON_EXISTENT_LABEL, NON_EXISTENT_LABEL);
         Assert.assertFalse(server.containsAll(labels));
     }
 
     @Test
     public void testHasAllLabelsWithEmptyLabels() {
         ServerInfo server = createServer(numOfLabels);
-        Assert.assertTrue(server.containsAll(Collections.<String>emptySet()));
+        Assert.assertTrue(server.containsAll(Collections.EMPTY_MAP));
     }
 
     private ServerInfo createServer(int numOfLabels) {
@@ -71,10 +72,10 @@ public class ServerInfoTest {
         return server;
     }
 
-    private Set<String> createLabels(int numOfLabels) {
-        Set<String> labels = new HashSet<String>();
+    private HashMap createLabels(int numOfLabels) {
+        HashMap labels = new HashMap();
         for (int i = 0; i < numOfLabels; i++) {
-            labels.add(LABEL_PREFIX + i);
+            labels.put(LABEL_PREFIX + i, LABEL_PREFIX + i);
         }
         return labels;
     }

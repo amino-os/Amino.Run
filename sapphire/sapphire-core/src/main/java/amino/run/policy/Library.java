@@ -1,8 +1,8 @@
 package amino.run.policy;
 
-import amino.run.app.Language;
-import amino.run.app.MicroServiceSpec;
-import amino.run.app.NodeSelectorSpec;
+import static amino.run.kernel.server.KernelServerImpl.REGION_KEY;
+
+import amino.run.app.*;
 import amino.run.common.*;
 import amino.run.compiler.GlobalStubConstants;
 import amino.run.kernel.common.GlobalKernelReferences;
@@ -422,7 +422,14 @@ public abstract class Library implements Upcalls {
             } else {
                 if (region != null && !region.isEmpty()) {
                     nodeSelector = new NodeSelectorSpec();
-                    nodeSelector.addAndLabel(region);
+                    NodeSelectorTerm term = new NodeSelectorTerm();
+                    term.setMatchExpressions(
+                            Collections.singletonList(
+                                    new Requirement(
+                                            REGION_KEY,
+                                            Operator.Equal,
+                                            Collections.singletonList(region))));
+                    nodeSelector.setRequireExpressions(Collections.singletonList(term));
                     serversInRegion = oms().getServers(nodeSelector);
                 } else {
                     serversInRegion = oms().getServers(null);

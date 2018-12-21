@@ -145,14 +145,8 @@ public class KernelServerManager {
      */
     public List<InetSocketAddress> getServers(NodeSelectorSpec spec) {
         List<InetSocketAddress> nodes = new ArrayList<InetSocketAddress>();
-        Set<String> orLabels = null;
-        Set<String> andLabels = null;
-        if (null != spec) {
-            orLabels = spec.getOrLabels();
-            andLabels = spec.getAndLabels();
-        }
         for (ServerInfo s : serverInfos) {
-            if (s.containsAll(andLabels) && s.containsAny(orLabels)) {
+            if (s.matchNodeSelectorSpec(spec)) {
                 nodes.add(s.getHost());
             }
         }

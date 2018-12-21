@@ -139,7 +139,8 @@ public class MicroServiceSpec implements Serializable {
                 && Objects.equals(javaClassName, that.javaClassName)
                 && Objects.equals(sourceFileLocation, that.sourceFileLocation)
                 && Objects.equals(constructorName, that.constructorName)
-                && Objects.equals(dmList, that.dmList);
+                && Objects.equals(dmList, that.dmList)
+                && Objects.equals(nodeSelectorSpec, that.nodeSelectorSpec);
     }
 
     @Override

@@ -2,9 +2,7 @@
 !!amino.run.app.MicroServiceSpec
 constructorName: null
 javaClassName: amino.run.demo.KVStore
-nodeSelectorSpec:
-  andLabels: !!set {}
-  orLabels: !!set {}
+nodeSelectorSpec: null
 lang: java
 name: null
 sourceFileLocation: null

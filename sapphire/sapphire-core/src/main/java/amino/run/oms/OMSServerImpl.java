@@ -21,6 +21,8 @@ import amino.run.kernel.server.KernelServerImpl;
 import amino.run.policy.Policy;
 import amino.run.runtime.EventHandler;
 import amino.run.runtime.Sapphire;
+import amino.run.app.labelselector.Selector;
+
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.InetSocketAddress;
@@ -193,6 +195,7 @@ public class OMSServerImpl implements OMSServer, SapphireObjectServer {
             SapphireObjectID sid = clientPolicy.getGroup().getSapphireObjId();
             objectManager.setInstanceObjectStub(sid, appObjStub);
             objectManager.setRootGroupPolicy(sid, clientPolicy.getGroup());
+            objectManager.setSapphireObjectSpec(sid, spec);
             return clientPolicy.getGroup().getSapphireObjId();
         } catch (Exception e) {
             throw new SapphireObjectCreationException(
@@ -218,6 +221,29 @@ public class OMSServerImpl implements OMSServer, SapphireObjectServer {
         } catch (Exception e) {
             throw new SapphireObjectNotFoundException(
                     "Failed to acquire stub for sapphire object " + sapphireObjId, e);
+        }
+    }
+
+    /**
+     * Gets the sapphire object stub of given sapphire object id
+     *
+     * @param selector
+     * @return Returns list of sapphire object stub
+     * @throws SapphireObjectNotFoundException
+     */
+    @Override
+    public ArrayList<AppObjectStub> acquireSapphireObjectStub(Selector selector)
+            throws SapphireObjectNotFoundException {
+
+        try {
+            ArrayList<AppObjectStub> appObjStubs = objectManager.getInstanceObjectStub(selector);
+            for (AppObjectStub appObjStub : appObjStubs) {
+                appObjStub.$__initialize(false);
+            }
+            return appObjStubs;
+        } catch (Exception e) {
+            throw new SapphireObjectNotFoundException(
+                    "Failed to acquire stub for sapphire object " + selector, e);
         }
     }
 

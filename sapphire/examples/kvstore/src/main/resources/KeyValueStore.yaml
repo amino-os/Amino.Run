@@ -9,4 +9,6 @@ dmList:
 javaClassName: amino.run.demo.KeyValueStore
 lang: java
 name: null
+sapphireObjectLabels:
+  labels: {key1: value1, key2: value2}
 sourceFileLocation: null

@@ -9,4 +9,6 @@ dmList:
 javaClassName: amino.run.appdemo.stubs.KeyValueStore_Stub
 lang: js
 name: KeyValueStore
-sourceFileLocation: ./src/main/js/amino/run/appdemo/KeyValueStore.js
+labels:
+  labels: {ing: ing1, test: test1}
+sourceFileLocation: ./src/main/js/sapphire/appdemo/KeyValueStore.js

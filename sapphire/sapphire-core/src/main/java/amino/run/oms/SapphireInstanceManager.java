@@ -7,6 +7,7 @@ import amino.run.common.SapphireObjectReplicaNotFoundException;
 import amino.run.common.SapphireReplicaID;
 import amino.run.policy.Policy;
 import amino.run.runtime.EventHandler;
+import amino.run.app.SapphireObjectSpec;
 import java.rmi.RemoteException;
 import java.util.Collection;
 import java.util.Date;
@@ -26,6 +27,8 @@ public class SapphireInstanceManager {
     private AppObjectStub objectStub;
     private HashMap<SapphireReplicaID, EventHandler> replicaDispatchers;
     private Random oidGenerator;
+    private SapphireObjectSpec spec;
+
     /**
      * Root group policy is the <strong>outmost</strong> group policy of this sapphire object.
      *
@@ -111,6 +114,24 @@ public class SapphireInstanceManager {
      */
     public void setInstanceObjectStub(AppObjectStub objStub) {
         objectStub = objStub;
+    }
+
+    /**
+     * Gets saphhire object specifications
+     *
+     * @return Returns object stub
+     */
+    public SapphireObjectSpec gettSapphireObjectSpec() {
+        return spec;
+    }
+
+    /**
+     * Sets saphhire object specifications
+     *
+     * @param spec
+     */
+    public void setSapphireObjectSpec(SapphireObjectSpec spec) {
+        this.spec = spec;
     }
 
     /**

@@ -8,6 +8,9 @@ import amino.run.common.SapphireObjectReplicaNotFoundException;
 import amino.run.common.SapphireReplicaID;
 import amino.run.policy.Policy;
 import amino.run.runtime.EventHandler;
+import amino.run.app.SapphireObjectSpec;
+import amino.run.app.labelselector.Selector;
+
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.UUID;
@@ -99,6 +102,22 @@ public class SapphireObjectManager {
             throw new SapphireObjectNotFoundException("Not a valid Sapphire object id.");
         }
         instance.setInstanceObjectStub(objectStub);
+    }
+
+    /**
+     * Set the object stub of sapphire object
+     *
+     * @param sapphireObjId
+     * @param spec
+     * @throws SapphireObjectNotFoundException
+     */
+    public void setSapphireObjectSpec(SapphireObjectID sapphireObjId, SapphireObjectSpec spec)
+            throws SapphireObjectNotFoundException {
+        SapphireInstanceManager instance = sapphireObjects.get(sapphireObjId);
+        if (instance == null) {
+            throw new SapphireObjectNotFoundException("Not a valid Sapphire object id.");
+        }
+        instance.setSapphireObjectSpec(spec);
     }
 
     /**
@@ -198,7 +217,8 @@ public class SapphireObjectManager {
      * @throws SapphireObjectNotFoundException
      */
     public void removeReplica(SapphireReplicaID replicaId) throws SapphireObjectNotFoundException {
-        SapphireInstanceManager instance = sapphireObjects.get(replicaId.getOID());
+        SapphireInstanceManager instance =
+                sapphireObjects.get(new SapphireObjectIdentifier(replicaId.getOID()));
         if (instance == null) {
             throw new SapphireObjectNotFoundException("Not a valid Sapphire object id.");
         }
@@ -247,6 +267,26 @@ public class SapphireObjectManager {
         }
 
         return instance.getInstanceDispatcher();
+    }
+
+    /**
+     * Get the object stub of sapphire object
+     *
+     * @param selector
+     * @return
+     * @throws SapphireObjectNotFoundException
+     */
+    public ArrayList<AppObjectStub> getInstanceObjectStub(Selector selector) {
+        ArrayList<AppObjectStub> appStubList = new ArrayList<>();
+        sapphireObjects.forEach(
+                (k, instance) -> {
+                    if (selector.matches(
+                            instance.gettSapphireObjectSpec().getSapphireObjectLabels())) {
+                        appStubList.add(instance.getInstanceObjectStub());
+                    }
+                });
+
+        return appStubList;
     }
 
     /**

@@ -1,5 +1,7 @@
 package amino.run.oms;
 
+import amino.run.app.MicroServiceSpec;
+import amino.run.app.labelselector.Selector;
 import amino.run.common.AppObjectStub;
 import amino.run.common.MicroServiceID;
 import amino.run.common.MicroServiceNameModificationException;
@@ -102,7 +104,23 @@ public class MicroServiceManager {
     }
 
     /**
-     * Add a replica of a microservice
+     * Set the object stub of sapphire object
+     *
+     * @param sapphireObjId
+     * @param spec
+     * @throws SapphireObjectNotFoundException
+     */
+    public void setSapphireObjectSpec(SapphireObjectID sapphireObjId, MicroServiceSpec spec)
+            throws SapphireObjectNotFoundException {
+        SapphireInstanceManager instance = sapphireObjects.get(sapphireObjId);
+        if (instance == null) {
+            throw new SapphireObjectNotFoundException("Not a valid Sapphire object id.");
+        }
+        instance.setMicroServiceSpec(spec);
+    }
+
+    /**
+     * Add a replica of a microservice 
      *
      * @param microServiceId
      * @param dispatcher
@@ -250,7 +268,30 @@ public class MicroServiceManager {
     }
 
     /**
-     * Get the object stub of microservice
+     * Get list of object stub.
+     *
+     * <p>As Stubs are filtered based on {@link Selector}, List can have stubs of different sapphire
+     * object.
+     *
+     * @param selector
+     * @return
+     * @throws SapphireObjectNotFoundException
+     */
+    public ArrayList<AppObjectStub> getInstanceObjectStub(Selector selector) {
+        ArrayList<AppObjectStub> appStubList = new ArrayList<>();
+        sapphireObjects.forEach(
+                (k, instance) -> {
+                    MicroServiceSpec spec = instance.getMicroServiceSpec();
+                    if (spec != null && selector.matches(spec.getMicroServiceLabels())) {
+                        appStubList.add(instance.getInstanceObjectStub());
+                    }
+                });
+
+        return appStubList;
+    }
+
+    /**
+     * Get the object stub of microservice 
      *
      * @param microServiceId
      * @return

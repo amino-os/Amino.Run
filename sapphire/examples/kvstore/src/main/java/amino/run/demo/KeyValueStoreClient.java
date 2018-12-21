@@ -3,11 +3,20 @@ package amino.run.demo;
 import amino.run.app.Registry;
 import amino.run.common.MicroServiceID;
 import amino.run.kernel.server.KernelServerImpl;
+import amino.run.app.SapphireObjectServer;
+import amino.run.common.SapphireObjectID;
+import amino.run.kernel.server.KernelServerImpl;
+import amino.run.oms.OMSServer;
+import amino.run.app.labelselector.Requirement;
+import amino.run.app.labelselector.Selector;
+import amino.run.common.AppObjectStub;
 
 import java.io.File;
 import java.net.InetSocketAddress;
 import java.nio.file.Files;
 import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -21,6 +30,36 @@ public class KeyValueStoreClient {
         KeyValueStore store = (KeyValueStore)server.acquireStub(oid);
 
         for (int i=0; i<30; ++i) {
+            String key = "key_" + i;
+            String val = "val_" + i;
+
+            System.out.println(String.format("<Client> setting %s = %s", key, val));
+            store.set(key, val);
+            val = String.valueOf(store.get(key));
+            System.out.println(String.format("<Client> got value %s with key %s", val, key));
+        }
+
+        // create requirement
+        Requirement req = Requirement.newBuilder().key("key1")
+                .equal()
+                .value("value1")
+                .create();
+        // create selector
+        Selector select = new Selector();
+        select.add(req);
+
+        // acquire sapphire objects based on selector
+        ArrayList<AppObjectStub> sapphireStubList = server.acquireSapphireObjectStub(select);
+
+        if(sapphireStubList.size() != 1 ){
+            throw new Exception("invalid list of stubs");
+        }
+
+        for(AppObjectStub stub:sapphireStubList){
+            store = (KeyValueStore)stub;
+        }
+
+        for (int i=31; i<60; ++i) {
             String key = "key_" + i;
             String val = "val_" + i;
 

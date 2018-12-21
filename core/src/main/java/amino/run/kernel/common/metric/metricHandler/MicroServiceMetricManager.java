@@ -4,6 +4,7 @@ import amino.run.app.MicroServiceSpec;
 import amino.run.common.ReplicaID;
 import amino.run.kernel.common.GlobalKernelReferences;
 import amino.run.kernel.common.metric.Metric;
+import amino.run.kernel.common.metric.MetricManager;
 import amino.run.kernel.common.metric.metricHandler.RPCMetric.ByteInHandler;
 import amino.run.kernel.common.metric.metricHandler.RPCMetric.ByteOutHandler;
 import amino.run.kernel.common.metric.metricHandler.RPCMetric.CountHandler;
@@ -25,7 +26,7 @@ import java.util.logging.Logger;
  *
  * @author AmitRoushan
  */
-public class MicroServiceMetricManager implements Serializable {
+public class MicroServiceMetricManager implements Serializable, MetricManager {
     private static Logger logger = Logger.getLogger(MicroServiceMetricManager.class.getName());
     /** Default policy instance for handing over normal RPC call after metric collection */
     private transient DefaultPolicy.DefaultServerPolicy policy;
@@ -220,7 +221,7 @@ public class MicroServiceMetricManager implements Serializable {
      *
      * @return
      */
-    public int getMetricUpdateFrequency() {
+    public long getMetricUpdateFrequency() {
         return metricUpdateFrequency;
     }
 

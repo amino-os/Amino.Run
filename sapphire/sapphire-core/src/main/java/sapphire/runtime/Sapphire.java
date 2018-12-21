@@ -64,14 +64,7 @@ public class Sapphire {
                     GlobalKernelReferences.nodeServer.oms.registerSapphireObject();
 
             List<SapphirePolicyContainer> policyList =
-                    createPolicy(
-                            sapphireObjId,
-                            spec,
-                            new boolean[1],
-                            policyNameChain,
-                            processedPolicies,
-                            "",
-                            args);
+                    createPolicy(sapphireObjId, spec, policyNameChain, processedPolicies, "", args);
 
             appStub = policyList.get(0).getServerPolicy().sapphire_getAppObjectStub();
         } catch (Exception e) {
@@ -118,14 +111,7 @@ public class Sapphire {
                     GlobalKernelReferences.nodeServer.oms.registerSapphireObject();
 
             List<SapphirePolicyContainer> policyList =
-                    createPolicy(
-                            sapphireObjId,
-                            spec,
-                            new boolean[1],
-                            policyNameChain,
-                            processedPolicies,
-                            "",
-                            args);
+                    createPolicy(sapphireObjId, spec, policyNameChain, processedPolicies, "", args);
 
             AppObjectStub appStub = policyList.get(0).getServerPolicy().sapphire_getAppObjectStub();
             logger.info("Sapphire Object created: " + appObjectClass.getName());
@@ -178,7 +164,6 @@ public class Sapphire {
      *
      * @param sapphireObjId Sapphire object Id
      * @param spec Sapphire object spec
-     * @param chainPinned Flag indicating chain is pinned
      * @param policyNameChain List of policies that need to be created
      * @param processedPolicies List of policies that were already created
      * @param region Region
@@ -197,7 +182,6 @@ public class Sapphire {
     public static List<SapphirePolicyContainer> createPolicy(
             SapphireObjectID sapphireObjId,
             SapphireObjectSpec spec,
-            boolean[] chainPinned,
             List<SapphirePolicyContainer> policyNameChain,
             List<SapphirePolicyContainer> processedPolicies,
             String region,
@@ -296,20 +280,13 @@ public class Sapphire {
                 }
             }
             createPolicy(
-                    sapphireObjId,
-                    spec,
-                    chainPinned,
-                    nextPoliciesToCreate,
-                    processedPolicies,
-                    region,
-                    appArgs);
+                    sapphireObjId, spec, nextPoliciesToCreate, processedPolicies, region, appArgs);
         }
 
         // server policy stub at this moment has the full policy chain; safe to add to group
         if (existingGroupPolicy == null) {
-            serverPolicyStub.setAlreadyPinned(chainPinned[0]);
+            setIfAlreadyPinned(serverPolicyStub, processedPolicies, nextPoliciesToCreate.size());
             groupPolicyStub.onCreate(region, serverPolicyStub, spec);
-            chainPinned[0] = true;
             groupPolicyStub.addServer(serverPolicyStub);
         }
 
@@ -578,6 +555,7 @@ public class Sapphire {
         /* Previous server policy stub object acts as Sapphire Object(SO) to the current server policy */
         serverPolicy.$__initialize(
                 new AppObject(Utils.ObjectCloner.deepCopy(prevServerPolicyStub)));
+        prevContainer.getServerPolicy().setPreviousServerPolicy(serverPolicy);
         prevServerPolicyStub.$__setNextClientPolicy(clientPolicy);
     }
 
@@ -619,5 +597,52 @@ public class Sapphire {
         }
         Class<?>[] argClasses = new Class<?>[argClassesList.size()];
         return argClassesList.toArray(argClasses);
+    }
+
+    /**
+     * Checks the downstream policies by going through processedPolicies and sets the given
+     * serverPolicyStub as being already pinned if any of downstream policies have set it as already
+     * pinned. Note 'pinned' means the chain was migrated to a target Kernel Server by
+     * sapphire_pin_to_server() at SapphirePolicyLibrary
+     *
+     * @param serverPolicyStub Stub to set as already pinned if downstream has already pinned.
+     * @param processedPolicies All of the policies created in this policy chain.
+     * @param sizeOfDownStreamPolicies number of policy instances that need to be checked if already
+     *     pinned.
+     */
+    private static void setIfAlreadyPinned(
+            SapphireServerPolicy serverPolicyStub,
+            List<SapphirePolicyContainer> processedPolicies,
+            int sizeOfDownStreamPolicies) {
+        int idx = 0, size = processedPolicies.size();
+
+        // Indicates start of downstream policies.
+        int startIdx = size - sizeOfDownStreamPolicies;
+        try {
+            // Set whether the chain was already pinned or not from downstream policies.
+            for (SapphirePolicyContainer policyContainer : processedPolicies) {
+                if (idx >= startIdx) {
+                    // Start checking all the downstream policies only.
+                    SapphireServerPolicy sp = policyContainer.getServerPolicy();
+                    if (sp.isAlreadyPinned()) {
+                        String msg =
+                                String.format(
+                                        "Sapphire Object was already pinned by %s. Set as already pinned for %s",
+                                        sp, serverPolicyStub);
+                        logger.log(Level.INFO, msg);
+                        serverPolicyStub.setAlreadyPinned(true);
+                        return;
+                    }
+                }
+                idx++;
+            }
+        } catch (Exception e) {
+            logger.log(
+                    Level.SEVERE,
+                    String.format(
+                            "Checking chain pinning failed. Size of processed policies = %d startIdx = %d",
+                            size, startIdx));
+            throw e;
+        }
     }
 }

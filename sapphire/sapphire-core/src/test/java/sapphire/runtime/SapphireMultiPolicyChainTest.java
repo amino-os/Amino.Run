@@ -206,13 +206,7 @@ public class SapphireMultiPolicyChainTest extends BaseTest {
         policyNameChain.add(new SapphirePolicyContainer("sapphire.policy.dht.DHTPolicy", null));
         List<SapphirePolicyContainer> policyList =
                 Sapphire.createPolicy(
-                        sapphireObjId,
-                        spec,
-                        new boolean[1],
-                        policyNameChain,
-                        processedPolicies,
-                        "",
-                        null);
+                        sapphireObjId, spec, policyNameChain, processedPolicies, "", null);
 
         assertEquals(1, policyList.size());
     }
@@ -231,13 +225,7 @@ public class SapphireMultiPolicyChainTest extends BaseTest {
 
         List<SapphirePolicyContainer> policyList =
                 Sapphire.createPolicy(
-                        sapphireObjId,
-                        spec,
-                        new boolean[1],
-                        policyNameChain,
-                        processedPolicies,
-                        "",
-                        null);
+                        sapphireObjId, spec, policyNameChain, processedPolicies, "", null);
 
         assertEquals(2, policyList.size());
     }

@@ -54,6 +54,10 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 
         static Logger logger = Logger.getLogger(SapphireServerPolicyLibrary.class.getName());
 
+        // ServerPolicy that precedes the current policy in the server side chain - this order is
+        // reverse in the client side.
+        protected SapphireServerPolicy previousServerPolicy;
+
         // List of ServerPolicies that should be created in the chain after the current one when
         // creating replicas.
         // These nested part of chain where the last one created will be called by KernelServer
@@ -84,6 +88,14 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
          */
         public List<SapphirePolicyContainer> getProcessedPolicies() {
             return this.processedPolicies;
+        }
+
+        public SapphireServerPolicy getPreviousServerPolicy() {
+            return this.previousServerPolicy;
+        }
+
+        public void setPreviousServerPolicy(SapphireServerPolicy sapphireServerPolicy) {
+            this.previousServerPolicy = sapphireServerPolicy;
         }
 
         public void setNextPolicies(List<SapphirePolicyContainer> nextPolicies) {
@@ -127,7 +139,6 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
                 Sapphire.createPolicy(
                         this.getGroup().sapphireObjId,
                         spec,
-                        null,
                         processedPolicies,
                         processedPoliciesReplica,
                         region,
@@ -149,7 +160,6 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
                         Sapphire.createPolicy(
                                 this.getGroup().sapphireObjId,
                                 spec,
-                                new boolean[1],
                                 this.nextPolicies,
                                 processedPoliciesReplica,
                                 region,
@@ -223,6 +233,11 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
                 throw new RemoteException("No server policy to pin to the server: " + server, e);
             }
 
+            // Ensure that we start from the first Server Policy.
+            while (serverPolicy.getPreviousServerPolicy() != null) {
+                serverPolicy = serverPolicy.getPreviousServerPolicy();
+            }
+
             // Before pinning the Sapphire Object replica to the provided KernelServer, need to
             // update the Hostname.
             List<SapphirePolicyContainer> processedPolicyList = serverPolicy.getProcessedPolicies();
@@ -262,6 +277,8 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
                 logger.severe(msg);
                 throw new Error(msg, e);
             }
+
+            serverPolicy.setAlreadyPinned(true);
 
             logger.info(
                     "(Complete) Pinning Sapphire object "

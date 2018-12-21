@@ -9,4 +9,6 @@ dmList:
 javaClassName: amino.run.demo.KeyValueStore
 lang: java
 name: null
+labels: {name: KVStore}
+annotations: {amino.metric : {amino.metric.frequency: 20000, amino.metrics: ["rpc_count", "avg_execution_time"]}}
 sourceFileLocation: null

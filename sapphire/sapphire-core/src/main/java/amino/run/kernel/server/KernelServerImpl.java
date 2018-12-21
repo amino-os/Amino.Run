@@ -5,6 +5,7 @@ import amino.run.common.*;
 import amino.run.common.ArgumentParser.KernelServerArgumentParser;
 import amino.run.kernel.client.KernelClient;
 import amino.run.kernel.common.*;
+import amino.run.kernel.common.metric.MetricLoggingClient;
 import amino.run.oms.OMSServer;
 import amino.run.policy.Library;
 import amino.run.policy.Policy;
@@ -356,28 +357,8 @@ public class KernelServerImpl implements KernelServer {
         return (AppObjectStub) MicroService.new_(spec, args);
     }
 
-    public class MemoryStatThread extends Thread {
-        public void run() {
-            while (true) {
-                try {
-                    Thread.sleep(100000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                System.out.println(
-                        "Total memory: " + Runtime.getRuntime().totalMemory() + " Bytes");
-                System.out.println("Free memory: " + Runtime.getRuntime().freeMemory() + " Bytes");
-                logger.fine("objectManager.getAllKernelObjectOids()");
-                KernelOID[] Oids = objectManager.getAllKernelObjectOids();
-                for (KernelOID oid : Oids) {
-                    logger.fine("oid:" + oid.toString());
-                }
-            }
-        }
-    }
-
-    public MemoryStatThread getMemoryStatThread() {
-        return new MemoryStatThread();
+    private KernelServerStat getKernelServerStat(ServerInfo srvInfo) {
+        return new KernelServerStat(srvInfo);
     }
 
     /** Send heartbeats to OMS. */
@@ -434,8 +415,11 @@ public class KernelServerImpl implements KernelServer {
             // Start heartbeat timer
             server.startHeartbeats(srvInfo);
 
-            // Start a thread that print memory stats
-            server.getMemoryStatThread().start();
+            // Initialize Metric client
+            server.initializeMetricClient();
+
+            // Start kernel server stat reporting
+            server.getKernelServerStat(srvInfo).start();
 
             // Log being used in examples gradle task "run", hence modify accordingly.
             logger.info(String.format("Kernel server ready at port(%s)!", ksArgs.kernelServerPort));
@@ -444,6 +428,17 @@ public class KernelServerImpl implements KernelServer {
                     "Failed to start kernel server: " + e.getMessage() + System.lineSeparator());
             printUsage(parser);
         }
+    }
+
+    private void initializeMetricClient() {
+        // TODO: Metric client creation needs metric server deployed and configured on OMS.
+        // OMS will expose RPC API to get System MicroService information which will
+        // be used by each kernel server to create Metric Client.
+        // If Metric Server is not configured on OMS, Kernel server will use MetricLoggerClient
+        // for Kernel server metric.
+        // Note: Configuration of Metric server will get handled in SystemMicroService
+        // deployment task.
+        GlobalKernelReferences.metricClient = new MetricLoggingClient();
     }
 
     private void startHeartbeats(final ServerInfo srvInfo)

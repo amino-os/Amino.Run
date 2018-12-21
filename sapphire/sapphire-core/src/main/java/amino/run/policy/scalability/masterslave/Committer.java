@@ -3,7 +3,7 @@ package amino.run.policy.scalability.masterslave;
 import static amino.run.policy.scalability.masterslave.MethodInvocationResponse.ReturnCode.FAILURE;
 import static amino.run.policy.scalability.masterslave.MethodInvocationResponse.ReturnCode.SUCCESS;
 
-import amino.run.common.AppObject;
+import amino.run.policy.DefaultPolicy;
 import amino.run.policy.scalability.LoadBalancedMasterSlaveBase;
 import amino.run.runtime.exception.AminoRunException;
 import amino.run.runtime.exception.AppExecutionException;
@@ -33,13 +33,17 @@ public class Committer implements Closeable {
      */
     private volatile long indexOfLargestCommittedEntry;
 
-    private final AppObject appObject;
+    // private final AppObject appObject;
     private final Configuration config;
     private ExecutorService executor;
+    private DefaultPolicy.DefaultServerPolicy policy;
 
     // TODO (Terry): remove indexOfLargestCommittedEntry from constructor
-    public Committer(AppObject appObject, long indexOfLargestCommittedEntry, Configuration config) {
-        this.appObject = appObject;
+    public Committer(
+            DefaultPolicy.DefaultServerPolicy policy,
+            long indexOfLargestCommittedEntry,
+            Configuration config) {
+        this.policy = policy;
         this.indexOfLargestCommittedEntry = indexOfLargestCommittedEntry;
         this.config = config;
     }
@@ -88,10 +92,10 @@ public class Committer implements Closeable {
                         new Callable<Object>() {
                             @Override
                             public Object call() throws Exception {
-                                synchronized (appObject) {
+                                synchronized (policy) {
                                     try {
                                         Object result =
-                                                appObject.invoke(
+                                                policy.onRPC(
                                                         request.getMethodName(),
                                                         request.getParams());
                                         logger.log(
@@ -158,10 +162,10 @@ public class Committer implements Closeable {
                             logger.log(Level.SEVERE, msg);
                             throw new IllegalStateException(msg);
                         } else {
-                            synchronized (appObject) {
+                            synchronized (policy) {
                                 try {
                                     Object result =
-                                            appObject.invoke(
+                                            policy.onRPC(
                                                     request.getMethodName(), request.getParams());
                                     markCommitted(entryIndex);
                                     logger.log(
@@ -193,8 +197,8 @@ public class Committer implements Closeable {
      * @param largestCommittedIndex
      */
     public void updateObject(Serializable object, long largestCommittedIndex) {
-        synchronized (appObject) {
-            appObject.setObject(object);
+        synchronized (policy) {
+            policy.getAppObject().setObject(object);
             markCommitted(largestCommittedIndex);
         }
     }
@@ -205,8 +209,8 @@ public class Committer implements Closeable {
      * @param server destination server
      */
     public void syncObject(LoadBalancedMasterSlaveBase.ServerPolicy server) {
-        synchronized (appObject) {
-            server.syncObject(appObject.getObject(), getIndexOfLargestCommittedEntry());
+        synchronized (policy) {
+            server.syncObject(policy.getAppObject().getObject(), getIndexOfLargestCommittedEntry());
         }
     }
 
@@ -270,7 +274,8 @@ public class Committer implements Closeable {
                 logger.log(
                         Level.FINE,
                         String.format(
-                                "failed to process request %s on %s: %s", request, appObject, ex),
+                                "failed to process request %s on %s: %s",
+                                request, policy.getAppObject(), ex),
                         ex);
                 response = new MethodInvocationResponse(FAILURE, ex);
             } catch (Exception e) {
@@ -285,7 +290,7 @@ public class Committer implements Closeable {
                         Level.SEVERE,
                         String.format(
                                 "the process of request %s on %s was interrupted: %s",
-                                request, appObject, ex),
+                                request, policy.getAppObject(), ex),
                         e);
                 response = new MethodInvocationResponse(FAILURE, ex);
             }

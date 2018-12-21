@@ -1,18 +1,32 @@
 package amino.run.policy;
 
+import amino.run.app.DMSpec;
 import amino.run.app.MicroServiceSpec;
 import amino.run.common.MicroServiceNotFoundException;
 import amino.run.common.MicroServiceReplicaNotFoundException;
 import amino.run.common.ReplicaID;
 import amino.run.kernel.common.KernelObjectStub;
+import amino.run.kernel.common.metric.Metric;
+import amino.run.kernel.common.metric.metricHandler.MetricHandler;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class DefaultPolicy extends Policy {
 
     public static class DefaultServerPolicy extends ServerPolicy {
+        protected MetricHandler metricHandler;
+
+        @Override
+        public Object onRPC(String method, ArrayList<Object> params) throws Exception {
+            if (metricHandler != null) {
+                return metricHandler.onRPC(method, params);
+            }
+            return super.onRPC(method, params);
+        }
+
         @Override
         public GroupPolicy getGroup() {
             return group;
@@ -24,8 +38,34 @@ public class DefaultPolicy extends Policy {
         @Override
         public void onCreate(GroupPolicy group, MicroServiceSpec spec) {
             super.onCreate(group, spec);
+            if (spec != null && isEntryPolicy(spec)) {
+                metricHandler = MetricHandler.create(this, spec);
+            }
         }
 
+        /**
+         * Return DM specific metric.
+         *
+         * <p>Each DM maintaining Metric override this method must also call <code>super.getDMMetric
+         * </code> and append metric returned metric
+         *
+         * @return list of Metric
+         */
+        public ArrayList<Metric> getDMMetrics() {
+            if (appObject.getObject() instanceof DefaultServerPolicy) {
+                return ((DefaultServerPolicy) appObject.getObject()).getDMMetrics();
+            }
+            return new ArrayList<Metric>();
+        }
+
+        private boolean isEntryPolicy(MicroServiceSpec spec) {
+            List<DMSpec> dmList = spec.getDmList();
+            DMSpec lastDM = dmList.get(dmList.size() - 1);
+            String dmName = lastDM.getName();
+            return this.getClass().getName().contains(dmName);
+        }
+
+        @Override
         public void onDestroy() {
             super.onDestroy();
         }

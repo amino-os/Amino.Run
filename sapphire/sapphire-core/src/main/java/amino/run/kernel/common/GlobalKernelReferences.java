@@ -1,5 +1,6 @@
 package amino.run.kernel.common;
 
+import amino.run.kernel.common.metric.MetricClient;
 import amino.run.kernel.server.KernelServerImpl;
 
 /**
@@ -14,4 +15,5 @@ import amino.run.kernel.server.KernelServerImpl;
  */
 public class GlobalKernelReferences {
     public static KernelServerImpl nodeServer;
+    public static MetricClient metricClient = null;
 }

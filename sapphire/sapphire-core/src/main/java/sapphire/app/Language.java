@@ -1,8 +1,6 @@
 package sapphire.app;
 
-/**
- * Programming languages supported by Sapphire.
- */
+/** Programming languages supported by Sapphire. */
 public enum Language {
     java("java", true),
     ruby("ruby", true),
@@ -18,33 +16,26 @@ public enum Language {
         isSupported = support;
     }
 
-    /**
-     * Language supports JVM Reflection.
-     **/
+    /** Language supports JVM Reflection. */
     public boolean supportJavaReflect() {
         return this == Language.java;
     }
 
     /**
-     * Language supports GraalVM Reflection.
-     * Objects from this language can be cast to Value and
+     * Language supports GraalVM Reflection. Objects from this language can be cast to Value and
      * fields and methods can be queried there.
-     **/
+     */
     public boolean supportGraalVMReflect() {
-        //TODO this isn't futureproof
+        // TODO this isn't futureproof
         return this != Language.java;
     }
 
-    /**
-     * Language ID for interop with GraalVM.
-     **/
+    /** Language ID for interop with GraalVM. */
     public String graalID() {
         return graalID;
     }
 
-    /**
-     * Language is supported by the Sapphire Runtime.
-     **/
+    /** Language is supported by the Sapphire Runtime. */
     public boolean isSupported() {
         return isSupported;
     }

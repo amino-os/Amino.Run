@@ -15,7 +15,7 @@ import sapphire.common.AppObjectStub;
 import sapphire.graal.io.GraalContext;
 
 /**
- * Host Sapphire Object Specification.
+ * GraalVM Sapphire Object Specification.
  *
  * <p>Implementation of SapphireSpec for objects from languages managed by GraalVM
  */

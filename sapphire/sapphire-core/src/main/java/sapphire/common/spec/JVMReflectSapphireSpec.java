@@ -11,7 +11,7 @@ import sapphire.common.AppObjectStub;
 import sapphire.compiler.GlobalStubConstants;
 
 /**
- * Host Sapphire Object Specification.
+ * JVM Reflection compatible Sapphire Object Specification.
  *
  * <p>Implementation of SapphireSpec for objects in languages that support java reflections.
  */
@@ -27,7 +27,7 @@ class JVMReflectSapphireSpec implements SapphireSpec {
                 || s.getSourceFileLocation() != null
                 || s.getConstructorName() != null) {
             throw new IllegalArgumentException(
-                    "Too much data provided for host language sapphire object specification. Please remove name, soureceFileLocation and constructorName.");
+                    "Too much data provided for jvm language sapphire object specification. Please remove name, soureceFileLocation and constructorName.");
         }
 
         try {
@@ -93,9 +93,5 @@ class JVMReflectSapphireSpec implements SapphireSpec {
 
         stub.$__initialize(false);
         return stub;
-    }
-
-    public boolean isHostType() {
-        return true;
     }
 }

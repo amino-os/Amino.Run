@@ -69,10 +69,12 @@ public interface SapphireSpec extends Serializable {
      * @throws IOException if builder references source files or DMs that do not exist.
      */
     public static SapphireSpec fromBuilder(SapphireObjectSpec s) throws IOException {
-        if (s.getLang().isHostLanguage()) {
+        if (s.getLang().supportJavaReflect()) {
             return new JVMReflectSapphireSpec(s);
-        } else {
+        } else if (s.getLang().supportGraalVMReflect()) {
             return new GraalVMSapphireSpec(s);
+        } else {
+            throw new IllegalArgumentException("language " + s.getLang() + " not supported");
         }
     }
 

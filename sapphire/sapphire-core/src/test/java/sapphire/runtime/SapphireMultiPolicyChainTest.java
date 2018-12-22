@@ -197,8 +197,6 @@ public class SapphireMultiPolicyChainTest extends BaseTest {
 
     @Test
     public void testCreatePolicy() throws Exception {
-        SapphirePolicy.SapphireServerPolicy previousServerPolicy = null;
-        KernelObjectStub previousServerPolicyStub = null;
         List<SapphirePolicyContainer> policyNameChain = new ArrayList<SapphirePolicyContainer>();
         List<SapphirePolicyContainer> processedPolicies = new ArrayList<SapphirePolicyContainer>();
 
@@ -208,23 +206,13 @@ public class SapphireMultiPolicyChainTest extends BaseTest {
         policyNameChain.add(new SapphirePolicyContainer("sapphire.policy.dht.DHTPolicy", null));
         List<SapphirePolicyContainer> policyList =
                 Sapphire.createPolicy(
-                        sapphireObjId,
-                        spec,
-                        configMap,
-                        policyNameChain,
-                        processedPolicies,
-                        previousServerPolicy,
-                        previousServerPolicyStub,
-                        "",
-                        null);
+                        sapphireObjId, spec, policyNameChain, processedPolicies, "", null);
 
         assertEquals(1, policyList.size());
     }
 
     @Test
     public void testCreatePolicyTwoPolicies() throws Exception {
-        SapphirePolicy.SapphireServerPolicy previousServerPolicy = null;
-        KernelObjectStub previousServerPolicyStub = null;
         List<SapphirePolicyContainer> policyNameChain = new ArrayList<SapphirePolicyContainer>();
         List<SapphirePolicyContainer> processedPolicies = new ArrayList<SapphirePolicyContainer>();
 
@@ -237,15 +225,7 @@ public class SapphireMultiPolicyChainTest extends BaseTest {
 
         List<SapphirePolicyContainer> policyList =
                 Sapphire.createPolicy(
-                        sapphireObjId,
-                        spec,
-                        configMap,
-                        policyNameChain,
-                        processedPolicies,
-                        previousServerPolicy,
-                        previousServerPolicyStub,
-                        "",
-                        null);
+                        sapphireObjId, spec, policyNameChain, processedPolicies, "", null);
 
         assertEquals(2, policyList.size());
     }

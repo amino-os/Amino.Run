@@ -54,10 +54,6 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 
         static Logger logger = Logger.getLogger(SapphireServerPolicyLibrary.class.getName());
 
-        // ServerPolicy that comes after the current policy in the server side chain - this order is
-        // reverse in the client side.
-        protected SapphireServerPolicy nextServerPolicy;
-
         // ServerPolicy that precedes the current policy in the server side chain - this order is
         // reverse in the client side.
         protected SapphireServerPolicy previousServerPolicy;
@@ -96,14 +92,6 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 
         public SapphireServerPolicy getPreviousServerPolicy() {
             return this.previousServerPolicy;
-        }
-
-        public SapphireServerPolicy getNextServerPolicy() {
-            return this.nextServerPolicy;
-        }
-
-        public void setNextServerPolicy(SapphireServerPolicy sapphireServerPolicy) {
-            this.nextServerPolicy = sapphireServerPolicy;
         }
 
         public void setPreviousServerPolicy(SapphireServerPolicy sapphireServerPolicy) {
@@ -151,11 +139,8 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
                 Sapphire.createPolicy(
                         this.getGroup().sapphireObjId,
                         spec,
-                        configMap,
                         processedPolicies,
                         processedPoliciesReplica,
-                        null,
-                        null,
                         region,
                         null);
 
@@ -175,11 +160,8 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
                         Sapphire.createPolicy(
                                 this.getGroup().sapphireObjId,
                                 spec,
-                                configMap,
                                 this.nextPolicies,
                                 processedPoliciesReplica,
-                                serverPolicy,
-                                serverPolicyStub,
                                 region,
                                 null);
 
@@ -296,15 +278,7 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
                 throw new Error(msg, e);
             }
 
-            try {
-                serverPolicy.setAlreadyPinned(true);
-            } catch (Exception e) {
-                String msg =
-                        "Exception occurred while checking if already pinned at "
-                                + serverPolicyStub;
-                logger.severe(msg);
-                throw new Error(msg, e);
-            }
+            serverPolicy.setAlreadyPinned(true);
 
             logger.info(
                     "(Complete) Pinning Sapphire object "

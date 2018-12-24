@@ -477,10 +477,6 @@ public class KernelServerImpl implements KernelServer {
         if ((data != null) && data.startsWith(KernelServerImpl.LABEL_OPT)) {
             String actualdata = data.substring(KernelServerImpl.LABEL_OPT.length());
             String[] maps = actualdata.split(KernelServerImpl.LABEL_SEPARATOR);
-
-            if (maps.length < 1) {
-                return labels;
-            }
             for (int i = 0; i < maps.length; i++) {
                 String[] kv = maps[i].split(KernelServerImpl.OPT_SEPARATOR);
                 // not allowed empty values

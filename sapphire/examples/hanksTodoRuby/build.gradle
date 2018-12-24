@@ -56,5 +56,10 @@ runapp {
     args = [project.property('embeddedKernelServerIp'), project.property('kernelServerPort'), project.property('omsIp'), project.property('omsPort')]
 }
 
+cleanStub{
+    inputDir=file(project.projectDir.toString() + '/src/main/ruby/sapphire/appexamples/hankstodo/')
+    outputDir=file(project.projectDir.toString() + '/src/main/java/sapphire/appexamples/hankstodo/stubs/')
+}
+genStubs.dependsOn cleanStub
 compileJava.dependsOn genStubs
 runapp.dependsOn compileStubs

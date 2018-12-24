@@ -21,6 +21,20 @@ buildscript {
         classpath 'com.android.tools.build:gradle:2.3.3'
     }
 }
+class CleanTask extends DefaultTask{
+    @InputDirectory
+    def File inputDir
+    def File compilerDir
+    @OutputDirectory
+    def File outputDir
+    @TaskAction
+    void execute(IncrementalTaskInputs inputs) {
+        println inputDir
+        println outputDir
+        if (inputs.incremental)
+            project.delete(outputDir.listFiles())
+    }
+}
 
 task wrapper(type: Wrapper) {
     gradleVersion = '4.1'
@@ -113,5 +127,18 @@ subprojects {
         destinationDir = sourceSets.main.output.classesDir
         options.incremental = true
         inputs.dir genStubs.outputs
+    }
+
+    task cleanStub(type: CleanTask) {
+        compilerDir=file(project.projectDir.toString() + '/src/main/java/sapphire/compiler/')
+    }
+    task cleanGraalStub(type: CleanTask) {
+        compilerDir=file(project.projectDir.toString() + '/src/main/java/sapphire/compiler/')
+    }
+    task cleanIntegTestStub(type: CleanTask) {
+        compilerDir=file(project.projectDir.toString() + '/src/main/java/sapphire/compiler/')
+    }
+    task cleanUnitTestStub(type: CleanTask) {
+        compilerDir=file(project.projectDir.toString() + '/src/main/java/sapphire/compiler/')
     }
 }

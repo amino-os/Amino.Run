@@ -19,5 +19,12 @@ compileStubs {
 runapp {
     main = "amino.run.appexamples.hankstodo.HanksTodoMain"
 }
+
+cleanStub{
+    inputDir=file(project.projectDir.toString() + '/src/main/java/sapphire/appexamples/hankstodo/')
+    outputDir=file(project.projectDir.toString() + '/src/main/java/sapphire/appexamples/hankstodo/stubs/')
+}
+compileJava.dependsOn cleanStub
+
 jar.dependsOn compileStubs
 

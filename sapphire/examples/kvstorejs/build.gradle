@@ -43,6 +43,10 @@ runapp {
     environment  YAML_FILE:  "KeyValueStore.yaml"
     main = 'amino.run.appdemo.KeyValueStoreClient'
 }
-
+cleanStub{
+    inputDir=file(project.projectDir.toString() + '/src/main/js/sapphire/appdemo/')
+    outputDir=file(project.projectDir.toString() + '/src/main/java/sapphire/appdemo/stubs/')
+}
+genStubs.dependsOn cleanStub
 compileJava.dependsOn genStubs
 runapp.dependsOn compileStubs

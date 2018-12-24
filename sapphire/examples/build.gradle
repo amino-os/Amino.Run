@@ -1,5 +1,7 @@
 // All default build scripts common to all examples go here.
 // These defaults can be overridden in build.gradle files of individual examples where necessary.
+
+
 subprojects {
     dependencies {
         compile project(':sapphire-core')
@@ -53,6 +55,9 @@ subprojects {
         jvmArgs '-Djava.util.logging.config.file=' + project.projectDir + '/../../logging.properties'
         args project.property('omsIp'), project.property('omsPort'), project.property('embeddedKernelServerIp'), project.property('kernelServerPort')
         inputs.dir compileStubs
+    }
+    cleanStub{
+        compilerDir=file("$projectDir/../../sapphire-core".toString() + '/src/main/java/sapphire/compiler')
     }
 }
 

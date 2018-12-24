@@ -20,4 +20,9 @@ runapp {
     main = "amino.run.appexamples.minnietwitter.MinnieTwitterMain"
 }
 
+cleanStub{
+    inputDir=file(project.projectDir.toString() + '/src/main/java/sapphire/appexamples/minnietwitter/')
+    outputDir=file(project.projectDir.toString() + '/src/main/java/sapphire/appexamples/minnietwitter/stubs/')
+}
+compileJava.dependsOn cleanStub
 jar.dependsOn compileStubs

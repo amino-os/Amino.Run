@@ -23,3 +23,9 @@ runapp {
     // This one doesn't take kernel server address params
     args project.property('omsIp'), project.property('omsPort')
 }
+
+cleanStub {
+    inputDir=file(project.projectDir.toString() + '/src/main/java/sapphire/demo/')
+    outputDir=file(project.projectDir.toString() + '/src/main/java/sapphire/demo/stubs/')
+}
+compileJava.dependsOn cleanStub

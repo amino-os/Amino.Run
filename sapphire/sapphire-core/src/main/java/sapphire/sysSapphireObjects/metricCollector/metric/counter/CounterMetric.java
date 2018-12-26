@@ -5,7 +5,7 @@ import sapphire.sysSapphireObjects.metricCollector.Metric;
 
 public class CounterMetric implements Metric {
     private String metricName;
-    private int count;
+    private long count;
     private Labels labels;
 
     @Override
@@ -28,7 +28,11 @@ public class CounterMetric implements Metric {
         this.count = count;
     }
 
-    public int getCount() {
+    public void reset() {
+        count = 0;
+    }
+
+    public long getCount() {
         return count;
     }
 
@@ -36,7 +40,7 @@ public class CounterMetric implements Metric {
         count++;
     }
 
-    public Labels getlabels() {
+    public Labels getLabels() {
         return labels;
     }
 

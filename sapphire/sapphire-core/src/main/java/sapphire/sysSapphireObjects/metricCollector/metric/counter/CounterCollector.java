@@ -27,9 +27,9 @@ public class CounterCollector implements Collector {
 
         // TODO check for mandatory labels
 
-        CounterMetric serverMetric = collector.get(clientMetric.getlabels());
+        CounterMetric serverMetric = collector.get(clientMetric.getLabels());
         if (serverMetric == null) {
-            collector.put(clientMetric.getlabels(), clientMetric);
+            collector.put(clientMetric.getLabels(), clientMetric);
         }
 
         serverMetric.merge(clientMetric);

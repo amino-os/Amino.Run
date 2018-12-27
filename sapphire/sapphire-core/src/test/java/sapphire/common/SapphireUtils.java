@@ -69,11 +69,8 @@ public class SapphireUtils {
     public static KernelServerImpl startSpiedKernelServer(
             OMSServerImpl spiedOms, int port, String region) throws Exception {
         KernelServerImpl ks =
-                new KernelServerImpl(
-                        new InetSocketAddress(LOOP_BACK_IP_ADDR, port),
-                        new InetSocketAddress(LOOP_BACK_IP_ADDR, omsPort));
+                new KernelServerImpl(new InetSocketAddress(LOOP_BACK_IP_ADDR, port), spiedOms);
         ks.setRegion(region);
-        KernelServerImpl.oms = spiedOms;
 
         /* If needed, all the fields inside KernelServer can be spied as shown below in commented code */
         /*KernelClient kernelClient = (KernelClient) extractFieldValueOnInstance(ks, "client");

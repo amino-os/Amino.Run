@@ -1,14 +1,13 @@
 package sapphire.policy.scalability;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 import static sapphire.common.SapphireUtils.deleteSapphireObject;
 import static sapphire.common.UtilsTest.extractFieldValueOnInstance;
 import static sapphire.common.UtilsTest.setFieldValueOnInstance;
 
-import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -25,74 +24,12 @@ import org.junit.runner.RunWith;
 import org.powermock.modules.junit4.PowerMockRunner;
 import sapphire.app.*;
 import sapphire.common.BaseTest;
-import sapphire.common.SapphireObjectID;
-import sapphire.kernel.common.KernelOID;
-import sapphire.kernel.common.KernelObjectStub;
-import sapphire.policy.DefaultSapphirePolicy;
-import sapphire.policy.SapphirePolicy;
-import sapphire.sampleSO.SO;
 import sapphire.sampleSO.stubs.SO_Stub;
 
 /** Created by Vishwajeet on 2/4/18. */
 @RunWith(PowerMockRunner.class)
 public class LoadBalancedFrontendPolicyTest extends BaseTest {
     int exceptionExpected = 0;
-
-    public static class LoadBalanceSO extends SO {}
-
-    public static class Group_Stub extends LoadBalancedFrontendPolicy.GroupPolicy
-            implements KernelObjectStub {
-        sapphire.kernel.common.KernelOID $__oid = null;
-        java.net.InetSocketAddress $__hostname = null;
-        SapphirePolicy.SapphireClientPolicy $__nextClientPolicy = null;
-
-        public Group_Stub(sapphire.kernel.common.KernelOID oid) {
-            this.$__oid = oid;
-        }
-
-        public sapphire.kernel.common.KernelOID $__getKernelOID() {
-            return this.$__oid;
-        }
-
-        public java.net.InetSocketAddress $__getHostname() {
-            return this.$__hostname;
-        }
-
-        public void $__updateHostname(java.net.InetSocketAddress hostname) {
-            this.$__hostname = hostname;
-        }
-
-        public void $__setNextClientPolicy(SapphirePolicy.SapphireClientPolicy clientPolicy) {
-            $__nextClientPolicy = clientPolicy;
-        }
-    }
-
-    public static class Server_Stub extends LoadBalancedFrontendPolicy.ServerPolicy
-            implements KernelObjectStub {
-        KernelOID $__oid = null;
-        InetSocketAddress $__hostname = null;
-        SapphirePolicy.SapphireClientPolicy $__nextClientPolicy = null;
-
-        public Server_Stub(KernelOID oid) {
-            this.$__oid = oid;
-        }
-
-        public KernelOID $__getKernelOID() {
-            return $__oid;
-        }
-
-        public InetSocketAddress $__getHostname() {
-            return $__hostname;
-        }
-
-        public void $__updateHostname(InetSocketAddress hostname) {
-            this.$__hostname = hostname;
-        }
-
-        public void $__setNextClientPolicy(SapphirePolicy.SapphireClientPolicy clientPolicy) {
-            $__nextClientPolicy = clientPolicy;
-        }
-    }
 
     @Rule public ExpectedException thrown = ExpectedException.none();
 
@@ -114,23 +51,22 @@ public class LoadBalancedFrontendPolicyTest extends BaseTest {
                                         .create())
                         .create();
         super.setUp(
+                2,
                 spec,
                 new HashMap<String, Class>() {
                     {
-                        put("LoadBalancedFrontendPolicy", Group_Stub.class);
+                        put(
+                                "LoadBalancedFrontendPolicy",
+                                LoadBalancedFrontendPolicy.GroupPolicy.class);
                     }
                 },
                 new HashMap<String, Class>() {
                     {
-                        put("LoadBalancedFrontendPolicy", Server_Stub.class);
+                        put(
+                                "LoadBalancedFrontendPolicy",
+                                LoadBalancedFrontendPolicy.ServerPolicy.class);
                     }
                 });
-
-        SapphireObjectID sapphireObjId = sapphireObjServer.createSapphireObject(spec.toString());
-        soStub = (SO_Stub) sapphireObjServer.acquireSapphireObjectStub(sapphireObjId);
-        client =
-                (DefaultSapphirePolicy.DefaultClientPolicy)
-                        extractFieldValueOnInstance(soStub, "$__client");
     }
 
     /**
@@ -141,13 +77,13 @@ public class LoadBalancedFrontendPolicyTest extends BaseTest {
      */
     @Test
     public void testRandomLoadBalance() throws Exception {
-        String methodName = "public java.lang.Integer sapphire.sampleSO.SO.getIDelayed()";
+        String setMethodName = "public void sapphire.sampleSO.SO.setI(java.lang.Integer)";
         ArrayList<Object> params = new ArrayList<Object>();
-
-        this.client.onRPC(methodName, params);
-        this.client.onRPC(methodName, params);
-        verify((this.server1), times(1)).onRPC(methodName, params);
-        verify((this.server2), times(1)).onRPC(methodName, params);
+        params.add(new Integer(2));
+        this.client.onRPC(setMethodName, params);
+        this.client.onRPC(setMethodName, params);
+        assertEquals(((SO_Stub) server1.sapphire_getAppObject().getObject()).getI().intValue(), 2);
+        assertEquals(((SO_Stub) server2.sapphire_getAppObject().getObject()).getI().intValue(), 2);
     }
 
     /**
@@ -204,7 +140,8 @@ public class LoadBalancedFrontendPolicyTest extends BaseTest {
         // Expecting error message- Configured replicas count: 5, created replica count : 2
         thrown.expectMessage("Configured replicas count: 5, created replica count : 2");
         setFieldValueOnInstance(group1, "replicaCount", 5);
-        group1.onCreate("", this.server1, new SapphireObjectSpec());
+        group1.onCreate(
+                "", mock(LoadBalancedFrontendPolicy.ServerPolicy.class), new SapphireObjectSpec());
     }
 
     @After

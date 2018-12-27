@@ -174,7 +174,7 @@ public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
         @Override
         public void onCreate(String region, SapphireServerPolicy server, SapphireObjectSpec spec)
                 throws RemoteException {
-
+            super.onCreate(region, server, spec);
             Config config = getConfig(spec);
             if (config != null) {
                 this.replicaCount = config.getReplicaCount();

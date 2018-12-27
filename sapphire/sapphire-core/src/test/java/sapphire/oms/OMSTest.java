@@ -3,7 +3,6 @@ package sapphire.oms;
 import static org.junit.Assert.assertEquals;
 import static sapphire.common.SapphireUtils.deleteSapphireObject;
 import static sapphire.common.SapphireUtils.getOmsSapphireInstance;
-import static sapphire.common.UtilsTest.extractFieldValueOnInstance;
 
 import java.net.InetSocketAddress;
 import java.rmi.registry.LocateRegistry;
@@ -15,19 +14,13 @@ import org.junit.runner.RunWith;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import sapphire.app.Language;
-import sapphire.app.SapphireObject;
 import sapphire.app.SapphireObjectSpec;
-import sapphire.common.AppObject;
 import sapphire.common.BaseTest;
 import sapphire.common.SapphireObjectID;
 import sapphire.common.SapphireUtils;
-import sapphire.kernel.common.GlobalKernelReferences;
-import sapphire.kernel.common.KernelOID;
 import sapphire.kernel.common.KernelObjectFactory;
-import sapphire.kernel.common.KernelObjectStub;
 import sapphire.kernel.server.KernelServerImpl;
 import sapphire.policy.DefaultSapphirePolicy;
-import sapphire.policy.SapphirePolicy;
 import sapphire.runtime.Sapphire;
 import sapphire.sampleSO.SO;
 import sapphire.sampleSO.stubs.SO_Stub;
@@ -44,74 +37,8 @@ import sapphire.sampleSO.stubs.SO_Stub;
     SapphireUtils.class
 })
 public class OMSTest extends BaseTest {
+    SO so;
     @Rule public ExpectedException thrown = ExpectedException.none();
-
-    public static class DefaultSO extends SO implements SapphireObject {}
-
-    public static class Group_Stub extends DefaultSapphirePolicy.DefaultGroupPolicy
-            implements KernelObjectStub {
-        sapphire.kernel.common.KernelOID $__oid = null;
-        java.net.InetSocketAddress $__hostname = null;
-        AppObject appObject = null;
-        SapphirePolicy.SapphireClientPolicy $__nextClientPolicy = null;
-
-        public Group_Stub(sapphire.kernel.common.KernelOID oid) {
-            this.$__oid = oid;
-        }
-
-        public sapphire.kernel.common.KernelOID $__getKernelOID() {
-            return this.$__oid;
-        }
-
-        public java.net.InetSocketAddress $__getHostname() {
-            return this.$__hostname;
-        }
-
-        public void $__updateHostname(java.net.InetSocketAddress hostname) {
-            this.$__hostname = hostname;
-        }
-
-        public void $__setNextClientPolicy(SapphirePolicy.SapphireClientPolicy clientPolicy) {
-            $__nextClientPolicy = clientPolicy;
-        }
-
-        public AppObject $__getAppObject() {
-            return this.appObject;
-        }
-    }
-
-    public static class Server_Stub extends DefaultSapphirePolicy.DefaultServerPolicy
-            implements KernelObjectStub {
-        KernelOID $__oid = null;
-        InetSocketAddress $__hostname = null;
-        AppObject appObject = null;
-        SapphirePolicy.SapphireClientPolicy $__nextClientPolicy = null;
-
-        public Server_Stub(KernelOID oid) {
-            this.oid = oid;
-            this.$__oid = oid;
-        }
-
-        public KernelOID $__getKernelOID() {
-            return $__oid;
-        }
-
-        public InetSocketAddress $__getHostname() {
-            return $__hostname;
-        }
-
-        public void $__updateHostname(InetSocketAddress hostname) {
-            this.$__hostname = hostname;
-        }
-
-        public void $__setNextClientPolicy(SapphirePolicy.SapphireClientPolicy clientPolicy) {
-            $__nextClientPolicy = clientPolicy;
-        }
-
-        public AppObject $__getAppObject() {
-            return this.appObject;
-        }
-    }
 
     @Before
     public void setUp() throws Exception {
@@ -121,23 +48,22 @@ public class OMSTest extends BaseTest {
                         .setJavaClassName("sapphire.sampleSO.SO")
                         .create();
         super.setUp(
+                1,
                 spec,
                 new HashMap<String, Class>() {
                     {
-                        put("DefaultSapphirePolicy", Group_Stub.class);
+                        put(
+                                "DefaultSapphirePolicy",
+                                DefaultSapphirePolicy.DefaultGroupPolicy.class);
                     }
                 },
                 new HashMap<String, Class>() {
                     {
-                        put("DefaultSapphirePolicy", Server_Stub.class);
+                        put(
+                                "DefaultSapphirePolicy",
+                                DefaultSapphirePolicy.DefaultServerPolicy.class);
                     }
                 });
-        SapphireObjectID sapphireObjId = sapphireObjServer.createSapphireObject(spec.toString());
-
-        soStub = (SO_Stub) sapphireObjServer.acquireSapphireObjectStub(sapphireObjId);
-        client =
-                (DefaultSapphirePolicy.DefaultClientPolicy)
-                        extractFieldValueOnInstance(soStub, "$__client");
         so = ((SO) (server1.sapphire_getAppObject().getObject()));
     }
 
@@ -181,8 +107,8 @@ public class OMSTest extends BaseTest {
     public void getServerTest() throws Exception {
         List<InetSocketAddress> servers = spiedOms.getServers(null);
 
-        /* Reference count must become 3 (Since three kernel server are added )  */
-        assertEquals(new Integer(3), new Integer(servers.size()));
+        /* Reference count must become 1 (Since 1 kernel server is added )  */
+        assertEquals(new Integer(kernelServerCount), new Integer(servers.size()));
     }
 
     @Test
@@ -193,7 +119,6 @@ public class OMSTest extends BaseTest {
 
     @After
     public void tearDown() throws Exception {
-        GlobalKernelReferences.nodeServer.oms = spiedOms;
         deleteSapphireObject(spiedOms, group.getSapphireObjId());
     }
 }

@@ -108,6 +108,7 @@ public class Server
             }
             switch (newState) { // Enter the new state.
                 case NONE: // do nothing
+                    vState.setState(State.NONE, vState.getState());
                     break;
                 case LEADER:
                     leader.start();
@@ -346,7 +347,7 @@ public class Server
         if (currentTerm < remoteTerm) {
             pState.setCurrentTerm(remoteTerm, currentTerm);
             State currentState = vState.getState();
-            if (currentState != vState.getState().FOLLOWER) {
+            if (currentState != State.FOLLOWER) {
                 become(State.FOLLOWER, currentState);
             }
         }
@@ -354,7 +355,7 @@ public class Server
 
     public Object applyToStateMachine(Object operation) throws java.lang.Exception {
         logger.fine(String.format("%s: applyToStateMachine(%s)", pState.myServerID, operation));
-        if (vState.getState() == Server.State.LEADER) {
+        if (vState.getState() == State.LEADER) {
             return leader.applyToStateMachine(operation);
         } else {
             throw new LeaderException(
@@ -417,8 +418,7 @@ public class Server
              */
             logger.info(pState.myServerID + ": Start being a leader.");
             vState.setState(
-                    Server.State.LEADER,
-                    vState.getState()); // It doesn't matter what we were before.
+                    State.LEADER, vState.getState()); // It doesn't matter what we were before.
             /** Reinitialize volatile leader state */
             nextIndex.clear();
             matchIndex.clear();
@@ -516,6 +516,10 @@ public class Server
                     logger.severe(e.toString());
                     this.nextIndex.put(
                             otherServerID, otherServerNextIndex - 1); // Decrement and try again.
+                } catch (java.lang.Exception e) {
+                    /* Other server could have failed */
+                    logger.warning(e.toString());
+                    return;
                 }
             }
             if (vState.getState() == State.LEADER) {
@@ -913,6 +917,16 @@ public class Server
                 voteGranted = false;
                 logger.info("Leader election vote request denied by server: " + e.toString());
                 respondToRemoteTerm(e.currentTerm);
+            } catch (java.lang.Exception e) {
+                voteGranted = false;
+                /* Following might have happened:
+                1. It could have happened that candidate has received majority of votes and become leader without
+                waiting for the rest of the votes as they are not useful anymore. voteRequestThreadPool is shutdown
+                upon candidate.stop(). Stops active tasks and interrupts the threads.
+                2. Remote server could have failed.
+                */
+                logger.info(
+                        String.format("Vote request to %s is not considered as useful", serverID));
             }
             if (voteGranted) {
                 logger.info("Vote received from server " + serverID);

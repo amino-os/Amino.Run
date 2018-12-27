@@ -5,7 +5,6 @@ import static org.junit.Assert.assertNotEquals;
 import static sapphire.common.SapphireUtils.deleteSapphireObject;
 import static sapphire.policy.SapphirePolicyUpcalls.SapphirePolicyConfig;
 
-import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -18,8 +17,6 @@ import sapphire.app.DMSpec;
 import sapphire.app.Language;
 import sapphire.app.SapphireObjectSpec;
 import sapphire.common.*;
-import sapphire.kernel.common.KernelOID;
-import sapphire.kernel.common.KernelObjectStub;
 import sapphire.policy.*;
 import sapphire.policy.dht.DHTPolicy;
 import sapphire.sampleSO.SO;
@@ -29,136 +26,9 @@ public class SapphireMultiPolicyChainTest extends BaseTest {
 
     @Rule public ExpectedException thrown = ExpectedException.none();
 
-    public static class DefaultSO extends SO {}
-
     private SapphireObjectSpec spec;
     private Map<String, Map<String, SapphirePolicyConfig>> configMaps;
     private Map<String, SapphirePolicyConfig> configMap;
-
-    public static class DefaultGroup_Stub extends DefaultSapphirePolicy.DefaultGroupPolicy
-            implements KernelObjectStub {
-        sapphire.kernel.common.KernelOID $__oid = null;
-        java.net.InetSocketAddress $__hostname = null;
-        AppObject appObject = null;
-        SapphirePolicy.SapphireClientPolicy $__nextClientPolicy = null;
-
-        public DefaultGroup_Stub(sapphire.kernel.common.KernelOID oid) {
-            this.$__oid = oid;
-        }
-
-        public sapphire.kernel.common.KernelOID $__getKernelOID() {
-            return this.$__oid;
-        }
-
-        public java.net.InetSocketAddress $__getHostname() {
-            return this.$__hostname;
-        }
-
-        public void $__updateHostname(java.net.InetSocketAddress hostname) {
-            this.$__hostname = hostname;
-        }
-
-        public void $__setNextClientPolicy(SapphirePolicy.SapphireClientPolicy clientPolicy) {
-            $__nextClientPolicy = clientPolicy;
-        }
-    }
-
-    public static class DefaultServer_Stub extends DefaultSapphirePolicy.DefaultServerPolicy
-            implements KernelObjectStub {
-        KernelOID $__oid = null;
-        InetSocketAddress $__hostname = null;
-        AppObject appObject = null;
-        SapphirePolicy.SapphireClientPolicy $__nextClientPolicy = null;
-
-        public DefaultServer_Stub(KernelOID oid) {
-            this.oid = oid;
-            this.$__oid = oid;
-        }
-
-        public KernelOID $__getKernelOID() {
-            return $__oid;
-        }
-
-        public InetSocketAddress $__getHostname() {
-            return $__hostname;
-        }
-
-        public void $__updateHostname(InetSocketAddress hostname) {
-            this.$__hostname = hostname;
-        }
-
-        public void $__setNextClientPolicy(SapphirePolicy.SapphireClientPolicy clientPolicy) {
-            $__nextClientPolicy = clientPolicy;
-        }
-    }
-
-    public static class DHTGroup_Stub extends DHTPolicy.DHTGroupPolicy implements KernelObjectStub {
-        sapphire.kernel.common.KernelOID $__oid = null;
-        java.net.InetSocketAddress $__hostname = null;
-        AppObject appObject = null;
-        SapphirePolicy.SapphireClientPolicy $__nextClientPolicy = null;
-
-        public DHTGroup_Stub(sapphire.kernel.common.KernelOID oid) {
-            this.$__oid = oid;
-        }
-
-        public sapphire.kernel.common.KernelOID $__getKernelOID() {
-            return this.$__oid;
-        }
-
-        public java.net.InetSocketAddress $__getHostname() {
-            return this.$__hostname;
-        }
-
-        public void $__updateHostname(java.net.InetSocketAddress hostname) {
-            this.$__hostname = hostname;
-        }
-
-        public void $__setNextClientPolicy(SapphirePolicy.SapphireClientPolicy clientPolicy) {
-            $__nextClientPolicy = clientPolicy;
-        }
-    }
-
-    public static class DHTServer_Stub extends DHTPolicy.DHTServerPolicy
-            implements KernelObjectStub {
-        KernelOID $__oid = null;
-        InetSocketAddress $__hostname = null;
-        AppObject appObject = null;
-        SapphirePolicy.SapphireClientPolicy $__nextClientPolicy = null;
-
-        public DHTServer_Stub(KernelOID oid) {
-            this.oid = oid;
-            this.$__oid = oid;
-        }
-
-        public KernelOID $__getKernelOID() {
-            return $__oid;
-        }
-
-        public InetSocketAddress $__getHostname() {
-            return $__hostname;
-        }
-
-        public void $__updateHostname(InetSocketAddress hostname) {
-            this.$__hostname = hostname;
-        }
-
-        public void $__setNextClientPolicy(SapphirePolicy.SapphireClientPolicy clientPolicy) {
-            $__nextClientPolicy = clientPolicy;
-        }
-
-        public void sapphire_pin(
-                SapphirePolicy.SapphireServerPolicy sapphireServerPolicy, String region) {
-            return;
-        }
-
-        /* This function is added here just to generate the stub for this function in all Policies server policy */
-        public void sapphire_pin_to_server(
-                SapphirePolicy.SapphireServerPolicy sapphireServerPolicy,
-                InetSocketAddress server) {
-            return;
-        }
-    }
 
     @Before
     public void setUp() throws Exception {
@@ -166,11 +36,10 @@ public class SapphireMultiPolicyChainTest extends BaseTest {
 
         HashMap<String, Class> groupMap = new HashMap<String, Class>();
         HashMap<String, Class> serverMap = new HashMap<String, Class>();
-        groupMap.put("DHTPolicy", SapphireMultiPolicyChainTest.DHTGroup_Stub.class);
-        groupMap.put("DefaultSapphirePolicy", SapphireMultiPolicyChainTest.DefaultGroup_Stub.class);
-        serverMap.put("DHTPolicy", SapphireMultiPolicyChainTest.DHTServer_Stub.class);
-        serverMap.put(
-                "DefaultSapphirePolicy", SapphireMultiPolicyChainTest.DefaultServer_Stub.class);
+        groupMap.put("DHTPolicy", DHTPolicy.DHTGroupPolicy.class);
+        groupMap.put("DefaultSapphirePolicy", DefaultSapphirePolicy.DefaultGroupPolicy.class);
+        serverMap.put("DHTPolicy", DHTPolicy.DHTServerPolicy.class);
+        serverMap.put("DefaultSapphirePolicy", DefaultSapphirePolicy.DefaultServerPolicy.class);
 
         spec =
                 SapphireObjectSpec.newBuilder()
@@ -186,12 +55,12 @@ public class SapphireMultiPolicyChainTest extends BaseTest {
         configMaps = Utils.fromDMSpecListToConfigMap(spec.getDmList());
         configMap = configMaps.get(DHTPolicy.class.getName());
 
-        super.setUp(spec, groupMap, serverMap);
+        super.setUp(2, spec, groupMap, serverMap);
     }
 
     @Test
     public void testNew_() throws Exception {
-        Object temp = Sapphire.new_(DefaultSO.class);
+        Object temp = Sapphire.new_(SO.class);
         assertNotEquals(null, temp);
     }
 

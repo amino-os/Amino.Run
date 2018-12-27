@@ -182,6 +182,9 @@ public class KSTest extends BaseTest {
     @Test(expected = KernelObjectNotFoundException.class)
     public void removeObjectTest() throws Exception {
         KernelServerImpl ks = (KernelServerImpl) spiedKs3;
+        /* used spiedKs3 here because in setUp(), getBestSuitableServer is mocked in such a way that
+        it should always return spiedKs3. If other KernelServers are used,
+        deleteKernelObject will throw the exception */
         ks.deleteKernelObject(client.getServer().$__getKernelOID());
         // should throw KernelObjectNotFoundException as it is deleted
         ks.getKernelObject(client.getServer().$__getKernelOID());

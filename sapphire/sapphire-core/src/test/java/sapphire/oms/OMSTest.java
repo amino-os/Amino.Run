@@ -215,6 +215,7 @@ public class OMSTest extends BaseTest {
     @Test
     public void getAllKernalObjectTest() throws Exception {
         ArrayList<KernelOID> arr = omsImpl.getAllKernelObjects();
+        /* Sapphire Object Created with the default DM  and number Kernel object should be two */
         assertEquals(new Integer(2), new Integer(arr.size()));
     }
 

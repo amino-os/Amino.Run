@@ -1,7 +1,6 @@
 package sapphire.policy.scalability;
 
 import static org.junit.Assert.assertEquals;
-import static sapphire.common.SapphireUtils.deleteSapphireObject;
 import static sapphire.common.UtilsTest.extractFieldValueOnInstance;
 
 import java.util.ArrayList;
@@ -127,6 +126,6 @@ public class ScaleUpFrontendPolicyTest extends BaseTest {
 
     @After
     public void tearDown() throws Exception {
-        deleteSapphireObject(spiedOms, group.getSapphireObjId());
+        super.tearDown();
     }
 }

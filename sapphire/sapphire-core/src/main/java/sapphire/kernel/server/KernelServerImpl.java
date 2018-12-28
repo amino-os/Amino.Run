@@ -50,7 +50,7 @@ public class KernelServerImpl implements KernelServer {
     static final long KS_HEARTBEAT_PERIOD = OMSServer.KS_HEARTBEAT_TIMEOUT / 3;
 
     // heartbeat timer
-    static ResettableTimer ksHeartbeatSendTimer;
+    private ResettableTimer ksHeartbeatSendTimer;
 
     public KernelServerImpl(InetSocketAddress host, InetSocketAddress omsHost) {
         OMSServer oms = null;
@@ -373,7 +373,7 @@ public class KernelServerImpl implements KernelServer {
     }
 
     /** Send heartbeats to OMS. */
-    static void startheartbeat(ServerInfo srvinfo) {
+    private void startheartbeat(ServerInfo srvinfo) {
         logger.fine("heartbeat KernelServer" + srvinfo);
         try {
             oms.heartbeatKernelServer(srvinfo);
@@ -429,7 +429,7 @@ public class KernelServerImpl implements KernelServer {
             oms.registerKernelServer(srvInfo);
 
             // Start heartbeat timer
-            startHeartbeats(srvInfo);
+            server.startHeartbeats(srvInfo);
 
             // Start a thread that print memory stats
             server.getMemoryStatThread().start();
@@ -440,7 +440,7 @@ public class KernelServerImpl implements KernelServer {
         }
     }
 
-    private static void startHeartbeats(ServerInfo srvInfo)
+    private void startHeartbeats(ServerInfo srvInfo)
             throws RemoteException, NotBoundException, KernelServerNotFoundException {
         oms.heartbeatKernelServer(srvInfo);
         ksHeartbeatSendTimer =

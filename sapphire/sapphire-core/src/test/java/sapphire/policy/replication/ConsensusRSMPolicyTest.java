@@ -5,7 +5,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
 import static org.powermock.api.mockito.PowerMockito.when;
-import static sapphire.common.SapphireUtils.deleteSapphireObject;
 import static sapphire.common.UtilsTest.extractFieldValueOnInstance;
 import static sapphire.policy.util.consensus.raft.Server.LEADER_HEARTBEAT_TIMEOUT;
 import static sapphire.policy.util.consensus.raft.ServerTest.*;
@@ -380,8 +379,10 @@ public class ConsensusRSMPolicyTest extends BaseTest {
         newRaftServer[0] = raftServer[0];
         newRaftServer[1] = raftServer[1];
 
-        // Waiting for LEADER_HEARTBEAT_TIMEOUT before re-election starts
-        Thread.sleep(LEADER_HEARTBEAT_TIMEOUT);
+        /* Wait for LEADER_HEARTBEAT_TIMEOUT time. So that other servers can detect current leader as dead and start
+        re-election of a new leader. Since Thread.sleep time is subjected to the precision and accuracy of system timers
+        and schedulers, added another 100ms to it. */
+        Thread.sleep(LEADER_HEARTBEAT_TIMEOUT + 100);
         // Verifying that new leader has been elected from amongst the running raftServers,
         // upon failure of the initial leader.
         verifyLeaderElected(newRaftServer);
@@ -389,6 +390,6 @@ public class ConsensusRSMPolicyTest extends BaseTest {
 
     @After
     public void tearDown() throws Exception {
-        deleteSapphireObject(spiedOms, group.getSapphireObjId());
+        super.tearDown();
     }
 }

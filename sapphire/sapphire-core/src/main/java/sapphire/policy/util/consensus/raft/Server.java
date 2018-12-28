@@ -516,10 +516,6 @@ public class Server
                     logger.severe(e.toString());
                     this.nextIndex.put(
                             otherServerID, otherServerNextIndex - 1); // Decrement and try again.
-                } catch (java.lang.Exception e) {
-                    /* Other server could have failed */
-                    logger.warning(e.toString());
-                    return;
                 }
             }
             if (vState.getState() == State.LEADER) {
@@ -917,16 +913,6 @@ public class Server
                 voteGranted = false;
                 logger.info("Leader election vote request denied by server: " + e.toString());
                 respondToRemoteTerm(e.currentTerm);
-            } catch (java.lang.Exception e) {
-                voteGranted = false;
-                /* Following might have happened:
-                1. It could have happened that candidate has received majority of votes and become leader without
-                waiting for the rest of the votes as they are not useful anymore. voteRequestThreadPool is shutdown
-                upon candidate.stop(). Stops active tasks and interrupts the threads.
-                2. Remote server could have failed.
-                */
-                logger.info(
-                        String.format("Vote request to %s is not considered as useful", serverID));
             }
             if (voteGranted) {
                 logger.info("Vote received from server " + serverID);

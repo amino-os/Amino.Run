@@ -1,27 +1,23 @@
 package sapphire.oms;
 
 import static org.junit.Assert.assertEquals;
-import static sapphire.common.SapphireUtils.deleteSapphireObject;
 import static sapphire.common.SapphireUtils.getOmsSapphireInstance;
 
 import java.net.InetSocketAddress;
-import java.rmi.registry.LocateRegistry;
 import java.util.HashMap;
 import java.util.List;
-import org.junit.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
-import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import sapphire.app.Language;
 import sapphire.app.SapphireObjectSpec;
 import sapphire.common.BaseTest;
 import sapphire.common.SapphireObjectID;
-import sapphire.common.SapphireUtils;
-import sapphire.kernel.common.KernelObjectFactory;
-import sapphire.kernel.server.KernelServerImpl;
 import sapphire.policy.DefaultSapphirePolicy;
-import sapphire.runtime.Sapphire;
 import sapphire.sampleSO.SO;
 import sapphire.sampleSO.stubs.SO_Stub;
 
@@ -29,16 +25,13 @@ import sapphire.sampleSO.stubs.SO_Stub;
 
 /** Created by Venugopal Reddy K 00900280 on 16/4/18. */
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({
-    KernelServerImpl.class,
-    Sapphire.class,
-    KernelObjectFactory.class,
-    LocateRegistry.class,
-    SapphireUtils.class
-})
 public class OMSTest extends BaseTest {
     SO so;
-    @Rule public ExpectedException thrown = ExpectedException.none();
+    @Rule public ExpectedException thrown;
+
+    public OMSTest() {
+        thrown = ExpectedException.none();
+    }
 
     @Before
     public void setUp() throws Exception {
@@ -111,14 +104,8 @@ public class OMSTest extends BaseTest {
         assertEquals(new Integer(kernelServerCount), new Integer(servers.size()));
     }
 
-    @Test
-    public void mainTest() throws Exception {
-
-        OMSServerImpl.main(new String[] {"127.0.0.1", "10005"});
-    }
-
     @After
     public void tearDown() throws Exception {
-        deleteSapphireObject(spiedOms, group.getSapphireObjId());
+        super.tearDown();
     }
 }

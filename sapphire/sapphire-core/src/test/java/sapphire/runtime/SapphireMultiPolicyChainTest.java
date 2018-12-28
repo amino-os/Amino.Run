@@ -2,7 +2,6 @@ package sapphire.runtime;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
-import static sapphire.common.SapphireUtils.deleteSapphireObject;
 import static sapphire.policy.SapphirePolicyUpcalls.SapphirePolicyConfig;
 
 import java.util.ArrayList;
@@ -102,6 +101,6 @@ public class SapphireMultiPolicyChainTest extends BaseTest {
     @After
     public void tearDown() throws Exception {
         System.out.println("Deleting SapphireObject: " + group.getSapphireObjId());
-        deleteSapphireObject(spiedOms, group.getSapphireObjId());
+        super.tearDown();
     }
 }

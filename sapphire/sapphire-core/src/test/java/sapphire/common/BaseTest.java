@@ -1,12 +1,8 @@
 package sapphire.common;
 
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.spy;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
-import static org.powermock.api.mockito.PowerMockito.when;
 import static sapphire.common.SapphireUtils.addHost;
-import static sapphire.common.SapphireUtils.dummyRegistry;
-import static sapphire.common.SapphireUtils.getHostOnOmsKernelServerManager;
 import static sapphire.common.SapphireUtils.startSpiedKernelServer;
 import static sapphire.common.SapphireUtils.startSpiedOms;
 import static sapphire.common.UtilsTest.extractFieldValueOnInstance;
@@ -19,7 +15,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import sapphire.app.SapphireObjectServer;
 import sapphire.app.SapphireObjectSpec;
@@ -51,6 +46,7 @@ import sapphire.sampleSO.stubs.SO_Stub;
     KernelObjectFactory.class,
     LocateRegistry.class,
     SapphireUtils.class,
+    OMSServerImpl.class,
     Utils.ObjectCloner.class
 })
 public class BaseTest {
@@ -62,10 +58,13 @@ public class BaseTest {
     protected SO_Stub soStub; // client side stub
     protected OMSServer spiedOms;
     protected SapphireObjectServer sapphireObjServer;
+    protected KernelServer spiedksOnOms;
     protected KernelServer spiedKs1;
     protected KernelServer spiedKs2;
     protected KernelServer spiedKs3;
     protected int kernelServerCount = 0;
+    private String LOOP_BACK_IP_ADDR = "127.0.0.1";
+    private int omsPort = 10000;
     private int kernelPort1 = 10001;
     private int kernelPort2 = 10002;
     private int kernelPort3 = 10003;
@@ -78,11 +77,9 @@ public class BaseTest {
             HashMap<String, Class> groupMap,
             HashMap<String, Class> serverMap)
             throws Exception {
-        PowerMockito.mockStatic(LocateRegistry.class);
-        when(LocateRegistry.getRegistry(anyString(), anyInt())).thenReturn(dummyRegistry);
-
         // create a spied oms instance
-        OMSServerImpl spiedOms = startSpiedOms();
+        OMSServerImpl spiedOms = startSpiedOms(LOOP_BACK_IP_ADDR, omsPort);
+        spiedksOnOms = spy(GlobalKernelReferences.nodeServer);
         KernelServerImpl.oms = spiedOms;
         this.spiedOms = spiedOms;
         sapphireObjServer = spiedOms;
@@ -97,19 +94,28 @@ public class BaseTest {
         assert (serverCount <= 3);
         kernelServerCount = serverCount;
 
-        /* create configured number of spied kernel server instances. And populate the servers map  in kernel clients of
-        respective kernel servers so that each kernel server will be able to communicate with other servers.
+        /* create configured number of spied kernel server instances. And populate the servers map in kernel clients of
+        respective kernel servers so that each kernel server will be able to communicate with other servers without
+        registry.lookup.
         */
-        spiedKs1 = startSpiedKernelServer(spiedOms, kernelPort1, regions[0]);
-
+        spiedKs1 =
+                startSpiedKernelServer(
+                        LOOP_BACK_IP_ADDR, kernelPort1, LOOP_BACK_IP_ADDR, omsPort, regions[0]);
+        addHost(spiedksOnOms);
         if (serverCount > 1) {
-            spiedKs2 = startSpiedKernelServer(spiedOms, kernelPort2, regions[1]);
+            spiedKs2 =
+                    startSpiedKernelServer(
+                            LOOP_BACK_IP_ADDR, kernelPort2, LOOP_BACK_IP_ADDR, omsPort, regions[1]);
+            addHost(spiedksOnOms);
             addHost(spiedKs1);
             GlobalKernelReferences.nodeServer = (KernelServerImpl) spiedKs1;
             addHost(spiedKs2);
         }
         if (serverCount > 2) {
-            spiedKs3 = startSpiedKernelServer(spiedOms, kernelPort3, regions[2]);
+            spiedKs3 =
+                    startSpiedKernelServer(
+                            LOOP_BACK_IP_ADDR, kernelPort3, LOOP_BACK_IP_ADDR, omsPort, regions[2]);
+            addHost(spiedksOnOms);
             addHost(spiedKs1);
             addHost(spiedKs2);
             GlobalKernelReferences.nodeServer = (KernelServerImpl) spiedKs2;
@@ -118,7 +124,7 @@ public class BaseTest {
             addHost(spiedKs3);
         }
 
-        PowerMockito.mockStatic(
+        mockStatic(
                 Utils.ObjectCloner.class,
                 new Answer<Object>() {
                     @Override
@@ -149,7 +155,9 @@ public class BaseTest {
                             InetSocketAddress host = spiedOms.lookupKernelObject(oid);
 
                             KernelServer ks = null;
-                            if (host.toString().contains(String.valueOf(kernelPort1))) {
+                            if (host.toString().contains(String.valueOf(omsPort))) {
+                                ks = spiedksOnOms;
+                            } else if (host.toString().contains(String.valueOf(kernelPort1))) {
                                 ks = spiedKs1;
                             } else if (host.toString().contains(String.valueOf(kernelPort2))) {
                                 ks = spiedKs2;
@@ -185,21 +193,17 @@ public class BaseTest {
                 });
 
         // Stub static sapphire methods
-        mockStatic(Sapphire.class);
-        PowerMockito.mockStatic(
+        mockStatic(
                 Sapphire.class,
                 new Answer<Object>() {
                     @Override
                     public Object answer(InvocationOnMock invocation) throws Throwable {
-                        if (!(invocation.getMethod().getName().equals("getPolicyStub")))
-                            return invocation.callRealMethod();
-
-                        if (invocation.getArguments().length == 2) {
-                            KernelOID oid = (KernelOID) invocation.getArguments()[1];
-                            KernelServer ks =
-                                    getHostOnOmsKernelServerManager(
-                                            spiedOms, spiedOms.lookupKernelObject(oid));
-                            return ((KernelServerImpl) ks).getObject(oid);
+                        if ((invocation.getMethod().getName().equals("createGroupPolicy"))) {
+                            KernelServerImpl temp = GlobalKernelReferences.nodeServer;
+                            GlobalKernelReferences.nodeServer = (KernelServerImpl) spiedksOnOms;
+                            Object ret = invocation.callRealMethod();
+                            GlobalKernelReferences.nodeServer = temp;
+                            return ret;
                         }
                         return invocation.callRealMethod();
                     }
@@ -238,25 +242,14 @@ public class BaseTest {
         }
     }
 
-    private void getGroupPolicyObject(KernelServer kernelServer, KernelObject obj) {
-        KernelServerImpl ks = (KernelServerImpl) kernelServer;
-        if (ks.getLocalHost().toString().contains(String.valueOf(kernelPort1))) {
-            group = (DefaultSapphirePolicy.DefaultGroupPolicy) obj.getObject();
-        } else if (ks.getLocalHost().toString().contains(String.valueOf(kernelPort2))) {
-            group = (DefaultSapphirePolicy.DefaultGroupPolicy) obj.getObject();
-        } else if (ks.getLocalHost().toString().contains(String.valueOf(kernelPort3))) {
-            group = (DefaultSapphirePolicy.DefaultGroupPolicy) obj.getObject();
-        }
-    }
-
-    public void getServerAndGroupPolicyObjects() throws Exception {
+    private void getServerAndGroupPolicyObjects() throws Exception {
         ArrayList<SapphirePolicy.SapphireServerPolicy> servers = client.getGroup().getServers();
-        KernelServer ks = getKernelServerFromPolicyStub((KernelObjectStub) client.getGroup());
+        KernelServer ks = spiedksOnOms;
         KernelObjectManager objMgr =
                 (KernelObjectManager) extractFieldValueOnInstance(ks, "objectManager");
         KernelObject obj =
                 objMgr.lookupObject(((KernelObjectStub) client.getGroup()).$__getKernelOID());
-        getGroupPolicyObject(ks, obj);
+        group = (DefaultSapphirePolicy.DefaultGroupPolicy) obj.getObject();
         for (SapphirePolicy.SapphireServerPolicy server : servers) {
             ks = getKernelServerFromPolicyStub((KernelObjectStub) server);
             objMgr = (KernelObjectManager) extractFieldValueOnInstance(ks, "objectManager");
@@ -265,5 +258,7 @@ public class BaseTest {
         }
     }
 
-    public void tearDown() throws Exception {}
+    public void tearDown() throws Exception {
+        spiedOms.deleteSapphireObject(group.getSapphireObjId());
+    }
 }

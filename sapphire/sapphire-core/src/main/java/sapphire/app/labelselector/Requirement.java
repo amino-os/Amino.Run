@@ -72,10 +72,13 @@ public class Requirement implements Serializable {
         switch (operator) {
             case Equal:
                 buffer.append("=");
+                break;
             case In:
                 buffer.append(" in ");
+                break;
             case NotIn:
                 buffer.append(" notin ");
+                break;
             case Exists:
                 buffer.append(key);
         }

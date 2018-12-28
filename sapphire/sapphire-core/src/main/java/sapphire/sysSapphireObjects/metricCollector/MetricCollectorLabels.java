@@ -1,9 +1,8 @@
-package sapphire.sysSapphireObjects.metricCollector.metric;
-
-import sapphire.app.labelselector.Labels;
+package sapphire.sysSapphireObjects.metricCollector;
 
 import java.util.HashMap;
 import java.util.Map;
+import sapphire.app.labelselector.Labels;
 
 public class MetricCollectorLabels {
     public static final Labels labels;

@@ -1,0 +1,12 @@
+!!sapphire.app.SapphireObjectSpec
+constructorName: null
+dmList:
+- configs:
+  - !!sapphire.policy.metric.MetricPolicy$Config {metricLabels: { labels : {App: KVStoreAutoMigration}}}
+  name: sapphire.policy.metric.MetricPolicy
+javaClassName: sapphire.migrationDemo.AutoMigrateKeyValueStore
+lang: java
+name: null
+sapphireObjectLabels:
+  labels: {AutoMigration: true, KVStore: WithMigration}
+sourceFileLocation: null

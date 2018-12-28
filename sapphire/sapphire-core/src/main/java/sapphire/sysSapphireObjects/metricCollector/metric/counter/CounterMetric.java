@@ -1,9 +1,12 @@
 package sapphire.sysSapphireObjects.metricCollector.metric.counter;
 
+import java.util.logging.Logger;
 import sapphire.app.labelselector.Labels;
 import sapphire.sysSapphireObjects.metricCollector.Metric;
 
 public class CounterMetric implements Metric {
+    private static Logger logger = Logger.getLogger(CounterMetric.class.getName());
+
     private String metricName;
     private long count;
     private Labels labels;
@@ -18,6 +21,11 @@ public class CounterMetric implements Metric {
         return this;
     }
 
+    @Override
+    public String toString() {
+        return metricName + "<" + labels.toString() + ":" + count + ">";
+    }
+
     public CounterMetric(String name, Labels labels) {
         this.metricName = name;
         this.labels = labels;
@@ -29,15 +37,23 @@ public class CounterMetric implements Metric {
     }
 
     public void reset() {
-        count = 0;
+        synchronized (this) {
+            count = 0;
+        }
+    }
+
+    public boolean modified() {
+        return count != 0;
     }
 
     public long getCount() {
         return count;
     }
 
-    public synchronized void incCount() {
-        count++;
+    public void incCount() {
+        synchronized (this) {
+            count++;
+        }
     }
 
     public Labels getLabels() {
@@ -45,6 +61,10 @@ public class CounterMetric implements Metric {
     }
 
     public void merge(CounterMetric metric) {
-        count = count + metric.getCount();
+        logger.info("Received metric : " + metric.toString());
+        synchronized (this) {
+            count = count + metric.getCount();
+        }
+        logger.info("Collected metric : " + this.toString());
     }
 }

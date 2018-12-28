@@ -1,47 +1,57 @@
 package sapphire.policy.metric;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.TimerTask;
 import java.util.logging.Logger;
 import sapphire.app.SapphireObjectServer;
 import sapphire.app.SapphireObjectSpec;
+import sapphire.app.labelselector.Labels;
 import sapphire.app.labelselector.Selector;
 import sapphire.common.AppObjectStub;
+import sapphire.common.SapphireObjectID;
+import sapphire.common.SapphireReplicaID;
 import sapphire.common.Utils;
 import sapphire.kernel.common.GlobalKernelReferences;
 import sapphire.oms.OMSServer;
 import sapphire.policy.SapphirePolicyUpcalls;
 import sapphire.policy.util.ResettableTimer;
 import sapphire.sysSapphireObjects.metricCollector.MetricCollector;
-import sapphire.sysSapphireObjects.metricCollector.metric.MetricCollectorLabels;
+import sapphire.sysSapphireObjects.metricCollector.MetricCollectorLabels;
 import sapphire.sysSapphireObjects.metricCollector.metric.counter.CounterMetric;
 import sapphire.sysSapphireObjects.metricCollector.metric.counter.Schema;
 
-public class MetricAggregator {
-    private static final String METRIC_NAME_RPC_COUNTER = "so_rpc_counter";
+public class MetricAggregator implements Serializable {
     private MetricPolicy.Config config = new MetricPolicy.Config();
     private MetricCollector collectorStub;
     private CounterMetric rpcCounter;
-    private ResettableTimer metricSendTimer;
+    private transient ResettableTimer metricSendTimer;
     static Logger logger = Logger.getLogger(MetricAggregator.class.getCanonicalName());
 
     private OMSServer oms() {
         return GlobalKernelReferences.nodeServer.oms;
     }
 
-    public MetricAggregator(SapphireObjectSpec spec) {
-        if (spec != null) {
-            Map<String, SapphirePolicyUpcalls.SapphirePolicyConfig> configMap =
-                    Utils.fromDMSpecListToFlatConfigMap(spec.getDmList());
-            if (configMap != null) {
-                SapphirePolicyUpcalls.SapphirePolicyConfig config =
-                        configMap.get(MetricPolicy.Config.class.getName());
-                if (config != null) {
-                    this.config = ((MetricPolicy.Config) config);
-                }
+    MetricAggregator(
+            SapphireObjectSpec spec, SapphireObjectID soID, SapphireReplicaID soReplicaID) {
+        Map<String, SapphirePolicyUpcalls.SapphirePolicyConfig> configMap =
+                Utils.fromDMSpecListToFlatConfigMap(spec.getDmList());
+        if (configMap != null) {
+            SapphirePolicyUpcalls.SapphirePolicyConfig config =
+                    configMap.get(MetricPolicy.Config.class.getName());
+            if (config != null) {
+                this.config = ((MetricPolicy.Config) config);
             }
         }
+
+        // add sapphire object ID and replica ID in metric labels
+        Map<String, String> labelsMap = config.getMetricLabels().getLabels();
+        labelsMap.put(MetricDMConstants.METRIC_SAPPHIRE_OBJECT_ID, soID.getID().toString());
+        labelsMap.put(MetricDMConstants.METRIC_SAPPHIRE_REPLICA_ID, soReplicaID.getID().toString());
+        Labels labels = new Labels();
+        labels.setLabels(labelsMap);
+        config.setMetricLabels(labels);
     }
 
     public boolean initialize() {
@@ -73,10 +83,13 @@ public class MetricAggregator {
         }
 
         // register metric
-        Schema metricCounterSchema = new Schema(METRIC_NAME_RPC_COUNTER, config.getMetricLabels());
+        Schema metricCounterSchema =
+                new Schema(MetricDMConstants.METRIC_NAME_RPC_COUNTER, config.getMetricLabels());
         // TODO: handle exceptions if metric already registered
         collectorStub.Register(metricCounterSchema);
-        rpcCounter = new CounterMetric(METRIC_NAME_RPC_COUNTER, config.getMetricLabels());
+        rpcCounter =
+                new CounterMetric(
+                        MetricDMConstants.METRIC_NAME_RPC_COUNTER, config.getMetricLabels());
 
         metricSendTimer =
                 new ResettableTimer(
@@ -86,21 +99,28 @@ public class MetricAggregator {
                             }
                         },
                         config.getMetricUpdateFrequency());
+        metricSendTimer.start();
     }
 
-    public void incRpcCounter() {
+    void incRpcCounter() {
         rpcCounter.incCount();
     }
 
-    public void sendMetric() {
+    private void sendMetric() {
         try {
-            collectorStub.push(rpcCounter);
+            if (rpcCounter.modified()) {
+                collectorStub.push(rpcCounter);
+                rpcCounter.reset();
+            }
         } catch (Exception e) {
             logger.warning(String.format("%s: Sending metric failed", e.toString()));
             return;
         }
 
-        rpcCounter.reset();
         metricSendTimer.reset();
+    }
+
+    void stop() {
+        metricSendTimer.cancel();
     }
 }

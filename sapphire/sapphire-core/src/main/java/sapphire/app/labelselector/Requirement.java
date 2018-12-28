@@ -81,6 +81,7 @@ public class Requirement implements Serializable {
                 break;
             case Exists:
                 buffer.append(key);
+                break;
         }
 
         if (operator.equals(In) || operator.equals(NotIn)) {

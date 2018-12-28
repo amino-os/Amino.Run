@@ -1,0 +1,25 @@
+apply plugin: 'java-library'
+
+// Customize app stub generation for this example
+genStubs {
+    def pkg = 'sapphire.migrationDemo'
+    def src = "$buildDir/classes/java/main/sapphire/migrationDemo/"
+    def dst = "$projectDir/src/main/java/sapphire/migrationDemo/stubs/"
+    args src, pkg, dst
+    outputs.dir dst // Declare outputs, so gradle will run if they have been changed
+    inputs.dir src   // Declare inputs, so gradle will run if they have been changed
+}
+
+// Customize stub compilation for this example
+compileStubs {
+    outputs.dir "$buildDir/classes/java/main/sapphire/migrationDemo/stubs/"
+}
+
+jar.dependsOn compileStubs
+
+// Customize runapp for this example
+runapp {
+    main = "sapphire.migrationDemo.AutoMigrateKeyValueStoreClient"
+    // This one doesn't take kernel server address params
+    args project.property('omsIp'), project.property('omsPort')
+}

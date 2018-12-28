@@ -1,8 +1,6 @@
 package sapphire.policy.metric;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 import sapphire.app.SapphireObjectSpec;
 import sapphire.app.labelselector.Labels;
@@ -11,12 +9,10 @@ import sapphire.policy.DefaultSapphirePolicy;
 public class MetricPolicy extends DefaultSapphirePolicy {
     // TODO define default labels for Metric collector
     private static final long DM_METRIC_UPDATE_FREQUENCY = 3000; // milliseconds
-    private static final Labels labels = null;
-
 
     /** Configuration for Metric Policy. */
     public static class Config implements SapphirePolicyConfig {
-        private Labels metricLabels = labels;
+        private Labels metricLabels = new Labels();
         private long metricUpdateFrequency = DM_METRIC_UPDATE_FREQUENCY;
 
         public long getMetricUpdateFrequency() {
@@ -31,7 +27,7 @@ public class MetricPolicy extends DefaultSapphirePolicy {
             return metricLabels;
         }
 
-        public void setmetricLabels(Labels labels) {
+        public void setMetricLabels(Labels labels) {
             this.metricLabels = labels;
         }
 
@@ -56,8 +52,8 @@ public class MetricPolicy extends DefaultSapphirePolicy {
 
         @Override
         public void onCreate(SapphireGroupPolicy group, SapphireObjectSpec spec) {
-            aggregator = new MetricAggregator(spec);
             super.onCreate(group, spec);
+            aggregator = new MetricAggregator(spec, group.getSapphireObjId(), getReplicaId());
         }
 
         @Override
@@ -69,6 +65,12 @@ public class MetricPolicy extends DefaultSapphirePolicy {
             aggregator.incRpcCounter();
 
             return super.onRPC(method, params);
+        }
+
+        @Override
+        public void onDestroy() {
+            super.onDestroy();
+            aggregator.stop();
         }
     }
 

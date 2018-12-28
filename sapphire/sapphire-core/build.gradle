@@ -120,6 +120,28 @@ genStubs {
     inputs.dir src   // Declare inputs, so gradle will run if they have been changed
 }
 
+// Customize Sys SO stub generation
+task genMetricCollectorSysSOStubs(type :JavaExec){
+    main = "sapphire.compiler.StubGenerator"
+    classpath = sourceSets.main.runtimeClasspath
+    
+    def pkg = 'sapphire.sysSapphireObjects.metricCollector'
+    def src = file(project.buildDir.toString() + '/classes/java/main/sapphire/sysSapphireObjects/metricCollector/')
+    def dst = file(project.projectDir.toString() + '/src/main/java/sapphire/sysSapphireObjects/metricCollector/stubs/')
+    args src.toString(), pkg, dst.toString()
+    outputs.dir dst // Declare outputs, so gradle will run if they have been changed
+    inputs.dir src   // Declare inputs, so gradle will run if they have been changed
+}
+
+// Task for stub compilation
+task compileMetricCollectorSysSOStubs(type: JavaCompile) {
+    source = sourceSets.main.java.srcDirs
+    classpath = sourceSets.main.compileClasspath
+    destinationDir = sourceSets.main.output.classesDir
+    options.incremental = true
+    inputs.dir genMetricCollectorSysSOStubs.outputs
+}
+
 task genUnitTestStubs(type :JavaExec){
     main = "amino.run.compiler.StubGenerator"
     classpath = sourceSets.main.runtimeClasspath
@@ -206,6 +228,7 @@ compileIntegrationTestJava.dependsOn genIntegTestStubs
 tasks.googleJavaFormat.dependsOn genStubs
 tasks.googleJavaFormat.dependsOn genGraalTestStubs
 tasks.googleJavaFormat.dependsOn genIntegTestStubs
+tasks.googleJavaFormat.dependsOn genMetricCollectorSysSOStubs
 
 check.dependsOn tasks.googleJavaFormat
 check.dependsOn integTest

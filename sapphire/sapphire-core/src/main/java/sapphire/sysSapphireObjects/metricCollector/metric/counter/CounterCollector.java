@@ -24,12 +24,14 @@ public class CounterCollector implements Collector {
         }
 
         CounterMetric clientMetric = (CounterMetric) metric.getMetric();
-
         // TODO check for mandatory labels
 
         CounterMetric serverMetric = collector.get(clientMetric.getLabels());
         if (serverMetric == null) {
-            collector.put(clientMetric.getLabels(), clientMetric);
+            serverMetric = new CounterMetric(clientMetric.getName(), clientMetric.getLabels());
+            collector.put(clientMetric.getLabels(), serverMetric);
+            serverMetric.merge(clientMetric);
+            return;
         }
 
         serverMetric.merge(clientMetric);

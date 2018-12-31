@@ -178,15 +178,12 @@ task compileIntegTestDemoPkg(type: JavaCompile) {
     options.incremental = true
 }
 
-tasks.matching {(it != compileJava) && (it != checkGraalVmVersion)}.all {
-    it.dependsOn compileJava
-}
-tasks.googleJavaFormat.mustRunAfter compileJava
 tasks.googleJavaFormat.mustRunAfter genStubs
 tasks.googleJavaFormat.mustRunAfter genGraalStub
 tasks.googleJavaFormat.mustRunAfter genUnitTestStubs
 tasks.googleJavaFormat.mustRunAfter genIntegTestStubs
 
+genGraalStub.dependsOn compileJava
 compileGraalStub.dependsOn genGraalStub
 compileTestJava.dependsOn compileGraalStub
 genUnitTestStubs.dependsOn compileSampleSO

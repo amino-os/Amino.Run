@@ -19,13 +19,13 @@ import sapphire.policy.SapphirePolicyUpcalls;
 import sapphire.policy.util.ResettableTimer;
 import sapphire.sysSapphireObjects.metricCollector.MetricCollector;
 import sapphire.sysSapphireObjects.metricCollector.MetricCollectorLabels;
-import sapphire.sysSapphireObjects.metricCollector.metric.counter.CounterMetric;
+import sapphire.sysSapphireObjects.metricCollector.metric.counter.CounterClientMetric;
 import sapphire.sysSapphireObjects.metricCollector.metric.counter.Schema;
 
 public class MetricAggregator implements Serializable {
     private MetricPolicy.Config config = new MetricPolicy.Config();
     private MetricCollector collectorStub;
-    private CounterMetric rpcCounter;
+    private CounterClientMetric rpcCounter;
     private transient ResettableTimer metricSendTimer;
     static Logger logger = Logger.getLogger(MetricAggregator.class.getCanonicalName());
 
@@ -88,8 +88,11 @@ public class MetricAggregator implements Serializable {
         // TODO: handle exceptions if metric already registered
         collectorStub.Register(metricCounterSchema);
         rpcCounter =
-                new CounterMetric(
-                        MetricDMConstants.METRIC_NAME_RPC_COUNTER, config.getMetricLabels());
+                CounterClientMetric.newBuilder()
+                        .setMetricName(MetricDMConstants.METRIC_NAME_RPC_COUNTER)
+                        .setLabels(config.getMetricLabels())
+                        .setMetricCollector(collectorStub)
+                        .create();
 
         metricSendTimer =
                 new ResettableTimer(
@@ -109,7 +112,7 @@ public class MetricAggregator implements Serializable {
     private void sendMetric() {
         try {
             if (rpcCounter.modified()) {
-                collectorStub.push(rpcCounter);
+                rpcCounter.sendMetric();
                 rpcCounter.reset();
             }
         } catch (Exception e) {

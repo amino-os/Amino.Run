@@ -1,4 +1,4 @@
-package sapphire.sysSapphireObjects.metricCollector.metric.counter;
+package sapphire.sysSapphireObjects.metricCollector.metric.histogram;
 
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
@@ -8,33 +8,28 @@ import sapphire.sysSapphireObjects.metricCollector.Collector;
 import sapphire.sysSapphireObjects.metricCollector.Metric;
 import sapphire.sysSapphireObjects.metricCollector.MetricSelector;
 
-public class CounterCollector implements Collector {
+public class HistogramCollector implements Collector {
     private Labels mandatoryLabels;
-    private ConcurrentHashMap<Labels, CounterServerMetric> collector;
+    private ConcurrentHashMap<Labels, HistogramServerMetric> collector;
 
-    public CounterCollector(Labels labels) {
+    public HistogramCollector(Labels labels) {
         this.mandatoryLabels = labels;
         this.collector = new ConcurrentHashMap<>();
     }
 
     @Override
     public void collect(Metric metric) throws Exception {
-        if (!(metric instanceof CounterClientMetric)) {
+        if (!(metric instanceof HistogramClientMetric)) {
             throw new Exception("invalid collector");
         }
+        HistogramClientMetric clientMetric = (HistogramClientMetric) metric.getMetric();
+        HistogramServerMetric serverMetric = collector.get(clientMetric.getLabels());
 
-        CounterClientMetric clientMetric = (CounterClientMetric) metric.getMetric();
-        // TODO check for mandatory labels
-
-        CounterServerMetric serverMetric = collector.get(clientMetric.getLabels());
         if (serverMetric == null) {
             serverMetric =
-                    new CounterServerMetric(clientMetric.getName(), clientMetric.getLabels());
+                    new HistogramServerMetric(clientMetric.getName(), clientMetric.getLabels());
             collector.put(clientMetric.getLabels(), serverMetric);
-            serverMetric.merge(clientMetric);
-            return;
         }
-
         serverMetric.merge(clientMetric);
     }
 
@@ -42,12 +37,12 @@ public class CounterCollector implements Collector {
     public ArrayList<Metric> retrieve(MetricSelector metricSelector) throws Exception {
         ArrayList<Metric> metricList = new ArrayList<>();
         Object oSelector = metricSelector.getMetricSelector();
-        if (!(oSelector instanceof CounterMetricSelector)) {
+        if (!(oSelector instanceof HistogramMetricSelector)) {
             throw new Exception("invalid selector");
         }
 
-        CounterMetricSelector cMetricSelector = (CounterMetricSelector) oSelector;
-        Selector selector = cMetricSelector.getSelector();
+        HistogramMetricSelector gMetricSelector = (HistogramMetricSelector) oSelector;
+        Selector selector = gMetricSelector.getSelector();
 
         collector.forEach(
                 (labels, collector) -> {

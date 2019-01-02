@@ -19,11 +19,11 @@ public class CounterCollector implements Collector {
 
     @Override
     public void collect(Metric metric) throws Exception {
-        if (!(metric instanceof CounterMetric)) {
+        if (!(metric instanceof CounterClientMetric)) {
             throw new Exception("invalid collector");
         }
 
-        CounterMetric clientMetric = (CounterMetric) metric.getMetric();
+        CounterClientMetric clientMetric = (CounterClientMetric) metric.getMetric();
         // TODO check for mandatory labels
 
         CounterMetricAggregator serverMetric = collector.get(clientMetric.getLabels());

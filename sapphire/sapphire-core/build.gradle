@@ -191,6 +191,10 @@ compileTestJava.dependsOn genUnitTestStubs
 genIntegTestStubs.dependsOn compileIntegTestDemoPkg
 compileIntegrationTestJava.dependsOn genIntegTestStubs
 
+tasks.googleJavaFormat.dependsOn genStubs
+tasks.googleJavaFormat.dependsOn genGraalStub
+tasks.googleJavaFormat.dependsOn genIntegTestStubs
+
 check.dependsOn tasks.googleJavaFormat
 check.dependsOn integTest
 compileJava.dependsOn checkGraalVmVersion

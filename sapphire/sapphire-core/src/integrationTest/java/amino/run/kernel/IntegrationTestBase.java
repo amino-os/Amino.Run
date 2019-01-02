@@ -4,16 +4,13 @@ import static java.lang.Thread.sleep;
 
 import amino.run.app.SapphireObjectSpec;
 import amino.run.demo.KVStore;
+import amino.run.kernel.server.KernelServerImpl;
 import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
 import java.nio.file.Files;
 import java.util.List;
 import org.junit.Assert;
-import sapphire.app.SapphireObjectSpec;
-import sapphire.demo.KVStore;
-import sapphire.kernel.server.KernelServerImpl;
-
 
 public class IntegrationTestBase {
     public static String omsIp = "127.0.0.1";

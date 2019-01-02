@@ -1,12 +1,12 @@
 package amino.run.kernel.common;
 
+import amino.run.kernel.server.KernelServerImpl;
 import java.io.Serializable;
 import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
-import sapphire.kernel.server.KernelServerImpl;
 
 /** {@code ServerInfo} contains meta data of a kernel server. */
 public class ServerInfo implements Serializable {

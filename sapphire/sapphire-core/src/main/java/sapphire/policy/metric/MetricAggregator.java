@@ -26,7 +26,7 @@ import sapphire.sysSapphireObjects.metricCollector.metric.counter.Schema;
 public class MetricAggregator implements Serializable, SendMetric {
     private MetricPolicy.Config config = new MetricPolicy.Config();
     private MetricCollector collectorStub;
-    private CounterClientMetric rpcCounter;
+    private CounterMetric rpcCounter;
     private transient ResettableTimer metricSendTimer;
     static Logger logger = Logger.getLogger(MetricAggregator.class.getCanonicalName());
 

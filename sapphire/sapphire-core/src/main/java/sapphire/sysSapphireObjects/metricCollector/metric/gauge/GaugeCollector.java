@@ -19,7 +19,7 @@ public class GaugeCollector implements Collector {
 
     @Override
     public void collect(Metric metric) throws Exception {
-        if (!(metric instanceof GaugeClientMetric)) {
+        if (!(metric instanceof GaugeMetric)) {
             throw new Exception("invalid collector");
         }
         GaugeMetric clientMetric = (GaugeMetric) metric.getMetric();

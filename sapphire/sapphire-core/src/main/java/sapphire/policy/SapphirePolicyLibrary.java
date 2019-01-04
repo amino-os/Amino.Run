@@ -128,7 +128,6 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
                 List<SapphirePolicyContainer> processedPolicies, String region)
                 throws RemoteException {
             KernelObjectStub serverPolicyStub = null;
-            SapphireServerPolicy serverPolicy = null;
 
             // Construct list of policies that will come after this policy on the server side.
             try {
@@ -145,10 +144,6 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
                         null);
 
                 // Last policy in the returned chain is replica of this policy.
-                serverPolicy =
-                        processedPoliciesReplica
-                                .get(processedPoliciesReplica.size() - 1)
-                                .getServerPolicy();
                 serverPolicyStub =
                         processedPoliciesReplica
                                 .get(processedPoliciesReplica.size() - 1)
@@ -156,14 +151,13 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 
                 // Complete the chain by creating new instances of server policies and stub that
                 // should be created after this policy.
-                List<SapphirePolicyContainer> nextPolicyList =
-                        Sapphire.createPolicy(
-                                this.getGroup().sapphireObjId,
-                                spec,
-                                this.nextPolicies,
-                                processedPoliciesReplica,
-                                region,
-                                null);
+                Sapphire.createPolicy(
+                        this.getGroup().sapphireObjId,
+                        spec,
+                        this.nextPolicies,
+                        processedPoliciesReplica,
+                        region,
+                        null);
 
                 getGroup().addServer((SapphireServerPolicy) serverPolicyStub);
             } catch (ClassNotFoundException e) {

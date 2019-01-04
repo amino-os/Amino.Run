@@ -191,7 +191,7 @@ public class SapphireMultiPolicyChainTest extends BaseTest {
 
     @Test
     public void testNew_() throws Exception {
-        Object temp = Sapphire.new_(DefaultSO.class);
+        Object temp = Sapphire.new_(SO.class);
         assertNotEquals(null, temp);
     }
 
@@ -204,11 +204,8 @@ public class SapphireMultiPolicyChainTest extends BaseTest {
         SapphireObjectID sapphireObjId = spiedOms.registerSapphireObject();
 
         policyNameChain.add(new SapphirePolicyContainer("sapphire.policy.dht.DHTPolicy", null));
-        List<SapphirePolicyContainer> policyList =
-                Sapphire.createPolicy(
-                        sapphireObjId, spec, policyNameChain, processedPolicies, "", null);
-
-        assertEquals(1, policyList.size());
+        Sapphire.createPolicy(sapphireObjId, spec, policyNameChain, processedPolicies, "", null);
+        assertEquals(1, processedPolicies.size());
     }
 
     @Test
@@ -223,11 +220,8 @@ public class SapphireMultiPolicyChainTest extends BaseTest {
         policyNameChain.add(
                 new SapphirePolicyContainer("sapphire.policy.DefaultSapphirePolicy", null));
 
-        List<SapphirePolicyContainer> policyList =
-                Sapphire.createPolicy(
-                        sapphireObjId, spec, policyNameChain, processedPolicies, "", null);
-
-        assertEquals(2, policyList.size());
+        Sapphire.createPolicy(sapphireObjId, spec, policyNameChain, processedPolicies, "", null);
+        assertEquals(2, processedPolicies.size());
     }
 
     @After

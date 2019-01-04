@@ -63,10 +63,8 @@ public class Sapphire {
             SapphireObjectID sapphireObjId =
                     GlobalKernelReferences.nodeServer.oms.registerSapphireObject();
 
-            List<SapphirePolicyContainer> policyList =
+            appStub =
                     createPolicy(sapphireObjId, spec, policyNameChain, processedPolicies, "", args);
-
-            appStub = policyList.get(0).getServerPolicy().sapphire_getAppObjectStub();
         } catch (Exception e) {
             String msg = String.format("Failed to create sapphire object '%s'", spec);
             logger.log(Level.SEVERE, msg, e);
@@ -110,10 +108,8 @@ public class Sapphire {
             SapphireObjectID sapphireObjId =
                     GlobalKernelReferences.nodeServer.oms.registerSapphireObject();
 
-            List<SapphirePolicyContainer> policyList =
+            AppObjectStub appStub =
                     createPolicy(sapphireObjId, spec, policyNameChain, processedPolicies, "", args);
-
-            AppObjectStub appStub = policyList.get(0).getServerPolicy().sapphire_getAppObjectStub();
             logger.info("Sapphire Object created: " + appObjectClass.getName());
             return appStub;
         } catch (Exception e) {
@@ -159,16 +155,18 @@ public class Sapphire {
     }
 
     /**
-     * Creates app object stub along with instantiation of policies and stubs, and returns processed
-     * policies for given policyNameChain.
+     * Creates app object stub along with instantiation of policies and stubs, appends policies
+     * processed for given policyNameChain to existing processed policy list and returns app object
+     * stub to client.
      *
      * @param sapphireObjId Sapphire object Id
      * @param spec Sapphire object spec
      * @param policyNameChain List of policies that need to be created
-     * @param processedPolicies List of policies that were already created
+     * @param processedPolicies List of policies that were already created. Policies created with
+     *     this invocation gets appended to existing list
      * @param region Region
      * @param appArgs Arguments for application object
-     * @return processedPolicies
+     * @return client side appObjectStub
      * @throws IOException
      * @throws ClassNotFoundException
      * @throws KernelObjectNotFoundException
@@ -179,7 +177,7 @@ public class Sapphire {
      * @throws IllegalAccessException
      * @throws CloneNotSupportedException
      */
-    public static List<SapphirePolicyContainer> createPolicy(
+    public static AppObjectStub createPolicy(
             SapphireObjectID sapphireObjId,
             SapphireObjectSpec spec,
             List<SapphirePolicyContainer> policyNameChain,
@@ -247,7 +245,7 @@ public class Sapphire {
         if (prevContainer != null) {
             initServerPolicy(serverPolicy, prevContainer, client);
         } else {
-            initAppStub(spec, serverPolicy, client, appArgs, appObject);
+            initAppStub(spec, serverPolicy, appArgs, appObject);
         }
 
         // Note that subList is non serializable; hence, the new list creation.
@@ -283,14 +281,26 @@ public class Sapphire {
                     sapphireObjId, spec, nextPoliciesToCreate, processedPolicies, region, appArgs);
         }
 
+        AppObjectStub appStub = null;
+
         // server policy stub at this moment has the full policy chain; safe to add to group
         if (existingGroupPolicy == null) {
             setIfAlreadyPinned(serverPolicyStub, processedPolicies, nextPoliciesToCreate.size());
             groupPolicyStub.onCreate(region, serverPolicyStub, spec);
             groupPolicyStub.addServer(serverPolicyStub);
+
+            /* Build client side appObjectStub from appObjectStub within AppObject of first DM's server policy in chain
+            and inject its client policy into it. An instance of Client side AppObjectStub is created at the end of
+            successful creation of SO. */
+            if (processedPolicies.get(0).getServerPolicy() == serverPolicy) {
+                appStub = (AppObjectStub) serverPolicy.sapphire_getAppObject().getObject();
+                // TODO(multi-lang): We may need to create a clone for non-java app object stub.
+                appStub = spec.getLang() == Language.java ? createClientAppStub(appStub) : appStub;
+                appStub.$__initialize(client);
+            }
         }
 
-        return processedPolicies;
+        return appStub;
     }
 
     /**
@@ -453,14 +463,6 @@ public class Sapphire {
         return serverPolicy;
     }
 
-    private static AppObjectStub getAppStub(
-            SapphireObjectSpec spec, SapphireServerPolicy serverPolicy, Object[] args)
-            throws CloneNotSupportedException {
-        AppObjectStub appObjectStub = serverPolicy.$__initialize(spec, args);
-        // TODO(multi-lang): We may need to create a clone for non-java app object stub.
-        return spec.getLang() == Language.java ? createClientAppStub(appObjectStub) : appObjectStub;
-    }
-
     public static AppObjectStub createClientAppStub(AppObjectStub template)
             throws CloneNotSupportedException {
         AppObjectStub obj = (AppObjectStub) template.$__clone();
@@ -564,29 +566,22 @@ public class Sapphire {
      *
      * @param spec sapphire object spec
      * @param serverPolicy server policy
-     * @param clientPolicy client policy
      * @param appArgs app arguments
      * @param appObject app Object
      * @throws ClassNotFoundException
-     * @throws CloneNotSupportedException
      * @throws IOException
      */
-    // TODO (merge):
     private static void initAppStub(
             SapphireObjectSpec spec,
             SapphireServerPolicy serverPolicy,
-            SapphireClientPolicy clientPolicy,
             Object[] appArgs,
             AppObject appObject)
-            throws ClassNotFoundException, CloneNotSupportedException, IOException {
-        AppObjectStub appStub;
+            throws ClassNotFoundException, IOException {
         if (appObject != null) {
             appObject = (AppObject) Utils.ObjectCloner.deepCopy(appObject);
             serverPolicy.$__initialize(appObject);
         } else {
-            appStub = getAppStub(spec, serverPolicy, appArgs);
-            appStub.$__initialize(clientPolicy);
-            serverPolicy.$__initialize(appStub);
+            serverPolicy.$__initialize(spec, appArgs);
         }
     }
 

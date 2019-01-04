@@ -44,7 +44,6 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
     public abstract static class SapphireServerPolicyLibrary
             implements SapphireServerPolicyUpcalls {
         protected AppObject appObject;
-        protected AppObjectStub appObjectStub;
         protected KernelOID oid;
         protected SapphireReplicaID replicaId;
         protected SapphirePolicy.SapphireGroupPolicy group;
@@ -156,14 +155,13 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 
                 // Complete the chain by creating new instances of server policies and stub that
                 // should be created after this policy.
-                List<SapphirePolicyContainer> nextPolicyList =
-                        Sapphire.createPolicy(
-                                this.getGroup().sapphireObjId,
-                                spec,
-                                this.nextPolicies,
-                                processedPoliciesReplica,
-                                region,
-                                null);
+                Sapphire.createPolicy(
+                        this.getGroup().sapphireObjId,
+                        spec,
+                        this.nextPolicies,
+                        processedPoliciesReplica,
+                        region,
+                        null);
 
                 getGroup().addServer((SapphireServerPolicy) serverPolicyStub);
             } catch (ClassNotFoundException e) {
@@ -199,10 +197,6 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 
         public AppObject sapphire_getAppObject() {
             return appObject;
-        }
-
-        public AppObjectStub sapphire_getAppObjectStub() {
-            return appObjectStub;
         }
 
         /**
@@ -381,10 +375,6 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 
         public void $__initialize(AppObject appObject) {
             this.appObject = appObject;
-        }
-
-        public void $__initialize(AppObjectStub appObjectStub) {
-            this.appObjectStub = appObjectStub;
         }
 
         public void $__setKernelOID(KernelOID oid) {

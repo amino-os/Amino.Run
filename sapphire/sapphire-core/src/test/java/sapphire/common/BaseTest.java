@@ -218,14 +218,18 @@ public class BaseTest {
                 new Answer<Object>() {
                     @Override
                     public Object answer(InvocationOnMock invocation) throws Throwable {
-                        if ((invocation.getMethod().getName().equals("getAppStub"))) {
+                        if ((invocation.getMethod().getName().equals("initAppStub"))) {
+                            SapphireObjectSpec spec =
+                                    (SapphireObjectSpec) invocation.getArguments()[0];
                             SapphirePolicy.SapphireServerPolicy serverPolicy =
                                     (SapphirePolicy.SapphireServerPolicy)
                                             invocation.getArguments()[1];
                             Object[] args = (Object[]) invocation.getArguments()[2];
 
-                            return Sapphire.createClientAppStub(
-                                    serverPolicy.$__initialize(spec, args));
+                            if (invocation.getArguments()[3] == null) {
+                                serverPolicy.$__initialize(spec, args);
+                                return null;
+                            }
                         }
                         if (!(invocation.getMethod().getName().equals("getPolicyStub")))
                             return invocation.callRealMethod();

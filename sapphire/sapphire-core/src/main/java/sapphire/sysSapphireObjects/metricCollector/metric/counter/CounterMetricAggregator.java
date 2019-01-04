@@ -4,8 +4,8 @@ import java.util.logging.Logger;
 import sapphire.app.labelselector.Labels;
 import sapphire.sysSapphireObjects.metricCollector.Metric;
 
-public class CounterServerMetric implements Metric {
-    private static Logger logger = Logger.getLogger(CounterClientMetric.class.getName());
+public class CounterMetricAggregator implements Metric {
+    private static Logger logger = Logger.getLogger(CounterMetric.class.getName());
     private String metricName;
     private long count;
     private Labels labels;
@@ -25,13 +25,12 @@ public class CounterServerMetric implements Metric {
         return metricName + "<" + labels.toString() + ":" + count + ">";
     }
 
-    public CounterServerMetric(String name, Labels labels) {
+    public CounterMetricAggregator(String name, Labels labels) {
         this.metricName = name;
         this.labels = labels;
     }
 
-    public void merge(
-            sapphire.sysSapphireObjects.metricCollector.metric.counter.CounterClientMetric metric) {
+    public void merge(CounterMetric metric) {
         logger.info("Received metric : " + metric.toString());
         synchronized (this) {
             count = count + metric.getCount();

@@ -1,4 +1,4 @@
-package sapphire.sysSapphireObjects.metricCollector.metric.counter;
+package sapphire.sysSapphireObjects.metricCollector.metric.WMA;
 
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
@@ -8,33 +8,27 @@ import sapphire.sysSapphireObjects.metricCollector.Collector;
 import sapphire.sysSapphireObjects.metricCollector.Metric;
 import sapphire.sysSapphireObjects.metricCollector.MetricSelector;
 
-public class CounterCollector implements Collector {
+public class WMACollector implements Collector {
     private Labels mandatoryLabels;
-    private ConcurrentHashMap<Labels, CounterMetricAggregator> collector;
+    private ConcurrentHashMap<Labels, WMAMetricAggregator> collector;
 
-    public CounterCollector(Labels labels) {
+    public WMACollector(Labels labels) {
         this.mandatoryLabels = labels;
         this.collector = new ConcurrentHashMap<>();
     }
 
     @Override
     public void collect(Metric metric) throws Exception {
-        if (!(metric instanceof CounterMetric)) {
+        if (!(metric instanceof WMAMetric)) {
             throw new Exception("invalid collector");
         }
+        WMAMetric clientMetric = (WMAMetric) metric.getMetric();
+        WMAMetricAggregator serverMetric = collector.get(clientMetric.getLabels());
 
-        CounterMetric clientMetric = (CounterMetric) metric.getMetric();
-        // TODO check for mandatory labels
-
-        CounterMetricAggregator serverMetric = collector.get(clientMetric.getLabels());
         if (serverMetric == null) {
-            serverMetric =
-                    new CounterMetricAggregator(clientMetric.getName(), clientMetric.getLabels());
+            serverMetric = new WMAMetricAggregator(clientMetric.getName(), clientMetric.getLabels());
             collector.put(clientMetric.getLabels(), serverMetric);
-            serverMetric.merge(clientMetric);
-            return;
         }
-
         serverMetric.merge(clientMetric);
     }
 
@@ -42,12 +36,12 @@ public class CounterCollector implements Collector {
     public ArrayList<Metric> retrieve(MetricSelector metricSelector) throws Exception {
         ArrayList<Metric> metricList = new ArrayList<>();
         Object oSelector = metricSelector.getMetricSelector();
-        if (!(oSelector instanceof CounterMetricSelector)) {
+        if (!(oSelector instanceof WMAMetricSelector)) {
             throw new Exception("invalid selector");
         }
 
-        CounterMetricSelector cMetricSelector = (CounterMetricSelector) oSelector;
-        Selector selector = cMetricSelector.getSelector();
+        WMAMetricSelector gMetricSelector = (WMAMetricSelector) oSelector;
+        Selector selector = gMetricSelector.getSelector();
 
         collector.forEach(
                 (labels, collector) -> {

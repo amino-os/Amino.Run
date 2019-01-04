@@ -10,7 +10,7 @@ import sapphire.sysSapphireObjects.metricCollector.MetricSelector;
 
 public class GaugeCollector implements Collector {
     private Labels mandatoryLabels;
-    private ConcurrentHashMap<Labels, GaugeServerMetric> collector;
+    private ConcurrentHashMap<Labels, GaugeMetricAggregator> collector;
 
     public GaugeCollector(Labels labels) {
         this.mandatoryLabels = labels;
@@ -19,14 +19,14 @@ public class GaugeCollector implements Collector {
 
     @Override
     public void collect(Metric metric) throws Exception {
-        if (!(metric instanceof GaugeClientMetric)) {
+        if (!(metric instanceof GaugeMetric)) {
             throw new Exception("invalid collector");
         }
-        GaugeClientMetric clientMetric = (GaugeClientMetric) metric.getMetric();
-        GaugeServerMetric serverMetric = collector.get(clientMetric.getLabels());
+        GaugeMetric clientMetric = (GaugeMetric) metric.getMetric();
+        GaugeMetricAggregator serverMetric = collector.get(clientMetric.getLabels());
 
         if (serverMetric == null) {
-            serverMetric = new GaugeServerMetric(clientMetric.getName(), clientMetric.getLabels());
+            serverMetric = new GaugeMetricAggregator(clientMetric.getName(), clientMetric.getLabels());
             collector.put(clientMetric.getLabels(), serverMetric);
         }
         serverMetric.merge(clientMetric);

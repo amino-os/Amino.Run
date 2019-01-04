@@ -10,7 +10,7 @@ import sapphire.sysSapphireObjects.metricCollector.MetricSelector;
 
 public class HistogramCollector implements Collector {
     private Labels mandatoryLabels;
-    private ConcurrentHashMap<Labels, HistogramServerMetric> collector;
+    private ConcurrentHashMap<Labels, HistogramMetricAggregator> collector;
 
     public HistogramCollector(Labels labels) {
         this.mandatoryLabels = labels;
@@ -19,15 +19,15 @@ public class HistogramCollector implements Collector {
 
     @Override
     public void collect(Metric metric) throws Exception {
-        if (!(metric instanceof HistogramClientMetric)) {
+        if (!(metric instanceof HistogramMetric)) {
             throw new Exception("invalid collector");
         }
-        HistogramClientMetric clientMetric = (HistogramClientMetric) metric.getMetric();
-        HistogramServerMetric serverMetric = collector.get(clientMetric.getLabels());
+        HistogramMetric clientMetric = (HistogramMetric) metric.getMetric();
+        HistogramMetricAggregator serverMetric = collector.get(clientMetric.getLabels());
 
         if (serverMetric == null) {
             serverMetric =
-                    new HistogramServerMetric(clientMetric.getName(), clientMetric.getLabels());
+                    new HistogramMetricAggregator(clientMetric.getName(), clientMetric.getLabels());
             collector.put(clientMetric.getLabels(), serverMetric);
         }
         serverMetric.merge(clientMetric);

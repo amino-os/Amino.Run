@@ -3,7 +3,6 @@ package sapphire.policy.metric;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Map;
-import java.util.TimerTask;
 import java.util.logging.Logger;
 import sapphire.app.SapphireObjectServer;
 import sapphire.app.SapphireObjectSpec;
@@ -17,21 +16,25 @@ import sapphire.kernel.common.GlobalKernelReferences;
 import sapphire.oms.OMSServer;
 import sapphire.policy.SapphirePolicyUpcalls;
 import sapphire.policy.util.ResettableTimer;
+import sapphire.sysSapphireObjects.metricCollector.Metric;
 import sapphire.sysSapphireObjects.metricCollector.MetricCollector;
 import sapphire.sysSapphireObjects.metricCollector.MetricCollectorLabels;
-import sapphire.sysSapphireObjects.metricCollector.metric.counter.CounterClientMetric;
+import sapphire.sysSapphireObjects.metricCollector.SendMetric;
+import sapphire.sysSapphireObjects.metricCollector.metric.counter.CounterMetric;
 import sapphire.sysSapphireObjects.metricCollector.metric.counter.Schema;
 
-public class MetricAggregator implements Serializable {
+public class MetricAggregator implements Serializable, SendMetric {
     private MetricPolicy.Config config = new MetricPolicy.Config();
     private MetricCollector collectorStub;
-    private CounterClientMetric rpcCounter;
+    private CounterMetric rpcCounter;
     private transient ResettableTimer metricSendTimer;
     static Logger logger = Logger.getLogger(MetricAggregator.class.getCanonicalName());
 
     private OMSServer oms() {
         return GlobalKernelReferences.nodeServer.oms;
     }
+
+    public MetricAggregator() {}
 
     MetricAggregator(
             SapphireObjectSpec spec, SapphireObjectID soID, SapphireReplicaID soReplicaID) {
@@ -88,42 +91,23 @@ public class MetricAggregator implements Serializable {
         // TODO: handle exceptions if metric already registered
         collectorStub.Register(metricCounterSchema);
         rpcCounter =
-                CounterClientMetric.newBuilder()
+                CounterMetric.newBuilder()
                         .setMetricName(MetricDMConstants.METRIC_NAME_RPC_COUNTER)
                         .setLabels(config.getMetricLabels())
-                        .setMetricCollector(collectorStub)
+                        .setFrequency(config.getMetricUpdateFrequency())
                         .create();
-
-        metricSendTimer =
-                new ResettableTimer(
-                        new TimerTask() {
-                            public void run() {
-                                sendMetric();
-                            }
-                        },
-                        config.getMetricUpdateFrequency());
-        metricSendTimer.start();
     }
 
     void incRpcCounter() {
         rpcCounter.incCount();
     }
 
-    private void sendMetric() {
-        try {
-            if (rpcCounter.modified()) {
-                rpcCounter.sendMetric();
-                rpcCounter.reset();
-            }
-        } catch (Exception e) {
-            logger.warning(String.format("%s: Sending metric failed", e.toString()));
-            return;
-        }
-
-        metricSendTimer.reset();
+    @Override
+    public void send(Metric metric) throws Exception {
+        collectorStub.push(metric);
     }
 
     void stop() {
-        metricSendTimer.cancel();
+        rpcCounter.stopTimer();
     }
 }

@@ -12,17 +12,15 @@ public class GaugeMetricSelector implements MetricSelector {
         this.metricName = name;
     }
 
-    @Override
     public String getName() {
-        return metricName;
+        return this.metricName;
     }
 
-    @Override
     public Object getMetricSelector() {
         return this;
     }
 
     public Selector getSelector() {
-        return selector;
+        return this.selector;
     }
 }

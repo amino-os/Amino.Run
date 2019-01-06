@@ -1,10 +1,8 @@
 package sapphire.app;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import org.junit.Assert;
 import org.junit.Test;
@@ -14,13 +12,13 @@ import sapphire.app.labelselector.Requirement;
 public class RequirementTest {
 
     private Labels createLabels() {
-        Labels label = new Labels();
-        Map<String, String> labels = new HashMap<>();
-        labels.put("key1", "value1");
-        labels.put("key2", "value2");
-        labels.put("key3", "value3");
-        labels.put("key4", "value4");
-        label.setLabels(labels);
+        Labels label =
+                Labels.newBuilder()
+                        .add("key1", "value1")
+                        .add("key2", "value2")
+                        .add("key3", "value3")
+                        .add("key4", "value4")
+                        .create();
         return label;
     }
 

@@ -3,6 +3,11 @@ package sapphire.app.labelselector;
 import java.io.Serializable;
 import java.util.*;
 
+/**
+ * Requirement is condition used in selector.
+ *
+ * <p>Each requirement can represent one of different condition such as equal or in or notin.
+ */
 public class Requirement implements Serializable {
     public static final String Equal = "=";
     public static final String In = "in";

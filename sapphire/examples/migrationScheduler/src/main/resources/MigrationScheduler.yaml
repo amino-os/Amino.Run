@@ -1,0 +1,8 @@
+!!sapphire.app.SapphireObjectSpec
+constructorName: null
+javaClassName: sapphire.sysSapphireObjects.migrationScheduler.MigrationScheduler
+lang: java
+name: MigrationScheduler
+sapphireObjectLabels:
+  labels: {MigrationSchedulerName: SysMigrationScheduler}
+sourceFileLocation: null

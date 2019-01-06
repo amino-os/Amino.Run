@@ -446,6 +446,21 @@ public class OMSServerImpl implements OMSServer, SapphireObjectServer {
     }
 
     /**
+     * Gets the event handler of sapphire replica
+     *
+     * @param replicaId
+     * @throws RemoteException
+     * @throws SapphireObjectNotFoundException
+     * @throws SapphireObjectReplicaNotFoundException
+     */
+    @Override
+    public EventHandler getSapphireReplicaDispatcher(SapphireReplicaID replicaId)
+            throws RemoteException, SapphireObjectNotFoundException,
+                    SapphireObjectReplicaNotFoundException {
+        return objectManager.getReplicaDispatcher(replicaId);
+    }
+
+    /**
      * Unregister the sapphire object
      *
      * @param sapphireObjId

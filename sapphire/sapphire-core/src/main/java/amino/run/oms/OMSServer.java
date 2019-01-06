@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public interface OMSServer extends Remote {
-    public static final long KS_HEARTBEAT_TIMEOUT = 6000; // milliseconds
+    public static final long KS_HEARTBEAT_TIMEOUT = 999999999; // milliseconds
 
     KernelOID registerKernelObject(InetSocketAddress host) throws RemoteException;
 
@@ -52,6 +52,10 @@ public interface OMSServer extends Remote {
             throws RemoteException, SapphireObjectNotFoundException;
 
     void setSapphireReplicaDispatcher(SapphireReplicaID replicaId, EventHandler dispatcher)
+            throws RemoteException, SapphireObjectNotFoundException,
+                    SapphireObjectReplicaNotFoundException;
+
+    EventHandler getSapphireReplicaDispatcher(SapphireReplicaID replicaId)
             throws RemoteException, SapphireObjectNotFoundException,
                     SapphireObjectReplicaNotFoundException;
 

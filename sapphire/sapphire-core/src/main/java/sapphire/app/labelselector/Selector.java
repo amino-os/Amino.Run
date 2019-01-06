@@ -5,6 +5,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Selector is set of condition to filter labeled objects.
+ *
+ * <p>Each Selector can have any number of conditions. An object get selected if all selection
+ * condition return true.
+ */
 public class Selector implements Serializable {
     private ArrayList<Requirement> requirements = new ArrayList<>();
 

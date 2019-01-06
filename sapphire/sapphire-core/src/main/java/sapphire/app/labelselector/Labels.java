@@ -7,6 +7,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+/**
+ * Labels are key-value pair used for tagging objects such as Sapphire Object for identity purpose.
+ *
+ * <p>Each Label maintains list of key value.Labels are immutable objects.
+ */
 public class Labels implements Serializable {
     private Map<String, String> labels = new HashMap<>();
 
@@ -22,7 +27,7 @@ public class Labels implements Serializable {
         return labels.get(label);
     }
 
-    public void setLabels(Map<String, String> labels) {
+    private void setLabels(Map<String, String> labels) {
         this.labels = labels;
     }
 
@@ -45,6 +50,32 @@ public class Labels implements Serializable {
         }
 
         return selector;
+    }
+
+    public static Labels.Builder newBuilder() {
+        return new Labels.Builder();
+    }
+
+    public static class Builder {
+        private Map<String, String> labelMap = new HashMap<>();
+
+        public Labels.Builder add(String key, String value) {
+            labelMap.put(key, value);
+            return this;
+        }
+
+        public Labels.Builder merge(Labels labels) {
+            for (Map.Entry<String, String> entry : labels.getLabels().entrySet()) {
+                labelMap.put(entry.getKey(), entry.getValue());
+            }
+            return this;
+        }
+
+        public Labels create() {
+            Labels labels = new Labels();
+            labels.setLabels(labelMap);
+            return labels;
+        }
     }
 
     @Override

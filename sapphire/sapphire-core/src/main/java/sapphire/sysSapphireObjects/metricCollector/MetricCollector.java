@@ -42,7 +42,7 @@ public class MetricCollector implements SapphireObject {
         Collector collector = metricCollectors.get(metricName);
         if (collector == null) {
             // TODO define new exception
-            throw new Exception("metric not registered");
+            return new ArrayList<>();
         }
 
         synchronized (collector) {

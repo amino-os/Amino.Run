@@ -1,0 +1,17 @@
+apply plugin: 'java-library'
+
+// Customize runapp for this example
+runapp {
+    main = "sapphire.sysSapphireObjects.migrationScheduler.MigrationSchedulerDeploy"
+    // This one doesn't take kernel server address params
+    args project.property('omsIp'), project.property('omsPort')
+}
+
+// For the parent examples project itself, we disable inherited tasks that don't make sense at this level.
+genStubs {
+    onlyIf() { false } // Disable
+}
+
+compileStubs {
+    onlyIf() { false } // Disable
+}

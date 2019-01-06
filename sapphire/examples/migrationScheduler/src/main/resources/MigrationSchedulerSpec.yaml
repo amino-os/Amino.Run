@@ -1,0 +1,3 @@
+!!sapphire.sysSapphireObjects.migrationScheduler.policy.ExecutionPolicy.Config
+metricLabels:
+  labels: {App: KVStoreAutoMigration}

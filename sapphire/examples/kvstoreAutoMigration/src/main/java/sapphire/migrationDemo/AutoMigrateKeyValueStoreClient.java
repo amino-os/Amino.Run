@@ -1,40 +1,45 @@
 package sapphire.migrationDemo;
 
 import sapphire.app.SapphireObjectServer;
-import sapphire.app.labelselector.Requirement;
-import sapphire.app.labelselector.Selector;
-import sapphire.common.AppObjectStub;
 import sapphire.common.SapphireObjectID;
 import sapphire.kernel.server.KernelServerImpl;
-import sapphire.oms.OMSServer;
 
 import java.io.File;
 import java.net.InetSocketAddress;
 import java.nio.file.Files;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * Client class for testing {@link AutoMigrateKeyValueStore}
  */
 public class AutoMigrateKeyValueStoreClient {
+    private static Logger logger = Logger.getLogger(AutoMigrateKeyValueStoreClient.class.getName());
+
     public static void main(String[] args) throws Exception {
         SapphireObjectServer server = getSapphireObjectServer(args[0], args[1]);
 
         SapphireObjectID oid = server.createSapphireObject(getSpec());
         AutoMigrateKeyValueStore store = (AutoMigrateKeyValueStore)server.acquireSapphireObjectStub(oid);
 
-        for (int i=0; i<30; ++i) {
+        for (int i=0; i<150; ++i) {
             String key = "key_" + i;
             String val = "val_" + i;
-
-            System.out.println(String.format("<Client> setting %s = %s", key, val));
-            store.set(key, val);
-            val = String.valueOf(store.get(key));
-            System.out.println(String.format("<Client> got value %s with key %s", val, key));
-            Thread.sleep(1000);
+            try {
+                System.out.println(String.format("<Client> setting %s = %s", key, val));
+                store.set(key, val);
+                val = String.valueOf(store.get(key));
+                System.out.println(String.format("<Client> got value %s with key %s", val, key));
+                Thread.sleep(1000);
+            }
+            catch(Exception e){
+                if (e instanceof sapphire.kernel.common.KernelObjectMigratingException){
+                    logger.warning("Object Migrated : " + e);
+                    store = (AutoMigrateKeyValueStore)server.acquireSapphireObjectStub(oid);
+                }
+            }
         }
     }
 

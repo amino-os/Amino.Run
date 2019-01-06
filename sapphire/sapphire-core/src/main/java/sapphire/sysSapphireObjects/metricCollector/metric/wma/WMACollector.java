@@ -1,4 +1,4 @@
-package sapphire.sysSapphireObjects.metricCollector.metric.gauge;
+package sapphire.sysSapphireObjects.metricCollector.metric.wma;
 
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
@@ -8,28 +8,32 @@ import sapphire.sysSapphireObjects.metricCollector.Collector;
 import sapphire.sysSapphireObjects.metricCollector.Metric;
 import sapphire.sysSapphireObjects.metricCollector.MetricSelector;
 
-public class GaugeCollector implements Collector {
+public class WMACollector implements Collector {
     private Labels mandatoryLabels;
-    private ConcurrentHashMap<Labels, GaugeMetricAggregator> collector;
+    private ConcurrentHashMap<Labels, WMAAggregateMetric> collector;
 
-    public GaugeCollector(Labels labels) {
+    public WMACollector(Labels labels) {
         this.mandatoryLabels = labels;
         this.collector = new ConcurrentHashMap<>();
     }
 
     @Override
     public void collect(Metric metric) throws Exception {
-        if (!(metric instanceof GaugeMetric)) {
+        if (!(metric instanceof WMAMetric)) {
             throw new Exception("invalid collector");
         }
-        GaugeMetric clientMetric = (GaugeMetric) metric.getMetric();
-        GaugeMetricAggregator serverMetric = collector.get(clientMetric.getLabels());
 
+        WMAMetric clientMetric = (WMAMetric) metric.getMetric();
+        // TODO check for mandatory labels
+
+        WMAAggregateMetric serverMetric = collector.get(clientMetric.getLabels());
         if (serverMetric == null) {
-            serverMetric = new GaugeMetricAggregator(clientMetric.getName(), clientMetric.getLabels());
+            serverMetric = new WMAAggregateMetric(clientMetric.getName(), clientMetric.getLabels());
             collector.put(clientMetric.getLabels(), serverMetric);
+            serverMetric.merge(clientMetric);
             return;
         }
+
         serverMetric.merge(clientMetric);
     }
 
@@ -37,12 +41,12 @@ public class GaugeCollector implements Collector {
     public ArrayList<Metric> retrieve(MetricSelector metricSelector) throws Exception {
         ArrayList<Metric> metricList = new ArrayList<>();
         Object oSelector = metricSelector.getMetricSelector();
-        if (!(oSelector instanceof GaugeMetricSelector)) {
+        if (!(oSelector instanceof WMAMetricSelector)) {
             throw new Exception("invalid selector");
         }
 
-        GaugeMetricSelector gMetricSelector = (GaugeMetricSelector) oSelector;
-        Selector selector = gMetricSelector.getSelector();
+        WMAMetricSelector cMetricSelector = (WMAMetricSelector) oSelector;
+        Selector selector = cMetricSelector.getSelector();
 
         collector.forEach(
                 (labels, collector) -> {

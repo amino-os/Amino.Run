@@ -23,4 +23,14 @@ public class CounterMetricSelector implements MetricSelector {
         this.selector = selector;
         this.metricName = name;
     }
+
+    @Override
+    public String toString() {
+        return "CounterMetricSelector < metricName: "
+                + metricName
+                + ","
+                + "Selector: "
+                + selector
+                + ">";
+    }
 }

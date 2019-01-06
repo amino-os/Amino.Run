@@ -7,10 +7,10 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Logger;
 import sapphire.app.SapphireObjectServer;
 import sapphire.app.SapphireObjectSpec;
+import sapphire.app.labelselector.Labels;
 import sapphire.app.labelselector.Selector;
 import sapphire.common.AppObjectStub;
 import sapphire.common.SapphireObjectID;
@@ -55,15 +55,14 @@ public class MetricCollectorDeploy {
         String userDefinedSpec = String.join("\n", lines);
 
         SapphireObjectSpec spec = SapphireObjectSpec.fromYaml(userDefinedSpec);
-        Map<String, String> userDefinedLabels = spec.getSapphireObjectLabels().getLabels();
 
-        // add MetricCollector labels
-        for (Map.Entry<String, String> sysLabels :
-                MetricCollectorLabels.labels.getLabels().entrySet()) {
-            userDefinedLabels.put(sysLabels.getKey(), sysLabels.getValue());
-        }
+        Labels metricCollectorLabels =
+                Labels.newBuilder()
+                        .merge(spec.getSapphireObjectLabels())
+                        .merge(MetricCollectorLabels.labels)
+                        .create();
 
-        spec.getSapphireObjectLabels().setLabels(userDefinedLabels);
+        spec.setSapphireObjectLabels(metricCollectorLabels);
 
         return spec.toString();
     }

@@ -2,8 +2,8 @@
 constructorName: null
 dmList:
 - configs:
-  - !!sapphire.policy.metric.MetricPolicy$Config {metricLabels: { labels : {App: KVStoreAutoMigration}}}
-  name: sapphire.policy.metric.MetricPolicy
+  - !!sapphire.policy.mobility.automigration.AutoMigrationPolicy$Config {metricLabels: { labels : {App: KVStoreAutoMigration}}}
+  name: sapphire.policy.mobility.automigration.AutoMigrationPolicy
 javaClassName: sapphire.migrationDemo.AutoMigrateKeyValueStore
 lang: java
 name: null

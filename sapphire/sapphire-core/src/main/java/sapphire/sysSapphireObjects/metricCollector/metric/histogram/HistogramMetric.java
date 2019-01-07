@@ -17,10 +17,10 @@ public class HistogramMetric implements Metric {
     private int bucketSize;
     private LinkedHashMap<Long, Object> observedValues;
     private transient ResettableTimer metricSendTimer;
-    private SendMetric metricAggregator;
-    private long metricUpdateFrequency;
+    private transient SendMetric metricAggregator;
+    private transient long metricUpdateFrequency;
 
-    public HistogramMetric(
+    private HistogramMetric(
             String metricName,
             Labels labels,
             int bucketSize,
@@ -32,6 +32,13 @@ public class HistogramMetric implements Metric {
         this.observedValues = new LinkedHashMap<>();
         this.metricUpdateFrequency = metricUpdateFrequency;
         metricAggregator = sendMetric;
+    }
+
+    private HistogramMetric(
+            String metricName, Labels labels, LinkedHashMap<Long, Object> observedValues) {
+        this.metricName = metricName;
+        this.labels = labels;
+        this.observedValues = observedValues;
     }
 
     @Override
@@ -50,7 +57,7 @@ public class HistogramMetric implements Metric {
     }
 
     /** starts a ResettableTimer and resets once metricUpdateFrequency is reached */
-    public void startTimer() {
+    public void start() {
         metricSendTimer =
                 new ResettableTimer(
                         new TimerTask() {
@@ -67,7 +74,7 @@ public class HistogramMetric implements Metric {
                                 }
                                 // reset the observedValues and timer after push is done
                                 reset();
-                                resetTimer();
+                                metricSendTimer.reset();
                             }
                         },
                         metricUpdateFrequency);
@@ -75,13 +82,8 @@ public class HistogramMetric implements Metric {
     }
 
     /** stops the timer */
-    public void stopTimer() {
+    public void stop() {
         metricSendTimer.cancel();
-    }
-
-    /** resets the timer */
-    public void resetTimer() {
-        metricSendTimer.reset();
     }
 
     /** reset the observedValues */
@@ -113,12 +115,17 @@ public class HistogramMetric implements Metric {
         return observedValues;
     }
 
+    public static HistogramMetric.Builder newBuilder() {
+        return new HistogramMetric.Builder();
+    }
+
     public static class Builder {
         private int bucketSize;
         private String metricName;
         private Labels labels;
         private long metricUpdateFrequency;
         private SendMetric sendMetric;
+        private LinkedHashMap<Long, Object> observedValues;
 
         public HistogramMetric.Builder setBucketSize(int bucketSize) {
             this.bucketSize = bucketSize;
@@ -145,11 +152,21 @@ public class HistogramMetric implements Metric {
             return this;
         }
 
+        public HistogramMetric.Builder setvalues(LinkedHashMap<Long, Object> observedValues) {
+            this.observedValues = observedValues;
+            return this;
+        }
+
         public HistogramMetric create() {
-            HistogramMetric histogramMetric =
-                    new HistogramMetric(
-                            metricName, labels, bucketSize, metricUpdateFrequency, sendMetric);
-            histogramMetric.startTimer();
+            HistogramMetric histogramMetric;
+            if (metricUpdateFrequency == 0 && sendMetric == null) {
+                histogramMetric = new HistogramMetric(metricName, labels, observedValues);
+            } else {
+                histogramMetric =
+                        new HistogramMetric(
+                                metricName, labels, bucketSize, metricUpdateFrequency, sendMetric);
+                histogramMetric.start();
+            }
             return histogramMetric;
         }
     }

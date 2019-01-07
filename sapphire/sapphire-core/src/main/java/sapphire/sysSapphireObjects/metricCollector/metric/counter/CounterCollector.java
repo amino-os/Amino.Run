@@ -52,7 +52,7 @@ public class CounterCollector implements Collector {
         collector.forEach(
                 (labels, collector) -> {
                     if (selector.matches(labels)) {
-                        metricList.add(collector);
+                        metricList.add(collector.getMetric(metricSelector));
                     }
                 });
 

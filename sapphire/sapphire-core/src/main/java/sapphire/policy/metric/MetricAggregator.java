@@ -111,6 +111,6 @@ public class MetricAggregator implements Serializable, SendMetric {
     }
 
     void stop() {
-        rpcCounter.stopTimer();
+        rpcCounter.stop();
     }
 }

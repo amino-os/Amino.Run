@@ -3,8 +3,10 @@ package sapphire.sysSapphireObjects.metricCollector.metric.gauge;
 import java.util.logging.Logger;
 import sapphire.app.labelselector.Labels;
 import sapphire.sysSapphireObjects.metricCollector.Metric;
+import sapphire.sysSapphireObjects.metricCollector.MetricSelector;
+import sapphire.sysSapphireObjects.metricCollector.MetricWithSelector;
 
-public class GaugeMetricAggregator implements Metric {
+public class GaugeMetricAggregator implements MetricWithSelector {
     private static Logger logger = Logger.getLogger(GaugeMetricAggregator.class.getName());
     private String metricName;
     private float value;
@@ -16,13 +18,14 @@ public class GaugeMetricAggregator implements Metric {
     }
 
     @Override
-    public String getName() {
-        return metricName;
-    }
-
-    @Override
-    public Object getMetric() {
-        return this;
+    public Metric getMetric(MetricSelector metricSelector) {
+        GaugeMetric gaugeMetric =
+                GaugeMetric.newBuilder()
+                        .setMetricName(metricName)
+                        .setLabels(labels)
+                        .setValue(value)
+                        .create();
+        return gaugeMetric;
     }
 
     public void merge(GaugeMetric metric) {

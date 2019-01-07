@@ -26,7 +26,7 @@ public class WMAMetric implements Metric {
     private transient ResettableTimer metricSendTimer;
     private SendMetric metricAggregator;
 
-    public WMAMetric(
+    private WMAMetric(
             String metricName,
             Labels labels,
             int bucketSize,
@@ -39,6 +39,12 @@ public class WMAMetric implements Metric {
         metricAggregator = sendMetric;
         this.list = new ArrayList<>();
         this.wmaValues = new ArrayList<>();
+    }
+
+    private WMAMetric(String metricName, Labels labels, ArrayList<Float> wmaValues) {
+        this.metricName = metricName;
+        this.labels = labels;
+        this.wmaValues = wmaValues;
     }
 
     @Override
@@ -82,7 +88,7 @@ public class WMAMetric implements Metric {
     }
 
     /** starts a ResettableTimer and resets once metricUpdateFrequency is reached */
-    public void startTimer() {
+    public void start() {
         metricSendTimer =
                 new ResettableTimer(
                         new TimerTask() {
@@ -99,7 +105,7 @@ public class WMAMetric implements Metric {
                                 }
                                 // reset the wmaValues and timer after push is done
                                 reset();
-                                resetTimer();
+                                metricSendTimer.reset();
                             }
                         },
                         metricUpdateFrequency);
@@ -107,13 +113,8 @@ public class WMAMetric implements Metric {
     }
 
     /** stops the timer */
-    public void stopTimer() {
+    public void stop() {
         metricSendTimer.cancel();
-    }
-
-    /** resets the timer */
-    public void resetTimer() {
-        metricSendTimer.reset();
     }
 
     /**
@@ -146,6 +147,10 @@ public class WMAMetric implements Metric {
         return wmaValues;
     }
 
+    public static WMAMetric.Builder newBuilder() {
+        return new WMAMetric.Builder();
+    }
+
     public static class Builder {
         private int bucketSize;
         private int batchSize;
@@ -153,6 +158,7 @@ public class WMAMetric implements Metric {
         private Labels labels;
         private long metricUpdateFrequency;
         private SendMetric sendMetric;
+        private ArrayList<Float> wmaValues;
 
         public WMAMetric.Builder setBucketSize(int bucketSize) {
             this.bucketSize = bucketSize;
@@ -169,6 +175,11 @@ public class WMAMetric implements Metric {
             return this;
         }
 
+        public WMAMetric.Builder setvalues(ArrayList<Float> wmaValues) {
+            this.wmaValues = wmaValues;
+            return this;
+        }
+
         public WMAMetric.Builder setFrequency(long metricUpdateFrequency) {
             this.metricUpdateFrequency = metricUpdateFrequency;
             return this;
@@ -180,10 +191,15 @@ public class WMAMetric implements Metric {
         }
 
         public WMAMetric create() {
-            WMAMetric wmaMetric =
-                    new WMAMetric(
-                            metricName, labels, bucketSize, metricUpdateFrequency, sendMetric);
-            wmaMetric.startTimer();
+            WMAMetric wmaMetric;
+            if (metricUpdateFrequency == 0 && sendMetric == null) {
+                wmaMetric = new WMAMetric(metricName, labels, wmaValues);
+            } else {
+                wmaMetric =
+                        new WMAMetric(
+                                metricName, labels, bucketSize, metricUpdateFrequency, sendMetric);
+                wmaMetric.start();
+            }
             return wmaMetric;
         }
     }

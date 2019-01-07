@@ -17,8 +17,8 @@ public class GaugeMetric implements Metric {
     private float value;
     private Labels labels;
     private transient ResettableTimer metricSendTimer;
-    private SendMetric metricAggregator;
-    private long metricUpdateFrequency;
+    private transient SendMetric metricAggregator;
+    private transient long metricUpdateFrequency;
 
     private GaugeMetric(
             String metricName, Labels labels, long metricUpdateFrequency, SendMetric sendMetric) {
@@ -26,6 +26,12 @@ public class GaugeMetric implements Metric {
         this.labels = labels;
         this.metricUpdateFrequency = metricUpdateFrequency;
         metricAggregator = sendMetric;
+    }
+
+    private GaugeMetric(String metricName, Labels labels, float value) {
+        this.metricName = metricName;
+        this.labels = labels;
+        this.value = value;
     }
 
     @Override
@@ -77,7 +83,7 @@ public class GaugeMetric implements Metric {
     }
 
     /** starts a ResettableTimer and resets once metricUpdateFrequency is reached */
-    public void startTimer() {
+    public void start() {
         metricSendTimer =
                 new ResettableTimer(
                         new TimerTask() {
@@ -94,7 +100,7 @@ public class GaugeMetric implements Metric {
                                 }
                                 // reset the value and timer after push is done
                                 reset();
-                                resetTimer();
+                                metricSendTimer.reset();
                             }
                         },
                         metricUpdateFrequency);
@@ -102,13 +108,8 @@ public class GaugeMetric implements Metric {
     }
 
     /** stops the timer */
-    public void stopTimer() {
+    public void stop() {
         metricSendTimer.cancel();
-    }
-
-    /** resets the timer */
-    public void resetTimer() {
-        metricSendTimer.reset();
     }
 
     public static GaugeMetric.Builder newBuilder() {
@@ -120,6 +121,7 @@ public class GaugeMetric implements Metric {
         private Labels labels;
         private long metricUpdateFrequency;
         private SendMetric sendMetric;
+        private float value;
 
         public GaugeMetric.Builder setMetricName(String metricName) {
             this.metricName = metricName;
@@ -141,10 +143,20 @@ public class GaugeMetric implements Metric {
             return this;
         }
 
+        public GaugeMetric.Builder setValue(float value) {
+            this.value = value;
+            return this;
+        }
+
         public GaugeMetric create() {
-            GaugeMetric gaugeMetric =
-                    new GaugeMetric(metricName, labels, metricUpdateFrequency, sendMetric);
-            gaugeMetric.startTimer();
+            GaugeMetric gaugeMetric;
+            if (metricUpdateFrequency == 0 && sendMetric == null) {
+                gaugeMetric = new GaugeMetric(metricName, labels, value);
+            } else {
+                gaugeMetric =
+                        new GaugeMetric(metricName, labels, metricUpdateFrequency, sendMetric);
+                gaugeMetric.start();
+            }
             return gaugeMetric;
         }
     }

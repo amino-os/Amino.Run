@@ -18,8 +18,8 @@ public class CounterMetric implements Metric {
     private long count;
     private Labels labels;
     private transient ResettableTimer metricSendTimer;
-    private long metricUpdateFrequency;
-    private SendMetric metricAggregator;
+    private transient long metricUpdateFrequency;
+    private transient SendMetric metricAggregator;
 
     @Override
     public String getName() {
@@ -42,6 +42,12 @@ public class CounterMetric implements Metric {
         this.labels = labels;
         this.metricUpdateFrequency = metricUpdateFrequency;
         metricAggregator = sendMetric;
+    }
+
+    private CounterMetric(String name, Labels labels, long count) {
+        this.metricName = name;
+        this.labels = labels;
+        this.count = count;
     }
 
     /** resets count to zero */
@@ -74,7 +80,7 @@ public class CounterMetric implements Metric {
     }
 
     /** starts a ResettableTimer and resets once metricUpdateFrequency is reached */
-    public void startTimer() {
+    public void start() {
         metricSendTimer =
                 new ResettableTimer(
                         new TimerTask() {
@@ -91,7 +97,7 @@ public class CounterMetric implements Metric {
                                 }
                                 // reset the count value and timer after push is done
                                 reset();
-                                resetTimer();
+                                metricSendTimer.reset();
                             }
                         },
                         metricUpdateFrequency);
@@ -99,13 +105,8 @@ public class CounterMetric implements Metric {
     }
 
     /** stops timer */
-    public void stopTimer() {
+    public void stop() {
         metricSendTimer.cancel();
-    }
-
-    /** resets timer */
-    public void resetTimer() {
-        metricSendTimer.reset();
     }
 
     public static CounterMetric.Builder newBuilder() {
@@ -117,6 +118,7 @@ public class CounterMetric implements Metric {
         private Labels labels;
         private long metricUpdateFrequency;
         private SendMetric sendMetric;
+        private long count;
 
         public CounterMetric.Builder setMetricName(String metricName) {
             this.metricName = metricName;
@@ -138,10 +140,20 @@ public class CounterMetric implements Metric {
             return this;
         }
 
+        public CounterMetric.Builder setCount(long count) {
+            this.count = count;
+            return this;
+        }
+
         public CounterMetric create() {
-            CounterMetric counterMetric =
-                    new CounterMetric(metricName, labels, metricUpdateFrequency, sendMetric);
-            counterMetric.startTimer();
+            CounterMetric counterMetric;
+            if (metricUpdateFrequency == 0 && sendMetric == null) {
+                counterMetric = new CounterMetric(metricName, labels, count);
+            } else {
+                counterMetric =
+                        new CounterMetric(metricName, labels, metricUpdateFrequency, sendMetric);
+                counterMetric.start();
+            }
             return counterMetric;
         }
     }

@@ -4,8 +4,10 @@ import java.util.LinkedHashMap;
 import java.util.logging.Logger;
 import sapphire.app.labelselector.Labels;
 import sapphire.sysSapphireObjects.metricCollector.Metric;
+import sapphire.sysSapphireObjects.metricCollector.MetricSelector;
+import sapphire.sysSapphireObjects.metricCollector.MetricWithSelector;
 
-public class HistogramMetricAggregator implements Metric {
+public class HistogramMetricAggregator implements MetricWithSelector {
     private static Logger logger = Logger.getLogger(HistogramMetricAggregator.class.getName());
     private String metricName;
     private LinkedHashMap<Long, Object> observedValues;
@@ -18,13 +20,14 @@ public class HistogramMetricAggregator implements Metric {
     }
 
     @Override
-    public String getName() {
-        return metricName;
-    }
-
-    @Override
-    public Object getMetric() {
-        return this;
+    public Metric getMetric(MetricSelector metricSelector) {
+        HistogramMetric histogramMetric =
+                HistogramMetric.newBuilder()
+                        .setMetricName(metricName)
+                        .setLabels(labels)
+                        .setvalues(observedValues)
+                        .create();
+        return histogramMetric;
     }
 
     public void merge(HistogramMetric metric) {

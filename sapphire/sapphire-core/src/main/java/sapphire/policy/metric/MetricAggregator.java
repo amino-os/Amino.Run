@@ -34,8 +34,6 @@ public class MetricAggregator implements Serializable, SendMetric {
         return GlobalKernelReferences.nodeServer.oms;
     }
 
-    public MetricAggregator() {}
-
     MetricAggregator(
             SapphireObjectSpec spec, SapphireObjectID soID, SapphireReplicaID soReplicaID) {
         Map<String, SapphirePolicyUpcalls.SapphirePolicyConfig> configMap =
@@ -99,6 +97,7 @@ public class MetricAggregator implements Serializable, SendMetric {
                         .setMetricName(MetricDMConstants.METRIC_NAME_RPC_COUNTER)
                         .setLabels(config.getMetricLabels())
                         .setFrequency(config.getMetricUpdateFrequency())
+                        .setSendMetric(this)
                         .create();
     }
 

@@ -3,7 +3,6 @@ package sapphire.policy.mobility.automigration;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Map;
-import java.util.TimerTask;
 import java.util.logging.Logger;
 import sapphire.app.SapphireObjectServer;
 import sapphire.app.SapphireObjectSpec;
@@ -16,20 +15,20 @@ import sapphire.common.Utils;
 import sapphire.kernel.common.GlobalKernelReferences;
 import sapphire.oms.OMSServer;
 import sapphire.policy.SapphirePolicyUpcalls;
-import sapphire.policy.util.ResettableTimer;
+import sapphire.sysSapphireObjects.metricCollector.Metric;
 import sapphire.sysSapphireObjects.metricCollector.MetricCollector;
 import sapphire.sysSapphireObjects.metricCollector.MetricCollectorLabels;
+import sapphire.sysSapphireObjects.metricCollector.SendMetric;
 import sapphire.sysSapphireObjects.metricCollector.metric.counter.CounterMetric;
 import sapphire.sysSapphireObjects.metricCollector.metric.counter.Schema;
 import sapphire.sysSapphireObjects.metricCollector.metric.gauge.GaugeMetric;
 import sapphire.sysSapphireObjects.metricCollector.metric.gauge.GaugeSchema;
 
-public class MetricAggregator implements Serializable {
+public class MetricAggregator implements Serializable, SendMetric {
     private AutoMigrationPolicy.Config config = new AutoMigrationPolicy.Config();
     private MetricCollector collectorStub;
     private CounterMetric rpcCounter;
     private GaugeMetric executionTime;
-    private transient ResettableTimer metricSendTimer;
     static Logger logger = Logger.getLogger(MetricAggregator.class.getCanonicalName());
 
     private OMSServer oms() {
@@ -109,23 +108,20 @@ public class MetricAggregator implements Serializable {
         }
         // register execution time metric
         rpcCounter =
-                new CounterMetric(
-                        MetricDMConstants.AUTO_MIGRATION_RPC_COUNTER, config.getMetricLabels());
+                CounterMetric.newBuilder()
+                        .setMetricName(MetricDMConstants.AUTO_MIGRATION_RPC_COUNTER)
+                        .setLabels(config.getMetricLabels())
+                        .setFrequency(config.getMetricUpdateFrequency())
+                        .setSendMetric(this)
+                        .create();
 
         executionTime =
-                new GaugeMetric(
-                        MetricDMConstants.AUTO_MIGRATION_AVG_EXECUTION_TIME,
-                        config.getMetricLabels());
-
-        metricSendTimer =
-                new ResettableTimer(
-                        new TimerTask() {
-                            public void run() {
-                                sendMetric();
-                            }
-                        },
-                        config.getMetricUpdateFrequency());
-        metricSendTimer.start();
+                GaugeMetric.newBuilder()
+                        .setMetricName(MetricDMConstants.AUTO_MIGRATION_AVG_EXECUTION_TIME)
+                        .setLabels(config.getMetricLabels())
+                        .setFrequency(config.getMetricUpdateFrequency())
+                        .setSendMetric(this)
+                        .create();
     }
 
     void incRpcCounter() {
@@ -140,24 +136,13 @@ public class MetricAggregator implements Serializable {
         return object;
     }
 
-    private void sendMetric() {
-        try {
-            if (rpcCounter.modified()) {
-                collectorStub.push(rpcCounter);
-                rpcCounter.reset();
-            }
-            collectorStub.push(executionTime);
-        } catch (Exception e) {
-            logger.warning(String.format("%s: Sending metric failed", e.toString()));
-            return;
-        }
-
-        metricSendTimer.reset();
+    @Override
+    public void send(Metric metric) throws Exception {
+        collectorStub.push(metric);
     }
 
     void stop() {
-        if (metricSendTimer != null) {
-            metricSendTimer.cancel();
-        }
+        rpcCounter.stopTimer();
+        executionTime.stopTimer();
     }
 }

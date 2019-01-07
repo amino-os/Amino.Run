@@ -15,6 +15,8 @@ import java.util.Objects;
 public class Labels implements Serializable {
     private Map<String, String> labels = new HashMap<>();
 
+    private Labels() {}
+
     public int size() {
         return labels.size();
     }
@@ -27,7 +29,7 @@ public class Labels implements Serializable {
         return labels.get(label);
     }
 
-    private void setLabels(Map<String, String> labels) {
+    public void setLabels(Map<String, String> labels) {
         this.labels = labels;
     }
 

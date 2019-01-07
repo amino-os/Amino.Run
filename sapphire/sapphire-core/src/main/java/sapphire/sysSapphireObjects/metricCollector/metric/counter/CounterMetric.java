@@ -3,9 +3,9 @@ package sapphire.sysSapphireObjects.metricCollector.metric.counter;
 import java.util.TimerTask;
 import java.util.logging.Logger;
 import sapphire.app.labelselector.Labels;
-import sapphire.policy.metric.MetricAggregator;
 import sapphire.policy.util.ResettableTimer;
 import sapphire.sysSapphireObjects.metricCollector.Metric;
+import sapphire.sysSapphireObjects.metricCollector.SendMetric;
 
 /**
  * Counter is a cumulative metric that represents a single monotonically increasing counter whose
@@ -19,7 +19,7 @@ public class CounterMetric implements Metric {
     private Labels labels;
     private transient ResettableTimer metricSendTimer;
     private long metricUpdateFrequency;
-    private MetricAggregator metricAggregator;
+    private SendMetric metricAggregator;
 
     @Override
     public String getName() {
@@ -36,16 +36,12 @@ public class CounterMetric implements Metric {
         return metricName + "<" + labels.toString() + ":" + count + ">";
     }
 
-    public CounterMetric(String name, Labels labels, long metricUpdateFrequency) {
+    private CounterMetric(
+            String name, Labels labels, long metricUpdateFrequency, SendMetric sendMetric) {
         this.metricName = name;
         this.labels = labels;
         this.metricUpdateFrequency = metricUpdateFrequency;
-        metricAggregator = new MetricAggregator();
-    }
-
-    public CounterMetric(String name, int count) {
-        this.metricName = name;
-        this.count = count;
+        metricAggregator = sendMetric;
     }
 
     /** resets count to zero */
@@ -120,6 +116,7 @@ public class CounterMetric implements Metric {
         private String metricName;
         private Labels labels;
         private long metricUpdateFrequency;
+        private SendMetric sendMetric;
 
         public CounterMetric.Builder setMetricName(String metricName) {
             this.metricName = metricName;
@@ -136,9 +133,14 @@ public class CounterMetric implements Metric {
             return this;
         }
 
+        public CounterMetric.Builder setSendMetric(SendMetric sendMetric) {
+            this.sendMetric = sendMetric;
+            return this;
+        }
+
         public CounterMetric create() {
             CounterMetric counterMetric =
-                    new CounterMetric(metricName, labels, metricUpdateFrequency);
+                    new CounterMetric(metricName, labels, metricUpdateFrequency, sendMetric);
             counterMetric.startTimer();
             return counterMetric;
         }

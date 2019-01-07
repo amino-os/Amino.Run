@@ -7,22 +7,20 @@ public class WMAMetricSelector implements MetricSelector {
     private Selector selector;
     private String metricName;
 
-    @Override
-    public String getName() {
-        return metricName;
+    public WMAMetricSelector(String name, Selector selector) {
+        this.selector = selector;
+        this.metricName = name;
     }
 
-    @Override
+    public String getName() {
+        return this.metricName;
+    }
+
     public Object getMetricSelector() {
         return this;
     }
 
     public Selector getSelector() {
-        return selector;
-    }
-
-    public WMAMetricSelector(String name, Selector selector) {
-        this.selector = selector;
-        this.metricName = name;
+        return this.selector;
     }
 }

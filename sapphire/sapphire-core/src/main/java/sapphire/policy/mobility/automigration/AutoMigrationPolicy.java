@@ -19,7 +19,7 @@ public class AutoMigrationPolicy extends DefaultSapphirePolicy {
 
     /** Configuration for Metric Policy. */
     public static class Config implements SapphirePolicyConfig {
-        private Labels metricLabels = new Labels();
+        private Labels metricLabels = Labels.newBuilder().create();
         private long metricUpdateFrequency = DM_METRIC_UPDATE_FREQUENCY;
 
         public long getMetricUpdateFrequency() {

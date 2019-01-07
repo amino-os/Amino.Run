@@ -1,4 +1,4 @@
-package sapphire.sysSapphireObjects.metricCollector.metric.WMA;
+package sapphire.sysSapphireObjects.metricCollector.metric.wma;
 
 public class Observation {
     private long timeInMillis;

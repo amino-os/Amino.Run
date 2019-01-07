@@ -10,7 +10,7 @@ import sapphire.sysSapphireObjects.metricCollector.MetricSelector;
 
 public class WMACollector implements Collector {
     private Labels mandatoryLabels;
-    private ConcurrentHashMap<Labels, WMAAggregateMetric> collector;
+    private ConcurrentHashMap<Labels, WMAMetricAggregator> collector;
 
     public WMACollector(Labels labels) {
         this.mandatoryLabels = labels;
@@ -22,18 +22,14 @@ public class WMACollector implements Collector {
         if (!(metric instanceof WMAMetric)) {
             throw new Exception("invalid collector");
         }
-
         WMAMetric clientMetric = (WMAMetric) metric.getMetric();
-        // TODO check for mandatory labels
+        WMAMetricAggregator serverMetric = collector.get(clientMetric.getLabels());
 
-        WMAAggregateMetric serverMetric = collector.get(clientMetric.getLabels());
         if (serverMetric == null) {
-            serverMetric = new WMAAggregateMetric(clientMetric.getName(), clientMetric.getLabels());
+            serverMetric =
+                    new WMAMetricAggregator(clientMetric.getName(), clientMetric.getLabels());
             collector.put(clientMetric.getLabels(), serverMetric);
-            serverMetric.merge(clientMetric);
-            return;
         }
-
         serverMetric.merge(clientMetric);
     }
 
@@ -45,8 +41,8 @@ public class WMACollector implements Collector {
             throw new Exception("invalid selector");
         }
 
-        WMAMetricSelector cMetricSelector = (WMAMetricSelector) oSelector;
-        Selector selector = cMetricSelector.getSelector();
+        WMAMetricSelector gMetricSelector = (WMAMetricSelector) oSelector;
+        Selector selector = gMetricSelector.getSelector();
 
         collector.forEach(
                 (labels, collector) -> {

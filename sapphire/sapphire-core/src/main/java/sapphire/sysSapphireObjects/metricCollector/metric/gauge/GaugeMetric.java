@@ -3,9 +3,9 @@ package sapphire.sysSapphireObjects.metricCollector.metric.gauge;
 import java.util.TimerTask;
 import java.util.logging.Logger;
 import sapphire.app.labelselector.Labels;
-import sapphire.policy.metric.MetricAggregator;
 import sapphire.policy.util.ResettableTimer;
 import sapphire.sysSapphireObjects.metricCollector.Metric;
+import sapphire.sysSapphireObjects.metricCollector.SendMetric;
 
 /**
  * Gauge is a metric that represents a single numerical value that can arbitrarily go up and down.
@@ -17,14 +17,15 @@ public class GaugeMetric implements Metric {
     private float value;
     private Labels labels;
     private transient ResettableTimer metricSendTimer;
-    private MetricAggregator metricAggregator;
+    private SendMetric metricAggregator;
     private long metricUpdateFrequency;
 
-    public GaugeMetric(String metricName, Labels labels, long metricUpdateFrequency) {
+    private GaugeMetric(
+            String metricName, Labels labels, long metricUpdateFrequency, SendMetric sendMetric) {
         this.metricName = metricName;
         this.labels = labels;
         this.metricUpdateFrequency = metricUpdateFrequency;
-        metricAggregator = new MetricAggregator();
+        metricAggregator = sendMetric;
     }
 
     @Override
@@ -118,6 +119,7 @@ public class GaugeMetric implements Metric {
         private String metricName;
         private Labels labels;
         private long metricUpdateFrequency;
+        private SendMetric sendMetric;
 
         public GaugeMetric.Builder setMetricName(String metricName) {
             this.metricName = metricName;
@@ -134,9 +136,14 @@ public class GaugeMetric implements Metric {
             return this;
         }
 
+        public GaugeMetric.Builder setSendMetric(SendMetric sendMetric) {
+            this.sendMetric = sendMetric;
+            return this;
+        }
+
         public GaugeMetric create() {
             GaugeMetric gaugeMetric =
-                    new GaugeMetric(metricName, labels, metricUpdateFrequency);
+                    new GaugeMetric(metricName, labels, metricUpdateFrequency, sendMetric);
             gaugeMetric.startTimer();
             return gaugeMetric;
         }

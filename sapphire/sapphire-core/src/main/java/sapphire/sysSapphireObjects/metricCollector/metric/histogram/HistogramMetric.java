@@ -4,9 +4,9 @@ import java.util.LinkedHashMap;
 import java.util.TimerTask;
 import java.util.logging.Logger;
 import sapphire.app.labelselector.Labels;
-import sapphire.policy.metric.MetricAggregator;
 import sapphire.policy.util.ResettableTimer;
 import sapphire.sysSapphireObjects.metricCollector.Metric;
+import sapphire.sysSapphireObjects.metricCollector.SendMetric;
 
 /** Histogram samples observations and maintains them in configurable buckets */
 public class HistogramMetric implements Metric {
@@ -17,17 +17,21 @@ public class HistogramMetric implements Metric {
     private int bucketSize;
     private LinkedHashMap<Long, Object> observedValues;
     private transient ResettableTimer metricSendTimer;
-    private MetricAggregator metricAggregator;
+    private SendMetric metricAggregator;
     private long metricUpdateFrequency;
 
     public HistogramMetric(
-            String metricName, Labels labels, int bucketSize, long metricUpdateFrequency) {
+            String metricName,
+            Labels labels,
+            int bucketSize,
+            long metricUpdateFrequency,
+            SendMetric sendMetric) {
         this.metricName = metricName;
         this.labels = labels;
         this.bucketSize = bucketSize;
         this.observedValues = new LinkedHashMap<>();
         this.metricUpdateFrequency = metricUpdateFrequency;
-        metricAggregator = new MetricAggregator();
+        metricAggregator = sendMetric;
     }
 
     @Override
@@ -114,6 +118,7 @@ public class HistogramMetric implements Metric {
         private String metricName;
         private Labels labels;
         private long metricUpdateFrequency;
+        private SendMetric sendMetric;
 
         public HistogramMetric.Builder setBucketSize(int bucketSize) {
             this.bucketSize = bucketSize;
@@ -135,10 +140,15 @@ public class HistogramMetric implements Metric {
             return this;
         }
 
+        public HistogramMetric.Builder setFrequency(SendMetric sendMetric) {
+            this.sendMetric = sendMetric;
+            return this;
+        }
+
         public HistogramMetric create() {
             HistogramMetric histogramMetric =
                     new HistogramMetric(
-                            metricName, labels, bucketSize, metricUpdateFrequency);
+                            metricName, labels, bucketSize, metricUpdateFrequency, sendMetric);
             histogramMetric.startTimer();
             return histogramMetric;
         }

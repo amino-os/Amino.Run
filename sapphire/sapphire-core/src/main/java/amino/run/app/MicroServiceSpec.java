@@ -186,7 +186,7 @@ public class MicroServiceSpec implements Serializable {
         private String constructorName;
         private List<DMSpec> dmList = new ArrayList<>();
         private NodeSelectorSpec nodeSelectorSpec;
-        private Labels labels = new Labels();
+        private Labels labels = Labels.newBuilder().create();
 
         public Builder setName(String name) {
             this.name = name;

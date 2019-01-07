@@ -232,6 +232,6 @@ tasks.googleJavaFormat.dependsOn genMetricCollectorSysSOStubs
 
 check.dependsOn tasks.googleJavaFormat
 check.dependsOn integTest
-compileJava.dependsOn checkGraalVmVersion
+//compileJava.dependsOn checkGraalVmVersion
 integTest.mustRunAfter test
 jar.inputs.dir compileStubs.outputs // jar needs to be rebuilt if stubs got recompiled

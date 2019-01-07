@@ -142,6 +142,28 @@ task compileMetricCollectorSysSOStubs(type: JavaCompile) {
     inputs.dir genMetricCollectorSysSOStubs.outputs
 }
 
+// Customize Sys SO stub generation
+task genMigrationSchedulerSysSOStubs(type :JavaExec){
+    main = "sapphire.compiler.StubGenerator"
+    classpath = sourceSets.main.runtimeClasspath
+
+    def pkg = 'sapphire.sysSapphireObjects.migrationScheduler'
+    def src = file(project.buildDir.toString() + '/classes/java/main/sapphire/sysSapphireObjects/migrationScheduler/')
+    def dst = file(project.projectDir.toString() + '/src/main/java/sapphire/sysSapphireObjects/migrationScheduler/stubs/')
+    args src.toString(), pkg, dst.toString()
+    outputs.dir dst // Declare outputs, so gradle will run if they have been changed
+    inputs.dir src   // Declare inputs, so gradle will run if they have been changed
+}
+
+// Task for stub compilation
+task compileMigrationSchedulerSysSOStubs(type: JavaCompile) {
+    source = sourceSets.main.java.srcDirs
+    classpath = sourceSets.main.compileClasspath
+    destinationDir = sourceSets.main.output.classesDir
+    options.incremental = true
+    inputs.dir genMigrationSchedulerSysSOStubs.outputs
+}
+
 task genUnitTestStubs(type :JavaExec){
     main = "amino.run.compiler.StubGenerator"
     classpath = sourceSets.main.runtimeClasspath
@@ -229,9 +251,25 @@ tasks.googleJavaFormat.dependsOn genStubs
 tasks.googleJavaFormat.dependsOn genGraalTestStubs
 tasks.googleJavaFormat.dependsOn genIntegTestStubs
 tasks.googleJavaFormat.dependsOn genMetricCollectorSysSOStubs
+tasks.googleJavaFormat.dependsOn genMigrationSchedulerSysSOStubs
 
 check.dependsOn tasks.googleJavaFormat
 check.dependsOn integTest
 //compileJava.dependsOn checkGraalVmVersion
 integTest.mustRunAfter test
 jar.inputs.dir compileStubs.outputs // jar needs to be rebuilt if stubs got recompiled
+
+task genFiles(){
+    def dst = genGraalTestStubs.outputs.files
+    dst += genIntegTestStubs.outputs.files
+    dst += genMetricCollectorSysSOStubs.outputs.files
+    dst += genMigrationSchedulerSysSOStubs.outputs.files
+    outputs.dir dst
+}
+
+clean {
+    delete genFiles.outputs.files // Add generated stubs to what the clean task must delete
+    doLast {
+        println 'DEBUG: Clean will also delete ' + genFiles.outputs.files.asCollection()
+    }
+}

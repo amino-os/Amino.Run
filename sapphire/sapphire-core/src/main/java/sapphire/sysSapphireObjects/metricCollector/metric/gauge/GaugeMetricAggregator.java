@@ -34,7 +34,6 @@ public class GaugeMetricAggregator implements MetricWithSelector {
     }
 
     public void merge(GaugeMetric metric) {
-        logger.info("Received metric : " + metric.toString());
         synchronized (this) {
             value = metric.getValue();
         }

@@ -92,6 +92,7 @@ public class GaugeMetric implements Metric {
                                 try {
                                     if (modified()) {
                                         metricAggregator.send(GaugeMetric.this);
+                                        reset();
                                     }
                                 } catch (Exception e) {
                                     logger.warning(
@@ -99,8 +100,6 @@ public class GaugeMetric implements Metric {
                                                     "%s: Sending metric failed", e.toString()));
                                     e.printStackTrace();
                                 }
-                                // reset the value and timer after push is done
-                                reset();
                                 metricSendTimer.reset();
                             }
                         },

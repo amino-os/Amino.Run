@@ -130,15 +130,15 @@ subprojects {
     }
 
     task cleanStub(type: CleanTask) {
-        compilerDir=file(project.projectDir.toString() + '/src/main/java/sapphire/compiler/')
+        compilerDir=file(project.projectDir.toString() + '/src/main/java/amino/run/compiler/')
     }
     task cleanGraalStub(type: CleanTask) {
-        compilerDir=file(project.projectDir.toString() + '/src/main/java/sapphire/compiler/')
+        compilerDir=file(project.projectDir.toString() + '/src/main/java/amino/run/compiler/')
     }
     task cleanIntegTestStub(type: CleanTask) {
-        compilerDir=file(project.projectDir.toString() + '/src/main/java/sapphire/compiler/')
+        compilerDir=file(project.projectDir.toString() + '/src/main/java/amino/run/compiler/')
     }
     task cleanUnitTestStub(type: CleanTask) {
-        compilerDir=file(project.projectDir.toString() + '/src/main/java/sapphire/compiler/')
+        compilerDir=file(project.projectDir.toString() + '/src/main/java/amino/run/compiler/')
     }
 }

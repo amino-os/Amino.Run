@@ -44,8 +44,8 @@ runapp {
     main = 'amino.run.appdemo.KeyValueStoreClient'
 }
 cleanStub{
-    inputDir=file(project.projectDir.toString() + '/src/main/js/sapphire/appdemo/')
-    outputDir=file(project.projectDir.toString() + '/src/main/java/sapphire/appdemo/stubs/')
+    inputDir=file(project.projectDir.toString() + '/src/main/js/amino/run/appdemo/')
+    outputDir=file(project.projectDir.toString() + '/src/main/java/amino/run/appdemo/stubs/')
 }
 genStubs.dependsOn cleanStub
 compileJava.dependsOn genStubs

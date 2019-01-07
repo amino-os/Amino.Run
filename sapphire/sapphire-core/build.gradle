@@ -178,22 +178,17 @@ task compileIntegTestDemoPkg(type: JavaCompile) {
     options.incremental = true
 }
 
-
-cleanStub{
-    inputDir =  file(project.projectDir.toString() + '/src/main/java/sapphire/policy/')
-    outputDir = file(project.projectDir.toString() + '/src/main/java/sapphire/policy/stubs/')
-}
 cleanGraalStub{
     inputDir =  file(project.projectDir.toString() + '/src/test/resources/')
-    outputDir = file(project.projectDir.toString() + '/src/test/java/sapphire/stubs/')
+    outputDir = file(project.projectDir.toString() + '/src/test/java/amino/run/stubs/')
 }
 cleanUnitTestStub{
-    inputDir =  file(project.projectDir.toString() + '/src/test/java/sapphire/sampleSO')
-    outputDir = file(project.projectDir.toString() + '/src/test/java/sapphire/sampleSO/stubs/')
+    inputDir =  file(project.projectDir.toString() + '/src/test/java/amino/run/sampleSO')
+    outputDir = file(project.projectDir.toString() + '/src/test/java/amino/run/sampleSO/stubs/')
 }
 cleanIntegTestStub{
-    inputDir =  file(project.projectDir.toString() + '/src/integrationTest/java/sapphire/demo/')
-    outputDir = file(project.projectDir.toString() + '/src/integrationTest/java/sapphire/demo/stubs/')
+    inputDir =  file(project.projectDir.toString() + '/src/integrationTest/java/amino/run/demo/')
+    outputDir = file(project.projectDir.toString() + '/src/integrationTest/java/amino/run/demo/stubs/')
 }
 
 tasks.googleJavaFormat.mustRunAfter genStubs
@@ -201,14 +196,13 @@ tasks.googleJavaFormat.mustRunAfter genIntegTestStubs
 tasks.googleJavaFormat.mustRunAfter genGraalStub
 tasks.googleJavaFormat.mustRunAfter genUnitTestStubs
 
-compileJava.dependsOn cleanStub
 genGraalStub.dependsOn cleanGraalStub
 compileGraalStub.dependsOn genGraalStub
 compileTestJava.dependsOn compileGraalStub
 compileSampleSO.dependsOn cleanUnitTestStub
 genUnitTestStubs.dependsOn compileSampleSO
 compileTestJava.dependsOn genUnitTestStubs
-genIntegTestStubs.dependsOn cleanIntegTestStub
+compileIntegTestDemoPkg.dependsOn cleanIntegTestStub
 genIntegTestStubs.dependsOn compileIntegTestDemoPkg
 compileIntegrationTestJava.dependsOn genIntegTestStubs
 

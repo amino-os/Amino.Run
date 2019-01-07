@@ -25,7 +25,7 @@ runapp {
 }
 
 cleanStub{
-    inputDir=file(project.projectDir.toString() + '/src/main/java/sapphire/appexamples/helloworld/')
-    outputDir=file(project.projectDir.toString() + '/src/main/java/sapphire/appexamples/helloworld/stubs/')
+    inputDir=file(project.projectDir.toString() + '/src/main/java/amino/run/appexamples/helloworld/')
+    outputDir=file(project.projectDir.toString() + '/src/main/java/amino/run/appexamples/helloworld/stubs/')
 }
 compileJava.dependsOn cleanStub

@@ -32,6 +32,7 @@ public class GaugeCollector implements Collector {
             collector.put(clientMetric.getLabels(), serverMetric);
             return;
         }
+
         serverMetric.merge(clientMetric);
     }
 

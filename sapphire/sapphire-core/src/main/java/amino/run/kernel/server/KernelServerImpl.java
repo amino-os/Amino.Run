@@ -384,6 +384,10 @@ public class KernelServerImpl implements KernelServer {
         return new MemoryStatThread();
     }
 
+    public KernelServerStat getKernelServerStat(ServerInfo srvInfo) {
+        return new KernelServerStat(srvInfo);
+    }
+
     /** Send heartbeats to OMS. */
     private void startheartbeat(ServerInfo srvinfo) {
         logger.fine("heartbeat KernelServer" + srvinfo);
@@ -440,6 +444,7 @@ public class KernelServerImpl implements KernelServer {
 
             // Start a thread that print memory stats
             server.getMemoryStatThread().start();
+            server.getKernelServerStat(srvInfo).start();
             System.out.println("Server ready!");
         } catch (Exception e) {
             System.err.println("Failed to start kernel server: " + e.getMessage());

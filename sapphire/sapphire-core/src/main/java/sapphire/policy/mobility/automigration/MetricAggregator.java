@@ -90,17 +90,22 @@ public class MetricAggregator implements Serializable, SendMetric {
         }
 
         try {
-            // register counter metric
-            collectorStub.Register(
+            Schema schema =
                     new Schema(
-                            MetricDMConstants.AUTO_MIGRATION_RPC_COUNTER,
-                            config.getMetricLabels()));
+                            MetricDMConstants.AUTO_MIGRATION_RPC_COUNTER, config.getMetricLabels());
+            // register counter metric
+            if (!collectorStub.registered(schema)) {
+                collectorStub.register(schema);
+            }
 
-            // register execution time metric
-            collectorStub.Register(
+            GaugeSchema execSchema =
                     new GaugeSchema(
                             MetricDMConstants.AUTO_MIGRATION_AVG_EXECUTION_TIME,
-                            config.getMetricLabels()));
+                            config.getMetricLabels());
+            // register execution time metric
+            if (!collectorStub.registered(execSchema)) {
+                collectorStub.register(execSchema);
+            }
         }
         // TODO define Exception for already registered metric
         catch (Exception e) {

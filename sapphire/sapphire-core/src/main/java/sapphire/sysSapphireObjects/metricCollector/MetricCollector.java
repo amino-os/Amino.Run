@@ -15,7 +15,6 @@ public class MetricCollector implements SapphireObject {
     public boolean push(Metric metric) throws Exception {
         if (metric == null) return false;
         String metricName = metric.getName();
-        System.out.println(String.format("<Server>: pushing %s", metricName));
 
         Collector collector = metricCollectors.get(metricName);
         if (collector == null) {
@@ -37,7 +36,6 @@ public class MetricCollector implements SapphireObject {
         }
 
         String metricName = selector.getName();
-        System.out.println(String.format("<Server>: getting  %s", metricName));
 
         Collector collector = metricCollectors.get(metricName);
         if (collector == null) {
@@ -50,7 +48,7 @@ public class MetricCollector implements SapphireObject {
         }
     }
 
-    public Boolean Register(MetricSchema schema) throws Exception {
+    public Boolean register(MetricSchema schema) throws Exception {
         if (schema == null) return false;
         String metricName = schema.getName();
         System.out.println(
@@ -64,5 +62,16 @@ public class MetricCollector implements SapphireObject {
 
         metricCollectors.put(metricName, schema.getCollector());
         return true;
+    }
+
+    public Boolean registered(MetricSchema schema) {
+        if (schema == null) return false;
+        String metricName = schema.getName();
+        Collector collector = metricCollectors.get(metricName);
+        if (collector != null) {
+            return true;
+        }
+
+        return false;
     }
 }

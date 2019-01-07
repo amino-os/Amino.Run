@@ -28,6 +28,7 @@ public class GaugeMetric implements Metric {
         metricAggregator = sendMetric;
     }
 
+    // metric constructor for send
     private GaugeMetric(String metricName, Labels labels, float value) {
         this.metricName = metricName;
         this.labels = labels;
@@ -40,7 +41,7 @@ public class GaugeMetric implements Metric {
     }
 
     @Override
-    public Object getMetric() {
+    public Metric getMetric() {
         return this;
     }
 
@@ -91,15 +92,14 @@ public class GaugeMetric implements Metric {
                                 try {
                                     if (modified()) {
                                         metricAggregator.send(GaugeMetric.this);
+                                        reset();
                                     }
                                 } catch (Exception e) {
                                     logger.warning(
                                             String.format(
                                                     "%s: Sending metric failed", e.toString()));
-                                    return;
+                                    e.printStackTrace();
                                 }
-                                // reset the value and timer after push is done
-                                reset();
                                 metricSendTimer.reset();
                             }
                         },
@@ -159,5 +159,6 @@ public class GaugeMetric implements Metric {
             }
             return gaugeMetric;
         }
+
     }
 }

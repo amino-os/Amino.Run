@@ -47,7 +47,7 @@ public class HistogramMetric implements Metric {
     }
 
     @Override
-    public Object getMetric() {
+    public Metric getMetric() {
         return this;
     }
 

@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public interface OMSServer extends Remote {
-    public static final long KS_HEARTBEAT_TIMEOUT = 999999999; // milliseconds
+    public static final long KS_HEARTBEAT_TIMEOUT = 6000; // milliseconds
 
     KernelOID registerKernelObject(InetSocketAddress host) throws RemoteException;
 

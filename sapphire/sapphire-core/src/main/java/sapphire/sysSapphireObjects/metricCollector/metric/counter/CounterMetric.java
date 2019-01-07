@@ -27,7 +27,7 @@ public class CounterMetric implements Metric {
     }
 
     @Override
-    public Object getMetric() {
+    public Metric getMetric() {
         return this;
     }
 

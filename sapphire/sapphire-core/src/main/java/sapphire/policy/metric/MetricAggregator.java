@@ -91,7 +91,7 @@ public class MetricAggregator implements Serializable, SendMetric {
         Schema metricCounterSchema =
                 new Schema(MetricDMConstants.METRIC_NAME_RPC_COUNTER, config.getMetricLabels());
         // TODO: handle exceptions if metric already registered
-        collectorStub.Register(metricCounterSchema);
+        collectorStub.register(metricCounterSchema);
         rpcCounter =
                 CounterMetric.newBuilder()
                         .setMetricName(MetricDMConstants.METRIC_NAME_RPC_COUNTER)

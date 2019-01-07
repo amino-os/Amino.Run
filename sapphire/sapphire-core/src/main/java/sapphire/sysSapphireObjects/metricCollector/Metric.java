@@ -5,5 +5,5 @@ import java.io.Serializable;
 public interface Metric extends Serializable {
     String getName();
 
-    Object getMetric();
+    Metric getMetric();
 }

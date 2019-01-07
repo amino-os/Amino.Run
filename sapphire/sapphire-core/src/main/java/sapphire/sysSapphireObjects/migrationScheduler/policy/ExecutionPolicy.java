@@ -30,7 +30,6 @@ public class ExecutionPolicy implements MigrationPolicy {
     private transient ResettableTimer metricCollectTimer;
     private transient Logger logger = Logger.getLogger(ExecutionPolicy.class.getName());
     private MetricSelector metricSelector;
-    private static final transient Random randgen = new Random();
 
     public ExecutionPolicy(String PolicySpec) {
         Yaml yaml = new Yaml();
@@ -70,6 +69,7 @@ public class ExecutionPolicy implements MigrationPolicy {
                         new TimerTask() {
                             public void run() {
                                 startScheduling();
+                                metricCollectTimer.reset();
                             }
                         },
                         config.getMetricCollectFrequency());
@@ -85,64 +85,70 @@ public class ExecutionPolicy implements MigrationPolicy {
     private void startScheduling() {
         try {
             ArrayList<Metric> metrics = collectorStub.get(metricSelector);
+            // filter top metric to schedule
+            Metric topMetric = null;
             for (Metric metric : metrics) {
-                metricHandler(metric);
+                if (topMetric == null) {
+                    topMetric = metric;
+                    continue;
+                }
+                if (((GaugeMetric) topMetric.getMetric()).getValue()
+                        < ((GaugeMetric) metric.getMetric()).getValue()) {
+                    topMetric = metric;
+                }
             }
+
+            if (topMetric == null) {
+                return;
+            }
+            logger.info("top metric : " + topMetric);
+            metricHandler(topMetric);
         } catch (Exception e) {
             logger.warning("Execution migration scheduler failed");
         }
-
-        metricCollectTimer.reset();
     }
 
     private void metricHandler(Metric metric) {
-        if (metric instanceof GaugeMetric) {
-            GaugeMetric gaugeMetric = (GaugeMetric) metric;
-            logger.info("Collected Metric : " + gaugeMetric);
-            UUID sapphireObjectUUID =
-                    UUID.fromString(
-                            gaugeMetric
-                                    .getLabels()
-                                    .get(MetricDMConstants.METRIC_SAPPHIRE_OBJECT_ID));
-            UUID sapphireReplicaUUID =
-                    UUID.fromString(
-                            gaugeMetric
-                                    .getLabels()
-                                    .get(MetricDMConstants.METRIC_SAPPHIRE_REPLICA_ID));
-            SapphireReplicaID sapphireReplicaID =
-                    new SapphireReplicaID(
-                            new SapphireObjectID(sapphireObjectUUID), sapphireReplicaUUID);
+        GaugeMetric gaugeMetric = (GaugeMetric) metric;
+        UUID sapphireObjectUUID =
+                UUID.fromString(
+                        gaugeMetric.getLabels().get(MetricDMConstants.METRIC_SAPPHIRE_OBJECT_ID));
+        UUID sapphireReplicaUUID =
+                UUID.fromString(
+                        gaugeMetric.getLabels().get(MetricDMConstants.METRIC_SAPPHIRE_REPLICA_ID));
+        SapphireReplicaID sapphireReplicaID =
+                new SapphireReplicaID(
+                        new SapphireObjectID(sapphireObjectUUID), sapphireReplicaUUID);
 
-            try {
-                EventHandler eventHandler = oms().getSapphireReplicaDispatcher(sapphireReplicaID);
-                for (Object object : eventHandler.getObjects()) {
-                    if (object instanceof SapphirePolicy.SapphireServerPolicy
-                            && object instanceof AutoMigrationPolicy.AutoMigrationServerPolicy) {
-                        AutoMigrationPolicy.AutoMigrationServerPolicy serverPolicy =
-                                (AutoMigrationPolicy.AutoMigrationServerPolicy) object;
+        try {
+            EventHandler eventHandler = oms().getSapphireReplicaDispatcher(sapphireReplicaID);
+            for (Object object : eventHandler.getObjects()) {
+                if (object instanceof SapphirePolicy.SapphireServerPolicy
+                        && object instanceof AutoMigrationPolicy.AutoMigrationServerPolicy) {
+                    AutoMigrationPolicy.AutoMigrationServerPolicy serverPolicy =
+                            (AutoMigrationPolicy.AutoMigrationServerPolicy) object;
 
-                        if (gaugeMetric.getValue() > 899999.99) {
-                            InetSocketAddress currentAddress =
-                                    oms().lookupKernelObject(serverPolicy.$__getKernelOID());
-                            List<InetSocketAddress> kernelServers = oms().getServers(null);
+                    if (gaugeMetric.getValue() > config.getMigrationExecutionThreshold()) {
+                        InetSocketAddress currentAddress =
+                                oms().lookupKernelObject(serverPolicy.$__getKernelOID());
+                        List<InetSocketAddress> kernelServers = oms().getServers(null);
 
-                            // select random server
-                            InetSocketAddress address = currentAddress;
-                            logger.info("Current address !!!!" + address);
-                            for (InetSocketAddress kernelServerAddress : kernelServers) {
-                                if (!kernelServerAddress.equals(address)) {
-                                    address = kernelServerAddress;
-                                    break;
-                                }
+                        // select random server
+                        InetSocketAddress address = currentAddress;
+                        logger.info("Current address !!!!" + address);
+                        for (InetSocketAddress kernelServerAddress : kernelServers) {
+                            if (!kernelServerAddress.equals(address)) {
+                                address = kernelServerAddress;
+                                break;
                             }
-                            logger.info("Updated address !!!!" + address);
-                            serverPolicy.migrateObject(address);
                         }
+                        logger.info("Updated address !!!!" + address);
+                        serverPolicy.migrateObject(address);
                     }
                 }
-            } catch (Exception e) {
-                logger.warning("Execution migration scheduler failed !!!!" + e);
             }
+        } catch (Exception e) {
+            logger.warning("Execution migration scheduler failed !!!!" + e);
         }
     }
 }

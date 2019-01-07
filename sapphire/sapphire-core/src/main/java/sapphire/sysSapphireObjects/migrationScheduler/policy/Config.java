@@ -8,6 +8,7 @@ import sapphire.app.labelselector.Labels;
 
 public class Config implements Serializable {
     private long metricCollectFrequency = 6000; // milliseconds
+    private long migrationExecutionThreshold = 499999; // milliseconds
     private String metricName = AUTO_MIGRATION_AVG_EXECUTION_TIME;
     private Labels metricLabels;
 
@@ -33,6 +34,14 @@ public class Config implements Serializable {
 
     public void setMetricLabels(Labels metricLabels) {
         this.metricLabels = metricLabels;
+    }
+
+    public void setMigrationExecutionThreshold(long migrationExecutionThreshold) {
+        this.migrationExecutionThreshold = migrationExecutionThreshold;
+    }
+
+    public long getMigrationExecutionThreshold() {
+        return migrationExecutionThreshold;
     }
 
     public static Config fromYaml(String yamlString) {

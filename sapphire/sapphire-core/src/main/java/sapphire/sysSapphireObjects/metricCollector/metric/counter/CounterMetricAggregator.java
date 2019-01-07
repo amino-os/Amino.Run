@@ -34,7 +34,6 @@ public class CounterMetricAggregator implements MetricWithSelector {
     }
 
     public void merge(CounterMetric metric) {
-        logger.info("Received metric : " + metric.toString());
         synchronized (this) {
             count = count + metric.getCount();
         }

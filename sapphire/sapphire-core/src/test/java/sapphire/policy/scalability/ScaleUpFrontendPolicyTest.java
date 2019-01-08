@@ -4,7 +4,6 @@ import static org.junit.Assert.assertEquals;
 import static sapphire.common.UtilsTest.extractFieldValueOnInstance;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -51,20 +50,7 @@ public class ScaleUpFrontendPolicyTest extends BaseTest {
                                         .addConfig(lbConfig)
                                         .create())
                         .create();
-
-        super.setUp(
-                3,
-                spec,
-                new HashMap<String, Class>() {
-                    {
-                        put("ScaleUpFrontendPolicy", ScaleUpFrontendPolicy.GroupPolicy.class);
-                    }
-                },
-                new HashMap<String, Class>() {
-                    {
-                        put("ScaleUpFrontendPolicy", ScaleUpFrontendPolicy.ServerPolicy.class);
-                    }
-                });
+        super.setUp(3, spec);
     }
 
     @Test

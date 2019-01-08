@@ -4,7 +4,6 @@ import static org.junit.Assert.assertEquals;
 import static sapphire.common.SapphireUtils.getOmsSapphireInstance;
 
 import java.net.InetSocketAddress;
-import java.util.HashMap;
 import java.util.List;
 import org.junit.After;
 import org.junit.Before;
@@ -17,7 +16,6 @@ import sapphire.app.Language;
 import sapphire.app.SapphireObjectSpec;
 import sapphire.common.BaseTest;
 import sapphire.common.SapphireObjectID;
-import sapphire.policy.DefaultSapphirePolicy;
 import sapphire.sampleSO.SO;
 import sapphire.sampleSO.stubs.SO_Stub;
 
@@ -40,23 +38,7 @@ public class OMSTest extends BaseTest {
                         .setLang(Language.java)
                         .setJavaClassName("sapphire.sampleSO.SO")
                         .create();
-        super.setUp(
-                1,
-                spec,
-                new HashMap<String, Class>() {
-                    {
-                        put(
-                                "DefaultSapphirePolicy",
-                                DefaultSapphirePolicy.DefaultGroupPolicy.class);
-                    }
-                },
-                new HashMap<String, Class>() {
-                    {
-                        put(
-                                "DefaultSapphirePolicy",
-                                DefaultSapphirePolicy.DefaultServerPolicy.class);
-                    }
-                });
+        super.setUp(1, spec);
         so = ((SO) (server1.sapphire_getAppObject().getObject()));
     }
 

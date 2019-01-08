@@ -6,13 +6,10 @@ import static sapphire.common.SapphireUtils.addHost;
 import static sapphire.common.SapphireUtils.startSpiedKernelServer;
 import static sapphire.common.SapphireUtils.startSpiedOms;
 import static sapphire.common.UtilsTest.extractFieldValueOnInstance;
-import static sapphire.compiler.GlobalStubConstants.POLICY_STUB_PACKAGE;
-import static sapphire.compiler.GlobalStubConstants.STUB_SUFFIX;
 
 import java.net.InetSocketAddress;
 import java.rmi.registry.LocateRegistry;
 import java.util.ArrayList;
-import java.util.HashMap;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.powermock.core.classloader.annotations.PrepareForTest;
@@ -71,12 +68,7 @@ public class BaseTest {
 
     protected boolean serversInSameRegion = true;
 
-    public void setUp(
-            int serverCount,
-            SapphireObjectSpec spec,
-            HashMap<String, Class> groupMap,
-            HashMap<String, Class> serverMap)
-            throws Exception {
+    public void setUp(int serverCount, SapphireObjectSpec spec) throws Exception {
         // create a spied oms instance
         OMSServerImpl spiedOms = startSpiedOms(LOOP_BACK_IP_ADDR, omsPort);
         spiedksOnOms = spy(GlobalKernelReferences.nodeServer);
@@ -124,71 +116,35 @@ public class BaseTest {
             addHost(spiedKs3);
         }
 
-        mockStatic(
-                Utils.ObjectCloner.class,
-                new Answer<Object>() {
-                    @Override
-                    public Object answer(InvocationOnMock invocation) throws Throwable {
-                        if (invocation.getMethod().getName().equals("deepCopy")
-                                && !(invocation.getArguments()[0] instanceof AppObject)) {
-                            return invocation.getArguments()[0];
-                        }
-                        return invocation.callRealMethod();
-                    }
-                });
-
         // Stub static kernel object factory methods
         mockStatic(
                 KernelObjectFactory.class,
                 new Answer<Object>() {
-                    int i = 0;
-
                     @Override
                     public Object answer(InvocationOnMock invocation) throws Throwable {
-                        if (!invocation.getMethod().getName().equals("delete")
-                                && !invocation.getMethod().getName().equals("create")) {
+                        if (!invocation.getMethod().getName().equals("delete")) {
                             return invocation.callRealMethod();
                         }
 
-                        if (invocation.getMethod().getName().equals("delete")) {
-                            KernelOID oid = (KernelOID) invocation.getArguments()[0];
-                            InetSocketAddress host = spiedOms.lookupKernelObject(oid);
+                        KernelOID oid = (KernelOID) invocation.getArguments()[0];
+                        InetSocketAddress host = spiedOms.lookupKernelObject(oid);
 
-                            KernelServer ks = null;
-                            if (host.toString().contains(String.valueOf(omsPort))) {
-                                ks = spiedksOnOms;
-                            } else if (host.toString().contains(String.valueOf(kernelPort1))) {
-                                ks = spiedKs1;
-                            } else if (host.toString().contains(String.valueOf(kernelPort2))) {
-                                ks = spiedKs2;
-                            } else if (host.toString().contains(String.valueOf(kernelPort3))) {
-                                ks = spiedKs3;
-                            }
-
-                            KernelServerImpl temp = GlobalKernelReferences.nodeServer;
-                            GlobalKernelReferences.nodeServer = (KernelServerImpl) ks;
-                            Object ret = invocation.callRealMethod();
-                            GlobalKernelReferences.nodeServer = temp;
-                            return ret;
+                        KernelServer ks = null;
+                        if (host.toString().contains(String.valueOf(omsPort))) {
+                            ks = spiedksOnOms;
+                        } else if (host.toString().contains(String.valueOf(kernelPort1))) {
+                            ks = spiedKs1;
+                        } else if (host.toString().contains(String.valueOf(kernelPort2))) {
+                            ks = spiedKs2;
+                        } else if (host.toString().contains(String.valueOf(kernelPort3))) {
+                            ks = spiedKs3;
                         }
 
-                        assert (invocation.getMethod().getName().equals("create"));
-                        String policyObjectName = (String) invocation.getArguments()[0];
-                        String temp[] = policyObjectName.split("\\$")[0].split("\\.");
-                        String policyName = temp[temp.length - 1];
-                        Class<?> groupClass = groupMap.get(policyName);
-                        Class<?> serverClass = serverMap.get(policyName);
-
-                        if (policyObjectName.contains("Server")) {
-                            String[] split = (serverClass.getName() + STUB_SUFFIX).split("\\.");
-                            invocation.getArguments()[0] =
-                                    POLICY_STUB_PACKAGE + "." + split[split.length - 1];
-                        } else if (policyObjectName.contains("Group")) {
-                            String[] split = (groupClass.getName() + STUB_SUFFIX).split("\\.");
-                            invocation.getArguments()[0] =
-                                    POLICY_STUB_PACKAGE + "." + split[split.length - 1];
-                        }
-                        return invocation.callRealMethod();
+                        KernelServerImpl temp = GlobalKernelReferences.nodeServer;
+                        GlobalKernelReferences.nodeServer = (KernelServerImpl) ks;
+                        Object ret = invocation.callRealMethod();
+                        GlobalKernelReferences.nodeServer = temp;
+                        return ret;
                     }
                 });
 
@@ -199,6 +155,7 @@ public class BaseTest {
                     @Override
                     public Object answer(InvocationOnMock invocation) throws Throwable {
                         if ((invocation.getMethod().getName().equals("createGroupPolicy"))) {
+                            /* Group policy objects are created on kernel server within OMS */
                             KernelServerImpl temp = GlobalKernelReferences.nodeServer;
                             GlobalKernelReferences.nodeServer = (KernelServerImpl) spiedksOnOms;
                             Object ret = invocation.callRealMethod();

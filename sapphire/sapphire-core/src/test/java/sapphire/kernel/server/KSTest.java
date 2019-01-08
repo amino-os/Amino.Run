@@ -1,7 +1,6 @@
 package sapphire.kernel.server;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -14,7 +13,6 @@ import sapphire.app.SapphireObjectSpec;
 import sapphire.common.BaseTest;
 import sapphire.kernel.common.KernelRPC;
 import sapphire.kernel.common.KernelRPCException;
-import sapphire.policy.DefaultSapphirePolicy;
 import sapphire.sampleSO.SO;
 
 /** Created by Vishwajeet on 11/9/18. */
@@ -30,23 +28,7 @@ public class KSTest extends BaseTest {
                         .setLang(Language.java)
                         .setJavaClassName("sapphire.sampleSO.SO")
                         .create();
-        super.setUp(
-                1,
-                spec,
-                new HashMap<String, Class>() {
-                    {
-                        put(
-                                "DefaultSapphirePolicy",
-                                DefaultSapphirePolicy.DefaultGroupPolicy.class);
-                    }
-                },
-                new HashMap<String, Class>() {
-                    {
-                        put(
-                                "DefaultSapphirePolicy",
-                                DefaultSapphirePolicy.DefaultServerPolicy.class);
-                    }
-                });
+        super.setUp(1, spec);
         so = ((SO) (server1.sapphire_getAppObject().getObject()));
     }
 

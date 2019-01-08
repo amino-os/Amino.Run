@@ -11,7 +11,6 @@ import static sapphire.policy.util.consensus.raft.ServerTest.*;
 
 import java.rmi.RemoteException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -52,19 +51,7 @@ public class ConsensusRSMPolicyTest extends BaseTest {
                                         .setName(ConsensusRSMPolicy.class.getName())
                                         .create())
                         .create();
-        super.setUp(
-                3,
-                spec,
-                new HashMap<String, Class>() {
-                    {
-                        put("ConsensusRSMPolicy", ConsensusRSMPolicy.GroupPolicy.class);
-                    }
-                },
-                new HashMap<String, Class>() {
-                    {
-                        put("ConsensusRSMPolicy", ConsensusRSMPolicy.ServerPolicy.class);
-                    }
-                });
+        super.setUp(3, spec);
 
         /* Make server3 as raft leader */
         raftServer[0] =

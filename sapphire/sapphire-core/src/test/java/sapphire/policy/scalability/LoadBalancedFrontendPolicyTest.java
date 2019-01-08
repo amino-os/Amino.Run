@@ -8,7 +8,6 @@ import static sapphire.common.UtilsTest.extractFieldValueOnInstance;
 import static sapphire.common.UtilsTest.setFieldValueOnInstance;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -49,23 +48,7 @@ public class LoadBalancedFrontendPolicyTest extends BaseTest {
                                         .addConfig(config)
                                         .create())
                         .create();
-        super.setUp(
-                2,
-                spec,
-                new HashMap<String, Class>() {
-                    {
-                        put(
-                                "LoadBalancedFrontendPolicy",
-                                LoadBalancedFrontendPolicy.GroupPolicy.class);
-                    }
-                },
-                new HashMap<String, Class>() {
-                    {
-                        put(
-                                "LoadBalancedFrontendPolicy",
-                                LoadBalancedFrontendPolicy.ServerPolicy.class);
-                    }
-                });
+        super.setUp(2, spec);
     }
 
     /**

@@ -2,12 +2,9 @@ package sapphire.runtime;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
-import static sapphire.policy.SapphirePolicyUpcalls.SapphirePolicyConfig;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import org.junit.*;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
@@ -26,20 +23,10 @@ public class SapphireMultiPolicyChainTest extends BaseTest {
     @Rule public ExpectedException thrown = ExpectedException.none();
 
     private SapphireObjectSpec spec;
-    private Map<String, Map<String, SapphirePolicyConfig>> configMaps;
-    private Map<String, SapphirePolicyConfig> configMap;
 
     @Before
     public void setUp() throws Exception {
         this.serversInSameRegion = false;
-
-        HashMap<String, Class> groupMap = new HashMap<String, Class>();
-        HashMap<String, Class> serverMap = new HashMap<String, Class>();
-        groupMap.put("DHTPolicy", DHTPolicy.DHTGroupPolicy.class);
-        groupMap.put("DefaultSapphirePolicy", DefaultSapphirePolicy.DefaultGroupPolicy.class);
-        serverMap.put("DHTPolicy", DHTPolicy.DHTServerPolicy.class);
-        serverMap.put("DefaultSapphirePolicy", DefaultSapphirePolicy.DefaultServerPolicy.class);
-
         spec =
                 SapphireObjectSpec.newBuilder()
                         .setLang(Language.java)
@@ -50,11 +37,7 @@ public class SapphireMultiPolicyChainTest extends BaseTest {
                                         .setName(DefaultSapphirePolicy.class.getName())
                                         .create())
                         .create();
-
-        configMaps = Utils.fromDMSpecListToConfigMap(spec.getDmList());
-        configMap = configMaps.get(DHTPolicy.class.getName());
-
-        super.setUp(2, spec, groupMap, serverMap);
+        super.setUp(2, spec);
     }
 
     @Test

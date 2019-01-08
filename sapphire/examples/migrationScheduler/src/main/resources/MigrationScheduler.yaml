@@ -1,6 +1,6 @@
 !!sapphire.app.SapphireObjectSpec
 constructorName: null
-javaClassName: sapphire.sysSapphireObjects.migrationScheduler.MigrationScheduler
+javaClassName: MigrationScheduler
 lang: java
 name: MigrationScheduler
 sapphireObjectLabels:

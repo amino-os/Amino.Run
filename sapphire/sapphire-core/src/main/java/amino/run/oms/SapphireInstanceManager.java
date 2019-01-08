@@ -1,5 +1,6 @@
 package amino.run.oms;
 
+import amino.run.app.MicroServiceSpec;
 import amino.run.common.AppObjectStub;
 import amino.run.common.SapphireObjectID;
 import amino.run.common.SapphireObjectNotFoundException;
@@ -7,7 +8,6 @@ import amino.run.common.SapphireObjectReplicaNotFoundException;
 import amino.run.common.SapphireReplicaID;
 import amino.run.policy.Policy;
 import amino.run.runtime.EventHandler;
-import amino.run.app.SapphireObjectSpec;
 import java.rmi.RemoteException;
 import java.util.Collection;
 import java.util.Date;
@@ -27,7 +27,7 @@ public class SapphireInstanceManager {
     private AppObjectStub objectStub;
     private HashMap<SapphireReplicaID, EventHandler> replicaDispatchers;
     private Random oidGenerator;
-    private SapphireObjectSpec spec;
+    private MicroServiceSpec spec;
 
     /**
      * Root group policy is the <strong>outmost</strong> group policy of this sapphire object.
@@ -121,7 +121,7 @@ public class SapphireInstanceManager {
      *
      * @return Returns object stub
      */
-    public SapphireObjectSpec gettSapphireObjectSpec() {
+    public MicroServiceSpec getMicroServiceSpec() {
         return spec;
     }
 
@@ -130,7 +130,7 @@ public class SapphireInstanceManager {
      *
      * @param spec
      */
-    public void setSapphireObjectSpec(SapphireObjectSpec spec) {
+    public void setMicroServiceSpec(MicroServiceSpec spec) {
         this.spec = spec;
     }
 

@@ -1,0 +1,8 @@
+!!sapphire.app.SapphireObjectSpec
+constructorName: null
+javaClassName: MetricCollector
+lang: java
+name: null
+sapphireObjectLabels:
+  labels: {MetricCollectorName: ExampleCollector}
+sourceFileLocation: null

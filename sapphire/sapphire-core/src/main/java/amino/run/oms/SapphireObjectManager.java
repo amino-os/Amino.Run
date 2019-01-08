@@ -1,5 +1,7 @@
 package amino.run.oms;
 
+import amino.run.app.MicroServiceSpec;
+import amino.run.app.labelselector.Selector;
 import amino.run.common.AppObjectStub;
 import amino.run.common.SapphireObjectID;
 import amino.run.common.SapphireObjectNameModificationException;
@@ -8,9 +10,6 @@ import amino.run.common.SapphireObjectReplicaNotFoundException;
 import amino.run.common.SapphireReplicaID;
 import amino.run.policy.Policy;
 import amino.run.runtime.EventHandler;
-import amino.run.app.SapphireObjectSpec;
-import amino.run.app.labelselector.Selector;
-
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.UUID;
@@ -111,13 +110,13 @@ public class SapphireObjectManager {
      * @param spec
      * @throws SapphireObjectNotFoundException
      */
-    public void setSapphireObjectSpec(SapphireObjectID sapphireObjId, SapphireObjectSpec spec)
+    public void setSapphireObjectSpec(SapphireObjectID sapphireObjId, MicroServiceSpec spec)
             throws SapphireObjectNotFoundException {
         SapphireInstanceManager instance = sapphireObjects.get(sapphireObjId);
         if (instance == null) {
             throw new SapphireObjectNotFoundException("Not a valid Sapphire object id.");
         }
-        instance.setSapphireObjectSpec(spec);
+        instance.setMicroServiceSpec(spec);
     }
 
     /**
@@ -217,8 +216,7 @@ public class SapphireObjectManager {
      * @throws SapphireObjectNotFoundException
      */
     public void removeReplica(SapphireReplicaID replicaId) throws SapphireObjectNotFoundException {
-        SapphireInstanceManager instance =
-                sapphireObjects.get(new SapphireObjectIdentifier(replicaId.getOID()));
+        SapphireInstanceManager instance = sapphireObjects.get(replicaId.getOID());
         if (instance == null) {
             throw new SapphireObjectNotFoundException("Not a valid Sapphire object id.");
         }
@@ -270,7 +268,10 @@ public class SapphireObjectManager {
     }
 
     /**
-     * Get the object stub of sapphire object
+     * Get list of object stub.
+     *
+     * <p>As Stubs are filtered based on {@link Selector}, List can have stubs of different sapphire
+     * object.
      *
      * @param selector
      * @return
@@ -281,7 +282,7 @@ public class SapphireObjectManager {
         sapphireObjects.forEach(
                 (k, instance) -> {
                     if (selector.matches(
-                            instance.gettSapphireObjectSpec().getSapphireObjectLabels())) {
+                            instance.getMicroServiceSpec().getMicroServiceSpecLabels())) {
                         appStubList.add(instance.getInstanceObjectStub());
                     }
                 });

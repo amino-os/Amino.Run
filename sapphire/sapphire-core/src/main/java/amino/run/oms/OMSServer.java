@@ -1,10 +1,7 @@
 package amino.run.oms;
 
 import amino.run.app.NodeSelectorSpec;
-import amino.run.common.SapphireObjectID;
-import amino.run.common.SapphireObjectNotFoundException;
-import amino.run.common.SapphireObjectReplicaNotFoundException;
-import amino.run.common.SapphireReplicaID;
+import amino.run.common.*;
 import amino.run.kernel.common.KernelOID;
 import amino.run.kernel.common.KernelObjectNotCreatedException;
 import amino.run.kernel.common.KernelObjectNotFoundException;
@@ -67,4 +64,6 @@ public interface OMSServer extends Remote {
 
     void unRegisterSapphireReplica(SapphireReplicaID replicaId)
             throws RemoteException, SapphireObjectNotFoundException;
+
+    List<SystemSapphireObjectStatus> getSystemSapphireObjectStatus() throws RemoteException;
 }

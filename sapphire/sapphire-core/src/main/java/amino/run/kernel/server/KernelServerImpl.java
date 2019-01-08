@@ -384,7 +384,7 @@ public class KernelServerImpl implements KernelServer {
         return new MemoryStatThread();
     }
 
-    public KernelServerStat getKernelServerStat(ServerInfo srvInfo) {
+    private KernelServerStat getKernelServerStat(ServerInfo srvInfo) {
         return new KernelServerStat(srvInfo);
     }
 

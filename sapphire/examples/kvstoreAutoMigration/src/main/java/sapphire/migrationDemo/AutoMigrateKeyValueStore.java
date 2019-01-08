@@ -1,6 +1,6 @@
 package sapphire.migrationDemo;
 
-import sapphire.app.SapphireObject;
+import amino.run.app.SapphireObject;
 
 import java.io.Serializable;
 import java.util.Hashtable;

@@ -1,10 +1,10 @@
-!!sapphire.app.SapphireObjectSpec
+!!amino.run.app.SapphireObjectSpec
 constructorName: null
 dmList:
 - configs:
-  - !!sapphire.policy.mobility.automigration.AutoMigrationPolicy$Config {metricLabels: { labels : {App: KVStoreAutoMigration}}}
-  name: sapphire.policy.mobility.automigration.AutoMigrationPolicy
-javaClassName: sapphire.migrationDemo.AutoMigrateKeyValueStore
+  - !!amino.run.policy.mobility.automigration.AutoMigrationPolicy$Config {metricLabels: { labels : {App: KVStoreAutoMigration}}}
+  name: AutoMigrationPolicy
+javaClassName: amino.run.migrationDemo.AutoMigrateKeyValueStore
 lang: java
 name: null
 sapphireObjectLabels:

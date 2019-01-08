@@ -1,11 +1,11 @@
 package amino.run.app;
 
+import amino.run.app.labelselector.Labels;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import org.yaml.snakeyaml.Yaml;
-import sapphire.app.labelselector.Labels;
 
 /**
  * Microservice Specification.
@@ -39,9 +39,8 @@ import sapphire.app.labelselector.Labels;
  * lang: js
  * name: com.org.College
  * sourceFileLocation: src/main/js/college.js
- * labels:
- * - key1: value1,
- *   key2: value2
+ * sapphireObjectLabels:
+ *   labels: {key1: value1, key2: value2}
  * </code>
  */
 public class MicroServiceSpec implements Serializable {
@@ -63,7 +62,7 @@ public class MicroServiceSpec implements Serializable {
     /** List of Deployment Managers to be applied on microservice */
     private List<DMSpec> dmList = new ArrayList<>();
 
-    /** List of labels (key-value) to be applied on Sapphire object */
+    /** List of tags (key-value) applied on Sapphire object */
     private Labels sapphireObjectLabels;
 
     private NodeSelectorSpec nodeSelectorSpec;

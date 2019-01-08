@@ -17,6 +17,15 @@ compileStubs {
 
 jar.dependsOn compileStubs
 
+// Run OMS
+task runomswithms(type: JavaExec) {
+    classpath = sourceSets.main.runtimeClasspath
+    jvmArgs '-Djava.util.logging.config.file=' + project.projectDir + '/../../logging.properties'
+    main = 'amino.run.oms.OMSServerImpl'
+    args project.property('omsIp'), project.property('omsPort') , "--enableSysSO=MetricCollector"
+    inputs.dir compileStubs
+}
+
 // Customize runapp for this example
 runapp {
     main = "sapphire.migrationDemo.AutoMigrateKeyValueStoreClient"

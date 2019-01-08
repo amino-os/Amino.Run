@@ -1,15 +1,13 @@
 package amino.run.app;
 
+import amino.run.app.labelselector.Selector;
 import amino.run.common.AppObjectStub;
 import amino.run.common.SapphireObjectCreationException;
 import amino.run.common.SapphireObjectID;
 import amino.run.common.SapphireObjectNameModificationException;
 import amino.run.common.SapphireObjectNotFoundException;
-import amino.run.app.labelselector.Selector;
-import amino.run.common.*;
-
-import java.rmi.RemoteException;
 import java.rmi.Remote;
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 
 /** Interface used by Application client to interact with DCAP Sapphire system. */
@@ -42,7 +40,7 @@ public interface SapphireObjectServer extends Remote {
      * Gets the application client side instance of sapphire object. It is used by client to do
      * further operations on the sapphire object.
      *
-     * @param selector
+     * @param selector criterion for client side object selection
      * @return Application client side instance for Sapphire object
      * @throws RemoteException
      * @throws SapphireObjectNotFoundException

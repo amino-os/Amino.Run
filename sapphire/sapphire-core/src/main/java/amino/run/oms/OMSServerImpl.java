@@ -3,13 +3,8 @@ package amino.run.oms;
 import amino.run.app.MicroServiceSpec;
 import amino.run.app.NodeSelectorSpec;
 import amino.run.app.SapphireObjectServer;
-import amino.run.common.AppObjectStub;
-import amino.run.common.SapphireObjectCreationException;
-import amino.run.common.SapphireObjectID;
-import amino.run.common.SapphireObjectNameModificationException;
-import amino.run.common.SapphireObjectNotFoundException;
-import amino.run.common.SapphireObjectReplicaNotFoundException;
-import amino.run.common.SapphireReplicaID;
+import amino.run.common.*;
+import amino.run.app.labelselector.Selector;
 import amino.run.compiler.GlobalStubConstants;
 import amino.run.kernel.common.KernelOID;
 import amino.run.kernel.common.KernelObjectNotCreatedException;
@@ -21,8 +16,6 @@ import amino.run.kernel.server.KernelServerImpl;
 import amino.run.policy.Policy;
 import amino.run.runtime.EventHandler;
 import amino.run.runtime.Sapphire;
-import amino.run.app.labelselector.Selector;
-
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.InetSocketAddress;
@@ -47,10 +40,12 @@ public class OMSServerImpl implements OMSServer, SapphireObjectServer {
 
     private static Logger logger = Logger.getLogger(OMSServerImpl.class.getName());
     private static String SERVICE_PORT = "--servicePort";
+    private static String ENABLE_SYSTEM_SO = "--enableSysSO";
 
     private GlobalKernelObjectManager kernelObjectManager;
     private KernelServerManager serverManager;
     private SapphireObjectManager objectManager;
+    private SystemSapphireObjectHandler sysSOHandler;
 
     /** CONSTRUCTOR * */
     // TODO Should receive a List of servers
@@ -58,6 +53,7 @@ public class OMSServerImpl implements OMSServer, SapphireObjectServer {
         kernelObjectManager = new GlobalKernelObjectManager();
         serverManager = new KernelServerManager();
         objectManager = new SapphireObjectManager();
+        sysSOHandler = new SystemSapphireObjectHandler();
     }
 
     /** KERNEL METHODS * */
@@ -359,23 +355,29 @@ public class OMSServerImpl implements OMSServer, SapphireObjectServer {
     }
 
     public static void main(String args[]) {
-        if (args.length < 2) {
+        if ((args.length < 2) || (args.length > 5)) {
             System.out.println("Invalid arguments to OMS.");
-            System.out.println("[IP] [port] [servicePort]");
+            System.out.println("[IP] [port] [servicePort] [enableSysSO]");
             return;
         }
 
         int port = 1099;
         int servicePort = 0;
+        String enabledSysSOList = "";
         try {
             port = Integer.parseInt(args[1]);
-            if (args.length > 2) {
-                servicePort = Integer.parseInt(parseServicePort(args[2]));
-            }
         } catch (NumberFormatException e) {
             System.out.println("Invalid arguments to OMS.");
-            System.out.println("[IP] [port] [servicePort]");
+            System.out.println("[IP] [port] [servicePort] [enableSysSO]");
             return;
+        }
+
+        for (int i = 2; i < args.length; i++) {
+            if (args[i].startsWith(ENABLE_SYSTEM_SO)) {
+                enabledSysSOList = args[i];
+            } else if (args[i].startsWith(SERVICE_PORT)) {
+                servicePort = Integer.parseInt(parseServicePort(args[i]));
+            }
         }
 
         System.setProperty("java.rmi.server.hostname", args[0]);
@@ -391,6 +393,9 @@ public class OMSServerImpl implements OMSServer, SapphireObjectServer {
             KernelServer localKernelServerStub =
                     (KernelServer) UnicastRemoteObject.exportObject(localKernelServer, servicePort);
             registry.rebind("SapphireKernelServer", localKernelServerStub);
+
+            // start system sapphire objects
+            oms.startSystemSapphireObjectHandler(enabledSysSOList);
 
             logger.info("OMS ready");
             // to get all the kernel server's addresses passing null in oms.getServers
@@ -522,5 +527,14 @@ public class OMSServerImpl implements OMSServer, SapphireObjectServer {
             port = servicePort.substring(SERVICE_PORT.length() + 1);
         }
         return port;
+    }
+
+    @Override
+    public List<SystemSapphireObjectStatus> getSystemSapphireObjectStatus() throws RemoteException {
+        return sysSOHandler.getSystemSapphireObjectStatus();
+    }
+
+    private void startSystemSapphireObjectHandler(String enabledSysSO) {
+        sysSOHandler.start(enabledSysSO);
     }
 }

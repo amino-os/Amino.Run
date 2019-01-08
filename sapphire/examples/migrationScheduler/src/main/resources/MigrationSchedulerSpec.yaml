@@ -1,3 +1,3 @@
-!!sapphire.sysSapphireObjects.migrationScheduler.policy.ExecutionPolicy.Config
+!!amino.run.sysSapphireObjects.migrationScheduler.policy.ExecutionPolicy.Config
 metricLabels:
   labels: {App: KVStoreAutoMigration}

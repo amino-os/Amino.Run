@@ -1,8 +1,8 @@
 package sapphire.migrationDemo;
 
-import sapphire.app.SapphireObjectServer;
-import sapphire.common.SapphireObjectID;
-import sapphire.kernel.server.KernelServerImpl;
+import amino.run.app.SapphireObjectServer;
+import amino.run.common.SapphireObjectID;
+import amino.run.kernel.server.KernelServerImpl;
 
 import java.io.File;
 import java.net.InetSocketAddress;
@@ -35,7 +35,7 @@ public class AutoMigrateKeyValueStoreClient {
                 Thread.sleep(1000);
             }
             catch(Exception e){
-                if (e instanceof sapphire.kernel.common.KernelObjectMigratingException){
+                if (e instanceof amino.run.kernel.common.KernelObjectMigratingException){
                     logger.warning("Object Migrated : " + e);
                     store = (AutoMigrateKeyValueStore)server.acquireSapphireObjectStub(oid);
                 }

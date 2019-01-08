@@ -122,12 +122,12 @@ genStubs {
 
 // Customize Sys SO stub generation
 task genMetricCollectorSysSOStubs(type :JavaExec){
-    main = "sapphire.compiler.StubGenerator"
+    main = "amino.run.compiler.StubGenerator"
     classpath = sourceSets.main.runtimeClasspath
-    
-    def pkg = 'sapphire.sysSapphireObjects.metricCollector'
-    def src = file(project.buildDir.toString() + '/classes/java/main/sapphire/sysSapphireObjects/metricCollector/')
-    def dst = file(project.projectDir.toString() + '/src/main/java/sapphire/sysSapphireObjects/metricCollector/stubs/')
+
+    def pkg = 'amino.run.sysSapphireObjects.metricCollector'
+    def src = file(project.buildDir.toString() + '/classes/java/main/amino/run/sysSapphireObjects/metricCollector/')
+    def dst = file(project.projectDir.toString() + '/src/main/java/amino/run/sysSapphireObjects/metricCollector/stubs/')
     args src.toString(), pkg, dst.toString()
     outputs.dir dst // Declare outputs, so gradle will run if they have been changed
     inputs.dir src   // Declare inputs, so gradle will run if they have been changed
@@ -144,12 +144,12 @@ task compileMetricCollectorSysSOStubs(type: JavaCompile) {
 
 // Customize Sys SO stub generation
 task genMigrationSchedulerSysSOStubs(type :JavaExec){
-    main = "sapphire.compiler.StubGenerator"
+    main = "amino.run.compiler.StubGenerator"
     classpath = sourceSets.main.runtimeClasspath
 
-    def pkg = 'sapphire.sysSapphireObjects.migrationScheduler'
-    def src = file(project.buildDir.toString() + '/classes/java/main/sapphire/sysSapphireObjects/migrationScheduler/')
-    def dst = file(project.projectDir.toString() + '/src/main/java/sapphire/sysSapphireObjects/migrationScheduler/stubs/')
+    def pkg = 'amino.run.sysSapphireObjects.migrationScheduler'
+    def src = file(project.buildDir.toString() + '/classes/java/main/amino/run/sysSapphireObjects/migrationScheduler/')
+    def dst = file(project.projectDir.toString() + '/src/main/java/amino/run/sysSapphireObjects/migrationScheduler/stubs/')
     args src.toString(), pkg, dst.toString()
     outputs.dir dst // Declare outputs, so gradle will run if they have been changed
     inputs.dir src   // Declare inputs, so gradle will run if they have been changed

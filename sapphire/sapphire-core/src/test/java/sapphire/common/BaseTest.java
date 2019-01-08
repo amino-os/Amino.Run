@@ -259,6 +259,6 @@ public class BaseTest {
     }
 
     public void tearDown() throws Exception {
-        spiedOms.deleteSapphireObject(group.getSapphireObjId());
+        sapphireObjServer.deleteSapphireObject(group.getSapphireObjId());
     }
 }

@@ -7,7 +7,7 @@ import sapphire.sysSapphireObjects.metricCollector.MetricSelector;
 import sapphire.sysSapphireObjects.metricCollector.MetricWithSelector;
 
 public class CounterMetricAggregator implements MetricWithSelector {
-    private static Logger logger = Logger.getLogger(CounterMetric.class.getName());
+    private static Logger logger = Logger.getLogger(CounterMetricAggregator.class.getName());
     private String metricName;
     private long count;
     private Labels labels;

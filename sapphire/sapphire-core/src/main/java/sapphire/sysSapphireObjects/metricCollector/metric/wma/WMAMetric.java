@@ -16,15 +16,12 @@ public class WMAMetric implements Metric {
     private static Logger logger = Logger.getLogger(WMAMetric.class.getName());
     private String metricName;
     private Labels labels;
-    private int bucketSize;
-    private ArrayList<Observation> list;
-    private float wmaNew;
+    private transient int bucketSize;
+    private ArrayList<Observation> observations;
     private ArrayList<Float> wmaValues;
-    private float total = 0;
-    private float numerator = 0;
-    private long metricUpdateFrequency;
+    private transient long metricUpdateFrequency;
     private transient ResettableTimer metricSendTimer;
-    private SendMetric metricAggregator;
+    private transient SendMetric metricAggregator;
 
     private WMAMetric(
             String metricName,
@@ -37,7 +34,7 @@ public class WMAMetric implements Metric {
         this.bucketSize = bucketSize;
         this.metricUpdateFrequency = metricUpdateFrequency;
         metricAggregator = sendMetric;
-        this.list = new ArrayList<>();
+        this.observations = new ArrayList<>();
         this.wmaValues = new ArrayList<>();
     }
 
@@ -57,34 +54,21 @@ public class WMAMetric implements Metric {
         return this;
     }
 
-    /** @return true if wmaValues is modified */
-    public boolean modified() {
-        return wmaValues.size() != 0;
+    @Override
+    public String toString() {
+        return metricName + "<" + labels.toString() + ":" + wmaValues + ">";
     }
 
-    /** resets wmaValues */
+    /** @return true if observations is modified */
+    public boolean modified() {
+        return observations.size() != 0;
+    }
+
+    /** resets observations */
     public void reset() {
         synchronized (this) {
-            wmaValues.clear();
+            observations.clear();
         }
-    }
-
-    /**
-     * Calculates weighted moving average whenever a new value is added to the bucket
-     *
-     * @param list List of observedValues
-     * @param oldvalue Previous value
-     * @return
-     */
-    public float calculateWMA(ArrayList<Observation> list, float oldvalue) {
-        int size = (list.size() < bucketSize) ? list.size() : bucketSize;
-        float totalNew = total + (list.get(size - 1).getValue()) - oldvalue;
-        float numeratorNew = numerator + (size * list.get(size - 1).getValue()) - total;
-        int denominator = (size * (size + 1)) / 2;
-        wmaNew = numeratorNew / denominator;
-        total = totalNew;
-        numerator = numeratorNew;
-        return wmaNew;
     }
 
     /** starts a ResettableTimer and resets once metricUpdateFrequency is reached */
@@ -103,7 +87,7 @@ public class WMAMetric implements Metric {
                                                     "%s: Sending metric failed", e.toString()));
                                     return;
                                 }
-                                // reset the wmaValues and timer after push is done
+                                // reset the observations and timer after push is done
                                 reset();
                                 metricSendTimer.reset();
                             }
@@ -117,23 +101,20 @@ public class WMAMetric implements Metric {
         metricSendTimer.cancel();
     }
 
-    /**
-     * Sets the value and calculate wma for the value
-     *
-     * @param time time when the value is added in a particular bucket
-     * @param value Value to be added
-     */
     public void setValue(long time, float value) {
         synchronized (this) {
-            float oldvalue = (list.isEmpty()) ? 0 : list.get(list.size() - 1).getValue();
             Observation observation = new Observation(time, value);
-            if (list.size() == bucketSize) {
-                oldvalue = list.get(0).getValue();
-                list.remove(0);
+            observations.add(observation);
+            if (observations.size() == bucketSize) {
+                try {
+                    metricAggregator.send(this);
+                } catch (Exception e) {
+                    logger.warning(String.format("%s: Sending metric failed", e.toString()));
+                    return;
+                }
+                reset();
+                metricSendTimer.reset();
             }
-            list.add(observation);
-            wmaNew = calculateWMA(list, oldvalue);
-            wmaValues.add(wmaNew);
         }
     }
 
@@ -142,9 +123,9 @@ public class WMAMetric implements Metric {
         return labels;
     }
 
-    /** @return wmaValues */
-    public ArrayList<Float> getValue() {
-        return wmaValues;
+    /** @return observations */
+    public ArrayList<Observation> getValue() {
+        return observations;
     }
 
     public static WMAMetric.Builder newBuilder() {
@@ -153,7 +134,6 @@ public class WMAMetric implements Metric {
 
     public static class Builder {
         private int bucketSize;
-        private int batchSize;
         private String metricName;
         private Labels labels;
         private long metricUpdateFrequency;

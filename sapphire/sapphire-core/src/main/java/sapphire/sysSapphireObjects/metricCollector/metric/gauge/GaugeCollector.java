@@ -28,6 +28,7 @@ public class GaugeCollector implements Collector {
         if (serverMetric == null) {
             serverMetric =
                     new GaugeMetricAggregator(clientMetric.getName(), clientMetric.getLabels());
+            serverMetric.merge(clientMetric);
             collector.put(clientMetric.getLabels(), serverMetric);
             return;
         }

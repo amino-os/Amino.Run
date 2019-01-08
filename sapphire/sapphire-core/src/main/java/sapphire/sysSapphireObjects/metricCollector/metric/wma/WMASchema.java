@@ -7,10 +7,12 @@ import sapphire.sysSapphireObjects.metricCollector.MetricSchema;
 public class WMASchema implements MetricSchema {
     private String metricName;
     private Labels mandatoryLabels;
+    private int bucketSize;
 
-    public WMASchema(String metricName, Labels labels) {
+    public WMASchema(String metricName, Labels labels, int bucketSize) {
         this.mandatoryLabels = labels;
         this.metricName = metricName;
+        this.bucketSize = bucketSize;
     }
 
     @Override
@@ -20,6 +22,6 @@ public class WMASchema implements MetricSchema {
 
     @Override
     public Collector getCollector() {
-        return new WMACollector(mandatoryLabels);
+        return new WMACollector(mandatoryLabels, bucketSize);
     }
 }

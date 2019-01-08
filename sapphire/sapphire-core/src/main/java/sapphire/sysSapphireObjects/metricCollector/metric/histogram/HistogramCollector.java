@@ -28,7 +28,9 @@ public class HistogramCollector implements Collector {
         if (serverMetric == null) {
             serverMetric =
                     new HistogramMetricAggregator(clientMetric.getName(), clientMetric.getLabels());
+            serverMetric.merge(clientMetric);
             collector.put(clientMetric.getLabels(), serverMetric);
+            return;
         }
         serverMetric.merge(clientMetric);
     }

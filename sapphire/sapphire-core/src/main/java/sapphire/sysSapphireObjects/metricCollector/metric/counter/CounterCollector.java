@@ -30,11 +30,10 @@ public class CounterCollector implements Collector {
         if (serverMetric == null) {
             serverMetric =
                     new CounterMetricAggregator(clientMetric.getName(), clientMetric.getLabels());
-            collector.put(clientMetric.getLabels(), serverMetric);
             serverMetric.merge(clientMetric);
+            collector.put(clientMetric.getLabels(), serverMetric);
             return;
         }
-
         serverMetric.merge(clientMetric);
     }
 

@@ -1,12 +1,12 @@
 # Configuration for running KeyValueStore as a
 # sapphire object with ScaleUpFrontend policy.
-!!sapphire.app.SapphireObjectSpec
+!!amino.run.app.SapphireObjectSpec
 constructorName: null
 dmList:
 - configs:
-  - !!sapphire.policy.scalability.LoadBalancedFrontendPolicy$Config {maxConcurrentReq: 10}
-  name: sapphire.policy.scalability.ScaleUpFrontendPolicy
-javaClassName: sapphire.demo.KVStore
+  - !!amino.run.policy.scalability.LoadBalancedFrontendPolicy$Config {maxConcurrentReq: 10}
+  name: amino.run.policy.scalability.ScaleUpFrontendPolicy
+javaClassName: amino.run.demo.KVStore
 lang: java
 name: null
 sourceFileLocation: null

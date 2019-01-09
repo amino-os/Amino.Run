@@ -6,15 +6,15 @@ dependencies {
 
 // Task for app stub generation
 genStubs {
-    main = "sapphire.compiler.GraalStubGenerator"
+    main = "amino.run.compiler.GraalStubGenerator"
     classpath =  files("$projectDir/../../sapphire-core/build/libs/sapphire-core-1.0.0.jar")
-
-    def sapphireObjectPath = "$projectDir/src/main/js/sapphire/appdemo/KeyValueStore.js"
+    // classpath sourceSets.main.output.classesDir
+    def sapphireObjectPath = "$projectDir/src/main/js/amino/run/appdemo/KeyValueStore.js"
     def outPath = "$projectDir/src/main/java"
-    def packageName = "sapphire.appdemo.stubs"
+    def packageName = "amino.run.appdemo.stubs"
     def sapphireClasses = "KeyValueStore"
     args sapphireObjectPath, outPath, packageName, sapphireClasses
-    outputs.dir "$projectDir/src/main/java/sapphire/appdemo/stubs" // Declare outputs, so gradle will run if they have been changed
+    outputs.dir "$projectDir/src/main/java/amino/run/appdemo/stubs" // Declare outputs, so gradle will run if they have been changed
     inputs.dir sapphireObjectPath   // Declare inputs, so gradle will run if they have been changed
 }
 
@@ -31,7 +31,7 @@ task runjsapp(type: Exec) {
     //executable "/home/paas/graalvm-ce-1.0.0-rc6/bin/js"
     executable "$System.env.JAVA_HOME/bin/js"
     args "--jvm", "--polyglot", "--jvm.classpath=${classpath}",
-            "${project.projectDir}/src/main/js/sapphire/appdemo/KeyValueStoreClient.js"
+            "${project.projectDir}/src/main/js/amino/run/appdemo/KeyValueStoreClient.js"
 }
 
 // Customise task to run Java app
@@ -41,7 +41,7 @@ runapp {
     environment  HOST_IP: "${project.property('embeddedKernelServerIp')}"
     environment  HOST_PORT: "${project.property('kernelServerPort')}"
     environment  YAML_FILE:  "KeyValueStore.yaml"
-    main = 'sapphire.appdemo.KeyValueStoreClient'
+    main = 'amino.run.appdemo.KeyValueStoreClient'
 }
 
 compileJava.dependsOn genStubs

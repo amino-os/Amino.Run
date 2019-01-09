@@ -95,7 +95,7 @@ subprojects {
     // Task for Stub Generation:
     // Run `gradlew genStubs` to generate stub files
     task genStubs(type: JavaExec) {
-        main = "sapphire.compiler.StubGenerator"
+        main = "amino.run.compiler.StubGenerator"
         classpath = sourceSets.main.runtimeClasspath
      }
 

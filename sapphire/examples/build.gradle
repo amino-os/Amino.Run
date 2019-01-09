@@ -9,7 +9,7 @@ subprojects {
     task runoms(type: JavaExec) {
         classpath = sourceSets.main.runtimeClasspath
         jvmArgs '-Djava.util.logging.config.file=' + project.projectDir + '/../../logging.properties'
-        main = 'sapphire.oms.OMSServerImpl'
+        main = 'amino.run.oms.OMSServerImpl'
         args project.property('omsIp'), project.property('omsPort')
         inputs.dir compileStubs
     }
@@ -18,7 +18,7 @@ subprojects {
     task runks(type: JavaExec) {
         classpath = sourceSets.main.runtimeClasspath
         jvmArgs '-Djava.util.logging.config.file=' + project.projectDir + '/../../logging.properties'
-        main = 'sapphire.kernel.server.KernelServerImpl'
+        main = 'amino.run.kernel.server.KernelServerImpl'
         args project.property('kernelServerIp'), project.property('kernelServerPort'), project.property('omsIp'), project.property('omsPort'), project.property("kernelServerRegion")
         inputs.dir compileStubs
     }

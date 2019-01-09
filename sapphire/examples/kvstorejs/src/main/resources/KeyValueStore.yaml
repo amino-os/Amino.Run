@@ -1,12 +1,12 @@
-!!sapphire.app.SapphireObjectSpec
+!!amino.run.app.SapphireObjectSpec
 constructorName: KeyValueStore
 dmList:
 - configs:
-  - !!sapphire.policy.dht.DHTPolicy$Config {numOfShards: 2}
-  name: sapphire.policy.dht.DHTPolicy
+  - !!amino.run.policy.dht.DHTPolicy$Config {numOfShards: 2}
+  name: amino.run.policy.dht.DHTPolicy
 - configs: []
-  name: sapphire.policy.scalability.LoadBalancedMasterSlaveSyncPolicy
-javaClassName: sapphire.appdemo.stubs.KeyValueStore_Stub
+  name: amino.run.policy.scalability.LoadBalancedMasterSlaveSyncPolicy
+javaClassName: amino.run.appdemo.stubs.KeyValueStore_Stub
 lang: js
 name: KeyValueStore
-sourceFileLocation: ./src/main/js/sapphire/appdemo/KeyValueStore.js
+sourceFileLocation: ./src/main/js/amino/run/appdemo/KeyValueStore.js

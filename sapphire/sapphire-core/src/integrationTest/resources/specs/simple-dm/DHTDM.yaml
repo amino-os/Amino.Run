@@ -1,14 +1,14 @@
 # Configuration for running KVStore with DHT DM
-!!sapphire.app.SapphireObjectSpec
+!!amino.run.app.SapphireObjectSpec
 constructorName: null
 dmList:
 - configs:
-  - !!sapphire.policy.dht.DHTPolicy$Config {numOfShards: 3}
-  name: sapphire.policy.dht.DHTPolicy
+  - !!amino.run.policy.dht.DHTPolicy$Config {numOfShards: 3}
+  name: amino.run.policy.dht.DHTPolicy
 nodeSelectorSpec:
   andLabels: !!set {}
   orLabels: !!set {}
-javaClassName: sapphire.demo.KVStore
+javaClassName: amino.run.demo.KVStore
 lang: java
 name: null
 sourceFileLocation: null

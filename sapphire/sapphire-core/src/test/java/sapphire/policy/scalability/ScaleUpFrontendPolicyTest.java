@@ -1,12 +1,9 @@
 package sapphire.policy.scalability;
 
 import static org.junit.Assert.assertEquals;
-import static sapphire.common.SapphireUtils.deleteSapphireObject;
 import static sapphire.common.UtilsTest.extractFieldValueOnInstance;
 
-import java.net.InetSocketAddress;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -22,15 +19,8 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.powermock.modules.junit4.PowerMockRunner;
 import sapphire.app.*;
-import sapphire.common.AppObject;
 import sapphire.common.BaseTest;
-import sapphire.common.SapphireObjectID;
-import sapphire.kernel.common.KernelOID;
-import sapphire.kernel.common.KernelObjectStub;
-import sapphire.policy.DefaultSapphirePolicy;
 import sapphire.policy.SapphirePolicy;
-import sapphire.sampleSO.SO;
-import sapphire.sampleSO.stubs.SO_Stub;
 
 /** ScaleupFrontend DM test cases */
 
@@ -39,63 +29,6 @@ import sapphire.sampleSO.stubs.SO_Stub;
 public class ScaleUpFrontendPolicyTest extends BaseTest {
     @Rule public ExpectedException thrown = ExpectedException.none();
 
-    public static class ScaleUpSO extends SO {}
-
-    public static class Group_Stub extends ScaleUpFrontendPolicy.GroupPolicy
-            implements KernelObjectStub {
-        sapphire.kernel.common.KernelOID $__oid = null;
-        java.net.InetSocketAddress $__hostname = null;
-        SapphirePolicy.SapphireClientPolicy $__nextClientPolicy = null;
-
-        public Group_Stub(sapphire.kernel.common.KernelOID oid) {
-            this.$__oid = oid;
-        }
-
-        public sapphire.kernel.common.KernelOID $__getKernelOID() {
-            return this.$__oid;
-        }
-
-        public java.net.InetSocketAddress $__getHostname() {
-            return this.$__hostname;
-        }
-
-        public void $__updateHostname(java.net.InetSocketAddress hostname) {
-            this.$__hostname = hostname;
-        }
-
-        public void $__setNextClientPolicy(SapphirePolicy.SapphireClientPolicy clientPolicy) {
-            $__nextClientPolicy = clientPolicy;
-        }
-    }
-
-    public static class Server_Stub extends ScaleUpFrontendPolicy.ServerPolicy
-            implements KernelObjectStub {
-        KernelOID $__oid = null;
-        InetSocketAddress $__hostname = null;
-        AppObject appObject = null;
-        SapphirePolicy.SapphireClientPolicy $__nextClientPolicy = null;
-
-        public Server_Stub(KernelOID oid) {
-            this.$__oid = oid;
-        }
-
-        public KernelOID $__getKernelOID() {
-            return $__oid;
-        }
-
-        public InetSocketAddress $__getHostname() {
-            return $__hostname;
-        }
-
-        public void $__updateHostname(InetSocketAddress hostname) {
-            this.$__hostname = hostname;
-        }
-
-        public void $__setNextClientPolicy(SapphirePolicy.SapphireClientPolicy clientPolicy) {
-            $__nextClientPolicy = clientPolicy;
-        }
-    }
-
     @Before
     public void setUp() throws Exception {
 
@@ -103,8 +36,8 @@ public class ScaleUpFrontendPolicyTest extends BaseTest {
         scaleConfig.setReplicationRateInMs(400);
 
         LoadBalancedFrontendPolicy.Config lbConfig = new LoadBalancedFrontendPolicy.Config();
-        lbConfig.setMaxConcurrentReq(3);
-        lbConfig.setReplicaCount(3);
+        lbConfig.setMaxConcurrentReq(2);
+        lbConfig.setReplicaCount(2);
 
         SapphireObjectSpec spec =
                 SapphireObjectSpec.newBuilder()
@@ -117,25 +50,7 @@ public class ScaleUpFrontendPolicyTest extends BaseTest {
                                         .addConfig(lbConfig)
                                         .create())
                         .create();
-
-        super.setUp(
-                spec,
-                new HashMap<String, Class>() {
-                    {
-                        put("ScaleUpFrontendPolicy", Group_Stub.class);
-                    }
-                },
-                new HashMap<String, Class>() {
-                    {
-                        put("ScaleUpFrontendPolicy", Server_Stub.class);
-                    }
-                });
-
-        SapphireObjectID sapphireObjId = sapphireObjServer.createSapphireObject(spec.toString());
-        soStub = (SO_Stub) sapphireObjServer.acquireSapphireObjectStub(sapphireObjId);
-        client =
-                (DefaultSapphirePolicy.DefaultClientPolicy)
-                        extractFieldValueOnInstance(soStub, "$__client");
+        super.setUp(3, spec);
     }
 
     @Test
@@ -162,7 +77,7 @@ public class ScaleUpFrontendPolicyTest extends BaseTest {
 
     @Test
     public void serverScaleUpTest() throws Exception {
-        final String methodName = "public java.lang.Integer sapphire.sampleSO.SO.getI()";
+        final String methodName = "public java.lang.Integer sapphire.sampleSO.SO.getIDelayed()";
         final ArrayList<Object> params = new ArrayList<Object>();
         Integer max = (Integer) extractFieldValueOnInstance(this.server1, "maxConcurrentReq");
 
@@ -197,6 +112,6 @@ public class ScaleUpFrontendPolicyTest extends BaseTest {
 
     @After
     public void tearDown() throws Exception {
-        deleteSapphireObject(spiedOms, group.getSapphireObjId());
+        super.tearDown();
     }
 }

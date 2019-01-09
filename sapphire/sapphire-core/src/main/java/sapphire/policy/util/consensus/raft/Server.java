@@ -108,6 +108,7 @@ public class Server
             }
             switch (newState) { // Enter the new state.
                 case NONE: // do nothing
+                    vState.setState(State.NONE, vState.getState());
                     break;
                 case LEADER:
                     leader.start();
@@ -346,7 +347,7 @@ public class Server
         if (currentTerm < remoteTerm) {
             pState.setCurrentTerm(remoteTerm, currentTerm);
             State currentState = vState.getState();
-            if (currentState != vState.getState().FOLLOWER) {
+            if (currentState != State.FOLLOWER) {
                 become(State.FOLLOWER, currentState);
             }
         }
@@ -354,7 +355,7 @@ public class Server
 
     public Object applyToStateMachine(Object operation) throws java.lang.Exception {
         logger.fine(String.format("%s: applyToStateMachine(%s)", pState.myServerID, operation));
-        if (vState.getState() == Server.State.LEADER) {
+        if (vState.getState() == State.LEADER) {
             return leader.applyToStateMachine(operation);
         } else {
             throw new LeaderException(
@@ -417,8 +418,7 @@ public class Server
              */
             logger.info(pState.myServerID + ": Start being a leader.");
             vState.setState(
-                    Server.State.LEADER,
-                    vState.getState()); // It doesn't matter what we were before.
+                    State.LEADER, vState.getState()); // It doesn't matter what we were before.
             /** Reinitialize volatile leader state */
             nextIndex.clear();
             matchIndex.clear();

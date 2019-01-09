@@ -30,10 +30,11 @@ public class GaugeMetricAggregator implements MetricWithSelector {
 
     @Override
     public String toString() {
-        return "Metric : " + metricName + "<" + labels + ":" + value + ">";
+        return metricName + "<" + labels.toString() + ":" + value + ">";
     }
 
     public void merge(GaugeMetric metric) {
+        logger.info("Received metric : " + metric.toString());
         synchronized (this) {
             value = metric.getValue();
         }

@@ -101,12 +101,6 @@ public class WMAMetric implements Metric {
         metricSendTimer.cancel();
     }
 
-    /**
-     * Sets the value and calculate wma for the value
-     *
-     * @param time time when the value is added in a particular bucket
-     * @param value Value to be added
-     */
     public void setValue(long time, float value) {
         synchronized (this) {
             Observation observation = new Observation(time, value);

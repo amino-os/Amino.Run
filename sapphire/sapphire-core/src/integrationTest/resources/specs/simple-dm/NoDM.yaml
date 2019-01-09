@@ -1,7 +1,7 @@
 # Configuration for running KVStore without DM
-!!sapphire.app.SapphireObjectSpec
+!!amino.run.app.SapphireObjectSpec
 constructorName: null
-javaClassName: sapphire.demo.KVStore
+javaClassName: amino.run.demo.KVStore
 nodeSelectorSpec:
   andLabels: !!set {}
   orLabels: !!set {}

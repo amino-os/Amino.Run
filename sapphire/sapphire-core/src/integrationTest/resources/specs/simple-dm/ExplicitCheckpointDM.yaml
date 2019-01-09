@@ -1,14 +1,14 @@
 #Configuration for running KVStore as a
 # sapphire object with ExplicitCheckpoint policy.
-!!sapphire.app.SapphireObjectSpec
+!!amino.run.app.SapphireObjectSpec
 constructorName: null
 dmList:
 - configs: []
-  name: sapphire.policy.checkpoint.explicitcheckpoint.ExplicitCheckpointPolicy
+  name: amino.run.policy.checkpoint.explicitcheckpoint.ExplicitCheckpointPolicy
 nodeSelectorSpec:
   andLabels: !!set {}
   orLabels: !!set {}
-javaClassName: sapphire.demo.KVStore
+javaClassName: amino.run.demo.KVStore
 lang: java
 name: null
 sourceFileLocation: null

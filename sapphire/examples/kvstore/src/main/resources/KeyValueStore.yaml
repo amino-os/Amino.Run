@@ -1,12 +1,12 @@
-!!sapphire.app.SapphireObjectSpec
+!!amino.run.app.SapphireObjectSpec
 constructorName: null
 dmList:
 - configs:
-  - !!sapphire.policy.dht.DHTPolicy$Config {numOfShards: 2}
-  name: sapphire.policy.dht.DHTPolicy
+  - !!amino.run.policy.dht.DHTPolicy$Config {numOfShards: 2}
+  name: amino.run.policy.dht.DHTPolicy
 - configs: []
-  name: sapphire.policy.scalability.LoadBalancedMasterSlaveSyncPolicy
-javaClassName: sapphire.demo.KeyValueStore
+  name: amino.run.policy.scalability.LoadBalancedMasterSlaveSyncPolicy
+javaClassName: amino.run.demo.KeyValueStore
 lang: java
 name: null
 sourceFileLocation: null

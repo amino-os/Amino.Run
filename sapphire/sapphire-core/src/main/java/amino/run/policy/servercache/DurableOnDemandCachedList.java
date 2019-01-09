@@ -1,0 +1,34 @@
+package amino.run.policy.servercache;
+
+import amino.run.policy.DefaultSapphirePolicy;
+import java.util.ArrayList;
+
+/*
+ * This class must be applied to an object that extends the List class.
+ *
+ * It interposes on each method call, stores everything to disk and caches sublists. (see Facebook's TAO paper)
+ */
+
+public class DurableOnDemandCachedList extends DefaultSapphirePolicy {
+
+    public static class DurableOnDemandCachedListClientPolicy extends DefaultClientPolicy {
+        @Override
+        public Object onRPC(String method, ArrayList<Object> params) throws Exception {
+            /* Switch on the method we need to execute */
+            return null;
+        }
+    }
+
+    // TODO: think about concurrency
+    public static class DurableOnDemandCachedListServerPolicy extends DefaultServerPolicy {
+        int listSize; // cache the size of the list
+        int numMisses; // to automatically grow the cache if possible
+
+        @Override
+        public Object onRPC(String method, ArrayList<Object> params) throws Exception {
+            return null;
+        }
+    }
+
+    public static class DurableOnDemandCachedListGroupPolicy extends DefaultGroupPolicy {}
+}

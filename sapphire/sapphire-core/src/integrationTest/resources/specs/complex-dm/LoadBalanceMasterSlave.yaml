@@ -1,11 +1,11 @@
 # Configuration for running KeyValueStore as a
 # sapphire object with LoadBalancedMasterSlaveSync policy.
-!!sapphire.app.SapphireObjectSpec
+!!amino.run.app.SapphireObjectSpec
 constructorName: null
 dmList:
 - configs: []
-  name: sapphire.policy.scalability.LoadBalancedMasterSlaveSyncPolicy
-javaClassName: sapphire.demo.KVStore
+  name: amino.run.policy.scalability.LoadBalancedMasterSlaveSyncPolicy
+javaClassName: amino.run.demo.KVStore
 lang: java
 name: null
 sourceFileLocation: null

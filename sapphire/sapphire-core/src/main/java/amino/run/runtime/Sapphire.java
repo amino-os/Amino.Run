@@ -299,6 +299,13 @@ public class Sapphire {
         if (existingGroupPolicy == null) {
             setIfAlreadyPinned(serverPolicyStub, processedPolicies, nextPoliciesToCreate.size());
             groupPolicyStub.onCreate(region, serverPolicyStub, spec);
+            // TODO: Quinton: This looks like a bug.  Why is the server only added for the first
+            // server?
+            // OK - I think I've figured out why.  Because addServer is also invoked from
+            // SapphirePolicyLibrary.sapphire_replicate
+            // when additional replicas are created.
+            // TODO: Remove calls to addServer from the DK.
+            // addServer should only be called be called internally in the DM's.
             groupPolicyStub.addServer(serverPolicyStub);
 
             /* Build client side appObjectStub from appObjectStub within AppObject of first DM's server policy in chain

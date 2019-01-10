@@ -133,11 +133,6 @@ public class DHTPolicy extends DefaultSapphirePolicy {
         }
 
         @Override
-        public void onFailure(SapphireServerPolicy server) {
-            // TODO
-        }
-
-        @Override
         public SapphireServerPolicy onRefRequest() {
             // TODO
             return null;

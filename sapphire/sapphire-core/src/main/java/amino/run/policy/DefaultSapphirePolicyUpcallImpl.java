@@ -56,6 +56,7 @@ public abstract class DefaultSapphirePolicyUpcallImpl extends SapphirePolicyLibr
             return super.sapphire_replicate(processedPolicies, "");
         }
 
+        @Override
         public SapphirePolicy.SapphireServerPolicy sapphire_replicate(
                 List<SapphirePolicyContainer> processedPolicies, String region)
                 throws RemoteException {
@@ -63,6 +64,7 @@ public abstract class DefaultSapphirePolicyUpcallImpl extends SapphirePolicyLibr
         }
 
         /* This function is added here just to generate the stub for this function in all Policies server policy */
+        @Override
         public void sapphire_pin_to_server(
                 SapphirePolicy.SapphireServerPolicy sapphireServerPolicy, InetSocketAddress server)
                 throws RemoteException, SapphireObjectNotFoundException,
@@ -70,6 +72,7 @@ public abstract class DefaultSapphirePolicyUpcallImpl extends SapphirePolicyLibr
             super.sapphire_pin_to_server(sapphireServerPolicy, server);
         }
 
+        @Override
         public void sapphire_remove_replica() throws RemoteException {
             super.sapphire_remove_replica(this.getProcessedPolicies());
         }
@@ -78,6 +81,7 @@ public abstract class DefaultSapphirePolicyUpcallImpl extends SapphirePolicyLibr
             return super.sapphire_getRegion();
         }
 
+        @Override
         public void onDestroy() {}
     }
 
@@ -92,11 +96,14 @@ public abstract class DefaultSapphirePolicyUpcallImpl extends SapphirePolicyLibr
             this.params = params;
         }
 
+        @Override
         public SapphirePolicy.SapphireServerPolicy onRefRequest() throws RemoteException {
             ArrayList<SapphirePolicy.SapphireServerPolicy> servers = getServers();
+            // By default just return the primary/first replica.  All DM's have at least one.
             return servers.get(0);
         }
 
+        @Override
         public void onDestroy() throws RemoteException {
             super.onDestroy();
         }

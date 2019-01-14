@@ -1,4 +1,4 @@
-package sapphire.common;
+package amino.run.common;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

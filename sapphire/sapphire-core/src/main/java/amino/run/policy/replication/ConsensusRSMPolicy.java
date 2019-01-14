@@ -226,7 +226,7 @@ public class ConsensusRSMPolicy extends DefaultPolicy {
                     // The first in the addressList is for primary policy chain.
                     // TODO: Improve node allocation so that other servers can be used instead of
                     // the first one in the region.
-                    consensusServer.sapphire_pin_to_server(server, addressList.get(0));
+                    pinReplica(consensusServer, addressList.get(0));
                 }
 
                 // Create additional replicas, one per region. TODO:  Create N-1 replicas on
@@ -234,22 +234,6 @@ public class ConsensusRSMPolicy extends DefaultPolicy {
                 for (int i = 1; i < addressList.size(); i++) {
                     addReplica(consensusServer, addressList.get(i), region);
                 }
-
-                // The first in the addressList is for primary policy chain.
-                // consensusServer.sapphire_pin_to_server(server, addressList.get(0));
-                // TODO: Quinton: This should not be necessary here.  It is probably here as a hack
-                // because
-                // addServer is not being invoked correctly elsewhere.
-                // Indeed, in Sapphire.createPolicies, addServer is called after onCreate.
-                // So actually addServer is called twice for this server, once here and once in
-                // createPolicies.
-                // That's probably causing things not to work correctly.
-                // No wait!! It's actually being called three times.  Once above in super.onCreate
-                // also.
-                // Incredible! Need to fix all of this.
-                // addServer should be called from
-                // onCreate, and when group members are added/replaced.
-                addServer(server);
 
                 // Tell all the servers about one another
                 ConcurrentHashMap<UUID, ServerPolicy> allServers =

@@ -273,12 +273,6 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
             if (serverToRemove != null) {
                 try {
                     removeReplica(serverToRemove);
-                } catch (SapphireObjectNotFoundException e) {
-                    throw new ScaleDownException(
-                            "Scale down failed. Sapphire object not found.", e);
-                } catch (SapphireObjectReplicaNotFoundException e) {
-                    throw new ScaleDownException(
-                            "Scale down failed. Sapphire object not found.", e);
                 } catch (RuntimeException e) {
                     throw new ScaleDownException("Scale down failed. Replica deletion failed.", e);
                 }

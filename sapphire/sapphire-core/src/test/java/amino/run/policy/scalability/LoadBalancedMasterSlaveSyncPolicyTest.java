@@ -1,5 +1,8 @@
 package amino.run.policy.scalability;
 
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.spy;
+
 import amino.run.common.AppObject;
 import amino.run.kernel.common.KernelOID;
 import amino.run.policy.scalability.masterslave.Lock;
@@ -60,8 +63,9 @@ public class LoadBalancedMasterSlaveSyncPolicyTest {
     @Test
     public void testGetMasterSlave() throws Exception {
         LoadBalancedMasterSlaveSyncPolicy.GroupPolicy group =
-                new LoadBalancedMasterSlaveSyncPolicy.GroupPolicy();
+                spy(new LoadBalancedMasterSlaveSyncPolicy.GroupPolicy());
         List<LoadBalancedMasterSlaveSyncPolicy.ServerPolicy> servers = createServers(group, 2);
+        doReturn(servers).when(group).getServers();
         group.obtainLock(servers.get(0).getServerId(), 10000L);
         Assert.assertEquals(servers.get(0), group.getMaster());
         Assert.assertEquals(servers.get(1), group.getSlave());
@@ -78,7 +82,6 @@ public class LoadBalancedMasterSlaveSyncPolicyTest {
             server.$__setKernelOID(new KernelOID(i));
             server.$__initialize(appObj);
             server.onCreate(group, null);
-            group.addServer(server);
             servers.add(server);
         }
         return servers;

@@ -171,8 +171,6 @@ public abstract class Library implements Upcalls {
                         processedPoliciesReplica,
                         region,
                         null);
-
-                getGroup().addServer((Policy.ServerPolicy) serverPolicyStub);
             } catch (ClassNotFoundException e) {
                 // TODO Auto-generated catch block
                 logger.severe(e.getMessage());
@@ -398,20 +396,6 @@ public abstract class Library implements Upcalls {
         public SapphireReplicaID getReplicaId() {
             return replicaId;
         }
-
-        public InetSocketAddress sapphire_locate_kernel_object(KernelOID oid)
-                throws RemoteException {
-            InetSocketAddress addr;
-            try {
-                addr = oms().lookupKernelObject(oid);
-            } catch (RemoteException e) {
-                throw new RemoteException("Could not contact oms.");
-            } catch (KernelObjectNotFoundException e) {
-                e.printStackTrace();
-                throw new Error("Could not find myself on this server!");
-            }
-            return addr;
-        }
     }
 
     public abstract static class GroupPolicyLibrary implements GroupUpcalls {
@@ -478,75 +462,6 @@ public abstract class Library implements Upcalls {
         }
 
         /**
-         * Creates a replica based on replicaSource and pin to the dest host if not pinned before.
-         *
-         * @param replicaSource server policy where the replica creation operation will be
-         *     performed.
-         * @param dest address for KernelServer that will host this replica.
-         * @param region region where this replica needs to be located within.
-         * @return newly created replica.
-         * @throws RemoteException
-         * @throws SapphireObjectNotFoundException
-         * @throws SapphireObjectReplicaNotFoundException
-         */
-        protected ServerPolicy addReplica(
-                Policy.ServerPolicy replicaSource, InetSocketAddress dest, String region)
-                throws RemoteException, SapphireObjectNotFoundException,
-                        SapphireObjectReplicaNotFoundException {
-            ServerPolicy replica =
-                    replicaSource.sapphire_replicate(replicaSource.getProcessedPolicies(), region);
-            if (!replicaSource.isLastPolicy()) {
-                // Pinning a replica happens only when this is the last policy of the policy chain.
-                return replica;
-            }
-
-            try {
-
-                replicaSource.sapphire_pin_to_server(replica, dest);
-                updateReplicaHostName(replica, dest);
-            } catch (Exception e) {
-                String msgDetail =
-                        String.format(
-                                "Region:%s Dest:%s ReplicaSrc:%s", region, dest, replicaSource);
-                logger.log(Level.SEVERE, "Replica pinning failed. " + msgDetail, e);
-                try {
-                    removeReplica(replica);
-                } catch (Exception innerException) {
-                    logger.log(
-                            Level.WARNING,
-                            "Replica removal failed after pinning has failed. " + msgDetail,
-                            e);
-                }
-                throw e;
-            }
-            return replica;
-        }
-
-        protected void removeReplica(Policy.ServerPolicy server)
-                throws RemoteException, SapphireObjectReplicaNotFoundException,
-                        SapphireObjectNotFoundException {
-            server.sapphire_remove_replica();
-            removeServer(server);
-        }
-
-        protected void updateReplicaHostName(ServerPolicy serverPolicy, InetSocketAddress host)
-                throws RemoteException {
-            ArrayList<ServerPolicy> servers = getServers();
-            if (servers == null) {
-                return;
-            }
-
-            for (Iterator<ServerPolicy> itr = servers.iterator(); itr.hasNext(); ) {
-                ServerPolicy server = itr.next();
-                if (server.$__getKernelOID().equals(serverPolicy.$__getKernelOID())) {
-                    ((KernelObjectStub) server).$__updateHostname(host);
-                    ((KernelObjectStub) serverPolicy).$__updateHostname(host);
-                    break;
-                }
-            }
-        }
-
-        /**
          * Notifies server policies to exit. Each server policy should do three tasks: 1) remove
          * itself from {@code KernelObjectManager} on local kernel server, 2) remove itself of OMS's
          * {@code KernelObjectManager}, and 3) remove replica ID from OMS.
@@ -561,9 +476,6 @@ public abstract class Library implements Upcalls {
         public void onDestroy() throws RemoteException {
             /* Delete all the servers */
             ArrayList<ServerPolicy> servers = getServers();
-            if (servers == null) {
-                return;
-            }
 
             for (Iterator<ServerPolicy> itr = servers.iterator(); itr.hasNext(); ) {
                 Policy.ServerPolicy server = itr.next();

@@ -1,5 +1,8 @@
 package amino.run.policy.scalability;
 
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.spy;
+
 import amino.run.common.AppObject;
 import amino.run.kernel.common.KernelOID;
 import amino.run.kernel.common.KernelObjectStub;
@@ -11,6 +14,7 @@ import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.List;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -43,9 +47,11 @@ public class LoadBalancedMasterSlaveSyncPolicyIntegTest {
 
         client = new ClientMock();
 
-        group = new GroupMock();
-        group.addServer(server1);
-        group.addServer(server2);
+        group = spy(new GroupMock());
+        List<SapphirePolicy.SapphireServerPolicy> list = new ArrayList<>();
+        list.add(server1);
+        list.add(server2);
+        doReturn(list).when(group).getServers();
 
         client.setServer(server1);
         client.onCreate(group, null);

@@ -75,10 +75,6 @@ public abstract class DefaultUpcallImpl extends Library {
             super.sapphire_remove_replica(this.getProcessedPolicies());
         }
 
-        public String sapphire_getRegion() {
-            return super.sapphire_getRegion();
-        }
-
         @Override
         public void onDestroy() {}
     }

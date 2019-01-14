@@ -204,8 +204,7 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultPolicy {
                     // TODO: Make deployment kernel pin primary replica once node selection
                     // constraint is implemented.
                     dest = getAvailable(0, addressList, unavailable);
-                    s.sapphire_pin_to_server(server, dest);
-                    ((KernelObjectStub) s).$__updateHostname(dest);
+                    pinReplica(s, dest);
                     logger.info("Created master on " + dest);
                 }
                 s.start();
@@ -215,15 +214,6 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultPolicy {
                         dest = getAvailable(i + 1, addressList, unavailable);
                     }
                     ServerBase replica = (ServerBase) addReplica(s, dest, region);
-                    // TODO: Quinton: Why are removeServer and then addServer called here?
-                    // May have been added because sapphire_replicate also has addServer() with
-                    // serverStub having the hostname of the one which replicated it. But after pin
-                    // host name would have changed. So calling remove and then add here would fix
-                    // that.
-                    // TODO: Clean all of this up, or at least comment clearly why wierd stuff is
-                    // being done.
-                    removeServer(replica);
-                    addServer(replica);
                     replica.start();
                     logger.info("created slave on " + dest);
                 }
@@ -305,9 +295,10 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultPolicy {
         public ServerBase getMaster() throws RemoteException {
             // TODO: cache master to avoid calling group policy remotely for RPC
             if (masterLock != null) {
-                List<ServerBase> servers = getServerPolicies();
-                for (ServerBase s : servers) {
+                ArrayList<ServerPolicy> servers = getServers();
+                for (ServerPolicy server : servers) {
                     try {
+                        ServerBase s = (ServerBase) server;
                         if (s.getServerId() != null
                                 && s.getServerId().equals(masterLock.getClientId())) {
                             return s;
@@ -324,27 +315,18 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultPolicy {
 
         public ServerBase getSlave() throws RemoteException {
             ServerBase master = getMaster();
-            List<ServerBase> servers = getServerPolicies();
-            for (ServerBase s : servers) {
+            ArrayList<ServerPolicy> servers = getServers();
+            for (ServerPolicy s : servers) {
                 if (!s.equals(master)) {
-                    return s;
+                    return (ServerBase) s;
                 }
             }
             return null;
         }
 
-        private List<ServerBase> getServerPolicies() throws RemoteException {
-            ArrayList<ServerPolicy> servers = super.getServers();
-            List<ServerBase> result = new ArrayList<ServerBase>();
-            for (ServerPolicy s : servers) {
-                result.add((ServerBase) s);
-            }
-            return result;
-        }
-
         public ServerBase getRandomServer() throws RemoteException {
-            List<ServerBase> servers = getServerPolicies();
-            return servers.get(random.nextInt(Integer.MAX_VALUE) % servers.size());
+            ArrayList<ServerPolicy> servers = getServers();
+            return (ServerBase) servers.get(random.nextInt(Integer.MAX_VALUE) % servers.size());
         }
     }
 }

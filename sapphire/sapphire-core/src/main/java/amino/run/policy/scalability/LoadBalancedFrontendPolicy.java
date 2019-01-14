@@ -6,6 +6,7 @@ import amino.run.common.SapphireObjectReplicaNotFoundException;
 import amino.run.common.Utils;
 import amino.run.policy.DefaultPolicy;
 import amino.run.policy.Policy;
+import amino.run.kernel.common.KernelObjectStub;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -194,9 +195,7 @@ public class LoadBalancedFrontendPolicy extends DefaultPolicy {
                 /* Find the current region and the kernel server on which this first instance of
                 sapphire object is being created. And try to replicate the
                 sapphire objects in the same region(excluding this kernel server) */
-                region = server.sapphire_getRegion();
-                InetSocketAddress addr =
-                        server.sapphire_locate_kernel_object(server.$__getKernelOID());
+                InetSocketAddress addr = ((KernelObjectStub) server).$__getHostname();
                 List<InetSocketAddress> addressList =
                         sapphire_getAddressList(spec.getNodeSelectorSpec(), region);
 
@@ -217,7 +216,7 @@ public class LoadBalancedFrontendPolicy extends DefaultPolicy {
                             "Configured replicas count: "
                                     + replicaCount
                                     + ", created replica count : "
-                                    + count
+                                    + (count + 1)
                                     + "insufficient servers in region "
                                     + numnodes
                                     + "to create required replicas");
@@ -225,7 +224,7 @@ public class LoadBalancedFrontendPolicy extends DefaultPolicy {
                             "Configured replicas count: "
                                     + replicaCount
                                     + ", created replica count : "
-                                    + count);
+                                    + (count + 1));
                 }
             } catch (RemoteException e) {
                 logger.severe("Received RemoteException may be oms is down ");

@@ -293,14 +293,6 @@ public class Sapphire {
         // server policy stub at this moment has the full policy chain; safe to add to group
         if (existingGroupPolicy == null) {
             groupPolicyStub.onCreate(region, serverPolicyStub, spec);
-            // TODO: Quinton: This looks like a bug.  Why is the server only added for the first
-            // server?
-            // OK - I think I've figured out why.  Because addServer is also invoked from
-            // Library.sapphire_replicate
-            // when additional replicas are created.
-            // TODO: Remove calls to addServer from the DK.
-            // addServer should only be called be called internally in the DM's.
-            groupPolicyStub.addServer(serverPolicyStub);
 
             /* Build client side appObjectStub from appObjectStub within AppObject of first DM's server policy in chain
             and inject its client policy into it. An instance of Client side AppObjectStub is created at the end of

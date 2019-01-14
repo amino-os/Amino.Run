@@ -31,6 +31,7 @@ import amino.run.policy.util.consensus.raft.Server;
 import amino.run.sampleSO.SO;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.List;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -227,9 +228,11 @@ public class ConsensusRSMPolicyTest extends BaseTest {
         Policy.ServerPolicy server2 = spy(ConsensusRSMPolicy.ServerPolicy.class);
         Policy.ServerPolicy server3 = spy(ConsensusRSMPolicy.ServerPolicy.class);
         Policy.GroupPolicy group = spy(ConsensusRSMPolicy.GroupPolicy.class);
-        group.addServer(server1);
-        group.addServer(server2);
-        group.addServer(server3);
+        List<Policy.ServerPolicy> list = new ArrayList<>();
+        list.add(server1);
+        list.add(server2);
+        list.add(server3);
+        doReturn(list).when(group).getServers();
         client.setServer(server1);
         client.onCreate(group, null);
 
@@ -268,8 +271,10 @@ public class ConsensusRSMPolicyTest extends BaseTest {
         Policy.ServerPolicy server1 = spy(ConsensusRSMPolicy.ServerPolicy.class);
         Policy.ServerPolicy server2 = spy(ConsensusRSMPolicy.ServerPolicy.class);
         Policy.GroupPolicy group = spy(ConsensusRSMPolicy.GroupPolicy.class);
-        group.addServer(server1);
-        group.addServer(server2);
+        List<Policy.ServerPolicy> list = new ArrayList<>();
+        list.add(server1);
+        list.add(server2);
+        doReturn(list).when(group).getServers();
 
         /* Inject stubbed server to be an rpc sever to client object */
         localClient.setServer(server1);
@@ -303,8 +308,10 @@ public class ConsensusRSMPolicyTest extends BaseTest {
         Policy.ServerPolicy server1 = spy(ConsensusRSMPolicy.ServerPolicy.class);
         Policy.ServerPolicy server2 = spy(ConsensusRSMPolicy.ServerPolicy.class);
         Policy.GroupPolicy group = spy(ConsensusRSMPolicy.GroupPolicy.class);
-        group.addServer(server1);
-        group.addServer(server2);
+        List<Policy.ServerPolicy> list = new ArrayList<>();
+        list.add(server1);
+        list.add(server2);
+        doReturn(list).when(group).getServers();
 
         /* Inject stubbed server to be an rpc sever to client object */
         localClient.setServer(server1);
@@ -331,12 +338,15 @@ public class ConsensusRSMPolicyTest extends BaseTest {
         ArrayList<Object> params = new ArrayList<Object>();
 
         /* Create a client policy, 2 server policy, group policy objects and inject group and current rpc server to client */
+
         Policy.ClientPolicy client = spy(ConsensusRSMPolicy.ClientPolicy.class);
         Policy.ServerPolicy server1 = spy(ConsensusRSMPolicy.ServerPolicy.class);
         Policy.ServerPolicy server2 = spy(ConsensusRSMPolicy.ServerPolicy.class);
         Policy.GroupPolicy group = spy(ConsensusRSMPolicy.GroupPolicy.class);
-        group.addServer(server1);
-        group.addServer(server2);
+        List<Policy.ServerPolicy> list = new ArrayList<>();
+        list.add(server1);
+        list.add(server2);
+        doReturn(list).when(group).getServers();
         client.setServer(server1);
         client.onCreate(group, null);
 

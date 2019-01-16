@@ -317,7 +317,6 @@ public class GraalStubGenerator {
                 else continue;
             }
 
-            System.out.println("got key " + m);
             if (prototype.getMember(m).canExecute() && !m.equals("constructor")) {
 
                 String convertFunctionName = convertFunctionName(m);

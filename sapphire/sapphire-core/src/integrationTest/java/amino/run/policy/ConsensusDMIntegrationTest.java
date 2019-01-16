@@ -27,7 +27,7 @@ public class ConsensusDMIntegrationTest {
 
     @BeforeClass
     public static void bootstrap() throws Exception {
-        startOmsAndKernelServers("");
+        startOmsAndKernelServers(null);
     }
 
     @Before

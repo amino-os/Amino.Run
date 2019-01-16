@@ -4,6 +4,7 @@ import static java.lang.Thread.sleep;
 
 import amino.run.app.SapphireObjectSpec;
 import amino.run.demo.KVStore;
+import amino.run.kernel.server.KernelServerImpl;
 import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
@@ -113,13 +114,12 @@ public class IntegrationTestBase {
      * @param port port to listen on
      * @param omsIp address of OMS
      * @param omsPort port of OMS
-     * @param region region to assign to this kernel server
      * @param labels labels to assign to this kernel server
      * @return The kernel server process
      * @throws java.io.IOException if the process fails to start
      */
     public static Process startKernelServer(
-            String ip, int port, String omsIp, int omsPort, String region, String[] labels)
+            String ip, int port, String omsIp, int omsPort, String labels)
             throws java.io.IOException {
         String cmd =
                 "java  -cp "
@@ -132,11 +132,9 @@ public class IntegrationTestBase {
                         + omsIp
                         + " "
                         + omsPort
-                        + " "
-                        + region
                         + " ";
-        if (null != labels && labels.length > 0) {
-            cmd += "--labels " + String.join(",", labels);
+        if (null != labels && labels.length() > 0) {
+            cmd += KernelServerImpl.LABEL_OPT + labels;
         }
         System.out.printf("Starting kernel server with command line \'%s\'\n", cmd);
         Process process = Runtime.getRuntime().exec(cmd);
@@ -148,19 +146,13 @@ public class IntegrationTestBase {
         omsProcess = startOms(omsIp, omsPort);
     }
 
-    public static void startOmsAndKernelServers(String kernelServerRegion) throws Exception {
-        startOmsAndKernelServers(kernelServerRegion, null);
-    }
-
     // @Deprecated "Please use {@link #startOms()} and {@link startKernelServer()} instead"
-    public static void startOmsAndKernelServers(String kernelServerRegion, String labels[])
-            throws Exception {
+    public static void startOmsAndKernelServers(String labels) throws Exception {
         omsProcess = startOms(omsIp, omsPort);
         waitForSockListen(omsIp, omsPort);
 
         for (int i = 0; i < ksPort.length; i++) {
-            kernelServerProcess[i] =
-                    startKernelServer(ksIp, ksPort[i], omsIp, omsPort, kernelServerRegion, labels);
+            kernelServerProcess[i] = startKernelServer(ksIp, ksPort[i], omsIp, omsPort, labels);
             waitForSockListen(ksIp, ksPort[i]);
         }
     }

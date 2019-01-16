@@ -60,11 +60,11 @@ public class BaseTest {
     protected KernelServer spiedKs2;
     protected KernelServer spiedKs3;
     protected int kernelServerCount = 0;
-    private String LOOP_BACK_IP_ADDR = "127.0.0.1";
-    private int omsPort = 10000;
-    private int kernelPort1 = 10001;
-    private int kernelPort2 = 10002;
-    private int kernelPort3 = 10003;
+    protected String LOOP_BACK_IP_ADDR = "127.0.0.1";
+    protected int omsPort = 10000;
+    protected int kernelPort1 = 10001;
+    protected int kernelPort2 = 10002;
+    protected int kernelPort3 = 10003;
 
     protected boolean serversInSameRegion = true;
 

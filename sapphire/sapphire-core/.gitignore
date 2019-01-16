@@ -1,1 +1,4 @@
 /build
+
+# ignore checkpoint file
+checkpoint.dat

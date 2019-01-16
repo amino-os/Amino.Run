@@ -131,16 +131,16 @@ task genUnitTestStubs(type :JavaExec){
 
 task compileSampleSO(type: JavaCompile) {
     source = file(project.projectDir.toString() + '/src/test/java/amino/run/sampleSO')
-    classpath =  files("$projectDir/build/libs/sapphire-core-1.0.0.jar")
+    classpath = files(sourceSets.main.output.classesDir)
     destinationDir = file(project.buildDir.toString() + '/classes/java/test/')
     options.incremental = true
 }
 
-// Task for Graal SO Stub Generation:
-// Run `gradlew genGraalStub` to generate stub files
-task genGraalStub(type: JavaExec) {
+// Task for Graal Test Stubs Generation:
+// Run `gradlew genGraalTestStubs` to generate Graal test stub files
+task genGraalTestStubs(type: JavaExec) {
     main = "amino.run.compiler.GraalStubGenerator"
-    classpath +=  files("$projectDir/build/libs/sapphire-core-1.0.0.jar")
+    classpath += files(sourceSets.main.output.classesDir)
     def sapphireObjectPath = "$projectDir/src/test/resources/student.js"
     def outPath = "$projectDir/src/test/java"
     def packageName = "amino.run.stubs"
@@ -149,16 +149,16 @@ task genGraalStub(type: JavaExec) {
     outputs.dir outPath // Declare outputs, so gradle will run if they have been changed
     inputs.dir sapphireObjectPath   // Declare inputs, so gradle will run if they have been changed
 }
-
-// Task for Graal stub compilation
-task compileGraalStub(type: JavaCompile) {
+// Task for Graal Test stubs compilation
+task compileGraalTestStubs(type: JavaCompile) {
     source = "$projectDir/src/test/java/amino/run/stubs"
-    classpath =  files("$projectDir/build/libs/sapphire-core-1.0.0.jar")
+    classpath = files(sourceSets.main.output.classesDir)
     // TODO: Quinton: Remove: classpath = files(sourceSets.main.output.classesDir)
     destinationDir = sourceSets.main.output.classesDir
     options.incremental = true
-    inputs.dir genGraalStub.outputs
+    inputs.dir genGraalTestStubs.outputs
 }
+
 task genIntegTestStubs(type :JavaExec) {
     main = "amino.run.compiler.StubGenerator"
     classpath = sourceSets.main.runtimeClasspath
@@ -179,19 +179,20 @@ task compileIntegTestDemoPkg(type: JavaCompile) {
 }
 
 tasks.googleJavaFormat.mustRunAfter genStubs
-tasks.googleJavaFormat.mustRunAfter genIntegTestStubs
-tasks.googleJavaFormat.mustRunAfter genGraalStub
+tasks.googleJavaFormat.mustRunAfter genGraalTestStubs
 tasks.googleJavaFormat.mustRunAfter genUnitTestStubs
+tasks.googleJavaFormat.mustRunAfter genIntegTestStubs
 
-compileGraalStub.dependsOn genGraalStub
-compileTestJava.dependsOn compileGraalStub
+genGraalTestStubs.dependsOn compileJava
+compileGraalTestStubs.dependsOn genGraalTestStubs
+compileTestJava.dependsOn compileGraalTestStubs
 genUnitTestStubs.dependsOn compileSampleSO
 compileTestJava.dependsOn genUnitTestStubs
 genIntegTestStubs.dependsOn compileIntegTestDemoPkg
 compileIntegrationTestJava.dependsOn genIntegTestStubs
 
 tasks.googleJavaFormat.dependsOn genStubs
-tasks.googleJavaFormat.dependsOn genGraalStub
+tasks.googleJavaFormat.dependsOn genGraalTestStubs
 tasks.googleJavaFormat.dependsOn genIntegTestStubs
 
 check.dependsOn tasks.googleJavaFormat

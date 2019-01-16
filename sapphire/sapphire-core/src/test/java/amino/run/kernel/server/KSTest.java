@@ -1,21 +1,16 @@
 package amino.run.kernel.server;
 
 import static amino.run.common.UtilsTest.extractFieldValueOnInstance;
-import static amino.run.common.UtilsTest.setFieldValueOnInstance;
 import static junit.framework.TestCase.assertEquals;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.spy;
 
 import amino.run.app.Language;
 import amino.run.app.SapphireObjectSpec;
 import amino.run.common.BaseTest;
+import amino.run.kernel.common.KernelOID;
 import amino.run.kernel.common.KernelObjectNotFoundException;
 import amino.run.kernel.common.KernelRPC;
 import amino.run.kernel.common.KernelRPCException;
-import amino.run.oms.KernelServerManager;
 import amino.run.sampleSO.SO;
-import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import org.junit.After;
 import org.junit.Before;
@@ -42,18 +37,6 @@ public class KSTest extends BaseTest {
                         .setJavaClassName("amino.run.sampleSO.SO")
                         .create();
         super.setUp(1, spec);
-        // Mocked getBestSuitableServer in KernelServerManager to always return spiedKs1 as the
-        // bestsuitableServer in order to get exact result from
-        // KernelObjectManager.getAllKernelObjectOids. If not mocked, random
-        // server will be choosen each time making the results random.
-        KernelServerManager serverManager =
-                (KernelServerManager) extractFieldValueOnInstance(spiedOms, "serverManager");
-        KernelServerManager spiedServerManager = spy(serverManager);
-        setFieldValueOnInstance(spiedOms, "serverManager", spiedServerManager);
-        InetSocketAddress address = new InetSocketAddress(LOOP_BACK_IP_ADDR, kernelPort1);
-        doReturn(address)
-                .when(spiedServerManager)
-                .getBestSuitableServer(any(SapphireObjectSpec.class));
         so = ((SO) (server1.sapphire_getAppObject().getObject()));
     }
 
@@ -61,22 +44,28 @@ public class KSTest extends BaseTest {
     public void testMakeKernelRPC() throws Exception {
         String method = "public java.lang.Integer amino.run.sampleSO.SO.getI()";
         ArrayList<Object> params = new ArrayList<Object>();
+        /* Make kernel rpc with a method name not present in server policy so that make rpc fails at invocation time(but
+        succeeds at object lookup).
+        Note: We have passed app method name instead of server's onRPC method to fail the rpc invocation. */
         KernelRPC rpc = new KernelRPC(server1.$__getKernelOID(), method, params);
         thrown.expect(KernelRPCException.class);
-        // Modified the KernelRPC call to ks1 as the local
-        // KernelServer has been changed to KS1, as part of Multi-DM implementation.
         spiedKs1.makeKernelRPC(rpc);
     }
 
-    @Test(expected = KernelObjectNotFoundException.class)
-    public void removeObjectTest() throws Exception {
-        /* used spiedKs1 here because in setUp(), getBestSuitableServer is mocked in such a way that
-        it should always return spiedKs1. If other KernelServers are used,
-        deleteKernelObject will throw the exception */
+    @Test
+    public void getKernelObjectTest() throws Exception {
         KernelServerImpl ks = (KernelServerImpl) spiedKs1;
-        ks.deleteKernelObject(client.getServer().$__getKernelOID());
-        // should throw KernelObjectNotFoundException as it is deleted
+
+        // Get the existing kernel object
         ks.getKernelObject(client.getServer().$__getKernelOID());
+    }
+
+    @Test(expected = KernelObjectNotFoundException.class)
+    public void getNonExistentKernelObjectTest() throws Exception {
+        KernelServerImpl ks = (KernelServerImpl) spiedKs1;
+
+        // Get the non-existent kernel object. It must throw kernel object not found exception.
+        ks.getKernelObject(new KernelOID(0));
     }
 
     @Test
@@ -88,9 +77,6 @@ public class KSTest extends BaseTest {
 
     @Test
     public void getAllKernelObjectOidsTest() throws Exception {
-        // used spiedKs1 here because in setUp(), getBestSuitableServer is mocked in such a way that
-        // it should always return spiedKs1. If other KernelServers are used,
-        // KernelObjectManager.getAllKernelObjectOids() will return null.
         KernelObjectManager kom =
                 (KernelObjectManager) extractFieldValueOnInstance(spiedKs1, "objectManager");
         // As KernelObjectManager.addObject is called once during

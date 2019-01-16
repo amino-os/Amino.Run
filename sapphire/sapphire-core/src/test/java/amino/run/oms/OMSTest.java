@@ -5,16 +5,15 @@ import static org.junit.Assert.assertEquals;
 import amino.run.app.Language;
 import amino.run.app.SapphireObjectSpec;
 import amino.run.common.BaseTest;
-import amino.run.common.IgnoreAfter;
 import amino.run.common.SapphireObjectID;
+import amino.run.common.SapphireReplicaID;
 import amino.run.common.SapphireUtils;
-import amino.run.kernel.common.GlobalKernelReferences;
 import amino.run.kernel.common.KernelOID;
+import amino.run.kernel.server.KernelServerImpl;
 import amino.run.runtime.EventHandler;
 import amino.run.sampleSO.SO;
 import amino.run.sampleSO.stubs.SO_Stub;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,7 +22,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
 import org.powermock.modules.junit4.PowerMockRunner;
 
@@ -35,16 +33,12 @@ public class OMSTest extends BaseTest {
     SO so;
     @Rule public ExpectedException thrown;
 
-    // To make the current test name available inside test methods
-    @Rule public TestName methodName;
-
     // To access the methods in SapphireObjectManager through Reflection
     OMSServerImpl omsImpl;
     SapphireObjectManager fieldValue;
 
     public OMSTest() {
         thrown = ExpectedException.none();
-        methodName = new TestName();
     }
 
     @Before
@@ -131,62 +125,59 @@ public class OMSTest extends BaseTest {
     }
 
     @Test
-    @IgnoreAfter // Added to ignore @After for this particular testcase
-    public void getAllAndUnRegisterSapphireObjectTest() throws Exception {
-        // As only one sapphire object is created during setUp(), after unregister, number of
-        // sapphireobjects should be zero
-        omsImpl.unRegisterSapphireObject(group.getSapphireObjId());
-        ArrayList<SapphireObjectID> afterUnregister = omsImpl.getAllSapphireObjects();
-        assertEquals(new Integer(0), new Integer(afterUnregister.size()));
-    }
+    public void sapphireInstanceAndReplicaDispatcherTest() throws Exception {
+        /* Setup had created a sapphire object with default SO. Hence SO count is 1 */
+        assertEquals(new Integer(1), new Integer(omsImpl.getAllSapphireObjects().size()));
 
-    @Test
-    public void getAndUnRegisterSapphireReplicaTest() throws Exception {
-        // As only one sapphire replica is created during setUp(), after unregister, number of
-        // sapphireReplicas should be zero
-        omsImpl.unRegisterSapphireReplica(server1.getReplicaId());
-        EventHandler[] arr = omsImpl.getSapphireReplicasById(group.getSapphireObjId());
-        assertEquals(new Integer(0), new Integer(arr.length));
-    }
+        /* register a new sapphire object, set the handler, get the handler back, verify if it is same as what we have
+        set, add a replica to it, set replica handler, get the handler and verify if it same as what is set and
+        then unregister the replica and the sapphire object */
+        SapphireObjectID sapphireObjId = omsImpl.registerSapphireObject();
 
-    @Test
-    public void setAndGetInstanceDispatcherTest() throws Exception {
-        EventHandler eventHandler =
+        /* Count becomes 2 after registering new sapphire object */
+        assertEquals(new Integer(2), new Integer(omsImpl.getAllSapphireObjects().size()));
+
+        EventHandler groupHandler =
                 new EventHandler(
-                        GlobalKernelReferences.nodeServer.getLocalHost(),
+                        ((KernelServerImpl) spiedksOnOms).getLocalHost(),
+                        new ArrayList() {
+                            {
+                                add(group);
+                            }
+                        });
+        fieldValue.setInstanceDispatcher(sapphireObjId, groupHandler);
+        assertEquals(groupHandler, fieldValue.getInstanceDispatcher(sapphireObjId));
+
+        /* Register a replica to this SO, check if it is added, set handler, get it back and verify if it is same */
+        SapphireReplicaID replicaId = omsImpl.registerSapphireReplica(sapphireObjId);
+        assertEquals(
+                new Integer(1), new Integer(omsImpl.getSapphireReplicasById(sapphireObjId).length));
+
+        EventHandler replicaHandler =
+                new EventHandler(
+                        ((KernelServerImpl) spiedKs1).getLocalHost(),
                         new ArrayList() {
                             {
                                 add(server1);
                             }
                         });
-        fieldValue.setInstanceDispatcher(group.getSapphireObjId(), eventHandler);
-        assertEquals(eventHandler, fieldValue.getInstanceDispatcher(group.getSapphireObjId()));
-    }
+        fieldValue.setReplicaDispatcher(replicaId, replicaHandler);
+        assertEquals(replicaHandler, fieldValue.getReplicaDispatcher(replicaId));
 
-    @Test
-    public void setAndGetReplicaDispatcherTest() throws Exception {
-        EventHandler eventHandler =
-                new EventHandler(
-                        GlobalKernelReferences.nodeServer.getLocalHost(),
-                        new ArrayList() {
-                            {
-                                add(server1);
-                            }
-                        });
-        fieldValue.setReplicaDispatcher(server1.getReplicaId(), eventHandler);
-        assertEquals(eventHandler, fieldValue.getReplicaDispatcher(server1.getReplicaId()));
+        /* unregister the replica and check it is removed from sapphire object */
+        omsImpl.unRegisterSapphireReplica(replicaId);
+        assertEquals(
+                new Integer(0), new Integer(omsImpl.getSapphireReplicasById(sapphireObjId).length));
+
+        /* unregister the sapphire object */
+        omsImpl.unRegisterSapphireObject(sapphireObjId);
+
+        /* Count becomes 1 after unregistering the sapphire object */
+        assertEquals(new Integer(1), new Integer(omsImpl.getAllSapphireObjects().size()));
     }
 
     @After
     public void tearDown() throws Exception {
-        GlobalKernelReferences.nodeServer.oms = spiedOms;
-        Method method = getClass().getMethod(methodName.getMethodName());
-        // because sapphire object will be deleted in getAllAndUnRegisterSapphireObjectTest.So no
-        // need to delete it again
-        if (method.isAnnotationPresent(IgnoreAfter.class)) {
-            System.out.println("sapphire object already deleted");
-        } else {
-            super.tearDown();
-        }
+        super.tearDown();
     }
 }

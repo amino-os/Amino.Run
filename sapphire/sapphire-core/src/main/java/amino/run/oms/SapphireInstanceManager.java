@@ -65,7 +65,6 @@ public class SapphireInstanceManager {
      * @param rootGroupPolicy root group policy
      */
     public void setRootGroupPolicy(Policy.GroupPolicy rootGroupPolicy) {
-
         this.rootGroupPolicy = rootGroupPolicy;
     }
 

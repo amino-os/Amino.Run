@@ -20,11 +20,8 @@ import amino.run.kernel.common.KernelObjectNotFoundException;
 import amino.run.kernel.common.KernelObjectStub;
 import amino.run.kernel.server.KernelServerImpl;
 import amino.run.oms.OMSServer;
-<<<<<<< HEAD
 import amino.run.policy.Policy.ServerPolicy;
-=======
-import amino.run.policy.SapphirePolicy.ServerPolicy;
->>>>>>> Rename SapphireClientPolicy to ClientPolicy etc
+import amino.run.policy.Policy.ServerPolicy;
 import amino.run.runtime.Sapphire;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;

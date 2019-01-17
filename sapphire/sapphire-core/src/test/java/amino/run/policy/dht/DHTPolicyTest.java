@@ -3,8 +3,19 @@ package amino.run.policy.dht;
 import amino.run.app.DMSpec;
 import amino.run.app.Language;
 import amino.run.app.SapphireObjectSpec;
+<<<<<<< HEAD
 import amino.run.common.BaseTest;
 import amino.run.sampleSO.SO;
+=======
+import amino.run.kernel.common.KernelOID;
+import amino.run.kernel.common.ServerInfo;
+import amino.run.kernel.server.KernelServerImpl;
+import amino.run.oms.OMSServer;
+import amino.run.oms.OMSServerImpl;
+import amino.run.policy.Policy;
+import amino.run.policy.SapphirePolicyContainer;
+import java.net.InetSocketAddress;
+>>>>>>> Renamed SapphirePolicy -> Policy
 import java.util.*;
 import org.junit.Assert;
 import org.junit.Before;

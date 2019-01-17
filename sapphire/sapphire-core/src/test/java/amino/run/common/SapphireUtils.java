@@ -112,8 +112,8 @@ public class SapphireUtils {
                     }
                 });
 
-        KernelServerImpl.main(
-                new String[] {ipAddr, "" + port, omsIpaddr, "" + omsPort, " " + region});
+        String labels = KernelServerImpl.LABEL_OPT + KernelServerImpl.REGION_KEY + "=" + region;
+        KernelServerImpl.main(new String[] {ipAddr, "" + port, omsIpaddr, "" + omsPort, labels});
 
         /* Get the kernel server instance created above from the GlobalKernelReferences nodeServer field */
         KernelServerImpl ks = GlobalKernelReferences.nodeServer;

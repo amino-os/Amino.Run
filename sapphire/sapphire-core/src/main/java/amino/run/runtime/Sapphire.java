@@ -75,8 +75,11 @@ public class Sapphire {
             SapphireObjectID sapphireObjId =
                     GlobalKernelReferences.nodeServer.oms.registerSapphireObject();
 
+            /* Get the region of current server */
+            String region = GlobalKernelReferences.nodeServer.getRegion();
             appStub =
-                    createPolicy(sapphireObjId, spec, policyNameChain, processedPolicies, "", args);
+                    createPolicy(
+                            sapphireObjId, spec, policyNameChain, processedPolicies, region, args);
         } catch (Exception e) {
             String msg = String.format("Failed to create sapphire object '%s'", spec);
             logger.log(Level.SEVERE, msg, e);
@@ -120,8 +123,11 @@ public class Sapphire {
             SapphireObjectID sapphireObjId =
                     GlobalKernelReferences.nodeServer.oms.registerSapphireObject();
 
+            /* Get the region of current server */
+            String region = GlobalKernelReferences.nodeServer.getRegion();
             AppObjectStub appStub =
-                    createPolicy(sapphireObjId, spec, policyNameChain, processedPolicies, "", args);
+                    createPolicy(
+                            sapphireObjId, spec, policyNameChain, processedPolicies, region, args);
             logger.info("Sapphire Object created: " + appObjectClass.getName());
             return appStub;
         } catch (Exception e) {
@@ -281,14 +287,6 @@ public class Sapphire {
         serverPolicyStub.setProcessedPolicies(processedPoliciesSoFar);
 
         if (nextPoliciesToCreate.size() != 0) {
-            // TODO: hacks for demo
-            if (policyName != null && policyName.contains("DHT")) {
-                if (region == null || region.isEmpty()) {
-                    List<String> regions = GlobalKernelReferences.nodeServer.oms.getRegions();
-                    logger.info("Regions available for DHT: " + regions);
-                    region = regions.get(0);
-                }
-            }
             createPolicy(
                     sapphireObjId, spec, nextPoliciesToCreate, processedPolicies, region, appArgs);
         }

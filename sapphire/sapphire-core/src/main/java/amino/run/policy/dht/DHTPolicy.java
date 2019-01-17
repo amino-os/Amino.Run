@@ -100,15 +100,21 @@ public class DHTPolicy extends DefaultSapphirePolicy {
                 // region.
 
                 // Create replicas based on annotation
-                for (int i = 1; i < numOfShards; i++) {
-                    region = regions.get(i % regions.size());
+                for (int i = 0; i < numOfShards; i++) {
+                    String regionVar = regions.get(i % regions.size());
                     if (region == null) {
                         throw new IllegalStateException("no region available for DHT DM");
                     }
 
-                    logger.info(String.format("Creating shard %s in region %s", i, region));
-                    InetSocketAddress address = getAddress(region);
-                    addReplica(server, address, region, pinned);
+                    if (regionVar.equals(region)) {
+                        /* In current implementation, each replica is in a different region. And each replica serves as
+                        a shard. Ignore the region where first shard was created. */
+                        continue;
+                    }
+
+                    logger.info(String.format("Creating shard %s in region %s", i, regionVar));
+                    InetSocketAddress address = getAddress(regionVar);
+                    addReplica(server, address, regionVar, pinned);
                 }
             } catch (RemoteException e) {
                 throw new Error(

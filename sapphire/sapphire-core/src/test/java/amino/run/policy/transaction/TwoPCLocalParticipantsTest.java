@@ -21,7 +21,6 @@ public class TwoPCLocalParticipantsTest {
     UUID id = UUID.randomUUID();
     Policy.ClientPolicy part1 = mock(TwoPCCohortPolicy.TwoPCCohortClientPolicy.class);
     Policy.ClientPolicy part2 = mock(TwoPCCohortPolicy.TwoPCCohortClientPolicy.class);
-
     TwoPCLocalParticipants participants = new TwoPCLocalParticipants();
 
     @Before

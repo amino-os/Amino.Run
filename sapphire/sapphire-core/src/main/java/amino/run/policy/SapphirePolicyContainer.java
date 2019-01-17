@@ -24,6 +24,7 @@ public class SapphirePolicyContainer implements Serializable {
     }
 
     public Policy.ServerPolicy getServerPolicy() {
+
         return this.serverPolicy;
     }
 

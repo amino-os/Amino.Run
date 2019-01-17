@@ -145,6 +145,7 @@ public class OMSServerImpl implements OMSServer, SapphireObjectServer {
      * @throws IllegalAccessException
      */
     private Policy.ClientPolicy extractClientPolicy(AppObjectStub appObjStub)
+
             throws NoSuchFieldException, IllegalAccessException {
         Field field =
                 appObjStub

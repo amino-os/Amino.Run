@@ -203,7 +203,6 @@ public class ConsensusRSMPolicyTest extends BaseTest {
 
         Policy.ClientPolicy localClient = spy(ConsensusRSMPolicy.ClientPolicy.class);
         Policy.ServerPolicy server = spy(ConsensusRSMPolicy.ServerPolicy.class);
-
         /* Inject the stubbed server to be an rpc sever to client policy object and make the RPC to fail with leader exception containing actual leaderServer's reference in exception */
         localClient.setServer(server);
         doThrow(new LeaderException("leaderException", leaderServer))

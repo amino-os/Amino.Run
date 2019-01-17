@@ -123,7 +123,11 @@ public class ServerTest {
         ConcurrentHashMap<UUID, ConsensusRSMPolicy.ServerPolicy> allServers =
                 new ConcurrentHashMap<UUID, ConsensusRSMPolicy.ServerPolicy>();
         int k = 0;
+<<<<<<< HEAD
         for (Policy.ServerPolicy i : serverPolicy) {
+=======
+        for (SapphirePolicy.ServerPolicy i : serverPolicy) {
+>>>>>>> Rename SapphireClientPolicy to ClientPolicy etc
             ConsensusRSMPolicy.ServerPolicy s = (ConsensusRSMPolicy.ServerPolicy) i;
             allServers.put(raftServer[k++].getMyServerID(), s);
         }

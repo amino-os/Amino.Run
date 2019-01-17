@@ -5,7 +5,7 @@ import amino.run.common.SapphireObjectNotFoundException;
 import amino.run.common.SapphireObjectReplicaNotFoundException;
 import amino.run.common.Utils;
 import amino.run.kernel.common.KernelObjectStub;
-import amino.run.policy.SapphirePolicy;
+import amino.run.policy.Policy;
 import amino.run.policy.util.ResettableTimer;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
@@ -87,7 +87,7 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
         private transient volatile ResettableTimer timer; // Timer for limiting
 
         @Override
-        public void onCreate(SapphirePolicy.GroupPolicy group, SapphireObjectSpec spec) {
+        public void onCreate(Policy.GroupPolicy group, SapphireObjectSpec spec) {
             super.onCreate(group, spec);
 
             Config config = getConfig(spec);
@@ -141,7 +141,7 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
             than required, so one can be removed. The number of replicas should not be
             reduced below 2 (in case one fails).
              */
-            ArrayList<SapphirePolicy.ServerPolicy> replicaServers;
+            ArrayList<Policy.ServerPolicy> replicaServers;
             try {
                 replicaServers = getGroup().getServers();
             } catch (RemoteException e) {
@@ -174,8 +174,7 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
         private transient ResettableTimer timer; // Timer for limiting
 
         @Override
-        public void onCreate(
-                String region, SapphirePolicy.ServerPolicy server, SapphireObjectSpec spec)
+        public void onCreate(String region, Policy.ServerPolicy server, SapphireObjectSpec spec)
                 throws RemoteException {
             super.onCreate(region, server, spec);
 
@@ -224,8 +223,8 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
             /* Get the list of servers on which replicas already exist */
             ArrayList<InetSocketAddress> sappObjReplicatedKernelList =
                     new ArrayList<InetSocketAddress>();
-            ArrayList<SapphirePolicy.ServerPolicy> servers = getServers();
-            for (SapphirePolicy.ServerPolicy tmp : servers) {
+            ArrayList<Policy.ServerPolicy> servers = getServers();
+            for (Policy.ServerPolicy tmp : servers) {
                 sappObjReplicatedKernelList.add(((KernelObjectStub) tmp).$__getHostname());
             }
 
@@ -254,17 +253,17 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
         }
 
         // TODO: Verify it works in multi-DM scenario.
-        public synchronized void scaleDownReplica(SapphirePolicy.ServerPolicy server)
+        public synchronized void scaleDownReplica(Policy.ServerPolicy server)
                 throws RemoteException, ScaleDownException {
-            ArrayList<SapphirePolicy.ServerPolicy> serverList = getServers();
+            ArrayList<Policy.ServerPolicy> serverList = getServers();
 
             if (2 >= serverList.size()) {
                 throw new ScaleDownException(
                         "Cannot scale down. Current replica count is " + serverList.size());
             }
 
-            SapphirePolicy.ServerPolicy serverToRemove = null;
-            for (SapphirePolicy.ServerPolicy serverPolicyStub : serverList) {
+            Policy.ServerPolicy serverToRemove = null;
+            for (Policy.ServerPolicy serverPolicyStub : serverList) {
                 if (serverPolicyStub.$__getKernelOID().equals(server.$__getKernelOID())) {
                     serverToRemove = serverPolicyStub;
                     break;

@@ -1,8 +1,8 @@
 package amino.run.policy.transaction;
 
-import static amino.run.policy.SapphirePolicy.ClientPolicy;
+import static amino.run.policy.Policy.ClientPolicy;
 
-import amino.run.policy.SapphirePolicy;
+import amino.run.policy.Policy;
 import java.io.Serializable;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -26,7 +26,7 @@ public class TwoPCLocalParticipants implements Serializable {
 
     public void addParticipants(UUID transactionId, Collection<ClientPolicy> participants) {
         TwoPCParticipants participantManager = this.getParticipantManager(transactionId);
-        for (SapphirePolicy.ClientPolicy participant : participants) {
+        for (Policy.ClientPolicy participant : participants) {
             participantManager.register(participant);
         }
     }

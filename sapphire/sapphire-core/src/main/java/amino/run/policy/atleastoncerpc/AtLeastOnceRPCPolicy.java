@@ -1,12 +1,12 @@
 package amino.run.policy.atleastoncerpc;
 
 import amino.run.common.AppExceptionWrapper;
-import amino.run.policy.DefaultSapphirePolicy;
+import amino.run.policy.DefaultPolicy;
 import java.util.ArrayList;
 import java.util.concurrent.TimeoutException;
 
 // AtLeastOnceRPC: automatically retry RPCs for bounded amount of time
-public class AtLeastOnceRPCPolicy extends DefaultSapphirePolicy {
+public class AtLeastOnceRPCPolicy extends DefaultPolicy {
 
     public static class AtLeastOnceRPCClientPolicy extends DefaultClientPolicy {
         // 5s looks like a reasonable default timeout for production

@@ -10,7 +10,7 @@ import amino.run.kernel.common.KernelObjectNotCreatedException;
 import amino.run.kernel.common.KernelObjectNotFoundException;
 import amino.run.kernel.common.KernelServerNotFoundException;
 import amino.run.kernel.common.ServerInfo;
-import amino.run.policy.SapphirePolicy;
+import amino.run.policy.Policy;
 import amino.run.runtime.EventHandler;
 import java.net.InetSocketAddress;
 import java.rmi.NotBoundException;
@@ -42,8 +42,7 @@ public interface OMSServer extends Remote {
     void heartbeatKernelServer(ServerInfo srvinfo)
             throws RemoteException, NotBoundException, KernelServerNotFoundException;
 
-    SapphirePolicy.GroupPolicy createGroupPolicy(
-            Class<?> policyClass, SapphireObjectID sapphireObjId)
+    Policy.GroupPolicy createGroupPolicy(Class<?> policyClass, SapphireObjectID sapphireObjId)
             throws RemoteException, ClassNotFoundException, KernelObjectNotCreatedException,
                     SapphireObjectNotFoundException;
 

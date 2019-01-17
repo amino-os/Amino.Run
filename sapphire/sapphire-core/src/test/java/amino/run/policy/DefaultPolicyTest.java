@@ -6,27 +6,27 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-public class DefaultSapphirePolicyTest {
+public class DefaultPolicyTest {
     private int cnt;
     private Thread[] addThreads;
     private Thread[] delThreads;
-    private DefaultSapphirePolicy.DefaultServerPolicy[] servers;
-    private DefaultSapphirePolicy.DefaultGroupPolicy group;
+    private DefaultPolicy.DefaultServerPolicy[] servers;
+    private DefaultPolicy.DefaultGroupPolicy group;
 
     @Before
     public void setup() throws Exception {
         cnt = 1000;
-        group = new DefaultSapphirePolicy.DefaultGroupPolicy();
+        group = new DefaultPolicy.DefaultGroupPolicy();
         addThreads = new Thread[cnt];
         delThreads = new Thread[cnt];
-        servers = new DefaultSapphirePolicy.DefaultServerPolicy[cnt];
+        servers = new DefaultPolicy.DefaultServerPolicy[cnt];
         for (int i = 0; i < addThreads.length; i++) {
-            servers[i] = new DefaultSapphirePolicy.DefaultServerPolicy();
+            servers[i] = new DefaultPolicy.DefaultServerPolicy();
             servers[i].$__setKernelOID(new KernelOID(i));
         }
 
         for (int i = 0; i < addThreads.length; i++) {
-            final DefaultSapphirePolicy.DefaultServerPolicy s = servers[i];
+            final DefaultPolicy.DefaultServerPolicy s = servers[i];
             addThreads[i] =
                     new Thread(
                             new Runnable() {
@@ -41,7 +41,7 @@ public class DefaultSapphirePolicyTest {
         }
 
         for (int i = 0; i < delThreads.length; i++) {
-            final DefaultSapphirePolicy.DefaultServerPolicy s = servers[i];
+            final DefaultPolicy.DefaultServerPolicy s = servers[i];
             delThreads[i] =
                     new Thread(
                             new Runnable() {

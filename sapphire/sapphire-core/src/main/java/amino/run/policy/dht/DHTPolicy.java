@@ -5,7 +5,7 @@ import amino.run.common.NoKernelServerFoundException;
 import amino.run.common.SapphireObjectNotFoundException;
 import amino.run.common.SapphireObjectReplicaNotFoundException;
 import amino.run.common.Utils;
-import amino.run.policy.DefaultSapphirePolicy;
+import amino.run.policy.DefaultPolicy;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -15,7 +15,7 @@ import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class DHTPolicy extends DefaultSapphirePolicy {
+public class DHTPolicy extends DefaultPolicy {
     private static final int DEFAULT_NUM_OF_SHARDS = 3;
 
     /** Configuration for DHT Policy. */

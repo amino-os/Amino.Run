@@ -6,7 +6,7 @@ import amino.run.common.SapphireObjectNameModificationException;
 import amino.run.common.SapphireObjectNotFoundException;
 import amino.run.common.SapphireObjectReplicaNotFoundException;
 import amino.run.common.SapphireReplicaID;
-import amino.run.policy.SapphirePolicy;
+import amino.run.policy.Policy;
 import amino.run.runtime.EventHandler;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -67,7 +67,7 @@ public class SapphireObjectManager {
      * @return Sapphire Group Policy Object
      * @throws SapphireObjectNotFoundException
      */
-    public SapphirePolicy.GroupPolicy getRootGroupPolicy(SapphireObjectID oid)
+    public Policy.GroupPolicy getRootGroupPolicy(SapphireObjectID oid)
             throws SapphireObjectNotFoundException {
         SapphireInstanceManager instanceManager = sapphireObjects.get(oid);
         if (instanceManager == null) {
@@ -76,7 +76,7 @@ public class SapphireObjectManager {
         return instanceManager.getRootGroupPolicy();
     }
 
-    public void setRootGroupPolicy(SapphireObjectID oid, SapphirePolicy.GroupPolicy rootGroupPolicy)
+    public void setRootGroupPolicy(SapphireObjectID oid, Policy.GroupPolicy rootGroupPolicy)
             throws SapphireObjectNotFoundException {
         SapphireInstanceManager instanceManager = sapphireObjects.get(oid);
         if (instanceManager == null) {

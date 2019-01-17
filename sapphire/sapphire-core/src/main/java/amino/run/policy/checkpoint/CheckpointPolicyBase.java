@@ -1,6 +1,6 @@
 package amino.run.policy.checkpoint;
 
-import amino.run.policy.DefaultSapphirePolicy;
+import amino.run.policy.DefaultPolicy;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -13,7 +13,7 @@ import java.io.ObjectOutputStream;
  * <p>Base class for checkpoint policies. Put common stuff in here that all checkpoint policies can
  * inherit/reuse.
  */
-public abstract class CheckpointPolicyBase extends DefaultSapphirePolicy {
+public abstract class CheckpointPolicyBase extends DefaultPolicy {
     public abstract static class ClientPolicy extends DefaultClientPolicy {}
 
     public abstract static class ServerPolicy extends DefaultServerPolicy {

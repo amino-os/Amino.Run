@@ -91,10 +91,7 @@ public class PolicyStub extends Stub {
         buffer.append(
                 indenter.indent() + "amino.run.kernel.common.KernelOID $__oid = null;" + EOLN);
         buffer.append(indenter.indent() + "java.net.InetSocketAddress $__hostname = null;" + EOLN);
-        buffer.append(
-                indenter.indent()
-                        + "SapphirePolicy.ClientPolicy $__nextClientPolicy = null;"
-                        + EOLN);
+        buffer.append(indenter.indent() + "Policy.ClientPolicy $__nextClientPolicy = null;" + EOLN);
         return buffer.toString();
     }
 
@@ -164,7 +161,7 @@ public class PolicyStub extends Stub {
         /* Implementation for setNextClientPolicy */
         buffer.append(
                 indenter.indent()
-                        + "public void $__setNextClientPolicy(SapphirePolicy.ClientPolicy clientPolicy) {"
+                        + "public void $__setNextClientPolicy(Policy.ClientPolicy clientPolicy) {"
                         + EOLN);
         buffer.append(
                 indenter.tIncrease()

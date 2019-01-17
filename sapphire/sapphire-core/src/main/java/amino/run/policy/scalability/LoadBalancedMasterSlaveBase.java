@@ -6,7 +6,7 @@ import amino.run.common.SapphireObjectReplicaNotFoundException;
 import amino.run.common.Utils;
 import amino.run.kernel.common.KernelObjectStub;
 import amino.run.kernel.common.KernelServerNotFoundException;
-import amino.run.policy.DefaultSapphirePolicy;
+import amino.run.policy.DefaultPolicy;
 import amino.run.policy.scalability.masterslave.Lock;
 import amino.run.policy.scalability.masterslave.MethodInvocationRequest;
 import amino.run.policy.scalability.masterslave.MethodInvocationResponse;
@@ -30,7 +30,7 @@ import java.util.logging.Logger;
  *
  * @author terryz
  */
-public abstract class LoadBalancedMasterSlaveBase extends DefaultSapphirePolicy {
+public abstract class LoadBalancedMasterSlaveBase extends DefaultPolicy {
     /** Base implementation of client side policy */
     public abstract static class ClientBase extends DefaultClientPolicy {
         private static Logger logger = Logger.getLogger(ClientBase.class.getName());

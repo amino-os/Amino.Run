@@ -1,6 +1,6 @@
 package amino.run.policy.transaction;
 
-import amino.run.policy.SapphirePolicy;
+import amino.run.policy.Policy;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -15,8 +15,8 @@ public class TransactionContext {
     private static final ThreadLocal<Integer> transactionEnterCount = new ThreadLocal<Integer>();
 
     // to keep track of SO objects been processed in the current  transaction primitive op
-    private static final ThreadLocal<Set<SapphirePolicy.ClientPolicy>> processedClients =
-            new ThreadLocal<Set<SapphirePolicy.ClientPolicy>>();
+    private static final ThreadLocal<Set<Policy.ClientPolicy>> processedClients =
+            new ThreadLocal<Set<Policy.ClientPolicy>>();
 
     /**
      * gets the clients of SO objects that haven been processed so far in the current transaction
@@ -24,14 +24,13 @@ public class TransactionContext {
      *
      * @return the clients of SO objects been processed
      */
-    public static Set<SapphirePolicy.ClientPolicy> getProcessedClients() {
+    public static Set<Policy.ClientPolicy> getProcessedClients() {
         return processedClients.get();
     }
 
     /** resets the processed SO clients */
     public static void initPrecessed() {
-        HashSet<SapphirePolicy.ClientPolicy> emptyClients =
-                new HashSet<SapphirePolicy.ClientPolicy>();
+        HashSet<Policy.ClientPolicy> emptyClients = new HashSet<Policy.ClientPolicy>();
         processedClients.set(emptyClients);
     }
 

@@ -3,7 +3,7 @@ package amino.run.policy.transaction;
 import amino.run.app.SapphireObjectSpec;
 import amino.run.common.AppObject;
 import amino.run.common.Utils;
-import amino.run.policy.SapphirePolicy;
+import amino.run.policy.Policy;
 import amino.run.policy.SapphirePolicyUpcalls;
 import amino.run.policy.scalability.masterslave.MethodInvocationRequest;
 import amino.run.policy.scalability.masterslave.MethodInvocationResponse;
@@ -16,13 +16,13 @@ public class AppObjectShimServerPolicy
     private AppObject originMaster;
 
     @Override
-    public void onCreate(SapphirePolicy.GroupPolicy group, SapphireObjectSpec spec) {}
+    public void onCreate(Policy.GroupPolicy group, SapphireObjectSpec spec) {}
 
     @Override
     public void onDestroy() {}
 
     @Override
-    public SapphirePolicy.GroupPolicy getGroup() {
+    public Policy.GroupPolicy getGroup() {
         return null;
     }
 

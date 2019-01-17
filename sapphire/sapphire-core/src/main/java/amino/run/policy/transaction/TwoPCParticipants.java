@@ -1,6 +1,6 @@
 package amino.run.policy.transaction;
 
-import static amino.run.policy.SapphirePolicy.ClientPolicy;
+import static amino.run.policy.Policy.ClientPolicy;
 
 import java.util.Collection;
 

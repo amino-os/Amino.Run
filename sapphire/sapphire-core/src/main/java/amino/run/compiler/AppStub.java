@@ -76,7 +76,7 @@ public final class AppStub extends Stub {
         StringBuilder buffer = new StringBuilder();
         buffer.append(
                 indenter.indent()
-                        + "amino.run.policy.SapphirePolicy.ClientPolicy "
+                        + "amino.run.policy.Policy.ClientPolicy "
                         + GlobalStubConstants.APPSTUB_POLICY_CLIENT_FIELD_NAME
                         + " = null;"
                         + EOLN);
@@ -120,7 +120,7 @@ public final class AppStub extends Stub {
         /* The $__initialize function */
         buffer.append(
                 indenter.indent()
-                        + "public void $__initialize(amino.run.policy.SapphirePolicy.ClientPolicy client) {"
+                        + "public void $__initialize(amino.run.policy.Policy.ClientPolicy client) {"
                         + EOLN);
         buffer.append(
                 indenter.tIncrease()

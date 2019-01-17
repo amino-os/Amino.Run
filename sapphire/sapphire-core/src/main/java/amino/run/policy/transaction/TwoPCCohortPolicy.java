@@ -1,6 +1,6 @@
 package amino.run.policy.transaction;
 
-import amino.run.policy.DefaultSapphirePolicy;
+import amino.run.policy.DefaultPolicy;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.UUID;
@@ -8,7 +8,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /** DCAP distributed transaction default DM set */
-public class TwoPCCohortPolicy extends DefaultSapphirePolicy {
+public class TwoPCCohortPolicy extends DefaultPolicy {
     /** DCAP distributed transaction default client policy */
     public static class TwoPCCohortClientPolicy extends DefaultClientPolicy
             implements TwoPCClient, Serializable {

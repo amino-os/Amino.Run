@@ -7,7 +7,7 @@ package amino.run.policy;
  * functions that are called when an event happened and a set of functions that implement the
  * sapphire API for policies.
  */
-public abstract class SapphirePolicy extends DefaultSapphirePolicyUpcallImpl {
+public abstract class Policy extends DefaultSapphirePolicyUpcallImpl {
     public abstract static class ClientPolicy extends DefaultSapphireClientPolicyUpcallImpl {}
 
     public abstract static class ServerPolicy extends DefaultSapphireServerPolicyUpcallImpl {}

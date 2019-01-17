@@ -5,7 +5,7 @@ import amino.run.common.SapphireObjectID;
 import amino.run.common.SapphireObjectNotFoundException;
 import amino.run.common.SapphireObjectReplicaNotFoundException;
 import amino.run.common.SapphireReplicaID;
-import amino.run.policy.SapphirePolicy;
+import amino.run.policy.Policy;
 import amino.run.runtime.EventHandler;
 import java.rmi.RemoteException;
 import java.util.Collection;
@@ -40,7 +40,7 @@ public class SapphireInstanceManager {
      *     href="https://docs.google.com/document/d/1g5SnzsnyGXzdZVDF_uj9MQJomQpHS-PMpfwnYn4RNDU/edit#heading=h.j9vsjm8kyruk">Multi-DM
      *     Design Doc</a>
      */
-    private SapphirePolicy.GroupPolicy rootGroupPolicy;
+    private Policy.GroupPolicy rootGroupPolicy;
 
     /**
      * Randomly generate a new replica id
@@ -64,7 +64,7 @@ public class SapphireInstanceManager {
      *
      * @param rootGroupPolicy root group policy
      */
-    public void setRootGroupPolicy(SapphirePolicy.GroupPolicy rootGroupPolicy) {
+    public void setRootGroupPolicy(Policy.GroupPolicy rootGroupPolicy) {
         this.rootGroupPolicy = rootGroupPolicy;
     }
 
@@ -73,7 +73,7 @@ public class SapphireInstanceManager {
      *
      * @return Sapphire Group Policy Object
      */
-    public SapphirePolicy.GroupPolicy getRootGroupPolicy() {
+    public Policy.GroupPolicy getRootGroupPolicy() {
         return rootGroupPolicy;
     }
 

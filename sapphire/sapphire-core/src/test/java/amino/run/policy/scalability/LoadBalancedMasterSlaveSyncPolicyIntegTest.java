@@ -3,7 +3,7 @@ package amino.run.policy.scalability;
 import amino.run.common.AppObject;
 import amino.run.kernel.common.KernelOID;
 import amino.run.kernel.common.KernelObjectStub;
-import amino.run.policy.SapphirePolicy;
+import amino.run.policy.Policy;
 import amino.run.policy.scalability.masterslave.MethodInvocationRequest;
 import amino.run.policy.scalability.masterslave.MethodInvocationResponse;
 import amino.run.runtime.annotations.Immutable;
@@ -163,7 +163,7 @@ public class LoadBalancedMasterSlaveSyncPolicyIntegTest {
         public void $__updateHostname(InetSocketAddress hostname) {}
 
         @Override
-        public void $__setNextClientPolicy(SapphirePolicy.ClientPolicy clientPolicy) {}
+        public void $__setNextClientPolicy(Policy.ClientPolicy clientPolicy) {}
     }
 
     private static class GroupMock extends LoadBalancedMasterSlaveSyncPolicy.GroupPolicy {}

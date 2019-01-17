@@ -1,6 +1,8 @@
 package amino.run.oms;
 
 import amino.run.app.MicroServiceSpec;
+import static amino.run.compiler.GlobalStubConstants.POLICY_NOTIFICATION_MTD_NAME_FORMAT;
+
 import amino.run.app.NodeSelectorSpec;
 import amino.run.app.Registry;
 import amino.run.common.AppObjectStub;
@@ -10,6 +12,7 @@ import amino.run.common.MicroServiceNameModificationException;
 import amino.run.common.MicroServiceNotFoundException;
 import amino.run.common.MicroServiceReplicaNotFoundException;
 import amino.run.common.ReplicaID;
+import amino.run.common.SapphireStatusObject;
 import amino.run.compiler.GlobalStubConstants;
 import amino.run.kernel.common.KernelOID;
 import amino.run.kernel.common.KernelObjectNotCreatedException;
@@ -31,6 +34,8 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.JSONException;
@@ -49,12 +54,23 @@ public class OMSServerImpl implements OMSServer, Registry {
     private KernelServerManager serverManager;
     private SapphireObjectManager objectManager;
 
+    private ExecutorService executorService;
+
     /** CONSTRUCTOR * */
     // TODO Should receive a List of servers
     public OMSServerImpl() throws IOException, NotBoundException, JSONException {
         kernelObjectManager = new GlobalKernelObjectManager();
         serverManager = new KernelServerManager();
         objectManager = new SapphireObjectManager();
+        executorService = null;
+    }
+
+    public ExecutorService getExecutorService() {
+        return executorService;
+    }
+
+    public void setExecutorService(ExecutorService executorService) {
+        this.executorService = executorService;
     }
 
     /** KERNEL METHODS * */
@@ -108,8 +124,48 @@ public class OMSServerImpl implements OMSServer, Registry {
     }
 
     @Override
-    public void heartbeatKernelServer(ServerInfo srvinfo)
+    public void heartbeatKernelServer(
+            ServerInfo srvinfo, ArrayList<SapphireStatusObject> statusObjects)
             throws RemoteException, NotBoundException, KernelServerNotFoundException {
+        for (SapphireStatusObject statusObj : statusObjects) {
+            executorService.execute(
+                    new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                /* Get the group policy handler and notify it */
+                                EventHandler handler =
+                                        objectManager.getInstanceDispatcher(
+                                                statusObj.getSapphireObjId());
+                                if (handler == null) {
+                                    return;
+                                }
+                                /* Get the kernel server stub */
+                                KernelServer server = serverManager.getServer(handler.getHost());
+                                if (server == null) {
+                                    return;
+                                }
+
+                                ArrayList<Object> params =
+                                        new ArrayList<Object>() {
+                                            {
+                                                add(statusObj);
+                                            }
+                                        };
+
+                                /* Invoke onNotification method on group policy object with status object */
+                                handler.invoke(
+                                        String.format(
+                                                POLICY_NOTIFICATION_MTD_NAME_FORMAT,
+                                                handler.getObjects().get(0).getClass().getName()),
+                                        params);
+                            } catch (Exception e) {
+                                logger.warning("Exception occurred : " + e);
+                            }
+                        }
+                    });
+        }
+
         serverManager.heartbeatKernelServer(srvinfo);
     }
 
@@ -277,6 +333,18 @@ public class OMSServerImpl implements OMSServer, Registry {
         return group;
     }
 
+    @Override
+    public EventHandler getSapphireObjectDispatcher(SapphireObjectID sapphireObjId)
+            throws RemoteException, SapphireObjectNotFoundException {
+        return objectManager.getInstanceDispatcher(sapphireObjId);
+    }
+
+    @Override
+    public void setSapphireObjectDispatcher(SapphireObjectID sapphireObjId, EventHandler dispatcher)
+            throws RemoteException, SapphireObjectNotFoundException {
+        objectManager.setInstanceDispatcher(sapphireObjId, dispatcher);
+    }
+
     public static void main(String args[]) {
         if (args.length < 2) {
             System.out.println("Invalid arguments to OMS.");
@@ -298,8 +366,10 @@ public class OMSServerImpl implements OMSServer, Registry {
         }
 
         System.setProperty("java.rmi.server.hostname", args[0]);
+        OMSServerImpl oms = null;
         try {
-            OMSServerImpl oms = new OMSServerImpl();
+            oms = new OMSServerImpl();
+            oms.setExecutorService(Executors.newFixedThreadPool(10));
             OMSServer omsStub = (OMSServer) UnicastRemoteObject.exportObject(oms, servicePort);
             java.rmi.registry.Registry registry = LocateRegistry.createRegistry(port);
             registry.rebind("SapphireOMS", omsStub);
@@ -320,6 +390,9 @@ public class OMSServerImpl implements OMSServer, Registry {
         } catch (Exception e) {
             logger.severe("Server exception: " + e.toString());
             e.printStackTrace();
+            if (oms.getExecutorService() != null) {
+                oms.getExecutorService().shutdown();
+            }
         }
     }
 

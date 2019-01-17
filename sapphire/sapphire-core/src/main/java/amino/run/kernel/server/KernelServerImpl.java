@@ -11,6 +11,23 @@ import amino.run.oms.OMSServer;
 import amino.run.policy.Library;
 import amino.run.policy.Policy;
 import amino.run.policy.PolicyContainer;
+import amino.run.common.SapphireObjectCreationException;
+import amino.run.common.SapphireObjectNotFoundException;
+import amino.run.common.SapphireObjectReplicaNotFoundException;
+import amino.run.common.SapphireStatusObject;
+import amino.run.kernel.client.KernelClient;
+import amino.run.kernel.common.*;
+import amino.run.oms.OMSServer;
+import amino.run.policy.Policy;
+import amino.run.policy.PolicyContainer;
+import amino.run.policy.Library;
+import amino.run.runtime.Sapphire;
+
+import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Level;
 import amino.run.policy.util.ResettableTimer;
 import amino.run.runtime.EventHandler;
 import amino.run.runtime.Sapphire;
@@ -331,6 +348,49 @@ public class KernelServerImpl implements KernelServer {
     }
 
     /**
+     * Updates the health status of kernel object
+     *
+     * @param oid
+     * @param status
+     * @throws KernelObjectNotFoundException
+     */
+    public void updateObjectStatus(KernelOID oid, boolean status)
+            throws KernelObjectNotFoundException {
+        KernelObject object = objectManager.lookupObject(oid);
+        object.setStatus(status);
+    }
+
+    /**
+     * Forms the list of status objects from its local kernel objects
+     *
+     * @return Returns list of status objects
+     */
+    public ArrayList<SapphireStatusObject> geStatusObjects() {
+        KernelObject kernelObject;
+        boolean status;
+        Set<Map.Entry<KernelOID, KernelObject>> set = objectManager.getKernelObjects();
+        ArrayList<SapphireStatusObject> statusObjects = new ArrayList();
+        for (Map.Entry<KernelOID, KernelObject> entry : set) {
+            if (entry.getValue().getObject() instanceof Policy.ServerPolicy) {
+                kernelObject = entry.getValue();
+                Policy.GroupPolicy group =
+                        ((Policy.ServerPolicy) kernelObject.getObject()).getGroup();
+                if (group != null) {
+                    status = kernelObject.isStatus();
+                    statusObjects.add(
+                            new SapphireStatusObject(
+                                    group.getSapphireObjId(),
+                                    group.$__getKernelOID(),
+                                    entry.getKey(),
+                                    status));
+                }
+            }
+        }
+
+        return statusObjects;
+    }
+
+    /**
      * Get the local hostname
      *
      * @return IP address of host that this server is running on
@@ -385,10 +445,11 @@ public class KernelServerImpl implements KernelServer {
     }
 
     /** Send heartbeats to OMS. */
-    private void startheartbeat(ServerInfo srvinfo) {
+    private void startheartbeat(ServerInfo srvinfo, ArrayList<SapphireStatusObject> statusObjects) {
         logger.fine("heartbeat KernelServer" + srvinfo);
         try {
-            oms.heartbeatKernelServer(srvinfo);
+            /* Update the status of policy objects too */
+            oms.heartbeatKernelServer(srvinfo, statusObjects);
         } catch (Exception e) {
             logger.severe("Cannot heartbeat KernelServer" + srvinfo);
             e.printStackTrace();
@@ -436,7 +497,7 @@ public class KernelServerImpl implements KernelServer {
             server.setRegion(srvInfo.getRegion());
 
             // Start heartbeat timer
-            server.startHeartbeats(srvInfo);
+            server.startHeartbeats(srvInfo, server.geStatusObjects());
 
             // Start a thread that print memory stats
             server.getMemoryStatThread().start();
@@ -447,14 +508,14 @@ public class KernelServerImpl implements KernelServer {
         }
     }
 
-    private void startHeartbeats(ServerInfo srvInfo)
+    private void startHeartbeats(ServerInfo srvInfo, ArrayList<SapphireStatusObject> statusObjects)
             throws RemoteException, NotBoundException, KernelServerNotFoundException {
-        oms.heartbeatKernelServer(srvInfo);
+        oms.heartbeatKernelServer(srvInfo, statusObjects);
         ksHeartbeatSendTimer =
                 new ResettableTimer(
                         new TimerTask() {
                             public void run() {
-                                startheartbeat(srvInfo);
+                                startheartbeat(srvInfo, geStatusObjects());
                             }
                         },
                         KS_HEARTBEAT_PERIOD);

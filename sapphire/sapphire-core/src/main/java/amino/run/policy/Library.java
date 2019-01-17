@@ -378,6 +378,32 @@ public abstract class Library implements Upcalls {
         public ReplicaID getReplicaId() {
             return replicaId;
         }
+
+        public InetSocketAddress sapphire_locate_kernel_object(KernelOID oid)
+                throws RemoteException {
+            InetSocketAddress addr;
+            try {
+                addr = oms().lookupKernelObject(oid);
+            } catch (RemoteException e) {
+                throw new RemoteException("Could not contact oms.");
+            } catch (KernelObjectNotFoundException e) {
+                e.printStackTrace();
+                throw new Error("Could not find myself on this server!");
+            }
+            return addr;
+        }
+
+        public boolean isAlreadyPinned() {
+            return this.alreadyPinned;
+        }
+
+        public void setAlreadyPinned(boolean alreadyPinned) {
+            this.alreadyPinned = alreadyPinned;
+        }
+
+        public void sapphire_update_status(boolean status) throws KernelObjectNotFoundException {
+            kernel().updateObjectStatus($__getKernelOID(), status);
+        }
     }
 
     public abstract static class GroupPolicyLibrary implements GroupUpcalls {
@@ -439,8 +465,77 @@ public abstract class Library implements Upcalls {
             microServiceId = sapphireId;
         }
 
+        /**
+         * Creates a replica based on replicaSource and pin to the dest host if not pinned before.
+         *
+         * @param replicaSource server policy where the replica creation operation will be
+         *     performed.
+         * @param dest address for KernelServer that will host this replica.
+         * @param region region where this replica needs to be located within.
+         * @param pinned whether the policy chain was already pinned by downstream policy.
+         * @return newly created replica.
+         * @throws RemoteException
+         * @throws MicroServiceNotFoundException
+         * @throws MicroServiceReplicaNotFoundException
+         */
+        protected ServerPolicy addReplica(
+                ServerPolicy replicaSource,
+                InetSocketAddress dest,
+                String region,
+                boolean pinned)
+                throws RemoteException, MicroServiceNotFoundException,
+                        MicroServiceReplicaNotFoundException {
+
+            ServerPolicy replica =
+                    replicaSource.sapphire_replicate(replicaSource.getProcessedPolicies(), region);
+            if (pinned) {
+                // This chain was already pinned by the downstream policy; hence, skips pinning.
+                return replica;
+            }
+
+            try {
+                replicaSource.sapphire_pin_to_server(replica, dest);
+                updateReplicaHostName(replica, dest);
+            } catch (Exception e) {
+                String msgDetail =
+                        String.format(
+                                "Region:%s Dest:%s ReplicaSrc:%s", region, dest, replicaSource);
+                logger.log(Level.SEVERE, "Replica pinning failed. " + msgDetail, e);
+                try {
+                    removeReplica(replica);
+                } catch (Exception innerException) {
+                    logger.log(
+                            Level.WARNING,
+                            "Replica removal failed after pinning has failed. " + msgDetail,
+                            e);
+                }
+                throw e;
+            }
+            return replica;
+        }
+
+        protected void removeReplica(ServerPolicy server)
+                throws RemoteException, MicroServiceReplicaNotFoundException,
+                        MicroServiceNotFoundException {
+            server.sapphire_remove_replica();
+            removeServer(server);
+        }
+
         public MicroServiceID getSapphireObjId() {
             return microServiceId;
+        }
+
+        public ServerPolicy getServer(KernelOID serverId)
+                throws RemoteException, KernelObjectNotFoundException {
+            ArrayList<ServerPolicy> servers = getServers();
+            for (ServerPolicy serverPolicyStub : servers) {
+                if (serverPolicyStub.$__getKernelOID().equals(serverId)) {
+                    return serverPolicyStub;
+                }
+            }
+
+            throw new KernelObjectNotFoundException(
+                    String.format("Kernel object %s not found", serverId));
         }
 
         /**

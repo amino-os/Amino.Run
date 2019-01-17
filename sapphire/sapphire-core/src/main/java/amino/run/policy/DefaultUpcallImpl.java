@@ -2,6 +2,7 @@ package amino.run.policy;
 
 import amino.run.common.MicroServiceNotFoundException;
 import amino.run.common.MicroServiceReplicaNotFoundException;
+import amino.run.common.NotificationObject;
 import amino.run.policy.transaction.IllegalComponentException;
 import amino.run.policy.transaction.TransactionContext;
 import amino.run.policy.transaction.TwoPCClient;
@@ -98,5 +99,7 @@ public abstract class DefaultUpcallImpl extends Library {
         public void onDestroy() throws RemoteException {
             super.onDestroy();
         }
+
+        public void onNotification(NotificationObject notificationObject) throws RemoteException {}
     }
 }

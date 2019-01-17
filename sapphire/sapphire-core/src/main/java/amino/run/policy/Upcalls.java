@@ -1,6 +1,7 @@
 package amino.run.policy;
 
 import amino.run.app.MicroServiceSpec;
+import amino.run.common.NotificationObject;
 import java.io.Serializable;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -50,10 +51,19 @@ public interface Upcalls {
         /**
          * TODO: Move this method out of this interface. It is not intended to be an upcall from the
          * DK to the DM. In the current code however it is called before {@link onCreate} (currently
+<<<<<<< HEAD:sapphire/sapphire-core/src/main/java/amino/run/policy/Upcalls.java
          * in {@link sapphire.runtime.Sapphire.createPolicy}. This is not correct. It is intended to
          * be an internal method in the DM, used to set the internal server instance variable, for
          * example: 1. DefaultUpcallImpl.ClientPolicy.onRPC() upon RemoteException when primary
          * server dies. 2. ConsensusRSMPolicy.ClientPolicy.onRPC() upon LeaderException.
+=======
+         * in {@link amino.run.runtime.Sapphire.createPolicy}. This is not correct. It is intended
+         * to be an internal method in the DM, used to set the internal server instance variable,
+         * for example: 1.
+         * DefaultSapphirePolicyUpcallImpl.DefaultSapphireClientPolicyUpcallImpl.onRPC() upon
+         * RemoteException when primary server dies. 2. ConsensusRSMPolicy.ClientPolicy.onRPC() upon
+         * LeaderException.
+>>>>>>> Obj monitoring in default DM implementation:sapphire/sapphire-core/src/main/java/amino/run/policy/SapphirePolicyUpcalls.java
          *
          * <p>It should also presumably be called to initialise the client (in {@link onCreate()})
          *
@@ -220,5 +230,8 @@ public interface Upcalls {
         // void onFailure(ServerPolicy server) throws RemoteException;
 
         Policy.ServerPolicy onRefRequest() throws RemoteException;
+        Policy.ServerPolicy onRefRequest() throws RemoteException;
+
+        void onNotification(NotificationObject notificationObject) throws RemoteException;
     }
 }

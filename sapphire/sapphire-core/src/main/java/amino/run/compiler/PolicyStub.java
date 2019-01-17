@@ -92,6 +92,7 @@ public class PolicyStub extends Stub {
                 indenter.indent() + "amino.run.kernel.common.KernelOID $__oid = null;" + EOLN);
         buffer.append(indenter.indent() + "java.net.InetSocketAddress $__hostname = null;" + EOLN);
         buffer.append(indenter.indent() + "Policy.ClientPolicy $__nextClientPolicy = null;" + EOLN);
+        buffer.append(indenter.indent() + "int $__lastSeenTick = 0;" + EOLN);
         return buffer.toString();
     }
 
@@ -166,6 +167,27 @@ public class PolicyStub extends Stub {
         buffer.append(
                 indenter.tIncrease()
                         + "this.$__nextClientPolicy = clientPolicy;"
+                        + EOLN
+                        + indenter.indent()
+                        + "}"
+                        + EOLN
+                        + EOLN);
+
+        buffer.append(indenter.indent() + "public int $__getLastSeenTick() {" + EOLN);
+        buffer.append(
+                indenter.tIncrease()
+                        + "return $__lastSeenTick;"
+                        + EOLN
+                        + indenter.indent()
+                        + "}"
+                        + EOLN
+                        + EOLN);
+
+        buffer.append(
+                indenter.indent() + "public void $__setLastSeenTick(int lastSeenTick) {" + EOLN);
+        buffer.append(
+                indenter.tIncrease()
+                        + "this.$__lastSeenTick = lastSeenTick;"
                         + EOLN
                         + indenter.indent()
                         + "}"

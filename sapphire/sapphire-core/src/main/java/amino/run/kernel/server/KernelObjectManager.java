@@ -5,6 +5,8 @@ import amino.run.kernel.common.KernelObjectNotCreatedException;
 import amino.run.kernel.common.KernelObjectNotFoundException;
 import java.lang.reflect.Constructor;
 import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
@@ -106,5 +108,14 @@ public class KernelObjectManager {
     public KernelOID[] getAllKernelObjectOids() {
         Collection<KernelOID> values = objects.keySet();
         return values.toArray(new KernelOID[values.size()]);
+    }
+
+    /**
+     * Gets the set view of local kernel objects
+     *
+     * @return Returns set of local kernel objects
+     */
+    public Set<Map.Entry<KernelOID, KernelObject>> getKernelObjects() {
+        return objects.entrySet();
     }
 }

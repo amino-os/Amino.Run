@@ -5,24 +5,24 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 
-import amino.run.app.SapphireObject;
+import amino.run.app.AbstractSapphireObject;
 import amino.run.policy.dht.DHTKey;
 
-public class TagManager implements SapphireObject {
-    Map<DHTKey, Tag> tags = new Hashtable<DHTKey, Tag>();
-
-    public TagManager() {
-    }
-
-    public void addTag(String label, Tweet t) {
-        DHTKey newKey = new DHTKey(label);
-
-        Tag tag = tags.get(newKey);
-
-        if (tag == null) {
-            tag = new Tag(label);
-            tags.put(newKey, tag);
-        }
+public class TagManager extends AbstractSapphireObject {
+	Map<DHTKey, Tag> tags = new Hashtable<DHTKey, Tag>();
+	
+	public TagManager() {
+	}
+	
+	public void addTag(String label, Tweet t) {
+		DHTKey newKey = new DHTKey(label);
+		
+		Tag tag = tags.get(newKey);
+		
+		if (tag == null) {
+			tag = new Tag(label);
+			tags.put(newKey, tag);
+		}
 
         System.out.println("Adding tag: " + label);
         tag.addTweet(t);

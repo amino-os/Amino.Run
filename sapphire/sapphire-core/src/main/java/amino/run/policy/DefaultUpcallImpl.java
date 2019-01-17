@@ -11,9 +11,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public abstract class DefaultSapphirePolicyUpcallImpl extends SapphirePolicyLibrary {
+public abstract class DefaultUpcallImpl extends SapphirePolicyLibrary {
 
-    public abstract static class DefaultSapphireClientPolicyUpcallImpl
+    public abstract static class ClientPolicy
             extends SapphireClientPolicyLibrary {
         public Object onRPC(String method, ArrayList<Object> params) throws Exception {
             // only transaction-capable SO is allowed in DCAP transaction -- change of the original
@@ -44,7 +44,7 @@ public abstract class DefaultSapphirePolicyUpcallImpl extends SapphirePolicyLibr
         }
     }
 
-    public abstract static class DefaultSapphireServerPolicyUpcallImpl
+    public abstract static class ServerPolicy
             extends SapphireServerPolicyLibrary {
         public Object onRPC(String method, ArrayList<Object> params) throws Exception {
             return appObject.invoke(method, params);
@@ -85,7 +85,7 @@ public abstract class DefaultSapphirePolicyUpcallImpl extends SapphirePolicyLibr
         public void onDestroy() {}
     }
 
-    public abstract static class DefaultSapphireGroupPolicyUpcallImpl
+    public abstract static class GroupPolicy
             extends SapphireGroupPolicyLibrary {
 
         /*

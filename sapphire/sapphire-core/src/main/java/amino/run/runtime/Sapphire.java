@@ -1,8 +1,8 @@
 package amino.run.runtime;
 
-import static amino.run.policy.SapphirePolicy.SapphireClientPolicy;
-import static amino.run.policy.SapphirePolicy.SapphireGroupPolicy;
-import static amino.run.policy.SapphirePolicy.SapphireServerPolicy;
+import static amino.run.policy.SapphirePolicy.ClientPolicy;
+import static amino.run.policy.SapphirePolicy.GroupPolicy;
+import static amino.run.policy.SapphirePolicy.ServerPolicy;
 
 import amino.run.app.DMSpec;
 import amino.run.app.Language;
@@ -208,7 +208,7 @@ public class Sapphire {
                     IllegalAccessException, CloneNotSupportedException {
         if (policyNameChain == null || policyNameChain.size() == 0) return null;
         String policyName = policyNameChain.get(0).getPolicyName();
-        SapphireGroupPolicy existingGroupPolicy = policyNameChain.get(0).getGroupPolicyStub();
+        GroupPolicy existingGroupPolicy = policyNameChain.get(0).getGroupPolicyStub();
         AppObject appObject = null;
 
         /* Get the annotations added for the Application class. */
@@ -222,7 +222,7 @@ public class Sapphire {
         /* Create and the Kernel Object for the Group Policy and get the Group Policy Stub
         Note that group policy does not need to update hostname because it only applies to
         individual server in multi-policy scenario */
-        SapphirePolicy.SapphireGroupPolicy groupPolicyStub;
+        GroupPolicy groupPolicyStub;
         if (existingGroupPolicy == null) {
             /* Create the Kernel Object for the Group Policy and get the Group Policy Stub from OMS */
             groupPolicyStub =
@@ -235,15 +235,14 @@ public class Sapphire {
         }
 
         /* Create the Kernel Object for the Server Policy, and get the Server Policy Stub */
-        SapphireServerPolicy serverPolicyStub =
-                (SapphireServerPolicy) getPolicyStub(sapphireServerPolicyClass);
+        SapphirePolicy.ServerPolicy serverPolicyStub =
+                (ServerPolicy) getPolicyStub(sapphireServerPolicyClass);
 
         /* Create the Client Policy Object */
-        SapphireClientPolicy client =
-                (SapphireClientPolicy) sapphireClientPolicyClass.newInstance();
+        ClientPolicy client = (SapphirePolicy.ClientPolicy) sapphireClientPolicyClass.newInstance();
 
         /* Initialize the server policy and return a local pointer to the object itself */
-        SapphirePolicy.SapphireServerPolicy serverPolicy = initializeServerPolicy(serverPolicyStub);
+        SapphirePolicy.ServerPolicy serverPolicy = initializeServerPolicy(serverPolicyStub);
 
         registerSapphireReplica(sapphireObjId, serverPolicy, serverPolicyStub);
 
@@ -338,8 +337,8 @@ public class Sapphire {
                             .getClass()
                             .getDeclaredField(GlobalStubConstants.APPSTUB_POLICY_CLIENT_FIELD_NAME);
             field.setAccessible(true);
-            SapphirePolicy.SapphireClientPolicy clientPolicy =
-                    (SapphirePolicy.SapphireClientPolicy) field.get(appObjectStub);
+            SapphirePolicy.ClientPolicy clientPolicy =
+                    (SapphirePolicy.ClientPolicy) field.get(appObjectStub);
             sapphireObjId = clientPolicy.getGroup().getSapphireObjId();
             GlobalKernelReferences.nodeServer.oms.deleteSapphireObject(sapphireObjId);
         } catch (NoSuchFieldException e) {
@@ -363,14 +362,13 @@ public class Sapphire {
      * @throws KernelObjectNotCreatedException
      * @throws SapphireObjectNotFoundException
      */
-    public static SapphirePolicy.SapphireGroupPolicy createGroupPolicy(
+    public static SapphirePolicy.GroupPolicy createGroupPolicy(
             Class<?> policyClass, SapphireObjectID sapphireObjId)
             throws RemoteException, ClassNotFoundException, KernelObjectNotCreatedException,
                     SapphireObjectNotFoundException {
-        SapphirePolicy.SapphireGroupPolicy groupPolicyStub =
-                (SapphirePolicy.SapphireGroupPolicy) getPolicyStub(policyClass);
+        SapphirePolicy.GroupPolicy groupPolicyStub = (GroupPolicy) getPolicyStub(policyClass);
         try {
-            SapphirePolicy.SapphireGroupPolicy groupPolicy = initializeGroupPolicy(groupPolicyStub);
+            GroupPolicy groupPolicy = initializeGroupPolicy(groupPolicyStub);
             groupPolicyStub.setSapphireObjId(sapphireObjId);
             groupPolicy.setSapphireObjId(sapphireObjId);
         } catch (KernelObjectNotFoundException e) {
@@ -410,15 +408,15 @@ public class Sapphire {
         E.g. policyClass in (Server, Client, Group) {..}
         */
         for (Class<?> c : policyClasses) {
-            if (SapphirePolicy.SapphireServerPolicy.class.isAssignableFrom(c)) {
+            if (SapphirePolicy.ServerPolicy.class.isAssignableFrom(c)) {
                 policyMap.put("sapphireServerPolicyClass", c);
                 continue;
             }
-            if (SapphirePolicy.SapphireClientPolicy.class.isAssignableFrom(c)) {
+            if (SapphirePolicy.ClientPolicy.class.isAssignableFrom(c)) {
                 policyMap.put("sapphireClientPolicyClass", c);
                 continue;
             }
-            if (SapphirePolicy.SapphireGroupPolicy.class.isAssignableFrom(c)) {
+            if (SapphirePolicy.GroupPolicy.class.isAssignableFrom(c)) {
                 policyMap.put("sapphireGroupPolicyClass", c);
                 continue;
             }
@@ -467,24 +465,20 @@ public class Sapphire {
         return policyStub;
     }
 
-    public static SapphirePolicy.SapphireGroupPolicy initializeGroupPolicy(
-            SapphirePolicy.SapphireGroupPolicy groupPolicyStub)
+    public static SapphirePolicy.GroupPolicy initializeGroupPolicy(GroupPolicy groupPolicyStub)
             throws KernelObjectNotFoundException {
         KernelOID groupOID = ((KernelObjectStub) groupPolicyStub).$__getKernelOID();
-        SapphirePolicy.SapphireGroupPolicy groupPolicy =
-                (SapphirePolicy.SapphireGroupPolicy)
-                        GlobalKernelReferences.nodeServer.getObject(groupOID);
+        GroupPolicy groupPolicy =
+                (SapphirePolicy.GroupPolicy) GlobalKernelReferences.nodeServer.getObject(groupOID);
         groupPolicy.$__setKernelOID(groupOID);
         return groupPolicy;
     }
 
-    private static SapphirePolicy.SapphireServerPolicy initializeServerPolicy(
-            SapphirePolicy.SapphireServerPolicy serverPolicyStub)
+    private static ServerPolicy initializeServerPolicy(SapphirePolicy.ServerPolicy serverPolicyStub)
             throws KernelObjectNotFoundException {
         KernelOID serverOID = ((KernelObjectStub) serverPolicyStub).$__getKernelOID();
-        SapphirePolicy.SapphireServerPolicy serverPolicy =
-                (SapphirePolicy.SapphireServerPolicy)
-                        GlobalKernelReferences.nodeServer.getObject(serverOID);
+        ServerPolicy serverPolicy =
+                (ServerPolicy) GlobalKernelReferences.nodeServer.getObject(serverOID);
         serverPolicy.$__setKernelOID(serverOID);
         return serverPolicy;
     }
@@ -531,7 +525,7 @@ public class Sapphire {
      * OMS.
      *
      * @param sapphireObjId Sapphire object ID
-     * @param serverPolicy SapphireServerPolicy
+     * @param serverPolicy ServerPolicy
      * @param serverPolicyStub ServerPolicy stub
      * @throws SapphireObjectNotFoundException
      * @throws SapphireObjectReplicaNotFoundException
@@ -539,8 +533,8 @@ public class Sapphire {
      */
     private static void registerSapphireReplica(
             SapphireObjectID sapphireObjId,
-            SapphirePolicy.SapphireServerPolicy serverPolicy,
-            SapphirePolicy.SapphireServerPolicy serverPolicyStub)
+            ServerPolicy serverPolicy,
+            ServerPolicy serverPolicyStub)
             throws SapphireObjectNotFoundException, SapphireObjectReplicaNotFoundException,
                     RemoteException {
         /* Register for a replica ID from OMS */
@@ -574,9 +568,9 @@ public class Sapphire {
      * @throws ClassNotFoundException
      */
     private static void initServerPolicy(
-            SapphirePolicy.SapphireServerPolicy serverPolicy,
+            ServerPolicy serverPolicy,
             SapphirePolicyContainer prevContainer,
-            SapphirePolicy.SapphireClientPolicy clientPolicy)
+            SapphirePolicy.ClientPolicy clientPolicy)
             throws IOException, ClassNotFoundException {
         KernelObjectStub prevServerPolicyStub = prevContainer.getServerPolicyStub();
 
@@ -599,7 +593,7 @@ public class Sapphire {
      */
     private static void initAppStub(
             SapphireObjectSpec spec,
-            SapphireServerPolicy serverPolicy,
+            ServerPolicy serverPolicy,
             Object[] appArgs,
             AppObject appObject)
             throws ClassNotFoundException, IOException {
@@ -632,7 +626,7 @@ public class Sapphire {
      *     pinned.
      */
     private static void setIfAlreadyPinned(
-            SapphirePolicy.SapphireServerPolicy serverPolicyStub,
+            ServerPolicy serverPolicyStub,
             List<SapphirePolicyContainer> processedPolicies,
             int sizeOfDownStreamPolicies) {
         int idx = 0, size = processedPolicies.size();
@@ -644,7 +638,7 @@ public class Sapphire {
             for (SapphirePolicyContainer policyContainer : processedPolicies) {
                 if (idx >= startIdx) {
                     // Start checking all the downstream policies only.
-                    SapphirePolicy.SapphireServerPolicy sp = policyContainer.getServerPolicy();
+                    SapphirePolicy.ServerPolicy sp = policyContainer.getServerPolicy();
                     if (sp.isAlreadyPinned()) {
                         String msg =
                                 String.format(

@@ -93,7 +93,7 @@ public class PolicyStub extends Stub {
         buffer.append(indenter.indent() + "java.net.InetSocketAddress $__hostname = null;" + EOLN);
         buffer.append(
                 indenter.indent()
-                        + "SapphirePolicy.SapphireClientPolicy $__nextClientPolicy = null;"
+                        + "SapphirePolicy.ClientPolicy $__nextClientPolicy = null;"
                         + EOLN);
         return buffer.toString();
     }
@@ -164,7 +164,7 @@ public class PolicyStub extends Stub {
         /* Implementation for setNextClientPolicy */
         buffer.append(
                 indenter.indent()
-                        + "public void $__setNextClientPolicy(SapphirePolicy.SapphireClientPolicy clientPolicy) {"
+                        + "public void $__setNextClientPolicy(SapphirePolicy.ClientPolicy clientPolicy) {"
                         + EOLN);
         buffer.append(
                 indenter.tIncrease()

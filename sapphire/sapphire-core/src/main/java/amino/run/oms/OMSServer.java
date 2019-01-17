@@ -42,7 +42,7 @@ public interface OMSServer extends Remote {
     void heartbeatKernelServer(ServerInfo srvinfo)
             throws RemoteException, NotBoundException, KernelServerNotFoundException;
 
-    SapphirePolicy.SapphireGroupPolicy createGroupPolicy(
+    SapphirePolicy.GroupPolicy createGroupPolicy(
             Class<?> policyClass, SapphireObjectID sapphireObjId)
             throws RemoteException, ClassNotFoundException, KernelObjectNotCreatedException,
                     SapphireObjectNotFoundException;

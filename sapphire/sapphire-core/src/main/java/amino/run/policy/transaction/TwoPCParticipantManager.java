@@ -9,17 +9,17 @@ import java.util.concurrent.ConcurrentHashMap;
 public class TwoPCParticipantManager implements TwoPCParticipants, Serializable {
     private Set participants =
             Collections.newSetFromMap(
-                    new ConcurrentHashMap<SapphirePolicy.SapphireClientPolicy, Boolean>());
+                    new ConcurrentHashMap<SapphirePolicy.ClientPolicy, Boolean>());
 
     @Override
-    public void register(SapphirePolicy.SapphireClientPolicy cohort) {
+    public void register(SapphirePolicy.ClientPolicy cohort) {
         if (!this.participants.contains(cohort)) {
             this.participants.add(cohort);
         }
     }
 
     @Override
-    public Collection<SapphirePolicy.SapphireClientPolicy> getRegistered() {
-        return new ArrayList<SapphirePolicy.SapphireClientPolicy>(this.participants);
+    public Collection<SapphirePolicy.ClientPolicy> getRegistered() {
+        return new ArrayList<SapphirePolicy.ClientPolicy>(this.participants);
     }
 }

@@ -8,11 +8,9 @@ package amino.run.policy;
  * sapphire API for policies.
  */
 public abstract class SapphirePolicy extends DefaultSapphirePolicyUpcallImpl {
-    public abstract static class SapphireClientPolicy
-            extends DefaultSapphireClientPolicyUpcallImpl {}
+    public abstract static class ClientPolicy extends DefaultSapphireClientPolicyUpcallImpl {}
 
-    public abstract static class SapphireServerPolicy
-            extends DefaultSapphireServerPolicyUpcallImpl {}
+    public abstract static class ServerPolicy extends DefaultSapphireServerPolicyUpcallImpl {}
 
-    public abstract static class SapphireGroupPolicy extends DefaultSapphireGroupPolicyUpcallImpl {}
+    public abstract static class GroupPolicy extends DefaultSapphireGroupPolicyUpcallImpl {}
 }

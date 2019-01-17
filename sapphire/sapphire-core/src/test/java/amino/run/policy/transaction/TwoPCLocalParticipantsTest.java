@@ -19,10 +19,8 @@ import org.mockito.ArgumentCaptor;
 
 public class TwoPCLocalParticipantsTest {
     UUID id = UUID.randomUUID();
-    SapphirePolicy.SapphireClientPolicy part1 =
-            mock(TwoPCCohortPolicy.TwoPCCohortClientPolicy.class);
-    SapphirePolicy.SapphireClientPolicy part2 =
-            mock(TwoPCCohortPolicy.TwoPCCohortClientPolicy.class);
+    SapphirePolicy.ClientPolicy part1 = mock(TwoPCCohortPolicy.TwoPCCohortClientPolicy.class);
+    SapphirePolicy.ClientPolicy part2 = mock(TwoPCCohortPolicy.TwoPCCohortClientPolicy.class);
 
     TwoPCLocalParticipants participants = new TwoPCLocalParticipants();
 

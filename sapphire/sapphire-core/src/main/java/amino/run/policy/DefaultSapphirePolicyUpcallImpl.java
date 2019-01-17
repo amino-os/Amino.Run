@@ -51,13 +51,13 @@ public abstract class DefaultSapphirePolicyUpcallImpl extends SapphirePolicyLibr
         }
 
         @Deprecated
-        public SapphirePolicy.SapphireServerPolicy sapphire_replicate(
+        public SapphirePolicy.ServerPolicy sapphire_replicate(
                 List<SapphirePolicyContainer> processedPolicies) throws RemoteException {
             return super.sapphire_replicate(processedPolicies, "");
         }
 
         @Override
-        public SapphirePolicy.SapphireServerPolicy sapphire_replicate(
+        public SapphirePolicy.ServerPolicy sapphire_replicate(
                 List<SapphirePolicyContainer> processedPolicies, String region)
                 throws RemoteException {
             return super.sapphire_replicate(processedPolicies, region);
@@ -66,10 +66,10 @@ public abstract class DefaultSapphirePolicyUpcallImpl extends SapphirePolicyLibr
         /* This function is added here just to generate the stub for this function in all Policies server policy */
         @Override
         public void sapphire_pin_to_server(
-                SapphirePolicy.SapphireServerPolicy sapphireServerPolicy, InetSocketAddress server)
+                SapphirePolicy.ServerPolicy serverPolicy, InetSocketAddress server)
                 throws RemoteException, SapphireObjectNotFoundException,
                         SapphireObjectReplicaNotFoundException {
-            super.sapphire_pin_to_server(sapphireServerPolicy, server);
+            super.sapphire_pin_to_server(serverPolicy, server);
         }
 
         @Override
@@ -97,8 +97,8 @@ public abstract class DefaultSapphirePolicyUpcallImpl extends SapphirePolicyLibr
         }
 
         @Override
-        public SapphirePolicy.SapphireServerPolicy onRefRequest() throws RemoteException {
-            ArrayList<SapphirePolicy.SapphireServerPolicy> servers = getServers();
+        public SapphirePolicy.ServerPolicy onRefRequest() throws RemoteException {
+            ArrayList<SapphirePolicy.ServerPolicy> servers = getServers();
             // By default just return the primary/first replica.  All DM's have at least one.
             return servers.get(0);
         }

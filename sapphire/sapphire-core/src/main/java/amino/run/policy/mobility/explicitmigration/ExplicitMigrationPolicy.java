@@ -7,6 +7,7 @@ import amino.run.kernel.common.KernelObjectMigratingException;
 import amino.run.kernel.server.KernelServerImpl;
 import amino.run.oms.OMSServer;
 import amino.run.policy.DefaultSapphirePolicy;
+import amino.run.policy.SapphirePolicy;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Map;
@@ -80,7 +81,7 @@ public class ExplicitMigrationPolicy extends DefaultSapphirePolicy {
         private long minWaitIntervalInMillis = MINWAITINTERVALINMILLIS;
 
         @Override
-        public void onCreate(SapphireGroupPolicy group, SapphireObjectSpec spec) {
+        public void onCreate(SapphirePolicy.GroupPolicy group, SapphireObjectSpec spec) {
             super.onCreate(group, spec);
 
             Map<String, SapphirePolicyConfig> configMap =
@@ -129,7 +130,7 @@ public class ExplicitMigrationPolicy extends DefaultSapphirePolicy {
         private String migrateObjectMethodName = MIGRATEOBJECTMETHODNAME;
 
         @Override
-        public void onCreate(SapphireGroupPolicy group, SapphireObjectSpec spec) {
+        public void onCreate(SapphirePolicy.GroupPolicy group, SapphireObjectSpec spec) {
             super.onCreate(group, spec);
 
             SapphirePolicyConfig config =

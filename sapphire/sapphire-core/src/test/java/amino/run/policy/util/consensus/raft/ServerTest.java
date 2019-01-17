@@ -27,9 +27,8 @@ import org.junit.rules.ExpectedException;
 /** Created by quinton on 3/16/18. */
 public class ServerTest {
     final int SERVER_COUNT = 3;
-    SapphirePolicy.SapphireGroupPolicy groupPolicy = mock(ConsensusRSMPolicy.GroupPolicy.class);
-    SapphirePolicy.SapphireServerPolicy[] serverPolicy =
-            new SapphirePolicy.SapphireServerPolicy[SERVER_COUNT];
+    SapphirePolicy.GroupPolicy groupPolicy = mock(ConsensusRSMPolicy.GroupPolicy.class);
+    SapphirePolicy.ServerPolicy[] serverPolicy = new SapphirePolicy.ServerPolicy[SERVER_COUNT];
     Server raftServer[] = new Server[SERVER_COUNT];
     private AppObject appObject;
 
@@ -124,7 +123,7 @@ public class ServerTest {
         ConcurrentHashMap<UUID, ConsensusRSMPolicy.ServerPolicy> allServers =
                 new ConcurrentHashMap<UUID, ConsensusRSMPolicy.ServerPolicy>();
         int k = 0;
-        for (SapphirePolicy.SapphireServerPolicy i : serverPolicy) {
+        for (SapphirePolicy.ServerPolicy i : serverPolicy) {
             ConsensusRSMPolicy.ServerPolicy s = (ConsensusRSMPolicy.ServerPolicy) i;
             allServers.put(raftServer[k++].getMyServerID(), s);
         }

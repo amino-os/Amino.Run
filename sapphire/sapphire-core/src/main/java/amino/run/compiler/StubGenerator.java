@@ -89,11 +89,11 @@ public class StubGenerator {
                         Class<?> sapphireGroupPolicyClass = null;
 
                         for (Class<?> cls : policyClasses) {
-                            if (SapphirePolicy.SapphireServerPolicy.class.isAssignableFrom(cls)) {
+                            if (SapphirePolicy.ServerPolicy.class.isAssignableFrom(cls)) {
                                 sapphireServerPolicyClass = cls;
                                 continue;
                             }
-                            if (SapphirePolicy.SapphireGroupPolicy.class.isAssignableFrom(cls)) {
+                            if (SapphirePolicy.GroupPolicy.class.isAssignableFrom(cls)) {
                                 sapphireGroupPolicyClass = cls;
                                 continue;
                             }

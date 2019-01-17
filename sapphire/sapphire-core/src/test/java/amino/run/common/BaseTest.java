@@ -200,14 +200,14 @@ public class BaseTest {
     }
 
     private void getServerAndGroupPolicyObjects() throws Exception {
-        ArrayList<SapphirePolicy.SapphireServerPolicy> servers = client.getGroup().getServers();
+        ArrayList<SapphirePolicy.ServerPolicy> servers = client.getGroup().getServers();
         KernelServer ks = spiedksOnOms;
         KernelObjectManager objMgr =
                 (KernelObjectManager) extractFieldValueOnInstance(ks, "objectManager");
         KernelObject obj =
                 objMgr.lookupObject(((KernelObjectStub) client.getGroup()).$__getKernelOID());
         group = (DefaultSapphirePolicy.DefaultGroupPolicy) obj.getObject();
-        for (SapphirePolicy.SapphireServerPolicy server : servers) {
+        for (SapphirePolicy.ServerPolicy server : servers) {
             ks = getKernelServerFromPolicyStub((KernelObjectStub) server);
             objMgr = (KernelObjectManager) extractFieldValueOnInstance(ks, "objectManager");
             obj = objMgr.lookupObject(((KernelObjectStub) server).$__getKernelOID());

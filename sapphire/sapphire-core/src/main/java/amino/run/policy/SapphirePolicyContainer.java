@@ -6,12 +6,12 @@ import java.io.Serializable;
 /** Contains Sapphire policies. */
 public class SapphirePolicyContainer implements Serializable {
     private String policyName;
-    private SapphirePolicy.SapphireGroupPolicy getGroupPolicyStub;
-    private SapphirePolicy.SapphireServerPolicy serverPolicy;
+    private SapphirePolicy.GroupPolicy getGroupPolicyStub;
+    private SapphirePolicy.ServerPolicy serverPolicy;
     private KernelObjectStub serverPolicyStub;
 
     public SapphirePolicyContainer(
-            String policyName, SapphirePolicy.SapphireGroupPolicy getGroupPolicyStub) {
+            String policyName, SapphirePolicy.GroupPolicy getGroupPolicyStub) {
         this.policyName = policyName;
         this.getGroupPolicyStub = getGroupPolicyStub;
     }
@@ -20,11 +20,11 @@ public class SapphirePolicyContainer implements Serializable {
         return this.policyName;
     }
 
-    public SapphirePolicy.SapphireGroupPolicy getGroupPolicyStub() {
+    public SapphirePolicy.GroupPolicy getGroupPolicyStub() {
         return this.getGroupPolicyStub;
     }
 
-    public SapphirePolicy.SapphireServerPolicy getServerPolicy() {
+    public SapphirePolicy.ServerPolicy getServerPolicy() {
         return this.serverPolicy;
     }
 
@@ -32,7 +32,7 @@ public class SapphirePolicyContainer implements Serializable {
         return this.serverPolicyStub;
     }
 
-    public void setServerPolicy(SapphirePolicy.SapphireServerPolicy serverPolicy) {
+    public void setServerPolicy(SapphirePolicy.ServerPolicy serverPolicy) {
         this.serverPolicy = serverPolicy;
     }
 

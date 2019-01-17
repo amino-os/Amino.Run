@@ -20,7 +20,7 @@ import amino.run.kernel.common.KernelObjectNotFoundException;
 import amino.run.kernel.common.KernelObjectStub;
 import amino.run.kernel.server.KernelServerImpl;
 import amino.run.oms.OMSServer;
-import amino.run.policy.SapphirePolicy.SapphireServerPolicy;
+import amino.run.policy.SapphirePolicy.ServerPolicy;
 import amino.run.runtime.Sapphire;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
@@ -46,7 +46,7 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
         protected AppObject appObject;
         protected KernelOID oid;
         protected SapphireReplicaID replicaId;
-        protected SapphirePolicy.SapphireGroupPolicy group;
+        protected SapphirePolicy.GroupPolicy group;
         protected SapphireObjectSpec spec;
         protected Map<String, SapphirePolicyConfig> configMap;
         protected boolean alreadyPinned;
@@ -55,7 +55,7 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
 
         // ServerPolicy that precedes the current policy in the server side chain - this order is
         // reverse in the client side.
-        protected SapphireServerPolicy previousServerPolicy;
+        protected SapphirePolicy.ServerPolicy previousServerPolicy;
 
         // List of ServerPolicies that should be created in the chain after the current one when
         // creating replicas.
@@ -89,12 +89,12 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
             return this.processedPolicies;
         }
 
-        public SapphireServerPolicy getPreviousServerPolicy() {
+        public ServerPolicy getPreviousServerPolicy() {
             return this.previousServerPolicy;
         }
 
-        public void setPreviousServerPolicy(SapphireServerPolicy sapphireServerPolicy) {
-            this.previousServerPolicy = sapphireServerPolicy;
+        public void setPreviousServerPolicy(SapphirePolicy.ServerPolicy serverPolicy) {
+            this.previousServerPolicy = serverPolicy;
         }
 
         public void setNextPolicies(List<SapphirePolicyContainer> nextPolicies) {
@@ -114,7 +114,7 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
         }
 
         @Override
-        public void onCreate(SapphirePolicy.SapphireGroupPolicy group, SapphireObjectSpec spec) {
+        public void onCreate(SapphirePolicy.GroupPolicy group, SapphireObjectSpec spec) {
             this.group = group;
             this.spec = spec;
             if (spec != null && spec.getDmList() != null) {
@@ -123,7 +123,7 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
         }
 
         /** Creates a replica of this server and registers it with the group. */
-        public SapphireServerPolicy sapphire_replicate(
+        public ServerPolicy sapphire_replicate(
                 List<SapphirePolicyContainer> processedPolicies, String region)
                 throws RemoteException {
             KernelObjectStub serverPolicyStub = null;
@@ -158,7 +158,7 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
                         region,
                         null);
 
-                getGroup().addServer((SapphireServerPolicy) serverPolicyStub);
+                getGroup().addServer((SapphirePolicy.ServerPolicy) serverPolicyStub);
             } catch (ClassNotFoundException e) {
                 // TODO Auto-generated catch block
                 logger.severe(e.getMessage());
@@ -187,7 +187,7 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
                 throw new Error("Unknown exception occurred!", e);
             }
 
-            return (SapphireServerPolicy) serverPolicyStub;
+            return (ServerPolicy) serverPolicyStub;
         }
 
         public AppObject sapphire_getAppObject() {
@@ -207,15 +207,14 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
          * @throws SapphireObjectNotFoundException
          * @throws SapphireObjectReplicaNotFoundException
          */
-        public void sapphire_pin_to_server(
-                SapphireServerPolicy serverPolicyStub, InetSocketAddress server)
+        public void sapphire_pin_to_server(ServerPolicy serverPolicyStub, InetSocketAddress server)
                 throws RemoteException, SapphireObjectNotFoundException,
                         SapphireObjectReplicaNotFoundException {
             KernelOID serverOID = serverPolicyStub.$__getKernelOID();
-            SapphireServerPolicy serverPolicy;
+            SapphirePolicy.ServerPolicy serverPolicy;
             try {
                 serverPolicy =
-                        (SapphireServerPolicy)
+                        (SapphirePolicy.ServerPolicy)
                                 GlobalKernelReferences.nodeServer.getObject(serverOID);
             } catch (Exception e) {
                 logger.severe(e.getMessage());
@@ -233,7 +232,7 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
             Iterator<SapphirePolicyContainer> itr = processedPolicyList.iterator();
             while (itr.hasNext()) {
                 SapphirePolicyContainer container = itr.next();
-                SapphireServerPolicy tempServerPolicy = container.getServerPolicy();
+                ServerPolicy tempServerPolicy = container.getServerPolicy();
                 container.getServerPolicyStub().$__updateHostname(server);
                 /* AppObject holds the previous DM's server policy stub(instead of So stub) in case of DM chain on the
                 server side. Update host name in the server stub within AppObject */
@@ -294,7 +293,7 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
                 throws RemoteException {
             try {
                 for (SapphirePolicyContainer policyContainer : processedPolicies) {
-                    SapphireServerPolicy sp = policyContainer.getServerPolicy();
+                    ServerPolicy sp = policyContainer.getServerPolicy();
                     oms().unRegisterSapphireReplica(sp.getReplicaId());
                 }
             } catch (SapphireObjectNotFoundException e) {
@@ -487,14 +486,14 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
          * @throws SapphireObjectNotFoundException
          * @throws SapphireObjectReplicaNotFoundException
          */
-        protected SapphireServerPolicy addReplica(
-                SapphireServerPolicy replicaSource,
+        protected ServerPolicy addReplica(
+                SapphirePolicy.ServerPolicy replicaSource,
                 InetSocketAddress dest,
                 String region,
                 boolean pinned)
                 throws RemoteException, SapphireObjectNotFoundException,
                         SapphireObjectReplicaNotFoundException {
-            SapphireServerPolicy replica =
+            ServerPolicy replica =
                     replicaSource.sapphire_replicate(replicaSource.getProcessedPolicies(), region);
             if (pinned) {
                 // This chain was already pinned by the downstream policy; hence, skips pinning.
@@ -522,22 +521,22 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
             return replica;
         }
 
-        protected void removeReplica(SapphireServerPolicy server)
+        protected void removeReplica(SapphirePolicy.ServerPolicy server)
                 throws RemoteException, SapphireObjectReplicaNotFoundException,
                         SapphireObjectNotFoundException {
             server.sapphire_remove_replica();
             removeServer(server);
         }
 
-        protected void updateReplicaHostName(
-                SapphireServerPolicy serverPolicy, InetSocketAddress host) throws RemoteException {
-            ArrayList<SapphireServerPolicy> servers = getServers();
+        protected void updateReplicaHostName(ServerPolicy serverPolicy, InetSocketAddress host)
+                throws RemoteException {
+            ArrayList<ServerPolicy> servers = getServers();
             if (servers == null) {
                 return;
             }
 
-            for (Iterator<SapphireServerPolicy> itr = servers.iterator(); itr.hasNext(); ) {
-                SapphireServerPolicy server = itr.next();
+            for (Iterator<ServerPolicy> itr = servers.iterator(); itr.hasNext(); ) {
+                ServerPolicy server = itr.next();
                 if (server.$__getKernelOID().equals(serverPolicy.$__getKernelOID())) {
                     ((KernelObjectStub) server).$__updateHostname(host);
                     ((KernelObjectStub) serverPolicy).$__updateHostname(host);
@@ -560,13 +559,13 @@ public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
          */
         public void onDestroy() throws RemoteException {
             /* Delete all the servers */
-            ArrayList<SapphireServerPolicy> servers = getServers();
+            ArrayList<ServerPolicy> servers = getServers();
             if (servers == null) {
                 return;
             }
 
-            for (Iterator<SapphireServerPolicy> itr = servers.iterator(); itr.hasNext(); ) {
-                SapphireServerPolicy server = itr.next();
+            for (Iterator<ServerPolicy> itr = servers.iterator(); itr.hasNext(); ) {
+                SapphirePolicy.ServerPolicy server = itr.next();
                 try {
                     server.sapphire_remove_replica();
                     itr.remove();

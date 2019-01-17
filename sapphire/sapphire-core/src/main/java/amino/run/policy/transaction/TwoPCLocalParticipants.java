@@ -1,7 +1,8 @@
 package amino.run.policy.transaction;
 
-import static amino.run.policy.SapphirePolicy.SapphireClientPolicy;
+import static amino.run.policy.SapphirePolicy.ClientPolicy;
 
+import amino.run.policy.SapphirePolicy;
 import java.io.Serializable;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -19,13 +20,13 @@ public class TwoPCLocalParticipants implements Serializable {
         return this.localParticipants.get(transactionId);
     }
 
-    public Collection<SapphireClientPolicy> getParticipants(UUID transactionId) {
+    public Collection<ClientPolicy> getParticipants(UUID transactionId) {
         return this.getParticipantManager(transactionId).getRegistered();
     }
 
-    public void addParticipants(UUID transactionId, Collection<SapphireClientPolicy> participants) {
+    public void addParticipants(UUID transactionId, Collection<ClientPolicy> participants) {
         TwoPCParticipants participantManager = this.getParticipantManager(transactionId);
-        for (SapphireClientPolicy participant : participants) {
+        for (SapphirePolicy.ClientPolicy participant : participants) {
             participantManager.register(participant);
         }
     }
@@ -51,7 +52,7 @@ public class TwoPCLocalParticipants implements Serializable {
         try {
             // todo: consider in parallel requests
             // todo: make sure the transaction context would be properly propagated in such case
-            for (SapphireClientPolicy p : this.getParticipants(transactionId)) {
+            for (ClientPolicy p : this.getParticipants(transactionId)) {
                 if (TransactionContext.getProcessedClients().contains(p)) {
                     continue;
                 }
@@ -89,7 +90,7 @@ public class TwoPCLocalParticipants implements Serializable {
             // todo: consider in parallel requests
             // todo: make sure the transaction context would be properly propagated in such case
             boolean isAllYes = true;
-            for (SapphireClientPolicy p : this.getParticipants(transactionId)) {
+            for (ClientPolicy p : this.getParticipants(transactionId)) {
                 if (TransactionContext.getProcessedClients().contains(p)) {
                     continue;
                 }

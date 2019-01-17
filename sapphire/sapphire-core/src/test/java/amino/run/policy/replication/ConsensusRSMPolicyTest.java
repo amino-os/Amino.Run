@@ -155,8 +155,8 @@ public class ConsensusRSMPolicyTest extends BaseTest {
      */
     @Test
     public void groupPolicyOnCreateFailure() throws Exception {
-        SapphirePolicy.SapphireServerPolicy server = spy(ConsensusRSMPolicy.ServerPolicy.class);
-        SapphirePolicy.SapphireGroupPolicy group = spy(ConsensusRSMPolicy.GroupPolicy.class);
+        SapphirePolicy.ServerPolicy server = spy(ConsensusRSMPolicy.ServerPolicy.class);
+        SapphirePolicy.GroupPolicy group = spy(ConsensusRSMPolicy.GroupPolicy.class);
         doReturn(true).when(server).isAlreadyPinned();
         when(group.getServers()).thenThrow(new RemoteException());
         thrown.expect(Error.class);
@@ -174,8 +174,8 @@ public class ConsensusRSMPolicyTest extends BaseTest {
     public void onRPCWithoutLeader() throws Exception {
         String method = "public void amino.run.sampleSO.SO.incI()";
         ArrayList<Object> params = new ArrayList<Object>();
-        SapphirePolicy.SapphireClientPolicy client = spy(ConsensusRSMPolicy.ClientPolicy.class);
-        SapphirePolicy.SapphireServerPolicy server = spy(ConsensusRSMPolicy.ServerPolicy.class);
+        SapphirePolicy.ClientPolicy client = spy(ConsensusRSMPolicy.ClientPolicy.class);
+        SapphirePolicy.ServerPolicy server = spy(ConsensusRSMPolicy.ServerPolicy.class);
         client.setServer(server);
         doThrow(new LeaderException("leaderException", null)).when(server).onRPC(method, params);
         thrown.expect(RemoteException.class);
@@ -201,9 +201,8 @@ public class ConsensusRSMPolicyTest extends BaseTest {
         ConsensusRSMPolicy.ServerPolicy leaderServer =
                 (ConsensusRSMPolicy.ServerPolicy) this.client.getServer();
 
-        SapphirePolicy.SapphireClientPolicy localClient =
-                spy(ConsensusRSMPolicy.ClientPolicy.class);
-        SapphirePolicy.SapphireServerPolicy server = spy(ConsensusRSMPolicy.ServerPolicy.class);
+        SapphirePolicy.ClientPolicy localClient = spy(ConsensusRSMPolicy.ClientPolicy.class);
+        SapphirePolicy.ServerPolicy server = spy(ConsensusRSMPolicy.ServerPolicy.class);
 
         /* Inject the stubbed server to be an rpc sever to client policy object and make the RPC to fail with leader exception containing actual leaderServer's reference in exception */
         localClient.setServer(server);
@@ -225,11 +224,11 @@ public class ConsensusRSMPolicyTest extends BaseTest {
         ArrayList<Object> params = new ArrayList<Object>();
 
         /* Create a client policy, 3 server policy, group policy objects and inject group and current rpc server to client */
-        SapphirePolicy.SapphireClientPolicy client = spy(ConsensusRSMPolicy.ClientPolicy.class);
-        SapphirePolicy.SapphireServerPolicy server1 = spy(ConsensusRSMPolicy.ServerPolicy.class);
-        SapphirePolicy.SapphireServerPolicy server2 = spy(ConsensusRSMPolicy.ServerPolicy.class);
-        SapphirePolicy.SapphireServerPolicy server3 = spy(ConsensusRSMPolicy.ServerPolicy.class);
-        SapphirePolicy.SapphireGroupPolicy group = spy(ConsensusRSMPolicy.GroupPolicy.class);
+        SapphirePolicy.ClientPolicy client = spy(ConsensusRSMPolicy.ClientPolicy.class);
+        SapphirePolicy.ServerPolicy server1 = spy(ConsensusRSMPolicy.ServerPolicy.class);
+        SapphirePolicy.ServerPolicy server2 = spy(ConsensusRSMPolicy.ServerPolicy.class);
+        SapphirePolicy.ServerPolicy server3 = spy(ConsensusRSMPolicy.ServerPolicy.class);
+        SapphirePolicy.GroupPolicy group = spy(ConsensusRSMPolicy.GroupPolicy.class);
         group.addServer(server1);
         group.addServer(server2);
         group.addServer(server3);
@@ -267,11 +266,10 @@ public class ConsensusRSMPolicyTest extends BaseTest {
                 (ConsensusRSMPolicy.ServerPolicy) this.client.getServer();
 
         /* Create a client policy, 3 server policy, group policy objects and inject group and current rpc server to client */
-        SapphirePolicy.SapphireClientPolicy localClient =
-                spy(ConsensusRSMPolicy.ClientPolicy.class);
-        SapphirePolicy.SapphireServerPolicy server1 = spy(ConsensusRSMPolicy.ServerPolicy.class);
-        SapphirePolicy.SapphireServerPolicy server2 = spy(ConsensusRSMPolicy.ServerPolicy.class);
-        SapphirePolicy.SapphireGroupPolicy group = spy(ConsensusRSMPolicy.GroupPolicy.class);
+        SapphirePolicy.ClientPolicy localClient = spy(ConsensusRSMPolicy.ClientPolicy.class);
+        SapphirePolicy.ServerPolicy server1 = spy(ConsensusRSMPolicy.ServerPolicy.class);
+        SapphirePolicy.ServerPolicy server2 = spy(ConsensusRSMPolicy.ServerPolicy.class);
+        SapphirePolicy.GroupPolicy group = spy(ConsensusRSMPolicy.GroupPolicy.class);
         group.addServer(server1);
         group.addServer(server2);
 
@@ -303,11 +301,10 @@ public class ConsensusRSMPolicyTest extends BaseTest {
         ArrayList<Object> params = new ArrayList<Object>();
 
         /* Create a client policy, 3 server policy, group policy objects and inject group and current rpc server to client */
-        SapphirePolicy.SapphireClientPolicy localClient =
-                spy(ConsensusRSMPolicy.ClientPolicy.class);
-        SapphirePolicy.SapphireServerPolicy server1 = spy(ConsensusRSMPolicy.ServerPolicy.class);
-        SapphirePolicy.SapphireServerPolicy server2 = spy(ConsensusRSMPolicy.ServerPolicy.class);
-        SapphirePolicy.SapphireGroupPolicy group = spy(ConsensusRSMPolicy.GroupPolicy.class);
+        SapphirePolicy.ClientPolicy localClient = spy(ConsensusRSMPolicy.ClientPolicy.class);
+        SapphirePolicy.ServerPolicy server1 = spy(ConsensusRSMPolicy.ServerPolicy.class);
+        SapphirePolicy.ServerPolicy server2 = spy(ConsensusRSMPolicy.ServerPolicy.class);
+        SapphirePolicy.GroupPolicy group = spy(ConsensusRSMPolicy.GroupPolicy.class);
         group.addServer(server1);
         group.addServer(server2);
 
@@ -336,10 +333,10 @@ public class ConsensusRSMPolicyTest extends BaseTest {
         ArrayList<Object> params = new ArrayList<Object>();
 
         /* Create a client policy, 2 server policy, group policy objects and inject group and current rpc server to client */
-        SapphirePolicy.SapphireClientPolicy client = spy(ConsensusRSMPolicy.ClientPolicy.class);
-        SapphirePolicy.SapphireServerPolicy server1 = spy(ConsensusRSMPolicy.ServerPolicy.class);
-        SapphirePolicy.SapphireServerPolicy server2 = spy(ConsensusRSMPolicy.ServerPolicy.class);
-        SapphirePolicy.SapphireGroupPolicy group = spy(ConsensusRSMPolicy.GroupPolicy.class);
+        SapphirePolicy.ClientPolicy client = spy(ConsensusRSMPolicy.ClientPolicy.class);
+        SapphirePolicy.ServerPolicy server1 = spy(ConsensusRSMPolicy.ServerPolicy.class);
+        SapphirePolicy.ServerPolicy server2 = spy(ConsensusRSMPolicy.ServerPolicy.class);
+        SapphirePolicy.GroupPolicy group = spy(ConsensusRSMPolicy.GroupPolicy.class);
         group.addServer(server1);
         group.addServer(server2);
         client.setServer(server1);

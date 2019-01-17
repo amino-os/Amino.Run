@@ -16,13 +16,13 @@ public class AppObjectShimServerPolicy
     private AppObject originMaster;
 
     @Override
-    public void onCreate(SapphirePolicy.SapphireGroupPolicy group, SapphireObjectSpec spec) {}
+    public void onCreate(SapphirePolicy.GroupPolicy group, SapphireObjectSpec spec) {}
 
     @Override
     public void onDestroy() {}
 
     @Override
-    public SapphirePolicy.SapphireGroupPolicy getGroup() {
+    public SapphirePolicy.GroupPolicy getGroup() {
         return null;
     }
 

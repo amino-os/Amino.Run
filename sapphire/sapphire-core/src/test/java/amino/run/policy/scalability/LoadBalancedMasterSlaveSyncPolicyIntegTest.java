@@ -163,7 +163,7 @@ public class LoadBalancedMasterSlaveSyncPolicyIntegTest {
         public void $__updateHostname(InetSocketAddress hostname) {}
 
         @Override
-        public void $__setNextClientPolicy(SapphirePolicy.SapphireClientPolicy clientPolicy) {}
+        public void $__setNextClientPolicy(SapphirePolicy.ClientPolicy clientPolicy) {}
     }
 
     private static class GroupMock extends LoadBalancedMasterSlaveSyncPolicy.GroupPolicy {}

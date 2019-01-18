@@ -98,23 +98,28 @@ public class DHTPolicy extends DefaultSapphirePolicy {
                 // TODO: Current implementation assumes shards are spread out across regions.
                 // This assumption may not be true if the policy wants to locate all shards per
                 // region.
-
+                int primaryReplicaIndex = regions.indexOf(region);
+                int shardCount = primaryReplicaIndex < numOfShards ? numOfShards : numOfShards - 1;
                 // Create replicas based on annotation
-                for (int i = 0; i < numOfShards; i++) {
-                    String regionVar = regions.get(i % regions.size());
+                for (int i = 0; i < shardCount; i++) {
+                    region = regions.get(i % regions.size());
                     if (region == null) {
                         throw new IllegalStateException("no region available for DHT DM");
                     }
 
-                    if (regionVar.equals(region)) {
+                    if (i == primaryReplicaIndex) {
                         /* In current implementation, each replica is in a different region. And each replica serves as
-                        a shard. Ignore the region where first shard was created. */
+                        a shard. Skip the region where first shard was created. If number of regions are less than
+                        the required number of replicas, once we reach the end of regions, start from first region again
+                        and continue in round robin fashion until all the necessary replicas are created. In effect,
+                        ensuring replicas are created in unique regions and are evenly distributed to the best. */
+                        primaryReplicaIndex = 0;
                         continue;
                     }
 
-                    logger.info(String.format("Creating shard %s in region %s", i, regionVar));
-                    InetSocketAddress address = getAddress(regionVar);
-                    addReplica(server, address, regionVar, pinned);
+                    logger.info(String.format("Creating shard %s in region %s", i, region));
+                    InetSocketAddress address = getAddress(region);
+                    addReplica(server, address, region, pinned);
                 }
             } catch (RemoteException e) {
                 throw new Error(

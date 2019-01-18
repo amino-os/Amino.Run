@@ -114,7 +114,7 @@ task integTest(type: Test) {
 genStubs {
     def pkg = 'amino.run.policy'
     def src = file(project.buildDir.toString() + '/classes/java/main/amino/run/policy/')
-    def dst = file(project.projectDir.toString() + '/src/main/java/amino/run/policy/stubs/')
+    def dst = file(project.projectDir.toString() + '/src/stubs/java/amino/run/policy/stubs/')
     args src.toString(), pkg, dst.toString()
     outputs.dir dst // Declare outputs, so gradle will run if they have been changed
     inputs.dir src   // Declare inputs, so gradle will run if they have been changed

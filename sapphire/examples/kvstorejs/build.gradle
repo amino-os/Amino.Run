@@ -10,12 +10,17 @@ genStubs {
     classpath =  files("$projectDir/../../sapphire-core/build/libs/sapphire-core-1.0.0.jar")
     // classpath sourceSets.main.output.classesDir
     def sapphireObjectPath = "$projectDir/src/main/js/amino/run/appdemo/KeyValueStore.js"
-    def outPath = "$projectDir/src/main/java"
+    def outPath = "$projectDir/src/stubs/java"
     def packageName = "amino.run.appdemo.stubs"
     def sapphireClasses = "KeyValueStore"
     args sapphireObjectPath, outPath, packageName, sapphireClasses
-    outputs.dir "$projectDir/src/main/java/amino/run/appdemo/stubs" // Declare outputs, so gradle will run if they have been changed
+    outputs.dir "$projectDir/src/stubs/java/amino/run/appdemo/stubs" // Declare outputs, so gradle will run if they have been changed
     inputs.dir sapphireObjectPath   // Declare inputs, so gradle will run if they have been changed
+}
+
+// Add generated stubs sourceSet to default compileJava task for compilation.
+compileJava {
+    source += sourceSets.stubs.java.srcDirs
 }
 
 jar.dependsOn compileStubs

@@ -5,8 +5,8 @@ import static java.lang.Thread.sleep;
 import amino.run.app.SapphireObjectSpec;
 import amino.run.demo.KVStore;
 import amino.run.kernel.server.KernelServerImpl;
-import java.io.File;
-import java.io.IOException;
+import amino.run.oms.OMSServerImpl;
+import java.io.*;
 import java.net.Socket;
 import java.nio.file.Files;
 import java.util.List;
@@ -21,9 +21,11 @@ public class IntegrationTestBase {
     public static int hostPort = 22333;
     private static Process omsProcess = null;
     private static Process[] kernelServerProcess = {null, null, null};
+    private static String javaHome = System.getProperty("java.home");
+    private static String javaBin = javaHome + File.separator + "bin" + File.separator + "java";
+    private static String classpath = System.getProperty("java.class.path");
 
     static void waitForSockListen(String ip, int port) {
-
         Socket socket = null;
         while (socket == null) {
             System.out.printf("Waiting for socket %d\n!", port);
@@ -95,14 +97,14 @@ public class IntegrationTestBase {
      * @throws java.io.IOException if the process failed to start.
      */
     public static Process startOms(String ip, int port) throws java.io.IOException {
-        String cmd =
-                "java  -cp "
-                        + System.getProperty("java.class.path")
-                        + " amino.run.oms.OMSServerImpl "
-                        + ip
-                        + " "
-                        + port;
-        Process process = Runtime.getRuntime().exec(cmd);
+        String className = OMSServerImpl.class.getName();
+
+        String[] args =
+                new String[] {javaBin, "-cp", classpath, className, ip, Integer.toString(port)};
+
+        ProcessBuilder builder = new ProcessBuilder(args);
+        Process process = builder.inheritIO().start();
+
         waitForSockListen(ip, port);
         return process;
     }
@@ -121,23 +123,30 @@ public class IntegrationTestBase {
     public static Process startKernelServer(
             String ip, int port, String omsIp, int omsPort, String labels)
             throws java.io.IOException {
-        String cmd =
-                "java  -cp "
-                        + System.getProperty("java.class.path")
-                        + " amino.run.kernel.server.KernelServerImpl "
-                        + ip
-                        + " "
-                        + port
-                        + " "
-                        + omsIp
-                        + " "
-                        + omsPort
-                        + " ";
+        String className = KernelServerImpl.class.getName();
+        String labelStr = "";
         if (null != labels && labels.length() > 0) {
-            cmd += KernelServerImpl.LABEL_OPT + labels;
+            labelStr += KernelServerImpl.LABEL_OPT + labels;
         }
-        System.out.printf("Starting kernel server with command line \'%s\'\n", cmd);
-        Process process = Runtime.getRuntime().exec(cmd);
+
+        String[] args =
+                new String[] {
+                    javaBin,
+                    "-cp",
+                    classpath,
+                    className,
+                    ip,
+                    Integer.toString(port),
+                    omsIp,
+                    Integer.toString(omsPort),
+                    labelStr
+                };
+
+        System.out.printf(
+                "Starting kernel server at %s:%d with command line \'%s\'\n", ip, port, args);
+        ProcessBuilder builder = new ProcessBuilder(args);
+        Process process = builder.inheritIO().start();
+
         waitForSockListen(ip, port);
         return process;
     }
@@ -179,16 +188,16 @@ public class IntegrationTestBase {
 
     public static void killOmsAndKernelServers() {
 
-        if (omsProcess != null) {
-            omsProcess.destroy();
-            waitForSockClose(omsIp, omsPort);
-        }
-
         for (int i = 0; i < ksPort.length; i++) {
             if (kernelServerProcess[i] != null) {
                 kernelServerProcess[i].destroy();
                 waitForSockClose(ksIp, ksPort[i]);
             }
+        }
+
+        if (omsProcess != null) {
+            omsProcess.destroy();
+            waitForSockClose(omsIp, omsPort);
         }
     }
 }

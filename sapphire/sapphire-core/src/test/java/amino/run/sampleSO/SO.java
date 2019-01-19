@@ -6,7 +6,7 @@ import amino.run.runtime.SapphireConfiguration;
 
 @SapphireConfiguration(Policies = "amino.run.policy.DefaultSapphirePolicy")
 public class SO implements SapphireObject {
-    public Integer i = 1;
+    public Integer i = 0;
 
     public Integer getI() {
         return i;
@@ -18,6 +18,10 @@ public class SO implements SapphireObject {
 
     public void incI() {
         i++;
+    }
+
+    public void incI(Integer value) {
+        i += value;
     }
 
     public void decI() {

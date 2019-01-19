@@ -19,6 +19,7 @@ import static org.powermock.api.mockito.PowerMockito.when;
 
 import amino.run.app.DMSpec;
 import amino.run.app.Language;
+import amino.run.app.NodeSelectorSpec;
 import amino.run.app.SapphireObjectSpec;
 import amino.run.common.BaseTest;
 import amino.run.common.Utils;
@@ -55,6 +56,7 @@ public class ConsensusRSMPolicyTest extends BaseTest {
                 SapphireObjectSpec.newBuilder()
                         .setLang(Language.java)
                         .setJavaClassName("amino.run.sampleSO.SO")
+                        .setNodeSelectorSpec(new NodeSelectorSpec())
                         .addDMSpec(
                                 DMSpec.newBuilder()
                                         .setName(ConsensusRSMPolicy.class.getName())

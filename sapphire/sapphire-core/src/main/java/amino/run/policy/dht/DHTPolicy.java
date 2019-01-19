@@ -98,6 +98,11 @@ public class DHTPolicy extends DefaultSapphirePolicy {
                 // TODO: Current implementation assumes shards are spread out across regions.
                 // This assumption may not be true if the policy wants to locate all shards per
                 // region.
+                /* In current implementation, each replica is in a different region. And each replica serves as a shard.
+                Skips the region where first shard was created. If number of regions are less than the required number
+                of replicas, once we reach the end of regions, start from first region again and continue in
+                round robin fashion until all the necessary replicas are created. In effect, ensuring replicas are
+                created in unique regions and are evenly distributed to the best. */
                 int primaryReplicaIndex = regions.indexOf(region);
                 int shardCount = primaryReplicaIndex < numOfShards ? numOfShards : numOfShards - 1;
                 // Create replicas based on annotation
@@ -108,12 +113,7 @@ public class DHTPolicy extends DefaultSapphirePolicy {
                     }
 
                     if (i == primaryReplicaIndex) {
-                        /* In current implementation, each replica is in a different region. And each replica serves as
-                        a shard. Skip the region where first shard was created. If number of regions are less than
-                        the required number of replicas, once we reach the end of regions, start from first region again
-                        and continue in round robin fashion until all the necessary replicas are created. In effect,
-                        ensuring replicas are created in unique regions and are evenly distributed to the best. */
-                        primaryReplicaIndex = 0;
+                        /* Skip the region where first shard was created */
                         continue;
                     }
 

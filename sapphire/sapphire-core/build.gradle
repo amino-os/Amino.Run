@@ -134,6 +134,7 @@ task genUnitTestStubs(type :JavaExec){
 
 task compileSampleSO(type: JavaCompile) {
     source = file(project.projectDir.toString() + '/src/test/java/amino/run/sampleSO')
+    exclude('**/*_Stub*')  // Added for excluding older Stub files, while compiling Sample SO package.
     classpath = files(sourceSets.main.output.classesDir)
     destinationDir = file(project.buildDir.toString() + '/classes/java/test/')
     options.incremental = true
@@ -176,6 +177,7 @@ task genIntegTestStubs(type :JavaExec) {
 
 task compileIntegTestDemoPkg(type: JavaCompile) {
     source = file(project.projectDir.toString() + '/src/integrationTest/java/amino/run/demo/')
+    exclude('**/*_Stub*')  // Added for excluding older Stub files, while compiling Integration Test Demo package.
     classpath = sourceSets.integrationTest.compileClasspath
     destinationDir = file(project.buildDir.toString() + '/classes/java/integrationTest/')
     options.incremental = true

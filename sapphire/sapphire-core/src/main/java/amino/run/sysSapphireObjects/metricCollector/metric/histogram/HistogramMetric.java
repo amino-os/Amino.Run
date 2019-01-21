@@ -147,7 +147,7 @@ public class HistogramMetric implements Metric {
             return this;
         }
 
-        public HistogramMetric.Builder setFrequency(SendMetric sendMetric) {
+        public HistogramMetric.Builder setSendMetric(SendMetric sendMetric) {
             this.sendMetric = sendMetric;
             return this;
         }

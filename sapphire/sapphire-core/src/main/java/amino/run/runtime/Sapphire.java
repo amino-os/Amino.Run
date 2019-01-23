@@ -27,7 +27,6 @@ import amino.run.kernel.common.KernelObjectStubNotCreatedException;
 import amino.run.policy.DefaultPolicy;
 import amino.run.policy.Policy;
 import amino.run.policy.SapphirePolicyContainer;
-import amino.run.policy.Upcalls;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -55,7 +54,6 @@ public class Sapphire {
      */
     public static Object new_(SapphireObjectSpec spec, Object... args)
             throws SapphireObjectCreationException {
-        AppObjectStub appStub = null;
         try {
             logger.info("Creating object for spec:" + spec);
             if (spec.getLang() == Language.java && spec.getDmList().isEmpty()) {
@@ -63,7 +61,6 @@ public class Sapphire {
                 return new_(appObjectClass, args);
             }
 
-            List<SapphirePolicyContainer> processedPolicies = new ArrayList<>();
             List<SapphirePolicyContainer> policyNameChain = getPolicyNameChain(spec);
 
             if (policyNameChain.size() == 0) {
@@ -71,22 +68,14 @@ public class Sapphire {
                 policyNameChain.add(new SapphirePolicyContainer(defaultPolicyName, null));
             }
 
-            /* Register for a sapphire object Id from OMS */
-            SapphireObjectID sapphireObjId =
-                    GlobalKernelReferences.nodeServer.oms.registerSapphireObject();
-
             /* Get the region of current server */
             String region = GlobalKernelReferences.nodeServer.getRegion();
-            appStub =
-                    createPolicy(
-                            sapphireObjId, spec, policyNameChain, processedPolicies, region, args);
+            return createPolicyChain(spec, policyNameChain, region, args);
         } catch (Exception e) {
             String msg = String.format("Failed to create sapphire object '%s'", spec);
             logger.log(Level.SEVERE, msg, e);
             throw new SapphireObjectCreationException(msg, e);
         }
-
-        return appStub;
     }
 
     /**
@@ -102,10 +91,6 @@ public class Sapphire {
     public static Object new_(Class<?> appObjectClass, Object... args) {
         try {
             Annotation[] annotations = appObjectClass.getAnnotations();
-            Map<String, Upcalls.SapphirePolicyConfig> configMap =
-                    Utils.toSapphirePolicyConfig(annotations);
-            List<SapphirePolicyContainer> processedPolicies =
-                    new ArrayList<SapphirePolicyContainer>();
             List<SapphirePolicyContainer> policyNameChain = getPolicyNameChain(annotations);
 
             if (policyNameChain.size() == 0) {
@@ -119,15 +104,9 @@ public class Sapphire {
                             .setJavaClassName(appObjectClass.getName())
                             .create();
 
-            /* Register for a sapphire object Id from OMS */
-            SapphireObjectID sapphireObjId =
-                    GlobalKernelReferences.nodeServer.oms.registerSapphireObject();
-
             /* Get the region of current server */
             String region = GlobalKernelReferences.nodeServer.getRegion();
-            AppObjectStub appStub =
-                    createPolicy(
-                            sapphireObjId, spec, policyNameChain, processedPolicies, region, args);
+            AppObjectStub appStub = createPolicyChain(spec, policyNameChain, region, args);
             logger.info("Sapphire Object created: " + appObjectClass.getName());
             return appStub;
         } catch (Exception e) {
@@ -170,6 +149,146 @@ public class Sapphire {
         }
 
         return policyNameChain;
+    }
+
+    /**
+     * Creates app object stub along with a policy chain associated to it.
+     *
+     * @param spec Sapphire object spec
+     * @param policyNameChain List of policies that need to be created
+     * @param region Region
+     * @param appArgs Arguments for application object
+     * @return client side appObjectStub
+     * @throws IOException
+     * @throws ClassNotFoundException
+     * @throws KernelObjectNotFoundException
+     * @throws KernelObjectNotCreatedException
+     * @throws SapphireObjectNotFoundException
+     * @throws SapphireObjectReplicaNotFoundException
+     * @throws InstantiationException
+     * @throws IllegalAccessException
+     * @throws CloneNotSupportedException
+     */
+    public static AppObjectStub createPolicyChain(
+            SapphireObjectSpec spec,
+            List<SapphirePolicyContainer> policyNameChain,
+            String region,
+            Object[] appArgs)
+            throws IOException, ClassNotFoundException, KernelObjectNotFoundException,
+                    KernelObjectNotCreatedException, SapphireObjectNotFoundException,
+                    SapphireObjectReplicaNotFoundException, InstantiationException,
+                    IllegalAccessException, CloneNotSupportedException {
+        if (policyNameChain == null || policyNameChain.size() == 0) return null;
+        AppObjectStub appStub = null;
+
+        /* Register for a sapphire object Id from OMS */
+        SapphireObjectID sapphireObjId =
+                GlobalKernelReferences.nodeServer.oms.registerSapphireObject();
+
+        ServerPolicy outerServerPolicy = null;
+        KernelObjectStub outerServerPolicyStub = null;
+
+        List<SapphirePolicyContainer> processedPolicies = new ArrayList<>();
+
+        for (int i = 0; i < policyNameChain.size(); i++) {
+            String policyName = policyNameChain.get(i).getPolicyName();
+
+            /* Get the annotations added for the Application class. */
+
+            /* Get the policy used by the Sapphire Object we need to create */
+            HashMap<String, Class<?>> policyMap = getPolicyMap(policyName);
+            Class<?> sapphireServerPolicyClass = policyMap.get("sapphireServerPolicyClass");
+            Class<?> sapphireClientPolicyClass = policyMap.get("sapphireClientPolicyClass");
+            Class<?> sapphireGroupPolicyClass = policyMap.get("sapphireGroupPolicyClass");
+
+            /* Create and the Kernel Object for the Group Policy and get the Group Policy Stub.
+            Note that group policy does not need to update hostname because it only applies to
+            individual server in multi-policy scenario */
+            Policy.GroupPolicy groupPolicyStub;
+            /* Create the Kernel Object for the Group Policy and get the Group Policy Stub from OMS */
+            groupPolicyStub =
+                    GlobalKernelReferences.nodeServer.oms.createGroupPolicy(
+                            sapphireGroupPolicyClass, sapphireObjId);
+
+            /* Create the Kernel Object for the Server Policy, and get the Server Policy Stub */
+            ServerPolicy serverPolicyStub = (ServerPolicy) getPolicyStub(sapphireServerPolicyClass);
+
+            /* Create the Client Policy Object */
+            ClientPolicy client = (ClientPolicy) sapphireClientPolicyClass.newInstance();
+
+            /* Initialize the server policy and return a local pointer to the object itself */
+            Policy.ServerPolicy serverPolicy = initializeServerPolicy(serverPolicyStub);
+
+            registerSapphireReplica(sapphireObjId, serverPolicy, serverPolicyStub);
+
+            /* Link everything together */
+            client.setServer(serverPolicyStub);
+            client.onCreate(groupPolicyStub, spec);
+
+            /* Check and get the previous DM's container if available. So that, server side and client side chain links can
+            be updated between the current DM and previous DM. If the previous DM's container is not available,
+            then DM/Policy being created is either for single DM based SO or It is the first DM/Policy in Multi DM based SO
+            (i.e., last mile server policy to SO */
+            if (i == 0) {
+                appStub = serverPolicy.$__initialize(spec, appArgs);
+            } else {
+                /* Previous server policy stub object acts as Sapphire Object(SO) to the current server policy */
+                serverPolicy.$__initialize(
+                        new AppObject(Utils.ObjectCloner.deepCopy(outerServerPolicyStub)));
+                outerServerPolicy.setPreviousServerPolicy(serverPolicy);
+                outerServerPolicyStub.$__setNextClientPolicy(client);
+            }
+
+            // Note that subList is non serializable; hence, the new list creation.
+            // TODO: next policies won't be needed if sapphire_replicate() is updated to use
+            // iterative logic.
+            List<SapphirePolicyContainer> nextPoliciesToCreate =
+                    new ArrayList(policyNameChain.subList(i + 1, policyNameChain.size()));
+            serverPolicy.setNextPolicies(nextPoliciesToCreate);
+
+            serverPolicy.onCreate(groupPolicyStub, spec);
+
+            SapphirePolicyContainer processedPolicy =
+                    new SapphirePolicyContainer(policyName, groupPolicyStub);
+            processedPolicy.setServerPolicy(serverPolicy);
+            processedPolicy.setServerPolicyStub((KernelObjectStub) serverPolicyStub);
+            processedPolicies.add(processedPolicy);
+
+            // Create a copy to set processed policies up to this point.
+            List<SapphirePolicyContainer> processedPoliciesSoFar = new ArrayList(processedPolicies);
+            serverPolicy.setProcessedPolicies(processedPoliciesSoFar);
+            serverPolicyStub.setProcessedPolicies(processedPoliciesSoFar);
+
+            outerServerPolicy = serverPolicy;
+            outerServerPolicyStub = (KernelObjectStub) serverPolicyStub;
+
+            if (i == 0) {
+                appStub = (AppObjectStub) serverPolicy.sapphire_getAppObject().getObject();
+                // TODO(multi-lang): We may need to create a clone for non-java app object stub.
+                appStub = spec.getLang() == Language.java ? createClientAppStub(appStub) : appStub;
+                appStub.$__initialize(client);
+            }
+        }
+
+        /* Execute GroupPolicy.onCreate() in the chain from inner most instance */
+        boolean alreadyPinned = false;
+        for (int j = processedPolicies.size() - 1; j >= 0; j--) {
+            GroupPolicy groupPolicyStub = processedPolicies.get(j).getGroupPolicyStub();
+            ServerPolicy serverPolicyStub =
+                    (ServerPolicy) processedPolicies.get(j).getServerPolicyStub();
+
+            if (alreadyPinned) {
+                serverPolicyStub.setAlreadyPinned(alreadyPinned);
+            }
+
+            if (serverPolicyStub.isAlreadyPinned()) {
+                alreadyPinned = true;
+            }
+            groupPolicyStub.onCreate(region, serverPolicyStub, spec);
+            groupPolicyStub.addServer(serverPolicyStub);
+        }
+
+        return appStub;
     }
 
     /**
@@ -613,7 +732,8 @@ public class Sapphire {
      * Checks the downstream policies by going through processedPolicies and sets the given
      * serverPolicyStub as being already pinned if any of downstream policies have set it as already
      * pinned. Note 'pinned' means the chain was migrated to a target Kernel Server by
-     * sapphire_pin_to_server() at Library
+     * sapphire_pin_to_server() at SapphirePolicyLibrary TODO: make pin_to_sapphire_server happen at
+     * the last DM all the time.
      *
      * @param serverPolicyStub Stub to set as already pinned if downstream has already pinned.
      * @param processedPolicies All of the policies created in this policy chain.

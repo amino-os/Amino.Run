@@ -61,6 +61,8 @@ public abstract class Library implements Upcalls {
         // (farthest from actual app object).
         // It means these were the last in order in the client side of chain. New groups should be
         // created for this list of chain.
+        // TODO: this will no longer be needed once sapphire_replicate() is updated to iterative
+        // logic.
         protected List<SapphirePolicyContainer> nextPolicies =
                 new ArrayList<SapphirePolicyContainer>();
 

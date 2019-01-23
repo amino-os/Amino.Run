@@ -1,6 +1,6 @@
 package amino.run.policy.transaction;
 
-import static amino.run.policy.SapphirePolicyUpcalls.SapphireServerPolicyUpcalls;
+import static amino.run.policy.Upcalls.ServerUpcalls;
 
 import amino.run.policy.serializability.TransactionAlreadyStartedException;
 import java.io.Serializable;
@@ -25,7 +25,7 @@ public class ExtResourceTransactionManager implements TransactionManager, Serial
     }
 
     private TransactionManager getBusinessObject(UUID transactionId) {
-        SapphireServerPolicyUpcalls sandbox = this.sandboxProvider.getSandbox(transactionId);
+        ServerUpcalls sandbox = this.sandboxProvider.getSandbox(transactionId);
         AppObjectShimServerPolicy appObjectShimServerPolicy = (AppObjectShimServerPolicy) sandbox;
         return (TransactionManager) appObjectShimServerPolicy.getAppObject().getObject();
     }

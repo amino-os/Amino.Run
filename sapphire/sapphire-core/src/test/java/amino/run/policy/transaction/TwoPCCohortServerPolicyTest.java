@@ -1,6 +1,6 @@
 package amino.run.policy.transaction;
 
-import static amino.run.policy.SapphirePolicyUpcalls.SapphireServerPolicyUpcalls;
+import static amino.run.policy.Upcalls.ServerUpcalls;
 import static amino.run.policy.transaction.TwoPCCohortPolicy.TwoPCCohortServerPolicy;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
@@ -47,7 +47,7 @@ public class TwoPCCohortServerPolicyTest {
         UUID transactionId = UUID.randomUUID();
         TransactionWrapper wrapper = new TransactionWrapper(transactionId, "foo", null);
 
-        SapphireServerPolicyUpcalls sandbox = mock(SapphireServerPolicyUpcalls.class);
+        ServerUpcalls sandbox = mock(ServerUpcalls.class);
         when(this.sandboxProvider.getSandbox(this.serverPolicy, transactionId)).thenReturn(sandbox);
 
         Object result = serverPolicy.onRPC("tx_rpc", wrapper.getRPCParams());

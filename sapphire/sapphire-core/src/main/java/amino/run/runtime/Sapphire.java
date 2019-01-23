@@ -27,7 +27,7 @@ import amino.run.kernel.common.KernelObjectStubNotCreatedException;
 import amino.run.policy.DefaultPolicy;
 import amino.run.policy.Policy;
 import amino.run.policy.SapphirePolicyContainer;
-import amino.run.policy.SapphirePolicyUpcalls;
+import amino.run.policy.Upcalls;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -102,7 +102,7 @@ public class Sapphire {
     public static Object new_(Class<?> appObjectClass, Object... args) {
         try {
             Annotation[] annotations = appObjectClass.getAnnotations();
-            Map<String, SapphirePolicyUpcalls.SapphirePolicyConfig> configMap =
+            Map<String, Upcalls.SapphirePolicyConfig> configMap =
                     Utils.toSapphirePolicyConfig(annotations);
             List<SapphirePolicyContainer> processedPolicies =
                     new ArrayList<SapphirePolicyContainer>();

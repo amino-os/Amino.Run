@@ -1,7 +1,7 @@
 package amino.run.policy.transaction;
 
 import static amino.run.policy.Library.ServerPolicyLibrary;
-import static amino.run.policy.SapphirePolicyUpcalls.SapphireServerPolicyUpcalls;
+import static amino.run.policy.Upcalls.ServerUpcalls;
 
 import java.io.Serializable;
 import java.util.UUID;
@@ -13,7 +13,7 @@ public class AppObjectSandboxProvider implements SandboxProvider, Serializable {
             new ConcurrentHashMap<UUID, AppObjectShimServerPolicy>();
 
     @Override
-    public SapphireServerPolicyUpcalls getSandbox(ServerPolicyLibrary origin, UUID transactionId)
+    public ServerUpcalls getSandbox(ServerPolicyLibrary origin, UUID transactionId)
             throws Exception {
         if (!this.sandboxes.containsKey(transactionId)) {
             AppObjectShimServerPolicy sandbox =
@@ -26,7 +26,7 @@ public class AppObjectSandboxProvider implements SandboxProvider, Serializable {
     }
 
     @Override
-    public SapphireServerPolicyUpcalls getSandbox(UUID transactionId) {
+    public ServerUpcalls getSandbox(UUID transactionId) {
         return this.sandboxes.get(transactionId);
     }
 

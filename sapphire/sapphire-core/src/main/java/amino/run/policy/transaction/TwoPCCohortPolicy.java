@@ -76,8 +76,7 @@ public class TwoPCCohortPolicy extends DefaultPolicy {
             }
             if (TwoPCPrimitive.isCommit(rpcMethod)) {
                 this.transactionManager.commit(transactionId);
-                SapphireServerPolicyUpcalls sandbox =
-                        this.sandboxProvider.getSandbox(transactionId);
+                ServerUpcalls sandbox = this.sandboxProvider.getSandbox(transactionId);
                 this.makeUpdateDurable(sandbox);
                 this.sandboxProvider.removeSandbox(transactionId);
                 return null;
@@ -87,8 +86,7 @@ public class TwoPCCohortPolicy extends DefaultPolicy {
                 this.sandboxProvider.removeSandbox(transactionId);
                 return null;
             } else {
-                SapphireServerPolicyUpcalls sandbox =
-                        this.sandboxProvider.getSandbox(this, transactionId);
+                ServerUpcalls sandbox = this.sandboxProvider.getSandbox(this, transactionId);
                 this.transactionManager.join(transactionId);
                 try {
                     return sandbox.onRPC(rpcMethod, tx.getInnerRPCParams());
@@ -109,7 +107,7 @@ public class TwoPCCohortPolicy extends DefaultPolicy {
          *
          * @param sandbox the isolated object that holds the updated content
          */
-        private void makeUpdateDurable(SapphireServerPolicyUpcalls sandbox) {
+        private void makeUpdateDurable(ServerUpcalls sandbox) {
             AppObjectShimServerPolicy shimServerPolicy = (AppObjectShimServerPolicy) sandbox;
             this.appObject = shimServerPolicy.getAppObject();
         }

@@ -1,6 +1,6 @@
 package amino.run.app;
 
-import static amino.run.policy.SapphirePolicyUpcalls.SapphirePolicyConfig;
+import static amino.run.policy.Upcalls.SapphirePolicyConfig;
 
 import java.io.Serializable;
 import java.util.*;

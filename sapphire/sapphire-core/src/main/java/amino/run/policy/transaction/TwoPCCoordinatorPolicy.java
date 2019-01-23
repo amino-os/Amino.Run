@@ -26,8 +26,7 @@ public class TwoPCCoordinatorPolicy extends DefaultPolicy {
             this.coordinator.beginTransaction();
             UUID transactionId = this.coordinator.getTransactionId();
 
-            SapphireServerPolicyUpcalls sandbox =
-                    this.sandboxProvider.getSandbox(this, transactionId);
+            ServerUpcalls sandbox = this.sandboxProvider.getSandbox(this, transactionId);
 
             Object rpcResult;
             try {
@@ -53,7 +52,7 @@ public class TwoPCCoordinatorPolicy extends DefaultPolicy {
             }
         }
 
-        private void makeUpdateDurable(SapphireServerPolicyUpcalls sandbox) {
+        private void makeUpdateDurable(ServerUpcalls sandbox) {
             AppObjectShimServerPolicy shimServerPolicy = (AppObjectShimServerPolicy) sandbox;
             this.appObject = shimServerPolicy.getAppObject();
         }

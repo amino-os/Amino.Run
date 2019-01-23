@@ -1,6 +1,6 @@
 package amino.run.common;
 
-import static amino.run.policy.SapphirePolicyUpcalls.SapphirePolicyConfig;
+import static amino.run.policy.Upcalls.SapphirePolicyConfig;
 
 import amino.run.app.DMSpec;
 import amino.run.runtime.annotations.AnnotationConfig;

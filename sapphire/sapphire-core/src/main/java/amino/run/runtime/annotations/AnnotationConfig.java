@@ -1,6 +1,6 @@
 package amino.run.runtime.annotations;
 
-import amino.run.policy.SapphirePolicyUpcalls;
+import amino.run.policy.Upcalls;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -11,7 +11,7 @@ import java.util.Map;
  * @deprecated This class is created to support java annotation based sapphire policy
  *     configurations.
  */
-public class AnnotationConfig implements SapphirePolicyUpcalls.SapphirePolicyConfig {
+public class AnnotationConfig implements Upcalls.SapphirePolicyConfig {
     private String annotationType;
 
     private Map<String, String> properties = new HashMap<>();

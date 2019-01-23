@@ -5,7 +5,7 @@
 * Get access to GitHub Repo by contacting Sungwook
 * Read [papers](https://sapphire.cs.washington.edu/research/)
 * Read [Sapphire source code](https://sapphire.cs.washington.edu/code.html)
-* Read [code study notes](./docs/code_study/)
+* Read [code study notes](./code_study/)
 * Read [github workflow guide](https://github.com/kubernetes/community/blob/master/contributors/guide/github-workflow.md). Please follow this workflow to submit pull requests.
 * [Set up Android Studio](https://github.com/Huawei-PaaS/DCAP-Sapphire/blob/master/docs/Development.md)
 * Review the Principles of Distributed Systems. If you have not done a university course on distributed systems you will need to read the following to get a basic understanding of the principles and common terminology. Feel free to add more resource links below.
@@ -99,8 +99,18 @@ $ git clone https://github.com/Huawei-PaaS/DCAP-Sapphire
 #### Generate Policy Stub
 ```shell
 > cd DCAP_Sapphire/sapphire/sapphire-core
-> ../gradlew genPolicyStubs
+> ../gradlew genStubs
 ```
+
+### Other Gradle Tips
+```shell
+> ./gradlew projects
+> ./gradlew tasks --all
+> ./gradlew properties
+> ./gradlew jar
+```
+
+## Release
 
 ### Publish Sapphire Core to Bintray 
 ```shell
@@ -114,14 +124,6 @@ export BINTRAY_API_KEY="<bintray_api_key>"
 > ./gradlew --info :apache.harmony:bintrayUpload
 ```
 
-
-### Other Gradle Tips
-```shell
-> ./gradlew projects
-> ./gradlew tasks --all
-> ./gradlew properties
-> ./gradlew jar
-```
 
 ### Build and Test Basic Example Applications
 #### Build and Run Hankstodo, a simple TODO list manager

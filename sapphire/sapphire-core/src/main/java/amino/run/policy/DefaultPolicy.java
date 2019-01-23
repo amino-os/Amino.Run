@@ -120,9 +120,9 @@ public class DefaultPolicy extends Policy {
         protected ServerPolicy replicate(
                 ServerPolicy replicaSource, InetSocketAddress dest, String region)
                 throws RemoteException, MicroServiceNotFoundException,
-                        MicroServiceReplicaNotFoundException {
+                MicroServiceReplicaNotFoundException {
             ServerPolicy replica =
-                    replicaSource.sapphire_replicate(replicaSource.getProcessedPolicies(), region);
+                    replicaSource.sapphire_replicate(region);
             if (replicaSource.isLastPolicy()) {
                 pin(replica, dest);
             }
@@ -142,7 +142,7 @@ public class DefaultPolicy extends Policy {
          */
         protected void pin(ServerPolicy server, InetSocketAddress host)
                 throws MicroServiceReplicaNotFoundException, RemoteException,
-                        MicroServiceNotFoundException {
+                MicroServiceNotFoundException {
             server.sapphire_pin_to_server(host);
             ((KernelObjectStub) server).$__updateHostname(host);
         }

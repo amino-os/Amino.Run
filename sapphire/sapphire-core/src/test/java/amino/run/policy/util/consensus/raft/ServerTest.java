@@ -123,6 +123,7 @@ public class ServerTest {
         ConcurrentHashMap<UUID, ConsensusRSMPolicy.ServerPolicy> allServers =
                 new ConcurrentHashMap<UUID, ConsensusRSMPolicy.ServerPolicy>();
         int k = 0;
+
         for (Policy.ServerPolicy i : serverPolicy) {
             ConsensusRSMPolicy.ServerPolicy s = (ConsensusRSMPolicy.ServerPolicy) i;
             allServers.put(raftServer[k++].getMyServerID(), s);

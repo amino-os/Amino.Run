@@ -243,7 +243,6 @@ public class Sapphire {
 
         /* Initialize the server policy and return a local pointer to the object itself */
         Policy.ServerPolicy serverPolicy = initializeServerPolicy(serverPolicyStub);
-
         registerSapphireReplica(sapphireObjId, serverPolicy, serverPolicyStub);
 
         /* Link everything together */

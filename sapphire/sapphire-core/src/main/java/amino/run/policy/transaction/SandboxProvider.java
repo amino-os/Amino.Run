@@ -15,7 +15,7 @@ public interface SandboxProvider {
      * @return sandbox associated with the transaction
      */
     SapphirePolicyUpcalls.SapphireServerPolicyUpcalls getSandbox(
-            Library.SapphireServerPolicyLibrary origin, UUID transactionId) throws Exception;
+            Library.ServerPolicyLibrary origin, UUID transactionId) throws Exception;
 
     /**
      * gets the sandbox assiated with the specified transaction

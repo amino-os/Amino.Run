@@ -17,8 +17,8 @@ public class PolicyStub extends Stub {
         TreeSet<MethodStub> ms = new TreeSet<MethodStub>();
 
         Class<?> ancestorClass = stubClass;
-        while ((!ancestorClass.getSimpleName().equals("SapphireServerPolicyLibrary"))
-                && (!ancestorClass.getSimpleName().equals("SapphireGroupPolicyLibrary"))) {
+        while ((!ancestorClass.getSimpleName().equals("ServerPolicyLibrary"))
+                && (!ancestorClass.getSimpleName().equals("GroupPolicyLibrary"))) {
 
             for (Method m : ancestorClass.getDeclaredMethods()) {
                 // Add public methods to methods vector

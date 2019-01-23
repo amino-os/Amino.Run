@@ -238,7 +238,7 @@ public interface SapphirePolicyUpcalls {
          * TODO: See above. This method should not be in this interface. It is in intenal/protected
          * method to the DM.
          *
-         * <p>TODO: This is currently only called by SapphireGroupPolicyLibrary.removeReplica and
+         * <p>TODO: This is currently only called by GroupPolicyLibrary.removeReplica and
          * SapphireLoadBalancedMasterSlaveBase. Clean this up and do it consistently across all DM's
          *
          * @param server The server that has been removed from the group.

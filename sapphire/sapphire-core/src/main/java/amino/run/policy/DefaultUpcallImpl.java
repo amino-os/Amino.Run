@@ -13,7 +13,7 @@ import java.util.UUID;
 
 public abstract class DefaultUpcallImpl extends Library {
 
-    public abstract static class ClientPolicy extends SapphireClientPolicyLibrary {
+    public abstract static class ClientPolicy extends ClientPolicyLibrary {
         public Object onRPC(String method, ArrayList<Object> params) throws Exception {
             // only transaction-capable SO is allowed in DCAP transaction -- change of the original
             // behavior
@@ -43,7 +43,7 @@ public abstract class DefaultUpcallImpl extends Library {
         }
     }
 
-    public abstract static class ServerPolicy extends SapphireServerPolicyLibrary {
+    public abstract static class ServerPolicy extends ServerPolicyLibrary {
         public Object onRPC(String method, ArrayList<Object> params) throws Exception {
             return appObject.invoke(method, params);
         }
@@ -83,7 +83,7 @@ public abstract class DefaultUpcallImpl extends Library {
         public void onDestroy() {}
     }
 
-    public abstract static class GroupPolicy extends SapphireGroupPolicyLibrary {
+    public abstract static class GroupPolicy extends GroupPolicyLibrary {
 
         /*
          * INTERNAL FUNCTIONS (Used by Sapphire runtime)

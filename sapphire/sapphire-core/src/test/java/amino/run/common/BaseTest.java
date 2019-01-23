@@ -19,8 +19,8 @@ import amino.run.kernel.server.KernelServer;
 import amino.run.kernel.server.KernelServerImpl;
 import amino.run.oms.OMSServer;
 import amino.run.oms.OMSServerImpl;
-import amino.run.policy.DefaultSapphirePolicy;
-import amino.run.policy.SapphirePolicy;
+import amino.run.policy.DefaultPolicy;
+import amino.run.policy.Policy;
 import amino.run.runtime.Sapphire;
 import amino.run.sampleSO.stubs.SO_Stub;
 import java.net.InetSocketAddress;
@@ -47,11 +47,11 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
     Utils.ObjectCloner.class
 })
 public class BaseTest {
-    protected DefaultSapphirePolicy.DefaultClientPolicy client;
-    protected DefaultSapphirePolicy.DefaultServerPolicy server1;
-    protected DefaultSapphirePolicy.DefaultServerPolicy server2;
-    protected DefaultSapphirePolicy.DefaultServerPolicy server3;
-    protected DefaultSapphirePolicy.DefaultGroupPolicy group;
+    protected DefaultPolicy.DefaultClientPolicy client;
+    protected DefaultPolicy.DefaultServerPolicy server1;
+    protected DefaultPolicy.DefaultServerPolicy server2;
+    protected DefaultPolicy.DefaultServerPolicy server3;
+    protected DefaultPolicy.DefaultGroupPolicy group;
     protected SO_Stub soStub; // client side stub
     protected OMSServer spiedOms;
     protected SapphireObjectServer sapphireObjServer;
@@ -170,7 +170,7 @@ public class BaseTest {
 
         soStub = (SO_Stub) sapphireObjServer.acquireSapphireObjectStub(sapphireObjId);
         client =
-                (DefaultSapphirePolicy.DefaultClientPolicy)
+                (DefaultPolicy.DefaultClientPolicy)
                         extractFieldValueOnInstance(soStub, "$__client");
         getServerAndGroupPolicyObjects();
     }
@@ -191,23 +191,23 @@ public class BaseTest {
     private void getServerPolicyObjects(KernelServer kernelServer, KernelObject obj) {
         KernelServerImpl ks = (KernelServerImpl) kernelServer;
         if (ks.getLocalHost().toString().contains(String.valueOf(kernelPort1))) {
-            server1 = (DefaultSapphirePolicy.DefaultServerPolicy) obj.getObject();
+            server1 = (DefaultPolicy.DefaultServerPolicy) obj.getObject();
         } else if (ks.getLocalHost().toString().contains(String.valueOf(kernelPort2))) {
-            server2 = (DefaultSapphirePolicy.DefaultServerPolicy) obj.getObject();
+            server2 = (DefaultPolicy.DefaultServerPolicy) obj.getObject();
         } else if (ks.getLocalHost().toString().contains(String.valueOf(kernelPort3))) {
-            server3 = (DefaultSapphirePolicy.DefaultServerPolicy) obj.getObject();
+            server3 = (DefaultPolicy.DefaultServerPolicy) obj.getObject();
         }
     }
 
     private void getServerAndGroupPolicyObjects() throws Exception {
-        ArrayList<SapphirePolicy.ServerPolicy> servers = client.getGroup().getServers();
+        ArrayList<Policy.ServerPolicy> servers = client.getGroup().getServers();
         KernelServer ks = spiedksOnOms;
         KernelObjectManager objMgr =
                 (KernelObjectManager) extractFieldValueOnInstance(ks, "objectManager");
         KernelObject obj =
                 objMgr.lookupObject(((KernelObjectStub) client.getGroup()).$__getKernelOID());
-        group = (DefaultSapphirePolicy.DefaultGroupPolicy) obj.getObject();
-        for (SapphirePolicy.ServerPolicy server : servers) {
+        group = (DefaultPolicy.DefaultGroupPolicy) obj.getObject();
+        for (Policy.ServerPolicy server : servers) {
             ks = getKernelServerFromPolicyStub((KernelObjectStub) server);
             objMgr = (KernelObjectManager) extractFieldValueOnInstance(ks, "objectManager");
             obj = objMgr.lookupObject(((KernelObjectStub) server).$__getKernelOID());

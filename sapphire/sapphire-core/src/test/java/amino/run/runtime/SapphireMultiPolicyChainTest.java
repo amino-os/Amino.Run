@@ -8,7 +8,7 @@ import amino.run.app.Language;
 import amino.run.app.SapphireObjectSpec;
 import amino.run.common.BaseTest;
 import amino.run.common.SapphireObjectID;
-import amino.run.policy.DefaultSapphirePolicy;
+import amino.run.policy.DefaultPolicy;
 import amino.run.policy.SapphirePolicyContainer;
 import amino.run.policy.dht.DHTPolicy;
 import amino.run.sampleSO.SO;
@@ -38,9 +38,7 @@ public class SapphireMultiPolicyChainTest extends BaseTest {
                         .setJavaClassName("amino.run.sampleSO.SO")
                         .addDMSpec(DMSpec.newBuilder().setName(DHTPolicy.class.getName()).create())
                         .addDMSpec(
-                                DMSpec.newBuilder()
-                                        .setName(DefaultSapphirePolicy.class.getName())
-                                        .create())
+                                DMSpec.newBuilder().setName(DefaultPolicy.class.getName()).create())
                         .create();
         super.setUp(2, spec);
     }
@@ -73,8 +71,7 @@ public class SapphireMultiPolicyChainTest extends BaseTest {
         SapphireObjectID sapphireObjId = spiedOms.registerSapphireObject();
 
         policyNameChain.add(new SapphirePolicyContainer("amino.run.policy.dht.DHTPolicy", null));
-        policyNameChain.add(
-                new SapphirePolicyContainer("amino.run.policy.DefaultSapphirePolicy", null));
+        policyNameChain.add(new SapphirePolicyContainer("amino.run.policy.DefaultPolicy", null));
 
         Sapphire.createPolicy(sapphireObjId, spec, policyNameChain, processedPolicies, "", null);
         assertEquals(2, processedPolicies.size());

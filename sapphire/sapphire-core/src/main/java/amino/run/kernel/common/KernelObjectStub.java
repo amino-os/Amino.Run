@@ -1,6 +1,6 @@
 package amino.run.kernel.common;
 
-import amino.run.policy.SapphirePolicy;
+import amino.run.policy.Policy;
 import java.io.Serializable;
 import java.net.InetSocketAddress;
 
@@ -16,5 +16,5 @@ public interface KernelObjectStub extends Serializable {
 
     public void $__updateHostname(InetSocketAddress hostname);
 
-    public void $__setNextClientPolicy(SapphirePolicy.ClientPolicy clientPolicy);
+    public void $__setNextClientPolicy(Policy.ClientPolicy clientPolicy);
 }

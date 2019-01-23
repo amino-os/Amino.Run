@@ -1,7 +1,7 @@
 package amino.run.policy.primitive;
 
 import amino.run.common.AppObject;
-import amino.run.policy.DefaultSapphirePolicy;
+import amino.run.policy.DefaultPolicy;
 import java.util.ArrayList;
 
 /**
@@ -14,7 +14,7 @@ import java.util.ArrayList;
  *
  * @author terryz
  */
-public class ImmutablePolicy extends DefaultSapphirePolicy {
+public class ImmutablePolicy extends DefaultPolicy {
     public static class ClientPolicy extends DefaultClientPolicy {
         private AppObject cachedObject = null;
 

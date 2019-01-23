@@ -4,8 +4,8 @@ import amino.run.app.SapphireObjectSpec;
 import amino.run.common.SapphireObjectNotFoundException;
 import amino.run.common.SapphireObjectReplicaNotFoundException;
 import amino.run.common.Utils;
-import amino.run.policy.DefaultSapphirePolicy;
-import amino.run.policy.SapphirePolicy;
+import amino.run.policy.DefaultPolicy;
+import amino.run.policy.Policy;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -23,7 +23,7 @@ import java.util.logging.Logger;
  * Created by SrinivasChilveri on 2/19/18. Simple load balancing w/ static number of replicas and no
  * consistency
  */
-public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
+public class LoadBalancedFrontendPolicy extends DefaultPolicy {
     public static final int STATIC_REPLICA_COUNT = 2;
     public static final int MAX_CONCURRENT_REQUESTS = 20;
 
@@ -90,9 +90,9 @@ public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
      *
      * @author SrinivasChilveri
      */
-    public static class ClientPolicy extends DefaultSapphirePolicy.DefaultClientPolicy {
+    public static class ClientPolicy extends DefaultPolicy.DefaultClientPolicy {
         private int index;
-        protected ArrayList<SapphirePolicy.ServerPolicy> replicaList;
+        protected ArrayList<Policy.ServerPolicy> replicaList;
         private static Logger logger = Logger.getLogger(ClientPolicy.class.getName());
 
         @Override
@@ -122,14 +122,14 @@ public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
      *
      * @author SrinivasChilveri
      */
-    public static class ServerPolicy extends DefaultSapphirePolicy.DefaultServerPolicy {
+    public static class ServerPolicy extends DefaultPolicy.DefaultServerPolicy {
         private static Logger logger = Logger.getLogger(ServerPolicy.class.getName());
         // we can read from default config or annotations
         protected int maxConcurrentReq = MAX_CONCURRENT_REQUESTS;
         protected Semaphore limiter;
 
         @Override
-        public void onCreate(SapphirePolicy.GroupPolicy group, SapphireObjectSpec spec) {
+        public void onCreate(Policy.GroupPolicy group, SapphireObjectSpec spec) {
             super.onCreate(group, spec);
 
             Config config = getConfig(spec);
@@ -168,13 +168,12 @@ public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
      *
      * @author SrinivasChilveri
      */
-    public static class GroupPolicy extends DefaultSapphirePolicy.DefaultGroupPolicy {
+    public static class GroupPolicy extends DefaultPolicy.DefaultGroupPolicy {
         private static Logger logger = Logger.getLogger(GroupPolicy.class.getName());
         private int replicaCount = STATIC_REPLICA_COUNT; // we can read from config or annotations
 
         @Override
-        public void onCreate(
-                String region, SapphirePolicy.ServerPolicy server, SapphireObjectSpec spec)
+        public void onCreate(String region, Policy.ServerPolicy server, SapphireObjectSpec spec)
                 throws RemoteException {
             super.onCreate(region, server, spec);
             Config config = getConfig(spec);

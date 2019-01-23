@@ -18,7 +18,7 @@ import amino.run.kernel.common.KernelServerNotFoundException;
 import amino.run.kernel.common.ServerInfo;
 import amino.run.kernel.server.KernelServer;
 import amino.run.kernel.server.KernelServerImpl;
-import amino.run.policy.SapphirePolicy;
+import amino.run.policy.Policy;
 import amino.run.runtime.EventHandler;
 import amino.run.runtime.Sapphire;
 import java.io.IOException;
@@ -144,14 +144,14 @@ public class OMSServerImpl implements OMSServer, SapphireObjectServer {
      * @throws NoSuchFieldException
      * @throws IllegalAccessException
      */
-    private SapphirePolicy.ClientPolicy extractClientPolicy(AppObjectStub appObjStub)
+    private Policy.ClientPolicy extractClientPolicy(AppObjectStub appObjStub)
             throws NoSuchFieldException, IllegalAccessException {
         Field field =
                 appObjStub
                         .getClass()
                         .getDeclaredField(GlobalStubConstants.APPSTUB_POLICY_CLIENT_FIELD_NAME);
         field.setAccessible(true);
-        return (SapphirePolicy.ClientPolicy) field.get(appObjStub);
+        return (Policy.ClientPolicy) field.get(appObjStub);
     }
 
     /**
@@ -189,7 +189,7 @@ public class OMSServerImpl implements OMSServer, SapphireObjectServer {
         try {
             AppObjectStub appObjStub = server.createSapphireObject(sapphireObjectSpec, args);
             assert appObjStub != null;
-            SapphirePolicy.ClientPolicy clientPolicy = extractClientPolicy(appObjStub);
+            Policy.ClientPolicy clientPolicy = extractClientPolicy(appObjStub);
             SapphireObjectID sid = clientPolicy.getGroup().getSapphireObjId();
             objectManager.setInstanceObjectStub(sid, appObjStub);
             objectManager.setRootGroupPolicy(sid, clientPolicy.getGroup());
@@ -314,11 +314,11 @@ public class OMSServerImpl implements OMSServer, SapphireObjectServer {
      * @throws SapphireObjectNotFoundException
      */
     @Override
-    public SapphirePolicy.GroupPolicy createGroupPolicy(
+    public Policy.GroupPolicy createGroupPolicy(
             Class<?> policyClass, SapphireObjectID sapphireObjId)
             throws RemoteException, ClassNotFoundException, KernelObjectNotCreatedException,
                     SapphireObjectNotFoundException {
-        SapphirePolicy.GroupPolicy group = Sapphire.createGroupPolicy(policyClass, sapphireObjId);
+        Policy.GroupPolicy group = Sapphire.createGroupPolicy(policyClass, sapphireObjId);
 
         /* TODO: This rootGroupPolicy is used in sapphire object deletion. Need to handle for multiDM case. In case of
         multiDM, multiple group policy objects are created in DM chain establishment. Currently, just ensuring not to

@@ -8,7 +8,7 @@ import amino.run.common.SapphireObjectReplicaNotFoundException;
 import amino.run.kernel.client.KernelClient;
 import amino.run.kernel.common.*;
 import amino.run.oms.OMSServer;
-import amino.run.policy.SapphirePolicy;
+import amino.run.policy.Policy;
 import amino.run.policy.SapphirePolicyContainer;
 import amino.run.policy.SapphirePolicyLibrary;
 import amino.run.policy.util.ResettableTimer;
@@ -148,8 +148,8 @@ public class KernelServerImpl implements KernelServer {
                     spContainer.getServerPolicy();
 
             // Added for setting the ReplicaId and registering handler for this replica to OMS.
-            SapphirePolicy.ServerPolicy serverPolicyStub =
-                    (SapphirePolicy.ServerPolicy) spContainer.getServerPolicyStub();
+            Policy.ServerPolicy serverPolicyStub =
+                    (Policy.ServerPolicy) spContainer.getServerPolicyStub();
             ArrayList<Object> policyObjList = new ArrayList<>();
             EventHandler policyHandler = new EventHandler(host, policyObjList);
             policyObjList.add(serverPolicyStub);
@@ -211,8 +211,7 @@ public class KernelServerImpl implements KernelServer {
      * @throws SapphireObjectNotFoundException
      * @throws SapphireObjectReplicaNotFoundException
      */
-    public void moveKernelObjectToServer(
-            SapphirePolicy.ServerPolicy serverPolicy, InetSocketAddress host)
+    public void moveKernelObjectToServer(Policy.ServerPolicy serverPolicy, InetSocketAddress host)
             throws RemoteException, KernelObjectNotFoundException, SapphireObjectNotFoundException,
                     SapphireObjectReplicaNotFoundException {
 
@@ -232,7 +231,7 @@ public class KernelServerImpl implements KernelServer {
 
         /* Coalesce all the server policies in chain before moving them */
         object.coalesce();
-        SapphirePolicy.ServerPolicy nextPolicy = serverPolicy;
+        Policy.ServerPolicy nextPolicy = serverPolicy;
 
         /* Below objectStub variable temporarily holds
         Either AppObjectStub(in case of the last mile server policy to SO).
@@ -243,7 +242,7 @@ public class KernelServerImpl implements KernelServer {
         while ((nextPolicy.sapphire_getAppObject() != null)
                 && ((objectStub = nextPolicy.sapphire_getAppObject().getObject()) != null)
                 && (objectStub instanceof KernelObjectStub)) {
-            nextPolicy = (SapphirePolicy.ServerPolicy) objectStub;
+            nextPolicy = (Policy.ServerPolicy) objectStub;
             try {
                 objectManager.lookupObject(nextPolicy.$__getKernelOID()).coalesce();
             } catch (KernelObjectNotFoundException e) {
@@ -277,7 +276,7 @@ public class KernelServerImpl implements KernelServer {
         // Remove the associated KernelObjects from the local KernelServer.
         objectStub = serverPolicy;
         do {
-            serverPolicy = (SapphirePolicy.ServerPolicy) objectStub;
+            serverPolicy = (Policy.ServerPolicy) objectStub;
             try {
                 objectManager.removeObject(serverPolicy.$__getKernelOID());
                 serverPolicy.onDestroy();
@@ -303,9 +302,9 @@ public class KernelServerImpl implements KernelServer {
             throws RemoteException, KernelObjectNotFoundException {
         KernelObject object = objectManager.lookupObject(oid);
 
-        if (object.getObject() instanceof SapphirePolicy.ServerPolicy) {
+        if (object.getObject() instanceof Policy.ServerPolicy) {
             /* De-initialize dynamic data of server policy object(i.e., timers, executors, sockets etc) */
-            ((SapphirePolicy.ServerPolicy) object.getObject()).onDestroy();
+            ((Policy.ServerPolicy) object.getObject()).onDestroy();
         }
 
         oms.unRegisterKernelObject(oid, host);

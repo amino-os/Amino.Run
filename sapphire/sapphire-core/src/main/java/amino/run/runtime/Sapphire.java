@@ -1,8 +1,8 @@
 package amino.run.runtime;
 
-import static amino.run.policy.SapphirePolicy.ClientPolicy;
-import static amino.run.policy.SapphirePolicy.GroupPolicy;
-import static amino.run.policy.SapphirePolicy.ServerPolicy;
+import static amino.run.policy.Policy.ClientPolicy;
+import static amino.run.policy.Policy.GroupPolicy;
+import static amino.run.policy.Policy.ServerPolicy;
 
 import amino.run.app.DMSpec;
 import amino.run.app.Language;
@@ -24,8 +24,8 @@ import amino.run.kernel.common.KernelObjectNotCreatedException;
 import amino.run.kernel.common.KernelObjectNotFoundException;
 import amino.run.kernel.common.KernelObjectStub;
 import amino.run.kernel.common.KernelObjectStubNotCreatedException;
-import amino.run.policy.DefaultSapphirePolicy;
-import amino.run.policy.SapphirePolicy;
+import amino.run.policy.DefaultPolicy;
+import amino.run.policy.Policy;
 import amino.run.policy.SapphirePolicyContainer;
 import amino.run.policy.SapphirePolicyUpcalls;
 import java.io.IOException;
@@ -67,7 +67,7 @@ public class Sapphire {
             List<SapphirePolicyContainer> policyNameChain = getPolicyNameChain(spec);
 
             if (policyNameChain.size() == 0) {
-                String defaultPolicyName = DefaultSapphirePolicy.class.getName();
+                String defaultPolicyName = DefaultPolicy.class.getName();
                 policyNameChain.add(new SapphirePolicyContainer(defaultPolicyName, null));
             }
 
@@ -109,7 +109,7 @@ public class Sapphire {
             List<SapphirePolicyContainer> policyNameChain = getPolicyNameChain(annotations);
 
             if (policyNameChain.size() == 0) {
-                String defaultPolicyName = DefaultSapphirePolicy.class.getName();
+                String defaultPolicyName = DefaultPolicy.class.getName();
                 policyNameChain.add(new SapphirePolicyContainer(defaultPolicyName, null));
             }
 
@@ -235,14 +235,14 @@ public class Sapphire {
         }
 
         /* Create the Kernel Object for the Server Policy, and get the Server Policy Stub */
-        SapphirePolicy.ServerPolicy serverPolicyStub =
+        Policy.ServerPolicy serverPolicyStub =
                 (ServerPolicy) getPolicyStub(sapphireServerPolicyClass);
 
         /* Create the Client Policy Object */
-        ClientPolicy client = (SapphirePolicy.ClientPolicy) sapphireClientPolicyClass.newInstance();
+        ClientPolicy client = (Policy.ClientPolicy) sapphireClientPolicyClass.newInstance();
 
         /* Initialize the server policy and return a local pointer to the object itself */
-        SapphirePolicy.ServerPolicy serverPolicy = initializeServerPolicy(serverPolicyStub);
+        Policy.ServerPolicy serverPolicy = initializeServerPolicy(serverPolicyStub);
 
         registerSapphireReplica(sapphireObjId, serverPolicy, serverPolicyStub);
 
@@ -337,8 +337,7 @@ public class Sapphire {
                             .getClass()
                             .getDeclaredField(GlobalStubConstants.APPSTUB_POLICY_CLIENT_FIELD_NAME);
             field.setAccessible(true);
-            SapphirePolicy.ClientPolicy clientPolicy =
-                    (SapphirePolicy.ClientPolicy) field.get(appObjectStub);
+            Policy.ClientPolicy clientPolicy = (Policy.ClientPolicy) field.get(appObjectStub);
             sapphireObjId = clientPolicy.getGroup().getSapphireObjId();
             GlobalKernelReferences.nodeServer.oms.deleteSapphireObject(sapphireObjId);
         } catch (NoSuchFieldException e) {
@@ -362,11 +361,11 @@ public class Sapphire {
      * @throws KernelObjectNotCreatedException
      * @throws SapphireObjectNotFoundException
      */
-    public static SapphirePolicy.GroupPolicy createGroupPolicy(
+    public static Policy.GroupPolicy createGroupPolicy(
             Class<?> policyClass, SapphireObjectID sapphireObjId)
             throws RemoteException, ClassNotFoundException, KernelObjectNotCreatedException,
                     SapphireObjectNotFoundException {
-        SapphirePolicy.GroupPolicy groupPolicyStub = (GroupPolicy) getPolicyStub(policyClass);
+        Policy.GroupPolicy groupPolicyStub = (GroupPolicy) getPolicyStub(policyClass);
         try {
             GroupPolicy groupPolicy = initializeGroupPolicy(groupPolicyStub);
             groupPolicyStub.setSapphireObjId(sapphireObjId);
@@ -408,15 +407,15 @@ public class Sapphire {
         E.g. policyClass in (Server, Client, Group) {..}
         */
         for (Class<?> c : policyClasses) {
-            if (SapphirePolicy.ServerPolicy.class.isAssignableFrom(c)) {
+            if (Policy.ServerPolicy.class.isAssignableFrom(c)) {
                 policyMap.put("sapphireServerPolicyClass", c);
                 continue;
             }
-            if (SapphirePolicy.ClientPolicy.class.isAssignableFrom(c)) {
+            if (Policy.ClientPolicy.class.isAssignableFrom(c)) {
                 policyMap.put("sapphireClientPolicyClass", c);
                 continue;
             }
-            if (SapphirePolicy.GroupPolicy.class.isAssignableFrom(c)) {
+            if (Policy.GroupPolicy.class.isAssignableFrom(c)) {
                 policyMap.put("sapphireGroupPolicyClass", c);
                 continue;
             }
@@ -424,14 +423,11 @@ public class Sapphire {
 
         /* If no policies specified use the defaults */
         if (!policyMap.containsKey("sapphireServerPolicyClass"))
-            policyMap.put(
-                    "sapphireServerPolicyClass", DefaultSapphirePolicy.DefaultServerPolicy.class);
+            policyMap.put("sapphireServerPolicyClass", DefaultPolicy.DefaultServerPolicy.class);
         if (!policyMap.containsKey("sapphireClientPolicyClass"))
-            policyMap.put(
-                    "sapphireClientPolicyClass", DefaultSapphirePolicy.DefaultClientPolicy.class);
+            policyMap.put("sapphireClientPolicyClass", DefaultPolicy.DefaultClientPolicy.class);
         if (!policyMap.containsKey("sapphireGroupPolicyClass"))
-            policyMap.put(
-                    "sapphireGroupPolicyClass", DefaultSapphirePolicy.DefaultGroupPolicy.class);
+            policyMap.put("sapphireGroupPolicyClass", DefaultPolicy.DefaultGroupPolicy.class);
 
         return policyMap;
     }
@@ -465,16 +461,16 @@ public class Sapphire {
         return policyStub;
     }
 
-    public static SapphirePolicy.GroupPolicy initializeGroupPolicy(GroupPolicy groupPolicyStub)
+    public static Policy.GroupPolicy initializeGroupPolicy(GroupPolicy groupPolicyStub)
             throws KernelObjectNotFoundException {
         KernelOID groupOID = ((KernelObjectStub) groupPolicyStub).$__getKernelOID();
         GroupPolicy groupPolicy =
-                (SapphirePolicy.GroupPolicy) GlobalKernelReferences.nodeServer.getObject(groupOID);
+                (Policy.GroupPolicy) GlobalKernelReferences.nodeServer.getObject(groupOID);
         groupPolicy.$__setKernelOID(groupOID);
         return groupPolicy;
     }
 
-    private static ServerPolicy initializeServerPolicy(SapphirePolicy.ServerPolicy serverPolicyStub)
+    private static ServerPolicy initializeServerPolicy(Policy.ServerPolicy serverPolicyStub)
             throws KernelObjectNotFoundException {
         KernelOID serverOID = ((KernelObjectStub) serverPolicyStub).$__getKernelOID();
         ServerPolicy serverPolicy =
@@ -570,7 +566,7 @@ public class Sapphire {
     private static void initServerPolicy(
             ServerPolicy serverPolicy,
             SapphirePolicyContainer prevContainer,
-            SapphirePolicy.ClientPolicy clientPolicy)
+            Policy.ClientPolicy clientPolicy)
             throws IOException, ClassNotFoundException {
         KernelObjectStub prevServerPolicyStub = prevContainer.getServerPolicyStub();
 
@@ -638,7 +634,7 @@ public class Sapphire {
             for (SapphirePolicyContainer policyContainer : processedPolicies) {
                 if (idx >= startIdx) {
                     // Start checking all the downstream policies only.
-                    SapphirePolicy.ServerPolicy sp = policyContainer.getServerPolicy();
+                    Policy.ServerPolicy sp = policyContainer.getServerPolicy();
                     if (sp.isAlreadyPinned()) {
                         String msg =
                                 String.format(

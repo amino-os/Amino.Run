@@ -1,6 +1,6 @@
 package amino.run.policy.scalability.masterslave;
 
-import static amino.run.policy.DefaultSapphirePolicy.DefaultGroupPolicy;
+import static amino.run.policy.DefaultPolicy.DefaultGroupPolicy;
 
 /** @author terryz */
 public class Context {

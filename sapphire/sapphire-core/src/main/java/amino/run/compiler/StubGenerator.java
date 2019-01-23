@@ -1,7 +1,7 @@
 package amino.run.compiler;
 
 import amino.run.app.SapphireObject;
-import amino.run.policy.SapphirePolicy;
+import amino.run.policy.Policy;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -82,18 +82,18 @@ public class StubGenerator {
 
                     if (Modifier.isAbstract(c.getModifiers())) continue;
 
-                    if (SapphirePolicy.class.isAssignableFrom(c)) {
+                    if (Policy.class.isAssignableFrom(c)) {
                         Class<?>[] policyClasses = c.getDeclaredClasses();
 
                         Class<?> sapphireServerPolicyClass = null;
                         Class<?> sapphireGroupPolicyClass = null;
 
                         for (Class<?> cls : policyClasses) {
-                            if (SapphirePolicy.ServerPolicy.class.isAssignableFrom(cls)) {
+                            if (Policy.ServerPolicy.class.isAssignableFrom(cls)) {
                                 sapphireServerPolicyClass = cls;
                                 continue;
                             }
-                            if (SapphirePolicy.GroupPolicy.class.isAssignableFrom(cls)) {
+                            if (Policy.GroupPolicy.class.isAssignableFrom(cls)) {
                                 sapphireGroupPolicyClass = cls;
                                 continue;
                             }

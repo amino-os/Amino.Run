@@ -1,6 +1,6 @@
 package amino.run.policy.servercache;
 
-import amino.run.policy.DefaultSapphirePolicy;
+import amino.run.policy.DefaultPolicy;
 import java.util.ArrayList;
 
 /*
@@ -9,7 +9,7 @@ import java.util.ArrayList;
  * It interposes on each method call, stores everything to disk and caches sublists. (see Facebook's TAO paper)
  */
 
-public class DurableOnDemandCachedList extends DefaultSapphirePolicy {
+public class DurableOnDemandCachedList extends DefaultPolicy {
 
     public static class DurableOnDemandCachedListClientPolicy extends DefaultClientPolicy {
         @Override

@@ -7,7 +7,7 @@ import amino.run.app.DMSpec;
 import amino.run.app.Language;
 import amino.run.app.SapphireObjectSpec;
 import amino.run.common.BaseTest;
-import amino.run.policy.SapphirePolicy;
+import amino.run.policy.Policy;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -70,10 +70,10 @@ public class ScaleUpFrontendPolicyTest extends BaseTest {
                 (AtomicInteger) extractFieldValueOnInstance(this.client, "replicaListSyncCtr");
         assertEquals(1, syncCtrCurr.get());
 
-        ArrayList<SapphirePolicy.ServerPolicy> replicas =
-                (ArrayList<SapphirePolicy.ServerPolicy>)
+        ArrayList<Policy.ServerPolicy> replicas =
+                (ArrayList<Policy.ServerPolicy>)
                         extractFieldValueOnInstance(this.client, "replicaList");
-        ArrayList<SapphirePolicy.ServerPolicy> expected = this.group.getServers();
+        ArrayList<Policy.ServerPolicy> expected = this.group.getServers();
         Assert.assertArrayEquals(replicas.toArray(), expected.toArray());
     }
 

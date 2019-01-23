@@ -1,7 +1,7 @@
 package amino.run.policy.cache.explicitcaching;
 
 import amino.run.common.AppObject;
-import amino.run.policy.DefaultSapphirePolicy;
+import amino.run.policy.DefaultPolicy;
 import java.io.Serializable;
 import java.util.ArrayList;
 
@@ -9,7 +9,7 @@ import java.util.ArrayList;
 // The guarded SO MUST provide pull/push method body (placeholder) of ExplicitCacher interface
 // TODO: stub generator to generate related methods
 // TODO: inherit from a common caching base class which has getCopy/syncCopy methods
-public class ExplicitCachingPolicy extends DefaultSapphirePolicy {
+public class ExplicitCachingPolicy extends DefaultPolicy {
     public static class ExplicitCachingClientPolicy extends DefaultClientPolicy {
         private AppObject cachedCopy = null;
 

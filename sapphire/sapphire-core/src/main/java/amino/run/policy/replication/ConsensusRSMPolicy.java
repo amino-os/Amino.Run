@@ -3,8 +3,8 @@ package amino.run.policy.replication;
 import amino.run.app.SapphireObjectSpec;
 import amino.run.common.SapphireObjectNotFoundException;
 import amino.run.common.SapphireObjectReplicaNotFoundException;
-import amino.run.policy.DefaultSapphirePolicy;
-import amino.run.policy.SapphirePolicy;
+import amino.run.policy.DefaultPolicy;
+import amino.run.policy.Policy;
 import amino.run.policy.util.consensus.raft.AlreadyVotedException;
 import amino.run.policy.util.consensus.raft.CandidateBehindException;
 import amino.run.policy.util.consensus.raft.InvalidLogIndex;
@@ -30,7 +30,7 @@ import java.util.logging.Logger;
  * Created by quinton on 1/31/18. Single cluster replicated SO w/ atomic RPCs across at least f + 1
  * replicas, using RAFT algorithm. *
  */
-public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
+public class ConsensusRSMPolicy extends DefaultPolicy {
     public static class RPC implements Serializable {
         String method;
         ArrayList<Object> params;
@@ -41,7 +41,7 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
         }
     }
 
-    public static class ClientPolicy extends DefaultSapphirePolicy.DefaultClientPolicy {
+    public static class ClientPolicy extends DefaultPolicy.DefaultClientPolicy {
         public Object onRPC(String method, ArrayList<Object> params) throws Exception {
             /* TODO: Note that this is currently the only DM that calls {@link setServer}.
              * setServer should only ever be called by the kernel.  Remove calls to setServer and keep
@@ -76,8 +76,8 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
             } catch (RemoteException e) {
                 /* Get servers from the group and find a responding server */
                 boolean serverFound = false;
-                ArrayList<SapphirePolicy.ServerPolicy> servers = getGroup().getServers();
-                for (SapphirePolicy.ServerPolicy server : servers) {
+                ArrayList<Policy.ServerPolicy> servers = getGroup().getServers();
+                for (Policy.ServerPolicy server : servers) {
                     /* Excluding the server failed to respond in the above try block */
                     if (getServer().$__getKernelOID().equals(server.$__getKernelOID())) {
                         continue;
@@ -113,7 +113,7 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
         }
     }
 
-    public static class ServerPolicy extends DefaultSapphirePolicy.DefaultServerPolicy
+    public static class ServerPolicy extends DefaultPolicy.DefaultServerPolicy
             implements StateMachineApplier, RemoteRaftServer {
         static Logger logger = Logger.getLogger(ServerPolicy.class.getCanonicalName());
         // There are so many servers and clients in this code,
@@ -149,7 +149,7 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
         }
 
         @Override
-        public void onCreate(SapphirePolicy.GroupPolicy group, SapphireObjectSpec spec) {
+        public void onCreate(Policy.GroupPolicy group, SapphireObjectSpec spec) {
             super.onCreate(group, spec);
             raftServer = new Server(this);
         }
@@ -207,12 +207,11 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
         }
     }
 
-    public static class GroupPolicy extends DefaultSapphirePolicy.DefaultGroupPolicy {
+    public static class GroupPolicy extends DefaultPolicy.DefaultGroupPolicy {
         private static Logger logger = Logger.getLogger(GroupPolicy.class.getName());
 
         @Override
-        public void onCreate(
-                String region, SapphirePolicy.ServerPolicy server, SapphireObjectSpec spec)
+        public void onCreate(String region, Policy.ServerPolicy server, SapphireObjectSpec spec)
                 throws RemoteException {
             super.onCreate(region, server, spec);
             List<InetSocketAddress> addressList = new ArrayList<>();
@@ -255,8 +254,8 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
                 ConcurrentHashMap<UUID, ServerPolicy> allServers =
                         new ConcurrentHashMap<UUID, ServerPolicy>();
                 // First get the self-assigned ID from each server
-                List<SapphirePolicy.ServerPolicy> servers = getServers();
-                for (SapphirePolicy.ServerPolicy i : servers) {
+                List<Policy.ServerPolicy> servers = getServers();
+                for (Policy.ServerPolicy i : servers) {
                     ServerPolicy s = (ServerPolicy) i;
                     allServers.put(s.getRaftServerId(), s);
                 }

@@ -13,11 +13,11 @@ import java.util.logging.Logger;
  * the Sapphire object to another Sapphire Kernel server when the number of RPC (RMI) is more than
  * 5.
  */
-public class ShiftPolicy extends DefaultSapphirePolicy {
+public class ShiftPolicy extends DefaultPolicy {
 
-    public static class ShiftClientPolicy extends DefaultSapphirePolicy.DefaultClientPolicy {}
+    public static class ShiftClientPolicy extends DefaultPolicy.DefaultClientPolicy {}
 
-    public static class ShiftServerPolicy extends DefaultSapphirePolicy.DefaultServerPolicy {
+    public static class ShiftServerPolicy extends DefaultPolicy.DefaultServerPolicy {
         private static Logger logger = Logger.getLogger(ShiftServerPolicy.class.getName());
 
         private static int LOAD = 5;
@@ -77,5 +77,5 @@ public class ShiftPolicy extends DefaultSapphirePolicy {
         }
     }
 
-    public static class ShiftGroupPolicy extends DefaultSapphirePolicy.DefaultGroupPolicy {}
+    public static class ShiftGroupPolicy extends DefaultPolicy.DefaultGroupPolicy {}
 }

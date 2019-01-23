@@ -6,8 +6,8 @@ import amino.run.kernel.common.GlobalKernelReferences;
 import amino.run.kernel.common.KernelObjectMigratingException;
 import amino.run.kernel.server.KernelServerImpl;
 import amino.run.oms.OMSServer;
-import amino.run.policy.DefaultSapphirePolicy;
-import amino.run.policy.SapphirePolicy;
+import amino.run.policy.DefaultPolicy;
+import amino.run.policy.Policy;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Map;
@@ -21,7 +21,7 @@ import java.util.logging.Logger;
  * method by implementing the ExplicitMigrator interface (or by simply extending the
  * ExplicitMigratorImpl class). TODO: improve this by using annotations instead
  */
-public class ExplicitMigrationPolicy extends DefaultSapphirePolicy {
+public class ExplicitMigrationPolicy extends DefaultPolicy {
     public static final int RETRYTIMEOUTINMILLIS = 15000;
     public static final int MINWAITINTERVALINMILLIS = 100;
     public static final String MIGRATEOBJECTMETHODNAME = "migrateObject";
@@ -81,7 +81,7 @@ public class ExplicitMigrationPolicy extends DefaultSapphirePolicy {
         private long minWaitIntervalInMillis = MINWAITINTERVALINMILLIS;
 
         @Override
-        public void onCreate(SapphirePolicy.GroupPolicy group, SapphireObjectSpec spec) {
+        public void onCreate(Policy.GroupPolicy group, SapphireObjectSpec spec) {
             super.onCreate(group, spec);
 
             Map<String, SapphirePolicyConfig> configMap =
@@ -130,7 +130,7 @@ public class ExplicitMigrationPolicy extends DefaultSapphirePolicy {
         private String migrateObjectMethodName = MIGRATEOBJECTMETHODNAME;
 
         @Override
-        public void onCreate(SapphirePolicy.GroupPolicy group, SapphireObjectSpec spec) {
+        public void onCreate(Policy.GroupPolicy group, SapphireObjectSpec spec) {
             super.onCreate(group, spec);
 
             SapphirePolicyConfig config =

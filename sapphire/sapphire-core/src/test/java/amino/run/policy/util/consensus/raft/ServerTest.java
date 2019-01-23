@@ -11,7 +11,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 
 import amino.run.common.AppObject;
-import amino.run.policy.SapphirePolicy;
+import amino.run.policy.Policy;
 import amino.run.policy.replication.ConsensusRSMPolicy;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,8 +27,8 @@ import org.junit.rules.ExpectedException;
 /** Created by quinton on 3/16/18. */
 public class ServerTest {
     final int SERVER_COUNT = 3;
-    SapphirePolicy.GroupPolicy groupPolicy = mock(ConsensusRSMPolicy.GroupPolicy.class);
-    SapphirePolicy.ServerPolicy[] serverPolicy = new SapphirePolicy.ServerPolicy[SERVER_COUNT];
+    Policy.GroupPolicy groupPolicy = mock(ConsensusRSMPolicy.GroupPolicy.class);
+    Policy.ServerPolicy[] serverPolicy = new Policy.ServerPolicy[SERVER_COUNT];
     Server raftServer[] = new Server[SERVER_COUNT];
     private AppObject appObject;
 
@@ -123,7 +123,7 @@ public class ServerTest {
         ConcurrentHashMap<UUID, ConsensusRSMPolicy.ServerPolicy> allServers =
                 new ConcurrentHashMap<UUID, ConsensusRSMPolicy.ServerPolicy>();
         int k = 0;
-        for (SapphirePolicy.ServerPolicy i : serverPolicy) {
+        for (Policy.ServerPolicy i : serverPolicy) {
             ConsensusRSMPolicy.ServerPolicy s = (ConsensusRSMPolicy.ServerPolicy) i;
             allServers.put(raftServer[k++].getMyServerID(), s);
         }

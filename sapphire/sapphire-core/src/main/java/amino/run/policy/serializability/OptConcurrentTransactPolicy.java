@@ -1,7 +1,7 @@
 package amino.run.policy.serializability;
 
 import amino.run.common.AppObject;
-import amino.run.policy.DefaultSapphirePolicy;
+import amino.run.policy.DefaultPolicy;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
@@ -18,7 +18,7 @@ import java.util.ArrayList;
  * simultaneously. But the first client committing, succeed its transaction and others fail,
  * rollback their transaction.
  */
-public class OptConcurrentTransactPolicy extends DefaultSapphirePolicy {
+public class OptConcurrentTransactPolicy extends DefaultPolicy {
 
     private static byte[] calculateMessageDigest(Object appObject) throws TransactionException {
         ObjectOutputStream oos = null;

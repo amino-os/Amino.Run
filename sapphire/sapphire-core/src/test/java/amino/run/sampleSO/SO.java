@@ -4,7 +4,7 @@ package amino.run.sampleSO;
 import amino.run.app.SapphireObject;
 import amino.run.runtime.SapphireConfiguration;
 
-@SapphireConfiguration(Policies = "amino.run.policy.DefaultSapphirePolicy")
+@SapphireConfiguration(Policies = "amino.run.policy.DefaultPolicy")
 public class SO implements SapphireObject {
     public Integer i = 0;
 

@@ -4,7 +4,7 @@ import amino.run.app.SapphireObjectSpec;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 
-public class DefaultSapphirePolicy extends SapphirePolicy {
+public class DefaultPolicy extends Policy {
 
     public static class DefaultServerPolicy extends ServerPolicy {
         @Override

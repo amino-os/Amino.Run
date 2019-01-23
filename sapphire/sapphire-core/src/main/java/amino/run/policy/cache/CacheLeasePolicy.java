@@ -3,7 +3,7 @@ package amino.run.policy.cache;
 import amino.run.common.AppObject;
 import amino.run.common.SapphireObjectNotAvailableException;
 import amino.run.kernel.common.KernelObjectNotFoundException;
-import amino.run.policy.DefaultSapphirePolicy;
+import amino.run.policy.DefaultPolicy;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -20,7 +20,7 @@ import java.util.logging.Logger;
  *
  * @author iyzhang
  */
-public class CacheLeasePolicy extends DefaultSapphirePolicy {
+public class CacheLeasePolicy extends DefaultPolicy {
     public static final long DEFAULT_LEASE_PERIOD = 10 * 1000; // milliseconds
     /** stick in some buffer to account for differences in time * */
     static final int LEASE_BUFFER =

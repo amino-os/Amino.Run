@@ -1,11 +1,11 @@
 package amino.run.policy.transaction;
 
-import amino.run.policy.DefaultSapphirePolicy;
+import amino.run.policy.DefaultPolicy;
 import java.util.ArrayList;
 import java.util.UUID;
 
 /** DCAP distributed transaction coordinator default DM set */
-public class TwoPCCoordinatorPolicy extends DefaultSapphirePolicy {
+public class TwoPCCoordinatorPolicy extends DefaultPolicy {
     /** DCAP distributed transaction coordinator client policy */
     public static class TwoPCCoordinatorClientPolicy extends DefaultClientPolicy {}
 

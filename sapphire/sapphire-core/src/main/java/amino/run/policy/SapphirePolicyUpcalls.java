@@ -45,7 +45,7 @@ public interface SapphirePolicyUpcalls {
          *     there, and also change this parameter to more specifically be client configuration
          *     parameters.
          */
-        void onCreate(SapphirePolicy.GroupPolicy group, SapphireObjectSpec spec);
+        void onCreate(Policy.GroupPolicy group, SapphireObjectSpec spec);
 
         /**
          * TODO: Move this method out of this interface. It is not intended to be an upcall from the
@@ -60,21 +60,21 @@ public interface SapphirePolicyUpcalls {
          *
          * @param server
          */
-        void setServer(SapphirePolicy.ServerPolicy server);
+        void setServer(Policy.ServerPolicy server);
 
         /**
          * Get the cached reference to the primary sapphire object's remote server policy.
          *
          * @return the primary sapphire object's server policy
          */
-        SapphirePolicy.ServerPolicy getServer();
+        Policy.ServerPolicy getServer();
 
         /**
          * Get the cached reference to the remote group policy (on OMS) for this sapphire object.
          *
          * @return the group policy for this sapphire object
          */
-        SapphirePolicy.GroupPolicy getGroup();
+        Policy.GroupPolicy getGroup();
 
         /**
          * Event handler for remote procedure calls/method invocations against the sapphire object.
@@ -114,7 +114,7 @@ public interface SapphirePolicyUpcalls {
          *     there, and also change this parameter to more specifically be server configuration
          *     parameters.
          */
-        void onCreate(SapphirePolicy.GroupPolicy group, SapphireObjectSpec spec);
+        void onCreate(Policy.GroupPolicy group, SapphireObjectSpec spec);
 
         /**
          * Event handler for sapphire object destruction. Called immediately before a sapphire
@@ -137,7 +137,7 @@ public interface SapphirePolicyUpcalls {
          *
          * @return The group policy for this sapphire replica.
          */
-        SapphirePolicy.GroupPolicy getGroup();
+        Policy.GroupPolicy getGroup();
 
         /**
          * Event handler for remote procedure calls/method invocations against this replica of the
@@ -190,7 +190,7 @@ public interface SapphirePolicyUpcalls {
          * @param spec sapphire object spec. This contains configuration parameters that may be used
          *     to configure this group policy.
          */
-        void onCreate(String region, SapphirePolicy.ServerPolicy server, SapphireObjectSpec spec)
+        void onCreate(String region, Policy.ServerPolicy server, SapphireObjectSpec spec)
                 throws RemoteException;
 
         /**
@@ -223,7 +223,7 @@ public interface SapphirePolicyUpcalls {
          * @throws RemoteException TODO: Quinton: This is deprecated, and should be removed - was
          *     added in error for DHTPolicy. It is unnecessary.
          */
-        void addServer(SapphirePolicy.ServerPolicy server) throws RemoteException;
+        void addServer(Policy.ServerPolicy server) throws RemoteException;
 
         /**
          * Event handler for sapphire object destruction. Called immediately before the group policy
@@ -245,7 +245,7 @@ public interface SapphirePolicyUpcalls {
          * @param server The server that has been removed from the group.
          * @throws RemoteException TODO: I can't imagine why this should be necessary. Remove it.
          */
-        void removeServer(SapphirePolicy.ServerPolicy server) throws RemoteException;
+        void removeServer(Policy.ServerPolicy server) throws RemoteException;
 
         /**
          * Get all the replicas in this group. TODO: This does not belong in the upcall interface.
@@ -254,7 +254,7 @@ public interface SapphirePolicyUpcalls {
          * @return References to server policies of all replicas in this group.
          * @throws RemoteException
          */
-        ArrayList<SapphirePolicy.ServerPolicy> getServers() throws RemoteException;
+        ArrayList<Policy.ServerPolicy> getServers() throws RemoteException;
 
         /**
          * Event handler for when replicas fail. TODO: Quinton: This is currently not called from
@@ -266,6 +266,6 @@ public interface SapphirePolicyUpcalls {
          */
         // void onFailure(ServerPolicy server) throws RemoteException;
 
-        SapphirePolicy.ServerPolicy onRefRequest() throws RemoteException;
+        Policy.ServerPolicy onRefRequest() throws RemoteException;
     }
 }

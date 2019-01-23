@@ -9,7 +9,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import amino.run.policy.SapphirePolicy;
+import amino.run.policy.Policy;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.UUID;
@@ -19,8 +19,8 @@ import org.mockito.ArgumentCaptor;
 
 public class TwoPCLocalParticipantsTest {
     UUID id = UUID.randomUUID();
-    SapphirePolicy.ClientPolicy part1 = mock(TwoPCCohortPolicy.TwoPCCohortClientPolicy.class);
-    SapphirePolicy.ClientPolicy part2 = mock(TwoPCCohortPolicy.TwoPCCohortClientPolicy.class);
+    Policy.ClientPolicy part1 = mock(TwoPCCohortPolicy.TwoPCCohortClientPolicy.class);
+    Policy.ClientPolicy part2 = mock(TwoPCCohortPolicy.TwoPCCohortClientPolicy.class);
 
     TwoPCLocalParticipants participants = new TwoPCLocalParticipants();
 

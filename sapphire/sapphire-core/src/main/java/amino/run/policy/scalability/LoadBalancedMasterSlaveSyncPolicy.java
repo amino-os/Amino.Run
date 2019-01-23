@@ -1,7 +1,7 @@
 package amino.run.policy.scalability;
 
 import amino.run.app.SapphireObjectSpec;
-import amino.run.policy.SapphirePolicy;
+import amino.run.policy.Policy;
 import amino.run.policy.scalability.masterslave.Committer;
 import amino.run.policy.scalability.masterslave.Configuration;
 import amino.run.policy.scalability.masterslave.Context;
@@ -42,7 +42,7 @@ public class LoadBalancedMasterSlaveSyncPolicy extends LoadBalancedMasterSlaveBa
         private transient Processor processor;
 
         @Override
-        public void onCreate(SapphirePolicy.GroupPolicy group, SapphireObjectSpec spec) {
+        public void onCreate(Policy.GroupPolicy group, SapphireObjectSpec spec) {
             super.onCreate(group, spec);
         }
 

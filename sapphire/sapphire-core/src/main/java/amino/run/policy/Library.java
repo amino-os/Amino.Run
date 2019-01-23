@@ -103,11 +103,11 @@ public abstract class Library implements Upcalls {
             this.processedPolicies = processedPolicies;
         }
 
-        public void setMicrosServiceSpec(MicroServiceSpec spec) {
+        public void setMicroServiceSpec(MicroServiceSpec spec) {
             this.spec = spec;
         }
 
-        public MicroServiceSpec getMicrosServiceSpec() {
+        public MicroServiceSpec getMicroServiceSpec() {
             return this.spec;
         }
 

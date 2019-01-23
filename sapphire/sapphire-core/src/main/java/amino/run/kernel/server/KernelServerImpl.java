@@ -162,7 +162,7 @@ public class KernelServerImpl implements KernelServer {
             logger.log(Level.INFO, "Added " + koid.getID() + " as ServerPolicyLibrary");
 
             try {
-                serverPolicy.onCreate(serverPolicy.getGroup(), serverPolicy.getMicrosServiceSpec());
+                serverPolicy.onCreate(serverPolicy.getGroup(), serverPolicy.getMicroServiceSpec());
             } catch (Exception e) {
                 String exceptionMsg =
                         "Initialization failed at copyKernelObject for KernelObject("

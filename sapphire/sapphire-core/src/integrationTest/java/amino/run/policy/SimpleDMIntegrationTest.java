@@ -48,7 +48,7 @@ public class SimpleDMIntegrationTest {
                 new InetSocketAddress(hostIp, hostPort), new InetSocketAddress(omsIp, omsPort));
     }
 
-    private MicroServiceSpec getMicrosServiceSpecForDM(String dmFileName) throws Exception {
+    private MicroServiceSpec getMicroServiceSpecForDM(String dmFileName) throws Exception {
         File file = new File(RESOURCE_REAL_PATH + dmFileName);
         return readSapphireSpec(file);
     }
@@ -67,7 +67,7 @@ public class SimpleDMIntegrationTest {
      * @throws Exception
      */
     private void runTest(String dmFileName) throws Exception {
-        MicroServiceSpec spec = getMicrosServiceSpecForDM(dmFileName);
+        MicroServiceSpec spec = getMicroServiceSpecForDM(dmFileName);
         sapphireObjId = sapphireObjectServer.createSapphireObject(spec.toString());
         KVStore store = (KVStore) sapphireObjectServer.acquireSapphireObjectStub(sapphireObjId);
         for (int i = 0; i < 10; i++) {
@@ -246,7 +246,7 @@ public class SimpleDMIntegrationTest {
      */
     @Test
     public void runLockingTransactionDMTest() throws Exception {
-        MicroServiceSpec spec = getMicrosServiceSpecForDM("LockingTransaction.yaml");
+        MicroServiceSpec spec = getMicroServiceSpecForDM("LockingTransaction.yaml");
         sapphireObjId = sapphireObjectServer.createSapphireObject(spec.toString());
         KVStore client1 = (KVStore) sapphireObjectServer.acquireSapphireObjectStub(sapphireObjId);
 
@@ -270,7 +270,7 @@ public class SimpleDMIntegrationTest {
      */
     @Test
     public void runOptimisticConcurrentTransactionDMTest() throws Exception {
-        MicroServiceSpec spec = getMicrosServiceSpecForDM("OptConcurrentTransactionDM.yaml");
+        MicroServiceSpec spec = getMicroServiceSpecForDM("OptConcurrentTransactionDM.yaml");
         sapphireObjId = sapphireObjectServer.createSapphireObject(spec.toString());
         KVStore client1 = (KVStore) sapphireObjectServer.acquireSapphireObjectStub(sapphireObjId);
 
@@ -293,7 +293,7 @@ public class SimpleDMIntegrationTest {
      */
     @Test
     public void runExplicitMigration() throws Exception {
-        MicroServiceSpec spec = getMicrosServiceSpecForDM("ExplicitMigrationDM.yaml");
+        MicroServiceSpec spec = getMicroServiceSpecForDM("ExplicitMigrationDM.yaml");
         sapphireObjId = sapphireObjectServer.createSapphireObject(spec.toString());
         KVStore store = (KVStore) sapphireObjectServer.acquireSapphireObjectStub(sapphireObjId);
         String key0 = "k1";
@@ -328,7 +328,7 @@ public class SimpleDMIntegrationTest {
      */
     @Test
     public void runExplicitCachingTest() throws Exception {
-        MicroServiceSpec spec = getMicrosServiceSpecForDM("ExplicitCachingDM.yaml");
+        MicroServiceSpec spec = getMicroServiceSpecForDM("ExplicitCachingDM.yaml");
         sapphireObjId = sapphireObjectServer.createSapphireObject(spec.toString());
         KVStore store = (KVStore) sapphireObjectServer.acquireSapphireObjectStub(sapphireObjId);
 
@@ -362,7 +362,7 @@ public class SimpleDMIntegrationTest {
      */
     @Test
     public void runExplicitCheckPointTest() throws Exception {
-        MicroServiceSpec spec = getMicrosServiceSpecForDM("ExplicitCheckpointDM.yaml");
+        MicroServiceSpec spec = getMicroServiceSpecForDM("ExplicitCheckpointDM.yaml");
         sapphireObjId = sapphireObjectServer.createSapphireObject(spec.toString());
         KVStore store = (KVStore) sapphireObjectServer.acquireSapphireObjectStub(sapphireObjId);
 
@@ -393,7 +393,7 @@ public class SimpleDMIntegrationTest {
      */
     @Test
     public void runPeriodicCheckpointTest() throws Exception {
-        MicroServiceSpec spec = getMicrosServiceSpecForDM("PeriodicCheckpointDM.yaml");
+        MicroServiceSpec spec = getMicroServiceSpecForDM("PeriodicCheckpointDM.yaml");
         sapphireObjId = sapphireObjectServer.createSapphireObject(spec.toString());
         KVStore store = (KVStore) sapphireObjectServer.acquireSapphireObjectStub(sapphireObjId);
 
@@ -422,7 +422,7 @@ public class SimpleDMIntegrationTest {
 
     @Test
     public void runTwoPCCohortTest() throws Exception {
-        MicroServiceSpec kvStoreSpec = getMicrosServiceSpecForDM("TwoPCCohortDM.yaml");
+        MicroServiceSpec kvStoreSpec = getMicroServiceSpecForDM("TwoPCCohortDM.yaml");
         SapphireObjectID store1SapphireObjectID =
                 sapphireObjectServer.createSapphireObject(kvStoreSpec.toString());
         KVStore store1 =
@@ -439,7 +439,7 @@ public class SimpleDMIntegrationTest {
         store1.set(key2, value2);
         store1.set(key1, value1);
         store2.set(key2, value3);
-        MicroServiceSpec coordinatoreSpec = getMicrosServiceSpecForDM("TwoPCCoordinatorDM.yaml");
+        MicroServiceSpec coordinatoreSpec = getMicroServiceSpecForDM("TwoPCCoordinatorDM.yaml");
         SapphireObjectID coordinatorSapphireObjectID =
                 sapphireObjectServer.createSapphireObject(
                         coordinatoreSpec.toString(), store1, store2);

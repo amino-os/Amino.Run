@@ -70,10 +70,10 @@ public class ScaleUpFrontendPolicyTest extends BaseTest {
                 (AtomicInteger) extractFieldValueOnInstance(this.client, "replicaListSyncCtr");
         assertEquals(1, syncCtrCurr.get());
 
-        ArrayList<SapphirePolicy.SapphireServerPolicy> replicas =
-                (ArrayList<SapphirePolicy.SapphireServerPolicy>)
+        ArrayList<SapphirePolicy.ServerPolicy> replicas =
+                (ArrayList<SapphirePolicy.ServerPolicy>)
                         extractFieldValueOnInstance(this.client, "replicaList");
-        ArrayList<SapphirePolicy.SapphireServerPolicy> expected = this.group.getServers();
+        ArrayList<SapphirePolicy.ServerPolicy> expected = this.group.getServers();
         Assert.assertArrayEquals(replicas.toArray(), expected.toArray());
     }
 

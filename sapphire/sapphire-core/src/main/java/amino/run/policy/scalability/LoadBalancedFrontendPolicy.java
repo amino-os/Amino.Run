@@ -5,6 +5,7 @@ import amino.run.common.SapphireObjectNotFoundException;
 import amino.run.common.SapphireObjectReplicaNotFoundException;
 import amino.run.common.Utils;
 import amino.run.policy.DefaultSapphirePolicy;
+import amino.run.policy.SapphirePolicy;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -91,7 +92,7 @@ public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
      */
     public static class ClientPolicy extends DefaultSapphirePolicy.DefaultClientPolicy {
         private int index;
-        protected ArrayList<SapphireServerPolicy> replicaList;
+        protected ArrayList<SapphirePolicy.ServerPolicy> replicaList;
         private static Logger logger = Logger.getLogger(ClientPolicy.class.getName());
 
         @Override
@@ -128,7 +129,7 @@ public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
         protected Semaphore limiter;
 
         @Override
-        public void onCreate(SapphireGroupPolicy group, SapphireObjectSpec spec) {
+        public void onCreate(SapphirePolicy.GroupPolicy group, SapphireObjectSpec spec) {
             super.onCreate(group, spec);
 
             Config config = getConfig(spec);
@@ -172,7 +173,8 @@ public class LoadBalancedFrontendPolicy extends DefaultSapphirePolicy {
         private int replicaCount = STATIC_REPLICA_COUNT; // we can read from config or annotations
 
         @Override
-        public void onCreate(String region, SapphireServerPolicy server, SapphireObjectSpec spec)
+        public void onCreate(
+                String region, SapphirePolicy.ServerPolicy server, SapphireObjectSpec spec)
                 throws RemoteException {
             super.onCreate(region, server, spec);
             Config config = getConfig(spec);

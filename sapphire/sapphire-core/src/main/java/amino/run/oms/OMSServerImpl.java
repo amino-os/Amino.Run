@@ -144,14 +144,14 @@ public class OMSServerImpl implements OMSServer, SapphireObjectServer {
      * @throws NoSuchFieldException
      * @throws IllegalAccessException
      */
-    private SapphirePolicy.SapphireClientPolicy extractClientPolicy(AppObjectStub appObjStub)
+    private SapphirePolicy.ClientPolicy extractClientPolicy(AppObjectStub appObjStub)
             throws NoSuchFieldException, IllegalAccessException {
         Field field =
                 appObjStub
                         .getClass()
                         .getDeclaredField(GlobalStubConstants.APPSTUB_POLICY_CLIENT_FIELD_NAME);
         field.setAccessible(true);
-        return (SapphirePolicy.SapphireClientPolicy) field.get(appObjStub);
+        return (SapphirePolicy.ClientPolicy) field.get(appObjStub);
     }
 
     /**
@@ -189,7 +189,7 @@ public class OMSServerImpl implements OMSServer, SapphireObjectServer {
         try {
             AppObjectStub appObjStub = server.createSapphireObject(sapphireObjectSpec, args);
             assert appObjStub != null;
-            SapphirePolicy.SapphireClientPolicy clientPolicy = extractClientPolicy(appObjStub);
+            SapphirePolicy.ClientPolicy clientPolicy = extractClientPolicy(appObjStub);
             SapphireObjectID sid = clientPolicy.getGroup().getSapphireObjId();
             objectManager.setInstanceObjectStub(sid, appObjStub);
             objectManager.setRootGroupPolicy(sid, clientPolicy.getGroup());
@@ -314,12 +314,11 @@ public class OMSServerImpl implements OMSServer, SapphireObjectServer {
      * @throws SapphireObjectNotFoundException
      */
     @Override
-    public SapphirePolicy.SapphireGroupPolicy createGroupPolicy(
+    public SapphirePolicy.GroupPolicy createGroupPolicy(
             Class<?> policyClass, SapphireObjectID sapphireObjId)
             throws RemoteException, ClassNotFoundException, KernelObjectNotCreatedException,
                     SapphireObjectNotFoundException {
-        SapphirePolicy.SapphireGroupPolicy group =
-                Sapphire.createGroupPolicy(policyClass, sapphireObjId);
+        SapphirePolicy.GroupPolicy group = Sapphire.createGroupPolicy(policyClass, sapphireObjId);
 
         /* TODO: This rootGroupPolicy is used in sapphire object deletion. Need to handle for multiDM case. In case of
         multiDM, multiple group policy objects are created in DM chain establishment. Currently, just ensuring not to

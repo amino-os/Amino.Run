@@ -4,6 +4,7 @@ import amino.run.app.SapphireObjectSpec;
 import amino.run.common.SapphireObjectNotFoundException;
 import amino.run.common.SapphireObjectReplicaNotFoundException;
 import amino.run.policy.DefaultSapphirePolicy;
+import amino.run.policy.SapphirePolicy;
 import amino.run.policy.util.consensus.raft.AlreadyVotedException;
 import amino.run.policy.util.consensus.raft.CandidateBehindException;
 import amino.run.policy.util.consensus.raft.InvalidLogIndex;
@@ -75,8 +76,8 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
             } catch (RemoteException e) {
                 /* Get servers from the group and find a responding server */
                 boolean serverFound = false;
-                ArrayList<SapphireServerPolicy> servers = getGroup().getServers();
-                for (SapphireServerPolicy server : servers) {
+                ArrayList<SapphirePolicy.ServerPolicy> servers = getGroup().getServers();
+                for (SapphirePolicy.ServerPolicy server : servers) {
                     /* Excluding the server failed to respond in the above try block */
                     if (getServer().$__getKernelOID().equals(server.$__getKernelOID())) {
                         continue;
@@ -148,14 +149,14 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
         }
 
         @Override
-        public void onCreate(SapphireGroupPolicy group, SapphireObjectSpec spec) {
+        public void onCreate(SapphirePolicy.GroupPolicy group, SapphireObjectSpec spec) {
             super.onCreate(group, spec);
             raftServer = new Server(this);
         }
 
         /**
          * TODO: Handle added and failed servers - i.e. quorum membership changes @Override public
-         * void onMembershipChange() { super.onMembershipChange(); for(SapphireServerPolicy server:
+         * void onMembershipChange() { super.onMembershipChange(); for(ServerPolicy server:
          * this.getGroup().getServers()) { ServerPolicy consensusServer = (ServerPolicy)server;
          * this.raftServer.addServer(consensusServer.getRaftServer().getMyServerID(),
          * consensusServer.getRaftServer()); } }
@@ -210,7 +211,8 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
         private static Logger logger = Logger.getLogger(GroupPolicy.class.getName());
 
         @Override
-        public void onCreate(String region, SapphireServerPolicy server, SapphireObjectSpec spec)
+        public void onCreate(
+                String region, SapphirePolicy.ServerPolicy server, SapphireObjectSpec spec)
                 throws RemoteException {
             super.onCreate(region, server, spec);
             List<InetSocketAddress> addressList = new ArrayList<>();
@@ -253,8 +255,8 @@ public class ConsensusRSMPolicy extends DefaultSapphirePolicy {
                 ConcurrentHashMap<UUID, ServerPolicy> allServers =
                         new ConcurrentHashMap<UUID, ServerPolicy>();
                 // First get the self-assigned ID from each server
-                List<SapphireServerPolicy> servers = getServers();
-                for (SapphireServerPolicy i : servers) {
+                List<SapphirePolicy.ServerPolicy> servers = getServers();
+                for (SapphirePolicy.ServerPolicy i : servers) {
                     ServerPolicy s = (ServerPolicy) i;
                     allServers.put(s.getRaftServerId(), s);
                 }

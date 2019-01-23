@@ -1,6 +1,6 @@
 package amino.run.policy.transaction;
 
-import static amino.run.policy.SapphirePolicy.SapphireClientPolicy;
+import static amino.run.policy.SapphirePolicy.ClientPolicy;
 
 import java.util.Collection;
 
@@ -11,12 +11,12 @@ public interface TwoPCParticipants {
      *
      * @param cohort the client proxy of the Sapphire object that involves in transaction
      */
-    public void register(SapphireClientPolicy cohort);
+    public void register(ClientPolicy cohort);
 
     /**
      * gets all participants of the transaction registered
      *
      * @return the collection of participating client proxies
      */
-    public Collection<SapphireClientPolicy> getRegistered();
+    public Collection<ClientPolicy> getRegistered();
 }

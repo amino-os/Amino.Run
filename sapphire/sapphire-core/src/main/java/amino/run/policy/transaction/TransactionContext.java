@@ -15,8 +15,8 @@ public class TransactionContext {
     private static final ThreadLocal<Integer> transactionEnterCount = new ThreadLocal<Integer>();
 
     // to keep track of SO objects been processed in the current  transaction primitive op
-    private static final ThreadLocal<Set<SapphirePolicy.SapphireClientPolicy>> processedClients =
-            new ThreadLocal<Set<SapphirePolicy.SapphireClientPolicy>>();
+    private static final ThreadLocal<Set<SapphirePolicy.ClientPolicy>> processedClients =
+            new ThreadLocal<Set<SapphirePolicy.ClientPolicy>>();
 
     /**
      * gets the clients of SO objects that haven been processed so far in the current transaction
@@ -24,14 +24,14 @@ public class TransactionContext {
      *
      * @return the clients of SO objects been processed
      */
-    public static Set<SapphirePolicy.SapphireClientPolicy> getProcessedClients() {
+    public static Set<SapphirePolicy.ClientPolicy> getProcessedClients() {
         return processedClients.get();
     }
 
     /** resets the processed SO clients */
     public static void initPrecessed() {
-        HashSet<SapphirePolicy.SapphireClientPolicy> emptyClients =
-                new HashSet<SapphirePolicy.SapphireClientPolicy>();
+        HashSet<SapphirePolicy.ClientPolicy> emptyClients =
+                new HashSet<SapphirePolicy.ClientPolicy>();
         processedClients.set(emptyClients);
     }
 

@@ -6,9 +6,9 @@ import java.util.ArrayList;
 
 public class DefaultSapphirePolicy extends SapphirePolicy {
 
-    public static class DefaultServerPolicy extends SapphireServerPolicy {
+    public static class DefaultServerPolicy extends ServerPolicy {
         @Override
-        public SapphireGroupPolicy getGroup() {
+        public GroupPolicy getGroup() {
             return group;
         }
 
@@ -16,7 +16,7 @@ public class DefaultSapphirePolicy extends SapphirePolicy {
         public void onMembershipChange() {}
 
         @Override
-        public void onCreate(SapphireGroupPolicy group, SapphireObjectSpec spec) {
+        public void onCreate(GroupPolicy group, SapphireObjectSpec spec) {
             super.onCreate(group, spec);
         }
 
@@ -25,33 +25,33 @@ public class DefaultSapphirePolicy extends SapphirePolicy {
         }
     }
 
-    public static class DefaultClientPolicy extends SapphireClientPolicy {
+    public static class DefaultClientPolicy extends ClientPolicy {
         private DefaultServerPolicy server;
         private DefaultGroupPolicy group;
 
         @Override
-        public void setServer(SapphireServerPolicy server) {
+        public void setServer(ServerPolicy server) {
             this.server = (DefaultServerPolicy) server;
         }
 
         @Override
-        public SapphireServerPolicy getServer() {
+        public ServerPolicy getServer() {
             return server;
         }
 
         @Override
-        public SapphireGroupPolicy getGroup() {
+        public GroupPolicy getGroup() {
             return group;
         }
 
         @Override
-        public void onCreate(SapphireGroupPolicy group, SapphireObjectSpec spec) {
+        public void onCreate(GroupPolicy group, SapphireObjectSpec spec) {
             this.group = (DefaultGroupPolicy) group;
         }
     }
 
-    public static class DefaultGroupPolicy extends SapphireGroupPolicy {
-        private ArrayList<SapphireServerPolicy> servers = new ArrayList<SapphireServerPolicy>();
+    public static class DefaultGroupPolicy extends GroupPolicy {
+        private ArrayList<ServerPolicy> servers = new ArrayList<ServerPolicy>();
         protected String region = "";
         protected SapphireObjectSpec spec = null;
 
@@ -60,7 +60,7 @@ public class DefaultSapphirePolicy extends SapphirePolicy {
          * it is advisable that defer putting this server policy into group policy until the server
          * policy is complete with full policy chain.
          */
-        public synchronized void addServer(SapphireServerPolicy server) throws RemoteException {
+        public synchronized void addServer(ServerPolicy server) throws RemoteException {
             if (servers == null) {
                 // TODO: Need to change it to proper exception
                 throw new RemoteException("Group object deleted");
@@ -69,22 +69,22 @@ public class DefaultSapphirePolicy extends SapphirePolicy {
         }
 
         @Override
-        public synchronized void removeServer(SapphireServerPolicy server) throws RemoteException {
+        public synchronized void removeServer(ServerPolicy server) throws RemoteException {
             if (servers != null) {
                 servers.remove(server);
             }
         }
 
         @Override
-        public ArrayList<SapphireServerPolicy> getServers() throws RemoteException {
+        public ArrayList<ServerPolicy> getServers() throws RemoteException {
             if (servers == null) {
-                return new ArrayList<SapphireServerPolicy>();
+                return new ArrayList<ServerPolicy>();
             }
-            return new ArrayList<SapphireServerPolicy>(servers);
+            return new ArrayList<ServerPolicy>(servers);
         }
 
         @Override
-        public void onCreate(String region, SapphireServerPolicy server, SapphireObjectSpec spec)
+        public void onCreate(String region, ServerPolicy server, SapphireObjectSpec spec)
                 throws RemoteException {
             this.region = region;
             this.spec = spec;

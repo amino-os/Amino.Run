@@ -172,7 +172,7 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultSapphirePolicy 
         private Map<String, String> nodeLabels;
 
         @Override
-        public void onCreate(String region, SapphireServerPolicy server, SapphireObjectSpec spec)
+        public void onCreate(String region, ServerPolicy server, SapphireObjectSpec spec)
                 throws RemoteException {
             logger = Logger.getLogger(GroupBase.class.getName());
             super.onCreate(region, server, spec);
@@ -332,9 +332,9 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultSapphirePolicy 
         }
 
         private List<ServerBase> getServerPolicies() throws RemoteException {
-            ArrayList<SapphireServerPolicy> servers = super.getServers();
+            ArrayList<ServerPolicy> servers = super.getServers();
             List<ServerBase> result = new ArrayList<ServerBase>();
-            for (SapphireServerPolicy s : servers) {
+            for (ServerPolicy s : servers) {
                 result.add((ServerBase) s);
             }
             return result;

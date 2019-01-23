@@ -69,7 +69,7 @@ public class DHTPolicy extends DefaultSapphirePolicy {
         private DHTChord dhtChord;
 
         @Override
-        public void onCreate(String region, SapphireServerPolicy server, SapphireObjectSpec spec)
+        public void onCreate(String region, ServerPolicy server, SapphireObjectSpec spec)
                 throws RemoteException {
             InetSocketAddress newServerAddress = null;
             dhtChord = new DHTChord();
@@ -134,7 +134,7 @@ public class DHTPolicy extends DefaultSapphirePolicy {
         }
 
         @Override
-        public void addServer(SapphireServerPolicy server) throws RemoteException {
+        public void addServer(ServerPolicy server) throws RemoteException {
             super.addServer(server);
             dhtChord.add((DHTServerPolicy) server);
         }
@@ -144,7 +144,7 @@ public class DHTPolicy extends DefaultSapphirePolicy {
         }
 
         @Override
-        public SapphireServerPolicy onRefRequest() {
+        public ServerPolicy onRefRequest() {
             // TODO
             return null;
         }

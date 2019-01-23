@@ -67,7 +67,7 @@ public class SapphireObjectManager {
      * @return Sapphire Group Policy Object
      * @throws SapphireObjectNotFoundException
      */
-    public SapphirePolicy.SapphireGroupPolicy getRootGroupPolicy(SapphireObjectID oid)
+    public SapphirePolicy.GroupPolicy getRootGroupPolicy(SapphireObjectID oid)
             throws SapphireObjectNotFoundException {
         SapphireInstanceManager instanceManager = sapphireObjects.get(oid);
         if (instanceManager == null) {
@@ -76,8 +76,7 @@ public class SapphireObjectManager {
         return instanceManager.getRootGroupPolicy();
     }
 
-    public void setRootGroupPolicy(
-            SapphireObjectID oid, SapphirePolicy.SapphireGroupPolicy rootGroupPolicy)
+    public void setRootGroupPolicy(SapphireObjectID oid, SapphirePolicy.GroupPolicy rootGroupPolicy)
             throws SapphireObjectNotFoundException {
         SapphireInstanceManager instanceManager = sapphireObjects.get(oid);
         if (instanceManager == null) {

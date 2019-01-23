@@ -16,5 +16,5 @@ public interface KernelObjectStub extends Serializable {
 
     public void $__updateHostname(InetSocketAddress hostname);
 
-    public void $__setNextClientPolicy(SapphirePolicy.SapphireClientPolicy clientPolicy);
+    public void $__setNextClientPolicy(SapphirePolicy.ClientPolicy clientPolicy);
 }

@@ -1,6 +1,6 @@
 package amino.run.kernel.server;
 
-import amino.run.app.SapphireObjectSpec;
+import amino.run.app.MicroServiceSpec;
 import amino.run.common.AppObjectStub;
 import amino.run.common.SapphireObjectCreationException;
 import amino.run.common.SapphireObjectNotFoundException;
@@ -162,8 +162,7 @@ public class KernelServerImpl implements KernelServer {
             logger.log(Level.INFO, "Added " + koid.getID() + " as ServerPolicyLibrary");
 
             try {
-                serverPolicy.onCreate(
-                        serverPolicy.getGroup(), serverPolicy.getSapphireObjectSpec());
+                serverPolicy.onCreate(serverPolicy.getGroup(), serverPolicy.getMicroServiceSpec());
             } catch (Exception e) {
                 String exceptionMsg =
                         "Initialization failed at copyKernelObject for KernelObject("
@@ -345,7 +344,7 @@ public class KernelServerImpl implements KernelServer {
                 String.format(
                         "Got request to create sapphire object with spec '%s' and %d parameters.",
                         soSpecYaml, args.length));
-        SapphireObjectSpec spec = SapphireObjectSpec.fromYaml(soSpecYaml);
+        MicroServiceSpec spec = MicroServiceSpec.fromYaml(soSpecYaml);
         return (AppObjectStub) Sapphire.new_(spec, args);
     }
 

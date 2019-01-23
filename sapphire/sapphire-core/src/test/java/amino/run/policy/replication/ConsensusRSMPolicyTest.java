@@ -19,8 +19,8 @@ import static org.powermock.api.mockito.PowerMockito.when;
 
 import amino.run.app.DMSpec;
 import amino.run.app.Language;
+import amino.run.app.MicroServiceSpec;
 import amino.run.app.NodeSelectorSpec;
-import amino.run.app.SapphireObjectSpec;
 import amino.run.common.BaseTest;
 import amino.run.common.Utils;
 import amino.run.kernel.common.KernelOID;
@@ -52,8 +52,8 @@ public class ConsensusRSMPolicyTest extends BaseTest {
     public void setUp() throws Exception {
         this.serversInSameRegion = false;
 
-        SapphireObjectSpec spec =
-                SapphireObjectSpec.newBuilder()
+        MicroServiceSpec spec =
+                MicroServiceSpec.newBuilder()
                         .setLang(Language.java)
                         .setJavaClassName("amino.run.sampleSO.SO")
                         .setNodeSelectorSpec(new NodeSelectorSpec())
@@ -160,7 +160,7 @@ public class ConsensusRSMPolicyTest extends BaseTest {
         doReturn(true).when(server).isAlreadyPinned();
         when(group.getServers()).thenThrow(new RemoteException());
         thrown.expect(Error.class);
-        group.onCreate("", server, new SapphireObjectSpec());
+        group.onCreate("", server, new MicroServiceSpec());
     }
 
     /**

@@ -7,7 +7,7 @@ import java.util.Map;
 import amino.run.app.DMSpec;
 import amino.run.app.Language;
 import amino.run.app.SapphireObject;
-import amino.run.app.SapphireObjectSpec;
+import amino.run.app.MicroServiceSpec;
 import amino.run.common.SapphireObjectCreationException;
 import amino.run.policy.dht.DHTPolicy;
 import amino.run.policy.replication.ConsensusRSMPolicy;
@@ -29,8 +29,8 @@ public class TodoListManager implements SapphireObject {
 	public TodoList newTodoList(String id) throws SapphireObjectCreationException {
 		TodoList t = todoLists.get(id);
 		if (t == null) {
-			SapphireObjectSpec spec;
-			spec = SapphireObjectSpec.newBuilder()
+			MicroServiceSpec spec;
+			spec = MicroServiceSpec.newBuilder()
 					.setLang(Language.java)
 					.setJavaClassName(TodoList.class.getName())
 					.addDMSpec(

@@ -1,6 +1,6 @@
 package amino.run.policy.scalability;
 
-import amino.run.app.SapphireObjectSpec;
+import amino.run.app.MicroServiceSpec;
 import amino.run.common.SapphireObjectNotFoundException;
 import amino.run.common.SapphireObjectReplicaNotFoundException;
 import amino.run.common.Utils;
@@ -71,7 +71,7 @@ public class LoadBalancedFrontendPolicy extends DefaultPolicy {
         int replicaCount() default STATIC_REPLICA_COUNT;
     }
 
-    private static Config getConfig(SapphireObjectSpec spec) {
+    private static Config getConfig(MicroServiceSpec spec) {
         Config config = null;
         if (spec != null) {
             Map<String, SapphirePolicyConfig> configMap =
@@ -129,7 +129,7 @@ public class LoadBalancedFrontendPolicy extends DefaultPolicy {
         protected Semaphore limiter;
 
         @Override
-        public void onCreate(Policy.GroupPolicy group, SapphireObjectSpec spec) {
+        public void onCreate(Policy.GroupPolicy group, MicroServiceSpec spec) {
             super.onCreate(group, spec);
 
             Config config = getConfig(spec);
@@ -173,7 +173,7 @@ public class LoadBalancedFrontendPolicy extends DefaultPolicy {
         private int replicaCount = STATIC_REPLICA_COUNT; // we can read from config or annotations
 
         @Override
-        public void onCreate(String region, Policy.ServerPolicy server, SapphireObjectSpec spec)
+        public void onCreate(String region, Policy.ServerPolicy server, MicroServiceSpec spec)
                 throws RemoteException {
             super.onCreate(region, server, spec);
             Config config = getConfig(spec);

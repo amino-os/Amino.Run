@@ -1,4 +1,4 @@
-!!amino.run.app.SapphireObjectSpec
+!!amino.run.app.MicroServiceSpec
 constructorName: KeyValueStore
 dmList:
 - configs:

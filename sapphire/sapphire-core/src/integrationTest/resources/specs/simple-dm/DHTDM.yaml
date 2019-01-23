@@ -1,5 +1,5 @@
 # Configuration for running KVStore with DHT DM
-!!amino.run.app.SapphireObjectSpec
+!!amino.run.app.MicroServiceSpec
 constructorName: null
 dmList:
 - configs:

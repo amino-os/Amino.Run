@@ -9,8 +9,8 @@ import static amino.run.kernel.IntegrationTestBase.omsPort;
 import static amino.run.kernel.IntegrationTestBase.readSapphireSpec;
 import static amino.run.kernel.IntegrationTestBase.startOmsAndKernelServers;
 
+import amino.run.app.MicroServiceSpec;
 import amino.run.app.SapphireObjectServer;
-import amino.run.app.SapphireObjectSpec;
 import amino.run.common.SapphireObjectID;
 import amino.run.demo.KVStore;
 import amino.run.kernel.server.KernelServerImpl;
@@ -40,7 +40,7 @@ public class LoadBalancedMasterSlaveDMIntegTest {
                 new InetSocketAddress(hostIp, hostPort), new InetSocketAddress(omsIp, omsPort));
     }
 
-    private void runTest(SapphireObjectSpec spec) throws Exception {
+    private void runTest(MicroServiceSpec spec) throws Exception {
         SapphireObjectID sapphireObjId = sapphireObjectServer.createSapphireObject(spec.toString());
         KVStore store = (KVStore) sapphireObjectServer.acquireSapphireObjectStub(sapphireObjId);
         for (int i = 0; i < 10; i++) {
@@ -59,7 +59,7 @@ public class LoadBalancedMasterSlaveDMIntegTest {
     @Test
     public void testMasterSlaveDM() throws Exception {
         File file = getResourceFile("specs/complex-dm/LoadBalanceMasterSlave.yaml");
-        SapphireObjectSpec spec = readSapphireSpec(file);
+        MicroServiceSpec spec = readSapphireSpec(file);
         runTest(spec);
     }
 

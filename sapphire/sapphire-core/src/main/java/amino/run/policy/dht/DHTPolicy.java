@@ -1,6 +1,6 @@
 package amino.run.policy.dht;
 
-import amino.run.app.SapphireObjectSpec;
+import amino.run.app.MicroServiceSpec;
 import amino.run.common.NoKernelServerFoundException;
 import amino.run.common.SapphireObjectNotFoundException;
 import amino.run.common.SapphireObjectReplicaNotFoundException;
@@ -69,7 +69,7 @@ public class DHTPolicy extends DefaultPolicy {
         private DHTChord dhtChord;
 
         @Override
-        public void onCreate(String region, ServerPolicy server, SapphireObjectSpec spec)
+        public void onCreate(String region, ServerPolicy server, MicroServiceSpec spec)
                 throws RemoteException {
             InetSocketAddress newServerAddress = null;
             dhtChord = new DHTChord();

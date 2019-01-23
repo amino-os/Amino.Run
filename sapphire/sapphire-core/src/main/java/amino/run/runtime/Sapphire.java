@@ -6,8 +6,8 @@ import static amino.run.policy.Policy.ServerPolicy;
 
 import amino.run.app.DMSpec;
 import amino.run.app.Language;
+import amino.run.app.MicroServiceSpec;
 import amino.run.app.SapphireObject;
-import amino.run.app.SapphireObjectSpec;
 import amino.run.common.AppObject;
 import amino.run.common.AppObjectStub;
 import amino.run.common.SapphireObjectCreationException;
@@ -53,7 +53,7 @@ public class Sapphire {
      * @param args parameters to sapphire object constructor
      * @return sapphire object stub
      */
-    public static Object new_(SapphireObjectSpec spec, Object... args)
+    public static Object new_(MicroServiceSpec spec, Object... args)
             throws SapphireObjectCreationException {
         AppObjectStub appStub = null;
         try {
@@ -91,13 +91,13 @@ public class Sapphire {
 
     /**
      * WARN: This method only works for Java sapphire object. This method has been deprecated.
-     * Please use {@link #new_(SapphireObjectSpec, Object...)}. We keep this method because we have
+     * Please use {@link #new_(MicroServiceSpec, Object...)}. We keep this method because we have
      * Java demo apps that call this method directly.
      *
      * @param appObjectClass the class of the app object
      * @param args the arguments to app object constructor
      * @return the App Object stub
-     * @deprecated Please use {@link #new_(SapphireObjectSpec, Object...)}
+     * @deprecated Please use {@link #new_(MicroServiceSpec, Object...)}
      */
     public static Object new_(Class<?> appObjectClass, Object... args) {
         try {
@@ -113,8 +113,8 @@ public class Sapphire {
                 policyNameChain.add(new SapphirePolicyContainer(defaultPolicyName, null));
             }
 
-            SapphireObjectSpec spec =
-                    SapphireObjectSpec.newBuilder()
+            MicroServiceSpec spec =
+                    MicroServiceSpec.newBuilder()
                             .setLang(Language.java)
                             .setJavaClassName(appObjectClass.getName())
                             .create();
@@ -161,7 +161,7 @@ public class Sapphire {
         return policyNameChain;
     }
 
-    private static List<SapphirePolicyContainer> getPolicyNameChain(SapphireObjectSpec spec) {
+    private static List<SapphirePolicyContainer> getPolicyNameChain(MicroServiceSpec spec) {
         List<SapphirePolicyContainer> policyNameChain = new ArrayList<SapphirePolicyContainer>();
 
         for (DMSpec dm : spec.getDmList()) {
@@ -197,7 +197,7 @@ public class Sapphire {
      */
     public static AppObjectStub createPolicy(
             SapphireObjectID sapphireObjId,
-            SapphireObjectSpec spec,
+            MicroServiceSpec spec,
             List<SapphirePolicyContainer> policyNameChain,
             List<SapphirePolicyContainer> processedPolicies,
             String region,
@@ -587,10 +587,7 @@ public class Sapphire {
      * @throws IOException
      */
     private static void initAppStub(
-            SapphireObjectSpec spec,
-            ServerPolicy serverPolicy,
-            Object[] appArgs,
-            AppObject appObject)
+            MicroServiceSpec spec, ServerPolicy serverPolicy, Object[] appArgs, AppObject appObject)
             throws ClassNotFoundException, IOException {
         if (appObject != null) {
             appObject = (AppObject) Utils.ObjectCloner.deepCopy(appObject);

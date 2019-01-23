@@ -3,7 +3,7 @@ package amino.run.oms;
 import static org.junit.Assert.assertEquals;
 
 import amino.run.app.Language;
-import amino.run.app.SapphireObjectSpec;
+import amino.run.app.MicroServiceSpec;
 import amino.run.common.BaseTest;
 import amino.run.common.SapphireObjectID;
 import amino.run.common.SapphireReplicaID;
@@ -43,8 +43,8 @@ public class OMSTest extends BaseTest {
 
     @Before
     public void setUp() throws Exception {
-        SapphireObjectSpec spec =
-                SapphireObjectSpec.newBuilder()
+        MicroServiceSpec spec =
+                MicroServiceSpec.newBuilder()
                         .setLang(Language.java)
                         .setJavaClassName("amino.run.sampleSO.SO")
                         .create();

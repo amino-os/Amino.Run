@@ -7,8 +7,8 @@ import static amino.run.common.UtilsTest.extractFieldValueOnInstance;
 import static org.mockito.Mockito.spy;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 
+import amino.run.app.MicroServiceSpec;
 import amino.run.app.SapphireObjectServer;
-import amino.run.app.SapphireObjectSpec;
 import amino.run.kernel.common.GlobalKernelReferences;
 import amino.run.kernel.common.KernelOID;
 import amino.run.kernel.common.KernelObjectFactory;
@@ -68,7 +68,7 @@ public class BaseTest {
 
     protected boolean serversInSameRegion = true;
 
-    public void setUp(int serverCount, SapphireObjectSpec spec) throws Exception {
+    public void setUp(int serverCount, MicroServiceSpec spec) throws Exception {
         // create a spied oms instance
         OMSServerImpl spiedOms = startSpiedOms(LOOP_BACK_IP_ADDR, omsPort);
         spiedksOnOms = spy(GlobalKernelReferences.nodeServer);

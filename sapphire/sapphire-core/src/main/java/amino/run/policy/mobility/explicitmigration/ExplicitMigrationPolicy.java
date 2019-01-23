@@ -1,6 +1,6 @@
 package amino.run.policy.mobility.explicitmigration;
 
-import amino.run.app.SapphireObjectSpec;
+import amino.run.app.MicroServiceSpec;
 import amino.run.common.Utils;
 import amino.run.kernel.common.GlobalKernelReferences;
 import amino.run.kernel.common.KernelObjectMigratingException;
@@ -81,7 +81,7 @@ public class ExplicitMigrationPolicy extends DefaultPolicy {
         private long minWaitIntervalInMillis = MINWAITINTERVALINMILLIS;
 
         @Override
-        public void onCreate(Policy.GroupPolicy group, SapphireObjectSpec spec) {
+        public void onCreate(Policy.GroupPolicy group, MicroServiceSpec spec) {
             super.onCreate(group, spec);
 
             Map<String, SapphirePolicyConfig> configMap =
@@ -130,7 +130,7 @@ public class ExplicitMigrationPolicy extends DefaultPolicy {
         private String migrateObjectMethodName = MIGRATEOBJECTMETHODNAME;
 
         @Override
-        public void onCreate(Policy.GroupPolicy group, SapphireObjectSpec spec) {
+        public void onCreate(Policy.GroupPolicy group, MicroServiceSpec spec) {
             super.onCreate(group, spec);
 
             SapphirePolicyConfig config =

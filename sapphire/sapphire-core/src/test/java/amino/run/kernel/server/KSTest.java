@@ -4,7 +4,7 @@ import static amino.run.common.UtilsTest.extractFieldValueOnInstance;
 import static junit.framework.TestCase.assertEquals;
 
 import amino.run.app.Language;
-import amino.run.app.SapphireObjectSpec;
+import amino.run.app.MicroServiceSpec;
 import amino.run.common.BaseTest;
 import amino.run.kernel.common.KernelOID;
 import amino.run.kernel.common.KernelObjectNotFoundException;
@@ -31,8 +31,8 @@ public class KSTest extends BaseTest {
 
     @Before
     public void setUp() throws Exception {
-        SapphireObjectSpec spec =
-                SapphireObjectSpec.newBuilder()
+        MicroServiceSpec spec =
+                MicroServiceSpec.newBuilder()
                         .setLang(Language.java)
                         .setJavaClassName("amino.run.sampleSO.SO")
                         .create();

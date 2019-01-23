@@ -8,8 +8,8 @@ import java.util.List;
 import java.util.Random;
 
 import amino.run.app.Language;
+import amino.run.app.MicroServiceSpec;
 import amino.run.app.SapphireObjectServer;
-import amino.run.app.SapphireObjectSpec;
 import amino.run.common.SapphireObjectID;
 import amino.run.kernel.server.KernelServer;
 import amino.run.kernel.server.KernelServerImpl;
@@ -79,8 +79,8 @@ public class MinnieTwitterMain {
       KernelServer nodeServer = new KernelServerImpl(hostAddr, omsAddr);
 
       /* Get Twitter and User Manager */
-      SapphireObjectSpec spec =
-          SapphireObjectSpec.newBuilder()
+      MicroServiceSpec spec =
+          MicroServiceSpec.newBuilder()
               .setLang(Language.java)
               .setJavaClassName("amino.run.appexamples.minnietwitter.TwitterManager")
               .create();

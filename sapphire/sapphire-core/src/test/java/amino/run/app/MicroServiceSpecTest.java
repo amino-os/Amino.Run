@@ -6,29 +6,29 @@ import amino.run.policy.scalability.ScaleUpFrontendPolicy;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class SapphireObjectSpecTest {
+public class MicroServiceSpecTest {
     @Test
     public void testToYamlFromYaml() {
-        SapphireObjectSpec soSpec = createSpec();
-        SapphireObjectSpec soSpecClone = SapphireObjectSpec.fromYaml(soSpec.toString());
+        MicroServiceSpec soSpec = createSpec();
+        MicroServiceSpec soSpecClone = MicroServiceSpec.fromYaml(soSpec.toString());
         Assert.assertEquals(soSpec, soSpecClone);
     }
 
     @Test
     public void testSerializeEmptySpec() {
-        SapphireObjectSpec spec = SapphireObjectSpec.newBuilder().create();
-        SapphireObjectSpec clone = SapphireObjectSpec.fromYaml(spec.toString());
+        MicroServiceSpec spec = MicroServiceSpec.newBuilder().create();
+        MicroServiceSpec clone = MicroServiceSpec.fromYaml(spec.toString());
         Assert.assertEquals(spec, clone);
     }
 
     @Test
     public void testSerialization() throws Exception {
-        SapphireObjectSpec spec = createSpec();
-        SapphireObjectSpec clone = (SapphireObjectSpec) Utils.toObject(Utils.toBytes(spec));
+        MicroServiceSpec spec = createSpec();
+        MicroServiceSpec clone = (MicroServiceSpec) Utils.toObject(Utils.toBytes(spec));
         Assert.assertEquals(spec, clone);
     }
 
-    private SapphireObjectSpec createSpec() {
+    private MicroServiceSpec createSpec() {
         NodeSelectorSpec nodeSelectorSpec = new NodeSelectorSpec();
         nodeSelectorSpec.addAndLabel("and_label");
         nodeSelectorSpec.addOrLabel("or_label");
@@ -47,7 +47,7 @@ public class SapphireObjectSpecTest {
                         .addConfig(lbConfig)
                         .create();
 
-        return SapphireObjectSpec.newBuilder()
+        return MicroServiceSpec.newBuilder()
                 .setLang(Language.js)
                 .setName("com.org.College")
                 .setSourceFileLocation("src/main/js/college.js")

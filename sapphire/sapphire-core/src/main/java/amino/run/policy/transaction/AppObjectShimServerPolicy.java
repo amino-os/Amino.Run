@@ -1,6 +1,6 @@
 package amino.run.policy.transaction;
 
-import amino.run.app.SapphireObjectSpec;
+import amino.run.app.MicroServiceSpec;
 import amino.run.common.AppObject;
 import amino.run.common.Utils;
 import amino.run.policy.Policy;
@@ -15,7 +15,7 @@ public class AppObjectShimServerPolicy implements Upcalls.ServerUpcalls {
     private AppObject originMaster;
 
     @Override
-    public void onCreate(Policy.GroupPolicy group, SapphireObjectSpec spec) {}
+    public void onCreate(Policy.GroupPolicy group, MicroServiceSpec spec) {}
 
     @Override
     public void onDestroy() {}

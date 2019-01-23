@@ -2,8 +2,8 @@ package amino.run.policy;
 
 import static amino.run.kernel.IntegrationTestBase.*;
 
+import amino.run.app.MicroServiceSpec;
 import amino.run.app.SapphireObjectServer;
-import amino.run.app.SapphireObjectSpec;
 import amino.run.common.SapphireObjectID;
 import amino.run.demo.KVStore;
 import amino.run.kernel.server.KernelServerImpl;
@@ -38,7 +38,7 @@ public class LoadBalancedFrontendDMIntegrationTest {
                 new InetSocketAddress(hostIp, hostPort), new InetSocketAddress(omsIp, omsPort));
     }
 
-    private void runTest(SapphireObjectSpec spec) throws Exception {
+    private void runTest(MicroServiceSpec spec) throws Exception {
         SapphireObjectID sapphireObjId = sapphireObjectServer.createSapphireObject(spec.toString());
         KVStore store = (KVStore) sapphireObjectServer.acquireSapphireObjectStub(sapphireObjId);
         for (int i = 0; i < 10; i++) {
@@ -53,7 +53,7 @@ public class LoadBalancedFrontendDMIntegrationTest {
     @Test
     public void testLoadBalancedFrontendDMs() throws Exception {
         File file = getResourceFile("specs/complex-dm/LoadBalancedFrontEnd.yaml");
-        SapphireObjectSpec spec = readSapphireSpec(file);
+        MicroServiceSpec spec = readSapphireSpec(file);
         runTest(spec);
     }
 

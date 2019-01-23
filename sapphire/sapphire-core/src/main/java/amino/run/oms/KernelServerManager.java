@@ -1,7 +1,7 @@
 package amino.run.oms;
 
+import amino.run.app.MicroServiceSpec;
 import amino.run.app.NodeSelectorSpec;
-import amino.run.app.SapphireObjectSpec;
 import amino.run.kernel.common.GlobalKernelReferences;
 import amino.run.kernel.common.KernelServerNotFoundException;
 import amino.run.kernel.common.ServerInfo;
@@ -190,7 +190,7 @@ public class KernelServerManager {
      * @param spec
      * @return
      */
-    public InetSocketAddress getBestSuitableServer(SapphireObjectSpec spec) {
+    public InetSocketAddress getBestSuitableServer(MicroServiceSpec spec) {
         NodeSelectorSpec nodeSelector = null;
         if (spec != null) {
             nodeSelector = spec.getNodeSelectorSpec();

@@ -50,7 +50,7 @@ public class OMSClient {
      * @throws RemoteException unable to reach OMS server
      * @throws SapphireObjectCreationException unable to create sapphire object.
      */
-    public SapphireObjectID createSapphireObject(SapphireObjectSpec spec, Object... args)
+    public SapphireObjectID createSapphireObject(MicroServiceSpec spec, Object... args)
             throws RemoteException, SapphireObjectCreationException {
 
         // convert graal...Value to serializable object

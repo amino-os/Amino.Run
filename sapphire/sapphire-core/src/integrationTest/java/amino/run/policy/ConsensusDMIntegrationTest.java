@@ -3,8 +3,8 @@ package amino.run.policy;
 import static amino.run.kernel.IntegrationTestBase.*;
 import static java.lang.Thread.sleep;
 
+import amino.run.app.MicroServiceSpec;
 import amino.run.app.SapphireObjectServer;
-import amino.run.app.SapphireObjectSpec;
 import amino.run.common.SapphireObjectID;
 import amino.run.demo.KVStore;
 import amino.run.kernel.server.KernelServerImpl;
@@ -38,7 +38,7 @@ public class ConsensusDMIntegrationTest {
                 new InetSocketAddress(hostIp, hostPort), new InetSocketAddress(omsIp, omsPort));
     }
 
-    private void runTest(SapphireObjectSpec spec) throws Exception {
+    private void runTest(MicroServiceSpec spec) throws Exception {
         SapphireObjectID sapphireObjId = sapphireObjectServer.createSapphireObject(spec.toString());
         sleep(5000);
         KVStore store = (KVStore) sapphireObjectServer.acquireSapphireObjectStub(sapphireObjId);
@@ -59,7 +59,7 @@ public class ConsensusDMIntegrationTest {
     @Test
     public void testConsensusDM() throws Exception {
         File file = getResourceFile("specs/complex-dm/Consensus.yaml");
-        SapphireObjectSpec spec = readSapphireSpec(file);
+        MicroServiceSpec spec = readSapphireSpec(file);
         runTest(spec);
     }
 

@@ -1,6 +1,6 @@
 package amino.run.policy.scalability;
 
-import amino.run.app.SapphireObjectSpec;
+import amino.run.app.MicroServiceSpec;
 import amino.run.common.SapphireObjectNotFoundException;
 import amino.run.common.SapphireObjectReplicaNotFoundException;
 import amino.run.common.Utils;
@@ -172,7 +172,7 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultPolicy {
         private Map<String, String> nodeLabels;
 
         @Override
-        public void onCreate(String region, ServerPolicy server, SapphireObjectSpec spec)
+        public void onCreate(String region, ServerPolicy server, MicroServiceSpec spec)
                 throws RemoteException {
             logger = Logger.getLogger(GroupBase.class.getName());
             super.onCreate(region, server, spec);

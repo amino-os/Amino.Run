@@ -1,8 +1,8 @@
 package amino.run.oms;
 
+import amino.run.app.MicroServiceSpec;
 import amino.run.app.NodeSelectorSpec;
 import amino.run.app.SapphireObjectServer;
-import amino.run.app.SapphireObjectSpec;
 import amino.run.common.AppObjectStub;
 import amino.run.common.SapphireObjectCreationException;
 import amino.run.common.SapphireObjectID;
@@ -167,7 +167,7 @@ public class OMSServerImpl implements OMSServer, SapphireObjectServer {
     public SapphireObjectID createSapphireObject(String sapphireObjectSpec, Object... args)
             throws RemoteException, SapphireObjectCreationException {
 
-        SapphireObjectSpec spec = SapphireObjectSpec.fromYaml(sapphireObjectSpec);
+        MicroServiceSpec spec = MicroServiceSpec.fromYaml(sapphireObjectSpec);
         /* Get a best server from the given spec */
         InetSocketAddress host = serverManager.getBestSuitableServer(spec);
         if (host == null) {
@@ -183,7 +183,7 @@ public class OMSServerImpl implements OMSServer, SapphireObjectServer {
         }
 
         // TODO(multi-lang): Store spec together with object ID in objectManager
-        // SapphireObjectSpec spec = SapphireObjectSpec.fromYaml(sapphireObjectSpec);
+        // MicroServiceSpec spec = MicroServiceSpec.fromYaml(sapphireObjectSpec);
 
         /* Invoke create sapphire object on the kernel server */
         try {

@@ -370,7 +370,7 @@ public class ConsensusRSMPolicyTest extends BaseTest {
         Server newRaftServer[] = new Server[SERVER_COUNT - 1];
 
         /* Bring down the raft leader */
-        this.server3.sapphire_remove_replica();
+        this.server3.sapphire_terminate();
 
         // Creating a new array with the running raftServers
         newRaftServer[0] = raftServer[0];

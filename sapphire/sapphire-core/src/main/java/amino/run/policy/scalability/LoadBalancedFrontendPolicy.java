@@ -4,9 +4,9 @@ import amino.run.app.MicroServiceSpec;
 import amino.run.common.SapphireObjectNotFoundException;
 import amino.run.common.SapphireObjectReplicaNotFoundException;
 import amino.run.common.Utils;
+import amino.run.kernel.common.KernelObjectStub;
 import amino.run.policy.DefaultPolicy;
 import amino.run.policy.Policy;
-import amino.run.kernel.common.KernelObjectStub;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -205,7 +205,7 @@ public class LoadBalancedFrontendPolicy extends DefaultPolicy {
                     numnodes = addressList.size();
 
                     for (count = 0; count < numnodes && count < replicaCount - 1; count++) {
-                        addReplica(server, addressList.get(count), region);
+                        replicate(server, addressList.get(count), region);
                     }
                 }
 

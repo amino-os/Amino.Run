@@ -204,7 +204,7 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultPolicy {
                     // TODO: Make deployment kernel pin primary replica once node selection
                     // constraint is implemented.
                     dest = getAvailable(0, addressList, unavailable);
-                    pinReplica(s, dest);
+                    pin(s, dest);
                     logger.info("Created master on " + dest);
                 }
                 s.start();
@@ -213,7 +213,7 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultPolicy {
                     if (isLastPolicy) {
                         dest = getAvailable(i + 1, addressList, unavailable);
                     }
-                    ServerBase replica = (ServerBase) addReplica(s, dest, region);
+                    ServerBase replica = (ServerBase) replicate(s, dest, region);
                     replica.start();
                     logger.info("created slave on " + dest);
                 }

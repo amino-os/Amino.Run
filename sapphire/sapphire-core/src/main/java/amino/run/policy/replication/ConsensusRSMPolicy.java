@@ -226,13 +226,13 @@ public class ConsensusRSMPolicy extends DefaultPolicy {
                     // The first in the addressList is for primary policy chain.
                     // TODO: Improve node allocation so that other servers can be used instead of
                     // the first one in the region.
-                    pinReplica(consensusServer, addressList.get(0));
+                    pin(consensusServer, addressList.get(0));
                 }
 
                 // Create additional replicas, one per region. TODO:  Create N-1 replicas on
                 // different servers in the same zone.
                 for (int i = 1; i < addressList.size(); i++) {
-                    addReplica(consensusServer, addressList.get(i), region);
+                    replicate(consensusServer, addressList.get(i), region);
                 }
 
                 // Tell all the servers about one another

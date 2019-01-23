@@ -48,7 +48,7 @@ public class LoadBalancedMasterSlaveSyncPolicyIntegTest {
         client = new ClientMock();
 
         group = spy(new GroupMock());
-        List<SapphirePolicy.SapphireServerPolicy> list = new ArrayList<>();
+        List<Policy.ServerPolicy> list = new ArrayList<>();
         list.add(server1);
         list.add(server2);
         doReturn(list).when(group).getServers();

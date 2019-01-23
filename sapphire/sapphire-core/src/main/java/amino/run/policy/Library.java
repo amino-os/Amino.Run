@@ -191,7 +191,7 @@ public abstract class Library implements Upcalls {
                 logger.severe(e.getMessage());
                 throw new Error("Could not find sapphire object replica on OMS", e);
             } catch (RemoteException e) {
-                sapphire_remove_replica(processedPolicies);
+                sapphire_terminate(processedPolicies);
                 logger.severe(e.getMessage());
                 throw new Error("Could not create a replica of " + appObject.getObject(), e);
             } catch (Exception e) {
@@ -207,31 +207,21 @@ public abstract class Library implements Upcalls {
         }
 
         /**
-         * Pin server policy chain to a given server. 1) Checks if there is server policy to pin to
-         * the new host. 2) Obtain the first server policy (farthest from app object) by moving the
-         * pointer in the chain. 3) Navigate through the chain to find all server policy information
-         * that need to be removed after move. 4) Copy the chain of server policy to the new host.
-         * 5) Remove the server policies in the local chain that were moved.
+         * Pin server policy chain to a given server. 1) Obtain the first server policy (farthest
+         * from app object) 2) Navigate through the chain to find all server policies that need to
+         * be removed after move. Update the respective stub objects with new host name. Coalesce
+         * all the server policy objects in chain. 3) Copy the chain of server policy to the new
+         * host. 4) Remove the server policies in the local chain that were moved.
          *
-         * @param serverPolicyStub
          * @param server
          * @throws RemoteException
          * @throws SapphireObjectNotFoundException
          * @throws SapphireObjectReplicaNotFoundException
          */
-        public void sapphire_pin_to_server(ServerPolicy serverPolicyStub, InetSocketAddress server)
+        public void sapphire_pin_to_server(InetSocketAddress server)
                 throws RemoteException, SapphireObjectNotFoundException,
                         SapphireObjectReplicaNotFoundException {
-            KernelOID serverOID = serverPolicyStub.$__getKernelOID();
-            Policy.ServerPolicy serverPolicy;
-            try {
-                serverPolicy =
-                        (Policy.ServerPolicy)
-                                GlobalKernelReferences.nodeServer.getObject(serverOID);
-            } catch (Exception e) {
-                logger.severe(e.getMessage());
-                throw new RemoteException("No server policy to pin to the server: " + server, e);
-            }
+            ServerPolicy serverPolicy = (ServerPolicy) this;
 
             // Ensure that we start from the first Server Policy.
             while (serverPolicy.getPreviousServerPolicy() != null) {
@@ -256,9 +246,7 @@ public abstract class Library implements Upcalls {
             }
 
             logger.info(
-                    "(Starting) Pinning Sapphire object "
-                            + serverPolicyStub
-                            + " "
+                    "Started pinning kernel object "
                             + serverPolicy.$__getKernelOID()
                             + " to "
                             + server);
@@ -279,16 +267,14 @@ public abstract class Library implements Upcalls {
             }
 
             logger.info(
-                    "(Complete) Pinning Sapphire object "
-                            + serverPolicyStub
-                            + " "
+                    "Finished pinning kernel object "
                             + serverPolicy.$__getKernelOID()
                             + " to "
                             + server);
         }
 
         // TODO (2018-9-26, Sungwook) Remove after verification.
-        public void sapphire_remove_replica() throws RemoteException {
+        public void sapphire_terminate() throws RemoteException {
             try {
                 GlobalKernelReferences.nodeServer.oms.unRegisterSapphireReplica(getReplicaId());
             } catch (SapphireObjectNotFoundException e) {
@@ -299,7 +285,7 @@ public abstract class Library implements Upcalls {
             KernelObjectFactory.delete($__getKernelOID());
         }
 
-        public void sapphire_remove_replica(List<SapphirePolicyContainer> processedPolicies)
+        public void sapphire_terminate(List<SapphirePolicyContainer> processedPolicies)
                 throws RemoteException {
             try {
                 for (SapphirePolicyContainer policyContainer : processedPolicies) {
@@ -480,7 +466,7 @@ public abstract class Library implements Upcalls {
             for (Iterator<ServerPolicy> itr = servers.iterator(); itr.hasNext(); ) {
                 Policy.ServerPolicy server = itr.next();
                 try {
-                    server.sapphire_remove_replica();
+                    server.sapphire_terminate();
                     itr.remove();
                 } catch (Exception e) {
 

@@ -33,16 +33,14 @@ import java.util.logging.Logger;
 import org.apache.harmony.rmi.common.RMIUtil;
 
 public abstract class Library implements SapphirePolicyUpcalls {
-    public abstract static class SapphireClientPolicyLibrary
-            implements SapphireClientPolicyUpcalls {
+    public abstract static class ClientPolicyLibrary implements SapphireClientPolicyUpcalls {
 
         /*
          * INTERNAL FUNCTIONS (Used by sapphire runtime system)
          */
     }
 
-    public abstract static class SapphireServerPolicyLibrary
-            implements SapphireServerPolicyUpcalls {
+    public abstract static class ServerPolicyLibrary implements SapphireServerPolicyUpcalls {
         protected AppObject appObject;
         protected KernelOID oid;
         protected SapphireReplicaID replicaId;
@@ -51,7 +49,7 @@ public abstract class Library implements SapphirePolicyUpcalls {
         protected Map<String, SapphirePolicyConfig> configMap;
         protected boolean alreadyPinned;
 
-        static Logger logger = Logger.getLogger(SapphireServerPolicyLibrary.class.getName());
+        static Logger logger = Logger.getLogger(ServerPolicyLibrary.class.getName());
 
         // ServerPolicy that precedes the current policy in the server side chain - this order is
         // reverse in the client side.
@@ -410,13 +408,13 @@ public abstract class Library implements SapphirePolicyUpcalls {
         }
     }
 
-    public abstract static class SapphireGroupPolicyLibrary implements SapphireGroupPolicyUpcalls {
+    public abstract static class GroupPolicyLibrary implements SapphireGroupPolicyUpcalls {
         protected String appObjectClassName;
         protected ArrayList<Object> params;
         protected KernelOID oid;
         protected SapphireObjectID sapphireObjId;
 
-        static Logger logger = Logger.getLogger(SapphireGroupPolicyLibrary.class.getName());
+        static Logger logger = Logger.getLogger(GroupPolicyLibrary.class.getName());
 
         protected OMSServer oms() {
             return GlobalKernelReferences.nodeServer.oms;

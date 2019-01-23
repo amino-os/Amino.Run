@@ -134,17 +134,16 @@ public class KernelServerImpl implements KernelServer {
         // To add Kernel Object to local object manager
         Serializable realObj = object.getObject();
 
-        if (!(realObj instanceof Library.SapphireServerPolicyLibrary)) {
+        if (!(realObj instanceof Library.ServerPolicyLibrary)) {
             logger.log(Level.WARNING, "Added " + oid.getID() + " as unknown type.");
             return;
         }
 
-        Library.SapphireServerPolicyLibrary firstServerPolicy =
-                (Library.SapphireServerPolicyLibrary) realObj;
+        Library.ServerPolicyLibrary firstServerPolicy = (Library.ServerPolicyLibrary) realObj;
 
         for (SapphirePolicyContainer spContainer : firstServerPolicy.getProcessedPolicies()) {
             // Add Server Policy object in the same order as client side has created.
-            Library.SapphireServerPolicyLibrary serverPolicy = spContainer.getServerPolicy();
+            Library.ServerPolicyLibrary serverPolicy = spContainer.getServerPolicy();
 
             // Added for setting the ReplicaId and registering handler for this replica to OMS.
             Policy.ServerPolicy serverPolicyStub =
@@ -160,7 +159,7 @@ public class KernelServerImpl implements KernelServer {
 
             objectManager.addObject(koid, newko);
             oms.registerKernelObject(koid, host);
-            logger.log(Level.INFO, "Added " + koid.getID() + " as SapphireServerPolicyLibrary");
+            logger.log(Level.INFO, "Added " + koid.getID() + " as ServerPolicyLibrary");
 
             try {
                 serverPolicy.onCreate(

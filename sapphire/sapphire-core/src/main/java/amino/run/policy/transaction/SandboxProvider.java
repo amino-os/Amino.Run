@@ -1,6 +1,6 @@
 package amino.run.policy.transaction;
 
-import amino.run.policy.SapphirePolicyLibrary;
+import amino.run.policy.Library;
 import amino.run.policy.SapphirePolicyUpcalls;
 import java.util.UUID;
 
@@ -15,8 +15,7 @@ public interface SandboxProvider {
      * @return sandbox associated with the transaction
      */
     SapphirePolicyUpcalls.SapphireServerPolicyUpcalls getSandbox(
-            SapphirePolicyLibrary.SapphireServerPolicyLibrary origin, UUID transactionId)
-            throws Exception;
+            Library.SapphireServerPolicyLibrary origin, UUID transactionId) throws Exception;
 
     /**
      * gets the sandbox assiated with the specified transaction

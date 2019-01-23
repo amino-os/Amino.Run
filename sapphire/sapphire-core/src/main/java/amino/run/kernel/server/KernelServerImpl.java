@@ -8,9 +8,9 @@ import amino.run.common.SapphireObjectReplicaNotFoundException;
 import amino.run.kernel.client.KernelClient;
 import amino.run.kernel.common.*;
 import amino.run.oms.OMSServer;
+import amino.run.policy.Library;
 import amino.run.policy.Policy;
 import amino.run.policy.SapphirePolicyContainer;
-import amino.run.policy.SapphirePolicyLibrary;
 import amino.run.policy.util.ResettableTimer;
 import amino.run.runtime.EventHandler;
 import amino.run.runtime.Sapphire;
@@ -134,18 +134,17 @@ public class KernelServerImpl implements KernelServer {
         // To add Kernel Object to local object manager
         Serializable realObj = object.getObject();
 
-        if (!(realObj instanceof SapphirePolicyLibrary.SapphireServerPolicyLibrary)) {
+        if (!(realObj instanceof Library.SapphireServerPolicyLibrary)) {
             logger.log(Level.WARNING, "Added " + oid.getID() + " as unknown type.");
             return;
         }
 
-        SapphirePolicyLibrary.SapphireServerPolicyLibrary firstServerPolicy =
-                (SapphirePolicyLibrary.SapphireServerPolicyLibrary) realObj;
+        Library.SapphireServerPolicyLibrary firstServerPolicy =
+                (Library.SapphireServerPolicyLibrary) realObj;
 
         for (SapphirePolicyContainer spContainer : firstServerPolicy.getProcessedPolicies()) {
             // Add Server Policy object in the same order as client side has created.
-            SapphirePolicyLibrary.SapphireServerPolicyLibrary serverPolicy =
-                    spContainer.getServerPolicy();
+            Library.SapphireServerPolicyLibrary serverPolicy = spContainer.getServerPolicy();
 
             // Added for setting the ReplicaId and registering handler for this replica to OMS.
             Policy.ServerPolicy serverPolicyStub =

@@ -1,6 +1,6 @@
 package amino.run.policy.transaction;
 
-import static amino.run.policy.SapphirePolicyLibrary.SapphireServerPolicyLibrary;
+import static amino.run.policy.Library.SapphireServerPolicyLibrary;
 import static amino.run.policy.SapphirePolicyUpcalls.SapphireServerPolicyUpcalls;
 
 import java.io.Serializable;

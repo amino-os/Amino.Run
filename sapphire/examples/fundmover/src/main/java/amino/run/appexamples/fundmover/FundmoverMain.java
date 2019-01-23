@@ -7,8 +7,8 @@ import java.rmi.registry.Registry;
 
 import amino.run.app.DMSpec;
 import amino.run.app.Language;
+import amino.run.app.MicroServiceSpec;
 import amino.run.app.SapphireObjectServer;
-import amino.run.app.SapphireObjectSpec;
 import amino.run.common.SapphireObjectID;
 import amino.run.kernel.server.KernelServer;
 import amino.run.kernel.server.KernelServerImpl;
@@ -34,8 +34,8 @@ public class FundmoverMain {
 
             KernelServer nodeServer = new KernelServerImpl(new InetSocketAddress(args[2], Integer.parseInt(args[3])), new InetSocketAddress(args[0], Integer.parseInt(args[1])));
 
-            SapphireObjectSpec walletSpec,bankAccountSpec,financeSpec ;
-            walletSpec= SapphireObjectSpec.newBuilder()
+            MicroServiceSpec walletSpec,bankAccountSpec,financeSpec ;
+            walletSpec= MicroServiceSpec.newBuilder()
                          .setLang(Language.java)
                          .setJavaClassName(Wallet.class.getName())
                          .addDMSpec(
@@ -43,7 +43,7 @@ public class FundmoverMain {
                                  .setName(TwoPCExtResourceCohortPolicy.class.getName())
                                  .create())
                          .create();
-            bankAccountSpec = SapphireObjectSpec.newBuilder()
+            bankAccountSpec = MicroServiceSpec.newBuilder()
                                .setLang(Language.java)
                                .setJavaClassName(BankAccount.class.getName())
                                .addDMSpec(
@@ -51,7 +51,7 @@ public class FundmoverMain {
                                        .setName(TwoPCExtResourceCohortPolicy.class.getName())
                                        .create())
                                .create();
-            financeSpec = SapphireObjectSpec.newBuilder()
+            financeSpec = MicroServiceSpec.newBuilder()
                            .setLang(Language.java)
                            .setJavaClassName(Finance.class.getName())
                            .addDMSpec(

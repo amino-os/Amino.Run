@@ -1,6 +1,6 @@
 package amino.run.policy.replication;
 
-import amino.run.app.SapphireObjectSpec;
+import amino.run.app.MicroServiceSpec;
 import amino.run.common.SapphireObjectNotFoundException;
 import amino.run.common.SapphireObjectReplicaNotFoundException;
 import amino.run.policy.DefaultPolicy;
@@ -149,7 +149,7 @@ public class ConsensusRSMPolicy extends DefaultPolicy {
         }
 
         @Override
-        public void onCreate(Policy.GroupPolicy group, SapphireObjectSpec spec) {
+        public void onCreate(Policy.GroupPolicy group, MicroServiceSpec spec) {
             super.onCreate(group, spec);
             raftServer = new Server(this);
         }
@@ -211,7 +211,7 @@ public class ConsensusRSMPolicy extends DefaultPolicy {
         private static Logger logger = Logger.getLogger(GroupPolicy.class.getName());
 
         @Override
-        public void onCreate(String region, Policy.ServerPolicy server, SapphireObjectSpec spec)
+        public void onCreate(String region, Policy.ServerPolicy server, MicroServiceSpec spec)
                 throws RemoteException {
             super.onCreate(region, server, spec);
             List<InetSocketAddress> addressList = new ArrayList<>();

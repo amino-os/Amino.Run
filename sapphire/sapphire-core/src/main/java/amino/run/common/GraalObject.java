@@ -1,7 +1,7 @@
 package amino.run.common;
 
 import amino.run.app.Language;
-import amino.run.app.SapphireObjectSpec;
+import amino.run.app.MicroServiceSpec;
 import amino.run.graal.io.Deserializer;
 import amino.run.graal.io.SerializeValue;
 import amino.run.graal.io.Serializer;
@@ -80,7 +80,7 @@ public class GraalObject implements Serializable {
         return new GraalObject.Builder();
     }
 
-    public void $__initializeGraal(SapphireObjectSpec spec, Object[] params) throws IOException {
+    public void $__initializeGraal(MicroServiceSpec spec, Object[] params) throws IOException {
         lang = spec.getLang();
         sourceLocation = spec.getSourceFileLocation();
         constructor = spec.getConstructorName();
@@ -104,7 +104,7 @@ public class GraalObject implements Serializable {
     }
 
     // only create context in graal initialize. Only used in client side
-    public void $__initializeGraal(SapphireObjectSpec spec) throws IOException {
+    public void $__initializeGraal(MicroServiceSpec spec) throws IOException {
         lang = spec.getLang();
         sourceLocation = spec.getSourceFileLocation();
         constructor = spec.getConstructorName();

@@ -2,8 +2,8 @@ package amino.run.policy;
 
 import static amino.run.kernel.IntegrationTestBase.startOmsAndKernelServers;
 
+import amino.run.app.MicroServiceSpec;
 import amino.run.app.SapphireObjectServer;
-import amino.run.app.SapphireObjectSpec;
 import amino.run.common.SapphireObjectID;
 import amino.run.demo.KVStore;
 import amino.run.kernel.IntegrationTestBase;
@@ -51,7 +51,7 @@ public class ScaleUpFrontendDMIntegTest {
                 new InetSocketAddress(IntegrationTestBase.omsIp, IntegrationTestBase.omsPort));
     }
 
-    private void runTest(SapphireObjectSpec spec) throws Exception {
+    private void runTest(MicroServiceSpec spec) throws Exception {
         SapphireObjectID sapphireObjId = sapphireObjectServer.createSapphireObject(spec.toString());
         KVStore store = (KVStore) sapphireObjectServer.acquireSapphireObjectStub(sapphireObjId);
         String key = "k";
@@ -136,7 +136,7 @@ public class ScaleUpFrontendDMIntegTest {
     @Test
     public void testScaleUpFrontendDMs() throws Exception {
         File file = IntegrationTestBase.getResourceFile("specs/complex-dm/ScaleUpFrontend.yaml");
-        SapphireObjectSpec spec = IntegrationTestBase.readSapphireSpec(file);
+        MicroServiceSpec spec = IntegrationTestBase.readSapphireSpec(file);
         runTest(spec);
     }
 

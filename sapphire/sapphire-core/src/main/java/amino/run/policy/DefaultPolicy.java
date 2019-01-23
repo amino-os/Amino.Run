@@ -1,6 +1,6 @@
 package amino.run.policy;
 
-import amino.run.app.SapphireObjectSpec;
+import amino.run.app.MicroServiceSpec;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 
@@ -16,7 +16,7 @@ public class DefaultPolicy extends Policy {
         public void onMembershipChange() {}
 
         @Override
-        public void onCreate(GroupPolicy group, SapphireObjectSpec spec) {
+        public void onCreate(GroupPolicy group, MicroServiceSpec spec) {
             super.onCreate(group, spec);
         }
 
@@ -45,7 +45,7 @@ public class DefaultPolicy extends Policy {
         }
 
         @Override
-        public void onCreate(GroupPolicy group, SapphireObjectSpec spec) {
+        public void onCreate(GroupPolicy group, MicroServiceSpec spec) {
             this.group = (DefaultGroupPolicy) group;
         }
     }
@@ -53,7 +53,7 @@ public class DefaultPolicy extends Policy {
     public static class DefaultGroupPolicy extends GroupPolicy {
         private ArrayList<ServerPolicy> servers = new ArrayList<ServerPolicy>();
         protected String region = "";
-        protected SapphireObjectSpec spec = null;
+        protected MicroServiceSpec spec = null;
 
         @Override
         /**
@@ -84,7 +84,7 @@ public class DefaultPolicy extends Policy {
         }
 
         @Override
-        public void onCreate(String region, ServerPolicy server, SapphireObjectSpec spec)
+        public void onCreate(String region, ServerPolicy server, MicroServiceSpec spec)
                 throws RemoteException {
             this.region = region;
             this.spec = spec;

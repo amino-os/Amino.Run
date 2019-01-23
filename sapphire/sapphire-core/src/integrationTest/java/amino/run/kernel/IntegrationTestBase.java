@@ -2,7 +2,7 @@ package amino.run.kernel;
 
 import static java.lang.Thread.sleep;
 
-import amino.run.app.SapphireObjectSpec;
+import amino.run.app.MicroServiceSpec;
 import amino.run.demo.KVStore;
 import amino.run.kernel.server.KernelServerImpl;
 import amino.run.oms.OMSServerImpl;
@@ -178,10 +178,10 @@ public class IntegrationTestBase {
         return file;
     }
 
-    public static SapphireObjectSpec readSapphireSpec(File file) throws Exception {
+    public static MicroServiceSpec readSapphireSpec(File file) throws Exception {
         List<String> lines = Files.readAllLines(file.toPath());
         String yamlStr = String.join("\n", lines);
-        SapphireObjectSpec spec = SapphireObjectSpec.fromYaml(yamlStr);
+        MicroServiceSpec spec = MicroServiceSpec.fromYaml(yamlStr);
 
         return spec;
     }

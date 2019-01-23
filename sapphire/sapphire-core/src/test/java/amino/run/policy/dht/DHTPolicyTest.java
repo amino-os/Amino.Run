@@ -2,7 +2,7 @@ package amino.run.policy.dht;
 
 import amino.run.app.DMSpec;
 import amino.run.app.Language;
-import amino.run.app.SapphireObjectSpec;
+import amino.run.app.MicroServiceSpec;
 import amino.run.common.BaseTest;
 import amino.run.sampleSO.SO;
 import java.util.*;
@@ -19,8 +19,8 @@ public class DHTPolicyTest extends BaseTest {
         DHTPolicy.Config config = new DHTPolicy.Config();
         config.setNumOfShards(3);
 
-        SapphireObjectSpec spec =
-                SapphireObjectSpec.newBuilder()
+        MicroServiceSpec spec =
+                MicroServiceSpec.newBuilder()
                         .setLang(Language.java)
                         .setJavaClassName("amino.run.sampleSO.SO")
                         .addDMSpec(

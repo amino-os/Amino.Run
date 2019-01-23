@@ -1,11 +1,8 @@
 package amino.run.common;
 
-import static org.junit.Assert.*;
-
 import amino.run.app.Language;
-import amino.run.app.SapphireObjectSpec;
+import amino.run.app.MicroServiceSpec;
 import java.io.*;
-import org.graalvm.polyglot.*;
 import org.junit.Test;
 
 public class ObjectHandlerTest {
@@ -14,8 +11,8 @@ public class ObjectHandlerTest {
     public void testGraalObject() throws Exception {
         String filename = "./src/test/resources/student.js";
 
-        SapphireObjectSpec spec =
-                SapphireObjectSpec.newBuilder()
+        MicroServiceSpec spec =
+                MicroServiceSpec.newBuilder()
                         .setLang(Language.js)
                         .setConstructorName("Student")
                         .setJavaClassName("amino.run.stubs.Student_Stub")

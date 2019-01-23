@@ -2,8 +2,8 @@ package amino.run.multidm;
 
 import static amino.run.kernel.IntegrationTestBase.*;
 
+import amino.run.app.MicroServiceSpec;
 import amino.run.app.SapphireObjectServer;
-import amino.run.app.SapphireObjectSpec;
 import amino.run.common.SapphireObjectID;
 import amino.run.demo.KVStore;
 import amino.run.kernel.server.KernelServerImpl;
@@ -41,7 +41,7 @@ public class MultiDMTestCases {
                 new InetSocketAddress(hostIp, hostPort), new InetSocketAddress(omsIp, omsPort));
     }
 
-    private void runTest(SapphireObjectSpec spec, boolean consensus) throws Exception {
+    private void runTest(MicroServiceSpec spec, boolean consensus) throws Exception {
         SapphireObjectID sapphireObjId = sapphireObjectServer.createSapphireObject(spec.toString());
         KVStore store = (KVStore) sapphireObjectServer.acquireSapphireObjectStub(sapphireObjId);
         // consensus DM needs some time to elect the leader other wise function call will fail
@@ -67,7 +67,7 @@ public class MultiDMTestCases {
     @Test
     public void testDHTNConsensusMultiDM() throws Exception {
         File file = getResourceFile("specs/multi-dm/DHTNConsensus.yaml");
-        SapphireObjectSpec spec = readSapphireSpec(file);
+        MicroServiceSpec spec = readSapphireSpec(file);
         runTest(spec, true);
     }
 
@@ -80,7 +80,7 @@ public class MultiDMTestCases {
     @Test
     public void testDHTNMasterSlaveMultiDM() throws Exception {
         File file = getResourceFile("specs/multi-dm/DHTNMasterSlave.yaml");
-        SapphireObjectSpec spec = readSapphireSpec(file);
+        MicroServiceSpec spec = readSapphireSpec(file);
         runTest(spec, false);
     }
 
@@ -94,7 +94,7 @@ public class MultiDMTestCases {
     @Ignore("Test is ignored will be removed once the multi DM issues are resolved")
     public void testAtleastOnceRPCDHTNMasterSlaveMultiDM() throws Exception {
         File file = getResourceFile("specs/multi-dm/AtleastRPCDHTNMasterSlave.yaml");
-        SapphireObjectSpec spec = readSapphireSpec(file);
+        MicroServiceSpec spec = readSapphireSpec(file);
         runTest(spec, false);
     }
 
@@ -108,7 +108,7 @@ public class MultiDMTestCases {
     @Ignore("Test is ignored will be removed once the multi DM issues are resolved")
     public void testAtleastOnceRPCDHTNConsensusMultiDM() throws Exception {
         File file = getResourceFile("specs/multi-dm/AtleastRPCDHTNConsensus.yaml");
-        SapphireObjectSpec spec = readSapphireSpec(file);
+        MicroServiceSpec spec = readSapphireSpec(file);
         runTest(spec, true);
     }
 

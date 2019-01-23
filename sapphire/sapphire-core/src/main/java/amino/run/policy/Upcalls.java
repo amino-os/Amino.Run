@@ -1,6 +1,6 @@
 package amino.run.policy;
 
-import amino.run.app.SapphireObjectSpec;
+import amino.run.app.MicroServiceSpec;
 import java.io.Serializable;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -45,7 +45,7 @@ public interface Upcalls {
          *     there, and also change this parameter to more specifically be client configuration
          *     parameters.
          */
-        void onCreate(Policy.GroupPolicy group, SapphireObjectSpec spec);
+        void onCreate(Policy.GroupPolicy group, MicroServiceSpec spec);
 
         /**
          * TODO: Move this method out of this interface. It is not intended to be an upcall from the
@@ -111,7 +111,7 @@ public interface Upcalls {
          *     there, and also change this parameter to more specifically be server configuration
          *     parameters.
          */
-        void onCreate(Policy.GroupPolicy group, SapphireObjectSpec spec);
+        void onCreate(Policy.GroupPolicy group, MicroServiceSpec spec);
 
         /**
          * Event handler for sapphire object destruction. Called immediately before a sapphire
@@ -187,7 +187,7 @@ public interface Upcalls {
          * @param spec sapphire object spec. This contains configuration parameters that may be used
          *     to configure this group policy.
          */
-        void onCreate(String region, Policy.ServerPolicy server, SapphireObjectSpec spec)
+        void onCreate(String region, Policy.ServerPolicy server, MicroServiceSpec spec)
                 throws RemoteException;
 
         /**

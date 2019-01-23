@@ -1,8 +1,8 @@
 package amino.run.policy;
 
 import amino.run.app.Language;
+import amino.run.app.MicroServiceSpec;
 import amino.run.app.NodeSelectorSpec;
-import amino.run.app.SapphireObjectSpec;
 import amino.run.common.AppObject;
 import amino.run.common.AppObjectStub;
 import amino.run.common.GraalObject;
@@ -45,7 +45,7 @@ public abstract class Library implements Upcalls {
         protected KernelOID oid;
         protected SapphireReplicaID replicaId;
         protected Policy.GroupPolicy group;
-        protected SapphireObjectSpec spec;
+        protected MicroServiceSpec spec;
         protected Map<String, SapphirePolicyConfig> configMap;
         protected boolean alreadyPinned;
 
@@ -103,16 +103,16 @@ public abstract class Library implements Upcalls {
             this.processedPolicies = processedPolicies;
         }
 
-        public void setSapphireObjectSpec(SapphireObjectSpec spec) {
+        public void setMicrosServiceSpec(MicroServiceSpec spec) {
             this.spec = spec;
         }
 
-        public SapphireObjectSpec getSapphireObjectSpec() {
+        public MicroServiceSpec getMicrosServiceSpec() {
             return this.spec;
         }
 
         @Override
-        public void onCreate(Policy.GroupPolicy group, SapphireObjectSpec spec) {
+        public void onCreate(Policy.GroupPolicy group, MicroServiceSpec spec) {
             this.group = group;
             this.spec = spec;
             if (spec != null && spec.getDmList() != null) {
@@ -308,7 +308,7 @@ public abstract class Library implements Upcalls {
          * @param params
          */
         // TODO: not final (stub overrides it)
-        public AppObjectStub $__initialize(SapphireObjectSpec spec, Object[] params) {
+        public AppObjectStub $__initialize(MicroServiceSpec spec, Object[] params) {
             logger.info(String.format("Creating app object '%s' with parameters %s", spec, params));
 
             AppObjectStub actualAppObject = null;

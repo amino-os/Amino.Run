@@ -5,7 +5,7 @@ import static org.junit.Assert.assertNotEquals;
 
 import amino.run.app.DMSpec;
 import amino.run.app.Language;
-import amino.run.app.SapphireObjectSpec;
+import amino.run.app.MicroServiceSpec;
 import amino.run.common.BaseTest;
 import amino.run.common.SapphireObjectID;
 import amino.run.policy.DefaultPolicy;
@@ -27,13 +27,13 @@ public class SapphireMultiPolicyChainTest extends BaseTest {
 
     @Rule public ExpectedException thrown = ExpectedException.none();
 
-    private SapphireObjectSpec spec;
+    private MicroServiceSpec spec;
 
     @Before
     public void setUp() throws Exception {
         this.serversInSameRegion = false;
         spec =
-                SapphireObjectSpec.newBuilder()
+                MicroServiceSpec.newBuilder()
                         .setLang(Language.java)
                         .setJavaClassName("amino.run.sampleSO.SO")
                         .addDMSpec(DMSpec.newBuilder().setName(DHTPolicy.class.getName()).create())

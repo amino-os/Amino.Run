@@ -1,6 +1,6 @@
 # Configuration for running KVStore as a
 # sapphire object with DurableSerializableRPC policy.
-!!amino.run.app.SapphireObjectSpec
+!!amino.run.app.MicrosServiceSpec
 constructorName: null
 dmList:
 - configs: []

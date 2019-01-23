@@ -6,8 +6,8 @@ import java.rmi.registry.Registry;
 
 import amino.run.app.DMSpec;
 import amino.run.app.Language;
+import amino.run.app.MicroServiceSpec;
 import amino.run.app.SapphireObjectServer;
-import amino.run.app.SapphireObjectSpec;
 import amino.run.common.SapphireObjectID;
 import amino.run.kernel.server.KernelServer;
 import amino.run.kernel.server.KernelServerImpl;
@@ -33,7 +33,7 @@ public class HelloWorldMain {
 
             KernelServer nodeServer = new KernelServerImpl(new InetSocketAddress(args[2], Integer.parseInt(args[3])), new InetSocketAddress(args[0], Integer.parseInt(args[1])));
 
-            SapphireObjectSpec spec = SapphireObjectSpec.newBuilder()
+            MicroServiceSpec spec = MicroServiceSpec.newBuilder()
                     .setLang(Language.java)
                     .setJavaClassName("amino.run.appexamples.helloworld.HelloWorld")
                     .addDMSpec(DMSpec.newBuilder()

@@ -8,7 +8,7 @@ import static org.mockito.Mockito.mock;
 
 import amino.run.app.DMSpec;
 import amino.run.app.Language;
-import amino.run.app.SapphireObjectSpec;
+import amino.run.app.MicroServiceSpec;
 import amino.run.common.BaseTest;
 import amino.run.sampleSO.stubs.SO_Stub;
 import java.util.ArrayList;
@@ -40,8 +40,8 @@ public class LoadBalancedFrontendPolicyTest extends BaseTest {
         config.setMaxConcurrentReq(2);
         config.setReplicaCount(2);
 
-        SapphireObjectSpec spec =
-                SapphireObjectSpec.newBuilder()
+        MicroServiceSpec spec =
+                MicroServiceSpec.newBuilder()
                         .setLang(Language.java)
                         .setJavaClassName("amino.run.sampleSO.SO")
                         .addDMSpec(
@@ -125,7 +125,7 @@ public class LoadBalancedFrontendPolicyTest extends BaseTest {
         thrown.expectMessage("Configured replicas count: 5, created replica count : 2");
         setFieldValueOnInstance(group1, "replicaCount", 5);
         group1.onCreate(
-                "", mock(LoadBalancedFrontendPolicy.ServerPolicy.class), new SapphireObjectSpec());
+                "", mock(LoadBalancedFrontendPolicy.ServerPolicy.class), new MicroServiceSpec());
     }
 
     @After

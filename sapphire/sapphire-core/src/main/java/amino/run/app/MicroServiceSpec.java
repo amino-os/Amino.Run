@@ -7,25 +7,25 @@ import java.util.Objects;
 import org.yaml.snakeyaml.Yaml;
 
 /**
- * Sapphire Object Specification.
+ * Microservice Specification.
  *
- * <p>Most applications should use Yaml file to specify sapphire objects. Yaml files can be parsed
- * into SapphireObjectSpec with {@link #fromYaml(String)}.
+ * <p>Most applications should use Yaml file to specify microservices. Yaml files can be parsed into
+ * MicroServiceSpec with {@link #fromYaml(String)}.
  *
- * <p>Java application has the option to create {@link SapphireObjectSpec} programmatically with
+ * <p>Java application has the option to create {@link MicroServiceSpec} programmatically with
  * {@link Builder} class. <code>
  *      LoadBalancedFrontendPolicy.Config config = new LoadBalancedFrontendPolicy.Config();
  *      config.setMaxConcurrentReq(200);
  *      config.setReplicaCount(30);
  *
  *      DMSpec dm = Utils.toDMSpec(config);
- *      SapphireObjectSpec spec = SapphireObjectSpec.newBuilder()
+ *      MicroServiceSpec spec = MicroServiceSpec.newBuilder()
  *                                      .setName("soname")
  *                                      .setLang(Language.Java)
  *                                      .addDMSpec(dm)
  *                                      .create();
  * </code> Yaml of one Sapphire Object Specification Example: <code>
- * !!amino.run.app.SapphireObjectSpec
+ * !!amino.run.app.MicroServiceSpec
  * constructorName: college
  * dmList:
  * - configs:
@@ -39,23 +39,23 @@ import org.yaml.snakeyaml.Yaml;
  * sourceFileLocation: src/main/js/college.js
  * </code>
  */
-public class SapphireObjectSpec implements Serializable {
-    /** Programming Language in which the Sapphire object is written */
+public class MicroServiceSpec implements Serializable {
+    /** Programming language in which the microservice is written */
     private Language lang;
 
-    /** Name of Sapphire object */
+    /** Name of microservice */
     private String name;
 
-    /** Java class name of Sapphire object. Only used when {@link #lang} is Java. */
+    /** Java class name of microservice. Only used when {@link #lang} is Java. */
     private String javaClassName;
 
-    /** Location of Sapphire object source file. Used when {@link #lang} is not Java */
+    /** Location of microservice source file. Used when {@link #lang} is not Java */
     private String sourceFileLocation;
 
-    /** Name of Sapphire object constructor. Used when {@link #lang} is not Java */
+    /** Name of microservice constructor. Used when {@link #lang} is not Java */
     private String constructorName;
 
-    /** List of Deployment Managers to be applied on Sapphire object */
+    /** List of Deployment Managers to be applied on microservice */
     private List<DMSpec> dmList = new ArrayList<>();
 
     private NodeSelectorSpec nodeSelectorSpec;
@@ -124,16 +124,16 @@ public class SapphireObjectSpec implements Serializable {
         this.nodeSelectorSpec = nodeSelectorSpec;
     }
 
-    public static SapphireObjectSpec fromYaml(String yamlString) {
+    public static MicroServiceSpec fromYaml(String yamlString) {
         Yaml yaml = new Yaml();
-        return yaml.loadAs(yamlString, SapphireObjectSpec.class);
+        return yaml.loadAs(yamlString, MicroServiceSpec.class);
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        SapphireObjectSpec that = (SapphireObjectSpec) o;
+        MicroServiceSpec that = (MicroServiceSpec) o;
         return lang == that.lang
                 && Objects.equals(name, that.name)
                 && Objects.equals(javaClassName, that.javaClassName)
@@ -208,8 +208,8 @@ public class SapphireObjectSpec implements Serializable {
             return this;
         }
 
-        public SapphireObjectSpec create() {
-            SapphireObjectSpec spec = new SapphireObjectSpec();
+        public MicroServiceSpec create() {
+            MicroServiceSpec spec = new MicroServiceSpec();
             spec.setName(name);
             spec.setLang(lang);
             spec.setJavaClassName(javaClassName);

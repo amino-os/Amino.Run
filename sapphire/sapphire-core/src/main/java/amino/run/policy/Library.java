@@ -32,7 +32,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.harmony.rmi.common.RMIUtil;
 
-public abstract class SapphirePolicyLibrary implements SapphirePolicyUpcalls {
+public abstract class Library implements SapphirePolicyUpcalls {
     public abstract static class SapphireClientPolicyLibrary
             implements SapphireClientPolicyUpcalls {
 

@@ -298,7 +298,7 @@ public class Sapphire {
             // TODO: Quinton: This looks like a bug.  Why is the server only added for the first
             // server?
             // OK - I think I've figured out why.  Because addServer is also invoked from
-            // SapphirePolicyLibrary.sapphire_replicate
+            // Library.sapphire_replicate
             // when additional replicas are created.
             // TODO: Remove calls to addServer from the DK.
             // addServer should only be called be called internally in the DM's.
@@ -613,7 +613,7 @@ public class Sapphire {
      * Checks the downstream policies by going through processedPolicies and sets the given
      * serverPolicyStub as being already pinned if any of downstream policies have set it as already
      * pinned. Note 'pinned' means the chain was migrated to a target Kernel Server by
-     * sapphire_pin_to_server() at SapphirePolicyLibrary
+     * sapphire_pin_to_server() at Library
      *
      * @param serverPolicyStub Stub to set as already pinned if downstream has already pinned.
      * @param processedPolicies All of the policies created in this policy chain.

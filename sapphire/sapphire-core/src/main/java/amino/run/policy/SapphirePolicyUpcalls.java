@@ -196,17 +196,17 @@ public interface SapphirePolicyUpcalls {
          * TODO: Move this method out of this interface. It is not intended to be an upcall from the
          * DK to the DM. It is intended to be an internal/protected method of the DM. In the current
          * code however, it is invoked from {@link Sapphire.createPolicy} during construction, and
-         * from {@link SapphirePolicyLibrary.sapphire_replicate} during replication. TODO: The above
-         * calls need to be removed. Additional comment from Venu: IMHO, decisions about the number
-         * of replicas, when to create or delete them, how to synchronize them, and how to handle
-         * failures occur at the DM level. Replicate and pin being controlled by group object. So
-         * addServer() and removeServer() can be treated as internal methods to group policy
-         * objects. Group policy can add and delete locally in group policy's onCreate(), after
-         * sapphire_pin_to_server() and removeReplica() respectively. We keep group policy
-         * onCreate() to do addServer() as before. And remove getGroup().addServer((ServerPolicy)
-         * serverPolicyStub); from sapphire_replicate(). In case of replication, we can do
-         * addServer() after sapphire_pin_to_server() call in group policy itself. In effect,
-         * addServer() and removeServer() no longer need to be in SapphireGroupPolicyUpcalls.
+         * from {@link Library.sapphire_replicate} during replication. TODO: The above calls need to
+         * be removed. Additional comment from Venu: IMHO, decisions about the number of replicas,
+         * when to create or delete them, how to synchronize them, and how to handle failures occur
+         * at the DM level. Replicate and pin being controlled by group object. So addServer() and
+         * removeServer() can be treated as internal methods to group policy objects. Group policy
+         * can add and delete locally in group policy's onCreate(), after sapphire_pin_to_server()
+         * and removeReplica() respectively. We keep group policy onCreate() to do addServer() as
+         * before. And remove getGroup().addServer((ServerPolicy) serverPolicyStub); from
+         * sapphire_replicate(). In case of replication, we can do addServer() after
+         * sapphire_pin_to_server() call in group policy itself. In effect, addServer() and
+         * removeServer() no longer need to be in SapphireGroupPolicyUpcalls.
          *
          * <p>NOTE: UWSysLab/Sapphire code has addServer() in SapphireGroupPolicyUpcalls and
          * getGroup().addServer((ServerPolicy)serverPolicyStub) being called in sapphire_replicate

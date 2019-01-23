@@ -102,7 +102,7 @@ subprojects {
     clean {
         delete genStubs.outputs.files // Add generated stubs to what the clean task must delete
         doLast {
-            println 'DEBUG: Clean will also delete ' + genStubs.outputs.files.asCollection()
+            logger.info('Clean will delete ' + clean.targetFiles.asCollection())
         }
     }
 

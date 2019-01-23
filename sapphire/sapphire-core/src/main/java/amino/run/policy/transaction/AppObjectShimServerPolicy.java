@@ -4,14 +4,13 @@ import amino.run.app.SapphireObjectSpec;
 import amino.run.common.AppObject;
 import amino.run.common.Utils;
 import amino.run.policy.Policy;
-import amino.run.policy.SapphirePolicyUpcalls;
+import amino.run.policy.Upcalls;
 import amino.run.policy.scalability.masterslave.MethodInvocationRequest;
 import amino.run.policy.scalability.masterslave.MethodInvocationResponse;
 import java.util.ArrayList;
 
 /** server policy that directly works on the deep-cloned copy of an AppObject */
-public class AppObjectShimServerPolicy
-        implements SapphirePolicyUpcalls.SapphireServerPolicyUpcalls {
+public class AppObjectShimServerPolicy implements Upcalls.ServerUpcalls {
     private AppObject appObject;
     private AppObject originMaster;
 

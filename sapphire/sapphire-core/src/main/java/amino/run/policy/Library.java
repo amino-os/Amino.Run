@@ -32,15 +32,15 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.harmony.rmi.common.RMIUtil;
 
-public abstract class Library implements SapphirePolicyUpcalls {
-    public abstract static class ClientPolicyLibrary implements SapphireClientPolicyUpcalls {
+public abstract class Library implements Upcalls {
+    public abstract static class ClientPolicyLibrary implements ClientUpcalls {
 
         /*
          * INTERNAL FUNCTIONS (Used by sapphire runtime system)
          */
     }
 
-    public abstract static class ServerPolicyLibrary implements SapphireServerPolicyUpcalls {
+    public abstract static class ServerPolicyLibrary implements ServerUpcalls {
         protected AppObject appObject;
         protected KernelOID oid;
         protected SapphireReplicaID replicaId;
@@ -408,7 +408,7 @@ public abstract class Library implements SapphirePolicyUpcalls {
         }
     }
 
-    public abstract static class GroupPolicyLibrary implements SapphireGroupPolicyUpcalls {
+    public abstract static class GroupPolicyLibrary implements GroupUpcalls {
         protected String appObjectClassName;
         protected ArrayList<Object> params;
         protected KernelOID oid;

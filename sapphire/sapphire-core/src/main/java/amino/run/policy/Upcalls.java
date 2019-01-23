@@ -14,15 +14,15 @@ import java.util.ArrayList;
  * and not by applications. TODO: Restructure code so that it's not possible/easy for these to be
  * involked from the wrong places, as is for example currently done in ConsensusRSMPolicy.
  */
-public interface SapphirePolicyUpcalls {
+public interface Upcalls {
 
     /**
      * Interface for sapphire policy configuration.
      *
      * <p>Each sapphire policy can optionally define a Config class to allow programmers to pass
      * configurations to the sapphire policy. All Config classes should implement this interface.
-     * TODO: Quinton: This does not belong in SapphirePolicyUpcalls interface. Move it to a more
-     * appropriate place.
+     * TODO: Quinton: This does not belong in Upcalls interface. Move it to a more appropriate
+     * place.
      */
     interface SapphirePolicyConfig extends Serializable {}
 
@@ -30,14 +30,14 @@ public interface SapphirePolicyUpcalls {
      * Interface for client policy. These are the methods invoked by the sapphire kernel against all
      * client policies to handle events.
      */
-    interface SapphireClientPolicyUpcalls extends Serializable {
+    interface ClientUpcalls extends Serializable {
         /**
          * Event handler for sapphire object creation. Called after a primary sapphire object is
          * first created (i.e. before any replicas are created). This is called after {@link
          * setServer} (currently in {@link amino.run.runtime.Sapphire.createPolicy} and before
-         * {@link SapphireServerPolicyUpcalls.onCreate}. It is usually used to store a reference to
-         * the group policy for this SO, and to initialize the client. Configuration parameters for
-         * the client are contained in spec.
+         * {@link ServerUpcalls.onCreate}. It is usually used to store a reference to the group
+         * policy for this SO, and to initialize the client. Configuration parameters for the client
+         * are contained in spec.
          *
          * @param group the group policy for the newly created sapphire object.
          * @param spec sapphire object spec, which contains configuration parameters for the client
@@ -95,17 +95,15 @@ public interface SapphirePolicyUpcalls {
     }
 
     /** Interface for server policy. */
-    interface SapphireServerPolicyUpcalls extends Serializable {
+    interface ServerUpcalls extends Serializable {
 
         /**
          * Event handler for sapphire replica creation. Called after a sapphire replica (including
-         * the first one) is first created. This is called after {@link
-         * SapphireClientPolicyUpcalls.onCreate} (currently in {@link
-         * amino.run.runtime.Sapphire.createPolicy} and before {@link
-         * SapphireGroupPolicyUpcalls.onCreate} and before {@link
-         * SapphireGroupPolicyUpcalls.addServer}. It is usually used to store a reference to the
-         * group policy for this SO, and to otherwise initialize the server. Configuration
-         * parameters for the server are contained in spec.
+         * the first one) is first created. This is called after {@link ClientUpcalls.onCreate}
+         * (currently in {@link amino.run.runtime.Sapphire.createPolicy} and before {@link
+         * GroupUpcalls.onCreate} and before {@link GroupUpcalls.addServer}. It is usually used to
+         * store a reference to the group policy for this SO, and to otherwise initialize the
+         * server. Configuration parameters for the server are contained in spec.
          *
          * @param group the group policy for the newly created sapphire object.
          * @param spec sapphire object spec, which contains configuration parameters for the server
@@ -176,7 +174,7 @@ public interface SapphirePolicyUpcalls {
         void onMembershipChange();
     }
 
-    interface SapphireGroupPolicyUpcalls extends Serializable {
+    interface GroupUpcalls extends Serializable {
         /**
          * Event handler for sapphire object creation. Called by the sapphire kernel on creation of
          * this group and it's first/primary replica. DM's may implement this method to initialize
@@ -206,9 +204,9 @@ public interface SapphirePolicyUpcalls {
          * before. And remove getGroup().addServer((ServerPolicy) serverPolicyStub); from
          * sapphire_replicate(). In case of replication, we can do addServer() after
          * sapphire_pin_to_server() call in group policy itself. In effect, addServer() and
-         * removeServer() no longer need to be in SapphireGroupPolicyUpcalls.
+         * removeServer() no longer need to be in GroupUpcalls.
          *
-         * <p>NOTE: UWSysLab/Sapphire code has addServer() in SapphireGroupPolicyUpcalls and
+         * <p>NOTE: UWSysLab/Sapphire code has addServer() in GroupUpcalls and
          * getGroup().addServer((ServerPolicy)serverPolicyStub) being called in sapphire_replicate
          * along with group object's onCreate() although Sapphire paper do not show addServer() in
          * DM Upcall APIs.

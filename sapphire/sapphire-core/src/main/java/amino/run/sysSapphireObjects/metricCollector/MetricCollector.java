@@ -48,7 +48,7 @@ public class MetricCollector implements SapphireObject {
         }
     }
 
-    public Boolean register(MetricSchema schema) throws Exception {
+    public Boolean register(MetricSchema schema) throws SchemaAlreadyRegistered {
         if (schema == null) return false;
         String metricName = schema.getName();
         System.out.println(
@@ -56,8 +56,8 @@ public class MetricCollector implements SapphireObject {
 
         Collector collector = metricCollectors.get(metricName);
         if (collector != null) {
-            // TODO define new exception
-            throw new Exception("metric already registered");
+            throw new SchemaAlreadyRegistered(
+                    String.format("Schema %s already registered", schema.getName()));
         }
 
         metricCollectors.put(metricName, schema.getCollector());

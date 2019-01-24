@@ -4,6 +4,7 @@ import amino.run.common.*;
 import amino.run.kernel.common.KernelObjectNotFoundException;
 import amino.run.kernel.common.KernelObjectStub;
 import amino.run.policy.util.ResettableTimer;
+import amino.run.runtime.AddEvent;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -15,7 +16,6 @@ public class DefaultSapphirePolicy extends Policy {
     public static class DefaultServerPolicy extends ServerPolicy {
         protected int HEALTH_STATUS_QUERY_INTERVAL = 5000;
         protected transient ResettableTimer healthCheckTimer;
-        private DefaultGroupPolicy group;
         private String statusMethodName;
 
         @Override
@@ -109,7 +109,6 @@ public class DefaultSapphirePolicy extends Policy {
         protected transient volatile int healthStatusTick = 1;
         protected transient ResettableTimer healthCheckTimer;
 
-        @Override
         /**
          * it is advisable that defer putting this server policy into group policy until the server
          * policy is complete with full policy chain.
@@ -168,6 +167,7 @@ public class DefaultSapphirePolicy extends Policy {
         }
 
         @Override
+        @AddEvent(event = "NOTIFY")
         public void onNotification(NotificationObject notificationObject) throws RemoteException {
             super.onNotification(notificationObject);
             if (!(notificationObject instanceof SapphireStatusObject)) {

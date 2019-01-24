@@ -1,10 +1,21 @@
 package amino.run.compiler;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.TreeSet;
 import java.util.Vector;
+
+import amino.run.runtime.AddEvent;
+//import amino.run.runtime.EventConst;
 import org.apache.harmony.rmi.common.ClassList;
 import org.apache.harmony.rmi.common.RMIUtil;
 import org.apache.harmony.rmi.compiler.Indenter;
@@ -199,6 +210,12 @@ public abstract class Stub implements RmicConstants {
         /** The generic name of the method */
         final String genericName;
 
+        private final Annotation[] annotations;
+
+        final int numAnnotations;
+
+        final Annotation[] annotationsClass;
+
         public String getGenericName() {
             return genericName;
         }
@@ -219,6 +236,10 @@ public abstract class Stub implements RmicConstants {
             return declaringClass;
         }
 
+        public Annotation[] getAnnotations() {
+            return annotationsClass;
+        }
+
         /**
          * Creates method stub instance.
          *
@@ -234,6 +255,8 @@ public abstract class Stub implements RmicConstants {
             this.retTypeName = RMIUtil.getCanonicalName(retType);
             this.shortSign = RMIUtil.getShortMethodSignature(method);
             this.declaringClass = method.getDeclaringClass();
+            this.annotations = method.getAnnotations();
+            this.numAnnotations = annotations.length;
 
             // Create parameter names array & string.
             paramClassNames = new String[numParams];
@@ -244,6 +267,13 @@ public abstract class Stub implements RmicConstants {
                 paramNames[i] = RmicUtil.getParameterName(parameter, i + 1);
             }
 
+            annotationsClass = new Annotation[numAnnotations];
+            if (annotations.length > 0) {
+                for (int i = 0; i < numAnnotations; i++) {
+                    Annotation annotation = annotations[i];
+                    annotationsClass[i] = annotation;
+                }
+            }
             // Create list of exceptions declared thrown.
             Class<?>[] exceptionsArray = method.getExceptionTypes();
             exceptions = new Vector<Class<?>>(exceptionsArray.length);
@@ -266,12 +296,38 @@ public abstract class Stub implements RmicConstants {
          * @return Stub implementation for this method.
          */
         String getStubImpl(boolean isDMMethod) {
-            return (getStubImplHeader()
+            return (getAvailableAnnotations()
+                    + getStubImplHeader()
                     + indenter.hIncrease()
                     + getMethodContent(this, isDMMethod)
                     + indenter.decrease()
                     + '}'
                     + EOLN);
+        }
+
+        private String getAvailableAnnotations() {
+            StringBuilder buffer = new StringBuilder();
+            try {
+                for (int i = 0; i < numAnnotations; i++) {
+                    Class<? extends Annotation> type = annotationsClass[i].annotationType();
+                    for (Method method : type.getDeclaredMethods()) {
+                        Object value = method.invoke(annotationsClass[i], (Object[]) null);
+                        int start = annotationsClass[i].toString().indexOf(value.toString());
+                        StringBuilder s = new StringBuilder();
+                        s.append("\"").append(value).append("\"");
+                        buffer.append(annotationsClass[i])
+                                .replace(
+                                        start,
+                                        annotationsClass[i].toString().length() - 1,
+                                        s.toString());
+                    }
+                }
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            } catch (InvocationTargetException e) {
+                e.printStackTrace();
+            }
+            return buffer.toString();
         }
 
         /**

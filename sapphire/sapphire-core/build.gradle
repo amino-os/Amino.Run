@@ -122,6 +122,17 @@ genStubs {
     inputs.dir src   // Declare inputs, so gradle will run if they have been changed
 }
 
+task genEvents(type: JavaExec) {
+    main = "amino.run.compiler.EventGenerator"
+    classpath = sourceSets.main.runtimeClasspath
+    def pkg = 'amino.run.policy.stubs'
+    def src = file(project.buildDir.toString() + '/classes/java/main/amino/run/policy/stubs/')
+    def dst = file(project.projectDir.toString() + '/src/main/java/amino/run/runtime/')
+    args src.toString(), pkg, dst.toString()
+    outputs.dir dst // Declare outputs, so gradle will run if they have been changed
+    inputs.dir src   // Declare inputs, so gradle will run if they have been changed
+}
+
 task genUnitTestStubs(type :JavaExec){
     main = "amino.run.compiler.StubGenerator"
     classpath = sourceSets.main.runtimeClasspath

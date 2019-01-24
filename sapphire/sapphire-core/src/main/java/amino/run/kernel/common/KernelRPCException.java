@@ -14,6 +14,10 @@ public class KernelRPCException extends Exception {
         this.e = e;
     }
 
+    public KernelRPCException(String detailMessage) {
+        super(detailMessage);
+    }
+
     public Exception getException() {
         return e;
     }

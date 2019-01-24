@@ -11,16 +11,7 @@ import amino.run.oms.OMSServer;
 import amino.run.policy.Library;
 import amino.run.policy.Policy;
 import amino.run.policy.PolicyContainer;
-import amino.run.common.SapphireObjectCreationException;
-import amino.run.common.SapphireObjectNotFoundException;
-import amino.run.common.SapphireObjectReplicaNotFoundException;
 import amino.run.common.SapphireStatusObject;
-import amino.run.kernel.client.KernelClient;
-import amino.run.kernel.common.*;
-import amino.run.oms.OMSServer;
-import amino.run.policy.Policy;
-import amino.run.policy.PolicyContainer;
-import amino.run.policy.Library;
 import amino.run.runtime.Sapphire;
 
 import java.net.InetSocketAddress;
@@ -30,16 +21,13 @@ import java.util.Set;
 import java.util.logging.Level;
 import amino.run.policy.util.ResettableTimer;
 import amino.run.runtime.EventHandler;
-import amino.run.runtime.Sapphire;
 import java.io.Serializable;
-import java.net.InetSocketAddress;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.*;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -56,6 +44,10 @@ public class KernelServerImpl implements KernelServer {
     public static String SERVICE_PORT = "--servicePort";
     public static String DEFAULT_REGION = "default-region";
     public static String REGION_KEY = "region";
+    private static int HEARTBEAT_MAX_TRIES = 3;
+    private static int HEARBEAT_FAIL_COUNT = 0;
+    private ArrayList<SapphireStatusObject> statusObjBatch;
+    private static final int batchSize = 2;
 
     private InetSocketAddress host;
     private String region;
@@ -93,6 +85,7 @@ public class KernelServerImpl implements KernelServer {
         objectManager = new KernelObjectManager();
         client = new KernelClient(oms);
         GlobalKernelReferences.nodeServer = this;
+        statusObjBatch = new ArrayList<>();
     }
 
     public void setRegion(String region) {
@@ -115,25 +108,29 @@ public class KernelServerImpl implements KernelServer {
     public Object makeKernelRPC(KernelRPC rpc)
             throws RemoteException, KernelObjectNotFoundException, KernelObjectMigratingException,
                     KernelRPCException {
-        KernelObject object = null;
-        object = objectManager.lookupObject(rpc.getOID());
+        if (GlobalKernelReferences.KernelServerDown) {
+            throw new KernelRPCException("Kernel server is down");
+        } else {
+            KernelObject object = null;
+            object = objectManager.lookupObject(rpc.getOID());
 
-        logger.log(
-                Level.FINE,
-                "Invoking RPC on Kernel Object with OID: "
-                        + rpc.getOID()
-                        + "with rpc:"
-                        + rpc.getMethod()
-                        + " params: "
-                        + rpc.getParams().toString());
+            logger.log(
+                    Level.FINE,
+                    "Invoking RPC on Kernel Object with OID: "
+                            + rpc.getOID()
+                            + "with rpc:"
+                            + rpc.getMethod()
+                            + " params: "
+                            + rpc.getParams().toString());
 
-        Object ret = null;
-        try {
-            ret = object.invoke(rpc.getMethod(), rpc.getParams());
-        } catch (Exception e) {
-            throw new KernelRPCException(e);
+            Object ret = null;
+            try {
+                ret = object.invoke(rpc.getMethod(), rpc.getParams());
+            } catch (Exception e) {
+                throw new KernelRPCException(e);
+            }
+            return ret;
         }
-        return ret;
     }
 
     /**
@@ -356,6 +353,8 @@ public class KernelServerImpl implements KernelServer {
      */
     public void updateObjectStatus(KernelOID oid, boolean status)
             throws KernelObjectNotFoundException {
+        logger.info("in update status..");
+        logger.info("status.." + status);
         KernelObject object = objectManager.lookupObject(oid);
         object.setStatus(status);
     }
@@ -369,14 +368,18 @@ public class KernelServerImpl implements KernelServer {
         KernelObject kernelObject;
         boolean status;
         Set<Map.Entry<KernelOID, KernelObject>> set = objectManager.getKernelObjects();
+        System.out.println("in geStatusObjects...");
+        System.out.println("set size.." + set.size());
         ArrayList<SapphireStatusObject> statusObjects = new ArrayList();
         for (Map.Entry<KernelOID, KernelObject> entry : set) {
             if (entry.getValue().getObject() instanceof Policy.ServerPolicy) {
                 kernelObject = entry.getValue();
                 Policy.GroupPolicy group =
                         ((Policy.ServerPolicy) kernelObject.getObject()).getGroup();
+                System.out.println("group is null???" + group);
                 if (group != null) {
                     status = kernelObject.isStatus();
+                    System.out.println("adding status objects..");
                     statusObjects.add(
                             new SapphireStatusObject(
                                     group.getSapphireObjId(),
@@ -446,15 +449,45 @@ public class KernelServerImpl implements KernelServer {
 
     /** Send heartbeats to OMS. */
     private void startheartbeat(ServerInfo srvinfo, ArrayList<SapphireStatusObject> statusObjects) {
-        logger.fine("heartbeat KernelServer" + srvinfo);
+        logger.info("heartbeat KernelServer" + srvinfo + statusObjects);
+        /*Update the status of policy objects too */
         try {
-            /* Update the status of policy objects too */
-            oms.heartbeatKernelServer(srvinfo, statusObjects);
+            synchronized (this) {
+                if (statusObjects.isEmpty()) {
+                    oms.heartbeatKernelServer(srvinfo, statusObjects);
+                } else {
+                    System.out.println("statusobj size.." + statusObjects.size());
+                    for (SapphireStatusObject statusObject : statusObjects) {
+                        statusObjBatch.add(statusObject);
+                        if (statusObjBatch.size() == batchSize) {
+                            System.out.println("reached batch size.." + statusObjBatch.size());
+                            oms.heartbeatKernelServer(srvinfo, statusObjBatch);
+                            statusObjBatch.clear();
+                        }
+                    }
+                    if (statusObjBatch.size() != 0) {
+                        System.out.println("pushed.....");
+                        oms.heartbeatKernelServer(srvinfo, statusObjBatch);
+                        statusObjBatch.clear();
+                    }
+                }
+            }
         } catch (Exception e) {
+            checkKernelServerStatus();
             logger.severe("Cannot heartbeat KernelServer" + srvinfo);
             e.printStackTrace();
         }
         ksHeartbeatSendTimer.reset();
+    }
+
+    private static void checkKernelServerStatus() {
+        HEARBEAT_FAIL_COUNT++;
+        GlobalKernelReferences.KernelServerDown = false;
+        System.out.println("HEARBEAT_FAIL_COUNT.." + HEARBEAT_FAIL_COUNT);
+        if (HEARBEAT_FAIL_COUNT == HEARTBEAT_MAX_TRIES) {
+            GlobalKernelReferences.KernelServerDown = true;
+            HEARBEAT_FAIL_COUNT = 0;
+        }
     }
     /**
      * At startup, contact the OMS.
@@ -510,7 +543,6 @@ public class KernelServerImpl implements KernelServer {
 
     private void startHeartbeats(ServerInfo srvInfo, ArrayList<SapphireStatusObject> statusObjects)
             throws RemoteException, NotBoundException, KernelServerNotFoundException {
-        oms.heartbeatKernelServer(srvInfo, statusObjects);
         ksHeartbeatSendTimer =
                 new ResettableTimer(
                         new TimerTask() {
@@ -518,7 +550,7 @@ public class KernelServerImpl implements KernelServer {
                                 startheartbeat(srvInfo, geStatusObjects());
                             }
                         },
-                        KS_HEARTBEAT_PERIOD);
+                        KS_HEARTBEAT_PERIOD / 2);
         ksHeartbeatSendTimer.start();
     }
 

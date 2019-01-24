@@ -78,6 +78,7 @@ public class MultiDMTestCases {
      * @throws Exception
      */
     @Test
+    @Ignore
     public void testDHTNMasterSlaveMultiDM() throws Exception {
         File file = getResourceFile("specs/multi-dm/DHTNMasterSlave.yaml");
         MicroServiceSpec spec = readSapphireSpec(file);

@@ -120,7 +120,16 @@ genStubs {
     inputs.dir src   // Declare inputs, so gradle will run if they have been changed
 }
 
+
+task compileSampleSO(type: JavaCompile) {
+    source = file(project.projectDir.toString() + '/src/test/java/amino/run/sampleSO')
+    classpath = files(sourceSets.main.output.classesDir)
+    destinationDir = file(project.buildDir.toString() + '/classes/java/test/')
+    options.incremental = true
+}
+
 task genUnitTestStubs(type :JavaExec){
+    dependsOn compileSampleSO
     main = "amino.run.compiler.StubGenerator"
     classpath = sourceSets.main.runtimeClasspath
     classpath += files("$projectDir/build/classes/java/test/")
@@ -152,9 +161,11 @@ task genGraalTestStubs(type: JavaExec) {
     args sapphireObjectPath, outPath, packageName, sapphireClasses
     outputs.dir outPath + "/amino/run/stubs" // Declare outputs, so gradle will run if they have been changed
     inputs.dir sapphireObjectPath   // Declare inputs, so gradle will run if they have been changed
+    dependsOn compileJava
 }
 // Task for Graal Test stubs compilation
 task compileGraalTestStubs(type: JavaCompile) {
+    dependsOn genGraalTestStubs
     source = "$projectDir/src/test/java/amino/run/stubs"
     classpath = files(sourceSets.main.output.classesDir)
     destinationDir = sourceSets.main.output.classesDir
@@ -162,7 +173,15 @@ task compileGraalTestStubs(type: JavaCompile) {
     inputs.dir genGraalTestStubs.outputs
 }
 
+task compileIntegTestDemoPkg(type: JavaCompile) {
+    source = file(project.projectDir.toString() + '/src/integrationTest/java/amino/run/demo/')
+    classpath = sourceSets.integrationTest.compileClasspath
+    destinationDir = file(project.buildDir.toString() + '/classes/java/integrationTest/')
+    options.incremental = true
+}
+
 task genIntegTestStubs(type :JavaExec) {
+    dependsOn compileIntegTestDemoPkg
     main = "amino.run.compiler.StubGenerator"
     classpath = sourceSets.main.runtimeClasspath
     classpath += files("$projectDir/build/classes/java/integrationTest/")
@@ -192,22 +211,18 @@ clean {
     }
 }
 
-tasks.googleJavaFormat.mustRunAfter genStubs
-tasks.googleJavaFormat.mustRunAfter genGraalTestStubs
-tasks.googleJavaFormat.mustRunAfter genUnitTestStubs
-tasks.googleJavaFormat.mustRunAfter genIntegTestStubs
+compileTestJava {
+    dependsOn compileGraalTestStubs
+    dependsOn genUnitTestStubs
+}
 
-genGraalTestStubs.dependsOn compileJava
-compileGraalTestStubs.dependsOn genGraalTestStubs
-compileTestJava.dependsOn compileGraalTestStubs
-genUnitTestStubs.dependsOn compileSampleSO
-compileTestJava.dependsOn genUnitTestStubs
-genIntegTestStubs.dependsOn compileIntegTestDemoPkg
-compileIntegrationTestJava.dependsOn genIntegTestStubs
+compileIntegrationTestJava {
+    dependsOn genIntegTestStubs
+}
 
-tasks.googleJavaFormat.dependsOn genStubs
-tasks.googleJavaFormat.dependsOn genGraalTestStubs
-tasks.googleJavaFormat.dependsOn genIntegTestStubs
+tasks.googleJavaFormat.dependsOn {
+    tasks.findAll { task -> task.name.startsWith('gen') } // When code is generated, reformat it.
+}
 
 check.dependsOn tasks.googleJavaFormat
 check.dependsOn integTest

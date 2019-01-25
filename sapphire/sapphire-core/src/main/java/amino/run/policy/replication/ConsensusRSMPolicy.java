@@ -215,12 +215,14 @@ public class ConsensusRSMPolicy extends DefaultPolicy {
                 throws RemoteException {
             super.onCreate(region, server, spec);
             List<InetSocketAddress> addressList = new ArrayList<>();
+            boolean isLastPolicy = server.isLastPolicy();
 
             try {
-                boolean pinned = server.isAlreadyPinned();
                 ServerPolicy consensusServer = (ServerPolicy) server;
 
-                if (!pinned) {
+                if (isLastPolicy) {
+                    // TODO: Make deployment kernel pin primary replica once node selection
+                    // constraint is implemented.
                     addressList = sapphire_getAddressList(spec.getNodeSelectorSpec(), region);
                     // The first in the addressList is for primary policy chain.
                     // TODO: Improve node allocation so that other servers can be used instead of
@@ -231,7 +233,7 @@ public class ConsensusRSMPolicy extends DefaultPolicy {
                 // Create additional replicas, one per region. TODO:  Create N-1 replicas on
                 // different servers in the same zone.
                 for (int i = 1; i < addressList.size(); i++) {
-                    addReplica(consensusServer, addressList.get(i), region, pinned);
+                    addReplica(consensusServer, addressList.get(i), region, isLastPolicy);
                 }
 
                 // The first in the addressList is for primary policy chain.

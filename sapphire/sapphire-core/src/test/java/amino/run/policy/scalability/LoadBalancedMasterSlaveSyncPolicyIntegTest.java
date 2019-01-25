@@ -135,7 +135,7 @@ public class LoadBalancedMasterSlaveSyncPolicyIntegTest {
                 LoadBalancedMasterSlaveBase.ServerBase server =
                         (LoadBalancedMasterSlaveBase.ServerBase) group.getMaster();
 
-                return server.onRPC(request);
+                return server.onRPC(methodName, params, request);
             } catch (Exception e) {
                 try {
                     Thread.sleep(waitInMilliseconds);

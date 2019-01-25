@@ -199,8 +199,6 @@ public abstract class Stub implements RmicConstants {
         /** The generic name of the method */
         final String genericName;
 
-        final Method method;
-
         public String getGenericName() {
             return genericName;
         }
@@ -260,8 +258,6 @@ public abstract class Stub implements RmicConstants {
             /* Add the runtime exception at the end such that all the more specific exceptions of
             runtime are added before it */
             catches.add(RuntimeException.class);
-
-            this.method = method;
         }
 
         /**

@@ -14,6 +14,7 @@ import amino.run.policy.scalability.masterslave.ReplicationResponse;
 import amino.run.policy.scalability.masterslave.RequestReplicator;
 import amino.run.policy.scalability.masterslave.StateManager;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -114,7 +115,15 @@ public class LoadBalancedMasterSlaveSyncPolicy extends LoadBalancedMasterSlaveBa
          * @param request method invocation request
          * @return method invocation response
          */
-        public MethodInvocationResponse onRPC(MethodInvocationRequest request) {
+        public MethodInvocationResponse onRPC(
+                String method, ArrayList<Object> params, MethodInvocationRequest request) {
+            request =
+                    new MethodInvocationRequest(
+                            request.getClientId(),
+                            request.getRequestId(),
+                            method,
+                            params,
+                            request.getMethodType());
             if (request.isImmutable()) {
                 return commitExecutor.applyRead(request);
             }

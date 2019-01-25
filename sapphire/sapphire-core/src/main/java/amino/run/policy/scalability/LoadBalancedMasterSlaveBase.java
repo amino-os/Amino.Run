@@ -82,7 +82,7 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultPolicy {
                         String.format(
                                 "Sending request to master server %s",
                                 ((KernelObjectStub) server).$__getHostname()));
-                MethodInvocationResponse response = server.onRPC(request);
+                MethodInvocationResponse response = server.onRPC(method, params, request);
                 switch (response.getReturnCode()) {
                     case SUCCESS:
                         return response.getResult();
@@ -145,7 +145,15 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultPolicy {
          * @param request method invocation request
          * @return method invocation response
          */
-        public MethodInvocationResponse onRPC(MethodInvocationRequest request) {
+        public MethodInvocationResponse onRPC(
+                String method, ArrayList<Object> params, MethodInvocationRequest request) {
+            request =
+                    new MethodInvocationRequest(
+                            request.getClientId(),
+                            request.getRequestId(),
+                            method,
+                            params,
+                            request.getMethodType());
             try {
                 Object ret =
                         sapphire_getAppObject()

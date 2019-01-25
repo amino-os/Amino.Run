@@ -52,31 +52,6 @@ public class PolicyStub extends Stub {
         return ms;
     }
 
-    boolean checkIfOnRpcMethod(Class targetCls, Method m) {
-        Class baseCls;
-
-        if (targetCls.getName().contains("ServerPolicy")) {
-            /* Get the interface class */
-            baseCls = amino.run.policy.Upcalls.ServerUpcalls.class;
-        } else {
-            /* return false if it is group policy */
-            return false;
-        }
-
-        if (!m.getName().equals("onRPC")) {
-            return false;
-        }
-
-        try {
-            /* Match for the exact onRPC method declaration of upCalls interface class with method received */
-            return (baseCls.getDeclaredMethod(m.getName(), m.getParameterTypes()) != null)
-                    ? true
-                    : false;
-        } catch (NoSuchMethodException e) {
-            return false;
-        }
-    }
-
     @Override
     public String getPackageStatement() {
         return ((packageName == null)
@@ -205,7 +180,6 @@ public class PolicyStub extends Stub {
 
         buffer.append(indenter.tIncrease() + "if ($__nextClientPolicy != null) {" + EOLN);
 
-        // amino.run.common.AppContext ctx = amino.run.common.AppObjectStub.context.get();
         buffer.append(
                 indenter.tIncrease(2)
                         + "amino.run.common.AppContext ctx = amino.run.common.AppObjectStub.context.get();"
@@ -309,18 +283,19 @@ public class PolicyStub extends Stub {
     public String getMethodContent(MethodStub m, boolean isDMMethod) {
         StringBuilder buffer = new StringBuilder("");
 
-        boolean onRpcMtd = checkIfOnRpcMethod(m.getDeclaringClass(), m.method);
+        boolean onRpcMtd = false;
+        if (m.getName().equals("onRPC")) {
+            onRpcMtd = true;
+            buffer.append(
+                    indenter.indent() + "java.util.ArrayList<Object> prevParam = null;" + EOLN);
+            buffer.append(indenter.indent() + "String prevMtdName = null;" + EOLN);
+        }
 
         // Construct list of parameters and String holding the method name
         // to call KernelObjectStub.makeRPC
         buffer.append(
                 indenter.indent()
                         + "java.util.ArrayList<Object> $__params = new java.util.ArrayList<Object>();"
-                        + EOLN
-                        + "java.util.ArrayList<Object> prevParam = null;"
-                        + EOLN
-                        + indenter.indent()
-                        + "String prevMtdName = null;"
                         + EOLN); //$NON-NLS-1$
         buffer.append(
                 indenter.indent()
@@ -330,10 +305,6 @@ public class PolicyStub extends Stub {
                         + EOLN); //$NON-NLS-1$
 
         if (onRpcMtd) {
-            // amino.run.common.AppContext ctx =  amino.run.common.AppObjectStub.context.get();
-            // $__params.add(ctx.getParams());
-            // ctx.setParams($__params);
-            // AppObjectStub.context.set(ctx);
             buffer.append(
                     indenter.indent()
                             + "amino.run.common.AppContext ctx = amino.run.common.AppObjectStub.context.get();"
@@ -342,54 +313,21 @@ public class PolicyStub extends Stub {
             buffer.append(indenter.tIncrease() + "if (ctx.getParams() != null) {" + EOLN);
             buffer.append(indenter.tIncrease(2) + "prevMtdName = ctx.getPrevMtdName();" + EOLN);
             buffer.append(indenter.tIncrease(2) + "prevParam = ctx.getParams();" + EOLN);
-            buffer.append(indenter.tIncrease(2) + "$__params.add(ctx.getPrevMtdName());" + EOLN);
-            buffer.append(
-                    indenter.tIncrease(2)
-                            + "$__params.add(ctx.getParams());"
-                            + EOLN
-                            + indenter.tIncrease()
-                            + "} else {"
-                            + EOLN);
-            if (m.numParams > 0) {
-                // Write invocation parameters.
-                // TODO: primitive types ??
-                for (int i = 0; i < m.numParams; i++) {
-                    buffer.append(
-                            indenter.tIncrease(2)
-                                    + "$__params.add("
-                                    + m.paramNames[i]
-                                    + ");"
-                                    + EOLN);
-                }
-                buffer.append(indenter.tIncrease() + "}" + EOLN);
-            }
+            buffer.append(indenter.tIncrease(2) + "$param_String_1 = ctx.getPrevMtdName();" + EOLN);
+            buffer.append(indenter.tIncrease(2) + "$param_ArrayList_2 = ctx.getParams();" + EOLN);
+            buffer.append(indenter.tIncrease() + "}" + EOLN);
             buffer.append(indenter.tIncrease() + "ctx.setParams($__params);" + EOLN);
             buffer.append(indenter.tIncrease() + "ctx.setPrevMtdName($__method);" + EOLN);
-            buffer.append(indenter.indent() + "} else {" + EOLN);
-            if (m.numParams > 0) {
-                // Write invocation parameters.
-                // TODO: primitive types ??
-                for (int i = 0; i < m.numParams; i++) {
-                    buffer.append(
-                            indenter.tIncrease()
-                                    + "$__params.add("
-                                    + m.paramNames[i]
-                                    + ");"
-                                    + EOLN);
-                }
-                buffer.append(indenter.indent() + "}" + EOLN);
-            }
             buffer.append(
                     indenter.indent() + "amino.run.common.AppObjectStub.context.set(ctx);" + EOLN);
-        } else {
+            buffer.append(indenter.indent() + "}" + EOLN);
+        }
 
-            if (m.numParams > 0) {
-                // Write invocation parameters.
-                // TODO: primitive types ??
-                for (int i = 0; i < m.numParams; i++) {
-                    buffer.append(
-                            indenter.indent() + "$__params.add(" + m.paramNames[i] + ");" + EOLN);
-                }
+        if (m.numParams > 0) {
+            // Write invocation parameters.
+            // TODO: primitive types ??
+            for (int i = 0; i < m.numParams; i++) {
+                buffer.append(indenter.indent() + "$__params.add(" + m.paramNames[i] + ");" + EOLN);
             }
         }
 
@@ -438,28 +376,17 @@ public class PolicyStub extends Stub {
                             + indenter.indent()
                             + '}'
                             + EOLN);
+        } else if (onRpcMtd) {
+            buffer.append(indenter.indent() + "}" + EOLN);
         }
 
         if (onRpcMtd) {
-            buffer.append(
-                    indenter.indent()
-                            + "} finally {"
-                            + EOLN //$NON-NLS-1$
-                            + indenter.tIncrease()
-                            + "if (ctx != null) {" //$NON-NLS-1$
-                            + EOLN //$NON-NLS-1$
-                            + indenter.tIncrease(2)
-                            + "ctx.setParams(prevParam);"
-                            + EOLN
-                            + indenter.tIncrease(2)
-                            + "ctx.setPrevMtdName(prevMtdName);"
-                            + EOLN
-                            + indenter.tIncrease()
-                            + "}"
-                            + EOLN
-                            + indenter.indent()
-                            + "}"
-                            + EOLN);
+            buffer.append(indenter.indent() + "finally {" + EOLN);
+            buffer.append(indenter.tIncrease() + "if (ctx != null) {" + EOLN);
+            buffer.append(indenter.tIncrease(2) + "ctx.setParams(prevParam);" + EOLN);
+            buffer.append(indenter.tIncrease(2) + "ctx.setPrevMtdName(prevMtdName);" + EOLN);
+            buffer.append(indenter.tIncrease() + "}" + EOLN);
+            buffer.append(indenter.indent() + "}" + EOLN);
         }
 
         if (!m.retType.getSimpleName().equals("void")) {

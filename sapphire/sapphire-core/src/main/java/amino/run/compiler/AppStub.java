@@ -228,23 +228,16 @@ public final class AppStub extends Stub {
         buffer.append(listParams.toString()); // $NON-NLS-1$
         buffer.append(indenter.tIncrease(tabWidth) + "try {" + EOLN); // $NON-NLS-1$
 
-        // amino.run.common.AppContext ctx = new amino.run.common.AppContext();
-        // ctx.setAppMtdName($__method);
-        // ctx.setAppParams($__params);
-        // amino.run.common.AppObjectStub.context.set(ctx);
         buffer.append(
                 indenter.tIncrease(tabWidth + 1)
                         + "amino.run.common.AppContext ctx = new amino.run.common.AppContext();"
-                        + EOLN
-                        + indenter.tIncrease(tabWidth + 1)
-                        + "ctx.setAppMtdName($__method);"
-                        + EOLN
-                        + indenter.tIncrease(tabWidth + 1)
-                        + "ctx.setAppParams($__params);"
-                        + EOLN
-                        + indenter.tIncrease(tabWidth + 1)
+                        + EOLN);
+        buffer.append(indenter.tIncrease(tabWidth + 1) + "ctx.setAppMtdName($__method);" + EOLN);
+        buffer.append(indenter.tIncrease(tabWidth + 1) + "ctx.setAppParams($__params);" + EOLN);
+        buffer.append(
+                indenter.tIncrease(tabWidth + 1)
                         + "amino.run.common.AppObjectStub.context.set(ctx);"
-                        + EOLN); // $NON-NLS-1$
+                        + EOLN);
 
         buffer.append(
                 indenter.tIncrease(tabWidth + 1)
@@ -312,14 +305,11 @@ public final class AppStub extends Stub {
                         + "} finally {"
                         + EOLN); //$NON-NLS-1$
 
-        // AppObjectStub.context.remove();
         buffer.append(
                 indenter.tIncrease(tabWidth + 1)
                         + "amino.run.common.AppObjectStub.context.remove();"
-                        + EOLN
-                        + indenter.tIncrease(tabWidth)
-                        + "}"
-                        + EOLN); //$NON-NLS-1$
+                        + EOLN);
+        buffer.append(indenter.tIncrease(tabWidth) + "}" + EOLN); // $NON-NLS-1$
 
         buffer.append(indenter.indent() + "}" + EOLN); // $NON-NLS-1$
 

@@ -354,6 +354,18 @@ public class OMSServerImpl implements OMSServer, SapphireObjectServer {
         return group;
     }
 
+    @Override
+    public EventHandler getSapphireObjectDispatcher(SapphireObjectID sapphireObjId)
+            throws RemoteException, SapphireObjectNotFoundException {
+        return objectManager.getInstanceDispatcher(sapphireObjId);
+    }
+
+    @Override
+    public void setSapphireObjectDispatcher(SapphireObjectID sapphireObjId, EventHandler dispatcher)
+            throws RemoteException, SapphireObjectNotFoundException {
+        objectManager.setInstanceDispatcher(sapphireObjId, dispatcher);
+    }
+
     public static void main(String args[]) {
         if ((args.length < 2) || (args.length > 5)) {
             System.out.println("Invalid arguments to OMS.");

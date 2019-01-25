@@ -1,5 +1,6 @@
 package amino.run.runtime;
 
+import amino.run.runtime.exception.EventNotFoundException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -43,8 +44,15 @@ public class EventHandler implements Serializable {
             // Grab the methods of the class
             Method[] methods = cl.getDeclaredMethods();
             for (int i = 0; i < methods.length; i++) {
-                PolicyHandler handler = new PolicyHandler(obj, methods[i]);
-                handlers.put(methods[i].toGenericString(), handler);
+                try {
+                    if (methods[i].isAnnotationPresent(AddEvent.class)) {
+                        PolicyHandler handler = new PolicyHandler(obj, methods[i]);
+                        System.out.println("method.." + methods[i]);
+                        handlers.put(methods[i].toGenericString(), handler);
+                    }
+                } catch (Exception e) {
+                    System.out.println(e.toString());
+                }
             }
         }
     }
@@ -55,19 +63,23 @@ public class EventHandler implements Serializable {
         fillMethodTable();
     }
 
+    private Object invoke(String method, ArrayList<Object> params) throws Exception {
+        return handlers.get(method).invokeHandler(params);
+    }
+
     /**
      * Invoke method on the object using the params
      *
-     * @param method
+     * @param event
      * @param params
      * @return the return value from the method
      */
-    public Object invoke(String method, ArrayList<Object> params) throws Exception {
-        if (handlers.containsKey(method)) {
-            return handlers.get(method).invokeHandler(params);
-        } else {
-            return null;
+    public Object notifyEvent(Event event, ArrayList<Object> params) throws Exception {
+        if (handlers.containsKey(event.getMethod())) {
+            throw new EventNotFoundException(
+                    String.format("Event %s not available in event handler", event.getName()));
         }
+        return invoke(event.getMethod(), params);
     }
 
     public InetSocketAddress getHost() {

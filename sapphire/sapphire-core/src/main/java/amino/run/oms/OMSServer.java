@@ -66,4 +66,10 @@ public interface OMSServer extends Remote {
             throws RemoteException, SapphireObjectNotFoundException;
 
     List<SystemSapphireObjectStatus> getSystemSapphireObjectStatus() throws RemoteException;
+
+    void setSapphireObjectDispatcher(SapphireObjectID sapphireObjId, EventHandler dispatcher)
+            throws RemoteException, SapphireObjectNotFoundException;
+
+    EventHandler getSapphireObjectDispatcher(SapphireObjectID sapphireObjId)
+            throws RemoteException, SapphireObjectNotFoundException;
 }

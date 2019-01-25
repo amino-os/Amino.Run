@@ -5,6 +5,7 @@ import amino.run.common.NoKernelServerFoundException;
 import amino.run.kernel.common.GlobalKernelReferences;
 import amino.run.kernel.server.KernelServerImpl;
 import amino.run.oms.OMSServer;
+import amino.run.runtime.AddEvent;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -34,6 +35,7 @@ public class DefaultPolicy extends Policy {
          *
          * @throws Exception migrateObject migrates the object to the specified Kernel Server
          */
+        @AddEvent(event = "Migrate")
         public void migrateObject(InetSocketAddress destinationAddr) throws Exception {
             logger.info(
                     "Performing Explicit Migration of the object to Destination Kernel Server with address as "

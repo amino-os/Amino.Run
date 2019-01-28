@@ -39,7 +39,7 @@ import org.yaml.snakeyaml.Yaml;
  * lang: js
  * name: com.org.College
  * sourceFileLocation: src/main/js/college.js
- * sapphireObjectLabels:
+ * microServiceLabels:
  *   labels: {key1: value1, key2: value2}
  * </code>
  */
@@ -63,7 +63,7 @@ public class MicroServiceSpec implements Serializable {
     private List<DMSpec> dmList = new ArrayList<>();
 
     /** List of tags (key-value) applied on Sapphire object */
-    private Labels sapphireObjectLabels;
+    private Labels microServiceLabels;
 
     private NodeSelectorSpec nodeSelectorSpec;
 
@@ -131,12 +131,12 @@ public class MicroServiceSpec implements Serializable {
         this.nodeSelectorSpec = nodeSelectorSpec;
     }
 
-    public Labels getMicroServiceSpecLabels() {
-        return sapphireObjectLabels;
+    public Labels getMicroServiceLabels() {
+        return microServiceLabels;
     }
 
-    public void setMicroServiceSpecLabels(Labels labels) {
-        this.sapphireObjectLabels = labels;
+    public void setMicroServiceLabels(Labels labels) {
+        this.microServiceLabels = labels;
     }
 
     public static MicroServiceSpec fromYaml(String yamlString) {
@@ -155,7 +155,7 @@ public class MicroServiceSpec implements Serializable {
                 && Objects.equals(sourceFileLocation, that.sourceFileLocation)
                 && Objects.equals(constructorName, that.constructorName)
                 && Objects.equals(dmList, that.dmList)
-                && Objects.equals(sapphireObjectLabels, that.sapphireObjectLabels);
+                && Objects.equals(microServiceLabels, that.microServiceLabels);
     }
 
     @Override
@@ -168,7 +168,7 @@ public class MicroServiceSpec implements Serializable {
                 constructorName,
                 dmList,
                 nodeSelectorSpec,
-                sapphireObjectLabels);
+                microServiceLabels);
     }
 
     @Override
@@ -240,7 +240,7 @@ public class MicroServiceSpec implements Serializable {
             spec.setConstructorName(constructorName);
             spec.setDmList(dmList);
             spec.setNodeSelectorSpec(nodeSelectorSpec);
-            spec.setMicroServiceSpecLabels(labels);
+            spec.setMicroServiceLabels(labels);
             return spec;
         }
     }

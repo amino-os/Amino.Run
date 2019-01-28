@@ -4,7 +4,6 @@ import static org.mockito.Mockito.mock;
 
 import amino.run.app.labelselector.Labels;
 import amino.run.sysSapphireObjects.metricCollector.MetricSelector;
-import java.util.ArrayList;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,7 +29,7 @@ public class WMAMetricAggregatorTest {
                         .setFrequency(3000)
                         .setLabels(labels)
                         .setBucketSize(3)
-                        .setvalues(new ArrayList<>())
+                        .setValue(0f)
                         .create();
         Assert.assertEquals(
                 exp.toString(), wmaMetricAggregator.getMetric(wmaMetricSelector).toString());
@@ -38,7 +37,7 @@ public class WMAMetricAggregatorTest {
 
     @Test
     public void testToString() {
-        String exp = "WMAMetric" + "<" + labels.toString() + ":" + "[]" + ">";
+        String exp = "WMAMetric" + "<" + labels.toString() + ":" + "0.0" + ">";
         Assert.assertEquals(exp, wmaMetricAggregator.toString());
     }
 }

@@ -3,8 +3,8 @@ package amino.run.oms;
 import amino.run.app.MicroServiceSpec;
 import amino.run.app.NodeSelectorSpec;
 import amino.run.app.SapphireObjectServer;
-import amino.run.common.*;
 import amino.run.app.labelselector.Selector;
+import amino.run.common.*;
 import amino.run.compiler.GlobalStubConstants;
 import amino.run.kernel.common.KernelOID;
 import amino.run.kernel.common.KernelObjectNotCreatedException;
@@ -238,8 +238,11 @@ public class OMSServerImpl implements OMSServer, SapphireObjectServer {
             }
             return appObjStubs;
         } catch (Exception e) {
+            e.printStackTrace();
             throw new SapphireObjectNotFoundException(
-                    "Failed to acquire stub for sapphire object " + selector, e);
+                    String.format(
+                            "Failed to acquire sapphire object stub with selector %s : %s",
+                            selector, e.getMessage()));
         }
     }
 

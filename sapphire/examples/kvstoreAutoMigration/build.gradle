@@ -2,9 +2,9 @@ apply plugin: 'java-library'
 
 // Customize app stub generation for this example
 genStubs {
-    def pkg = 'sapphire.migrationDemo'
-    def src = "$buildDir/classes/java/main/sapphire/migrationDemo/"
-    def dst = "$projectDir/src/main/java/sapphire/migrationDemo/stubs/"
+    def pkg = 'amino.run.migrationDemo'
+    def src = "$buildDir/classes/java/main/amino/run/migrationDemo/"
+    def dst = "$projectDir/src/main/java/sapphire/amino/run/stubs/"
     args src, pkg, dst
     outputs.dir dst // Declare outputs, so gradle will run if they have been changed
     inputs.dir src   // Declare inputs, so gradle will run if they have been changed
@@ -12,7 +12,7 @@ genStubs {
 
 // Customize stub compilation for this example
 compileStubs {
-    outputs.dir "$buildDir/classes/java/main/sapphire/migrationDemo/stubs/"
+    outputs.dir "$buildDir/classes/java/main/amino/run/migrationDemo/stubs/"
 }
 
 jar.dependsOn compileStubs
@@ -22,13 +22,14 @@ task runomswithms(type: JavaExec) {
     classpath = sourceSets.main.runtimeClasspath
     jvmArgs '-Djava.util.logging.config.file=' + project.projectDir + '/../../logging.properties'
     main = 'amino.run.oms.OMSServerImpl'
-    args project.property('omsIp'), project.property('omsPort') , "--enableSysSO=MetricCollector"
+    args project.property('omsIp'), project.property('omsPort') , "--enableSysSO=MetricCollector,MigrationScheduler"
     inputs.dir compileStubs
+    // 
 }
 
 // Customize runapp for this example
 runapp {
-    main = "sapphire.migrationDemo.AutoMigrateKeyValueStoreClient"
+    main = "amino.run.migrationDemo.AutoMigrateKeyValueStoreClient"
     // This one doesn't take kernel server address params
     args project.property('omsIp'), project.property('omsPort')
 }

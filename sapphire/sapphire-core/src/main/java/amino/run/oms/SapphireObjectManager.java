@@ -14,6 +14,7 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Logger;
 
 public class SapphireObjectManager {
     private ConcurrentHashMap<SapphireObjectID, SapphireInstanceManager> sapphireObjects;
@@ -278,11 +279,12 @@ public class SapphireObjectManager {
      * @throws SapphireObjectNotFoundException
      */
     public ArrayList<AppObjectStub> getInstanceObjectStub(Selector selector) {
+        Logger logger = Logger.getLogger(SapphireObjectManager.class.getName());
         ArrayList<AppObjectStub> appStubList = new ArrayList<>();
         sapphireObjects.forEach(
                 (k, instance) -> {
-                    if (selector.matches(
-                            instance.getMicroServiceSpec().getMicroServiceSpecLabels())) {
+                    MicroServiceSpec spec = instance.getMicroServiceSpec();
+                    if (spec != null && selector.matches(spec.getMicroServiceLabels())) {
                         appStubList.add(instance.getInstanceObjectStub());
                     }
                 });

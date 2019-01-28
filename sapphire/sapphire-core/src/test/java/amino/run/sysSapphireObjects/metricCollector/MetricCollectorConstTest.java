@@ -1,7 +1,7 @@
 package amino.run.sysSapphireObjects.metricCollector;
 
 import amino.run.app.Language;
-import amino.run.app.SapphireObjectSpec;
+import amino.run.app.MicroServiceSpec;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -22,8 +22,8 @@ public class MetricCollectorConstTest {
 
     @Test
     public void testSapphireObjectSpec() {
-        SapphireObjectSpec exp =
-                SapphireObjectSpec.newBuilder()
+        MicroServiceSpec exp =
+                MicroServiceSpec.newBuilder()
                         .setJavaClassName(
                                 "amino.run.sysSapphireObjects.metricCollector.MetricCollector")
                         .setLang(Language.java)

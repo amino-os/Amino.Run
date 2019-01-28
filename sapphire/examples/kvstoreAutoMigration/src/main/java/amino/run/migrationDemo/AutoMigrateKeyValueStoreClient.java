@@ -1,4 +1,4 @@
-package sapphire.migrationDemo;
+package amino.run.migrationDemo;
 
 import amino.run.app.SapphireObjectServer;
 import amino.run.common.SapphireObjectID;

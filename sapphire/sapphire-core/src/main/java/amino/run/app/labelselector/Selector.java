@@ -21,6 +21,9 @@ public class Selector implements Serializable {
      * @return true if a label matches all conditions
      */
     public boolean matches(Labels labels) {
+        if (labels == null) {
+            return false;
+        }
         for (Requirement requirement : requirements) {
             if (!requirement.matches(labels)) {
                 return false;

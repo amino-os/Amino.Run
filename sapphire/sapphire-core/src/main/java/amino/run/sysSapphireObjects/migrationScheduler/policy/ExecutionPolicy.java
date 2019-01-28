@@ -7,18 +7,18 @@ import amino.run.common.SapphireObjectID;
 import amino.run.common.SapphireReplicaID;
 import amino.run.kernel.common.GlobalKernelReferences;
 import amino.run.oms.OMSServer;
-import amino.run.policy.SapphirePolicy;
-import amino.run.policy.mobility.automigration.AutoMigrationPolicy;
-import amino.run.policy.mobility.automigration.MetricDMConstants;
+import amino.run.policy.Policy;
+import amino.run.policy.metric.MetricDMConstants;
 import amino.run.policy.util.ResettableTimer;
 import amino.run.runtime.EventHandler;
 import amino.run.sysSapphireObjects.metricCollector.Metric;
 import amino.run.sysSapphireObjects.metricCollector.MetricCollector;
 import amino.run.sysSapphireObjects.metricCollector.MetricCollectorLabels;
 import amino.run.sysSapphireObjects.metricCollector.MetricSelector;
-import amino.run.sysSapphireObjects.metricCollector.metric.gauge.GaugeMetric;
-import amino.run.sysSapphireObjects.metricCollector.metric.gauge.GaugeMetricSelector;
+import amino.run.sysSapphireObjects.metricCollector.metric.wma.WMAMetric;
+import amino.run.sysSapphireObjects.metricCollector.metric.wma.WMAMetricSelector;
 import amino.run.sysSapphireObjects.migrationScheduler.MigrationPolicy;
+import amino.run.sysSapphireObjects.migrationScheduler.MigrationSchedulerConst;
 import java.net.InetSocketAddress;
 import java.util.*;
 import java.util.logging.Logger;
@@ -60,8 +60,8 @@ public class ExecutionPolicy implements MigrationPolicy {
             }
 
             metricSelector =
-                    new GaugeMetricSelector(
-                            config.getMetricName(), config.getMetricLabels().asSelector());
+                    new WMAMetricSelector(
+                            config.getMetricName(), MigrationSchedulerConst.MIGRATION.asSelector());
         }
 
         metricCollectTimer =
@@ -84,6 +84,10 @@ public class ExecutionPolicy implements MigrationPolicy {
 
     private void startScheduling() {
         try {
+            logger.info(
+                    String.format(
+                            "Start scheduling with selector %s",
+                            MigrationSchedulerConst.MIGRATION.asSelector()));
             ArrayList<Metric> metrics = collectorStub.get(metricSelector);
             // filter top metric to schedule
             Metric topMetric = null;
@@ -92,8 +96,8 @@ public class ExecutionPolicy implements MigrationPolicy {
                     topMetric = metric;
                     continue;
                 }
-                if (((GaugeMetric) topMetric.getMetric()).getValue()
-                        < ((GaugeMetric) metric.getMetric()).getValue()) {
+                if (((WMAMetric) topMetric.getMetric()).getValue()
+                        < ((WMAMetric) metric.getMetric()).getValue()) {
                     topMetric = metric;
                 }
             }
@@ -104,29 +108,32 @@ public class ExecutionPolicy implements MigrationPolicy {
             logger.info("top metric : " + topMetric);
             metricHandler(topMetric);
         } catch (Exception e) {
+            e.printStackTrace();
             logger.warning("Execution migration scheduler failed");
         }
     }
 
     private void metricHandler(Metric metric) {
-        GaugeMetric gaugeMetric = (GaugeMetric) metric;
+        WMAMetric gaugeMetric = (WMAMetric) metric;
         UUID sapphireObjectUUID =
                 UUID.fromString(
                         gaugeMetric.getLabels().get(MetricDMConstants.METRIC_SAPPHIRE_OBJECT_ID));
         UUID sapphireReplicaUUID =
                 UUID.fromString(
                         gaugeMetric.getLabels().get(MetricDMConstants.METRIC_SAPPHIRE_REPLICA_ID));
+        SapphireObjectID sapphireObjectID = new SapphireObjectID(sapphireObjectUUID);
         SapphireReplicaID sapphireReplicaID =
-                new SapphireReplicaID(
-                        new SapphireObjectID(sapphireObjectUUID), sapphireReplicaUUID);
+                new SapphireReplicaID(sapphireObjectID, sapphireReplicaUUID);
 
         try {
+            // get group event handler
+            EventHandler groupEventHandler = oms().getSapphireObjectDispatcher(sapphireObjectID);
+            // get replica Event handler
             EventHandler eventHandler = oms().getSapphireReplicaDispatcher(sapphireReplicaID);
+
             for (Object object : eventHandler.getObjects()) {
-                if (object instanceof SapphirePolicy.SapphireServerPolicy
-                        && object instanceof AutoMigrationPolicy.AutoMigrationServerPolicy) {
-                    AutoMigrationPolicy.AutoMigrationServerPolicy serverPolicy =
-                            (AutoMigrationPolicy.AutoMigrationServerPolicy) object;
+                if (object instanceof Policy.ServerPolicy) {
+                    Policy.ServerPolicy serverPolicy = (Policy.ServerPolicy) object;
 
                     if (gaugeMetric.getValue() > config.getMigrationExecutionThreshold()) {
                         InetSocketAddress currentAddress =
@@ -143,11 +150,19 @@ public class ExecutionPolicy implements MigrationPolicy {
                             }
                         }
                         logger.info("Updated address !!!!" + address);
-                        serverPolicy.migrateObject(address);
+
+                        ArrayList<Object> eventParams = new ArrayList();
+                        eventParams.add(serverPolicy);
+                        eventParams.add(address);
+                        for (Object gObject : groupEventHandler.getObjects()) {
+                            groupEventHandler.notifyEvent(
+                                    gObject.getClass(), "Migrate", eventParams);
+                        }
                     }
                 }
             }
         } catch (Exception e) {
+            e.printStackTrace();
             logger.warning("Execution migration scheduler failed !!!!" + e);
         }
     }

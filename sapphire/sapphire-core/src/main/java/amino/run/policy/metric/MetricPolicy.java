@@ -1,12 +1,12 @@
 package amino.run.policy.metric;
 
-import amino.run.app.SapphireObjectSpec;
+import amino.run.app.MicroServiceSpec;
 import amino.run.app.labelselector.Labels;
-import amino.run.policy.DefaultSapphirePolicy;
+import amino.run.policy.DefaultPolicy;
 import java.util.ArrayList;
 import java.util.Objects;
 
-public class MetricPolicy extends DefaultSapphirePolicy {
+public class MetricPolicy extends DefaultPolicy {
     // TODO define default labels for Metric collector
     private static final long DM_METRIC_UPDATE_FREQUENCY = 3000; // milliseconds
 
@@ -14,6 +14,7 @@ public class MetricPolicy extends DefaultSapphirePolicy {
     public static class Config implements SapphirePolicyConfig {
         private Labels metricLabels = Labels.newBuilder().create();
         private long metricUpdateFrequency = DM_METRIC_UPDATE_FREQUENCY;
+        private boolean migrationEnabled = false;
 
         public long getMetricUpdateFrequency() {
             return metricUpdateFrequency;
@@ -29,6 +30,14 @@ public class MetricPolicy extends DefaultSapphirePolicy {
 
         public void setMetricLabels(Labels labels) {
             this.metricLabels = labels;
+        }
+
+        public void setMigrationEnabled(boolean enable) {
+            migrationEnabled = enable;
+        }
+
+        public boolean isMigrationEnabled() {
+            return migrationEnabled;
         }
 
         @Override
@@ -51,20 +60,20 @@ public class MetricPolicy extends DefaultSapphirePolicy {
         private MetricAggregator aggregator;
 
         @Override
-        public void onCreate(SapphireGroupPolicy group, SapphireObjectSpec spec) {
+        public void onCreate(GroupPolicy group, MicroServiceSpec spec) {
             super.onCreate(group, spec);
             aggregator = new MetricAggregator(spec, group.getSapphireObjId(), getReplicaId());
         }
 
         @Override
         public Object onRPC(String method, ArrayList<Object> params) throws Exception {
-            if (!aggregator.initialize()) {
-                aggregator.$__initialize();
+            if (!aggregator.isInitialized()) {
+                aggregator.initialize();
             }
 
             aggregator.incRpcCounter();
 
-            return super.onRPC(method, params);
+            return aggregator.executionTime(() -> super.onRPC(method, params));
         }
 
         @Override

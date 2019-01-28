@@ -1,12 +1,12 @@
-!!amino.run.app.SapphireObjectSpec
+!!amino.run.app.MicroServiceSpec
 constructorName: null
 dmList:
-- configs:
-  - !!amino.run.policy.mobility.automigration.AutoMigrationPolicy$Config {metricLabels: { labels : {App: KVStoreAutoMigration}}}
-  name: AutoMigrationPolicy
+  - configs:
+      - !!amino.run.policy.metric.MetricPolicy$Config {migrationEnabled: true}
+    name: amino.run.policy.metric.MetricPolicy
 javaClassName: amino.run.migrationDemo.AutoMigrateKeyValueStore
 lang: java
 name: null
-sapphireObjectLabels:
+microServiceLabels:
   labels: {AutoMigration: true, KVStore: WithMigration}
 sourceFileLocation: null

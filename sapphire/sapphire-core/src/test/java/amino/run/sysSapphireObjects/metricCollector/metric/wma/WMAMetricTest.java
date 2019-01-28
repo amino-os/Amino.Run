@@ -26,7 +26,7 @@ public class WMAMetricTest {
                         .setLabels(labels)
                         .setFrequency(15)
                         .setBucketSize(3)
-                        .setvalues(new ArrayList<>())
+                        .setValue(0f)
                         .create();
     }
 
@@ -49,10 +49,6 @@ public class WMAMetricTest {
     public void testObservedValues() {
         List<Float> exp = new ArrayList<>();
 
-        // this will return the value set during initialization of WMAMetric and the expected value
-        // is empty arraylist
-        Assert.assertEquals(exp, wmaMetric.getValue());
-
         // this will return false as value is empty arraylist
         Assert.assertEquals(false, wmaMetric.modified());
 
@@ -67,17 +63,14 @@ public class WMAMetricTest {
         wmaMetric.start();
 
         // this will check the each value which are set in WMAMetric
-        Assert.assertEquals((float) exp.get(0), wmaMetric.getValue().get(0).getValue(), 0);
-        Assert.assertEquals((float) exp.get(1), wmaMetric.getValue().get(1).getValue(), 0);
-        Assert.assertEquals((float) exp.get(2), wmaMetric.getValue().get(2).getValue(), 0);
+        Assert.assertEquals((float) exp.get(0), wmaMetric.getObservations().get(0).getValue(), 0);
+        Assert.assertEquals((float) exp.get(1), wmaMetric.getObservations().get(1).getValue(), 0);
+        Assert.assertEquals((float) exp.get(2), wmaMetric.getObservations().get(2).getValue(), 0);
 
         // this will return true as value in WMAMetric is not empty
         Assert.assertEquals(true, wmaMetric.modified());
 
         wmaMetric.reset();
-
-        // reset the value in WMAMetric so now the expected value is empty arraylist
-        Assert.assertEquals(new ArrayList<>(), wmaMetric.getValue());
 
         wmaMetric.stop();
     }

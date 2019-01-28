@@ -35,10 +35,9 @@ public class DefaultPolicy extends Policy {
          *
          * @throws Exception migrateObject migrates the object to the specified Kernel Server
          */
-        @AddEvent(event = "Migrate")
         public void migrateObject(InetSocketAddress destinationAddr) throws Exception {
             logger.info(
-                    "Performing Explicit Migration of the object to Destination Kernel Server with address as "
+                    "Performing Migration of the object to Destination Kernel Server with address as "
                             + destinationAddr);
             OMSServer oms = GlobalKernelReferences.nodeServer.oms;
             ArrayList<InetSocketAddress> servers = new ArrayList<>(oms.getServers(null));
@@ -47,7 +46,7 @@ public class DefaultPolicy extends Policy {
             InetSocketAddress localAddress = localKernel.getLocalHost();
 
             logger.info(
-                    "Performing Explicit Migration of object from "
+                    "Performing Migration of object from "
                             + localAddress
                             + " to "
                             + destinationAddr);
@@ -64,7 +63,7 @@ public class DefaultPolicy extends Policy {
             }
 
             logger.info(
-                    "Successfully performed Explicit Migration of object from "
+                    "Successfully performed Migration of object from "
                             + localAddress
                             + " to "
                             + destinationAddr);
@@ -140,6 +139,25 @@ public class DefaultPolicy extends Policy {
         public synchronized void onDestroy() throws RemoteException {
             super.onDestroy();
             servers = null;
+        }
+
+        @AddEvent(event = "Migrate")
+        public void migrateObject(ServerPolicy server, InetSocketAddress destinationAddr)
+                throws Exception {
+            logger.info(
+                    "Performing Migration of the object to Destination Kernel Server with address as "
+                            + destinationAddr);
+
+            // check if server is available
+            for (ServerPolicy availableServer : servers) {
+                if (availableServer.equals(server)) {
+                    // TODO: check sapphire object spec and decide kernel server to migrate
+                    ((DefaultServerPolicy) availableServer).migrateObject(destinationAddr);
+                }
+            }
+
+            // ignore migration if server not available
+            return;
         }
     }
 }

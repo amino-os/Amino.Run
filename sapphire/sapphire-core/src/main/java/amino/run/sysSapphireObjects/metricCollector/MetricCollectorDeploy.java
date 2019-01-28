@@ -1,7 +1,7 @@
 package amino.run.sysSapphireObjects.metricCollector;
 
+import amino.run.app.MicroServiceSpec;
 import amino.run.app.SapphireObjectServer;
-import amino.run.app.SapphireObjectSpec;
 import amino.run.app.labelselector.Labels;
 import amino.run.app.labelselector.Selector;
 import amino.run.common.AppObjectStub;
@@ -37,22 +37,22 @@ public class MetricCollectorDeploy implements SystemSapphireObjectDeploy {
 
     // TODO: define a common interface for system sapphire object spec processing
     private static String getSpec(String specFile) throws Exception {
-        SapphireObjectSpec spec = MetricCollectorConst.SAPPHIRE_OBJECT_SPEC;
+        MicroServiceSpec spec = MetricCollectorConst.SAPPHIRE_OBJECT_SPEC;
         if (!SystemSapphireObjectHandler.EMPTY_SO_SPEC.equals(specFile)) {
             File file = new File(specFile);
             List<String> lines = Files.readAllLines(file.toPath());
             String userDefinedSpec = String.join("\n", lines);
 
-            spec = SapphireObjectSpec.fromYaml(userDefinedSpec);
+            spec = MicroServiceSpec.fromYaml(userDefinedSpec);
         }
 
         Labels metricCollectorLabels =
                 Labels.newBuilder()
-                        .merge(spec.getSapphireObjectLabels())
+                        .merge(spec.getMicroServiceLabels())
                         .merge(MetricCollectorLabels.labels)
                         .create();
 
-        spec.setSapphireObjectLabels(metricCollectorLabels);
+        spec.setMicroServiceLabels(metricCollectorLabels);
 
         return spec.toString();
     }

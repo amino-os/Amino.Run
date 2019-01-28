@@ -1,6 +1,6 @@
 package amino.run.sysSapphireObjects.migrationScheduler.policy;
 
-import static amino.run.policy.mobility.automigration.MetricDMConstants.AUTO_MIGRATION_AVG_EXECUTION_TIME;
+import static amino.run.policy.metric.MetricDMConstants.MIGRATION_AVG_EXECUTION_TIME;
 
 import amino.run.app.labelselector.Labels;
 import java.io.Serializable;
@@ -9,7 +9,7 @@ import org.yaml.snakeyaml.Yaml;
 public class Config implements Serializable {
     private long metricCollectFrequency = 6000; // milliseconds
     private long migrationExecutionThreshold = 499999; // milliseconds
-    private String metricName = AUTO_MIGRATION_AVG_EXECUTION_TIME;
+    private String metricName = MIGRATION_AVG_EXECUTION_TIME;
     private Labels metricLabels;
 
     public long getMetricCollectFrequency() {

@@ -17,6 +17,12 @@ import java.util.List;
 import java.util.TimerTask;
 import java.util.logging.Logger;
 
+/**
+ * Update Kernel server statistics to Metric server.
+ *
+ * <p>Reports Kernel server statistics to Metric server only if Metric server is enabled and
+ * deployed
+ */
 public class KernelServerStat extends Thread implements SendMetric {
     public static final String KERNEL_SERVER_MEMORY_STAT = "kernel_server_memory_stat";
     public static final String KERNEL_SERVER_HOST = "host";

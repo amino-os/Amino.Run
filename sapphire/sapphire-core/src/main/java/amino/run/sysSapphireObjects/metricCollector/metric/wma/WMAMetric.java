@@ -18,7 +18,7 @@ public class WMAMetric implements Metric {
     private Labels labels;
     private transient int bucketSize;
     private ArrayList<Observation> observations;
-    private ArrayList<Float> wmaValues;
+    private float wmaValue;
     private transient long metricUpdateFrequency;
     private transient ResettableTimer metricSendTimer;
     private transient SendMetric metricAggregator;
@@ -35,13 +35,13 @@ public class WMAMetric implements Metric {
         this.metricUpdateFrequency = metricUpdateFrequency;
         metricAggregator = sendMetric;
         this.observations = new ArrayList<>();
-        this.wmaValues = new ArrayList<>();
+        this.wmaValue = 0;
     }
 
-    private WMAMetric(String metricName, Labels labels, ArrayList<Float> wmaValues) {
+    private WMAMetric(String metricName, Labels labels, float wmaValues) {
         this.metricName = metricName;
         this.labels = labels;
-        this.wmaValues = wmaValues;
+        this.wmaValue = wmaValues;
     }
 
     @Override
@@ -56,7 +56,7 @@ public class WMAMetric implements Metric {
 
     @Override
     public String toString() {
-        return metricName + "<" + labels.toString() + ":" + wmaValues + ">";
+        return metricName + "<" + labels.toString() + ":" + wmaValue + ">";
     }
 
     /** @return true if observations is modified */
@@ -68,6 +68,7 @@ public class WMAMetric implements Metric {
     public void reset() {
         synchronized (this) {
             observations.clear();
+            wmaValue = 0f;
         }
     }
 
@@ -130,8 +131,12 @@ public class WMAMetric implements Metric {
     }
 
     /** @return observations */
-    public ArrayList<Observation> getValue() {
+    public ArrayList<Observation> getObservations() {
         return observations;
+    }
+
+    public float getValue() {
+        return wmaValue;
     }
 
     public static WMAMetric.Builder newBuilder() {
@@ -144,7 +149,7 @@ public class WMAMetric implements Metric {
         private Labels labels;
         private long metricUpdateFrequency;
         private SendMetric sendMetric;
-        private ArrayList<Float> wmaValues;
+        private float wmaValues;
 
         public WMAMetric.Builder setBucketSize(int bucketSize) {
             this.bucketSize = bucketSize;
@@ -161,7 +166,7 @@ public class WMAMetric implements Metric {
             return this;
         }
 
-        public WMAMetric.Builder setvalues(ArrayList<Float> wmaValues) {
+        public WMAMetric.Builder setValue(float wmaValues) {
             this.wmaValues = wmaValues;
             return this;
         }

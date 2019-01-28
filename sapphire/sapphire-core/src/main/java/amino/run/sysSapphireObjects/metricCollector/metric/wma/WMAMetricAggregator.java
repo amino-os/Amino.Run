@@ -10,12 +10,11 @@ import java.util.logging.Logger;
 public class WMAMetricAggregator implements MetricWithSelector {
     private static Logger logger = Logger.getLogger(WMAMetricAggregator.class.getName());
     private String metricName;
-    private ArrayList<Float> wmaValues;
+    private float wmaValue;
     private Labels labels;
     private ArrayList<Observation> list;
     private ArrayList<Float> observedValues;
     private int bucketSize;
-    private float wmaNew;
     private float total = 0;
     private float numerator = 0;
 
@@ -23,7 +22,7 @@ public class WMAMetricAggregator implements MetricWithSelector {
         this.metricName = metricName;
         this.labels = labels;
         this.observedValues = new ArrayList<>();
-        this.wmaValues = new ArrayList<>();
+        this.wmaValue = 0;
         this.bucketSize = bucketSize;
     }
 
@@ -33,14 +32,14 @@ public class WMAMetricAggregator implements MetricWithSelector {
                 WMAMetric.newBuilder()
                         .setMetricName(metricName)
                         .setLabels(labels)
-                        .setvalues(wmaValues)
+                        .setValue(wmaValue)
                         .create();
         return wmaMetric;
     }
 
     @Override
     public String toString() {
-        return metricName + "<" + labels.toString() + ":" + wmaValues + ">";
+        return metricName + "<" + labels.toString() + ":" + wmaValue + ">";
     }
 
     /**
@@ -51,7 +50,7 @@ public class WMAMetricAggregator implements MetricWithSelector {
     public void merge(WMAMetric metric) {
         synchronized (this) {
             logger.info("Received metric : " + metric.toString());
-            list = metric.getValue();
+            list = metric.getObservations();
             for (Observation i : list) {
                 float oldValue =
                         (observedValues.isEmpty())
@@ -63,8 +62,7 @@ public class WMAMetricAggregator implements MetricWithSelector {
                 }
                 float currentValue = i.getValue();
                 observedValues.add(currentValue);
-                wmaNew = calculateWMA(observedValues, oldValue);
-                wmaValues.add(wmaNew);
+                wmaValue = calculateWMA(observedValues, oldValue);
             }
             logger.info("Collected metric : " + this.toString());
         }
@@ -82,9 +80,8 @@ public class WMAMetricAggregator implements MetricWithSelector {
         float totalNew = total + (observedValues.get(size - 1)) - oldValue;
         float numeratorNew = numerator + (size * observedValues.get(size - 1)) - total;
         int denominator = (size * (size + 1)) / 2;
-        wmaNew = numeratorNew / denominator;
         total = totalNew;
         numerator = numeratorNew;
-        return wmaNew;
+        return numeratorNew / denominator;
     }
 }

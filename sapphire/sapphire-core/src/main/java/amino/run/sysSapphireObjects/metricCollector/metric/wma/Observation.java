@@ -1,6 +1,8 @@
 package amino.run.sysSapphireObjects.metricCollector.metric.wma;
 
-public class Observation {
+import java.io.Serializable;
+
+public class Observation implements Serializable {
     private long timeInMillis;
     private float value;
 

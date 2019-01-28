@@ -7,8 +7,6 @@ import amino.run.app.labelselector.Requirement;
 import amino.run.app.labelselector.Selector;
 import amino.run.sysSapphireObjects.metricCollector.MetricSelector;
 import amino.run.sysSapphireObjects.metricCollector.SendMetric;
-import java.util.ArrayList;
-import java.util.Arrays;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -40,20 +38,19 @@ public class WMACollectorTest {
 
     @Test
     public void testCollectAndRetrieve() throws Exception {
-        ArrayList<Float> values = new ArrayList<>(Arrays.asList(1f));
         wmaMetric =
                 WMAMetric.newBuilder()
                         .setMetricName("WMAMetric")
                         .setFrequency(3000)
                         .setLabels(labels)
                         .setBucketSize(3)
-                        .setvalues(values)
+                        .setValue(1f)
                         .setSendMetric(sendMetric)
                         .create();
 
         wmaMetric.setValue(1, 1f);
         wmaCollector.collect(wmaMetric);
-        String exp = "WMAMetric" + "<" + labels.toString() + ":" + values + ">";
+        String exp = "WMAMetric" + "<" + labels.toString() + ":" + 1f + ">";
         Assert.assertEquals(exp, wmaCollector.retrieve(wmaMetricSelector).get(0).toString());
     }
 }

@@ -129,8 +129,6 @@ public class KernelServerImpl implements KernelServer {
             throws RemoteException, KernelObjectNotFoundException,
                     KernelObjectStubNotCreatedException, SapphireObjectNotFoundException,
                     SapphireObjectReplicaNotFoundException {
-        logger.log(Level.INFO, "Adding object " + oid);
-
         // To add Kernel Object to local object manager
         Serializable realObj = object.getObject();
 
@@ -140,6 +138,14 @@ public class KernelServerImpl implements KernelServer {
         }
 
         Library.ServerPolicyLibrary firstServerPolicy = (Library.ServerPolicyLibrary) realObj;
+        List<SapphirePolicyContainer> spContainers = firstServerPolicy.getProcessedPolicies();
+
+        logger.log(
+                Level.INFO,
+                String.format(
+                        "Started adding %d objects. First OID: %s", spContainers.size(), oid));
+
+        List<String> serverPolicies = new ArrayList<>();
 
         for (SapphirePolicyContainer spContainer : firstServerPolicy.getProcessedPolicies()) {
             // Add Server Policy object in the same order as client side has created.
@@ -155,11 +161,11 @@ public class KernelServerImpl implements KernelServer {
             oms.setSapphireReplicaDispatcher(serverPolicy.getReplicaId(), policyHandler);
 
             KernelOID koid = serverPolicy.$__getKernelOID();
-            KernelObject newko = new KernelObject(serverPolicy);
 
-            objectManager.addObject(koid, newko);
+            objectManager.addObject(koid, new KernelObject(serverPolicy));
             oms.registerKernelObject(koid, host);
-            logger.log(Level.INFO, "Added " + koid.getID() + " as ServerPolicyLibrary");
+
+            serverPolicies.add(serverPolicy.toString());
 
             try {
                 serverPolicy.onCreate(serverPolicy.getGroup(), serverPolicy.getMicroServiceSpec());
@@ -172,6 +178,12 @@ public class KernelServerImpl implements KernelServer {
                 throw new RemoteException(exceptionMsg, e);
             }
         }
+
+        logger.log(
+                Level.INFO,
+                String.format(
+                        "Finished adding chain for %s with %s",
+                        oid, String.join(", ", serverPolicies)));
     }
 
     /** LOCAL INTERFACES * */

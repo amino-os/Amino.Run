@@ -37,7 +37,7 @@ In summary, our approach is to:
 
 1. provide a wide and expandable range of standard, re-usable,
    pluggable and production-ready Deployment Managers
-   (DMs)](https://github.com/Huawei-PaaS/DCAP-Sapphire-Core/blob/master/docs/code_study/DMList.md)
+   (DMs)](https://github.com/Huawei-PaaS/DCAP-Sapphire/blob/master/docs/code_study/DMList.md)
    to solve many common distributed computing problems (including all
    of those mentioned above) so that you can focus on application
    logic, not solving hard distributed systems challenges.

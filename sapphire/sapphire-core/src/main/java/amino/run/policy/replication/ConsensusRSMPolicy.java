@@ -39,6 +39,18 @@ public class ConsensusRSMPolicy extends DefaultPolicy {
             this.method = method;
             this.params = params;
         }
+
+        /**
+         * Overriding the equals method so that the fields of the operation object in LogEntry can
+         * be compared rather than just comparing their reference.
+         */
+        @Override
+        public boolean equals(Object obj) {
+            if (this.method.equals(((RPC) obj).method) && this.params.equals(((RPC) obj).params)) {
+                return true;
+            }
+            return false;
+        }
     }
 
     public static class ClientPolicy extends DefaultPolicy.DefaultClientPolicy {

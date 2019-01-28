@@ -4,6 +4,7 @@ import static amino.run.policy.util.consensus.raft.PersistentState.INVALID_INDEX
 import static amino.run.policy.util.consensus.raft.PersistentState.NO_LEADER;
 
 import amino.run.policy.util.ResettableTimer;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -153,6 +154,12 @@ public class Server
                         prevLogTerm,
                         leaderCommit,
                         entries.size()));
+
+        try {
+            pState.persist();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         /** All servers convert to followers if their current term is behind (§5.1). */
         respondToRemoteTerm(term);
@@ -400,7 +407,7 @@ public class Server
         /** Match index for each server. */
         Map<UUID, Integer> matchIndex = new ConcurrentHashMap<UUID, Integer>();
 
-        /** How frequently we send out heartbeats when we're the leader. */
+        /** How frequently we send bos heartbeats when we're the leader. */
         final int LEADER_HEARTBEAT_PERIOD = LEADER_HEARTBEAT_TIMEOUT / 3;
 
         /** Periodically send heartbeats when we're the leader. */
@@ -467,6 +474,11 @@ public class Server
          */
         void sendAppendEntries(UUID otherServerID) {
             boolean success = false;
+            try {
+                pState.persist();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             while (!success && vState.getState() == State.LEADER) {
                 final Integer otherServerNextIndex = leader.nextIndex.get(otherServerID);
                 try {
@@ -503,6 +515,7 @@ public class Server
                                             vState.getCommitIndex());
                     success = true;
                     respondToRemoteTerm(remoteTerm); // Might lose leadership.
+
                 } catch (InvalidTermException e) {
                     logger.warning(e.toString());
                     respondToRemoteTerm(e.currentTerm);
@@ -811,7 +824,7 @@ public class Server
         /** If no leader is elected within the timeout, start another election. */
         ResettableTimer leaderElectionTimer;
 
-        /** Thread pool used for sending out vote requests in parallel. */
+        /** Thread pool used for sending bos vote requests in parallel. */
         ThreadPoolExecutor voteRequestThreadPool;
 
         /** Start being a candidate. */

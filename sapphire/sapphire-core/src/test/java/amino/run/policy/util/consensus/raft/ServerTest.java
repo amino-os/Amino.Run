@@ -13,6 +13,13 @@ import static org.mockito.Mockito.spy;
 import amino.run.common.AppObject;
 import amino.run.policy.Policy;
 import amino.run.policy.replication.ConsensusRSMPolicy;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.ObjectInputStream;
+import java.io.RandomAccessFile;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -425,6 +432,104 @@ public class ServerTest {
         for (String method : methods) {
             // Apply to stateMachine is invoked only on leader
             raftServer[0].applyToStateMachine(new ConsensusRSMPolicy.RPC(method, args));
+        }
+    }
+
+    /**
+     * Verifying that the currentTerm, votedFor, myServerID and log stored using memory map to the
+     * persistent storage is in sync with the data on the raftServer.
+     */
+    @Test
+    public void testPersistence() throws java.lang.Exception {
+        byte[] arr;
+        int i = 0;
+        int position = 0;
+        int UUIDsize = 36;
+        List<LogEntry> myLog = new ArrayList<LogEntry>();
+        MappedByteBuffer buffer;
+        RandomAccessFile file;
+        String persistFile = "/var/tmp/" + raftServer[0].pState.myServerID + ".txt";
+        String value;
+        UUID uid;
+
+        // Ensure Leader Election
+        for (Server s : raftServer) {
+            s.start();
+        }
+        raftServer[0].become(CANDIDATE, FOLLOWER);
+        assertTrue(raftServer[verifyLeaderElected(raftServer)] == raftServer[0]);
+
+        String methodName = "public java.lang.String java.lang.Object.toString()";
+        ArrayList<Object> args = new ArrayList<Object>();
+        Object obj = new ConsensusRSMPolicy.RPC(methodName, args);
+        raftServer[0].applyToStateMachine(obj);
+        raftServer[0].applyToStateMachine(obj);
+
+        // Gaining access to the file to which the logs were persisted
+        file = new RandomAccessFile(new File(persistFile), "r");
+        FileChannel fc = file.getChannel();
+
+        // Extracting currentTerm from the persistent storage
+        buffer = fc.map(FileChannel.MapMode.READ_ONLY, position, Integer.SIZE);
+        arr = new byte[Integer.SIZE];
+        buffer.get(arr);
+        int currentTerm = Integer.parseInt(new String(arr).trim());
+        // Verifying currentTerm is the same
+        assertEquals(raftServer[0].pState.getCurrentTerm(), currentTerm);
+        position += Integer.SIZE;
+
+        // Extracting votedFor from the persistent storage
+        buffer = fc.map(FileChannel.MapMode.READ_ONLY, position, UUIDsize);
+        value = StandardCharsets.UTF_8.decode(buffer).toString();
+        uid = UUID.fromString(value);
+        // Verifying votedFor is same
+        assertEquals(raftServer[0].pState.getVotedFor(), uid);
+        position += UUIDsize;
+
+        // Extracting myServerID from the persistent storage
+        buffer = fc.map(FileChannel.MapMode.READ_ONLY, position, UUIDsize);
+        value = StandardCharsets.UTF_8.decode(buffer).toString();
+        uid = UUID.fromString(value);
+        // Verifying myServerID is same
+        assertEquals(raftServer[0].pState.myServerID, uid);
+        position += UUIDsize;
+
+        while (position < file.length()) {
+            // Extracting the logEntry index from the persistent storage
+            buffer = fc.map(FileChannel.MapMode.READ_ONLY, position, Integer.SIZE);
+            arr = new byte[Integer.SIZE];
+            buffer.get(arr);
+            position += Integer.SIZE;
+
+            // Extracting the logEntry length from the persistent storage
+            buffer = fc.map(FileChannel.MapMode.READ_ONLY, position, Integer.SIZE);
+            arr = new byte[Integer.SIZE];
+            buffer.get(arr);
+            int logEntry_length = Integer.parseInt(new String(arr).trim());
+            position += Integer.SIZE;
+
+            // Extracting the logEntry object from the persistent storage
+            buffer = fc.map(FileChannel.MapMode.READ_ONLY, position, logEntry_length);
+            arr = new byte[logEntry_length];
+            buffer.get(arr);
+            position += logEntry_length;
+
+            ByteArrayInputStream bais = new ByteArrayInputStream(arr);
+            ObjectInputStream objectIn = new ObjectInputStream(bais);
+            try {
+                Object objc = objectIn.readObject();
+                myLog.add((LogEntry) objc);
+                // Verifying the LogEntry term at each index
+                assertEquals(raftServer[0].pState.log().get(i).term, ((LogEntry) objc).term);
+                // Verifying the LogEntry operation at each index
+                assertTrue(
+                        (raftServer[0].pState.log().get(i).operation)
+                                .equals(((LogEntry) objc).operation));
+                i++;
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+            objectIn.close();
         }
     }
 }

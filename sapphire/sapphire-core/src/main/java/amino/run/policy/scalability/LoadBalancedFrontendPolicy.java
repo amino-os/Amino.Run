@@ -176,7 +176,6 @@ public class LoadBalancedFrontendPolicy extends DefaultPolicy {
         public void onCreate(String region, Policy.ServerPolicy server, MicroServiceSpec spec)
                 throws RemoteException {
             super.onCreate(region, server, spec);
-            boolean isLastPolicy = server.isLastPolicy();
 
             Config config = getConfig(spec);
             if (config != null) {
@@ -207,7 +206,7 @@ public class LoadBalancedFrontendPolicy extends DefaultPolicy {
                     numnodes = addressList.size();
 
                     for (count = 0; count < numnodes && count < replicaCount - 1; count++) {
-                        addReplica(server, addressList.get(count), region, isLastPolicy);
+                        addReplica(server, addressList.get(count), region);
                     }
                 }
 

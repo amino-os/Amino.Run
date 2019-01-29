@@ -200,7 +200,7 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultPolicy {
                 ServerBase s = (ServerBase) server;
                 InetSocketAddress dest = null;
 
-                if (server.isLastPolicy()) {
+                if (isLastPolicy) {
                     // TODO: Make deployment kernel pin primary replica once node selection
                     // constraint is implemented.
                     dest = getAvailable(0, addressList, unavailable);
@@ -214,7 +214,7 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultPolicy {
                     if (isLastPolicy) {
                         dest = getAvailable(i + 1, addressList, unavailable);
                     }
-                    ServerBase replica = (ServerBase) addReplica(s, dest, region, isLastPolicy);
+                    ServerBase replica = (ServerBase) addReplica(s, dest, region);
                     // TODO: Quinton: Why are removeServer and then addServer called here?
                     // May have been added because sapphire_replicate also has addServer() with
                     // serverStub having the hostname of the one which replicated it. But after pin

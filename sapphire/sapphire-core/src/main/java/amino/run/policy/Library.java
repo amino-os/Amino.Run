@@ -477,23 +477,18 @@ public abstract class Library implements Upcalls {
          *     performed.
          * @param dest address for KernelServer that will host this replica.
          * @param region region where this replica needs to be located within.
-         * @param isLastPolicy whether this is the last policy or not to decide if it should be
-         *     pinned.
          * @return newly created replica.
          * @throws RemoteException
          * @throws SapphireObjectNotFoundException
          * @throws SapphireObjectReplicaNotFoundException
          */
         protected ServerPolicy addReplica(
-                Policy.ServerPolicy replicaSource,
-                InetSocketAddress dest,
-                String region,
-                boolean isLastPolicy)
+                Policy.ServerPolicy replicaSource, InetSocketAddress dest, String region)
                 throws RemoteException, SapphireObjectNotFoundException,
                         SapphireObjectReplicaNotFoundException {
             ServerPolicy replica =
                     replicaSource.sapphire_replicate(replicaSource.getProcessedPolicies(), region);
-            if (!isLastPolicy) {
+            if (!replicaSource.isLastPolicy()) {
                 // Pinning a replica happens only when this is the last policy of the policy chain.
                 return replica;
             }

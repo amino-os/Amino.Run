@@ -71,6 +71,9 @@ public abstract class Library implements Upcalls {
         protected List<SapphirePolicyContainer> processedPolicies =
                 new ArrayList<SapphirePolicyContainer>();
 
+        // Indicates whether this policy is the inner most policy of the chain.
+        protected boolean isLastPolicy = false;
+
         private OMSServer oms() {
             return GlobalKernelReferences.nodeServer.oms;
         }
@@ -105,7 +108,11 @@ public abstract class Library implements Upcalls {
          * @return true if this is the last policy.
          */
         public boolean isLastPolicy() {
-            return (this.nextPolicies.size() == 0);
+            return this.isLastPolicy;
+        }
+
+        public void setIsLastPolicy(boolean isLastPolicy) {
+            this.isLastPolicy = isLastPolicy;
         }
 
         public void setProcessedPolicies(List<SapphirePolicyContainer> processedPolicies) {

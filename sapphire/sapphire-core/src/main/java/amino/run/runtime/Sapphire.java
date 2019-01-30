@@ -266,12 +266,11 @@ public class Sapphire {
 
         // Note that subList is non serializable; hence, the new list creation.
         List<SapphirePolicyContainer> nextPoliciesToCreate =
-                new ArrayList<SapphirePolicyContainer>(
-                        policyNameChain.subList(1, policyNameChain.size()));
+                new ArrayList<>(policyNameChain.subList(1, policyNameChain.size()));
 
         serverPolicy.onCreate(groupPolicyStub, spec);
         serverPolicy.setNextPolicies(nextPoliciesToCreate);
-        serverPolicyStub.setNextPolicies(nextPoliciesToCreate);
+        serverPolicyStub.setIsLastPolicy(nextPoliciesToCreate.size() == 0);
 
         SapphirePolicyContainer processedPolicy =
                 new SapphirePolicyContainer(policyName, groupPolicyStub);
@@ -280,8 +279,7 @@ public class Sapphire {
         processedPolicies.add(processedPolicy);
 
         // Create a copy to set processed policies up to this point.
-        List<SapphirePolicyContainer> processedPoliciesSoFar =
-                new ArrayList<SapphirePolicyContainer>(processedPolicies);
+        List<SapphirePolicyContainer> processedPoliciesSoFar = new ArrayList<>(processedPolicies);
         serverPolicy.setProcessedPolicies(processedPoliciesSoFar);
         serverPolicyStub.setProcessedPolicies(processedPoliciesSoFar);
 

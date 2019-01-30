@@ -96,7 +96,7 @@ subprojects {
     sourceSets {
         stubs {
             java {
-                srcDir file('src/stubs/java')
+                'src/stubs'
             }
         }
     }
@@ -109,7 +109,7 @@ subprojects {
      }
 
     clean {
-        delete sourceSets.stubs.java.srcDirs // Add generated stubs to what the clean task must delete
+        delete genStubs.outputs.files // Add generated stubs to what the clean task must delete
         doLast {
             println 'DEBUG: Clean will also delete ' + genStubs.outputs.files.asCollection()
         }
@@ -117,11 +117,16 @@ subprojects {
 
     // Task for stub compilation
     task compileStubs(type: JavaCompile) {
-        source = sourceSets.main.java.srcDirs
-        source += sourceSets.stubs.java.srcDirs  // Added generated stubs sourceSet, to the source list for compilation.
-        classpath = sourceSets.main.compileClasspath
-        destinationDir = sourceSets.main.output.classesDir
+        source = sourceSets.stubs.java.srcDirs  // Added generated stubs sourceSet, to the source list for compilation.
+        classpath = sourceSets.main.runtimeClasspath
+        destinationDir = sourceSets.stubs.output.classesDir
         options.incremental = true
         inputs.dir genStubs.outputs
+        outputs.dir sourceSets.stubs.output.classesDir
+    }
+
+    // Include stubs sourceSet classes in the jar file.
+    jar {
+        from sourceSets.stubs.output.classesDir
     }
 }

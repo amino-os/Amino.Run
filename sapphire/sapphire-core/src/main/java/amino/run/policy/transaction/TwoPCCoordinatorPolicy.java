@@ -1,6 +1,5 @@
 package amino.run.policy.transaction;
 
-import amino.run.policy.DefaultPolicy;
 import java.util.ArrayList;
 import java.util.UUID;
 

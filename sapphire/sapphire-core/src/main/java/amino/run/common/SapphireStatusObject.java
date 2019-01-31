@@ -9,20 +9,20 @@ import amino.run.kernel.common.KernelOID;
  * to group policy(on OMS)
  */
 public class SapphireStatusObject implements NotificationObject {
-    public final SapphireObjectID sapphireObjId;
+    public final MicroServiceID sapphireObjId;
     public final KernelOID groupId;
     public final KernelOID serverId;
     public final boolean status;
 
     public SapphireStatusObject(
-            SapphireObjectID sapphireObjId, KernelOID groupId, KernelOID serverId, boolean status) {
+            MicroServiceID sapphireObjId, KernelOID groupId, KernelOID serverId, boolean status) {
         this.sapphireObjId = sapphireObjId;
         this.groupId = groupId;
         this.serverId = serverId;
         this.status = status;
     }
 
-    public SapphireObjectID getSapphireObjId() {
+    public MicroServiceID getSapphireObjId() {
         return sapphireObjId;
     }
 

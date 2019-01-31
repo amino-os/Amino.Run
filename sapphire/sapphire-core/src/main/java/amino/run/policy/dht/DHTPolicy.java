@@ -17,7 +17,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class DHTPolicy extends DefaultPolicy {
-    private static final int DEFAULT_NUM_OF_SHARDS = 3;
+    private static final int DEFAULT_NUM_OF_SHARDS = replicaCount;
 
     /** Configuration for DHT Policy. */
     public static class Config implements SapphirePolicyConfig {

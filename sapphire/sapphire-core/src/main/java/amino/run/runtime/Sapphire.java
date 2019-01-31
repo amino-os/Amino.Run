@@ -24,7 +24,6 @@ import amino.run.kernel.common.KernelObjectNotCreatedException;
 import amino.run.kernel.common.KernelObjectNotFoundException;
 import amino.run.kernel.common.KernelObjectStub;
 import amino.run.kernel.common.KernelObjectStubNotCreatedException;
-import amino.run.policy.DefaultPolicy;
 import amino.run.policy.Policy;
 import amino.run.policy.PolicyContainer;
 import amino.run.policy.Upcalls;

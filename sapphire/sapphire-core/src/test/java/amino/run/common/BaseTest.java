@@ -19,7 +19,6 @@ import amino.run.kernel.server.KernelServer;
 import amino.run.kernel.server.KernelServerImpl;
 import amino.run.oms.OMSServer;
 import amino.run.oms.OMSServerImpl;
-import amino.run.policy.DefaultPolicy;
 import amino.run.policy.Policy;
 import amino.run.runtime.Sapphire;
 import amino.run.sampleSO.SO;
@@ -65,6 +64,7 @@ public class BaseTest {
     protected int kernelPort1 = 10001;
     protected int kernelPort2 = 10002;
     protected int kernelPort3 = 10003;
+    protected long HEALTH_STATUS_QUERY_INTERVAL = OMSServer.KS_HEARTBEAT_TIMEOUT;
 
     protected boolean serversInSameRegion = true;
 
@@ -167,6 +167,7 @@ public class BaseTest {
                 });
 
         MicroServiceID microServiceId = registry.create(spec.toString());
+        Thread.sleep(HEALTH_STATUS_QUERY_INTERVAL * 2);
 
         soStub = (SO) registry.acquireStub(microServiceId);
         client =

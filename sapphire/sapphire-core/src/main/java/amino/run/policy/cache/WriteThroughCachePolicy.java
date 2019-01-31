@@ -2,6 +2,7 @@ package amino.run.policy.cache;
 
 import amino.run.common.AppObject;
 import amino.run.policy.DefaultPolicy;
+
 import java.util.ArrayList;
 
 /**
@@ -52,7 +53,7 @@ public class WriteThroughCachePolicy extends DefaultPolicy {
         }
     }
 
-    public static class ServerPolicy extends DefaultServerPolicy {
+    public static class ServerPolicy extends DefaultPolicy.DefaultServerPolicy {
         public AppObject getObject() {
             return sapphire_getAppObject();
         }

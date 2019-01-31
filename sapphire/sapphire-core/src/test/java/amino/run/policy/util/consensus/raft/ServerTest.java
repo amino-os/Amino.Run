@@ -13,6 +13,7 @@ import static org.mockito.Mockito.spy;
 import amino.run.common.AppObject;
 import amino.run.policy.Policy;
 import amino.run.policy.replication.ConsensusRSMPolicy;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -31,6 +32,7 @@ public class ServerTest {
     Policy.ServerPolicy[] serverPolicy = new Policy.ServerPolicy[SERVER_COUNT];
     Server raftServer[] = new Server[SERVER_COUNT];
     private AppObject appObject;
+    Object object = new ServerTest.SO_Stub();
 
     /**
      * Below methods have been written for the purpose of unit tests only. The reason for creating
@@ -105,7 +107,7 @@ public class ServerTest {
 
     @Before
     public void setUp() throws Exception {
-        appObject = mock(AppObject.class);
+        appObject = new AppObject(object);
 
         for (int i = 0; i < SERVER_COUNT; i++) {
             serverPolicy[i] = spy(ConsensusRSMPolicy.ServerPolicy.class);
@@ -427,4 +429,14 @@ public class ServerTest {
             raftServer[0].applyToStateMachine(new ConsensusRSMPolicy.RPC(method, args));
         }
     }
+
+    public static class SO implements Serializable {
+        public static final int DEFAULT = 100;
+
+        public int getValue() throws Exception {
+            return DEFAULT;
+        }
+    }
+
+    public static class SO_Stub extends ServerTest.SO {}
 }

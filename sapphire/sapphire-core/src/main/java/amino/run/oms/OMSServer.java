@@ -64,9 +64,6 @@ public interface OMSServer extends Remote {
     EventHandler getSapphireObjectDispatcher(MicroServiceID microServiceId)
             throws RemoteException, MicroServiceNotFoundException;
 
-    boolean deleteSapphireObject(MicroServiceID microServiceId)
-            throws RemoteException, MicroServiceNotFoundException;
-
     void unRegisterSapphireObject(MicroServiceID microServiceId)
             throws RemoteException, MicroServiceNotFoundException;
 

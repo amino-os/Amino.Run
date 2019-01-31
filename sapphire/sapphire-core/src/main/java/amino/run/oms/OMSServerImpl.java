@@ -12,12 +12,9 @@ import amino.run.common.MicroServiceNotFoundException;
 import amino.run.common.MicroServiceReplicaNotFoundException;
 import amino.run.common.ReplicaID;
 import amino.run.common.SapphireStatusObject;
+import amino.run.common.*;
 import amino.run.compiler.GlobalStubConstants;
-import amino.run.kernel.common.KernelOID;
-import amino.run.kernel.common.KernelObjectNotCreatedException;
-import amino.run.kernel.common.KernelObjectNotFoundException;
-import amino.run.kernel.common.KernelServerNotFoundException;
-import amino.run.kernel.common.ServerInfo;
+import amino.run.kernel.common.*;
 import amino.run.kernel.server.KernelServer;
 import amino.run.kernel.server.KernelServerImpl;
 import amino.run.policy.Policy;
@@ -49,6 +46,7 @@ public class OMSServerImpl implements OMSServer, Registry {
 
     private static Logger logger = Logger.getLogger(OMSServerImpl.class.getName());
     private static String SERVICE_PORT = "--servicePort";
+    private static String NOTIFICATION_METHOD = "onNotification";
 
     private GlobalKernelObjectManager kernelObjectManager;
     private KernelServerManager serverManager;
@@ -127,7 +125,6 @@ public class OMSServerImpl implements OMSServer, Registry {
     public void heartbeatKernelServer(
             ServerInfo srvinfo, ArrayList<SapphireStatusObject> statusObjects)
             throws RemoteException, NotBoundException, KernelServerNotFoundException {
-        System.out.println("size of statusobjects.." + statusObjects.size());
         for (SapphireStatusObject statusObj : statusObjects) {
             executorService.execute(
                     new Runnable() {
@@ -138,17 +135,7 @@ public class OMSServerImpl implements OMSServer, Registry {
                                 EventHandler handler =
                                         objectManager.getInstanceDispatcher(
                                                 statusObj.getSapphireObjId());
-                                System.out.println(
-                                        "statusObj.getSapphireObjId()..."
-                                                + statusObj.getSapphireObjId());
-                                System.out.println("handler..." + handler);
                                 if (handler == null) {
-                                    return;
-                                }
-                                /* Get the kernel server stub */
-                                KernelServer server = serverManager.getServer(handler.getHost());
-                                System.out.println("server..." + server);
-                                if (server == null) {
                                     return;
                                 }
 
@@ -158,7 +145,16 @@ public class OMSServerImpl implements OMSServer, Registry {
                                                 add(statusObj);
                                             }
                                         };
-                                 handler.notifyEvent(EventConst.DefaultSapphirePolicy$DefaultGroupPolicy_NOTIFY, params);
+                                Class groupPolicyStubClass = handler.getObjects().get(0).getClass();
+                                handler.notifyEvent(
+                                        groupPolicyStubClass,
+                                        groupPolicyStubClass
+                                                .getDeclaredMethod(
+                                                        NOTIFICATION_METHOD,
+                                                        NotificationObject.class)
+                                                .getAnnotation(AddEvent.class)
+                                                .event(),
+                                        params);
                             } catch (Exception e) {
                                 logger.warning("Exception occurred : " + e);
                             }

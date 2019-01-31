@@ -1,16 +1,24 @@
 package amino.run.policy;
 
 import amino.run.app.MicroServiceSpec;
-import amino.run.common.MicroServiceNotFoundException;
-import amino.run.common.MicroServiceReplicaNotFoundException;
+import amino.run.common.*;
+import amino.run.kernel.common.KernelObjectNotFoundException;
 import amino.run.kernel.common.KernelObjectStub;
+import amino.run.oms.OMSServer;
+import amino.run.policy.util.ResettableTimer;
+import amino.run.runtime.AddEvent;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
-import java.util.ArrayList;
+import java.util.*;
 
 public class DefaultPolicy extends Policy {
+    protected static int replicaCount = 3;
 
     public static class DefaultServerPolicy extends ServerPolicy {
+        protected long HEALTH_STATUS_QUERY_INTERVAL = OMSServer.KS_HEARTBEAT_TIMEOUT;
+        protected transient ResettableTimer healthCheckTimer;
+        private String statusMethodName;
+
         @Override
         public GroupPolicy getGroup() {
             return group;
@@ -22,10 +30,48 @@ public class DefaultPolicy extends Policy {
         @Override
         public void onCreate(GroupPolicy group, MicroServiceSpec spec) {
             super.onCreate(group, spec);
+            AppObject appObject = sapphire_getAppObject();
+            try {
+                statusMethodName =
+                        appObject
+                                .getClass(appObject.getObject())
+                                .getMethod("getStatus")
+                                .toGenericString();
+            } catch (NoSuchMethodException e) {
+                /* get health status method is not found in SO class. It means, SO did not extend
+                AbstractSapphireObject class.*/
+                return;
+            }
+
+            if (healthCheckTimer == null) {
+                healthCheckTimer =
+                        new ResettableTimer(
+                                new TimerTask() {
+                                    public void run() {
+                                        boolean status;
+                                        ArrayList<Object> params = new ArrayList<>();
+                                        try {
+                                            /* Query health status and update to local kernel server */
+                                            status = (boolean) onRPC(statusMethodName, params);
+                                            sapphire_update_status(status);
+                                            healthCheckTimer.reset();
+                                        } catch (KernelObjectNotFoundException e) {
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                        }
+                                    }
+                                },
+                                HEALTH_STATUS_QUERY_INTERVAL);
+                healthCheckTimer.start();
+            }
         }
 
         public void onDestroy() {
             super.onDestroy();
+            if (healthCheckTimer != null) {
+                healthCheckTimer.cancel();
+                healthCheckTimer = null;
+            }
         }
     }
 
@@ -58,17 +104,34 @@ public class DefaultPolicy extends Policy {
         private ArrayList<ServerPolicy> servers = new ArrayList<ServerPolicy>();
         protected String region = "";
         protected MicroServiceSpec spec = null;
+        protected int HEALTH_STATUS_MAX_SKIP_TICKS = 3;
+        protected long HEALTH_STATUS_REPORT_INTERVAL = OMSServer.KS_HEARTBEAT_TIMEOUT;
+        protected transient volatile int healthStatusTick = 1;
+        protected transient ResettableTimer healthCheckTimer;
 
-        protected synchronized void addServer(ServerPolicy server) {
+        /**
+         * it is advisable that defer putting this server policy into group policy until the server
+         * policy is complete with full policy chain.
+         */
+        public synchronized void addServer(ServerPolicy server) throws RemoteException {
+            if (servers == null) {
+                // TODO: Need to change it to proper exception
+                throw new RemoteException("Group object deleted");
+            }
             servers.add(server);
         }
 
-        protected synchronized void removeServer(ServerPolicy server) {
-            servers.remove(server);
+        public synchronized void removeServer(ServerPolicy server) throws RemoteException {
+            if (servers != null) {
+                servers.remove(server);
+            }
         }
 
         @Override
         public ArrayList<ServerPolicy> getServers() throws RemoteException {
+            if (servers == null) {
+                return new ArrayList<ServerPolicy>();
+            }
             return new ArrayList<ServerPolicy>(servers);
         }
 
@@ -77,73 +140,142 @@ public class DefaultPolicy extends Policy {
                 throws RemoteException {
             this.region = region;
             this.spec = spec;
-            addServer(server);
+            if (healthCheckTimer == null) {
+                healthCheckTimer =
+                        new ResettableTimer(
+                                new TimerTask() {
+                                    public void run() {
+                                        healthCheckTimerExpired();
+                                        healthCheckTimer.reset();
+                                    }
+                                },
+                                HEALTH_STATUS_REPORT_INTERVAL);
+                healthCheckTimer.start();
+            }
         }
 
         @Override
         public synchronized void onDestroy() throws RemoteException {
             super.onDestroy();
-            servers.clear();
+            if (healthCheckTimer != null) {
+                healthCheckTimer.cancel();
+                healthCheckTimer = null;
+            }
+            servers = null;
         }
 
-        /** Below methods can be used by all the DMs extending this default DM. */
-
-        /**
-         * This method is used to replicate a server policy at the given source considering itself
-         * as reference copy and pin it to kernel server with specified host. And adds it to its
-         * local server list.
-         *
-         * @param replicaSource Server policy on which a new replica is created considering itself
-         *     as reference copy
-         * @param dest Host address on which replicated copy need to pin
-         * @param region Region in which replicated server has to be pinned. It is passed down to
-         *     all downstream DMs till leaf. And downstream DM pinning the chain ensures to pin on
-         *     kernel server belonging to the region
-         * @return New replica of server policy
-         * @throws RemoteException
-         * @throws MicroServiceNotFoundException
-         * @throws MicroServiceReplicaNotFoundException
-         */
-        protected ServerPolicy replicate(
-                ServerPolicy replicaSource, InetSocketAddress dest, String region)
-                throws RemoteException, MicroServiceNotFoundException,
-                        MicroServiceReplicaNotFoundException {
-            ServerPolicy replica =
-                    replicaSource.sapphire_replicate(replicaSource.getProcessedPolicies(), region);
-            if (replicaSource.isLastPolicy()) {
-                pin(replica, dest);
+        @Override
+        @AddEvent(event = "NOTIFY")
+        public void onNotification(NotificationObject notificationObject) throws RemoteException {
+            super.onNotification(notificationObject);
+            if (!(notificationObject instanceof SapphireStatusObject)) {
+                /* Unsupported notification received */
+                return;
             }
 
-            addServer(replica);
-            return replica;
+            try {
+                SapphireStatusObject statusObject = (SapphireStatusObject) notificationObject;
+                KernelObjectStub server = (KernelObjectStub) getServer(statusObject.getServerId());
+                ServerPolicy serverPolicy = getServer(statusObject.getServerId());
+                if (statusObject.isStatus()) {
+                    /* Mark the server as healthy */
+                    server.$__setLastSeenTick(healthStatusTick);
+                    return;
+                }
+                removeReplica(serverPolicy);
+                addReplicas(region);
+            } catch (KernelObjectNotFoundException e) {
+                e.toString();
+            } catch (MicroServiceNotFoundException e) {
+                e.toString();
+            } catch (MicroServiceReplicaNotFoundException e) {
+                e.toString();
+            }
+        }
+
+        protected void healthCheckTimerExpired() {
+            try {
+                healthStatusTick++;
+                ArrayList<ServerPolicy> servers = getServers();
+                for (ServerPolicy server : servers) {
+                    KernelObjectStub serverStub = (KernelObjectStub) server;
+                    if ((healthStatusTick - serverStub.$__getLastSeenTick())
+                            > HEALTH_STATUS_MAX_SKIP_TICKS) {
+                        /* Did not receive notification from the server policy for max times which means it is unhealthy. So replica is removed from group policy */
+                        removeServer(server);
+                        // TODO:region maybe removed later
+                        addReplicas(region);
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
 
         /**
-         * Pin the server policy to kernel server with specified host
+         * Check the status of appobject from each replica and add healthy ones in the list
          *
-         * @param server
-         * @param host
-         * @throws MicroServiceReplicaNotFoundException
+         * @return List of healthy replicas
          * @throws RemoteException
-         * @throws MicroServiceNotFoundException
          */
-        protected void pin(ServerPolicy server, InetSocketAddress host)
-                throws MicroServiceReplicaNotFoundException, RemoteException,
-                        MicroServiceNotFoundException {
-            server.sapphire_pin_to_server(host);
-            ((KernelObjectStub) server).$__updateHostname(host);
+        private ServerPolicy getHealthyReplicas() throws Exception {
+            ArrayList<ServerPolicy> servers = getServers();
+            for (ServerPolicy server : servers) {
+                KernelObjectStub serverStub = (KernelObjectStub) server;
+                // return healthy server
+                if ((healthStatusTick - serverStub.$__getLastSeenTick())
+                        <= HEALTH_STATUS_MAX_SKIP_TICKS) {
+                    return server;
+                }
+            }
+            throw new Exception("Healthy replica not available");
         }
 
-        /**
-         * Destroys the given server policy from the kernel server where it resides. And removes it
-         * from its local server list
-         *
-         * @param server
-         * @throws RemoteException
-         */
-        protected void terminate(ServerPolicy server) throws RemoteException {
-            server.sapphire_terminate();
-            removeServer(server);
+        private void addReplicas(String region)
+                throws RemoteException, MicroServiceNotFoundException,
+                MicroServiceReplicaNotFoundException {
+            ArrayList<ServerPolicy> servers = getServers();
+
+            /* Get the list of available servers in region */
+            List<InetSocketAddress> fullKernelList;
+            fullKernelList = sapphire_getAddressList(null, region);
+            if (fullKernelList.isEmpty()) {
+                // Kernel Servers not available in the region
+                return;
+            }
+
+            int remainingReplicaCount;
+            remainingReplicaCount = replicaCount - servers.size();
+            List<InetSocketAddress> ksToBeUsed = new ArrayList<>(fullKernelList);
+            Set<InetSocketAddress> ksList = new HashSet<>();
+            // add the kernelservers in which replica is already present in the list
+            for (ServerPolicy s : servers) {
+                ksList.add(s.sapphire_locate_kernel_object(s.$__getKernelOID()));
+            }
+
+            // remove the kernelserver in which replica is already present in order to make the
+            // replicas distributed across kernel servers
+            for (InetSocketAddress i : ksList) {
+                ksToBeUsed.remove(i);
+            }
+            while (remainingReplicaCount > 0) {
+                if (!ksToBeUsed.isEmpty()) {
+                    InetSocketAddress currentKS = ksToBeUsed.get(0);
+                    ServerPolicy replicaSource = null;
+                    //adding new replica
+                    try {
+                        replicaSource = getHealthyReplicas();
+                    } catch (Exception e){
+                        logger.warning("Healthy replica not available");
+                        return;
+                    }
+                    addReplica(replicaSource, currentKS, region, false);
+                    ksToBeUsed.remove(currentKS);
+                    remainingReplicaCount--;
+                } else {
+                    ksToBeUsed = fullKernelList;
+                }
+            }
         }
     }
 }

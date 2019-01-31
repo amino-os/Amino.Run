@@ -44,10 +44,10 @@ public class KernelServerImpl implements KernelServer {
     public static String SERVICE_PORT = "--servicePort";
     public static String DEFAULT_REGION = "default-region";
     public static String REGION_KEY = "region";
-    private static int HEARTBEAT_MAX_TRIES = 3;
-    private static int HEARBEAT_FAIL_COUNT = 0;
+    private static int HEARTBEAT_MAX_TRIES = 2;
+    private int HEARBEAT_FAIL_COUNT = 0;
     private ArrayList<SapphireStatusObject> statusObjBatch;
-    private static final int batchSize = 2;
+    private static final int BATCH_SIZE = 50;
 
     private InetSocketAddress host;
     private String region;
@@ -110,27 +110,26 @@ public class KernelServerImpl implements KernelServer {
                     KernelRPCException {
         if (GlobalKernelReferences.KernelServerDown) {
             throw new KernelRPCException("Kernel server is down");
-        } else {
-            KernelObject object = null;
-            object = objectManager.lookupObject(rpc.getOID());
-
-            logger.log(
-                    Level.FINE,
-                    "Invoking RPC on Kernel Object with OID: "
-                            + rpc.getOID()
-                            + "with rpc:"
-                            + rpc.getMethod()
-                            + " params: "
-                            + rpc.getParams().toString());
-
-            Object ret = null;
-            try {
-                ret = object.invoke(rpc.getMethod(), rpc.getParams());
-            } catch (Exception e) {
-                throw new KernelRPCException(e);
-            }
-            return ret;
         }
+        KernelObject object = null;
+        object = objectManager.lookupObject(rpc.getOID());
+
+        logger.log(
+                Level.FINE,
+                "Invoking RPC on Kernel Object with OID: "
+                        + rpc.getOID()
+                        + "with rpc:"
+                        + rpc.getMethod()
+                        + " params: "
+                        + rpc.getParams().toString());
+
+        Object ret = null;
+        try {
+            ret = object.invoke(rpc.getMethod(), rpc.getParams());
+        } catch (Exception e) {
+            throw new KernelRPCException(e);
+        }
+        return ret;
     }
 
     /**
@@ -353,8 +352,6 @@ public class KernelServerImpl implements KernelServer {
      */
     public void updateObjectStatus(KernelOID oid, boolean status)
             throws KernelObjectNotFoundException {
-        logger.info("in update status..");
-        logger.info("status.." + status);
         KernelObject object = objectManager.lookupObject(oid);
         object.setStatus(status);
     }
@@ -368,18 +365,14 @@ public class KernelServerImpl implements KernelServer {
         KernelObject kernelObject;
         boolean status;
         Set<Map.Entry<KernelOID, KernelObject>> set = objectManager.getKernelObjects();
-        System.out.println("in geStatusObjects...");
-        System.out.println("set size.." + set.size());
         ArrayList<SapphireStatusObject> statusObjects = new ArrayList();
         for (Map.Entry<KernelOID, KernelObject> entry : set) {
             if (entry.getValue().getObject() instanceof Policy.ServerPolicy) {
                 kernelObject = entry.getValue();
                 Policy.GroupPolicy group =
                         ((Policy.ServerPolicy) kernelObject.getObject()).getGroup();
-                System.out.println("group is null???" + group);
                 if (group != null) {
                     status = kernelObject.isStatus();
-                    System.out.println("adding status objects..");
                     statusObjects.add(
                             new SapphireStatusObject(
                                     group.getSapphireObjId(),
@@ -449,29 +442,17 @@ public class KernelServerImpl implements KernelServer {
 
     /** Send heartbeats to OMS. */
     private void startheartbeat(ServerInfo srvinfo, ArrayList<SapphireStatusObject> statusObjects) {
-        logger.info("heartbeat KernelServer" + srvinfo + statusObjects);
+        logger.fine("heartbeat KernelServer" + srvinfo + statusObjects);
         /*Update the status of policy objects too */
         try {
-            synchronized (this) {
-                if (statusObjects.isEmpty()) {
-                    oms.heartbeatKernelServer(srvinfo, statusObjects);
-                } else {
-                    System.out.println("statusobj size.." + statusObjects.size());
-                    for (SapphireStatusObject statusObject : statusObjects) {
-                        statusObjBatch.add(statusObject);
-                        if (statusObjBatch.size() == batchSize) {
-                            System.out.println("reached batch size.." + statusObjBatch.size());
-                            oms.heartbeatKernelServer(srvinfo, statusObjBatch);
-                            statusObjBatch.clear();
-                        }
-                    }
-                    if (statusObjBatch.size() != 0) {
-                        System.out.println("pushed.....");
-                        oms.heartbeatKernelServer(srvinfo, statusObjBatch);
-                        statusObjBatch.clear();
-                    }
+            for (SapphireStatusObject statusObject : statusObjects) {
+                statusObjBatch.add(statusObject);
+                if (statusObjBatch.size() == BATCH_SIZE) {
+                    oms.heartbeatKernelServer(srvinfo, statusObjBatch);
+                    statusObjBatch.clear();
                 }
             }
+            oms.heartbeatKernelServer(srvinfo, statusObjBatch);
         } catch (Exception e) {
             checkKernelServerStatus();
             logger.severe("Cannot heartbeat KernelServer" + srvinfo);
@@ -480,10 +461,9 @@ public class KernelServerImpl implements KernelServer {
         ksHeartbeatSendTimer.reset();
     }
 
-    private static void checkKernelServerStatus() {
+    private void checkKernelServerStatus() {
         HEARBEAT_FAIL_COUNT++;
         GlobalKernelReferences.KernelServerDown = false;
-        System.out.println("HEARBEAT_FAIL_COUNT.." + HEARBEAT_FAIL_COUNT);
         if (HEARBEAT_FAIL_COUNT == HEARTBEAT_MAX_TRIES) {
             GlobalKernelReferences.KernelServerDown = true;
             HEARBEAT_FAIL_COUNT = 0;
@@ -550,7 +530,7 @@ public class KernelServerImpl implements KernelServer {
                                 startheartbeat(srvInfo, geStatusObjects());
                             }
                         },
-                        KS_HEARTBEAT_PERIOD / 2);
+                        KS_HEARTBEAT_PERIOD);
         ksHeartbeatSendTimer.start();
     }
 

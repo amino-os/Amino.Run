@@ -176,6 +176,7 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultPolicy {
                 throws RemoteException {
             logger = Logger.getLogger(GroupBase.class.getName());
             super.onCreate(region, server, spec);
+            boolean isLastPolicy = server.isLastPolicy();
             logger.info(String.format("Creating master and slave instance in region %s", region));
 
             try {
@@ -196,11 +197,12 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultPolicy {
                                 "Creating master and slave instances in servers: %s", addressList));
 
                 List<InetSocketAddress> unavailable = new ArrayList<InetSocketAddress>();
-                boolean pinned = server.isAlreadyPinned();
                 ServerBase s = (ServerBase) server;
                 InetSocketAddress dest = null;
 
-                if (!pinned) {
+                if (isLastPolicy) {
+                    // TODO: Make deployment kernel pin primary replica once node selection
+                    // constraint is implemented.
                     dest = getAvailable(0, addressList, unavailable);
                     s.sapphire_pin_to_server(server, dest);
                     ((KernelObjectStub) s).$__updateHostname(dest);
@@ -209,10 +211,10 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultPolicy {
                 s.start();
 
                 for (int i = 0; i < NUM_OF_REPLICAS - 1; i++) {
-                    if (!pinned) {
+                    if (isLastPolicy) {
                         dest = getAvailable(i + 1, addressList, unavailable);
                     }
-                    ServerBase replica = (ServerBase) addReplica(s, dest, region, pinned);
+                    ServerBase replica = (ServerBase) addReplica(s, dest, region);
                     // TODO: Quinton: Why are removeServer and then addServer called here?
                     // May have been added because sapphire_replicate also has addServer() with
                     // serverStub having the hostname of the one which replicated it. But after pin

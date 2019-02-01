@@ -88,9 +88,10 @@ public class DHTPolicy extends DefaultPolicy {
 
             try {
                 ArrayList<String> regions = sapphire_getRegions();
-                boolean pinned = server.isAlreadyPinned();
 
-                if (!pinned) {
+                if (server.isLastPolicy()) {
+                    // TODO: Make deployment kernel pin primary replica once node selection
+                    // constraint is implemented.
                     InetSocketAddress address = getAddress(region);
                     server.sapphire_pin_to_server(server, address);
                 }
@@ -119,7 +120,7 @@ public class DHTPolicy extends DefaultPolicy {
 
                     logger.info(String.format("Creating shard %s in region %s", i, region));
                     InetSocketAddress address = getAddress(region);
-                    addReplica(server, address, region, pinned);
+                    addReplica(server, address, region);
                 }
             } catch (RemoteException e) {
                 throw new Error(

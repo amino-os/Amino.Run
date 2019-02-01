@@ -47,7 +47,6 @@ public abstract class Library implements Upcalls {
         protected Policy.GroupPolicy group;
         protected MicroServiceSpec spec;
         protected Map<String, SapphirePolicyConfig> configMap;
-        protected boolean alreadyPinned;
 
         static Logger logger = Logger.getLogger(ServerPolicyLibrary.class.getName());
 
@@ -71,6 +70,9 @@ public abstract class Library implements Upcalls {
         // to the new replicas so that they can reference the same group stubs.
         protected List<SapphirePolicyContainer> processedPolicies =
                 new ArrayList<SapphirePolicyContainer>();
+
+        // Indicates whether this policy is the inner most policy of the chain.
+        protected boolean isLastPolicy = false;
 
         private OMSServer oms() {
             return GlobalKernelReferences.nodeServer.oms;
@@ -97,6 +99,20 @@ public abstract class Library implements Upcalls {
 
         public void setNextPolicies(List<SapphirePolicyContainer> nextPolicies) {
             this.nextPolicies = nextPolicies;
+        }
+
+        /**
+         * Is this the last server policy instance in the chain? Last policy is the inner most
+         * policy in the chain.
+         *
+         * @return true if this is the last policy.
+         */
+        public boolean isLastPolicy() {
+            return this.isLastPolicy;
+        }
+
+        public void setIsLastPolicy(boolean isLastPolicy) {
+            this.isLastPolicy = isLastPolicy;
         }
 
         public void setProcessedPolicies(List<SapphirePolicyContainer> processedPolicies) {
@@ -264,8 +280,6 @@ public abstract class Library implements Upcalls {
                 throw new Error(msg, e);
             }
 
-            serverPolicy.setAlreadyPinned(true);
-
             logger.info(
                     "(Complete) Pinning Sapphire object "
                             + serverPolicyStub
@@ -398,14 +412,6 @@ public abstract class Library implements Upcalls {
             }
             return addr;
         }
-
-        public boolean isAlreadyPinned() {
-            return this.alreadyPinned;
-        }
-
-        public void setAlreadyPinned(boolean alreadyPinned) {
-            this.alreadyPinned = alreadyPinned;
-        }
     }
 
     public abstract static class GroupPolicyLibrary implements GroupUpcalls {
@@ -478,27 +484,24 @@ public abstract class Library implements Upcalls {
          *     performed.
          * @param dest address for KernelServer that will host this replica.
          * @param region region where this replica needs to be located within.
-         * @param pinned whether the policy chain was already pinned by downstream policy.
          * @return newly created replica.
          * @throws RemoteException
          * @throws SapphireObjectNotFoundException
          * @throws SapphireObjectReplicaNotFoundException
          */
         protected ServerPolicy addReplica(
-                Policy.ServerPolicy replicaSource,
-                InetSocketAddress dest,
-                String region,
-                boolean pinned)
+                Policy.ServerPolicy replicaSource, InetSocketAddress dest, String region)
                 throws RemoteException, SapphireObjectNotFoundException,
                         SapphireObjectReplicaNotFoundException {
             ServerPolicy replica =
                     replicaSource.sapphire_replicate(replicaSource.getProcessedPolicies(), region);
-            if (pinned) {
-                // This chain was already pinned by the downstream policy; hence, skips pinning.
+            if (!replicaSource.isLastPolicy()) {
+                // Pinning a replica happens only when this is the last policy of the policy chain.
                 return replica;
             }
 
             try {
+
                 replicaSource.sapphire_pin_to_server(replica, dest);
                 updateReplicaHostName(replica, dest);
             } catch (Exception e) {

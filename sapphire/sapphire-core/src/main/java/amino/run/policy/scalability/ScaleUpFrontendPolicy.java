@@ -238,7 +238,7 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
                      * is set to false for now but may need to be updated properly when run-time
                      * addition is supported.
                      */
-                    addReplica(servers.get(0), addressList.get(0), region, false);
+                    addReplica(servers.get(0), addressList.get(0), region);
                 } catch (SapphireObjectNotFoundException e) {
                     throw new ScaleUpException(
                             "Failed to find sapphire object. Probably deleted.", e);

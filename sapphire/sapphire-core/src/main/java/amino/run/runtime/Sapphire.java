@@ -266,11 +266,11 @@ public class Sapphire {
 
         // Note that subList is non serializable; hence, the new list creation.
         List<SapphirePolicyContainer> nextPoliciesToCreate =
-                new ArrayList<SapphirePolicyContainer>(
-                        policyNameChain.subList(1, policyNameChain.size()));
+                new ArrayList<>(policyNameChain.subList(1, policyNameChain.size()));
 
         serverPolicy.onCreate(groupPolicyStub, spec);
         serverPolicy.setNextPolicies(nextPoliciesToCreate);
+        serverPolicyStub.setIsLastPolicy(nextPoliciesToCreate.size() == 0);
 
         SapphirePolicyContainer processedPolicy =
                 new SapphirePolicyContainer(policyName, groupPolicyStub);
@@ -279,8 +279,7 @@ public class Sapphire {
         processedPolicies.add(processedPolicy);
 
         // Create a copy to set processed policies up to this point.
-        List<SapphirePolicyContainer> processedPoliciesSoFar =
-                new ArrayList<SapphirePolicyContainer>(processedPolicies);
+        List<SapphirePolicyContainer> processedPoliciesSoFar = new ArrayList<>(processedPolicies);
         serverPolicy.setProcessedPolicies(processedPoliciesSoFar);
         serverPolicyStub.setProcessedPolicies(processedPoliciesSoFar);
 
@@ -293,7 +292,6 @@ public class Sapphire {
 
         // server policy stub at this moment has the full policy chain; safe to add to group
         if (existingGroupPolicy == null) {
-            setIfAlreadyPinned(serverPolicyStub, processedPolicies, nextPoliciesToCreate.size());
             groupPolicyStub.onCreate(region, serverPolicyStub, spec);
             // TODO: Quinton: This looks like a bug.  Why is the server only added for the first
             // server?
@@ -315,6 +313,9 @@ public class Sapphire {
             }
         }
 
+        // TODO: Add a pin_to_server logic here if not pinned by the last DM. This is needed for DMs
+        // that do not pin the default DM. It can be added once passing down node selection
+        // constraint is implemented.
         return appStub;
     }
 
@@ -604,52 +605,5 @@ public class Sapphire {
         }
         Class<?>[] argClasses = new Class<?>[argClassesList.size()];
         return argClassesList.toArray(argClasses);
-    }
-
-    /**
-     * Checks the downstream policies by going through processedPolicies and sets the given
-     * serverPolicyStub as being already pinned if any of downstream policies have set it as already
-     * pinned. Note 'pinned' means the chain was migrated to a target Kernel Server by
-     * sapphire_pin_to_server() at Library
-     *
-     * @param serverPolicyStub Stub to set as already pinned if downstream has already pinned.
-     * @param processedPolicies All of the policies created in this policy chain.
-     * @param sizeOfDownStreamPolicies number of policy instances that need to be checked if already
-     *     pinned.
-     */
-    private static void setIfAlreadyPinned(
-            ServerPolicy serverPolicyStub,
-            List<SapphirePolicyContainer> processedPolicies,
-            int sizeOfDownStreamPolicies) {
-        int idx = 0, size = processedPolicies.size();
-
-        // Indicates start of downstream policies.
-        int startIdx = size - sizeOfDownStreamPolicies;
-        try {
-            // Set whether the chain was already pinned or not from downstream policies.
-            for (SapphirePolicyContainer policyContainer : processedPolicies) {
-                if (idx >= startIdx) {
-                    // Start checking all the downstream policies only.
-                    Policy.ServerPolicy sp = policyContainer.getServerPolicy();
-                    if (sp.isAlreadyPinned()) {
-                        String msg =
-                                String.format(
-                                        "Sapphire Object was already pinned by %s. Set as already pinned for %s",
-                                        sp, serverPolicyStub);
-                        logger.log(Level.INFO, msg);
-                        serverPolicyStub.setAlreadyPinned(true);
-                        return;
-                    }
-                }
-                idx++;
-            }
-        } catch (Exception e) {
-            logger.log(
-                    Level.SEVERE,
-                    String.format(
-                            "Checking chain pinning failed. Size of processed policies = %d startIdx = %d",
-                            size, startIdx));
-            throw e;
-        }
     }
 }

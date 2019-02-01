@@ -157,7 +157,6 @@ public class ConsensusRSMPolicyTest extends BaseTest {
     public void groupPolicyOnCreateFailure() throws Exception {
         Policy.ServerPolicy server = spy(ConsensusRSMPolicy.ServerPolicy.class);
         Policy.GroupPolicy group = spy(ConsensusRSMPolicy.GroupPolicy.class);
-        doReturn(true).when(server).isAlreadyPinned();
         when(group.getServers()).thenThrow(new RemoteException());
         thrown.expect(Error.class);
         group.onCreate("", server, new MicroServiceSpec());

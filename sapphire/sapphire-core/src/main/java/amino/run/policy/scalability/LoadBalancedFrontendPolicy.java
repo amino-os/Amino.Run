@@ -176,6 +176,7 @@ public class LoadBalancedFrontendPolicy extends DefaultPolicy {
         public void onCreate(String region, Policy.ServerPolicy server, MicroServiceSpec spec)
                 throws RemoteException {
             super.onCreate(region, server, spec);
+
             Config config = getConfig(spec);
             if (config != null) {
                 this.replicaCount = config.getReplicaCount();
@@ -196,7 +197,6 @@ public class LoadBalancedFrontendPolicy extends DefaultPolicy {
                 region = server.sapphire_getRegion();
                 InetSocketAddress addr =
                         server.sapphire_locate_kernel_object(server.$__getKernelOID());
-                boolean pinned = server.isAlreadyPinned();
                 List<InetSocketAddress> addressList =
                         sapphire_getAddressList(spec.getNodeSelectorSpec(), region);
 
@@ -206,7 +206,7 @@ public class LoadBalancedFrontendPolicy extends DefaultPolicy {
                     numnodes = addressList.size();
 
                     for (count = 0; count < numnodes && count < replicaCount - 1; count++) {
-                        addReplica(server, addressList.get(count), region, pinned);
+                        addReplica(server, addressList.get(count), region);
                     }
                 }
 

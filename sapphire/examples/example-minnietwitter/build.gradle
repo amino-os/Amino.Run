@@ -10,6 +10,11 @@ genStubs {
     outputs.dir dst
 }
 
+// Customize stub compilation for this example
+compileStubs {
+    outputs.dir "$buildDir/classes/java/stubs/amino/run/appexamples/minnietwitter/stubs/"
+}
+
 // Customize runapp for this example
 runapp {
     main = "amino.run.appexamples.minnietwitter.MinnieTwitterMain"

@@ -122,7 +122,6 @@ subprojects {
         destinationDir = sourceSets.stubs.output.classesDir
         options.incremental = true
         inputs.dir genStubs.outputs
-        outputs.dir sourceSets.stubs.output.classesDir
     }
 
     // Include stubs sourceSet classes in the jar file.

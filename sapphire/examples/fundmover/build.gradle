@@ -13,6 +13,11 @@ genStubs {
     inputs.dir src   // Declare inputs, so gradle will run if they have been changed
 }
 
+// Customize stub compilation for this example
+compileStubs {
+    outputs.dir "$buildDir/classes/java/stubs/amino/run/appexamples/fundmover/stubs/"
+}
+
 // Customize runapp for this example
 runapp {
     main = "amino.run.appexamples.fundmover.FundmoverMain"

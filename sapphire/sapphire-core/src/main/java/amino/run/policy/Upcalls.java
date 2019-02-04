@@ -83,15 +83,31 @@ public interface Upcalls {
          * DK in the current implementation. onRPC() is invoked directly from the appStub, which is
          * invoked by the app client.
          *
-         * @param method The name of the method to be invoked.
-         * @param params the parameters to be passed to the remote method invocation. All parameter
-         *     passing is by definition pass-by-value, because it's remote.
+         * @param appMethod The name of the app method to be invoked. This method name can be used
+         *     DM clients to make a decision based on app method name. It is the same value passed
+         *     to all the DM clients along chain traversal
+         * @param appParams The app method parameters to be passed. These parameters are used by DM
+         *     clients making certain DM decisions based on the app arguments. These are the same
+         *     value passed to all the DM clients along chain traversal.
+         * @param prevDMMethod The name of the previous DM method invoked in the DM chain. It is
+         *     null if it is first DM in the chain. It is passed along the chain. This value is
+         *     changed at intercepting server stub to current method name before calling next DM
+         *     client in the chain.
+         * @param paramStack The parameters to be passed to the remote method invocation. All
+         *     parameter passing is by definition pass-by-value, because it's remote. It is the
+         *     stack of parameters pushed all the way from Appstub till the current DM client
+         *     through previous intercepting DM server stub
          * @return the return value from the remote method invocation. Again, return values are
          *     pass-by-value.
          * @throws Exception Either the exception thrown directly by the remote method invocation,
          *     or an exception thrown by the sapphire kernel or network stack.
          */
-        Object onRPC(String method, ArrayList<Object> params) throws Exception;
+        Object onRPC(
+                String appMethod,
+                ArrayList<Object> appParams,
+                String prevDMMethod,
+                ArrayList<Object> paramStack)
+                throws Exception;
     }
 
     /** Interface for server policy. */
@@ -145,6 +161,14 @@ public interface Upcalls {
          *
          * @param method Name of the method to be invoked.
          * @param params Parameters to be passed to the method invocation.
+         * @param prevDMMethod No significance on DM server policy object. Value is null when {@link
+         *     onRPC} method is invoked on server policy object. It has significance on server
+         *     policy stub object present on DM client side as described at {@link
+         *     Upcalls.ClientUpcalls.onRPC()}
+         * @param paramStack No significance on DM server policy object. Value is null when {@link
+         *     onRPC} method is invoked on server policy object. It has significance on server
+         *     policy stub object present on DM client side as described at {@link
+         *     Upcalls.ClientUpcalls.onRPC()}
          * @return
          * @throws Exception Either the exception thrown by the application, or an exception
          *     resulting from the operations of the DM/Kernel itself (e.g. if RPC replication fails,
@@ -154,7 +178,12 @@ public interface Upcalls {
          *     So ideally we explicitly return either a wrapped application exception, or one of an
          *     explicit set of kernel or DM exceptions.
          */
-        Object onRPC(String method, ArrayList<Object> params) throws Exception;
+        Object onRPC(
+                String method,
+                ArrayList<Object> params,
+                String prevDMMethod,
+                ArrayList<Object> paramStack)
+                throws Exception;
 
         /**
          * Event handler to notify replicas of an SO that the set of replicas of this SO have

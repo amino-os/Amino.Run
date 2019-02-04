@@ -96,9 +96,14 @@ public class LoadBalancedFrontendPolicy extends DefaultPolicy {
         private static Logger logger = Logger.getLogger(ClientPolicy.class.getName());
 
         @Override
-        public Object onRPC(String method, ArrayList<Object> params) throws Exception {
+        public Object onRPC(
+                String method,
+                ArrayList<Object> params,
+                String prevDMMethod,
+                ArrayList<Object> paramStack)
+                throws Exception {
             ServerPolicy server = getCurrentServer();
-            return server.onRPC(method, params);
+            return server.onRPC(method, params, prevDMMethod, paramStack);
         }
 
         private synchronized ServerPolicy getCurrentServer() throws Exception {
@@ -143,12 +148,17 @@ public class LoadBalancedFrontendPolicy extends DefaultPolicy {
         }
 
         @Override
-        public Object onRPC(String method, ArrayList<Object> params) throws Exception {
+        public Object onRPC(
+                String method,
+                ArrayList<Object> params,
+                String prevDMMethod,
+                ArrayList<Object> paramStack)
+                throws Exception {
             boolean acquired = false;
             acquired = limiter.tryAcquire();
             if (acquired) { // concurrent requests count not reached
                 try {
-                    return super.onRPC(method, params);
+                    return super.onRPC(method, params, prevDMMethod, paramStack);
                 } finally {
                     limiter.release();
                 }

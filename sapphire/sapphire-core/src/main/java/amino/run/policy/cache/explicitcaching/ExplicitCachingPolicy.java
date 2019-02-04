@@ -46,7 +46,12 @@ public class ExplicitCachingPolicy extends DefaultPolicy {
         }
 
         @Override
-        public Object onRPC(String method, ArrayList<Object> params) throws Exception {
+        public Object onRPC(
+                String method,
+                ArrayList<Object> params,
+                String prevDMMethod,
+                ArrayList<Object> paramStack)
+                throws Exception {
             // All the operations between pull/push calls goes against local cache
             if (this.isPull(method)) {
                 this.pull();
@@ -59,7 +64,7 @@ public class ExplicitCachingPolicy extends DefaultPolicy {
             }
 
             /* When app object is explicitly not pulled, rpc calls are directed to server */
-            return this.getServer().onRPC(method, params);
+            return this.getServer().onRPC(method, params, prevDMMethod, paramStack);
         }
     }
 

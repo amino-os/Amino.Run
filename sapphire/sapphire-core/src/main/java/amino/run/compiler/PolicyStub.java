@@ -33,25 +33,6 @@ public class PolicyStub extends Stub {
         return ms;
     }
 
-    /**
-     * Method checks whether onRPC method has been overriden in the DM class. If overridden, then
-     * the onRPC method has to be Directly invoked on the DM instead of following the chain in the
-     * case of MultiDM scenarios.
-     *
-     * @return List of DM Class onRPC Methods
-     */
-    @Override
-    public TreeSet<MethodStub> getDMRPCMethods() {
-        TreeSet<MethodStub> ms = new TreeSet<MethodStub>();
-        Class<?> dmClass = stubClass;
-        for (Method m : dmClass.getDeclaredMethods()) {
-            if (Modifier.isPublic(m.getModifiers()) && m.getName().equals("onRPC")) {
-                ms.add(new MethodStub((Method) m));
-            }
-        }
-        return ms;
-    }
-
     @Override
     public String getPackageStatement() {
         return ((packageName == null)
@@ -175,16 +156,26 @@ public class PolicyStub extends Stub {
         /* Implementation for makeRPC */
         buffer.append(
                 indenter.indent()
-                        + "public Object $__makeKernelRPC(java.lang.String method, java.util.ArrayList<Object> params) throws java.rmi.RemoteException, java.lang.Exception {"
+                        + "public Object $__makeKernelRPC(java.lang.String method, java.util.ArrayList<Object> params, java.lang.String dmMethod, java.util.ArrayList<Object> paramStack) throws java.rmi.RemoteException, java.lang.Exception {"
                         + EOLN);
+        buffer.append(
+                indenter.tIncrease()
+                        + "java.util.ArrayList<Object> $__param = new java.util.ArrayList<Object>();"
+                        + EOLN);
+        buffer.append(indenter.tIncrease() + "$__param.add(paramStack.get(0));" + EOLN);
+        buffer.append(indenter.tIncrease() + "$__param.add(paramStack.get(1));" + EOLN);
+        buffer.append(indenter.tIncrease() + "$__param.add(null);" + EOLN);
+        buffer.append(indenter.tIncrease() + "$__param.add(null);" + EOLN);
 
         buffer.append(indenter.tIncrease() + "if ($__nextClientPolicy != null) {" + EOLN);
         buffer.append(
-                indenter.tIncrease(2) + "return $__nextClientPolicy.onRPC(method, params);" + EOLN);
+                indenter.tIncrease(2)
+                        + "return $__nextClientPolicy.onRPC(method, params, dmMethod, $__param);"
+                        + EOLN);
         buffer.append(indenter.tIncrease() + "}" + EOLN + EOLN);
         buffer.append(
                 indenter.tIncrease()
-                        + "amino.run.kernel.common.KernelRPC rpc = new amino.run.kernel.common.KernelRPC($__oid, method, params);"
+                        + "amino.run.kernel.common.KernelRPC rpc = new amino.run.kernel.common.KernelRPC($__oid, dmMethod, $__param);"
                         + EOLN);
         buffer.append(indenter.tIncrease() + "try {" + EOLN);
         buffer.append(
@@ -274,8 +265,13 @@ public class PolicyStub extends Stub {
      * @return Stub implementation code for this method.
      */
     @Override
-    public String getMethodContent(MethodStub m, boolean isDMMethod) {
+    public String getMethodContent(MethodStub m) {
         StringBuilder buffer = new StringBuilder("");
+
+        boolean isDMMethod = true;
+        if (m.getName().equals("onRPC")) {
+            isDMMethod = false;
+        }
 
         // Construct list of parameters and String holding the method name
         // to call KernelObjectStub.makeRPC
@@ -293,7 +289,16 @@ public class PolicyStub extends Stub {
         if (m.numParams > 0) {
             // Write invocation parameters.
             // TODO: primitive types ??
-            for (int i = 0; i < m.numParams; i++) {
+            int i = 0;
+            if (!isDMMethod) {
+                i = 2;
+                buffer.append(indenter.indent() + "if ($param_String_3 == null) {" + EOLN);
+                buffer.append(indenter.tIncrease() + "$param_String_3 = $param_String_1;" + EOLN);
+                buffer.append(
+                        indenter.tIncrease() + "$param_ArrayList_4 = $param_ArrayList_2;" + EOLN);
+                buffer.append(indenter.indent() + "}" + EOLN);
+            }
+            for (; i < m.numParams; i++) {
                 buffer.append(indenter.indent() + "$__params.add(" + m.paramNames[i] + ");" + EOLN);
             }
         }
@@ -367,7 +372,7 @@ public class PolicyStub extends Stub {
         if (isDMMethod == true) {
             return "$__result = $__makeKernelDMRPC($__method, $__params);";
         } else {
-            return "$__result = $__makeKernelRPC($__method, $__params);";
+            return "$__result = $__makeKernelRPC($param_String_1, $param_ArrayList_2, $__method, $__params);";
         }
     }
 }

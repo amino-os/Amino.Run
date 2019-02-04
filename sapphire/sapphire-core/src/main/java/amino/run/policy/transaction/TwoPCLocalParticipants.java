@@ -60,7 +60,7 @@ public class TwoPCLocalParticipants implements Serializable {
                 TransactionContext.getProcessedClients().add(p);
 
                 try {
-                    p.onRPC(TransactionWrapper.txWrapperTag, paramsTX);
+                    p.onRPC(TransactionWrapper.txWrapperTag, paramsTX, null, null);
                 } catch (Exception e) {
                     throw new TransactionExecutionException(
                             "DCAP 2PC transaction exception: " + primitiveMethod, e);
@@ -97,7 +97,8 @@ public class TwoPCLocalParticipants implements Serializable {
 
                 try {
                     TransactionContext.getProcessedClients().add(p);
-                    Object vote = p.onRPC(TransactionWrapper.txWrapperTag, paramsVoteReq);
+                    Object vote =
+                            p.onRPC(TransactionWrapper.txWrapperTag, paramsVoteReq, null, null);
                     if (!TransactionManager.Vote.YES.equals(vote)) {
                         isAllYes = false;
                         break;

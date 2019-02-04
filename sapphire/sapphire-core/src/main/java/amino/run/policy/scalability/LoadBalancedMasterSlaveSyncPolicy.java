@@ -114,7 +114,7 @@ public class LoadBalancedMasterSlaveSyncPolicy extends LoadBalancedMasterSlaveBa
          * @param request method invocation request
          * @return method invocation response
          */
-        public MethodInvocationResponse onRPC(MethodInvocationRequest request) {
+        public MethodInvocationResponse rpcRequest(MethodInvocationRequest request) {
             if (request.isImmutable()) {
                 return commitExecutor.applyRead(request);
             }

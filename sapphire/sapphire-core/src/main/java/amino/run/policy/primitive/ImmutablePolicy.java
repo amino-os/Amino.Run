@@ -19,7 +19,12 @@ public class ImmutablePolicy extends DefaultPolicy {
         private AppObject cachedObject = null;
 
         @Override
-        public Object onRPC(String method, ArrayList<Object> params) throws Exception {
+        public Object onRPC(
+                String method,
+                ArrayList<Object> params,
+                String prevDMMethod,
+                ArrayList<Object> paramStack)
+                throws Exception {
             synchronized (this) {
                 if (cachedObject == null) {
                     cachedObject = ((ServerPolicy) getServer()).getObject();

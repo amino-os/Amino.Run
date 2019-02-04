@@ -67,7 +67,12 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
         private final AtomicInteger replicaListSyncCtr = new AtomicInteger();
 
         @Override
-        public Object onRPC(String method, ArrayList<Object> params) throws Exception {
+        public Object onRPC(
+                String method,
+                ArrayList<Object> params,
+                String prevDMMethod,
+                ArrayList<Object> paramStack)
+                throws Exception {
             if (0 == (replicaListSyncCtr.getAndIncrement() % 100)) {
                 synchronized (this) {
                     // TODO: Should device a mechanism to fetch the latest replica list
@@ -75,7 +80,7 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
                 }
             }
 
-            return super.onRPC(method, params);
+            return super.onRPC(method, params, prevDMMethod, paramStack);
         }
     }
 
@@ -117,9 +122,14 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
         }
 
         @Override
-        public Object onRPC(String method, ArrayList<Object> params) throws Exception {
+        public Object onRPC(
+                String method,
+                ArrayList<Object> params,
+                String prevDMMethod,
+                ArrayList<Object> paramStack)
+                throws Exception {
             try {
-                return super.onRPC(method, params);
+                return super.onRPC(method, params, prevDMMethod, paramStack);
             } catch (ServerOverLoadException e) {
                 if (!replicaCreateLimiter.tryAcquire()) {
                     logger.warning("Replica creation rate exceeded for this sapphire object.");

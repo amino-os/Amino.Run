@@ -17,10 +17,15 @@ public class PeriodicCheckpointPolicy extends CheckpointPolicyBase {
         protected int rpcsBeforeCheckpoint = MAX_RPCS_BEFORE_CHECKPOINT;
 
         @Override
-        public Object onRPC(String method, ArrayList<Object> params) throws Exception {
+        public Object onRPC(
+                String method,
+                ArrayList<Object> params,
+                String prevDMMethod,
+                ArrayList<Object> paramStack)
+                throws Exception {
             Object retVal = null;
             try {
-                retVal = super.onRPC(method, params);
+                retVal = super.onRPC(method, params, prevDMMethod, paramStack);
             } catch (Exception e) { // RPC threw an exception, so restore to previous snapshot.
                 // If no previous snapshot exists, that exception will also go back to the client.
                 this.restoreCheckpoint(); // If this throws an exception, it goes straight back

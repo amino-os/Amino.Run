@@ -22,11 +22,16 @@ public class WriteThroughCachePolicy extends DefaultPolicy {
         private AppObject cachedObject = null;
 
         @Override
-        public Object onRPC(String method, ArrayList<Object> params) throws Exception {
+        public Object onRPC(
+                String method,
+                ArrayList<Object> params,
+                String prevDMMethod,
+                ArrayList<Object> paramStack)
+                throws Exception {
             Object ret = null;
 
             if (isMethodMutable(method, params)) {
-                ret = getServer().onRPC(method, params);
+                ret = getServer().onRPC(method, params, prevDMMethod, paramStack);
                 cachedObject = ((ServerPolicy) getServer()).getObject();
             } else {
                 if (cachedObject == null) {

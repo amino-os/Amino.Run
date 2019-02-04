@@ -13,7 +13,12 @@ public class DurableOnDemandCachedList extends DefaultPolicy {
 
     public static class DurableOnDemandCachedListClientPolicy extends DefaultClientPolicy {
         @Override
-        public Object onRPC(String method, ArrayList<Object> params) throws Exception {
+        public Object onRPC(
+                String method,
+                ArrayList<Object> params,
+                String prevDMMethod,
+                ArrayList<Object> paramStack)
+                throws Exception {
             /* Switch on the method we need to execute */
             return null;
         }
@@ -25,7 +30,12 @@ public class DurableOnDemandCachedList extends DefaultPolicy {
         int numMisses; // to automatically grow the cache if possible
 
         @Override
-        public Object onRPC(String method, ArrayList<Object> params) throws Exception {
+        public Object onRPC(
+                String method,
+                ArrayList<Object> params,
+                String prevDMMethod,
+                ArrayList<Object> paramStack)
+                throws Exception {
             return null;
         }
     }

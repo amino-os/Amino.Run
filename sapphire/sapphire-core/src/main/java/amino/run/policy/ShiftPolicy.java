@@ -24,9 +24,14 @@ public class ShiftPolicy extends DefaultPolicy {
         private static int shiftRPCLoad = 0;
 
         @Override
-        public Object onRPC(String method, ArrayList<Object> params) throws Exception {
+        public Object onRPC(
+                String method,
+                ArrayList<Object> params,
+                String prevDMMethod,
+                ArrayList<Object> paramStack)
+                throws Exception {
             this.shiftRPCLoad++;
-            Object obj = super.onRPC(method, params);
+            Object obj = super.onRPC(method, params, prevDMMethod, paramStack);
 
             if (this.shiftRPCLoad > 0 && this.shiftRPCLoad % this.LOAD == 0) {
                 logger.info(

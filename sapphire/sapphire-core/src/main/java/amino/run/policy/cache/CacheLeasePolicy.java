@@ -94,7 +94,12 @@ public class CacheLeasePolicy extends DefaultPolicy {
         }
 
         @Override
-        public Object onRPC(String method, ArrayList<Object> params) throws Exception {
+        public Object onRPC(
+                String method,
+                ArrayList<Object> params,
+                String prevDMMethod,
+                ArrayList<Object> paramStack)
+                throws Exception {
             Object ret = null;
             if (!leaseStillValid()) {
                 getNewLease(CacheLeasePolicy.DEFAULT_LEASE_PERIOD);

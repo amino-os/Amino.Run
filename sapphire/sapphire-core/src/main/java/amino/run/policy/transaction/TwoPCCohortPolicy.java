@@ -19,16 +19,25 @@ public class TwoPCCohortPolicy extends DefaultPolicy {
         private TwoPCParticipants participantManager;
 
         @Override
-        public Object onRPC(String method, ArrayList<Object> params) throws Exception {
+        public Object onRPC(
+                String method,
+                ArrayList<Object> params,
+                String prevDMMethod,
+                ArrayList<Object> paramStack)
+                throws Exception {
             if ((!method.equals(TransactionWrapper.txWrapperTag)) && super.hasTransaction()) {
                 TransactionContext.getParticipants().register(this);
 
                 UUID txnId = this.getCurrentTransaction();
                 TransactionWrapper txWrapper = new TransactionWrapper(txnId, method, params);
-                return super.onRPC(TransactionWrapper.txWrapperTag, txWrapper.getRPCParams());
+                return super.onRPC(
+                        TransactionWrapper.txWrapperTag,
+                        txWrapper.getRPCParams(),
+                        prevDMMethod,
+                        paramStack);
             }
 
-            return super.onRPC(method, params);
+            return super.onRPC(method, params, prevDMMethod, paramStack);
         }
     }
 
@@ -56,12 +65,18 @@ public class TwoPCCohortPolicy extends DefaultPolicy {
         }
 
         @Override
-        public Object onRPC(String method, ArrayList<Object> params) throws Exception {
+        public Object onRPC(
+                String method,
+                ArrayList<Object> params,
+                String prevDMMethod,
+                ArrayList<Object> paramStack)
+                throws Exception {
             TransactionWrapper tx = new TransactionWrapper(method, params);
             UUID transactionId = tx.getTransaction();
 
             if (transactionId == null) {
-                return super.onRPC(tx.getInnerRPCMethod(), tx.getInnerRPCParams());
+                return super.onRPC(
+                        tx.getInnerRPCMethod(), tx.getInnerRPCParams(), prevDMMethod, paramStack);
             } else {
                 return onTransactionRPC(tx);
             }
@@ -89,7 +104,7 @@ public class TwoPCCohortPolicy extends DefaultPolicy {
                 ServerUpcalls sandbox = this.sandboxProvider.getSandbox(this, transactionId);
                 this.transactionManager.join(transactionId);
                 try {
-                    return sandbox.onRPC(rpcMethod, tx.getInnerRPCParams());
+                    return sandbox.onRPC(rpcMethod, tx.getInnerRPCParams(), null, null);
                 } catch (Exception e) {
                     logger.log(Level.WARNING, "onRPC failed: ", e);
                     this.transactionManager.abort(transactionId);

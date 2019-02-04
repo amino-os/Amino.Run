@@ -18,7 +18,12 @@ public class LockingTransactionPolicy extends CacheLeasePolicy {
         protected boolean transactionInProgress; // Has this client begun a transaction?
 
         @Override
-        public Object onRPC(String method, ArrayList<Object> params) throws Exception {
+        public Object onRPC(
+                String method,
+                ArrayList<Object> params,
+                String prevDMMethod,
+                ArrayList<Object> paramStack)
+                throws Exception {
             if (isStartTransaction(method)) {
                 this.startTransaction(params);
                 return null;
@@ -47,7 +52,7 @@ public class LockingTransactionPolicy extends CacheLeasePolicy {
                                 "Transaction timed out.  Transaction rolled back.");
                     }
                 } else { // Outside of transactions, we invoke against the server
-                    return getServer().onRPC(method, params);
+                    return getServer().onRPC(method, params, prevDMMethod, paramStack);
                 }
             }
         }

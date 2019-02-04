@@ -40,10 +40,15 @@ public class KernelRPC implements Serializable {
             ret += "(";
             Iterator<Object> it = params.iterator();
             for (Object obj = it.next(); it.hasNext(); obj = it.next()) {
-                if (it.hasNext()) {
-                    ret = ret + obj.toString() + ",";
+                if (obj != null) {
+                    ret = ret + obj.toString();
                 } else {
-                    ret = ret + obj.toString() + ")";
+                    ret = ret + "null";
+                }
+                if (it.hasNext()) {
+                    ret = ret + ",";
+                } else {
+                    ret = ret + ")";
                 }
             }
         }

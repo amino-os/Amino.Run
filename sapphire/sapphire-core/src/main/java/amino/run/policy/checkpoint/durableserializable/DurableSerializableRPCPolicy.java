@@ -15,13 +15,21 @@ public class DurableSerializableRPCPolicy extends PeriodicCheckpointPolicy {
     public static class ServerPolicy extends PeriodicCheckpointPolicy.ServerPolicy {
 
         @Override
-        public Object onRPC(String method, ArrayList<Object> params) throws Exception {
+        public Object onRPC(
+                String method,
+                ArrayList<Object> params,
+                String prevDMMethod,
+                ArrayList<Object> paramStack)
+                throws Exception {
             synchronized (this) { // ensure that all RPC's are serialized
                 // Note that Java does not support multiple inheritance, so there is no good way
                 // to inherit synchronization logic from SerializableRPCPolicy.  But fortunately it
                 // is extremely simple, so we just re-implement synchronization here.
                 return super.onRPC(
-                        method, params); // Does save and restore of checkpoint on failure.
+                        method,
+                        params,
+                        prevDMMethod,
+                        paramStack); // Does save and restore of checkpoint on failure.
             }
         }
     }

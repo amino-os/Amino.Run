@@ -32,18 +32,6 @@ public final class AppStub extends Stub {
         return ms;
     }
 
-    /**
-     * Method defined for overriding Base class abstract method. Is a dummy method in AppStub class,
-     * as no handling is needed in the AppStub, as this method handles DM class onRPC methods.
-     *
-     * @return List of DM onRPC methods
-     */
-    @Override
-    public TreeSet<MethodStub> getDMRPCMethods() {
-        TreeSet<MethodStub> ms = new TreeSet<MethodStub>();
-        return ms;
-    }
-
     @Override
     public String getPackageStatement() {
         return ((packageName == null)
@@ -156,11 +144,10 @@ public final class AppStub extends Stub {
      * Returns the stub implementation code section source for the methods
      *
      * @param m : Method for which stub implementation code is needed.
-     * @param isDMMethod : Is not used as the same is not needed in AppStub class.
      * @return Stub implementation code for the methods.
      */
     @Override
-    public String getMethodContent(MethodStub m, boolean isDMMethod) {
+    public String getMethodContent(MethodStub m) {
         StringBuilder buffer = new StringBuilder("");
 
         buffer.append(indenter.indent() + "java.lang.Object $__result = null;" + EOLN);
@@ -231,7 +218,7 @@ public final class AppStub extends Stub {
                 indenter.tIncrease(tabWidth + 1)
                         + "$__result = "
                         + GlobalStubConstants.APPSTUB_POLICY_CLIENT_FIELD_NAME
-                        + ".onRPC($__method, $__params);"
+                        + ".onRPC($__method, $__params, null, null);"
                         + EOLN); // $NON-NLS-1$
         buffer.append(
                 indenter.tIncrease(tabWidth)

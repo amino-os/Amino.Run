@@ -56,7 +56,12 @@ public class OptConcurrentTransactPolicy extends DefaultPolicy {
         private AppObject cachedObject; // app object
 
         @Override
-        public Object onRPC(String method, ArrayList<Object> params) throws Exception {
+        public Object onRPC(
+                String method,
+                ArrayList<Object> params,
+                String prevDMMethod,
+                ArrayList<Object> paramStack)
+                throws Exception {
             if (isStartTransaction(method)) {
                 this.startTransaction(params);
                 return null;
@@ -79,7 +84,7 @@ public class OptConcurrentTransactPolicy extends DefaultPolicy {
                     }
                 } else {
                     // Non transactional based invocation. Make an RPC call
-                    return super.onRPC(method, params);
+                    return super.onRPC(method, params, prevDMMethod, paramStack);
                 }
             }
         }
@@ -166,8 +171,13 @@ public class OptConcurrentTransactPolicy extends DefaultPolicy {
         }
 
         @Override
-        public synchronized Object onRPC(String method, ArrayList<Object> params) throws Exception {
-            return super.onRPC(method, params);
+        public synchronized Object onRPC(
+                String method,
+                ArrayList<Object> params,
+                String prevDMMethod,
+                ArrayList<Object> paramStack)
+                throws Exception {
+            return super.onRPC(method, params, prevDMMethod, paramStack);
         }
     }
 

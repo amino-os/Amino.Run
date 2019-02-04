@@ -49,7 +49,12 @@ public class DHTPolicy extends DefaultPolicy {
         private DHTChord dhtChord;
 
         @Override
-        public Object onRPC(String method, ArrayList<Object> params) throws Exception {
+        public Object onRPC(
+                String method,
+                ArrayList<Object> params,
+                String prevDMMethod,
+                ArrayList<Object> paramStack)
+                throws Exception {
             DHTKey key = new DHTKey(params.get(0).toString());
             if (dhtChord == null) {
                 dhtChord = ((DHTGroupPolicy) getGroup()).getChord();
@@ -57,7 +62,7 @@ public class DHTPolicy extends DefaultPolicy {
 
             DHTNode node = dhtChord.getResponsibleNode(key);
             logger.fine("Responsible node for: " + key + " is: " + node.id);
-            return node.server.onRPC(method, params);
+            return node.server.onRPC(method, params, prevDMMethod, paramStack);
         }
     }
 

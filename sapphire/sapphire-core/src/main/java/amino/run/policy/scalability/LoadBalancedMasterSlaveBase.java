@@ -40,7 +40,12 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultPolicy {
         public ClientBase() {}
 
         @Override
-        public Object onRPC(String method, ArrayList<Object> params) throws Exception {
+        public Object onRPC(
+                String method,
+                ArrayList<Object> params,
+                String prevDMMethod,
+                ArrayList<Object> paramStack)
+                throws Exception {
             final int MAX_RETRY = 5;
             int retryCnt = 1, waitInMilliseconds = 50;
 
@@ -69,12 +74,21 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultPolicy {
                     continue;
                 }
 
+                String mtdName = method;
+                ArrayList<Object> param = params;
+
+                /* If the previous DM is null */
+                if (prevDMMethod != null) {
+                    mtdName = prevDMMethod;
+                    param = paramStack;
+                }
+
                 MethodInvocationRequest request =
                         new MethodInvocationRequest(
                                 CLIENT_ID.toString(),
                                 SeqGenerator.getAndAdd(1L),
-                                method,
-                                params,
+                                mtdName,
+                                param,
                                 type);
 
                 logger.log(
@@ -82,7 +96,7 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultPolicy {
                         String.format(
                                 "Sending request to master server %s",
                                 ((KernelObjectStub) server).$__getHostname()));
-                MethodInvocationResponse response = server.onRPC(request);
+                MethodInvocationResponse response = server.rpcRequest(request);
                 switch (response.getReturnCode()) {
                     case SUCCESS:
                         return response.getResult();
@@ -145,7 +159,7 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultPolicy {
          * @param request method invocation request
          * @return method invocation response
          */
-        public MethodInvocationResponse onRPC(MethodInvocationRequest request) {
+        public MethodInvocationResponse rpcRequest(MethodInvocationRequest request) {
             try {
                 Object ret =
                         sapphire_getAppObject()

@@ -42,7 +42,12 @@ public class ConsensusRSMPolicy extends DefaultPolicy {
     }
 
     public static class ClientPolicy extends DefaultPolicy.DefaultClientPolicy {
-        public Object onRPC(String method, ArrayList<Object> params) throws Exception {
+        public Object onRPC(
+                String method,
+                ArrayList<Object> params,
+                String prevDMMethod,
+                ArrayList<Object> paramStack)
+                throws Exception {
             /* TODO: Note that this is currently the only DM that calls {@link setServer}.
              * setServer should only ever be called by the kernel.  Remove calls to setServer and keep
              * track of the master via a separate mechanism.
@@ -50,7 +55,7 @@ public class ConsensusRSMPolicy extends DefaultPolicy {
             Object ret = null;
 
             try {
-                ret = getServer().onRPC(method, params);
+                ret = getServer().onRPC(method, params, prevDMMethod, paramStack);
             } catch (LeaderException e) {
 
                 if (null == e.getLeader()) {
@@ -58,7 +63,9 @@ public class ConsensusRSMPolicy extends DefaultPolicy {
                 }
 
                 setServer((ServerPolicy) e.getLeader());
-                ret = ((ServerPolicy) e.getLeader()).onRPC(method, params);
+                ret =
+                        ((ServerPolicy) e.getLeader())
+                                .onRPC(method, params, prevDMMethod, paramStack);
             } catch (InvocationTargetException e) {
                 /*
                  * Added for handling Multi-DM scenarios where LeaderException can be nested inside InvocationTargetException.
@@ -71,7 +78,9 @@ public class ConsensusRSMPolicy extends DefaultPolicy {
                         throw new RemoteException("Raft leader is not elected");
                     }
                     setServer((ServerPolicy) le.getLeader());
-                    ret = ((ServerPolicy) le.getLeader()).onRPC(method, params);
+                    ret =
+                            ((ServerPolicy) le.getLeader())
+                                    .onRPC(method, params, prevDMMethod, paramStack);
                 }
             } catch (RemoteException e) {
                 /* Get servers from the group and find a responding server */
@@ -84,7 +93,7 @@ public class ConsensusRSMPolicy extends DefaultPolicy {
                     }
 
                     try {
-                        ret = server.onRPC(method, params);
+                        ret = server.onRPC(method, params, prevDMMethod, paramStack);
                         serverFound = true;
                         break;
                     } catch (RemoteException re) {
@@ -97,7 +106,9 @@ public class ConsensusRSMPolicy extends DefaultPolicy {
                         }
 
                         setServer(((ServerPolicy) le.getLeader()));
-                        ret = ((ServerPolicy) le.getLeader()).onRPC(method, params);
+                        ret =
+                                ((ServerPolicy) le.getLeader())
+                                        .onRPC(method, params, prevDMMethod, paramStack);
                         serverFound = true;
                         break;
                     }
@@ -187,11 +198,16 @@ public class ConsensusRSMPolicy extends DefaultPolicy {
                 rpc.params = new ArrayList<Object>();
             }
 
-            return super.onRPC(rpc.method, rpc.params);
+            return super.onRPC(rpc.method, rpc.params, null, null);
         }
 
         @Override
-        public Object onRPC(String method, ArrayList<Object> params) throws Exception {
+        public Object onRPC(
+                String method,
+                ArrayList<Object> params,
+                String prevDMMethod,
+                ArrayList<Object> paramStack)
+                throws Exception {
             return raftServer.applyToStateMachine(
                     new RPC(
                             method,

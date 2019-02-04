@@ -97,7 +97,12 @@ public class ExplicitMigrationPolicy extends DefaultPolicy {
         }
 
         @Override
-        public Object onRPC(String method, ArrayList<Object> params) throws Exception {
+        public Object onRPC(
+                String method,
+                ArrayList<Object> params,
+                String prevDMMethod,
+                ArrayList<Object> paramStack)
+                throws Exception {
             long startTime = System.currentTimeMillis();
             long currentTime = System.currentTimeMillis();
             // While migrating if an RPC comes to the Server Side, KernelObjectMigratingException is
@@ -110,7 +115,7 @@ public class ExplicitMigrationPolicy extends DefaultPolicy {
                     currentTime < (startTime + retryTimeoutInMillis - delay);
                     delay *= 2, currentTime = System.currentTimeMillis()) {
                 try {
-                    return super.onRPC(method, params);
+                    return super.onRPC(method, params, prevDMMethod, paramStack);
                 } catch (KernelObjectMigratingException e) {
                     logger.info(
                             "Caught KernelObjectMigratingException at client policy of ExplicitMigrator Policy: "
@@ -141,12 +146,17 @@ public class ExplicitMigrationPolicy extends DefaultPolicy {
         }
 
         @Override
-        public Object onRPC(String method, ArrayList<Object> params) throws Exception {
+        public Object onRPC(
+                String method,
+                ArrayList<Object> params,
+                String prevDMMethod,
+                ArrayList<Object> paramStack)
+                throws Exception {
             if (isMigrateObject(method)) {
                 migrateObject((InetSocketAddress) params.get(0));
                 return null;
             } else {
-                return super.onRPC(method, params);
+                return super.onRPC(method, params, prevDMMethod, paramStack);
             }
         }
 

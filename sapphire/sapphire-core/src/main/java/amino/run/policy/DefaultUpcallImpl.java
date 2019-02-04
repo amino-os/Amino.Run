@@ -14,7 +14,12 @@ import java.util.UUID;
 public abstract class DefaultUpcallImpl extends Library {
 
     public abstract static class ClientPolicy extends ClientPolicyLibrary {
-        public Object onRPC(String method, ArrayList<Object> params) throws Exception {
+        public Object onRPC(
+                String method,
+                ArrayList<Object> params,
+                String prevDMMethod,
+                ArrayList<Object> paramStack)
+                throws Exception {
             // only transaction-capable SO is allowed in DCAP transaction -- change of the original
             // behavior
             if (!(this instanceof TwoPCClient) && this.hasTransaction()) {
@@ -25,7 +30,7 @@ public abstract class DefaultUpcallImpl extends Library {
             Object ret = null;
 
             try {
-                ret = getServer().onRPC(method, params);
+                ret = getServer().onRPC(method, params, prevDMMethod, paramStack);
             } catch (RemoteException e) {
                 // TODO: Quinton: This looks like a bug.  RemoteExceptions are silently swallowed
                 // and null is returned.
@@ -44,7 +49,12 @@ public abstract class DefaultUpcallImpl extends Library {
     }
 
     public abstract static class ServerPolicy extends ServerPolicyLibrary {
-        public Object onRPC(String method, ArrayList<Object> params) throws Exception {
+        public Object onRPC(
+                String method,
+                ArrayList<Object> params,
+                String prevDMMethod,
+                ArrayList<Object> paramStack)
+                throws Exception {
             return appObject.invoke(method, params);
         }
 

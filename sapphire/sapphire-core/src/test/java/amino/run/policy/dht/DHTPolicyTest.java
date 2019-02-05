@@ -41,7 +41,7 @@ public class DHTPolicyTest extends BaseTest {
             /* Increment value of I each time by 1,2,3,4 .. so on till loopCount. Each request would go to any one of
             the 3 available shards */
             ArrayList<Object> params = new ArrayList<>(Arrays.asList(new Object[] {i + 1}));
-            client.onRPC(method, params);
+            client.onRPC(method, params, null, null);
         }
 
         /* Verify that all requests have been processed. Aggregate of I value in all the shards must be equal

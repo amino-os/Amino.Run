@@ -36,7 +36,7 @@ public class TwoPCExtResourceCohortServerPolicyTest {
 
         TransactionWrapper wrapper = new TransactionWrapper(transactionId, "foo", null);
 
-        Object result = serverPolicy.onRPC("tx_rpc", wrapper.getRPCParams());
+        Object result = serverPolicy.onRPC("tx_rpc", wrapper.getRPCParams(), null, null);
 
         verify(businessObj).join(transactionId);
         verify(transactionManager).join(transactionId);

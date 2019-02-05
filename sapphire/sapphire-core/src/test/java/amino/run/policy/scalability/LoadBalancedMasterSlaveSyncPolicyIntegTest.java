@@ -61,7 +61,7 @@ public class LoadBalancedMasterSlaveSyncPolicyIntegTest {
         String methodName = m.toGenericString();
         ArrayList<Object> params = new ArrayList<Object>();
 
-        Object ret = client.onRPC(methodName, params);
+        Object ret = client.onRPC(methodName, params, methodName, params);
         Assert.assertEquals(data, ret);
     }
 
@@ -76,7 +76,7 @@ public class LoadBalancedMasterSlaveSyncPolicyIntegTest {
         ArrayList<Object> params = new ArrayList<Object>();
         params.add(newData);
 
-        Object ret = client.onRPC(methodName, params);
+        Object ret = client.onRPC(methodName, params, methodName, params);
         Assert.assertNull(ret);
 
         // verify app object1 in server1 has been updated
@@ -135,7 +135,7 @@ public class LoadBalancedMasterSlaveSyncPolicyIntegTest {
                 LoadBalancedMasterSlaveBase.ServerBase server =
                         (LoadBalancedMasterSlaveBase.ServerBase) group.getMaster();
 
-                return server.onRPC(request);
+                return server.rpcRequest(request);
             } catch (Exception e) {
                 try {
                     Thread.sleep(waitInMilliseconds);

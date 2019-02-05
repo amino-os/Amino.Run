@@ -177,9 +177,11 @@ public class ConsensusRSMPolicyTest extends BaseTest {
         Policy.ClientPolicy client = spy(ConsensusRSMPolicy.ClientPolicy.class);
         Policy.ServerPolicy server = spy(ConsensusRSMPolicy.ServerPolicy.class);
         client.setServer(server);
-        doThrow(new LeaderException("leaderException", null)).when(server).onRPC(method, params);
+        doThrow(new LeaderException("leaderException", null))
+                .when(server)
+                .onRPC(method, params, null, null);
         thrown.expect(RemoteException.class);
-        client.onRPC(method, params);
+        client.onRPC(method, params, null, null);
     }
 
     /**
@@ -195,7 +197,7 @@ public class ConsensusRSMPolicyTest extends BaseTest {
         ArrayList<Object> params = new ArrayList<Object>();
 
         /* Let the current rpc server in the client be updated with leader. This happens on the first RPC invocation. So just make an RPC */
-        this.client.onRPC(method, params);
+        this.client.onRPC(method, params, null, null);
 
         /* Now, get the current rpc server from client. We are pretty sure it raft leader */
         ConsensusRSMPolicy.ServerPolicy leaderServer =
@@ -207,8 +209,8 @@ public class ConsensusRSMPolicyTest extends BaseTest {
         localClient.setServer(server);
         doThrow(new LeaderException("leaderException", leaderServer))
                 .when(server)
-                .onRPC(method, params);
-        localClient.onRPC(method, params);
+                .onRPC(method, params, null, null);
+        localClient.onRPC(method, params, null, null);
     }
 
     /**
@@ -235,13 +237,13 @@ public class ConsensusRSMPolicyTest extends BaseTest {
         client.onCreate(group, null);
 
         /* Make server1 and server2 to throw remote exceptions and server3 to return successfully */
-        doThrow(RemoteException.class).when(server1).onRPC(method, params);
-        doThrow(RemoteException.class).when(server2).onRPC(method, params);
+        doThrow(RemoteException.class).when(server1).onRPC(method, params, null, null);
+        doThrow(RemoteException.class).when(server2).onRPC(method, params, null, null);
         doReturn(new KernelOID(1)).when(server1).$__getKernelOID();
         doReturn(new KernelOID(2)).when(server2).$__getKernelOID();
         doReturn(new KernelOID(3)).when(server3).$__getKernelOID();
-        doReturn("OK").when(server3).onRPC(method, params);
-        client.onRPC(method, params);
+        doReturn("OK").when(server3).onRPC(method, params, null, null);
+        client.onRPC(method, params, null, null);
     }
 
     /**
@@ -258,7 +260,7 @@ public class ConsensusRSMPolicyTest extends BaseTest {
         ArrayList<Object> params = new ArrayList<Object>();
 
         /* Let the current rpc server in the client be updated with leader. This happens on the first RPC invocation. So just make an RPC */
-        this.client.onRPC(method, params);
+        this.client.onRPC(method, params, null, null);
 
         /* Now, get the current rpc server from client. We are pretty sure it raft leader */
         ConsensusRSMPolicy.ServerPolicy leaderServer =
@@ -277,13 +279,13 @@ public class ConsensusRSMPolicyTest extends BaseTest {
         localClient.onCreate(group, null);
 
         /* Make server1 to throw remote exception, server2 to throw leader exception with actual leader's reference in exception */
-        doThrow(RemoteException.class).when(server1).onRPC(method, params);
+        doThrow(RemoteException.class).when(server1).onRPC(method, params, null, null);
         doThrow(new LeaderException("leaderException", leaderServer))
                 .when(server2)
-                .onRPC(method, params);
+                .onRPC(method, params, null, null);
         doReturn(new KernelOID(1)).when(server1).$__getKernelOID();
         doReturn(new KernelOID(2)).when(server2).$__getKernelOID();
-        localClient.onRPC(method, params);
+        localClient.onRPC(method, params, null, null);
     }
 
     /**
@@ -312,12 +314,14 @@ public class ConsensusRSMPolicyTest extends BaseTest {
         localClient.onCreate(group, null);
 
         /* Make server1 to throw remote exception, server2 to throw leader exception with actual leader's reference in exception */
-        doThrow(RemoteException.class).when(server1).onRPC(method, params);
-        doThrow(new LeaderException("leaderException", null)).when(server2).onRPC(method, params);
+        doThrow(RemoteException.class).when(server1).onRPC(method, params, null, null);
+        doThrow(new LeaderException("leaderException", null))
+                .when(server2)
+                .onRPC(method, params, null, null);
         doReturn(new KernelOID(1)).when(server1).$__getKernelOID();
         doReturn(new KernelOID(2)).when(server2).$__getKernelOID();
         thrown.expect(RemoteException.class);
-        localClient.onRPC(method, params);
+        localClient.onRPC(method, params, null, null);
     }
 
     /**
@@ -342,12 +346,12 @@ public class ConsensusRSMPolicyTest extends BaseTest {
         client.onCreate(group, null);
 
         /* Make both server1 and server2 to throw remote exceptions(i.e., none of them are reachable) */
-        doThrow(RemoteException.class).when(server1).onRPC(method, params);
-        doThrow(RemoteException.class).when(server2).onRPC(method, params);
+        doThrow(RemoteException.class).when(server1).onRPC(method, params, null, null);
+        doThrow(RemoteException.class).when(server2).onRPC(method, params, null, null);
         doReturn(new KernelOID(1)).when(server1).$__getKernelOID();
         doReturn(new KernelOID(2)).when(server2).$__getKernelOID();
         thrown.expect(RemoteException.class);
-        client.onRPC(method, params);
+        client.onRPC(method, params, null, null);
     }
 
     /**

@@ -64,8 +64,8 @@ public class LoadBalancedFrontendPolicyTest extends BaseTest {
         String setMethodName = "public void amino.run.sampleSO.SO.setI(java.lang.Integer)";
         ArrayList<Object> params = new ArrayList<Object>();
         params.add(new Integer(2));
-        this.client.onRPC(setMethodName, params);
-        this.client.onRPC(setMethodName, params);
+        this.client.onRPC(setMethodName, params, null, null);
+        this.client.onRPC(setMethodName, params, null, null);
         assertEquals(((SO_Stub) server1.sapphire_getAppObject().getObject()).getI().intValue(), 2);
         assertEquals(((SO_Stub) server2.sapphire_getAppObject().getObject()).getI().intValue(), 2);
     }
@@ -90,7 +90,7 @@ public class LoadBalancedFrontendPolicyTest extends BaseTest {
                                 public Object call() throws Exception {
                                     Object test = null;
                                     try {
-                                        test = client.onRPC(methodName, params);
+                                        test = client.onRPC(methodName, params, null, null);
                                     } catch (ServerOverLoadException e) {
                                         exceptionExpected++;
                                     }

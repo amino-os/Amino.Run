@@ -15,11 +15,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.powermock.modules.junit4.PowerMockRunner;
@@ -65,7 +61,7 @@ public class ScaleUpFrontendPolicyTest extends BaseTest {
         assertEquals(0, syncCtrCurr.get());
         assertEquals(null, extractFieldValueOnInstance(this.client, "replicaList"));
 
-        this.client.onRPC(methodName, params);
+        this.client.onRPC(methodName, params, null, null);
         syncCtrCurr =
                 (AtomicInteger) extractFieldValueOnInstance(this.client, "replicaListSyncCtr");
         assertEquals(1, syncCtrCurr.get());
@@ -92,7 +88,7 @@ public class ScaleUpFrontendPolicyTest extends BaseTest {
                                 public Object call() throws Exception {
                                     Object test = new String("test");
                                     try {
-                                        test = client.onRPC(methodName, params);
+                                        test = client.onRPC(methodName, params, null, null);
                                     } catch (ServerOverLoadException e) {
                                     }
                                     return test;

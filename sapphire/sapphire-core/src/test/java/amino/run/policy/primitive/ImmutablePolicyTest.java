@@ -46,7 +46,8 @@ public class ImmutablePolicyTest {
                             new Callable<Object>() {
                                 @Override
                                 public Object call() throws Exception {
-                                    return client.onRPC(methodName, new ArrayList<Object>());
+                                    return client.onRPC(
+                                            methodName, new ArrayList<Object>(), null, null);
                                 }
                             });
             taskList.add(task);
@@ -65,7 +66,7 @@ public class ImmutablePolicyTest {
         }
 
         // verify that onRPC is not invoked on server
-        verify(server, never()).onRPC(methodName, new ArrayList<Object>());
+        verify(server, never()).onRPC(methodName, new ArrayList<Object>(), null, null);
 
         // verify that server.getObject was only invoked once
         verify(server, times(1)).sapphire_getAppObject();

@@ -35,12 +35,12 @@ public class ExplicitCachingPolicyTest {
 
         /* Invoke a method without explicit pull to cache the app object */
         ArrayList<Object> params = new ArrayList<Object>();
-        this.client.onRPC("foo", params);
+        this.client.onRPC("foo", params, null, null);
 
         /* Verify that app object is not cached. And method is invoked on the remote server */
         assertNull(this.client.getCachedCopy());
         verify(this.server, never()).getCopy();
-        verify(this.server, times(1)).onRPC("foo", params);
+        verify(this.server, times(1)).onRPC("foo", params, null, null);
     }
 
     @Test
@@ -57,14 +57,14 @@ public class ExplicitCachingPolicyTest {
         assertNull(this.client.getCachedCopy());
 
         /* Explicitly pull the cache of app object */
-        this.client.onRPC(methodPull, new ArrayList<Object>());
+        this.client.onRPC(methodPull, new ArrayList<Object>(), null, null);
 
         /* Invoke a method */
-        this.client.onRPC("foo", params);
+        this.client.onRPC("foo", params, null, null);
 
         /* Verify whether invocation happened on locally cached object(not on the server) */
         verify(appObject, times(1)).invoke("foo", params);
-        verify(this.server, never()).onRPC("foo", params);
+        verify(this.server, never()).onRPC("foo", params, null, null);
     }
 
     @Test
@@ -82,14 +82,14 @@ public class ExplicitCachingPolicyTest {
         when(this.server.getCopy()).thenReturn(staleCopy);
 
         /* Explicitly pull the cache of app object. It should get staleCopy reference */
-        this.client.onRPC(methodPull, new ArrayList<Object>());
+        this.client.onRPC(methodPull, new ArrayList<Object>(), null, null);
 
         AppObject remoteCopy = mock(AppObject.class);
         when(remoteCopy.getObject()).thenReturn(latestSO);
         when(this.server.getCopy()).thenReturn(remoteCopy);
 
         /* Pull again when cached object is already available */
-        this.client.onRPC(methodPull, new ArrayList<Object>());
+        this.client.onRPC(methodPull, new ArrayList<Object>(), null, null);
 
         /* Verify whether stale copy is discarded and new cache object is pulled */
         verifyZeroInteractions(staleSO);
@@ -112,12 +112,12 @@ public class ExplicitCachingPolicyTest {
         when(this.server.getCopy()).thenReturn(appObject);
 
         /* Explicitly pull the cache of app object */
-        this.client.onRPC(methodPull, new ArrayList<Object>());
+        this.client.onRPC(methodPull, new ArrayList<Object>(), null, null);
 
         Assert.assertEquals(latestSO, this.client.getCachedCopy().getObject());
 
         /* Explicit push of cached object */
-        this.client.onRPC(methodPush, new ArrayList<Object>());
+        this.client.onRPC(methodPush, new ArrayList<Object>(), null, null);
 
         /* Verify whether object is sync'd to server */
         verifyZeroInteractions(latestSO);

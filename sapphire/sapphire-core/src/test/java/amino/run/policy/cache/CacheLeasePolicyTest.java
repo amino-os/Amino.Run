@@ -49,7 +49,7 @@ public class CacheLeasePolicyTest {
         ArrayList<Object> params = new ArrayList<Object>();
 
         // Get new lease and invoke cached object
-        this.client.onRPC(methodName, params);
+        this.client.onRPC(methodName, params, null, null);
 
         // Verify if the client has a valid lease
         assertTrue(this.client.leaseStillValid());

@@ -37,12 +37,12 @@ public class WriteThroughCachePolicyTest {
         when(this.client.isMethodMutable(methodName, new ArrayList<Object>())).thenReturn(false);
 
         for (int i = 0; i < 5; i++) {
-            Object actual = this.client.onRPC(methodName, new ArrayList<Object>());
+            Object actual = this.client.onRPC(methodName, new ArrayList<Object>(), null, null);
             assertEquals(object.toString(), actual);
         }
 
         // verify that read operations only called on cached object
-        verify(server, never()).onRPC(methodName, new ArrayList<Object>());
+        verify(server, never()).onRPC(methodName, new ArrayList<Object>(), null, null);
 
         // verify that server.getObject was only invoked once
         verify(server, times(1)).getObject();
@@ -56,7 +56,7 @@ public class WriteThroughCachePolicyTest {
 
         when(this.client.isMethodMutable(methodName, params)).thenReturn(true);
 
-        Object actual = this.client.onRPC(methodName, params);
+        Object actual = this.client.onRPC(methodName, params, null, null);
 
         // verify that the return value of the method invocation is correct
         assertEquals(true, actual);
@@ -68,7 +68,7 @@ public class WriteThroughCachePolicyTest {
         // read from cache one more time to verify that cached object is correct
         String m = "public java.lang.String java.util.AbstractCollection.toString()";
         when(this.client.isMethodMutable(m, new ArrayList<Object>())).thenReturn(false);
-        actual = this.client.onRPC(m, new ArrayList<Object>());
+        actual = this.client.onRPC(m, new ArrayList<Object>(), null, null);
         assertEquals(expectedResult.toString(), actual.toString());
     }
 }

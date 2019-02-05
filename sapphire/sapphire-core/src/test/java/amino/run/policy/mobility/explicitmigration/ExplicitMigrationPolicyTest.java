@@ -54,8 +54,8 @@ public class ExplicitMigrationPolicyTest {
     public void regularRPC() throws Exception {
         String methodName = "public java.lang.String java.lang.Object.toString()";
 
-        this.client.onRPC(methodName, noParams);
-        verify(this.server).onRPC(methodName, noParams);
+        this.client.onRPC(methodName, noParams, null, null);
+        verify(this.server).onRPC(methodName, noParams, null, null);
 
         // Check that DM methods were not called
         verify(this.server, never())
@@ -71,18 +71,18 @@ public class ExplicitMigrationPolicyTest {
         // In order to test the scenario of the exponential backoff retry in this case
         ExplicitMigrationPolicy.ServerPolicy mockServerPolicy =
                 mock(ExplicitMigrationPolicy.ServerPolicy.class);
-        when(mockServerPolicy.onRPC(methodName, noParams))
+        when(mockServerPolicy.onRPC(methodName, noParams, null, null))
                 .thenThrow(new KernelObjectMigratingException());
 
         this.client.setServer(mockServerPolicy);
 
         thrown.expect(KernelObjectMigratingException.class);
 
-        this.client.onRPC(methodName, noParams);
+        this.client.onRPC(methodName, noParams, null, null);
 
         // Check that onRPC() of server is called 7 times, as per the current values which
         // decide the number of exponential backoffs
-        verify(mockServerPolicy, times(7)).onRPC(methodName, noParams);
+        verify(mockServerPolicy, times(7)).onRPC(methodName, noParams, null, null);
 
         // Check that DM method i.e migrateObject(...) was not called
         verify(mockServerPolicy, never()).migrateObject((InetSocketAddress) any());
@@ -100,21 +100,21 @@ public class ExplicitMigrationPolicyTest {
         ExplicitMigrationPolicy.ServerPolicy mockServerPolicy =
                 mock(ExplicitMigrationPolicy.ServerPolicy.class);
 
-        when(mockServerPolicy.onRPC(methodName, noParams))
+        when(mockServerPolicy.onRPC(methodName, noParams, null, null))
                 .thenThrow(new KernelObjectMigratingException())
                 .thenThrow(new KernelObjectMigratingException())
                 .thenCallRealMethod();
 
         this.client.setServer(mockServerPolicy);
         try {
-            this.client.onRPC(methodName, noParams);
+            this.client.onRPC(methodName, noParams, null, null);
         } catch (Exception e) {
             // Caught the KernelObjectMigratingException as a user
         }
 
         // Check that onRPC() of server is called 3 times, as per the current values which
         // decide the number of exponential backoffs
-        verify(mockServerPolicy, times(3)).onRPC(methodName, noParams);
+        verify(mockServerPolicy, times(3)).onRPC(methodName, noParams, null, null);
 
         // Check that DM method i.e migrateObject(...) was not called
         verify(mockServerPolicy, never()).migrateObject((InetSocketAddress) any());
@@ -142,8 +142,8 @@ public class ExplicitMigrationPolicyTest {
 
         oneParam.add(ExplicitMigrationPolicyTestConstants.kernelServerAddr2);
 
-        this.client.onRPC(explicitMigrateObject, oneParam);
-        verify(this.server).onRPC(explicitMigrateObject, oneParam);
+        this.client.onRPC(explicitMigrateObject, oneParam, null, null);
+        verify(this.server).onRPC(explicitMigrateObject, oneParam, null, null);
 
         // Check that DM methods were called only once
         verify(this.server, times(1))
@@ -172,7 +172,7 @@ public class ExplicitMigrationPolicyTest {
         thrown.expectMessage(
                 "The destinations address passed is not present as one of the Kernel Servers");
 
-        this.client.onRPC(explicitMigrateObject, oneParam);
+        this.client.onRPC(explicitMigrateObject, oneParam, null, null);
     }
 
     @Test
@@ -194,7 +194,7 @@ public class ExplicitMigrationPolicyTest {
         oneParam.add(ExplicitMigrationPolicyTestConstants.kernelServerAddr4);
 
         try {
-            this.client.onRPC(explicitMigrateObject, oneParam);
+            this.client.onRPC(explicitMigrateObject, oneParam, null, null);
         } catch (
                 NotFoundDestinationKernelServerException notFoundDestinationKernelServerException) {
             assertEquals(
@@ -221,8 +221,8 @@ public class ExplicitMigrationPolicyTest {
 
         oneParam.add(ExplicitMigrationPolicyTestConstants.kernelServerAddr4);
 
-        this.client.onRPC(explicitMigrateObject, oneParam);
-        verify(this.server).onRPC(explicitMigrateObject, oneParam);
+        this.client.onRPC(explicitMigrateObject, oneParam, null, null);
+        verify(this.server).onRPC(explicitMigrateObject, oneParam, null, null);
 
         // Check that DM methods were called only once
         verify(this.server, times(1))
@@ -249,7 +249,7 @@ public class ExplicitMigrationPolicyTest {
 
         thrown.expect(KernelObjectMigratingException.class);
 
-        this.client.onRPC(explicitMigrateObject, oneParam);
+        this.client.onRPC(explicitMigrateObject, oneParam, null, null);
     }
 
     @Test
@@ -271,14 +271,14 @@ public class ExplicitMigrationPolicyTest {
         oneParam.add(ExplicitMigrationPolicyTestConstants.kernelServerAddr3);
 
         try {
-            this.client.onRPC(explicitMigrateObject, oneParam);
+            this.client.onRPC(explicitMigrateObject, oneParam, null, null);
         } catch (Exception e) {
             // Caught the KernelObjectMigratingException as a user
         }
 
         // Check that onRPC() of server is called 7 times, as per the current values which
         // decide the number of exponential backoffs
-        verify(this.server, times(7)).onRPC(explicitMigrateObject, oneParam);
+        verify(this.server, times(7)).onRPC(explicitMigrateObject, oneParam, null, null);
 
         // Check that DM method migrateObject(...) was called all the 7 times, the onRPC() was
         // called
@@ -305,7 +305,7 @@ public class ExplicitMigrationPolicyTest {
         oneParam.add(ExplicitMigrationPolicyTestConstants.kernelServerAddr3);
 
         try {
-            this.client.onRPC(explicitMigrateObject, oneParam);
+            this.client.onRPC(explicitMigrateObject, oneParam, null, null);
         } catch (Exception e) {
             // Caught the KernelObjectMigratingException as a user
         }

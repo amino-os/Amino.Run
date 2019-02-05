@@ -45,9 +45,9 @@ public class PeriodicCheckpointPolicyTest {
     @Test
     public void regularRPCWithAutomaticSaveCheckpoint() throws Exception {
         String methodName = "public java.lang.String java.lang.Object.toString()";
-        this.client.onRPC(methodName, noParams);
+        this.client.onRPC(methodName, noParams, null, null);
         // Check that the server got the request.
-        verify(this.server).onRPC(methodName, noParams);
+        verify(this.server).onRPC(methodName, noParams, null, null);
         // Check that DM saved a checkpoint.
         verify(this.server, times(1)).saveCheckpoint();
         // And didn't try to restore it
@@ -66,19 +66,21 @@ public class PeriodicCheckpointPolicyTest {
 
         boolean exceptionWasThrown = false;
 
-        this.client.onRPC(regularMethodName, oneParam);
-        verify(this.server).onRPC(regularMethodName, oneParam);
+        this.client.onRPC(regularMethodName, oneParam, null, null);
+        verify(this.server).onRPC(regularMethodName, oneParam, null, null);
         // Check that DM saved a checkpoint.
         verify(this.server, times(1)).saveCheckpoint();
         // Verify that the object has been updated
-        this.client.onRPC(getMethodName, noParams);
-        verify(this.server).onRPC(getMethodName, noParams);
+        this.client.onRPC(getMethodName, noParams, null, null);
+        verify(this.server).onRPC(getMethodName, noParams, null, null);
         assertEquals(((PeriodicCheckpointerTest) appObject.getObject()).getI(), 1);
 
         try {
             this.client.onRPC(
                     exceptionMethodName,
-                    twoParam); // This sets the value to two, then throws an exception
+                    twoParam,
+                    null,
+                    null); // This sets the value to two, then throws an exception
         } catch (Exception e) {
             exceptionWasThrown = true;
             // Discard the exception - we were expecting it.
@@ -88,7 +90,7 @@ public class PeriodicCheckpointPolicyTest {
         verify(this.server, times(1)).restoreCheckpoint();
 
         // Verify that the object has been restored
-        this.client.onRPC(getMethodName, noParams);
+        this.client.onRPC(getMethodName, noParams, null, null);
         assertEquals(((PeriodicCheckpointerTest) appObject.getObject()).getI(), 1);
     }
 

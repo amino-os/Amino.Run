@@ -33,7 +33,7 @@ public class KernelServerManager {
     private static final Random randgen = new Random();
 
     public KernelServerManager() {
-        serverInfos = new ConcurrentHashMap<ServerInfo, ServerInfo>().newKeySet();
+        serverInfos = Collections.newSetFromMap(new ConcurrentHashMap<>());
         servers = new ConcurrentHashMap<InetSocketAddress, KernelServer>();
         regions = new ConcurrentHashMap<String, ArrayList<InetSocketAddress>>();
         ksHeartBeatTimers = new ConcurrentHashMap<InetSocketAddress, ResettableTimer>();

@@ -4,7 +4,6 @@ import static amino.run.common.UtilsTest.extractFieldValueOnInstance;
 import static amino.run.common.UtilsTest.setFieldValueOnInstance;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
-import static org.mockito.Mockito.mock;
 
 import amino.run.app.DMSpec;
 import amino.run.app.Language;
@@ -124,8 +123,7 @@ public class LoadBalancedFrontendPolicyTest extends BaseTest {
         // Expecting error message- Configured replicas count: 5, created replica count : 2
         thrown.expectMessage("Configured replicas count: 5, created replica count : 2");
         setFieldValueOnInstance(group1, "replicaCount", 5);
-        group1.onCreate(
-                "", mock(LoadBalancedFrontendPolicy.ServerPolicy.class), new MicroServiceSpec());
+        group1.onCreate("", client.getServer(), new MicroServiceSpec());
     }
 
     @After

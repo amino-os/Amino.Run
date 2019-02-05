@@ -93,7 +93,7 @@ public class DHTPolicy extends DefaultPolicy {
                     // TODO: Make deployment kernel pin primary replica once node selection
                     // constraint is implemented.
                     InetSocketAddress address = getAddress(region);
-                    server.sapphire_pin_to_server(server, address);
+                    pin(server, address);
                 }
 
                 // TODO: Current implementation assumes shards are spread out across regions.
@@ -120,7 +120,7 @@ public class DHTPolicy extends DefaultPolicy {
 
                     logger.info(String.format("Creating shard %s in region %s", i, region));
                     InetSocketAddress address = getAddress(region);
-                    addReplica(server, address, region);
+                    replicate(server, address, region);
                 }
             } catch (RemoteException e) {
                 throw new Error(
@@ -135,9 +135,15 @@ public class DHTPolicy extends DefaultPolicy {
         }
 
         @Override
-        public void addServer(ServerPolicy server) throws RemoteException {
+        protected void addServer(ServerPolicy server) {
             super.addServer(server);
             dhtChord.add((DHTServerPolicy) server);
+        }
+
+        @Override
+        protected void removeServer(ServerPolicy server) {
+            super.removeServer(server);
+            // TODO: Need to remove from chord too
         }
 
         public DHTChord getChord() {

@@ -63,20 +63,15 @@ public abstract class DefaultUpcallImpl extends Library {
 
         /* This function is added here just to generate the stub for this function in all Policies server policy */
         @Override
-        public void sapphire_pin_to_server(
-                Policy.ServerPolicy serverPolicy, InetSocketAddress server)
+        public void sapphire_pin_to_server(InetSocketAddress server)
                 throws RemoteException, SapphireObjectNotFoundException,
                         SapphireObjectReplicaNotFoundException {
-            super.sapphire_pin_to_server(serverPolicy, server);
+            super.sapphire_pin_to_server(server);
         }
 
         @Override
-        public void sapphire_remove_replica() throws RemoteException {
-            super.sapphire_remove_replica(this.getProcessedPolicies());
-        }
-
-        public String sapphire_getRegion() {
-            return super.sapphire_getRegion();
+        public void sapphire_terminate() throws RemoteException {
+            super.sapphire_terminate(this.getProcessedPolicies());
         }
 
         @Override

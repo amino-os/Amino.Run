@@ -238,7 +238,7 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
                      * is set to false for now but may need to be updated properly when run-time
                      * addition is supported.
                      */
-                    addReplica(servers.get(0), addressList.get(0), region);
+                    replicate(servers.get(0), addressList.get(0), region);
                 } catch (SapphireObjectNotFoundException e) {
                     throw new ScaleUpException(
                             "Failed to find sapphire object. Probably deleted.", e);
@@ -272,13 +272,7 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
 
             if (serverToRemove != null) {
                 try {
-                    removeReplica(serverToRemove);
-                } catch (SapphireObjectNotFoundException e) {
-                    throw new ScaleDownException(
-                            "Scale down failed. Sapphire object not found.", e);
-                } catch (SapphireObjectReplicaNotFoundException e) {
-                    throw new ScaleDownException(
-                            "Scale down failed. Sapphire object not found.", e);
+                    terminate(serverToRemove);
                 } catch (RuntimeException e) {
                     throw new ScaleDownException("Scale down failed. Replica deletion failed.", e);
                 }

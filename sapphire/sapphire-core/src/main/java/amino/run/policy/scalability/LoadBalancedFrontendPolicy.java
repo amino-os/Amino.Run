@@ -4,6 +4,7 @@ import amino.run.app.MicroServiceSpec;
 import amino.run.common.SapphireObjectNotFoundException;
 import amino.run.common.SapphireObjectReplicaNotFoundException;
 import amino.run.common.Utils;
+import amino.run.kernel.common.KernelObjectStub;
 import amino.run.policy.DefaultPolicy;
 import amino.run.policy.Policy;
 import java.lang.annotation.ElementType;
@@ -194,9 +195,7 @@ public class LoadBalancedFrontendPolicy extends DefaultPolicy {
                 /* Find the current region and the kernel server on which this first instance of
                 sapphire object is being created. And try to replicate the
                 sapphire objects in the same region(excluding this kernel server) */
-                region = server.sapphire_getRegion();
-                InetSocketAddress addr =
-                        server.sapphire_locate_kernel_object(server.$__getKernelOID());
+                InetSocketAddress addr = ((KernelObjectStub) server).$__getHostname();
                 List<InetSocketAddress> addressList =
                         sapphire_getAddressList(spec.getNodeSelectorSpec(), region);
 
@@ -206,7 +205,7 @@ public class LoadBalancedFrontendPolicy extends DefaultPolicy {
                     numnodes = addressList.size();
 
                     for (count = 0; count < numnodes && count < replicaCount - 1; count++) {
-                        addReplica(server, addressList.get(count), region);
+                        replicate(server, addressList.get(count), region);
                     }
                 }
 
@@ -217,7 +216,7 @@ public class LoadBalancedFrontendPolicy extends DefaultPolicy {
                             "Configured replicas count: "
                                     + replicaCount
                                     + ", created replica count : "
-                                    + count
+                                    + (count + 1)
                                     + "insufficient servers in region "
                                     + numnodes
                                     + "to create required replicas");
@@ -225,7 +224,7 @@ public class LoadBalancedFrontendPolicy extends DefaultPolicy {
                             "Configured replicas count: "
                                     + replicaCount
                                     + ", created replica count : "
-                                    + count);
+                                    + (count + 1));
                 }
             } catch (RemoteException e) {
                 logger.severe("Received RemoteException may be oms is down ");

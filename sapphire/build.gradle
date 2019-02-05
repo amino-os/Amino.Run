@@ -94,11 +94,7 @@ subprojects {
 
     // SourceSet for generated stubs
     sourceSets {
-        stubs {
-            java {
-                'src/stubs'
-            }
-        }
+        stubs
     }
 
     // Task for Stub Generation:

@@ -92,6 +92,11 @@ subprojects {
         }
     }
 
+    // SourceSet for generated stubs
+    sourceSets {
+        stubs
+    }
+
     // Task for Stub Generation:
     // Run `gradlew genStubs` to generate stub files
     task genStubs(type: JavaExec) {
@@ -108,10 +113,15 @@ subprojects {
 
     // Task for stub compilation
     task compileStubs(type: JavaCompile) {
-        source = sourceSets.main.java.srcDirs
-        classpath = sourceSets.main.compileClasspath
-        destinationDir = sourceSets.main.output.classesDir
+        source = sourceSets.stubs.java.srcDirs  // Added generated stubs sourceSet, to the source list for compilation.
+        classpath = sourceSets.main.runtimeClasspath
+        destinationDir = sourceSets.stubs.output.classesDir
         options.incremental = true
         inputs.dir genStubs.outputs
+    }
+
+    // Include stubs sourceSet classes in the jar file.
+    jar {
+        from sourceSets.stubs.output.classesDir
     }
 }

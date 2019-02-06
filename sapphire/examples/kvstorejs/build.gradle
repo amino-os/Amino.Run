@@ -1,14 +1,9 @@
 apply plugin: 'java-library'
 
-dependencies {
-    compile project(':sapphire-core')
-}
-
 // Task for app stub generation
 genStubs {
     main = "amino.run.compiler.GraalStubGenerator"
-    classpath =  files("$projectDir/../../sapphire-core/build/libs/sapphire-core-1.0.0.jar")
-    // classpath sourceSets.main.output.classesDir
+    classpath = files("$projectDir/../../sapphire-core/build/classes/java/main/")
     def sapphireObjectPath = "$projectDir/src/main/js/amino/run/appdemo/KeyValueStore.js"
     def outPath = "$projectDir/src/main/java"
     def packageName = "amino.run.appdemo.stubs"
@@ -17,8 +12,6 @@ genStubs {
     outputs.dir "$projectDir/src/main/java/amino/run/appdemo/stubs" // Declare outputs, so gradle will run if they have been changed
     inputs.dir sapphireObjectPath   // Declare inputs, so gradle will run if they have been changed
 }
-
-jar.dependsOn compileStubs
 
 // task for run javascript kvstore client
 task runjsapp(type: Exec) {
@@ -45,4 +38,4 @@ runapp {
 }
 
 compileJava.dependsOn genStubs
-runapp.dependsOn compileStubs
+runapp.dependsOn compileJava

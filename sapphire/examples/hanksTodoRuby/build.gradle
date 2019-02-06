@@ -3,8 +3,7 @@ apply plugin: 'java'
 // Customize app stub generation for this example.
 genStubs {
     main = "amino.run.compiler.GraalStubGenerator"
-    classpath =  files("$projectDir/../../sapphire-core/build/libs/sapphire-core-1.0.0.jar")
-    // TODO: Quinton: Remove: classpath sourceSets.main.output.classesDir
+    classpath = files("$projectDir/../../sapphire-core/build/classes/java/main/")
     def sapphireObjectPath = "$projectDir/src/main/ruby/amino/run/appexamples/hankstodo/todo_list_manager.rb"
     def outPath = "$projectDir/src/main/java"
     def packageName = "amino.run.appexamples.hankstodo.stubs"
@@ -13,13 +12,6 @@ genStubs {
     outputs.dir "$projectDir/src/main/java/amino/run/appexamples/hankstodo/stubs" // Declare outputs, so gradle will run if they have been changed
     inputs.dir sapphireObjectPath   // Declare inputs, so gradle will run if they have been changed
 }
-
-// Customize stub compilation for this example
-compileStubs {
-    outputs.dir "$buildDir/classes/java/main/amino/run/appexamples/hankstodo/stubs/"
-}
-
-jar.dependsOn compileStubs
 
 // Task to run Ruby app
 task runrubyapp(type: Exec) {
@@ -56,4 +48,4 @@ runapp {
 }
 
 compileJava.dependsOn genStubs
-runapp.dependsOn compileStubs
+runapp.dependsOn compileJava

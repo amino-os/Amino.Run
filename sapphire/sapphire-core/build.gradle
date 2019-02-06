@@ -157,9 +157,10 @@ task genGraalTestStubs(type: JavaExec) {
 task compileGraalTestStubs(type: JavaCompile) {
     source = "$projectDir/src/test/java/amino/run/stubs"
     classpath = files(sourceSets.main.output.classesDir)
-    destinationDir = sourceSets.main.output.classesDir
+    destinationDir = sourceSets.test.output.classesDir
     options.incremental = true
     inputs.dir genGraalTestStubs.outputs
+    outputs.dir destinationDir
 }
 
 task genIntegTestStubs(type :JavaExec) {

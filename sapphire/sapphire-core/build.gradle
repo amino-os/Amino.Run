@@ -120,9 +120,9 @@ genStubs {
     inputs.dir src   // Declare inputs, so gradle will run if they have been changed
 }
 
-
 task compileSampleSO(type: JavaCompile) {
     source = file(project.projectDir.toString() + '/src/test/java/amino/run/sampleSO')
+    exclude('**/*_Stub*')  // Added for excluding older Stub files, while compiling Sample SO package.
     classpath = files(sourceSets.main.output.classesDir)
     destinationDir = file(project.buildDir.toString() + '/classes/java/test/')
     options.incremental = true
@@ -139,14 +139,6 @@ task genUnitTestStubs(type :JavaExec){
     args src.toString(), pkg, dst.toString()
     outputs.dir dst
     inputs.dir src
-}
-
-task compileSampleSO(type: JavaCompile) {
-    source = file(project.projectDir.toString() + '/src/test/java/amino/run/sampleSO')
-    exclude('**/*_Stub*')  // Added for excluding older Stub files, while compiling Sample SO package.
-    classpath = files(sourceSets.main.output.classesDir)
-    destinationDir = file(project.buildDir.toString() + '/classes/java/test/')
-    options.incremental = true
 }
 
 // Task for Graal Test Stubs Generation:
@@ -175,6 +167,7 @@ task compileGraalTestStubs(type: JavaCompile) {
 
 task compileIntegTestDemoPkg(type: JavaCompile) {
     source = file(project.projectDir.toString() + '/src/integrationTest/java/amino/run/demo/')
+    exclude('**/*_Stub*')  // Added for excluding older Stub files, while compiling Integration Test Demo package.
     classpath = sourceSets.integrationTest.compileClasspath
     destinationDir = file(project.buildDir.toString() + '/classes/java/integrationTest/')
     options.incremental = true
@@ -191,14 +184,6 @@ task genIntegTestStubs(type :JavaExec) {
     args src.toString(), pkg, dst.toString()
     outputs.dir dst // Declare outputs, so gradle will run if they have been changed
     inputs.dir src // Declare inputs, so gradle will run if they have been change
-}
-
-task compileIntegTestDemoPkg(type: JavaCompile) {
-    source = file(project.projectDir.toString() + '/src/integrationTest/java/amino/run/demo/')
-    exclude('**/*_Stub*')  // Added for excluding older Stub files, while compiling Integration Test Demo package.
-    classpath = sourceSets.integrationTest.compileClasspath
-    destinationDir = file(project.buildDir.toString() + '/classes/java/integrationTest/')
-    options.incremental = true
 }
 
 clean {

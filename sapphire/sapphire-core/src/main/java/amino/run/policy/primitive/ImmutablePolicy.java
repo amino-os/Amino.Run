@@ -20,10 +20,10 @@ public class ImmutablePolicy extends DefaultPolicy {
 
         @Override
         public Object onRPC(
-                String method,
-                ArrayList<Object> params,
+                String appMethod,
+                ArrayList<Object> appParams,
                 String prevDMMethod,
-                ArrayList<Object> paramStack)
+                ArrayList<Object> prevDMParams)
                 throws Exception {
             synchronized (this) {
                 if (cachedObject == null) {
@@ -31,7 +31,7 @@ public class ImmutablePolicy extends DefaultPolicy {
                 }
             }
 
-            return cachedObject.invoke(method, params);
+            return cachedObject.invoke(appMethod, appParams);
         }
     }
 

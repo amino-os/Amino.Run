@@ -50,19 +50,19 @@ public class DHTPolicy extends DefaultPolicy {
 
         @Override
         public Object onRPC(
-                String method,
-                ArrayList<Object> params,
+                String appMethod,
+                ArrayList<Object> appParams,
                 String prevDMMethod,
-                ArrayList<Object> paramStack)
+                ArrayList<Object> prevDMParams)
                 throws Exception {
-            DHTKey key = new DHTKey(params.get(0).toString());
+            DHTKey key = new DHTKey(appParams.get(0).toString());
             if (dhtChord == null) {
                 dhtChord = ((DHTGroupPolicy) getGroup()).getChord();
             }
 
             DHTNode node = dhtChord.getResponsibleNode(key);
             logger.fine("Responsible node for: " + key + " is: " + node.id);
-            return node.server.onRPC(method, params, prevDMMethod, paramStack);
+            return node.server.onRPC(appMethod, appParams, prevDMMethod, prevDMParams);
         }
     }
 

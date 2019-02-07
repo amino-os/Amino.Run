@@ -53,9 +53,9 @@ public class DurableSerializableRPCPolicyTest extends SerializableRPCPolicyTest 
     @Test
     public void regularRPCWithAutomaticSaveCheckpoint() throws Exception {
         String methodName = "public java.lang.String java.lang.Object.toString()";
-        this.checkpointClient.onRPC(methodName, noParams, null, null);
+        this.checkpointClient.onRPC(methodName, noParams, methodName, noParams);
         // Check that the server got the request.
-        verify(this.checkpointServer).onRPC(methodName, noParams, null, null);
+        verify(this.checkpointServer).onRPC(methodName, noParams, methodName, noParams);
         // Check that DM saved a checkpoint.
         verify(this.checkpointServer, times(1)).saveCheckpoint();
         // And didn't try to restore it
@@ -74,21 +74,22 @@ public class DurableSerializableRPCPolicyTest extends SerializableRPCPolicyTest 
 
         boolean exceptionWasThrown = false;
 
-        this.checkpointClient.onRPC(regularMethodName, oneParam, null, null);
-        verify(this.checkpointServer).onRPC(regularMethodName, oneParam, null, null);
+        this.checkpointClient.onRPC(regularMethodName, oneParam, regularMethodName, oneParam);
+        verify(this.checkpointServer)
+                .onRPC(regularMethodName, oneParam, regularMethodName, oneParam);
         // Check that DM saved a checkpoint.
         verify(this.checkpointServer, times(1)).saveCheckpoint();
         // Verify that the object has been updated
-        this.checkpointClient.onRPC(getMethodName, noParams, null, null);
-        verify(this.checkpointServer).onRPC(getMethodName, noParams, null, null);
+        this.checkpointClient.onRPC(getMethodName, noParams, getMethodName, noParams);
+        verify(this.checkpointServer).onRPC(getMethodName, noParams, getMethodName, noParams);
         assertEquals(((PeriodicCheckpointerTest) checkpointAppObject.getObject()).getI(), 1);
 
         try {
             this.checkpointClient.onRPC(
                     exceptionMethodName,
                     twoParam,
-                    null,
-                    null); // This sets the value to two, then throws an exception
+                    exceptionMethodName,
+                    twoParam); // This sets the value to two, then throws an exception
         } catch (Exception e) {
             exceptionWasThrown = true;
             // Discard the exception - we were expecting it.
@@ -98,7 +99,7 @@ public class DurableSerializableRPCPolicyTest extends SerializableRPCPolicyTest 
         verify(this.checkpointServer, times(1)).restoreCheckpoint();
 
         // Verify that the object has been restored
-        this.checkpointClient.onRPC(getMethodName, noParams, null, null);
+        this.checkpointClient.onRPC(getMethodName, noParams, getMethodName, noParams);
         assertEquals(((PeriodicCheckpointerTest) checkpointAppObject.getObject()).getI(), 1);
     }
 }

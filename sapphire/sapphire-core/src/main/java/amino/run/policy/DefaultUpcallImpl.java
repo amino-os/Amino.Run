@@ -50,12 +50,12 @@ public abstract class DefaultUpcallImpl extends Library {
 
     public abstract static class ServerPolicy extends ServerPolicyLibrary {
         public Object onRPC(
-                String method,
-                ArrayList<Object> params,
-                String prevDMMethod,
-                ArrayList<Object> paramStack)
+                String appMethod,
+                ArrayList<Object> appParams,
+                String nextDMMethod,
+                ArrayList<Object> nextDMParams)
                 throws Exception {
-            return appObject.invoke(method, params);
+            return appObject.invoke(nextDMMethod, nextDMParams);
         }
 
         @Deprecated

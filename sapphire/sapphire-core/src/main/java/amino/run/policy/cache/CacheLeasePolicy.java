@@ -95,16 +95,16 @@ public class CacheLeasePolicy extends DefaultPolicy {
 
         @Override
         public Object onRPC(
-                String method,
-                ArrayList<Object> params,
+                String appMethod,
+                ArrayList<Object> appParams,
                 String prevDMMethod,
-                ArrayList<Object> paramStack)
+                ArrayList<Object> prevDMParams)
                 throws Exception {
             Object ret = null;
             if (!leaseStillValid()) {
                 getNewLease(CacheLeasePolicy.DEFAULT_LEASE_PERIOD);
             }
-            ret = cachedObject.invoke(method, params);
+            ret = cachedObject.invoke(appMethod, appParams);
             if (true) { // TODO: isMutable?
                 sync();
             }

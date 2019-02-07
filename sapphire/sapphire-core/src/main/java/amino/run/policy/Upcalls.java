@@ -85,18 +85,17 @@ public interface Upcalls {
          *
          * @param appMethod The name of the app method to be invoked. This method name can be used
          *     DM clients to make a decision based on app method name. It is the same value passed
-         *     to all the DM clients along chain traversal
-         * @param appParams The app method parameters to be passed. These parameters are used by DM
-         *     clients making certain DM decisions based on the app arguments. These are the same
-         *     value passed to all the DM clients along chain traversal.
+         *     to all the intercepting DMs along chain traversal.
+         * @param appParams The app method parameters to be passed. These parameters are used by DMs
+         *     making certain decisions based on the app arguments. These are the same value passed
+         *     to all the intercepting DMs along chain traversal.
          * @param prevDMMethod The name of the previous DM method invoked in the DM chain. It is
-         *     null if it is first DM in the chain. It is passed along the chain. This value is
-         *     changed at intercepting server stub to current method name before calling next DM
-         *     client in the chain.
-         * @param paramStack The parameters to be passed to the remote method invocation. All
-         *     parameter passing is by definition pass-by-value, because it's remote. It is the
-         *     stack of parameters pushed all the way from Appstub till the current DM client
-         *     through previous intercepting DM server stub
+         *     same as appMethod if it is first DM in the chain. It is passed along the chain. This
+         *     value is changed at intercepting server stub to current method name before calling
+         *     next DM client in the chain.
+         * @param prevDMParams The parameters to be passed to the remote method invocation. It is
+         *     the stack of parameters pushed all the way from Appstub till the current DM client
+         *     through previous intercepting DM server stub.
          * @return the return value from the remote method invocation. Again, return values are
          *     pass-by-value.
          * @throws Exception Either the exception thrown directly by the remote method invocation,
@@ -106,7 +105,7 @@ public interface Upcalls {
                 String appMethod,
                 ArrayList<Object> appParams,
                 String prevDMMethod,
-                ArrayList<Object> paramStack)
+                ArrayList<Object> prevDMParams)
                 throws Exception;
     }
 
@@ -159,16 +158,17 @@ public interface Upcalls {
          * replica. May be overidden in DM's to, for example, replicate the call to all replicas,
          * detect and handle server overloads, persist transaction logs, etc.
          *
-         * @param method Name of the method to be invoked.
-         * @param params Parameters to be passed to the method invocation.
-         * @param prevDMMethod No significance on DM server policy object. Value is null when {@link
-         *     onRPC} method is invoked on server policy object. It has significance on server
-         *     policy stub object present on DM client side as described at {@link
-         *     Upcalls.ClientUpcalls.onRPC()}
-         * @param paramStack No significance on DM server policy object. Value is null when {@link
-         *     onRPC} method is invoked on server policy object. It has significance on server
-         *     policy stub object present on DM client side as described at {@link
-         *     Upcalls.ClientUpcalls.onRPC()}
+         * @param appMethod The name of the app method to be invoked. This method name can be used
+         *     DM to make a decision based on app method name. It is the same value passed to all
+         *     the intercepting DMs along chain traversal.
+         * @param appParams The app method parameters to be passed. These parameters are used by DMs
+         *     making certain decisions based on the app arguments. These are the same value passed
+         *     to all the intercepting DMs along chain traversal.
+         * @param nextDMMethod The name of the next DM method invoked in the DM chain. It is same as
+         *     appMethod if it is first DM in the chain(i.e, last mile DM to SO). As the RPC call is
+         *     being processed at DMs in chain, it points to next subsequent DM method to be invoked
+         *     along the chain.
+         * @param nextDMParams The parameters to be passed to the next DM method.
          * @return
          * @throws Exception Either the exception thrown by the application, or an exception
          *     resulting from the operations of the DM/Kernel itself (e.g. if RPC replication fails,
@@ -179,10 +179,10 @@ public interface Upcalls {
          *     explicit set of kernel or DM exceptions.
          */
         Object onRPC(
-                String method,
-                ArrayList<Object> params,
-                String prevDMMethod,
-                ArrayList<Object> paramStack)
+                String appMethod,
+                ArrayList<Object> appParams,
+                String nextDMMethod,
+                ArrayList<Object> nextDMParams)
                 throws Exception;
 
         /**

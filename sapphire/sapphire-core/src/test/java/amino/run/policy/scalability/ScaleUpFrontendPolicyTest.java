@@ -61,7 +61,7 @@ public class ScaleUpFrontendPolicyTest extends BaseTest {
         assertEquals(0, syncCtrCurr.get());
         assertEquals(null, extractFieldValueOnInstance(this.client, "replicaList"));
 
-        this.client.onRPC(methodName, params, null, null);
+        this.client.onRPC(methodName, params, methodName, params);
         syncCtrCurr =
                 (AtomicInteger) extractFieldValueOnInstance(this.client, "replicaListSyncCtr");
         assertEquals(1, syncCtrCurr.get());
@@ -88,7 +88,7 @@ public class ScaleUpFrontendPolicyTest extends BaseTest {
                                 public Object call() throws Exception {
                                     Object test = new String("test");
                                     try {
-                                        test = client.onRPC(methodName, params, null, null);
+                                        test = client.onRPC(methodName, params, methodName, params);
                                     } catch (ServerOverLoadException e) {
                                     }
                                     return test;

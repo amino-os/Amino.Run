@@ -34,7 +34,7 @@ public class TwoPCCohortServerPolicyTest {
         when(appObject.invoke("foo", null)).thenReturn("bar");
         serverPolicy.$__initialize(appObject);
 
-        Object result = serverPolicy.onRPC("foo", null, null, null);
+        Object result = serverPolicy.onRPC("foo", null, "foo", null);
 
         verifyNoMoreInteractions(sandboxProvider);
         verifyZeroInteractions(transactionManager);
@@ -50,11 +50,13 @@ public class TwoPCCohortServerPolicyTest {
         ServerUpcalls sandbox = mock(ServerUpcalls.class);
         when(this.sandboxProvider.getSandbox(this.serverPolicy, transactionId)).thenReturn(sandbox);
 
-        Object result = serverPolicy.onRPC("tx_rpc", wrapper.getRPCParams(), null, null);
+        Object result =
+                serverPolicy.onRPC(
+                        "tx_rpc", wrapper.getRPCParams(), "tx_rpc", wrapper.getRPCParams());
 
         verify(transactionManager).join(transactionId);
         verify(sandboxProvider).getSandbox(this.serverPolicy, transactionId);
-        verify(sandbox).onRPC("foo", null, null, null);
+        verify(sandbox).onRPC("foo", null, "foo", null);
         verify(transactionManager).leave(transactionId);
     }
 
@@ -63,7 +65,9 @@ public class TwoPCCohortServerPolicyTest {
         UUID transactionId = UUID.randomUUID();
         TransactionWrapper wrapper = new TransactionWrapper(transactionId, "tx_vote_req", null);
 
-        Object result = this.serverPolicy.onRPC("tx_rpc", wrapper.getRPCParams(), null, null);
+        Object result =
+                this.serverPolicy.onRPC(
+                        "tx_rpc", wrapper.getRPCParams(), "tx_rpc", wrapper.getRPCParams());
 
         verify(this.transactionManager).vote(transactionId);
     }

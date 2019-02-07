@@ -43,10 +43,10 @@ public class ConsensusRSMPolicy extends DefaultPolicy {
 
     public static class ClientPolicy extends DefaultPolicy.DefaultClientPolicy {
         public Object onRPC(
-                String method,
-                ArrayList<Object> params,
+                String appMethod,
+                ArrayList<Object> appParams,
                 String prevDMMethod,
-                ArrayList<Object> paramStack)
+                ArrayList<Object> prevDMParams)
                 throws Exception {
             /* TODO: Note that this is currently the only DM that calls {@link setServer}.
              * setServer should only ever be called by the kernel.  Remove calls to setServer and keep
@@ -55,7 +55,7 @@ public class ConsensusRSMPolicy extends DefaultPolicy {
             Object ret = null;
 
             try {
-                ret = getServer().onRPC(method, params, prevDMMethod, paramStack);
+                ret = getServer().onRPC(appMethod, appParams, prevDMMethod, prevDMParams);
             } catch (LeaderException e) {
 
                 if (null == e.getLeader()) {
@@ -65,7 +65,7 @@ public class ConsensusRSMPolicy extends DefaultPolicy {
                 setServer((ServerPolicy) e.getLeader());
                 ret =
                         ((ServerPolicy) e.getLeader())
-                                .onRPC(method, params, prevDMMethod, paramStack);
+                                .onRPC(appMethod, appParams, prevDMMethod, prevDMParams);
             } catch (InvocationTargetException e) {
                 /*
                  * Added for handling Multi-DM scenarios where LeaderException can be nested inside InvocationTargetException.
@@ -80,7 +80,7 @@ public class ConsensusRSMPolicy extends DefaultPolicy {
                     setServer((ServerPolicy) le.getLeader());
                     ret =
                             ((ServerPolicy) le.getLeader())
-                                    .onRPC(method, params, prevDMMethod, paramStack);
+                                    .onRPC(appMethod, appParams, prevDMMethod, prevDMParams);
                 }
             } catch (RemoteException e) {
                 /* Get servers from the group and find a responding server */
@@ -93,7 +93,7 @@ public class ConsensusRSMPolicy extends DefaultPolicy {
                     }
 
                     try {
-                        ret = server.onRPC(method, params, prevDMMethod, paramStack);
+                        ret = server.onRPC(appMethod, appParams, prevDMMethod, prevDMParams);
                         serverFound = true;
                         break;
                     } catch (RemoteException re) {
@@ -108,7 +108,7 @@ public class ConsensusRSMPolicy extends DefaultPolicy {
                         setServer(((ServerPolicy) le.getLeader()));
                         ret =
                                 ((ServerPolicy) le.getLeader())
-                                        .onRPC(method, params, prevDMMethod, paramStack);
+                                        .onRPC(appMethod, appParams, prevDMMethod, prevDMParams);
                         serverFound = true;
                         break;
                     }
@@ -198,20 +198,18 @@ public class ConsensusRSMPolicy extends DefaultPolicy {
                 rpc.params = new ArrayList<Object>();
             }
 
-            return super.onRPC(rpc.method, rpc.params, null, null);
+            return super.onRPC(null, null, rpc.method, rpc.params);
         }
 
         @Override
         public Object onRPC(
-                String method,
-                ArrayList<Object> params,
-                String prevDMMethod,
-                ArrayList<Object> paramStack)
+                String appMethod,
+                ArrayList<Object> appParams,
+                String nextDMMethod,
+                ArrayList<Object> nextDMParams)
                 throws Exception {
-            return raftServer.applyToStateMachine(
-                    new RPC(
-                            method,
-                            params)); // first commit it to the logs of a consensus of replicas.
+            // first commit it to the logs of a consensus of replicas.
+            return raftServer.applyToStateMachine(new RPC(nextDMMethod, nextDMParams));
         }
 
         @Override

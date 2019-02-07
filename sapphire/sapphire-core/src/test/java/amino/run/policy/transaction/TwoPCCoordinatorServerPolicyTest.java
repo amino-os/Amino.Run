@@ -34,7 +34,7 @@ public class TwoPCCoordinatorServerPolicyTest {
     public void test_commit_observes_2pc_protocols() throws Exception {
         when(coordinator.vote(any(UUID.class))).thenReturn(TransactionManager.Vote.YES);
 
-        coordinatorServerPolicy.onRPC("foo", null, null, null);
+        coordinatorServerPolicy.onRPC("foo", null, "foo", null);
 
         InOrder inOrder = inOrder(coordinator);
         inOrder.verify(coordinator).beginTransaction();
@@ -47,7 +47,7 @@ public class TwoPCCoordinatorServerPolicyTest {
         when(coordinator.vote(any(UUID.class))).thenReturn(TransactionManager.Vote.NO);
 
         try {
-            coordinatorServerPolicy.onRPC("foo", null, null, null);
+            coordinatorServerPolicy.onRPC("foo", null, "foo", null);
         } catch (TransactionAbortException e) {
             // do nothing on expected exception
         }
@@ -65,12 +65,12 @@ public class TwoPCCoordinatorServerPolicyTest {
         coordinatorServerPolicy.$__initialize(appObject);
 
         try {
-            this.coordinatorServerPolicy.onRPC("foo", null, null, null);
+            this.coordinatorServerPolicy.onRPC("foo", null, "foo", null);
         } catch (Exception e) {
         }
 
         verifyZeroInteractions(appObject);
-        verify(this.sandbox).onRPC("foo", null, null, null);
+        verify(this.sandbox).onRPC("foo", null, "foo", null);
     }
 
     @Test
@@ -81,7 +81,7 @@ public class TwoPCCoordinatorServerPolicyTest {
         this.coordinatorServerPolicy.$__initialize(originalAppObject);
 
         try {
-            coordinatorServerPolicy.onRPC("foo", null, null, null);
+            coordinatorServerPolicy.onRPC("foo", null, "foo", null);
         } catch (TransactionAbortException e) {
             // as expected exception
             assertSame(originalAppObject, this.coordinatorServerPolicy.sapphire_getAppObject());
@@ -98,7 +98,7 @@ public class TwoPCCoordinatorServerPolicyTest {
         AppObject originalAppObject = new AppObject("bar");
         this.coordinatorServerPolicy.$__initialize(originalAppObject);
 
-        coordinatorServerPolicy.onRPC("foo", null, null, null);
+        coordinatorServerPolicy.onRPC("foo", null, "foo", null);
 
         assertNotSame(originalAppObject, this.coordinatorServerPolicy.sapphire_getAppObject());
     }

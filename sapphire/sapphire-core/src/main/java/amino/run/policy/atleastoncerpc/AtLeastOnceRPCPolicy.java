@@ -21,16 +21,16 @@ public class AtLeastOnceRPCPolicy extends DefaultPolicy {
 
         @Override
         public Object onRPC(
-                String method,
-                ArrayList<Object> params,
+                String appMethod,
+                ArrayList<Object> appParams,
                 String prevDMMethod,
-                ArrayList<Object> paramStack)
+                ArrayList<Object> prevDMParams)
                 throws Exception {
             long startTime = System.currentTimeMillis();
             Exception lastException = null;
             do { // Retry until timeout expires
                 try {
-                    return super.onRPC(method, params, prevDMMethod, paramStack);
+                    return super.onRPC(appMethod, appParams, prevDMMethod, prevDMParams);
                 } catch (AppExceptionWrapper e) {
                     throw e; // Don't retry on application exceptions
                 } catch (Exception e) {

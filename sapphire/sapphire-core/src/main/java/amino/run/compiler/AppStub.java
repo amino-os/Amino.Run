@@ -218,7 +218,7 @@ public final class AppStub extends Stub {
                 indenter.tIncrease(tabWidth + 1)
                         + "$__result = "
                         + GlobalStubConstants.APPSTUB_POLICY_CLIENT_FIELD_NAME
-                        + ".onRPC($__method, $__params, null, null);"
+                        + ".onRPC($__method, $__params, $__method, $__params);"
                         + EOLN); // $NON-NLS-1$
         buffer.append(
                 indenter.tIncrease(tabWidth)

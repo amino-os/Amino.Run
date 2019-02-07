@@ -156,26 +156,18 @@ public class PolicyStub extends Stub {
         /* Implementation for makeRPC */
         buffer.append(
                 indenter.indent()
-                        + "public Object $__makeKernelRPC(java.lang.String method, java.util.ArrayList<Object> params, java.lang.String dmMethod, java.util.ArrayList<Object> paramStack) throws java.rmi.RemoteException, java.lang.Exception {"
+                        + "public Object $__makeKernelRPC(java.lang.String appMethod, java.util.ArrayList<Object> appParams, java.lang.String method, java.util.ArrayList<Object> params) throws java.rmi.RemoteException, java.lang.Exception {"
                         + EOLN);
-        buffer.append(
-                indenter.tIncrease()
-                        + "java.util.ArrayList<Object> $__param = new java.util.ArrayList<Object>();"
-                        + EOLN);
-        buffer.append(indenter.tIncrease() + "$__param.add(paramStack.get(0));" + EOLN);
-        buffer.append(indenter.tIncrease() + "$__param.add(paramStack.get(1));" + EOLN);
-        buffer.append(indenter.tIncrease() + "$__param.add(null);" + EOLN);
-        buffer.append(indenter.tIncrease() + "$__param.add(null);" + EOLN);
 
         buffer.append(indenter.tIncrease() + "if ($__nextClientPolicy != null) {" + EOLN);
         buffer.append(
                 indenter.tIncrease(2)
-                        + "return $__nextClientPolicy.onRPC(method, params, dmMethod, $__param);"
+                        + "return $__nextClientPolicy.onRPC(appMethod, appParams, method, params);"
                         + EOLN);
         buffer.append(indenter.tIncrease() + "}" + EOLN + EOLN);
         buffer.append(
                 indenter.tIncrease()
-                        + "amino.run.kernel.common.KernelRPC rpc = new amino.run.kernel.common.KernelRPC($__oid, dmMethod, $__param);"
+                        + "amino.run.kernel.common.KernelRPC rpc = new amino.run.kernel.common.KernelRPC($__oid, method, params);"
                         + EOLN);
         buffer.append(indenter.tIncrease() + "try {" + EOLN);
         buffer.append(
@@ -289,16 +281,7 @@ public class PolicyStub extends Stub {
         if (m.numParams > 0) {
             // Write invocation parameters.
             // TODO: primitive types ??
-            int i = 0;
-            if (!isDMMethod) {
-                i = 2;
-                buffer.append(indenter.indent() + "if ($param_String_3 == null) {" + EOLN);
-                buffer.append(indenter.tIncrease() + "$param_String_3 = $param_String_1;" + EOLN);
-                buffer.append(
-                        indenter.tIncrease() + "$param_ArrayList_4 = $param_ArrayList_2;" + EOLN);
-                buffer.append(indenter.indent() + "}" + EOLN);
-            }
-            for (; i < m.numParams; i++) {
+            for (int i = 0; i < m.numParams; i++) {
                 buffer.append(indenter.indent() + "$__params.add(" + m.paramNames[i] + ");" + EOLN);
             }
         }

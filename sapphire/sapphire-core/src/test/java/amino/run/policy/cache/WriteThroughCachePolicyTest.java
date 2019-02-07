@@ -56,7 +56,7 @@ public class WriteThroughCachePolicyTest {
 
         when(this.client.isMethodMutable(methodName, params)).thenReturn(true);
 
-        Object actual = this.client.onRPC(methodName, params, null, null);
+        Object actual = this.client.onRPC(methodName, params, methodName, params);
 
         // verify that the return value of the method invocation is correct
         assertEquals(true, actual);
@@ -68,7 +68,7 @@ public class WriteThroughCachePolicyTest {
         // read from cache one more time to verify that cached object is correct
         String m = "public java.lang.String java.util.AbstractCollection.toString()";
         when(this.client.isMethodMutable(m, new ArrayList<Object>())).thenReturn(false);
-        actual = this.client.onRPC(m, new ArrayList<Object>(), null, null);
+        actual = this.client.onRPC(m, new ArrayList<Object>(), methodName, params);
         assertEquals(expectedResult.toString(), actual.toString());
     }
 }

@@ -23,10 +23,10 @@ public class TwoPCCoordinatorPolicy extends DefaultPolicy {
 
         @Override
         public Object onRPC(
-                String method,
-                ArrayList<Object> params,
-                String prevDMMethod,
-                ArrayList<Object> paramStack)
+                String appMethod,
+                ArrayList<Object> appParams,
+                String nextDMMethod,
+                ArrayList<Object> nextDMParams)
                 throws Exception {
             this.coordinator.beginTransaction();
             UUID transactionId = this.coordinator.getTransactionId();
@@ -35,7 +35,7 @@ public class TwoPCCoordinatorPolicy extends DefaultPolicy {
 
             Object rpcResult;
             try {
-                rpcResult = sandbox.onRPC(method, params, prevDMMethod, paramStack);
+                rpcResult = sandbox.onRPC(appMethod, appParams, nextDMMethod, nextDMParams);
             } catch (Exception e) {
                 this.coordinator.abort(transactionId);
                 this.sandboxProvider.removeSandbox(transactionId);

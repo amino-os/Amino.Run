@@ -25,9 +25,9 @@ public class TwoPCCohortClientPolicyTest {
         TwoPCCohortClientPolicy clientPolicy = new TwoPCCohortClientPolicy();
         clientPolicy.setServer(serverPolicy);
 
-        clientPolicy.onRPC("foo", null, null, null);
+        clientPolicy.onRPC("foo", null, "foo", null);
 
-        verify(serverPolicy, times(1)).onRPC("foo", null, null, null);
+        verify(serverPolicy, times(1)).onRPC("foo", null, "foo", null);
     }
 
     @Test
@@ -41,11 +41,12 @@ public class TwoPCCohortClientPolicyTest {
         UUID txnId = UUID.randomUUID();
         TransactionContext.enterTransaction(txnId, participants);
 
-        clientPolicy.onRPC("foo", null, null, null);
+        clientPolicy.onRPC("foo", null, "foo", null);
 
         verify(participants, times(1)).register(clientPolicy);
         ArgumentCaptor<ArrayList<Object>> argCaptor = new ArgumentCaptor<ArrayList<Object>>();
-        verify(serverPolicy, times(1)).onRPC(eq("tx_rpc"), argCaptor.capture(), eq(null), eq(null));
+        verify(serverPolicy, times(1))
+                .onRPC(eq("tx_rpc"), argCaptor.capture(), eq("foo"), eq(null));
         ArrayList<Object> args = argCaptor.getValue();
         TransactionWrapper rpcTransaction = new TransactionWrapper("tx_rpc", args);
         assertEquals(rpcTransaction.getTransaction(), txnId);
@@ -61,6 +62,6 @@ public class TwoPCCohortClientPolicyTest {
         UUID txnId = UUID.randomUUID();
         TransactionContext.enterTransaction(txnId, participants);
 
-        other.onRPC("foo", null, null, null);
+        other.onRPC("foo", null, "foo", null);
     }
 }

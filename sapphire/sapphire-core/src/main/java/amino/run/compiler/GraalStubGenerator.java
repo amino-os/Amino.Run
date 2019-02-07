@@ -224,7 +224,7 @@ public class GraalStubGenerator {
                     + "            String $__method = \"public java.lang.Object %s.%s_Stub.%s(java.lang.Object...) throws java.lang.Exception\";\n"
                     + "            $__params.addAll(serializeParams(args));\n"
                     + "            try {\n"
-                    + "                $__result = $__client.onRPC($__method, $__params, null, null);\n"
+                    + "                $__result = $__client.onRPC($__method, $__params, $__method, $__params);\n"
                     + "                if ($__result instanceof SerializeValue) {\n"
                     + "                    $__result = deserializedSerializeValue((SerializeValue)$__result);\n"
                     + "                    $__result = ((org.graalvm.polyglot.Value)$__result).as(java.lang.Object.class);\n"

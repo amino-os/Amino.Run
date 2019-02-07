@@ -20,19 +20,19 @@ public class ExplicitCheckpointPolicy extends CheckpointPolicyBase {
     public static class ServerPolicy extends CheckpointPolicyBase.ServerPolicy {
         @Override
         public Object onRPC(
-                String method,
-                ArrayList<Object> params,
-                String prevDMMethod,
-                ArrayList<Object> paramStack)
+                String appMethod,
+                ArrayList<Object> appParams,
+                String nextDMMethod,
+                ArrayList<Object> nextDMParams)
                 throws Exception {
-            if (isSaveCheckpoint(method)) {
+            if (isSaveCheckpoint(appMethod)) {
                 this.saveCheckpoint();
                 return null;
-            } else if (isRestoreCheckpoint(method)) {
+            } else if (isRestoreCheckpoint(appMethod)) {
                 this.restoreCheckpoint();
                 return null;
             } else {
-                return super.onRPC(method, params, prevDMMethod, paramStack);
+                return super.onRPC(appMethod, appParams, nextDMMethod, nextDMParams);
             }
         }
 

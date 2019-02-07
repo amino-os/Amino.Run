@@ -41,10 +41,10 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultPolicy {
 
         @Override
         public Object onRPC(
-                String method,
-                ArrayList<Object> params,
+                String appMethod,
+                ArrayList<Object> appParams,
                 String prevDMMethod,
-                ArrayList<Object> paramStack)
+                ArrayList<Object> prevDMParams)
                 throws Exception {
             final int MAX_RETRY = 5;
             int retryCnt = 1, waitInMilliseconds = 50;
@@ -60,7 +60,7 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultPolicy {
 
             do {
                 ServerBase server = (ServerBase) getServer();
-                if (isImmutable(server.getClass(), method)) {
+                if (isImmutable(server.getClass(), appMethod)) {
                     server = group.getRandomServer();
                     type = MethodInvocationRequest.MethodType.IMMUTABLE;
                 } else {
@@ -74,21 +74,12 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultPolicy {
                     continue;
                 }
 
-                String mtdName = method;
-                ArrayList<Object> param = params;
-
-                /* If the previous DM is null */
-                if (prevDMMethod != null) {
-                    mtdName = prevDMMethod;
-                    param = paramStack;
-                }
-
                 MethodInvocationRequest request =
                         new MethodInvocationRequest(
                                 CLIENT_ID.toString(),
                                 SeqGenerator.getAndAdd(1L),
-                                mtdName,
-                                param,
+                                prevDMMethod,
+                                prevDMParams,
                                 type);
 
                 logger.log(
@@ -112,7 +103,8 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultPolicy {
                 }
             } while (++retryCnt <= MAX_RETRY);
 
-            throw new Exception(String.format("failed to execute method %s after retries", method));
+            throw new Exception(
+                    String.format("failed to execute method %s after retries", appMethod));
         }
 
         private boolean isImmutable(Class clazz, String method) {

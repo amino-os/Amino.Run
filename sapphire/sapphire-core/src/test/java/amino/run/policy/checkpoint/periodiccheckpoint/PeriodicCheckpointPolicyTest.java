@@ -45,9 +45,9 @@ public class PeriodicCheckpointPolicyTest {
     @Test
     public void regularRPCWithAutomaticSaveCheckpoint() throws Exception {
         String methodName = "public java.lang.String java.lang.Object.toString()";
-        this.client.onRPC(methodName, noParams, null, null);
+        this.client.onRPC(methodName, noParams, methodName, noParams);
         // Check that the server got the request.
-        verify(this.server).onRPC(methodName, noParams, null, null);
+        verify(this.server).onRPC(methodName, noParams, methodName, noParams);
         // Check that DM saved a checkpoint.
         verify(this.server, times(1)).saveCheckpoint();
         // And didn't try to restore it
@@ -66,13 +66,13 @@ public class PeriodicCheckpointPolicyTest {
 
         boolean exceptionWasThrown = false;
 
-        this.client.onRPC(regularMethodName, oneParam, null, null);
-        verify(this.server).onRPC(regularMethodName, oneParam, null, null);
+        this.client.onRPC(regularMethodName, oneParam, regularMethodName, oneParam);
+        verify(this.server).onRPC(regularMethodName, oneParam, regularMethodName, oneParam);
         // Check that DM saved a checkpoint.
         verify(this.server, times(1)).saveCheckpoint();
         // Verify that the object has been updated
-        this.client.onRPC(getMethodName, noParams, null, null);
-        verify(this.server).onRPC(getMethodName, noParams, null, null);
+        this.client.onRPC(getMethodName, noParams, getMethodName, noParams);
+        verify(this.server).onRPC(getMethodName, noParams, getMethodName, noParams);
         assertEquals(((PeriodicCheckpointerTest) appObject.getObject()).getI(), 1);
 
         try {
@@ -90,7 +90,7 @@ public class PeriodicCheckpointPolicyTest {
         verify(this.server, times(1)).restoreCheckpoint();
 
         // Verify that the object has been restored
-        this.client.onRPC(getMethodName, noParams, null, null);
+        this.client.onRPC(getMethodName, noParams, getMethodName, noParams);
         assertEquals(((PeriodicCheckpointerTest) appObject.getObject()).getI(), 1);
     }
 

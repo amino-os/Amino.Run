@@ -97,13 +97,13 @@ public class LoadBalancedFrontendPolicy extends DefaultPolicy {
 
         @Override
         public Object onRPC(
-                String method,
-                ArrayList<Object> params,
+                String appMethod,
+                ArrayList<Object> appParams,
                 String prevDMMethod,
-                ArrayList<Object> paramStack)
+                ArrayList<Object> prevDMParams)
                 throws Exception {
             ServerPolicy server = getCurrentServer();
-            return server.onRPC(method, params, prevDMMethod, paramStack);
+            return server.onRPC(appMethod, appParams, prevDMMethod, prevDMParams);
         }
 
         private synchronized ServerPolicy getCurrentServer() throws Exception {
@@ -149,16 +149,16 @@ public class LoadBalancedFrontendPolicy extends DefaultPolicy {
 
         @Override
         public Object onRPC(
-                String method,
-                ArrayList<Object> params,
-                String prevDMMethod,
-                ArrayList<Object> paramStack)
+                String appMethod,
+                ArrayList<Object> appParams,
+                String nextDMMethod,
+                ArrayList<Object> nextDMParams)
                 throws Exception {
             boolean acquired = false;
             acquired = limiter.tryAcquire();
             if (acquired) { // concurrent requests count not reached
                 try {
-                    return super.onRPC(method, params, prevDMMethod, paramStack);
+                    return super.onRPC(appMethod, appParams, nextDMMethod, nextDMParams);
                 } finally {
                     limiter.release();
                 }

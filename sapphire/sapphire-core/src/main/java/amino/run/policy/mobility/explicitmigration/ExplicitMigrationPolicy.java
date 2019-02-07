@@ -98,10 +98,10 @@ public class ExplicitMigrationPolicy extends DefaultPolicy {
 
         @Override
         public Object onRPC(
-                String method,
-                ArrayList<Object> params,
+                String appMethod,
+                ArrayList<Object> appParams,
                 String prevDMMethod,
-                ArrayList<Object> paramStack)
+                ArrayList<Object> prevDMParams)
                 throws Exception {
             long startTime = System.currentTimeMillis();
             long currentTime = System.currentTimeMillis();
@@ -115,7 +115,7 @@ public class ExplicitMigrationPolicy extends DefaultPolicy {
                     currentTime < (startTime + retryTimeoutInMillis - delay);
                     delay *= 2, currentTime = System.currentTimeMillis()) {
                 try {
-                    return super.onRPC(method, params, prevDMMethod, paramStack);
+                    return super.onRPC(appMethod, appParams, prevDMMethod, prevDMParams);
                 } catch (KernelObjectMigratingException e) {
                     logger.info(
                             "Caught KernelObjectMigratingException at client policy of ExplicitMigrator Policy: "
@@ -147,16 +147,16 @@ public class ExplicitMigrationPolicy extends DefaultPolicy {
 
         @Override
         public Object onRPC(
-                String method,
-                ArrayList<Object> params,
-                String prevDMMethod,
-                ArrayList<Object> paramStack)
+                String appMethod,
+                ArrayList<Object> appParams,
+                String nextDMMethod,
+                ArrayList<Object> nextDMParams)
                 throws Exception {
-            if (isMigrateObject(method)) {
-                migrateObject((InetSocketAddress) params.get(0));
+            if (isMigrateObject(appMethod)) {
+                migrateObject((InetSocketAddress) appParams.get(0));
                 return null;
             } else {
-                return super.onRPC(method, params, prevDMMethod, paramStack);
+                return super.onRPC(appMethod, appParams, nextDMMethod, nextDMParams);
             }
         }
 

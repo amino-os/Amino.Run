@@ -42,7 +42,10 @@ public class SerializableRPCPolicyTest {
                                 public Object call() throws Exception {
                                     // invoke onRPC method on server
                                     return server.onRPC(
-                                            methodName, new ArrayList<Object>(), null, null);
+                                            methodName,
+                                            new ArrayList<Object>(),
+                                            methodName,
+                                            new ArrayList<Object>());
                                 }
                             });
             taskList.add(task);
@@ -66,7 +69,10 @@ public class SerializableRPCPolicyTest {
                                 public Object call() throws Exception {
                                     // invoke onRPC method on client
                                     return client.onRPC(
-                                            methodName, new ArrayList<Object>(), null, null);
+                                            methodName,
+                                            new ArrayList<Object>(),
+                                            methodName,
+                                            new ArrayList<Object>());
                                 }
                             });
             taskList.add(task);

@@ -21,19 +21,19 @@ public class SerializableRPCPolicy extends DefaultPolicy {
         /**
          * Synchronize RPC calls on {@link AppObject}
          *
-         * @param method method name
-         * @param params types of method parameters
+         * @param appMethod method name
+         * @param appParams types of method parameters
          * @return return value of the method
          * @throws Exception
          */
         @Override
-        public synchronized Object onRPC(
-                String method,
-                ArrayList<Object> params,
-                String prevDMMethod,
-                ArrayList<Object> paramStack)
+        public Object onRPC(
+                String appMethod,
+                ArrayList<Object> appParams,
+                String nextDMMethod,
+                ArrayList<Object> nextDMParams)
                 throws Exception {
-            return appObject.invoke(method, params);
+            return appObject.invoke(nextDMMethod, nextDMParams);
         }
     }
 

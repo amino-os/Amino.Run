@@ -14,10 +14,10 @@ public class DurableOnDemandCachedList extends DefaultPolicy {
     public static class DurableOnDemandCachedListClientPolicy extends DefaultClientPolicy {
         @Override
         public Object onRPC(
-                String method,
-                ArrayList<Object> params,
+                String appMethod,
+                ArrayList<Object> appParams,
                 String prevDMMethod,
-                ArrayList<Object> paramStack)
+                ArrayList<Object> prevDMParams)
                 throws Exception {
             /* Switch on the method we need to execute */
             return null;
@@ -31,10 +31,10 @@ public class DurableOnDemandCachedList extends DefaultPolicy {
 
         @Override
         public Object onRPC(
-                String method,
-                ArrayList<Object> params,
-                String prevDMMethod,
-                ArrayList<Object> paramStack)
+                String appMethod,
+                ArrayList<Object> appParams,
+                String nextDMMethod,
+                ArrayList<Object> nextDMParams)
                 throws Exception {
             return null;
         }

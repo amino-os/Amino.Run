@@ -20,24 +20,24 @@ public class TwoPCCohortPolicy extends DefaultPolicy {
 
         @Override
         public Object onRPC(
-                String method,
-                ArrayList<Object> params,
+                String appMethod,
+                ArrayList<Object> appParams,
                 String prevDMMethod,
-                ArrayList<Object> paramStack)
+                ArrayList<Object> prevDMParams)
                 throws Exception {
-            if ((!method.equals(TransactionWrapper.txWrapperTag)) && super.hasTransaction()) {
+            if ((!appMethod.equals(TransactionWrapper.txWrapperTag)) && super.hasTransaction()) {
                 TransactionContext.getParticipants().register(this);
 
                 UUID txnId = this.getCurrentTransaction();
-                TransactionWrapper txWrapper = new TransactionWrapper(txnId, method, params);
+                TransactionWrapper txWrapper = new TransactionWrapper(txnId, appMethod, appParams);
                 return super.onRPC(
                         TransactionWrapper.txWrapperTag,
                         txWrapper.getRPCParams(),
                         prevDMMethod,
-                        paramStack);
+                        prevDMParams);
             }
 
-            return super.onRPC(method, params, prevDMMethod, paramStack);
+            return super.onRPC(appMethod, appParams, prevDMMethod, prevDMParams);
         }
     }
 
@@ -66,17 +66,17 @@ public class TwoPCCohortPolicy extends DefaultPolicy {
 
         @Override
         public Object onRPC(
-                String method,
-                ArrayList<Object> params,
-                String prevDMMethod,
-                ArrayList<Object> paramStack)
+                String appMethod,
+                ArrayList<Object> appParams,
+                String nextDMMethod,
+                ArrayList<Object> nextDMParams)
                 throws Exception {
-            TransactionWrapper tx = new TransactionWrapper(method, params);
+            TransactionWrapper tx = new TransactionWrapper(appMethod, appParams);
             UUID transactionId = tx.getTransaction();
 
             if (transactionId == null) {
                 return super.onRPC(
-                        tx.getInnerRPCMethod(), tx.getInnerRPCParams(), prevDMMethod, paramStack);
+                        tx.getInnerRPCMethod(), tx.getInnerRPCParams(), nextDMMethod, nextDMParams);
             } else {
                 return onTransactionRPC(tx);
             }
@@ -104,7 +104,8 @@ public class TwoPCCohortPolicy extends DefaultPolicy {
                 ServerUpcalls sandbox = this.sandboxProvider.getSandbox(this, transactionId);
                 this.transactionManager.join(transactionId);
                 try {
-                    return sandbox.onRPC(rpcMethod, tx.getInnerRPCParams(), null, null);
+                    return sandbox.onRPC(
+                            rpcMethod, tx.getInnerRPCParams(), rpcMethod, tx.getInnerRPCParams());
                 } catch (Exception e) {
                     logger.log(Level.WARNING, "onRPC failed: ", e);
                     this.transactionManager.abort(transactionId);

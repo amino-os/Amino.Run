@@ -59,8 +59,8 @@ public class LockingTransactionPolicyTest {
     @Test
     public void regularRPC() throws Exception {
         String methodName = "public java.lang.String java.lang.Object.toString()";
-        this.client.onRPC(methodName, noParams, null, null);
-        verify(this.server).onRPC(methodName, noParams, null, null);
+        this.client.onRPC(methodName, noParams, methodName, noParams);
+        verify(this.server).onRPC(methodName, noParams, methodName, noParams);
         // Check that DM methods were not called
         verify(this.server, never()).getLease((Matchers.anyLong()));
     }
@@ -68,33 +68,33 @@ public class LockingTransactionPolicyTest {
     @Test
     public void startAndCommitTransaction() throws Exception {
         // Update the object to 1
-        this.client.onRPC(setMethodName, oneParam, null, null);
-        verify(this.server).onRPC(setMethodName, oneParam, null, null);
+        this.client.onRPC(setMethodName, oneParam, setMethodName, oneParam);
+        verify(this.server).onRPC(setMethodName, oneParam, setMethodName, oneParam);
         assertEquals(so.getI(), 1);
 
         // Start a transaction
-        this.client.onRPC(startMethodName, noParams, null, null);
+        this.client.onRPC(startMethodName, noParams, startMethodName, noParams);
         // Update the object again, this time to 2
-        this.client.onRPC(setMethodName, twoParam, null, null);
+        this.client.onRPC(setMethodName, twoParam, setMethodName, twoParam);
         assertEquals(so.getI(), 2);
         // Check that it was not executed against the server.
-        verify(this.server, never()).onRPC(setMethodName, twoParam, null, null);
+        verify(this.server, never()).onRPC(setMethodName, twoParam, setMethodName, twoParam);
         // Commit the transaction
-        this.client.onRPC(commitMethodName, noParams, null, null);
+        this.client.onRPC(commitMethodName, noParams, commitMethodName, noParams);
         // Check that it got sync'd to the server.
         verify(this.server).syncObject((UUID) any(), (Serializable) any());
 
         // Verify that the object has been updated
-        this.client.onRPC(getMethodName, noParams, null, null);
-        verify(this.server).onRPC(getMethodName, noParams, null, null);
+        this.client.onRPC(getMethodName, noParams, getMethodName, noParams);
+        verify(this.server).onRPC(getMethodName, noParams, getMethodName, noParams);
         assertEquals(((LockingTransactionTest) appObject.getObject()).getI(), 2);
     }
 
     @Test
     public void startAndRollbackTransaction() throws Exception {
         // Update the object to 1
-        this.client.onRPC(setMethodName, oneParam, null, null);
-        verify(this.server).onRPC(setMethodName, oneParam, null, null);
+        this.client.onRPC(setMethodName, oneParam, setMethodName, oneParam);
+        verify(this.server).onRPC(setMethodName, oneParam, setMethodName, oneParam);
         assertEquals(1, so.getI());
 
         // Start a transaction
@@ -105,33 +105,33 @@ public class LockingTransactionPolicyTest {
         // than
         // different objects, due to RMI serialization.
         doReturn(clone).when(this.server).sapphire_getAppObject();
-        this.client.onRPC(startMethodName, noParams, null, null);
+        this.client.onRPC(startMethodName, noParams, startMethodName, noParams);
         // Update the object again, this time to 2
-        this.client.onRPC(setMethodName, twoParam, null, null);
-        verify(this.server, never()).onRPC(setMethodName, twoParam, null, null);
+        this.client.onRPC(setMethodName, twoParam, setMethodName, twoParam);
+        verify(this.server, never()).onRPC(setMethodName, twoParam, setMethodName, twoParam);
         // Check that the client has the new value.
-        assertEquals(2, this.client.onRPC(getMethodName, noParams, null, null));
+        assertEquals(2, this.client.onRPC(getMethodName, noParams, getMethodName, noParams));
         // Check that the server has the old value.
         assertEquals(1, so.getI());
         // Rollback the transaction
-        this.client.onRPC(rollbackMethodName, noParams, null, null);
+        this.client.onRPC(rollbackMethodName, noParams, rollbackMethodName, noParams);
 
         // Verify that the object has been restored when viewed from the client.
-        assertEquals(1, this.client.onRPC(getMethodName, noParams, null, null));
+        assertEquals(1, this.client.onRPC(getMethodName, noParams, getMethodName, noParams));
         // ... and on the server.
         assertEquals(1, so.getI());
 
-        verify(this.server).onRPC(getMethodName, noParams, null, null);
+        verify(this.server).onRPC(getMethodName, noParams, getMethodName, noParams);
     }
 
     @Test
     public void startTransactionWithMultipleClients() throws Exception {
         // Start transaction with first client
-        this.client.onRPC(startMethodName, noParams, null, null);
+        this.client.onRPC(startMethodName, noParams, startMethodName, noParams);
 
         // Update the object to 2 from first client
-        this.client.onRPC(setMethodName, twoParam, null, null);
-        assertEquals(2, this.client.onRPC(getMethodName, noParams, null, null));
+        this.client.onRPC(setMethodName, twoParam, setMethodName, twoParam);
+        assertEquals(2, this.client.onRPC(getMethodName, noParams, getMethodName, noParams));
 
         /* Create another client */
         LockingTransactionPolicy.ClientPolicy client2 =
@@ -141,30 +141,30 @@ public class LockingTransactionPolicyTest {
         // Start a transaction from new client
         thrown.expect(TransactionException.class);
         thrown.expectMessage(containsString("Failed to start a transaction."));
-        client2.onRPC(startMethodName, noParams, null, null);
+        client2.onRPC(startMethodName, noParams, startMethodName, noParams);
     }
 
     @Test
     public void startTransactWithSingleClientWhenTransactIsInProgress() throws Exception {
-        this.client.onRPC(startMethodName, noParams, null, null);
+        this.client.onRPC(startMethodName, noParams, startMethodName, noParams);
 
         thrown.expect(TransactionAlreadyStartedException.class);
         thrown.expectMessage(containsString("Transaction already started on Sapphire object."));
-        this.client.onRPC(startMethodName, noParams, null, null);
+        this.client.onRPC(startMethodName, noParams, startMethodName, noParams);
     }
 
     @Test
     public void commitTransactWhenTransactNotStarted() throws Exception {
         thrown.expect(NoTransactionStartedException.class);
         thrown.expectMessage(containsString("No transaction to commit."));
-        this.client.onRPC(commitMethodName, noParams, null, null);
+        this.client.onRPC(commitMethodName, noParams, commitMethodName, noParams);
     }
 
     @Test
     public void rollbackTransactWhenTransactNotStarted() throws Exception {
         thrown.expect(NoTransactionStartedException.class);
         thrown.expectMessage(containsString("No transaction to rollback."));
-        this.client.onRPC(rollbackMethodName, noParams, null, null);
+        this.client.onRPC(rollbackMethodName, noParams, rollbackMethodName, noParams);
     }
 }
 

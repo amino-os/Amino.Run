@@ -27,12 +27,12 @@ public class AppObjectShimServerPolicy implements Upcalls.ServerUpcalls {
 
     @Override
     public Object onRPC(
-            String method,
-            ArrayList<Object> params,
-            String prevDMMethod,
-            ArrayList<Object> paramStack)
+            String appMethod,
+            ArrayList<Object> appParams,
+            String nextDMMethod,
+            ArrayList<Object> nextDMParams)
             throws Exception {
-        return appObject.invoke(method, params);
+        return appObject.invoke(nextDMMethod, nextDMParams);
     }
 
     public MethodInvocationResponse onRPC(MethodInvocationRequest request) {

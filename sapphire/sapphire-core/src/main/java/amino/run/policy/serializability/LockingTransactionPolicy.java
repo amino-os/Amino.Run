@@ -19,18 +19,18 @@ public class LockingTransactionPolicy extends CacheLeasePolicy {
 
         @Override
         public Object onRPC(
-                String method,
-                ArrayList<Object> params,
+                String appMethod,
+                ArrayList<Object> appParams,
                 String prevDMMethod,
-                ArrayList<Object> paramStack)
+                ArrayList<Object> prevDMParams)
                 throws Exception {
-            if (isStartTransaction(method)) {
-                this.startTransaction(params);
+            if (isStartTransaction(appMethod)) {
+                this.startTransaction(appParams);
                 return null;
-            } else if (isCommitTransaction(method)) {
+            } else if (isCommitTransaction(appMethod)) {
                 this.commitTransaction();
                 return null;
-            } else if (isRollbackTransaction(method)) {
+            } else if (isRollbackTransaction(appMethod)) {
                 this.rollbackTransaction();
                 return null;
             } else { // Normal method invocation
@@ -39,7 +39,7 @@ public class LockingTransactionPolicy extends CacheLeasePolicy {
                     // copy.
                     if (leaseStillValid()) {
                         try {
-                            return cachedObject.invoke(method, params);
+                            return cachedObject.invoke(appMethod, appParams);
                         } catch (Exception e) {
                             rollbackTransaction();
                             throw new Exception(
@@ -52,7 +52,7 @@ public class LockingTransactionPolicy extends CacheLeasePolicy {
                                 "Transaction timed out.  Transaction rolled back.");
                     }
                 } else { // Outside of transactions, we invoke against the server
-                    return getServer().onRPC(method, params, prevDMMethod, paramStack);
+                    return getServer().onRPC(appMethod, appParams, prevDMMethod, prevDMParams);
                 }
             }
         }

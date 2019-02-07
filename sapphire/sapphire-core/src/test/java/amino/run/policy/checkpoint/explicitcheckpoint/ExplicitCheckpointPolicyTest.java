@@ -44,8 +44,8 @@ public class ExplicitCheckpointPolicyTest {
     @Test
     public void regularRPC() throws Exception {
         String methodName = "public java.lang.String java.lang.Object.toString()";
-        this.client.onRPC(methodName, noParams, null, null);
-        verify(this.server).onRPC(methodName, noParams, null, null);
+        this.client.onRPC(methodName, noParams, methodName, noParams);
+        verify(this.server).onRPC(methodName, noParams, methodName, noParams);
         // Check that DM methods were not called
         verify(this.server, never()).saveCheckpoint();
         verify(this.server, never()).restoreCheckpoint();
@@ -55,8 +55,8 @@ public class ExplicitCheckpointPolicyTest {
     public void basicSaveCheckpoint() throws Exception {
         String methodName =
                 "public void amino.run.policy.checkpoint.explicitcheckpoint.ExplicitCheckpointerImpl.saveCheckpoint() throws java.lang.Exception";
-        this.client.onRPC(methodName, noParams, null, null);
-        verify(this.server).onRPC(methodName, noParams, null, null);
+        this.client.onRPC(methodName, noParams, methodName, noParams);
+        verify(this.server).onRPC(methodName, noParams, methodName, noParams);
         // Check that correct DM method was called.
         verify(this.server, times(1)).saveCheckpoint();
         verify(this.server, never()).restoreCheckpoint();
@@ -75,28 +75,28 @@ public class ExplicitCheckpointPolicyTest {
                         "public int amino.run.policy.checkpoint.explicitcheckpoint.ExplicitCheckpointerTest.getI()";
 
         // Update the object to 1
-        this.client.onRPC(setMethodName, oneParam, null, null);
-        verify(this.server).onRPC(setMethodName, oneParam, null, null);
+        this.client.onRPC(setMethodName, oneParam, setMethodName, oneParam);
+        verify(this.server).onRPC(setMethodName, oneParam, setMethodName, oneParam);
         assertEquals(so.getI(), 1);
 
         // Save a checkpoint
-        this.client.onRPC(saveMethodName, noParams, null, null);
-        verify(this.server).onRPC(saveMethodName, noParams, null, null);
+        this.client.onRPC(saveMethodName, noParams, saveMethodName, noParams);
+        verify(this.server).onRPC(saveMethodName, noParams, saveMethodName, noParams);
         verify(this.server, never()).restoreCheckpoint();
         verify(this.server, times(1)).saveCheckpoint();
 
         // Update the object again, this time to 2
-        this.client.onRPC(setMethodName, twoParam, null, null);
-        verify(this.server).onRPC(setMethodName, twoParam, null, null);
+        this.client.onRPC(setMethodName, twoParam, setMethodName, twoParam);
+        verify(this.server).onRPC(setMethodName, twoParam, setMethodName, twoParam);
         assertEquals(so.getI(), 2);
 
         // Restore the previous checkpoint
-        this.client.onRPC(restoreMethodName, noParams, null, null);
-        verify(this.server).onRPC(restoreMethodName, noParams, null, null);
+        this.client.onRPC(restoreMethodName, noParams, restoreMethodName, noParams);
+        verify(this.server).onRPC(restoreMethodName, noParams, restoreMethodName, noParams);
 
         // Verify that the object has been restored
-        this.client.onRPC(getMethodName, noParams, null, null);
-        verify(this.server).onRPC(getMethodName, noParams, null, null);
+        this.client.onRPC(getMethodName, noParams, getMethodName, noParams);
+        verify(this.server).onRPC(getMethodName, noParams, getMethodName, noParams);
         assertEquals(((ExplicitCheckpointerTest) appObject.getObject()).getI(), 1);
     }
 }

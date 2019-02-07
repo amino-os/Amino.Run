@@ -57,25 +57,25 @@ public class OptConcurrentTransactPolicy extends DefaultPolicy {
 
         @Override
         public Object onRPC(
-                String method,
-                ArrayList<Object> params,
+                String appMethod,
+                ArrayList<Object> appParams,
                 String prevDMMethod,
-                ArrayList<Object> paramStack)
+                ArrayList<Object> prevDMParams)
                 throws Exception {
-            if (isStartTransaction(method)) {
-                this.startTransaction(params);
+            if (isStartTransaction(appMethod)) {
+                this.startTransaction(appParams);
                 return null;
-            } else if (isCommitTransaction(method)) {
+            } else if (isCommitTransaction(appMethod)) {
                 this.commitTransaction();
                 return null;
-            } else if (isRollbackTransaction(method)) {
+            } else if (isRollbackTransaction(appMethod)) {
                 this.rollbackTransaction();
                 return null;
             } else { // Normal method invocation
                 if (null != cachedObject) {
                     // Transaction based invocation. Invoke against the local copy
                     try {
-                        return cachedObject.invoke(method, params);
+                        return cachedObject.invoke(appMethod, appParams);
                     } catch (Exception e) {
                         rollbackTransaction();
                         throw new TransactionException(
@@ -84,7 +84,7 @@ public class OptConcurrentTransactPolicy extends DefaultPolicy {
                     }
                 } else {
                     // Non transactional based invocation. Make an RPC call
-                    return super.onRPC(method, params, prevDMMethod, paramStack);
+                    return super.onRPC(appMethod, appParams, prevDMMethod, prevDMParams);
                 }
             }
         }
@@ -171,13 +171,13 @@ public class OptConcurrentTransactPolicy extends DefaultPolicy {
         }
 
         @Override
-        public synchronized Object onRPC(
-                String method,
-                ArrayList<Object> params,
-                String prevDMMethod,
-                ArrayList<Object> paramStack)
+        public Object onRPC(
+                String appMethod,
+                ArrayList<Object> appParams,
+                String nextDMMethod,
+                ArrayList<Object> nextDMParams)
                 throws Exception {
-            return super.onRPC(method, params, prevDMMethod, paramStack);
+            return super.onRPC(appMethod, appParams, nextDMMethod, nextDMParams);
         }
     }
 

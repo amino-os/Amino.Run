@@ -1,5 +1,3 @@
-apply plugin: 'java'
-
 // Customize app stub generation for this example.
 genStubs {
     main = "amino.run.compiler.GraalStubGenerator"

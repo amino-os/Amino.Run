@@ -1,5 +1,3 @@
-apply plugin: 'java-library'
-
 // Task for app stub generation
 genStubs {
     main = "amino.run.compiler.GraalStubGenerator"

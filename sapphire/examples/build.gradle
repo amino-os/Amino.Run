@@ -1,26 +1,34 @@
 // All default build scripts common to all examples go here.
 // These defaults can be overridden in build.gradle files of individual examples where necessary.
 subprojects {
+    apply plugin: 'java-library'
+
     dependencies {
         compile project(':sapphire-core')
     }
 
+    // Java jar file depends on compile tasks of all sourceSets.
+    // Currently there are two sourceSets - "main" and "stubs".
+    // Java examples will have "main" and "stubs" sourceSets and
+    // non-Java examples will have only "main" sourceSet.
+    jar.dependsOn tasks.withType(AbstractCompile)
+
     // Run OMS
     task runoms(type: JavaExec) {
         classpath = sourceSets.main.runtimeClasspath
+        classpath += sourceSets.stubs.runtimeClasspath
         jvmArgs '-Djava.util.logging.config.file=' + project.projectDir + '/../../logging.properties'
         main = 'amino.run.oms.OMSServerImpl'
         args project.property('omsIp'), project.property('omsPort')
-        inputs.dir compileStubs
     }
 
     // Run a kernel server
     task runks(type: JavaExec) {
         classpath = sourceSets.main.runtimeClasspath
+        classpath += sourceSets.stubs.runtimeClasspath
         jvmArgs '-Djava.util.logging.config.file=' + project.projectDir + '/../../logging.properties'
         main = 'amino.run.kernel.server.KernelServerImpl'
         args project.property('kernelServerIp'), project.property('kernelServerPort'), project.property('omsIp'), project.property('omsPort'), project.property("kernelServerRegion")
-        inputs.dir compileStubs
     }
 
     // Run a second kernel server
@@ -50,17 +58,13 @@ subprojects {
     // Run application
     task runapp(type: JavaExec) {
         classpath = sourceSets.main.runtimeClasspath
+        classpath += sourceSets.stubs.runtimeClasspath
         jvmArgs '-Djava.util.logging.config.file=' + project.projectDir + '/../../logging.properties'
         args project.property('omsIp'), project.property('omsPort'), project.property('embeddedKernelServerIp'), project.property('kernelServerPort')
-        inputs.dir compileStubs
     }
 }
 
 // For the parent examples project itself, we disable inherited tasks that don't make sense at this level.
 genStubs {
-    onlyIf() { false } // Disable
-}
-
-compileStubs {
     onlyIf() { false } // Disable
 }

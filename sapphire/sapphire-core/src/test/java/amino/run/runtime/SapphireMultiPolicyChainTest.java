@@ -60,8 +60,8 @@ public class SapphireMultiPolicyChainTest extends BaseTest {
 
         policyNameChain.add("amino.run.policy.dht.DHTPolicy");
         HashMap<String, Class<?>> policyMap = Sapphire.getPolicyMap(policyNameChain.get(0));
-        Sapphire.createPolicyInstance(
-                microServiceId, group, policyMap, policyNameChain, processedPolicies, spec);
+        Sapphire.createPolicyObject(
+                sapphireObjId, group, policyMap, policyNameChain, processedPolicies, spec);
         assertEquals(1, processedPolicies.size());
     }
 
@@ -76,11 +76,11 @@ public class SapphireMultiPolicyChainTest extends BaseTest {
         policyNameChain.add("amino.run.policy.dht.DHTPolicy");
         policyNameChain.add(("amino.run.policy.DefaultPolicy"));
         HashMap<String, Class<?>> policyMap = Sapphire.getPolicyMap(policyNameChain.get(0));
-        Sapphire.createPolicyInstance(
-                microServiceId, group, policyMap, policyNameChain, processedPolicies, spec);
+        Sapphire.createPolicyObject(
+                sapphireObjId, group, policyMap, policyNameChain, processedPolicies, spec);
 
-        Sapphire.createPolicyInstance(
-                microServiceId, group, policyMap, policyNameChain, processedPolicies, spec);
+        Sapphire.createPolicyObject(
+                sapphireObjId, group, policyMap, policyNameChain, processedPolicies, spec);
         assertEquals(2, processedPolicies.size());
     }
 

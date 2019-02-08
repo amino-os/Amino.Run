@@ -158,7 +158,7 @@ public abstract class Library implements Upcalls {
                     Policy.GroupPolicy groupPolicyStub =
                             processedPolicies.get(i).getGroupPolicyStub();
 
-                    Sapphire.createPolicyInstance(
+                    Sapphire.createPolicyObject(
                             sapphireObjId,
                             groupPolicyStub,
                             policyMap,
@@ -212,7 +212,7 @@ public abstract class Library implements Upcalls {
                             GlobalKernelReferences.nodeServer.oms.createGroupPolicy(
                                     sapphireGroupPolicyClass, sapphireObjId);
 
-                    Sapphire.createPolicyInstance(
+                    Sapphire.createPolicyObject(
                             sapphireObjId,
                             groupPolicyStub,
                             policyMap,
@@ -262,17 +262,10 @@ public abstract class Library implements Upcalls {
                 // TODO Auto-generated catch block
                 logger.severe(e.getMessage());
                 throw new Error("Could not create a replica!", e);
-            } catch (KernelObjectNotFoundException e) {
-                logger.severe(e.getMessage());
-                throw new Error("Could not find object to replicate!", e);
-            } catch (MicroServiceNotFoundException e) {
+            } catch (SapphireObjectNotFoundException e) {
                 KernelObjectFactory.delete(serverPolicyStub.$__getKernelOID());
                 logger.severe(e.getMessage());
                 throw new Error("Could not find sapphire object on OMS", e);
-            } catch (MicroServiceReplicaNotFoundException e) {
-                KernelObjectFactory.delete(serverPolicyStub.$__getKernelOID());
-                logger.severe(e.getMessage());
-                throw new Error("Could not find sapphire object replica on OMS", e);
             } catch (RemoteException e) {
                 sapphire_terminate(processedPolicies);
                 logger.severe(e.getMessage());

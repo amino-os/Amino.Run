@@ -3,14 +3,7 @@ package amino.run.policy;
 import amino.run.app.Language;
 import amino.run.app.MicroServiceSpec;
 import amino.run.app.NodeSelectorSpec;
-import amino.run.common.AppObject;
-import amino.run.common.AppObjectStub;
-import amino.run.common.GraalObject;
-import amino.run.common.MicroServiceID;
-import amino.run.common.MicroServiceNotFoundException;
-import amino.run.common.MicroServiceReplicaNotFoundException;
-import amino.run.common.ReplicaID;
-import amino.run.common.Utils;
+import amino.run.common.*;
 import amino.run.compiler.GlobalStubConstants;
 import amino.run.kernel.common.GlobalKernelReferences;
 import amino.run.kernel.common.KernelOID;
@@ -57,8 +50,7 @@ public abstract class Library implements Upcalls {
         // (farthest from actual app object).
         // It means these were the last in order in the client side of chain. New groups should be
         // created for this list of chain.
-        protected List<PolicyContainer> nextPolicies =
-                new ArrayList<PolicyContainer>();
+        protected List<String> nextPolicyNames = new ArrayList<>();
 
         // List of ServerPolicies that were created previously. They are upper level in group
         // hierarchy. Therefore, this list of chain
@@ -93,8 +85,8 @@ public abstract class Library implements Upcalls {
             this.previousServerPolicy = serverPolicy;
         }
 
-        public void setNextPolicies(List<PolicyContainer> nextPolicies) {
-            this.nextPolicies = nextPolicies;
+        public void setNextPolicyNames(List<String> nextPolicyNames) {
+            this.nextPolicyNames = nextPolicyNames;
         }
 
         /**
@@ -145,7 +137,7 @@ public abstract class Library implements Upcalls {
             ServerPolicy outerServerPolicy = null;
             KernelObjectStub outerServerPolicyStub = null;
             List<PolicyContainer> processedPoliciesReplica = new ArrayList<>();
-            int sizeOfProcessedPolicies = +processedPolicies.size();
+            int sizeOfProcessedPolicies = processedPolicies.size();
 
             // TODO: Split each logic into different methods if at all possible and makes sense.
             try {
@@ -161,8 +153,8 @@ public abstract class Library implements Upcalls {
                 for (int i = 0; i < sizeOfProcessedPolicies; i++) {
                     HashMap<String, Class<?>> policyMap =
                             Sapphire.getPolicyMap(processedPolicies.get(i).getPolicyName());
-                    List<PolicyContainer> policiesToCreate =
-                            new ArrayList(processedPolicies.subList(i, sizeOfProcessedPolicies));
+                    List<String> policiesToCreate =
+                            MultiDMConstructionHelper.getPolicyNames(processedPolicies, i);
                     Policy.GroupPolicy groupPolicyStub =
                             processedPolicies.get(i).getGroupPolicyStub();
 
@@ -204,14 +196,14 @@ public abstract class Library implements Upcalls {
                 // 2. Create a rest of the replica policy chain from the next of this policy (inner)
                 // to the innermost policy. Note that it does not include the current policy. This
                 // creates new group policies as well.
-                int sizeOfNextPolicies = this.nextPolicies.size();
+                int sizeOfNextPolicies = this.nextPolicyNames.size();
                 for (int j = 0; j < sizeOfNextPolicies; j++) {
                     // Note that when there is only a single DM defined in spec, it doesn't go in
                     // here because it was already processed in the previous step.
-                    List<PolicyContainer> policiesToCreate =
-                            new ArrayList(this.nextPolicies.subList(j, sizeOfNextPolicies));
+                    List<String> policiesToCreate =
+                            new ArrayList(this.nextPolicyNames.subList(j, sizeOfNextPolicies));
                     HashMap<String, Class<?>> policyMap =
-                            Sapphire.getPolicyMap(this.nextPolicies.get(j).getPolicyName());
+                            Sapphire.getPolicyMap(this.nextPolicyNames.get(j));
                     Class<?> sapphireGroupPolicyClass = policyMap.get("sapphireGroupPolicyClass");
 
                     // Create the Kernel Object for the Group Policy and get the Group Policy Stub
@@ -250,7 +242,7 @@ public abstract class Library implements Upcalls {
 
                 // 3. Execute GroupPolicy.onCreate() in the chain starting from the inner most
                 // instance.
-                for (int k = 0; k < this.nextPolicies.size(); k++) {
+                for (int k = 0; k < this.nextPolicyNames.size(); k++) {
                     Policy.GroupPolicy groupPolicyStub =
                             processedPoliciesReplica
                                     .get(sizeOfProcessedPolicies + k)
@@ -315,7 +307,7 @@ public abstract class Library implements Upcalls {
             ServerPolicy serverPolicy = (ServerPolicy) this;
 
             // Ensure that we start from the first Server Policy.
-            // TODO: Consider using a reference to the outermost policy directly instead of going
+            // TODO: Consider using a reference to the innermost policy directly instead of going
             // through the chain.
             while (serverPolicy.getPreviousServerPolicy() != null) {
                 serverPolicy = serverPolicy.getPreviousServerPolicy();

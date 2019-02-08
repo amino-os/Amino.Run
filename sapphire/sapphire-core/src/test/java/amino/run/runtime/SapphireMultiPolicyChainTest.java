@@ -52,15 +52,14 @@ public class SapphireMultiPolicyChainTest extends BaseTest {
 
     @Test
     public void testCreatePolicy() throws Exception {
-        List<PolicyContainer> policyNameChain = new ArrayList<PolicyContainer>();
-        List<PolicyContainer> processedPolicies = new ArrayList<PolicyContainer>();
+        List<String> policyNameChain = new ArrayList<>();
+        List<PolicyContainer> processedPolicies = new ArrayList<>();
 
         /* Register for a sapphire object Id from OMS */
         MicroServiceID microServiceId = spiedOms.registerSapphireObject();
 
-        policyNameChain.add(new PolicyContainer("amino.run.policy.dht.DHTPolicy", null));
-        HashMap<String, Class<?>> policyMap =
-                Sapphire.getPolicyMap(policyNameChain.get(0).getPolicyName());
+        policyNameChain.add("amino.run.policy.dht.DHTPolicy");
+        HashMap<String, Class<?>> policyMap = Sapphire.getPolicyMap(policyNameChain.get(0));
         Sapphire.createPolicyInstance(
                 microServiceId, group, policyMap, policyNameChain, processedPolicies, spec);
         assertEquals(1, processedPolicies.size());
@@ -68,16 +67,15 @@ public class SapphireMultiPolicyChainTest extends BaseTest {
 
     @Test
     public void testCreatePolicyTwoPolicies() throws Exception {
-        List<PolicyContainer> policyNameChain = new ArrayList<PolicyContainer>();
-        List<PolicyContainer> processedPolicies = new ArrayList<PolicyContainer>();
+        List<String> policyNameChain = new ArrayList<>();
+        List<PolicyContainer> processedPolicies = new ArrayList<>();
 
         /* Register for a sapphire object Id from OMS */
         MicroServiceID microServiceId = spiedOms.registerSapphireObject();
 
-        policyNameChain.add(new PolicyContainer("amino.run.policy.dht.DHTPolicy", null));
-        policyNameChain.add(new PolicyContainer("amino.run.policy.DefaultPolicy", null));
-        HashMap<String, Class<?>> policyMap =
-                Sapphire.getPolicyMap(policyNameChain.get(0).getPolicyName());
+        policyNameChain.add("amino.run.policy.dht.DHTPolicy");
+        policyNameChain.add(("amino.run.policy.DefaultPolicy"));
+        HashMap<String, Class<?>> policyMap = Sapphire.getPolicyMap(policyNameChain.get(0));
         Sapphire.createPolicyInstance(
                 microServiceId, group, policyMap, policyNameChain, processedPolicies, spec);
 

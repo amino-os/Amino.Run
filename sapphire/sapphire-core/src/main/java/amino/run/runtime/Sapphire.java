@@ -4,7 +4,6 @@ import static amino.run.policy.Policy.ClientPolicy;
 import static amino.run.policy.Policy.GroupPolicy;
 import static amino.run.policy.Policy.ServerPolicy;
 
-import amino.run.app.DMSpec;
 import amino.run.app.Language;
 import amino.run.app.MicroServiceSpec;
 import amino.run.app.SapphireObject;
@@ -16,6 +15,7 @@ import amino.run.common.MicroServiceNotFoundException;
 import amino.run.common.MicroServiceReplicaNotFoundException;
 import amino.run.common.ReplicaID;
 import amino.run.common.Utils;
+import amino.run.common.*;
 import amino.run.compiler.GlobalStubConstants;
 import amino.run.kernel.common.GlobalKernelReferences;
 import amino.run.kernel.common.KernelOID;
@@ -23,7 +23,6 @@ import amino.run.kernel.common.KernelObjectFactory;
 import amino.run.kernel.common.KernelObjectNotCreatedException;
 import amino.run.kernel.common.KernelObjectNotFoundException;
 import amino.run.kernel.common.KernelObjectStub;
-import amino.run.kernel.common.KernelObjectStubNotCreatedException;
 import amino.run.policy.DefaultPolicy;
 import amino.run.policy.Policy;
 import amino.run.policy.PolicyContainer;
@@ -63,11 +62,10 @@ public class Sapphire {
                 return new_(appObjectClass, args);
             }
 
-            List<PolicyContainer> policyNameChain = getPolicyNameChain(spec);
+            List<String> policyNameChain = MultiDMConstructionHelper.getPolicyNameChain(spec);
 
             if (policyNameChain.size() == 0) {
-                String defaultPolicyName = DefaultPolicy.class.getName();
-                policyNameChain.add(new PolicyContainer(defaultPolicyName, null));
+                policyNameChain.add(DefaultPolicy.class.getName());
             }
 
             /* Get the region of current server */
@@ -93,11 +91,11 @@ public class Sapphire {
     public static Object new_(Class<?> appObjectClass, Object... args) {
         try {
             Annotation[] annotations = appObjectClass.getAnnotations();
-            List<PolicyContainer> policyNameChain = getPolicyNameChain(annotations);
+            List<String> policyNameChain =
+                    MultiDMConstructionHelper.getPolicyNameChain(annotations);
 
             if (policyNameChain.size() == 0) {
-                String defaultPolicyName = DefaultPolicy.class.getName();
-                policyNameChain.add(new PolicyContainer(defaultPolicyName, null));
+                policyNameChain.add(DefaultPolicy.class.getName());
             }
 
             MicroServiceSpec spec =
@@ -115,42 +113,6 @@ public class Sapphire {
             logger.log(Level.SEVERE, "Failed to create sapphire object:", e);
             return null;
         }
-    }
-
-    /**
-     * Creates a policy name chain based on annotations and return list of PolicyContainer.
-     *
-     * @param annotations Annotations that contain chain of policy names.
-     * @return List of PolicyContainer with the policy names parsed from annotations.
-     * @throws Exception
-     */
-    private static List<PolicyContainer> getPolicyNameChain(Annotation[] annotations) {
-        List<PolicyContainer> policyNameChain = new ArrayList<PolicyContainer>();
-
-        for (Annotation annotation : annotations) {
-            if (annotation instanceof SapphireConfiguration) {
-                String[] policyAnnotations = ((SapphireConfiguration) annotation).Policies();
-                for (String policyAnnotation : policyAnnotations) {
-                    String[] policyNames = policyAnnotation.split(",");
-                    for (String policyName : policyNames) {
-                        policyNameChain.add(new PolicyContainer(policyName.trim(), null));
-                    }
-                }
-            }
-        }
-
-        return policyNameChain;
-    }
-
-    private static List<PolicyContainer> getPolicyNameChain(MicroServiceSpec spec) {
-        List<PolicyContainer> policyNameChain = new ArrayList<PolicyContainer>();
-
-        for (DMSpec dm : spec.getDmList()) {
-            PolicyContainer c = new PolicyContainer(dm.getName(), null);
-            policyNameChain.add(c);
-        }
-
-        return policyNameChain;
     }
 
     /**
@@ -174,32 +136,27 @@ public class Sapphire {
      * @throws CloneNotSupportedException
      */
     public static AppObjectStub createPolicyChain(
-            MicroServiceSpec spec,
-            List<PolicyContainer> policyNameChain,
-            String region,
-            Object[] appArgs)
+            MicroServiceSpec spec, List<String> policyNameChain, String region, Object[] appArgs)
             throws IOException, ClassNotFoundException, KernelObjectNotFoundException,
                     KernelObjectNotCreatedException, MicroServiceNotFoundException,
                     MicroServiceReplicaNotFoundException, InstantiationException,
                     IllegalAccessException, CloneNotSupportedException {
         if (policyNameChain == null || policyNameChain.size() == 0) return null;
         AppObjectStub appStub = null;
+        ServerPolicy outerServerPolicy = null;
+        KernelObjectStub outerServerPolicyStub = null;
+        List<SapphirePolicyContainer> processedPolicies = new ArrayList<>();
 
         /* Register for a sapphire object Id from OMS */
         MicroServiceID microServiceID =
                 GlobalKernelReferences.nodeServer.oms.registerSapphireObject();
 
-        ServerPolicy outerServerPolicy = null;
-        KernelObjectStub outerServerPolicyStub = null;
-        List<PolicyContainer> processedPolicies = new ArrayList<>();
-
         /* Create a policy chain for the primary */
         for (int i = 0; i < policyNameChain.size(); i++) {
-            List<PolicyContainer> policiesToCreate =
+            List<String> policiesToCreate =
                     new ArrayList(policyNameChain.subList(i, policyNameChain.size()));
 
-            HashMap<String, Class<?>> policyMap =
-                    getPolicyMap(policyNameChain.get(i).getPolicyName());
+            HashMap<String, Class<?>> policyMap = getPolicyMap(policyNameChain.get(i));
             Class<?> sapphireGroupPolicyClass = policyMap.get("sapphireGroupPolicyClass");
 
             /* Create the Kernel Object for the Group Policy and get the Group Policy Stub from OMS */
@@ -222,7 +179,7 @@ public class Sapphire {
             be updated between the current DM and previous DM. If the previous DM's container is not available,
             then DM/Policy being created is either for single DM based SO or It is the first DM/Policy in Multi DM based SO
             (i.e., last mile server policy to SO */
-            // TODO: See if below logic can be separted out to a method and shared with replicate()
+            // TODO: See if below logic can be separated out to a method and shared with replicate()
             if (i == 0) {
                 serverPolicy.$__initialize(spec, appArgs);
                 appStub = (AppObjectStub) serverPolicy.sapphire_getAppObject().getObject();
@@ -242,7 +199,7 @@ public class Sapphire {
         }
 
         /* Execute GroupPolicy.onCreate() in the chain starting from inner most instance */
-        // TODO: Can node selection constrations be passed to the next (inner) group policy in
+        // TODO: Can node selection constraints be passed to the next (inner) group policy in
         // an iterative way?
         for (int j = processedPolicies.size() - 1; j >= 0; j--) {
             GroupPolicy groupPolicyStub = processedPolicies.get(j).getGroupPolicyStub();
@@ -260,6 +217,7 @@ public class Sapphire {
      * @param microServiceID MicroService ID
      * @param groupPolicyStub Group Policy stub
      * @param policyMap policy map for client, server and group policy based on input policy name
+     * @param policyNamesToCreate name of polices that need to be created (this and inner policies)
      * @param processedPolicies Policies processed so far (created and linked)
      * @param spec Sapphire object spec
      * @throws IOException
@@ -275,14 +233,14 @@ public class Sapphire {
             MicroServiceID microServiceID,
             GroupPolicy groupPolicyStub,
             HashMap<String, Class<?>> policyMap,
-            List<PolicyContainer> policiesToCreate,
+            List<String> policyNamesToCreate,
             List<PolicyContainer> processedPolicies,
             MicroServiceSpec spec)
             throws IOException, ClassNotFoundException, KernelObjectNotFoundException,
                     KernelObjectNotCreatedException, MicroServiceNotFoundException,
                     MicroServiceReplicaNotFoundException, InstantiationException,
                     IllegalAccessException {
-        String policyName = policiesToCreate.get(0).getPolicyName();
+        String policyName = policyNamesToCreate.get(0);
 
         /* Get the policy used by the Sapphire Object we need to create */
         Class<?> sapphireServerPolicyClass = policyMap.get("sapphireServerPolicyClass");
@@ -307,9 +265,9 @@ public class Sapphire {
         // Note that subList is non serializable; hence, the new list creation.
         // TODO: next policies won't be needed if sapphire_replicate() is updated to use
         // iterative logic.
-        policiesToCreate.remove(0);
-        serverPolicy.setNextPolicies(policiesToCreate);
-        serverPolicyStub.setIsLastPolicy(policiesToCreate.size() == 0);
+        policyNamesToCreate.remove(0);
+        serverPolicy.setNextPolicyNames(policyNamesToCreate);
+        serverPolicyStub.setIsLastPolicy(policyNamesToCreate.size() == 0);
 
         PolicyContainer processedPolicy = new PolicyContainer(policyName, groupPolicyStub);
         processedPolicy.setServerPolicy(serverPolicy);
@@ -368,9 +326,8 @@ public class Sapphire {
      * @throws MicroServiceNotFoundException
      */
     public static Policy.GroupPolicy createGroupPolicy(
-            Class<?> policyClass, MicroServiceID microServiceId)
-            throws RemoteException, ClassNotFoundException, KernelObjectNotCreatedException,
-                    MicroServiceNotFoundException {
+            Class<?> policyClass, SapphireObjectID sapphireObjId)
+            throws ClassNotFoundException, KernelObjectNotCreatedException {
         Policy.GroupPolicy groupPolicyStub = (GroupPolicy) getPolicyStub(policyClass);
         try {
             GroupPolicy groupPolicy = initializeGroupPolicy(groupPolicyStub);
@@ -438,24 +395,6 @@ public class Sapphire {
         return policyMap;
     }
 
-    public static KernelObjectStub getPolicyStub(Class<?> policyClass, KernelOID oid)
-            throws KernelObjectStubNotCreatedException {
-        String policyStubClassName =
-                GlobalStubConstants.getPolicyPackageName()
-                        + "."
-                        + RMIUtil.getShortName(policyClass)
-                        + GlobalStubConstants.STUB_SUFFIX;
-        KernelObjectStub policyStub;
-        try {
-            policyStub = KernelObjectFactory.createStub(Class.forName(policyStubClassName), oid);
-        } catch (Exception e) {
-            throw new KernelObjectStubNotCreatedException(
-                    "Failed to create a policy stub object", e);
-        }
-
-        return policyStub;
-    }
-
     public static KernelObjectStub getPolicyStub(Class<?> policyClass)
             throws ClassNotFoundException, KernelObjectNotCreatedException {
         String policyStubClassName =
@@ -517,7 +456,6 @@ public class Sapphire {
         if (paramClassName.substring(index).equals(GlobalStubConstants.STUB_SUFFIX))
             /* TODO: Is it correct all times ? */
             paramClassName = param.getClass().getSuperclass().getName();
-        // paramClassName = paramClassName.substring(0, index);
 
         return Class.forName(paramClassName);
     }
@@ -555,7 +493,7 @@ public class Sapphire {
 
         /* Register the handler for this replica to OMS */
         GlobalKernelReferences.nodeServer.oms.setSapphireReplicaDispatcher(
-                replicaId, replicaHandler);
+                sapphireReplicaId, replicaHandler);
     }
 
     public static Class<?>[] getParamsClasses(Object[] params) throws ClassNotFoundException {

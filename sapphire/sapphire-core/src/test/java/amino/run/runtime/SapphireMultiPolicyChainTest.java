@@ -58,9 +58,10 @@ public class SapphireMultiPolicyChainTest extends BaseTest {
         /* Register for a sapphire object Id from OMS */
         MicroServiceID microServiceId = spiedOms.registerSapphireObject();
 
-        policyNameChain.add("amino.run.policy.dht.DHTPolicy");
-        HashMap<String, Class<?>> policyMap = Sapphire.getPolicyMap(policyNameChain.get(0));
-        Sapphire.createPolicyObject(
+        policyNameChain.add(new SapphirePolicyContainer("amino.run.policy.dht.DHTPolicy", null));
+        HashMap<String, Class<?>> policyMap =
+                Sapphire.getPolicyMap(policyNameChain.get(0).getPolicyName());
+        Sapphire.createPolicyInstance(
                 sapphireObjId, group, policyMap, policyNameChain, processedPolicies, spec);
         assertEquals(1, processedPolicies.size());
     }

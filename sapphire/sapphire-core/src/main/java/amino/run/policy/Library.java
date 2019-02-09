@@ -136,14 +136,14 @@ public abstract class Library implements Upcalls {
             ServerPolicy serverPolicyStub = null;
             ServerPolicy outerServerPolicy = null;
             KernelObjectStub outerServerPolicyStub = null;
-            List<PolicyContainer> processedPoliciesReplica = new ArrayList<>();
+            List<SapphirePolicyContainer> processedPoliciesReplica = new ArrayList<>();
             int sizeOfProcessedPolicies = processedPolicies.size();
 
             // TODO: Split each logic into different methods if at all possible and makes sense.
             try {
                 // TODO: would it better to pass as a parameter than RPC to group policy to get the
                 // object ID?
-                MicroServiceID sapphireObjId = this.getGroup().sapphireObjId;
+                SapphireObjectID sapphireObjId = getReplicaId().getOID();
                 AppObject appObject =
                         processedPolicies.get(0).getServerPolicy().sapphire_getAppObject();
 

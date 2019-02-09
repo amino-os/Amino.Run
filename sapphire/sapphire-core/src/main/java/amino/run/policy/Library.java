@@ -408,7 +408,6 @@ public abstract class Library implements Upcalls {
                                         appObjectStubClass
                                                 .getConstructor(argClasses)
                                                 .newInstance(params);
-
                     } else {
                         actualAppObject = (AppObjectStub) appObjectStubClass.newInstance();
                     }

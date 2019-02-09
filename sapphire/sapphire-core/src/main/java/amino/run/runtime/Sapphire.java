@@ -315,27 +315,23 @@ public class Sapphire {
             serverPolicyStub.setProcessedPolicies(processedPoliciesSoFar);
 
             serverPolicy.onCreate(groupPolicyStub, spec);
-        } catch (KernelObjectNotCreatedException e) {
-            logger.severe("Failed to create policy objects for " + policyName);
+        } catch (KernelObjectNotCreatedException | ClassNotFoundException e) {
+            logger.severe(
+                    "Failed to create policy object while creating stub object for " + policyName);
             throw new PolicyObjectCreationException(e);
         } catch (KernelObjectNotFoundException e) {
-            logger.severe("Failed to find kernel object for " + policyName);
-            throw new PolicyObjectCreationException(e);
-        } catch (ClassNotFoundException e) {
-            logger.severe("Class was not found while creating a stub for " + policyName);
+            logger.severe(
+                    "Failed to create policy object while creating server policy for "
+                            + policyName);
             throw new PolicyObjectCreationException(e);
         } catch (SapphireObjectReplicaNotFoundException
                 | SapphireObjectNotFoundException
                 | RemoteException e) {
             logger.severe(
-                    "Sapphire object replica was not found when registering replica for "
-                            + policyName);
+                    "Failed to create policy object while registering a replica for " + policyName);
             throw new PolicyObjectCreationException(e);
-        } catch (IllegalAccessException e) {
-            logger.severe("Illegal access when instantiating client class for " + policyName);
-            throw new PolicyObjectCreationException(e);
-        } catch (InstantiationException e) {
-            logger.severe("Instantiating client class failed for " + policyName);
+        } catch (IllegalAccessException | InstantiationException e) {
+            logger.severe("Exception while instantiating client class for " + policyName);
             throw new PolicyObjectCreationException(e);
         }
     }

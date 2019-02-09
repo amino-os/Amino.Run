@@ -22,9 +22,13 @@ public class ExplicitMigrationPolicy extends DefaultPolicy {
     public static class ClientPolicy extends DefaultClientPolicy {
         @Override
         public Object onRPC(String method, ArrayList<Object> params) throws Exception {
-            if (isMigrateTo(method)) {
+            // Get app method name and params
+            AppContext context = extractAppContext(method, params);
+
+            if (isMigrateTo(context.getAppMethod())) {
                 /* If the method name is migrateTo, request group policy to migrate remote server policy object */
-                ((GroupPolicy) getGroup()).migrate(getServer(), (InetSocketAddress) params.get(0));
+                ((GroupPolicy) getGroup())
+                        .migrate(getServer(), (InetSocketAddress) context.getAppParams().get(0));
                 return null;
             } else {
                 return super.onRPC(method, params);

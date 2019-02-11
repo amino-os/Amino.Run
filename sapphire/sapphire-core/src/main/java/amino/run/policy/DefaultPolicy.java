@@ -35,31 +35,16 @@ public class DefaultPolicy extends Policy {
         private DefaultServerPolicy server;
         private DefaultGroupPolicy group;
 
-        /**
-         * Set the remote server policy in cache.
-         *
-         * @param server remote server policy
-         */
         @Override
         public void setServer(ServerPolicy server) {
             this.server = (DefaultServerPolicy) server;
         }
 
-        /**
-         * Get the cached reference to this DM's remote server policy object.
-         *
-         * @return remote server policy
-         */
         @Override
         public ServerPolicy getServer() {
             return server;
         }
 
-        /**
-         * Get the cached reference to this DM's remote group policy object.
-         *
-         * @return remote group policy
-         */
         @Override
         public GroupPolicy getGroup() {
             return group;

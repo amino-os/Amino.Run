@@ -33,10 +33,25 @@ public abstract class DefaultUpcallImpl extends Library {
             return ret;
         }
 
+        /**
+         * Set the remote server policy in cache.
+         *
+         * @param server remote server policy
+         */
         protected abstract void setServer(Policy.ServerPolicy server);
 
+        /**
+         * Get the cached reference to remote server policy object.
+         *
+         * @return remote server policy
+         */
         protected abstract Policy.ServerPolicy getServer();
 
+        /**
+         * Get the cached reference to remote group policy object.
+         *
+         * @return remote group policy
+         */
         protected abstract Policy.GroupPolicy getGroup();
 
         protected UUID getCurrentTransaction() {

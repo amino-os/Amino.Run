@@ -4,14 +4,14 @@ import static amino.run.kernel.IntegrationTestBase.*;
 import static java.lang.Thread.sleep;
 
 import amino.run.app.MicroServiceSpec;
-import amino.run.app.SapphireObjectServer;
+import amino.run.app.Registry;
 import amino.run.common.SapphireObjectID;
 import amino.run.demo.KVStore;
 import amino.run.kernel.server.KernelServerImpl;
 import java.io.File;
 import java.net.InetSocketAddress;
 import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
+
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
@@ -23,7 +23,7 @@ import org.junit.Test;
  * servers are covered here.
  */
 public class ConsensusDMIntegrationTest {
-    SapphireObjectServer sapphireObjectServer;
+    Registry registry;
 
     @BeforeClass
     public static void bootstrap() throws Exception {
@@ -32,16 +32,16 @@ public class ConsensusDMIntegrationTest {
 
     @Before
     public void setUp() throws Exception {
-        Registry registry = LocateRegistry.getRegistry(omsIp, omsPort);
-        sapphireObjectServer = (SapphireObjectServer) registry.lookup("SapphireOMS");
+        java.rmi.registry.Registry registry = LocateRegistry.getRegistry(omsIp, omsPort);
+        this.registry = (Registry) registry.lookup("SapphireOMS");
         new KernelServerImpl(
                 new InetSocketAddress(hostIp, hostPort), new InetSocketAddress(omsIp, omsPort));
     }
 
     private void runTest(MicroServiceSpec spec) throws Exception {
-        SapphireObjectID sapphireObjId = sapphireObjectServer.createSapphireObject(spec.toString());
+        SapphireObjectID sapphireObjId = registry.create(spec.toString());
         sleep(5000);
-        KVStore store = (KVStore) sapphireObjectServer.acquireSapphireObjectStub(sapphireObjId);
+        KVStore store = (KVStore) registry.acquireStub(sapphireObjId);
         for (int i = 0; i < 10; i++) {
             String key = "k1_" + i;
             String value = "v1_" + i;

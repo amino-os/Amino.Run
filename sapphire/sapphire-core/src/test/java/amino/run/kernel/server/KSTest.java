@@ -80,7 +80,7 @@ public class KSTest extends BaseTest {
         KernelObjectManager kom =
                 (KernelObjectManager) extractFieldValueOnInstance(spiedKs1, "objectManager");
         // As KernelObjectManager.addObject is called once during
-        // createSapphireObject, length returned should be 1.
+        // create, length returned should be 1.
         assertEquals(new Integer(1), new Integer(kom.getAllKernelObjectOids().length));
     }
 

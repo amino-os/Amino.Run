@@ -179,7 +179,7 @@ public interface Upcalls {
          * Event handler for sapphire object creation. Called by the sapphire kernel on creation of
          * this group and it's first/primary replica. DM's may implement this method to initialize
          * the group policy, create additional replicas, etc. Currently this is invoked from {@link
-         * Sapphire.createPolicy} during construction (new_ or createSapphireObject).
+         * Sapphire.createPolicy} during construction (new_ or create).
          *
          * @param region TODO: Quinton: This parameter is deprecated and must be deleted.
          * @param server reference to the server policy of the first/primary replica that is managed

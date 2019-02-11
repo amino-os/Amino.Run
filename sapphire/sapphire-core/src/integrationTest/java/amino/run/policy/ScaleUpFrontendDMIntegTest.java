@@ -3,7 +3,7 @@ package amino.run.policy;
 import static amino.run.kernel.IntegrationTestBase.startOmsAndKernelServers;
 
 import amino.run.app.MicroServiceSpec;
-import amino.run.app.SapphireObjectServer;
+import amino.run.app.Registry;
 import amino.run.common.SapphireObjectID;
 import amino.run.demo.KVStore;
 import amino.run.kernel.IntegrationTestBase;
@@ -16,7 +16,6 @@ import java.io.File;
 import java.io.Serializable;
 import java.net.InetSocketAddress;
 import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -33,7 +32,7 @@ public class ScaleUpFrontendDMIntegTest {
     private static final int TASK_COUNT = 50;
     private static final int PARALLEL_THREAD_COUNT = 5;
     private static final String regionName = "IND";
-    SapphireObjectServer sapphireObjectServer;
+    Registry registry;
 
     @BeforeClass
     public static void bootstrap() throws Exception {
@@ -43,17 +42,17 @@ public class ScaleUpFrontendDMIntegTest {
 
     @Before
     public void setUp() throws Exception {
-        Registry registry =
+        java.rmi.registry.Registry registry =
                 LocateRegistry.getRegistry(IntegrationTestBase.omsIp, IntegrationTestBase.omsPort);
-        sapphireObjectServer = (SapphireObjectServer) registry.lookup("SapphireOMS");
+        this.registry = (Registry) registry.lookup("SapphireOMS");
         new KernelServerImpl(
                 new InetSocketAddress(IntegrationTestBase.hostIp, IntegrationTestBase.hostPort),
                 new InetSocketAddress(IntegrationTestBase.omsIp, IntegrationTestBase.omsPort));
     }
 
     private void runTest(MicroServiceSpec spec) throws Exception {
-        SapphireObjectID sapphireObjId = sapphireObjectServer.createSapphireObject(spec.toString());
-        KVStore store = (KVStore) sapphireObjectServer.acquireSapphireObjectStub(sapphireObjId);
+        SapphireObjectID sapphireObjId = registry.create(spec.toString());
+        KVStore store = (KVStore) registry.acquireStub(sapphireObjId);
         String key = "k";
         String value = "v";
         List<FutureTask<Object>> taskList = new ArrayList<FutureTask<Object>>();

@@ -1,18 +1,13 @@
 package amino.run.demo;
 
-import amino.run.app.SapphireObjectServer;
+import amino.run.app.Registry;
 import amino.run.common.SapphireObjectID;
 import amino.run.kernel.server.KernelServerImpl;
-import amino.run.app.SapphireObjectServer;
-import amino.run.common.SapphireObjectID;
-import amino.run.kernel.server.KernelServerImpl;
-import amino.run.oms.OMSServer;
 
 import java.io.File;
 import java.net.InetSocketAddress;
 import java.nio.file.Files;
 import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
 import java.util.List;
 
 /**
@@ -20,10 +15,10 @@ import java.util.List;
  */
 public class KeyValueStoreClient {
     public static void main(String[] args) throws Exception {
-        SapphireObjectServer server = getSapphireObjectServer(args[0], args[1]);
+        Registry server = getSapphireObjectServer(args[0], args[1]);
 
-        SapphireObjectID oid = server.createSapphireObject(getSpec());
-        KeyValueStore store = (KeyValueStore)server.acquireSapphireObjectStub(oid);
+        SapphireObjectID oid = server.create(getSpec());
+        KeyValueStore store = (KeyValueStore)server.acquireStub(oid);
 
         for (int i=0; i<30; ++i) {
             String key = "key_" + i;
@@ -36,10 +31,10 @@ public class KeyValueStoreClient {
         }
     }
 
-    private static SapphireObjectServer getSapphireObjectServer(String omsIp, String omsPort) throws Exception {
+    private static Registry getSapphireObjectServer(String omsIp, String omsPort) throws Exception {
         new KernelServerImpl(new InetSocketAddress("127.0.0.2", 11111), new InetSocketAddress(omsIp, Integer.parseInt(omsPort)));
-        Registry registry = LocateRegistry.getRegistry(omsIp, Integer.parseInt(omsPort));
-        SapphireObjectServer server = (SapphireObjectServer) registry.lookup("SapphireOMS");
+        java.rmi.registry.Registry registry = LocateRegistry.getRegistry(omsIp, Integer.parseInt(omsPort));
+        Registry server = (Registry) registry.lookup("SapphireOMS");
         return server;
     }
 

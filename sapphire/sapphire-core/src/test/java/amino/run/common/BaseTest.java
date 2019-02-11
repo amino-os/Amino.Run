@@ -1,8 +1,8 @@
 package amino.run.common;
 
-import static amino.run.common.SapphireUtils.addHost;
-import static amino.run.common.SapphireUtils.startSpiedKernelServer;
-import static amino.run.common.SapphireUtils.startSpiedOms;
+import static amino.run.common.TestUtils.addHost;
+import static amino.run.common.TestUtils.startSpiedKernelServer;
+import static amino.run.common.TestUtils.startSpiedOms;
 import static amino.run.common.UtilsTest.extractFieldValueOnInstance;
 import static org.mockito.Mockito.spy;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
@@ -42,7 +42,7 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
     Sapphire.class,
     KernelObjectFactory.class,
     LocateRegistry.class,
-    SapphireUtils.class,
+    TestUtils.class,
     OMSServerImpl.class,
     Utils.ObjectCloner.class
 })

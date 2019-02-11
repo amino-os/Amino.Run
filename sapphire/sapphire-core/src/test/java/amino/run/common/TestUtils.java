@@ -31,7 +31,7 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 /** Created by Vishwajeet on 4/4/18. */
-public class SapphireUtils {
+public class TestUtils {
     public static Registry dummyRegistry =
             new Registry() {
                 @Override

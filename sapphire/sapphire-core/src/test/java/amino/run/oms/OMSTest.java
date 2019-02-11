@@ -7,7 +7,7 @@ import amino.run.app.MicroServiceSpec;
 import amino.run.common.BaseTest;
 import amino.run.common.SapphireObjectID;
 import amino.run.common.SapphireReplicaID;
-import amino.run.common.SapphireUtils;
+import amino.run.common.TestUtils;
 import amino.run.kernel.common.KernelOID;
 import amino.run.kernel.server.KernelServerImpl;
 import amino.run.runtime.EventHandler;
@@ -66,7 +66,7 @@ public class OMSTest extends BaseTest {
         SO appObjstub = (SO) sapphireObjServer.acquireSapphireObjectStub(sid);
         assertEquals(
                 1,
-                SapphireUtils.getOmsSapphireInstance(spiedOms, group.getSapphireObjId())
+                TestUtils.getOmsSapphireInstance(spiedOms, group.getSapphireObjId())
                         .getReferenceCount());
 
         /* setI on the client side stub */
@@ -85,7 +85,7 @@ public class OMSTest extends BaseTest {
         /* Reference count must become 2. Once user created it and other attached to it */
         assertEquals(
                 2,
-                SapphireUtils.getOmsSapphireInstance(spiedOms, group.getSapphireObjId())
+                TestUtils.getOmsSapphireInstance(spiedOms, group.getSapphireObjId())
                         .getReferenceCount());
 
         /* setI on the client side stub */
@@ -98,7 +98,7 @@ public class OMSTest extends BaseTest {
         sapphireObjServer.detachFromSapphireObject("MySapphireObject");
         assertEquals(
                 1,
-                SapphireUtils.getOmsSapphireInstance(spiedOms, group.getSapphireObjId())
+                TestUtils.getOmsSapphireInstance(spiedOms, group.getSapphireObjId())
                         .getReferenceCount());
     }
 

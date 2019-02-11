@@ -22,7 +22,7 @@ import amino.run.oms.OMSServerImpl;
 import amino.run.policy.DefaultPolicy;
 import amino.run.policy.Policy;
 import amino.run.runtime.Sapphire;
-import amino.run.sampleSO.stubs.SO_Stub;
+import amino.run.sampleSO.SO;
 import java.net.InetSocketAddress;
 import java.rmi.registry.LocateRegistry;
 import java.util.ArrayList;
@@ -52,7 +52,7 @@ public class BaseTest {
     protected DefaultPolicy.DefaultServerPolicy server2;
     protected DefaultPolicy.DefaultServerPolicy server3;
     protected DefaultPolicy.DefaultGroupPolicy group;
-    protected SO_Stub soStub; // client side stub
+    protected SO soStub; // client side stub
     protected OMSServer spiedOms;
     protected SapphireObjectServer sapphireObjServer;
     protected KernelServer spiedksOnOms;
@@ -168,7 +168,7 @@ public class BaseTest {
 
         SapphireObjectID sapphireObjId = sapphireObjServer.createSapphireObject(spec.toString());
 
-        soStub = (SO_Stub) sapphireObjServer.acquireSapphireObjectStub(sapphireObjId);
+        soStub = (SO) sapphireObjServer.acquireSapphireObjectStub(sapphireObjId);
         client =
                 (DefaultPolicy.DefaultClientPolicy)
                         extractFieldValueOnInstance(soStub, "$__client");

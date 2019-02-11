@@ -12,7 +12,6 @@ import amino.run.kernel.common.KernelOID;
 import amino.run.kernel.server.KernelServerImpl;
 import amino.run.runtime.EventHandler;
 import amino.run.sampleSO.SO;
-import amino.run.sampleSO.stubs.SO_Stub;
 import java.lang.reflect.Field;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
@@ -64,7 +63,7 @@ public class OMSTest extends BaseTest {
     @Test
     public void acquireSapphireObjectStubSuccessTest() throws Exception {
         SapphireObjectID sid = group.getSapphireObjId();
-        SO_Stub appObjstub = (SO_Stub) sapphireObjServer.acquireSapphireObjectStub(sid);
+        SO appObjstub = (SO) sapphireObjServer.acquireSapphireObjectStub(sid);
         assertEquals(
                 1,
                 SapphireUtils.getOmsSapphireInstance(spiedOms, group.getSapphireObjId())
@@ -81,7 +80,7 @@ public class OMSTest extends BaseTest {
     public void attachAndDetactSapphireObjectSuccessTest() throws Exception {
         sapphireObjServer.setSapphireObjectName(group.getSapphireObjId(), "MySapphireObject");
 
-        SO_Stub appObjstub = (SO_Stub) sapphireObjServer.attachToSapphireObject("MySapphireObject");
+        SO appObjstub = (SO) sapphireObjServer.attachToSapphireObject("MySapphireObject");
 
         /* Reference count must become 2. Once user created it and other attached to it */
         assertEquals(

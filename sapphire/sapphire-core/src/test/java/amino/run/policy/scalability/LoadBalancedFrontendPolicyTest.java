@@ -9,7 +9,7 @@ import amino.run.app.DMSpec;
 import amino.run.app.Language;
 import amino.run.app.MicroServiceSpec;
 import amino.run.common.BaseTest;
-import amino.run.sampleSO.stubs.SO_Stub;
+import amino.run.sampleSO.SO;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -65,8 +65,8 @@ public class LoadBalancedFrontendPolicyTest extends BaseTest {
         params.add(new Integer(2));
         this.client.onRPC(setMethodName, params);
         this.client.onRPC(setMethodName, params);
-        assertEquals(((SO_Stub) server1.sapphire_getAppObject().getObject()).getI().intValue(), 2);
-        assertEquals(((SO_Stub) server2.sapphire_getAppObject().getObject()).getI().intValue(), 2);
+        assertEquals(((SO) server1.sapphire_getAppObject().getObject()).getI().intValue(), 2);
+        assertEquals(((SO) server2.sapphire_getAppObject().getObject()).getI().intValue(), 2);
     }
 
     /**

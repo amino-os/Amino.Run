@@ -6,7 +6,6 @@ public class GlobalStubConstants {
     public static final String POLICY_CLASS = "amino.run.policy.Policy";
     public static final String STUB_SUFFIX = "_Stub";
     public static final String STUB_PACKAGE_PART = "stubs";
-    public static final String APPSTUB_POLICY_CLIENT_FIELD_NAME = "$__client";
     public static final String POLICY_ONDESTROY_MTD_NAME_FORMAT =
             "public void %s.onDestroy() throws java.rmi.RemoteException";
 

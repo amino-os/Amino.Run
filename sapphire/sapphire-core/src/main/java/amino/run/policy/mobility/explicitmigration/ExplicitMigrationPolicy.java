@@ -81,8 +81,9 @@ public class ExplicitMigrationPolicy extends DefaultPolicy {
         private long minWaitIntervalInMillis = DEFAULT_MIN_WAIT_INTERVAL_IN_MILLISEC;
 
         @Override
-        public void onCreate(Policy.GroupPolicy group, MicroServiceSpec spec) {
-            super.onCreate(group, spec);
+        public void onCreate(
+                Policy.GroupPolicy group, Policy.ServerPolicy server, MicroServiceSpec spec) {
+            super.onCreate(group, server, spec);
 
             Map<String, SapphirePolicyConfig> configMap =
                     Utils.fromDMSpecListToFlatConfigMap(spec.getDmList());

@@ -33,6 +33,12 @@ public abstract class DefaultUpcallImpl extends Library {
             return ret;
         }
 
+        protected abstract void setServer(Policy.ServerPolicy server);
+
+        protected abstract Policy.ServerPolicy getServer();
+
+        protected abstract Policy.GroupPolicy getGroup();
+
         protected UUID getCurrentTransaction() {
             return TransactionContext.getCurrentTransaction();
         }

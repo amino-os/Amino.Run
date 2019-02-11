@@ -146,7 +146,7 @@ public class Sapphire {
         AppObjectStub appStub = initAppStub(spec, serverPolicy, appArgs);
         // TODO(multi-lang): We may need to create a clone for non-java app object stub.
         appStub = spec.getLang() == Language.java ? createClientAppStub(appStub) : appStub;
-        appStub.$__initialize(clientPolicy);
+        appStub.$__initialize(microServiceID, clientPolicy);
 
         /* Execute GroupPolicy.onCreate() in the chain starting from inner most instance */
         // TODO: Can node selection constraints be passed to the next (inner) group policy in an
@@ -275,8 +275,7 @@ public class Sapphire {
 
             /* Link everything together */
             // TODO: client is unncessary for outer policies of a replica.
-            client.setServer(serverPolicyStub);
-            client.onCreate(groupPolicyStub, spec);
+            client.onCreate(groupPolicyStub, serverPolicyStub, spec);
 
             // TODO: Separate out the following code block.
             // Note that subList is non serializable; hence, the new list creation.
@@ -330,19 +329,9 @@ public class Sapphire {
             throw new RuntimeException("Tried to delete invalid sapphire object");
         }
 
-        MicroServiceID microServiceId = null;
+        MicroServiceID microServiceId = ((AppObjectStub) stub).$__getMicroServiceId();
         try {
-            AppObjectStub appObjectStub = (AppObjectStub) stub;
-            Field field =
-                    appObjectStub
-                            .getClass()
-                            .getDeclaredField(GlobalStubConstants.APPSTUB_POLICY_CLIENT_FIELD_NAME);
-            field.setAccessible(true);
-            Policy.ClientPolicy clientPolicy = (Policy.ClientPolicy) field.get(appObjectStub);
-            microServiceId = clientPolicy.getGroup().getSapphireObjId();
             GlobalKernelReferences.nodeServer.oms.delete(microServiceId);
-        } catch (NoSuchFieldException e) {
-            throw new RuntimeException("Tried to delete invalid sapphire object.", e);
         } catch (MicroServiceNotFoundException e) {
             /* Ignore it. It might have happened that sapphire object is already deleted and still hold reference */
             logger.warning(String.format("%s is not found. Probably deleted.", microServiceId));

@@ -10,6 +10,7 @@ import amino.run.kernel.common.KernelOID;
 import amino.run.kernel.common.KernelObjectNotFoundException;
 import amino.run.kernel.common.KernelRPC;
 import amino.run.kernel.common.KernelRPCException;
+import amino.run.oms.OMSServerImpl;
 import amino.run.sampleSO.SO;
 import java.util.ArrayList;
 import org.junit.After;
@@ -70,9 +71,16 @@ public class KernelServerTest extends BaseTest {
 
     @Test
     public void testMain() throws Exception {
-        // for testing negative scenario with only 3 arguments
+        // for testing negative scenario with only 6 arguments
         KernelServerImpl.main(
-                new String[] {LOOP_BACK_IP_ADDR, Integer.toString(kernelPort1), LOOP_BACK_IP_ADDR});
+                new String[] {
+                    KernelServerImpl.KERNEL_SERVER_IP_OPT,
+                    LOOP_BACK_IP_ADDR,
+                    KernelServerImpl.KERNEL_SERVER_PORT_OPT,
+                    Integer.toString(kernelPort1),
+                    OMSServerImpl.OMS_IP_OPT,
+                    LOOP_BACK_IP_ADDR
+                });
     }
 
     @Test

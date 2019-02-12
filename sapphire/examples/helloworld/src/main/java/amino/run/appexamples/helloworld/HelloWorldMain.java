@@ -2,35 +2,51 @@ package amino.run.appexamples.helloworld;
 
 import java.net.InetSocketAddress;
 import java.rmi.registry.LocateRegistry;
+import java.util.Collections;
 
 import amino.run.app.DMSpec;
 import amino.run.app.Language;
 import amino.run.app.MicroServiceSpec;
 import amino.run.app.Registry;
+import amino.run.common.ArgumentParser.AppArgumentParser;
 import amino.run.common.MicroServiceID;
 import amino.run.kernel.server.KernelServer;
 import amino.run.kernel.server.KernelServerImpl;
 import amino.run.policy.atleastoncerpc.AtLeastOnceRPCPolicy;
+import com.google.devtools.common.options.OptionsParser;
 
 public class HelloWorldMain {
     public static void main(String[] args) {
         String world = "DCAP World";
 
-        if (args.length < 4) {
+        OptionsParser parser = OptionsParser.newOptionsParser(AppArgumentParser.class);
+
+        if (args.length<8){
             System.out.println("Incorrect arguments to the program");
-            System.out.println("<host-ip> <host-port> <oms ip> <oms-port> [program-arg]");
+            printUsage(parser);
             return;
         }
-
-        if (args.length > 4 && args[4] != null && args[4].length()>0) {
-            world = args[4];
+        try {
+            parser.parse(args);
+        } catch (Exception e) {
+            System.out.println(e.getMessage()+System.lineSeparator()+System.lineSeparator()+
+                    "Usage: "
+                            + HelloWorldMain.class.getSimpleName()+System.lineSeparator()
+                            + parser.describeOptions(
+                            Collections.<String, String>emptyMap(),
+                            OptionsParser.HelpVerbosity.LONG));
+            return;
         }
+        AppArgumentParser appArgs = parser.getOptions(AppArgumentParser.class);
+             if (appArgs.appArgs!=""){
+                 world=appArgs.appArgs;
+             }
 
         try {
-            java.rmi.registry.Registry registry = LocateRegistry.getRegistry(args[0], Integer.parseInt(args[1]));
+            java.rmi.registry.Registry registry = LocateRegistry.getRegistry(appArgs.omsIP, appArgs.omsPort);
             Registry server = (Registry) registry.lookup("io.amino.run.oms");
 
-            KernelServer nodeServer = new KernelServerImpl(new InetSocketAddress(args[2], Integer.parseInt(args[3])), new InetSocketAddress(args[0], Integer.parseInt(args[1])));
+            KernelServer nodeServer = new KernelServerImpl(new InetSocketAddress(appArgs.kernelServerIP, appArgs.kernelServerPort), new InetSocketAddress(appArgs.omsIP, appArgs.omsPort));
 
             MicroServiceSpec spec = MicroServiceSpec.newBuilder()
                     .setLang(Language.java)
@@ -49,5 +65,15 @@ public class HelloWorldMain {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private static void printUsage(OptionsParser parser) {
+        System.out.println(
+                "Usage: java -cp <classpath> "
+                        + HelloWorldMain.class.getSimpleName()
+                        + System.lineSeparator()
+                        + parser.describeOptions(
+                        Collections.<String, String>emptyMap(),
+                        OptionsParser.HelpVerbosity.LONG));
     }
 }

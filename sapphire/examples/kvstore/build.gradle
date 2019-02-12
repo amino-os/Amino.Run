@@ -12,5 +12,5 @@ genStubs {
 runapp {
     main = "amino.run.demo.KeyValueStoreClient"
     // This one doesn't take kernel server address params
-    args project.property('omsIp'), project.property('omsPort')
+    args project.property('omsIpFlag'), project.property('omsIp'), project.property('omsPortFlag'), project.property('omsPort')
 }

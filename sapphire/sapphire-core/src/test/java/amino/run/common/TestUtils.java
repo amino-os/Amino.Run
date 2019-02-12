@@ -32,6 +32,7 @@ import org.mockito.stubbing.Answer;
 
 /** Created by Vishwajeet on 4/4/18. */
 public class TestUtils {
+
     public static Registry dummyRegistry =
             new Registry() {
                 @Override
@@ -77,7 +78,10 @@ public class TestUtils {
                     }
                 });
 
-        OMSServerImpl.main(new String[] {ipAddr, "" + omsPort});
+        OMSServerImpl.main(
+                new String[] {
+                    OMSServerImpl.OMS_IP_OPT, ipAddr, OMSServerImpl.OMS_PORT_OPT, "" + omsPort
+                });
 
         /* Get the oms instance created above from the local kernel server's static oms field */
         OMSServerImpl myOms = (OMSServerImpl) KernelServerImpl.oms;
@@ -112,8 +116,20 @@ public class TestUtils {
                     }
                 });
 
-        String labels = KernelServerImpl.LABEL_OPT + KernelServerImpl.REGION_KEY + "=" + region;
-        KernelServerImpl.main(new String[] {ipAddr, "" + port, omsIpaddr, "" + omsPort, labels});
+        String labels = KernelServerImpl.REGION_KEY + "=" + region;
+        KernelServerImpl.main(
+                new String[] {
+                    KernelServerImpl.KERNEL_SERVER_IP_OPT,
+                    ipAddr,
+                    KernelServerImpl.KERNEL_SERVER_PORT_OPT,
+                    "" + port,
+                    OMSServerImpl.OMS_IP_OPT,
+                    omsIpaddr,
+                    OMSServerImpl.OMS_PORT_OPT,
+                    "" + omsPort,
+                    KernelServerImpl.LABEL_OPT,
+                    labels
+                });
 
         /* Get the kernel server instance created above from the GlobalKernelReferences nodeServer field */
         KernelServerImpl ks = GlobalKernelReferences.nodeServer;

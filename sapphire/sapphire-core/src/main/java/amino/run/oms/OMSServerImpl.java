@@ -4,6 +4,7 @@ import amino.run.app.MicroServiceSpec;
 import amino.run.app.NodeSelectorSpec;
 import amino.run.app.Registry;
 import amino.run.common.AppObjectStub;
+import amino.run.common.ArgumentParser.OMSArgumentParser;
 import amino.run.common.MicroServiceCreationException;
 import amino.run.common.MicroServiceID;
 import amino.run.common.MicroServiceNameModificationException;
@@ -20,12 +21,14 @@ import amino.run.kernel.server.KernelServerImpl;
 import amino.run.policy.Policy;
 import amino.run.runtime.EventHandler;
 import amino.run.runtime.MicroService;
+import com.google.devtools.common.options.OptionsParser;
 import java.net.InetSocketAddress;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
@@ -40,11 +43,13 @@ import org.json.JSONException;
 public class OMSServerImpl implements OMSServer, Registry {
 
     private static Logger logger = Logger.getLogger(OMSServerImpl.class.getName());
-    private static String SERVICE_PORT = "--servicePort";
-
     private GlobalKernelObjectManager kernelObjectManager;
     private KernelServerManager serverManager;
     private MicroServiceManager objectManager;
+
+    public static String OMS_IP_OPT = "--oms-ip";
+    public static String OMS_PORT_OPT = "--oms-port";
+    public static String SERVICE_PORT = "--service-port";
 
     /** CONSTRUCTOR * */
     // TODO Should receive a List of servers
@@ -251,43 +256,45 @@ public class OMSServerImpl implements OMSServer, Registry {
     }
 
     public static void main(String args[]) {
-        if (args.length < 2) {
-            System.out.println("Invalid arguments to OMS.");
-            System.out.println("[IP] [port] [servicePort]");
+        OptionsParser parser = OptionsParser.newOptionsParser(OMSArgumentParser.class);
+        if (args.length < 4) {
+            System.out.println("Incorrect arguments to the program");
+            printUsage(parser);
             return;
         }
 
-        int port;
-        int servicePort = 0;
         try {
-            port = Integer.parseInt(args[1]);
-            if (args.length > 2) {
-                servicePort = Integer.parseInt(parseServicePort(args[2]));
-            }
-        } catch (NumberFormatException e) {
-            System.out.println("Invalid arguments to OMS.");
-            System.out.println("[IP] [port] [servicePort]");
+            parser.parse(args);
+        } catch (Exception e) {
+            System.out.println(e.getMessage() + System.lineSeparator());
+            printUsage(parser);
             return;
         }
 
-        System.setProperty("java.rmi.server.hostname", args[0]);
+        OMSArgumentParser omsArgs = parser.getOptions(OMSArgumentParser.class);
+        System.setProperty("java.rmi.server.hostname", omsArgs.omsIP);
+
         try {
             OMSServerImpl oms = new OMSServerImpl();
-            OMSServer omsStub = (OMSServer) UnicastRemoteObject.exportObject(oms, servicePort);
-            java.rmi.registry.Registry registry = LocateRegistry.createRegistry(port);
+            OMSServer omsStub =
+                    (OMSServer) UnicastRemoteObject.exportObject(oms, omsArgs.servicePort);
+            java.rmi.registry.Registry registry = LocateRegistry.createRegistry(omsArgs.omsPort);
             registry.rebind("io.amino.run.oms", omsStub);
 
             /* Create an instance of kernel server and export kernel server service */
             KernelServer localKernelServer =
-                    new KernelServerImpl(new InetSocketAddress(args[0], port), oms);
+                    new KernelServerImpl(
+                            new InetSocketAddress(omsArgs.omsIP, omsArgs.omsPort), oms);
             KernelServer localKernelServerStub =
-                    (KernelServer) UnicastRemoteObject.exportObject(localKernelServer, servicePort);
+                    (KernelServer)
+                            UnicastRemoteObject.exportObject(
+                                    localKernelServer, omsArgs.servicePort);
             registry.rebind("io.amino.run.kernelserver", localKernelServerStub);
 
             // Log being used in examples gradle task "run", hence modify accordingly.
-            logger.info(String.format("OMS ready at port(%s)!", port));
+            logger.info(String.format("OMS ready at port (%s)!", omsArgs.omsPort));
 
-            // To get all the kernel server's addresses passing null in oms.getServers
+            // to get all the kernel server's addresses passing null in oms.getServers
             for (Iterator<InetSocketAddress> it = oms.getServers(null).iterator(); it.hasNext(); ) {
                 InetSocketAddress address = it.next();
                 logger.fine("   " + address.getHostName() + ":" + address.getPort());
@@ -393,11 +400,13 @@ public class OMSServerImpl implements OMSServer, Registry {
         return kernelObjectManager.getAllKernelObjects();
     }
 
-    private static String parseServicePort(String servicePort) {
-        String port = null;
-        if (servicePort != null) {
-            port = servicePort.substring(SERVICE_PORT.length() + 1);
-        }
-        return port;
+    private static void printUsage(OptionsParser parser) {
+        System.out.println(
+                "Usage: java -cp <classpath> "
+                        + OMSServerImpl.class.getSimpleName()
+                        + System.lineSeparator()
+                        + parser.describeOptions(
+                                Collections.<String, String>emptyMap(),
+                                OptionsParser.HelpVerbosity.LONG));
     }
 }

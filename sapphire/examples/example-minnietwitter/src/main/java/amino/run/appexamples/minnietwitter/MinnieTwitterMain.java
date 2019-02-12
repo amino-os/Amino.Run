@@ -3,15 +3,18 @@ package amino.run.appexamples.minnietwitter;
 import java.net.InetSocketAddress;
 import java.rmi.registry.LocateRegistry;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
 import amino.run.app.Language;
 import amino.run.app.MicroServiceSpec;
 import amino.run.app.Registry;
+import amino.run.common.ArgumentParser.AppArgumentParser;
 import amino.run.common.MicroServiceID;
 import amino.run.kernel.server.KernelServer;
 import amino.run.kernel.server.KernelServerImpl;
+import com.google.devtools.common.options.OptionsParser;
 
 public class MinnieTwitterMain {
   static final int EVENTS_PER_USER = 100;
@@ -244,19 +247,34 @@ public class MinnieTwitterMain {
     }
   }
 
-  public static void main(String[] args) {
 
-    if (args.length < 4) {
-      System.out.println("Incorrect arguments to the program");
-      System.out.println(
-          "usage: "
-              + MinnieTwitterMain.class.getSimpleName()
-              + " <oms ip> <oms-port> <host-ip> <host-port>");
-      System.exit(1);
+  public static void main(String[] args) {
+    OptionsParser parser = OptionsParser.newOptionsParser(AppArgumentParser.class);
+    if (args.length<8){
+        System.out.println("Incorrect arguments to the program");
+        printUsage(parser);
+        return;
+      }
+    try {
+      parser.parse(args);
+    } catch (Exception e) {
+      printUsage(parser);
+      return;
     }
-    String omsIp = args[0], omsPort = args[1], hostIp = args[2], hostPort = args[3];
-    InetSocketAddress hostAddr = new InetSocketAddress(hostIp, Integer.parseInt(hostPort)),
-        omsAddr = new InetSocketAddress(omsIp, Integer.parseInt(omsPort));
+
+    AppArgumentParser appArgs = parser.getOptions(AppArgumentParser.class);
+
+    InetSocketAddress hostAddr = new InetSocketAddress(appArgs.kernelServerIP, appArgs.kernelServerPort),
+        omsAddr = new InetSocketAddress(appArgs.omsIP, appArgs.omsPort);
     ExecuteSingleUserDemo(hostAddr, omsAddr);
   }
+  private static void printUsage(OptionsParser parser) {
+      System.out.println(
+              "Usage: java -cp <classpath> "
+                      + MinnieTwitterMain.class.getSimpleName()
+                      + System.lineSeparator()
+                      + parser.describeOptions(
+                      Collections.<String, String>emptyMap(),
+                      OptionsParser.HelpVerbosity.LONG));
+    }
 }

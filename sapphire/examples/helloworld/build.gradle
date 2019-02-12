@@ -12,5 +12,6 @@ genStubs {
 runapp {
     main = "amino.run.appexamples.helloworld.HelloWorldMain"
     // We pass extra parameters
-    args project.property('embeddedKernelServerIp'), project.property('kernelServerPort'), project.property('omsIp'), project.property('omsPort'), project.hasProperty('W') ? project.property('W') : "DCAP World"
+    args  project.property('omsIpFlag'), project.property('omsIp'), project.property('omsPortFlag'), project.property('omsPort'), project.property('kernelServerIpFlag'), project.property('embeddedKernelServerIp'), project.property('kernelServerPortFlag'), project.property('kernelServerPort'), 
+            "--app-args", project.hasProperty('W') ? project.property('W') : "DCAP World"
 }

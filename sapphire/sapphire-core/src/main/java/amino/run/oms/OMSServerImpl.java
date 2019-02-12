@@ -213,9 +213,9 @@ public class OMSServerImpl implements OMSServer, Registry {
     @Override
     public AppObjectStub attachTo(String name)
             throws RemoteException, MicroServiceNotFoundException {
-        MicroServiceID MicroServiceId = objectManager.getSapphireInstanceIdByName(name);
-        AppObjectStub appObjStub = acquireStub(MicroServiceId);
-        objectManager.incrRefCountAndGet(MicroServiceId);
+        MicroServiceID microServiceId = objectManager.getSapphireInstanceIdByName(name);
+        AppObjectStub appObjStub = acquireStub(microServiceId);
+        objectManager.incrRefCountAndGet(microServiceId);
         return appObjStub;
     }
 
@@ -252,7 +252,7 @@ public class OMSServerImpl implements OMSServer, Registry {
      * policy object Stub
      *
      * @param policyClass
-     * @param MicroServiceId
+     * @param microServiceId
      * @return Returns group policy object stub
      * @throws RemoteException
      * @throws ClassNotFoundException
@@ -260,18 +260,18 @@ public class OMSServerImpl implements OMSServer, Registry {
      * @throws MicroServiceNotFoundException
      */
     @Override
-    public Policy.GroupPolicy createGroupPolicy(Class<?> policyClass, MicroServiceID MicroServiceId)
+    public Policy.GroupPolicy createGroupPolicy(Class<?> policyClass, MicroServiceID microServiceId)
             throws RemoteException, ClassNotFoundException, KernelObjectNotCreatedException,
                     MicroServiceNotFoundException {
-        Policy.GroupPolicy group = Sapphire.createGroupPolicy(policyClass, MicroServiceId);
+        Policy.GroupPolicy group = Sapphire.createGroupPolicy(policyClass, microServiceId);
 
         /* TODO: This rootGroupPolicy is used in sapphire object deletion. Need to handle for multiDM case. In case of
         multiDM, multiple group policy objects are created in DM chain establishment. Currently, just ensuring not to
         overwrite the outermost DM's group policy reference(i.e., first created group policy in chain).So that deletion
         works for single DM case.
          */
-        if (objectManager.getRootGroupPolicy(MicroServiceId) == null) {
-            objectManager.setRootGroupPolicy(MicroServiceId, group);
+        if (objectManager.getRootGroupPolicy(microServiceId) == null) {
+            objectManager.setRootGroupPolicy(microServiceId, group);
         }
 
         return group;
@@ -337,15 +337,15 @@ public class OMSServerImpl implements OMSServer, Registry {
     /**
      * Register a sapphire replica of a given sapphire object
      *
-     * @param MicroServiceId
+     * @param microServiceId
      * @return Return sapphire replica id
      * @throws RemoteException
      * @throws MicroServiceNotFoundException
      */
     @Override
-    public SapphireReplicaID registerSapphireReplica(MicroServiceID MicroServiceId)
+    public SapphireReplicaID registerSapphireReplica(MicroServiceID microServiceId)
             throws RemoteException, MicroServiceNotFoundException {
-        return objectManager.addReplica(MicroServiceId, null);
+        return objectManager.addReplica(microServiceId, null);
     }
 
     /**
@@ -367,13 +367,13 @@ public class OMSServerImpl implements OMSServer, Registry {
     /**
      * Unregister the sapphire object
      *
-     * @param MicroServiceId
+     * @param microServiceId
      * @throws RemoteException
      * @throws MicroServiceNotFoundException :w
      */
-    public void unRegisterSapphireObject(MicroServiceID MicroServiceId)
+    public void unRegisterSapphireObject(MicroServiceID microServiceId)
             throws RemoteException, MicroServiceNotFoundException {
-        objectManager.removeInstance(MicroServiceId);
+        objectManager.removeInstance(microServiceId);
     }
 
     /**

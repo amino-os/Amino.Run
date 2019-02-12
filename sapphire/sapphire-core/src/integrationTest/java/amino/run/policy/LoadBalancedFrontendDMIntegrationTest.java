@@ -38,8 +38,8 @@ public class LoadBalancedFrontendDMIntegrationTest {
     }
 
     private void runTest(MicroServiceSpec spec) throws Exception {
-        MicroServiceID MicroServiceId = registry.create(spec.toString());
-        KVStore store = (KVStore) registry.acquireStub(MicroServiceId);
+        MicroServiceID microServiceId = registry.create(spec.toString());
+        KVStore store = (KVStore) registry.acquireStub(microServiceId);
         for (int i = 0; i < 10; i++) {
             String key = "k1_" + i;
             String value = "v1_" + i;

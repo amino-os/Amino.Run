@@ -164,12 +164,12 @@ public class TestUtils {
     }
 
     public static SapphireInstanceManager getOmsSapphireInstance(
-            OMSServer oms, MicroServiceID MicroServiceId) throws Exception {
+            OMSServer oms, MicroServiceID microServiceId) throws Exception {
         SapphireObjectManager objMgr =
                 (SapphireObjectManager) extractFieldValueOnInstance(oms, "objectManager");
         ConcurrentHashMap<MicroServiceID, SapphireInstanceManager> sapphireObjects =
                 (ConcurrentHashMap<MicroServiceID, SapphireInstanceManager>)
                         extractFieldValueOnInstance(objMgr, "sapphireObjects");
-        return sapphireObjects.get(MicroServiceId);
+        return sapphireObjects.get(microServiceId);
     }
 }

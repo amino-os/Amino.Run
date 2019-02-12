@@ -149,7 +149,7 @@ public abstract class Library implements Upcalls {
                 List<SapphirePolicyContainer> processedPoliciesReplica =
                         new ArrayList<SapphirePolicyContainer>();
                 Sapphire.createPolicy(
-                        this.getGroup().MicroServiceId,
+                        this.getGroup().microServiceId,
                         spec,
                         processedPolicies,
                         processedPoliciesReplica,
@@ -165,7 +165,7 @@ public abstract class Library implements Upcalls {
                 // Complete the chain by creating new instances of server policies and stub that
                 // should be created after this policy.
                 Sapphire.createPolicy(
-                        this.getGroup().MicroServiceId,
+                        this.getGroup().microServiceId,
                         spec,
                         this.nextPolicies,
                         processedPoliciesReplica,
@@ -388,7 +388,7 @@ public abstract class Library implements Upcalls {
         protected String appObjectClassName;
         protected ArrayList<Object> params;
         protected KernelOID oid;
-        protected MicroServiceID MicroServiceId;
+        protected MicroServiceID microServiceId;
 
         static Logger logger = Logger.getLogger(GroupPolicyLibrary.class.getName());
 
@@ -440,11 +440,11 @@ public abstract class Library implements Upcalls {
         }
 
         public void setSapphireObjId(MicroServiceID sapphireId) {
-            MicroServiceId = sapphireId;
+            microServiceId = sapphireId;
         }
 
         public MicroServiceID getSapphireObjId() {
-            return MicroServiceId;
+            return microServiceId;
         }
 
         /**

@@ -166,9 +166,9 @@ public class BaseTest {
                     }
                 });
 
-        MicroServiceID MicroServiceId = registry.create(spec.toString());
+        MicroServiceID microServiceId = registry.create(spec.toString());
 
-        soStub = (SO) registry.acquireStub(MicroServiceId);
+        soStub = (SO) registry.acquireStub(microServiceId);
         client =
                 (DefaultPolicy.DefaultClientPolicy)
                         extractFieldValueOnInstance(soStub, "$__client");

@@ -38,9 +38,9 @@ public class ConsensusDMIntegrationTest {
     }
 
     private void runTest(MicroServiceSpec spec) throws Exception {
-        MicroServiceID MicroServiceId = registry.create(spec.toString());
+        MicroServiceID microServiceId = registry.create(spec.toString());
         sleep(5000);
-        KVStore store = (KVStore) registry.acquireStub(MicroServiceId);
+        KVStore store = (KVStore) registry.acquireStub(microServiceId);
         for (int i = 0; i < 10; i++) {
             String key = "k1_" + i;
             String value = "v1_" + i;

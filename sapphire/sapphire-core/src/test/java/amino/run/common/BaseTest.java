@@ -54,7 +54,7 @@ public class BaseTest {
     protected DefaultPolicy.DefaultGroupPolicy group;
     protected SO soStub; // client side stub
     protected OMSServer spiedOms;
-    protected Registry sapphireObjServer;
+    protected Registry registry;
     protected KernelServer spiedksOnOms;
     protected KernelServer spiedKs1;
     protected KernelServer spiedKs2;
@@ -74,7 +74,7 @@ public class BaseTest {
         spiedksOnOms = spy(GlobalKernelReferences.nodeServer);
         KernelServerImpl.oms = spiedOms;
         this.spiedOms = spiedOms;
-        sapphireObjServer = spiedOms;
+        registry = spiedOms;
 
         String[] regions;
         if (serversInSameRegion) {
@@ -166,9 +166,9 @@ public class BaseTest {
                     }
                 });
 
-        SapphireObjectID sapphireObjId = sapphireObjServer.create(spec.toString());
+        SapphireObjectID sapphireObjId = registry.create(spec.toString());
 
-        soStub = (SO) sapphireObjServer.acquireStub(sapphireObjId);
+        soStub = (SO) registry.acquireStub(sapphireObjId);
         client =
                 (DefaultPolicy.DefaultClientPolicy)
                         extractFieldValueOnInstance(soStub, "$__client");
@@ -216,6 +216,6 @@ public class BaseTest {
     }
 
     public void tearDown() throws Exception {
-        sapphireObjServer.delete(group.getSapphireObjId());
+        registry.delete(group.getSapphireObjId());
     }
 }

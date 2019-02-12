@@ -453,8 +453,8 @@ public abstract class Library implements Upcalls {
          * {@code KernelObjectManager}, and 3) remove replica ID from OMS.
          *
          * <p><strong>Warning:</strong> Do not try to call OMS to unregister the sapphire object.
-         * {@link OMSServer#deleteSapphireObject(SapphireObjectID)} is the public entry point to
-         * delete a sapphire object. OMS will take care of deleting sapphire object at {@link
+         * {@link OMSServer#delete(SapphireObjectID)} is the public entry point to delete a sapphire
+         * object. OMS will take care of deleting sapphire object at {@link
          * amino.run.oms.OMSServerImpl#delete(SapphireObjectID)}.
          *
          * @throws RemoteException

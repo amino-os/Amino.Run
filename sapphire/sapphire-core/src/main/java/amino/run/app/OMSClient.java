@@ -11,7 +11,6 @@ import java.net.InetSocketAddress;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
-
 import org.graalvm.polyglot.Value;
 
 /**
@@ -37,7 +36,8 @@ public class OMSClient {
      */
     public OMSClient(InetSocketAddress host, InetSocketAddress omsHost)
             throws RemoteException, NotBoundException {
-        java.rmi.registry.Registry registry = LocateRegistry.getRegistry(omsHost.getHostName(), omsHost.getPort());
+        java.rmi.registry.Registry registry =
+                LocateRegistry.getRegistry(omsHost.getHostName(), omsHost.getPort());
         server = (Registry) registry.lookup("SapphireOMS");
         KernelServer nodeServer = new KernelServerImpl(host, omsHost);
     }

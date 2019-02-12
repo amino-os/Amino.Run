@@ -422,14 +422,10 @@ public class SimpleDMIntegrationTest {
     @Test
     public void runTwoPCCohortTest() throws Exception {
         MicroServiceSpec kvStoreSpec = getMicroServiceSpecForDM("TwoPCCohortDM.yaml");
-        SapphireObjectID store1SapphireObjectID =
-                registry.create(kvStoreSpec.toString());
-        KVStore store1 =
-                (KVStore) registry.acquireStub(store1SapphireObjectID);
-        SapphireObjectID store2SapphireObjectID =
-                registry.create(kvStoreSpec.toString());
-        KVStore store2 =
-                (KVStore) registry.acquireStub(store2SapphireObjectID);
+        SapphireObjectID store1SapphireObjectID = registry.create(kvStoreSpec.toString());
+        KVStore store1 = (KVStore) registry.acquireStub(store1SapphireObjectID);
+        SapphireObjectID store2SapphireObjectID = registry.create(kvStoreSpec.toString());
+        KVStore store2 = (KVStore) registry.acquireStub(store2SapphireObjectID);
         String key1 = "k1";
         String value1 = "v1";
         String key2 = "k2";
@@ -440,11 +436,8 @@ public class SimpleDMIntegrationTest {
         store2.set(key2, value3);
         MicroServiceSpec coordinatoreSpec = getMicroServiceSpecForDM("TwoPCCoordinatorDM.yaml");
         SapphireObjectID coordinatorSapphireObjectID =
-                registry.create(
-                        coordinatoreSpec.toString(), store1, store2);
-        Coordinator coordinator =
-                (Coordinator)
-                        registry.acquireStub(coordinatorSapphireObjectID);
+                registry.create(coordinatoreSpec.toString(), store1, store2);
+        Coordinator coordinator = (Coordinator) registry.acquireStub(coordinatorSapphireObjectID);
 
         /* During the invocation of migrate method for every participant method invocation ,
         Two PC Coordinator DM's server policy initiates  invocation in following sequence

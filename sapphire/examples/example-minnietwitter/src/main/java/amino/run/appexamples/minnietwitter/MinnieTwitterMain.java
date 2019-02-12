@@ -95,7 +95,7 @@ public class MinnieTwitterMain {
       Twitter manager sapphire object is created just above in same thread. Below attach call
       has no significance. It is just used to show the usage of API. */
       TwitterManager tmAttached =
-          (TwitterManager) server.attachToSapphireObject("MyTwitterManager");
+          (TwitterManager) server.attachTo("MyTwitterManager");
 
       /* Detach from the shared sapphire object. It is necessary to explicitly call detach to
       un-reference the sapphire object. This call is not required here if attach call was not

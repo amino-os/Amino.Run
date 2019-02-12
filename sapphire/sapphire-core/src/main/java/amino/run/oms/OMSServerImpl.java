@@ -153,15 +153,6 @@ public class OMSServerImpl implements OMSServer, Registry {
         return (Policy.ClientPolicy) field.get(appObjStub);
     }
 
-    /**
-     * Create the sapphire object of given class on one of the servers
-     *
-     * @param microServiceSpec sapphire object specification in YAML
-     * @param args parameters to sapphire object constructor
-     * @return Returns sapphire object id
-     * @throws RemoteException
-     * @throws SapphireObjectCreationException
-     */
     @Override
     public SapphireObjectID create(String microServiceSpec, Object... args)
             throws RemoteException, SapphireObjectCreationException {
@@ -199,36 +190,19 @@ public class OMSServerImpl implements OMSServer, Registry {
         }
     }
 
-    /**
-     * Gets the sapphire object stub of given sapphire object id
-     *
-     * @param microServiceId
-     * @return Returns sapphire object stub
-     * @throws SapphireObjectNotFoundException
-     */
     @Override
-    public AppObjectStub acquireStub(SapphireObjectID microServiceId)
-            throws SapphireObjectNotFoundException {
+    public AppObjectStub acquireStub(SapphireObjectID id) throws SapphireObjectNotFoundException {
 
         try {
-            AppObjectStub appObjStub = objectManager.getInstanceObjectStub(microServiceId);
+            AppObjectStub appObjStub = objectManager.getInstanceObjectStub(id);
             appObjStub.$__initialize(false);
             return appObjStub;
         } catch (Exception e) {
             throw new SapphireObjectNotFoundException(
-                    "Failed to acquire stub for sapphire object " + microServiceId, e);
+                    "Failed to acquire stub for sapphire object " + id, e);
         }
     }
 
-    /**
-     * Assigns the name to given sapphire object
-     *
-     * @param id
-     * @param name
-     * @throws RemoteException
-     * @throws SapphireObjectNotFoundException
-     * @throws SapphireObjectNameModificationException
-     */
     @Override
     public void setName(SapphireObjectID id, String name)
             throws RemoteException, SapphireObjectNotFoundException,
@@ -236,48 +210,22 @@ public class OMSServerImpl implements OMSServer, Registry {
         objectManager.setInstanceName(id, name);
     }
 
-    /**
-     * Attach to the given sapphire object
-     *
-     * @param sapphireObjName
-     * @return Returns sapphire object stub
-     * @throws RemoteException
-     * @throws SapphireObjectNotFoundException
-     */
     @Override
-    public AppObjectStub attachToSapphireObject(String sapphireObjName)
+    public AppObjectStub attachTo(String name)
             throws RemoteException, SapphireObjectNotFoundException {
-        SapphireObjectID sapphireObjId = objectManager.getSapphireInstanceIdByName(sapphireObjName);
+        SapphireObjectID sapphireObjId = objectManager.getSapphireInstanceIdByName(name);
         AppObjectStub appObjStub = acquireStub(sapphireObjId);
         objectManager.incrRefCountAndGet(sapphireObjId);
         return appObjStub;
     }
 
-    /**
-     * Detach from the given sapphire object
-     *
-     * @param name
-     * @return Returns true on success and false on failure
-     * @throws RemoteException
-     * @throws SapphireObjectNotFoundException
-     */
     @Override
-    public boolean detachFrom(String name)
-            throws RemoteException, SapphireObjectNotFoundException {
+    public boolean detachFrom(String name) throws RemoteException, SapphireObjectNotFoundException {
         return delete(objectManager.getSapphireInstanceIdByName(name));
     }
 
-    /**
-     * Delete the sapphire object of given sapphire object id
-     *
-     * @param id
-     * @return Returns true on success and false on failure
-     * @throws RemoteException
-     * @throws SapphireObjectNotFoundException
-     */
     @Override
-    public boolean delete(SapphireObjectID id)
-            throws SapphireObjectNotFoundException {
+    public boolean delete(SapphireObjectID id) throws SapphireObjectNotFoundException {
 
         if (objectManager.decrRefCountAndGet(id) != 0) {
             return true;
@@ -288,8 +236,7 @@ public class OMSServerImpl implements OMSServer, Registry {
             objectManager.removeInstance(id);
             logger.log(
                     Level.FINE,
-                    String.format(
-                            "Successfully removed sapphire object with oid %s", id));
+                    String.format("Successfully removed sapphire object with oid %s", id));
         } catch (Exception e) {
             logger.log(
                     Level.SEVERE,

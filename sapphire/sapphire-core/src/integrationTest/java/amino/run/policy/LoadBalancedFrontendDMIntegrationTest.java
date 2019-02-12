@@ -10,7 +10,6 @@ import amino.run.kernel.server.KernelServerImpl;
 import java.io.File;
 import java.net.InetSocketAddress;
 import java.rmi.registry.LocateRegistry;
-
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;

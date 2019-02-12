@@ -13,7 +13,7 @@ public interface Registry extends Remote {
     /**
      * Creates a microservice instance, deploys it on kernel server(s) and returns its Id.
      *
-     * @param spec Specification of the microservice.  See class MicroServiceSpec.
+     * @param spec Specification of the microservice. See class MicroServiceSpec.
      * @param args Arguments to the constructor of the Microservice.
      * @return Id of the created microservice
      * @throws RemoteException
@@ -23,8 +23,8 @@ public interface Registry extends Remote {
             throws RemoteException, SapphireObjectCreationException;
 
     /**
-     * Gets the application client side instance of microservice. It is used by client to do
-     * further operations on the microservice.
+     * Gets the application client side instance of microservice. It is used by client to do further
+     * operations on the microservice.
      *
      * @param microServiceId
      * @return Application client side instance of microservice
@@ -35,16 +35,15 @@ public interface Registry extends Remote {
             throws RemoteException, SapphireObjectNotFoundException;
 
     /**
-     * Attaches the client to an existing named microservice and returns the
-     * application client side instance for it.
+     * Attaches the client to an existing named microservice and returns the application client side
+     * instance for it.
      *
      * @param name Name of the microservice to attach to
      * @return Application client side instance of microservice
      * @throws RemoteException
      * @throws SapphireObjectNotFoundException
      */
-    AppObjectStub attachTo(String name)
-            throws RemoteException, SapphireObjectNotFoundException;
+    AppObjectStub attachTo(String name) throws RemoteException, SapphireObjectNotFoundException;
 
     /**
      * Detaches the client from an existing named microservice.
@@ -55,8 +54,7 @@ public interface Registry extends Remote {
      * @throws RemoteException
      * @throws SapphireObjectNotFoundException
      */
-    boolean detachFrom(String name)
-            throws RemoteException, SapphireObjectNotFoundException;
+    boolean detachFrom(String name) throws RemoteException, SapphireObjectNotFoundException;
 
     /**
      * Assigns a name to a microservice.
@@ -81,6 +79,5 @@ public interface Registry extends Remote {
      * @throws RemoteException
      * @throws SapphireObjectNotFoundException
      */
-    boolean delete(SapphireObjectID id)
-            throws RemoteException, SapphireObjectNotFoundException;
+    boolean delete(SapphireObjectID id) throws RemoteException, SapphireObjectNotFoundException;
 }

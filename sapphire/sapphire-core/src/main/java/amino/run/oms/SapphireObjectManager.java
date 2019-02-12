@@ -2,7 +2,7 @@ package amino.run.oms;
 
 import amino.run.common.AppObjectStub;
 import amino.run.common.SapphireObjectID;
-import amino.run.common.SapphireObjectNameModificationException;
+import amino.run.common.MicroServiceNameModificationException;
 import amino.run.common.SapphireObjectNotFoundException;
 import amino.run.common.SapphireObjectReplicaNotFoundException;
 import amino.run.common.SapphireReplicaID;
@@ -165,7 +165,7 @@ public class SapphireObjectManager {
      * @throws SapphireObjectNotFoundException
      */
     public void setInstanceName(SapphireObjectID sapphireObjId, String name)
-            throws SapphireObjectNotFoundException, SapphireObjectNameModificationException {
+            throws SapphireObjectNotFoundException, MicroServiceNameModificationException {
         SapphireInstanceManager instance = sapphireObjects.get(sapphireObjId);
         if (instance == null) {
             throw new SapphireObjectNotFoundException("Not a valid Sapphire object id.");
@@ -174,13 +174,13 @@ public class SapphireObjectManager {
         /* Object name is not allowed to change once set. Because reference count are updated based
         on attachByName and detachByName. And name change would affect it */
         if (instance.getName() != null) {
-            throw new SapphireObjectNameModificationException(sapphireObjId, instance.getName());
+            throw new MicroServiceNameModificationException(sapphireObjId, instance.getName());
         }
 
         /* This name is already used for some other sapphire object */
         SapphireInstanceManager otherInstance = sapphireObjectsByName.get(name);
         if (otherInstance != null) {
-            throw new SapphireObjectNameModificationException(otherInstance.getOid(), name);
+            throw new MicroServiceNameModificationException(otherInstance.getOid(), name);
         }
 
         synchronized (instance) {

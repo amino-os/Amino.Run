@@ -6,7 +6,7 @@ import amino.run.app.Registry;
 import amino.run.common.AppObjectStub;
 import amino.run.common.MicroServiceCreationException;
 import amino.run.common.SapphireObjectID;
-import amino.run.common.SapphireObjectNameModificationException;
+import amino.run.common.MicroServiceNameModificationException;
 import amino.run.common.SapphireObjectNotFoundException;
 import amino.run.common.SapphireObjectReplicaNotFoundException;
 import amino.run.common.SapphireReplicaID;
@@ -206,7 +206,7 @@ public class OMSServerImpl implements OMSServer, Registry {
     @Override
     public void setName(SapphireObjectID id, String name)
             throws RemoteException, SapphireObjectNotFoundException,
-                    SapphireObjectNameModificationException {
+            MicroServiceNameModificationException {
         objectManager.setInstanceName(id, name);
     }
 

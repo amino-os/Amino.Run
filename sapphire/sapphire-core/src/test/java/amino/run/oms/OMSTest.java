@@ -5,7 +5,7 @@ import static org.junit.Assert.assertEquals;
 import amino.run.app.Language;
 import amino.run.app.MicroServiceSpec;
 import amino.run.common.BaseTest;
-import amino.run.common.SapphireObjectID;
+import amino.run.common.MicroServiceID;
 import amino.run.common.SapphireReplicaID;
 import amino.run.common.TestUtils;
 import amino.run.kernel.common.KernelOID;
@@ -62,7 +62,7 @@ public class OMSTest extends BaseTest {
 
     @Test
     public void acquireSapphireObjectStubSuccessTest() throws Exception {
-        SapphireObjectID sid = group.getSapphireObjId();
+        MicroServiceID sid = group.getSapphireObjId();
         SO appObjstub = (SO) registry.acquireStub(sid);
         assertEquals(
                 1,
@@ -131,7 +131,7 @@ public class OMSTest extends BaseTest {
         /* register a new sapphire object, set the handler, get the handler back, verify if it is same as what we have
         set, add a replica to it, set replica handler, get the handler and verify if it same as what is set and
         then unregister the replica and the sapphire object */
-        SapphireObjectID sapphireObjId = omsImpl.registerSapphireObject();
+        MicroServiceID sapphireObjId = omsImpl.registerSapphireObject();
 
         /* Count becomes 2 after registering new sapphire object */
         assertEquals(new Integer(2), new Integer(omsImpl.getAllSapphireObjects().size()));

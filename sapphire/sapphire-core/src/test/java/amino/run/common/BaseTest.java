@@ -166,7 +166,7 @@ public class BaseTest {
                     }
                 });
 
-        SapphireObjectID sapphireObjId = registry.create(spec.toString());
+        MicroServiceID sapphireObjId = registry.create(spec.toString());
 
         soStub = (SO) registry.acquireStub(sapphireObjId);
         client =

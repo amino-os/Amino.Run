@@ -1,7 +1,7 @@
 package amino.run.demo;
 
 import amino.run.app.Registry;
-import amino.run.common.SapphireObjectID;
+import amino.run.common.MicroServiceID;
 import amino.run.kernel.server.KernelServerImpl;
 
 import java.io.File;
@@ -17,7 +17,7 @@ public class KeyValueStoreClient {
     public static void main(String[] args) throws Exception {
         Registry server = getSapphireObjectServer(args[0], args[1]);
 
-        SapphireObjectID oid = server.create(getSpec());
+        MicroServiceID oid = server.create(getSpec());
         KeyValueStore store = (KeyValueStore)server.acquireStub(oid);
 
         for (int i=0; i<30; ++i) {

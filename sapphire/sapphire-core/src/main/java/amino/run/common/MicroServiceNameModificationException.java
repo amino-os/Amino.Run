@@ -5,9 +5,9 @@ package amino.run.common;
 /** Sapphire object name modification exception */
 public class MicroServiceNameModificationException extends Exception {
     String name;
-    SapphireObjectID sapphireObjId;
+    MicroServiceID sapphireObjId;
 
-    public MicroServiceNameModificationException(SapphireObjectID sapphireObjId, String name) {
+    public MicroServiceNameModificationException(MicroServiceID sapphireObjId, String name) {
         this.sapphireObjId = sapphireObjId;
         this.name = name;
     }
@@ -16,7 +16,7 @@ public class MicroServiceNameModificationException extends Exception {
         return name;
     }
 
-    public SapphireObjectID getSapphireObjId() {
+    public MicroServiceID getSapphireObjId() {
         return sapphireObjId;
     }
 }

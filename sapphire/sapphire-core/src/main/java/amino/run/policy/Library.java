@@ -6,9 +6,9 @@ import amino.run.app.NodeSelectorSpec;
 import amino.run.common.AppObject;
 import amino.run.common.AppObjectStub;
 import amino.run.common.GraalObject;
+import amino.run.common.MicroServiceID;
 import amino.run.common.MicroServiceNotFoundException;
 import amino.run.common.MicroServiceReplicaNotFoundException;
-import amino.run.common.SapphireObjectID;
 import amino.run.common.SapphireReplicaID;
 import amino.run.common.Utils;
 import amino.run.compiler.GlobalStubConstants;
@@ -388,7 +388,7 @@ public abstract class Library implements Upcalls {
         protected String appObjectClassName;
         protected ArrayList<Object> params;
         protected KernelOID oid;
-        protected SapphireObjectID sapphireObjId;
+        protected MicroServiceID sapphireObjId;
 
         static Logger logger = Logger.getLogger(GroupPolicyLibrary.class.getName());
 
@@ -439,11 +439,11 @@ public abstract class Library implements Upcalls {
             return this.oid;
         }
 
-        public void setSapphireObjId(SapphireObjectID sapphireId) {
+        public void setSapphireObjId(MicroServiceID sapphireId) {
             sapphireObjId = sapphireId;
         }
 
-        public SapphireObjectID getSapphireObjId() {
+        public MicroServiceID getSapphireObjId() {
             return sapphireObjId;
         }
 
@@ -453,9 +453,9 @@ public abstract class Library implements Upcalls {
          * {@code KernelObjectManager}, and 3) remove replica ID from OMS.
          *
          * <p><strong>Warning:</strong> Do not try to call OMS to unregister the sapphire object.
-         * {@link OMSServer#delete(SapphireObjectID)} is the public entry point to delete a sapphire
+         * {@link OMSServer#delete(MicroServiceID)} is the public entry point to delete a sapphire
          * object. OMS will take care of deleting sapphire object at {@link
-         * amino.run.oms.OMSServerImpl#delete(SapphireObjectID)}.
+         * amino.run.oms.OMSServerImpl#delete(MicroServiceID)}.
          *
          * @throws RemoteException
          */

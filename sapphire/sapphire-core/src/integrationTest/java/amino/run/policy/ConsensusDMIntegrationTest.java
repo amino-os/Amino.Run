@@ -5,7 +5,7 @@ import static java.lang.Thread.sleep;
 
 import amino.run.app.MicroServiceSpec;
 import amino.run.app.Registry;
-import amino.run.common.SapphireObjectID;
+import amino.run.common.MicroServiceID;
 import amino.run.demo.KVStore;
 import amino.run.kernel.server.KernelServerImpl;
 import java.io.File;
@@ -38,7 +38,7 @@ public class ConsensusDMIntegrationTest {
     }
 
     private void runTest(MicroServiceSpec spec) throws Exception {
-        SapphireObjectID sapphireObjId = registry.create(spec.toString());
+        MicroServiceID sapphireObjId = registry.create(spec.toString());
         sleep(5000);
         KVStore store = (KVStore) registry.acquireStub(sapphireObjId);
         for (int i = 0; i < 10; i++) {

@@ -4,15 +4,15 @@ import java.io.Serializable;
 import java.util.UUID;
 
 public class SapphireReplicaID implements Serializable {
-    private final SapphireObjectID oid;
+    private final MicroServiceID oid;
     private final UUID rid;
 
-    public SapphireReplicaID(SapphireObjectID oid, UUID rid) {
+    public SapphireReplicaID(MicroServiceID oid, UUID rid) {
         this.oid = oid;
         this.rid = rid;
     }
 
-    public SapphireObjectID getOID() {
+    public MicroServiceID getOID() {
         return this.oid;
     }
 

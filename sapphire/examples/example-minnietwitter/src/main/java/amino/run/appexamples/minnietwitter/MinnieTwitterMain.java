@@ -9,7 +9,7 @@ import java.util.Random;
 import amino.run.app.Language;
 import amino.run.app.MicroServiceSpec;
 import amino.run.app.Registry;
-import amino.run.common.SapphireObjectID;
+import amino.run.common.MicroServiceID;
 import amino.run.kernel.server.KernelServer;
 import amino.run.kernel.server.KernelServerImpl;
 
@@ -84,7 +84,7 @@ public class MinnieTwitterMain {
               .setJavaClassName("amino.run.appexamples.minnietwitter.TwitterManager")
               .create();
 
-      SapphireObjectID sapphireObjId = server.create(spec.toString());
+      MicroServiceID sapphireObjId = server.create(spec.toString());
       TwitterManager tm = (TwitterManager) server.acquireStub(sapphireObjId);
 
       /* To set a name to sapphire object. It is required to set the name if the object has to be shared */
@@ -151,7 +151,7 @@ public class MinnieTwitterMain {
       KernelServer nodeServer = new KernelServerImpl(hostAddr, omsAddr);
 
       /* Get Twitter and User Manager */
-      SapphireObjectID sapphireObjId =
+      MicroServiceID sapphireObjId =
           server.create(
               "amino.run.appexamples.minnietwitter.TwitterManager", new Object[0]);
       TwitterManager tm = (TwitterManager) server.acquireStub(sapphireObjId);

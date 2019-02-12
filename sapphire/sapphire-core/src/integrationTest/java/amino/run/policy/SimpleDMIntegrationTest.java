@@ -4,7 +4,7 @@ import static amino.run.kernel.IntegrationTestBase.*;
 
 import amino.run.app.MicroServiceSpec;
 import amino.run.app.Registry;
-import amino.run.common.SapphireObjectID;
+import amino.run.common.MicroServiceID;
 import amino.run.demo.Coordinator;
 import amino.run.demo.KVStore;
 import amino.run.kernel.server.KernelServerImpl;
@@ -28,7 +28,7 @@ public class SimpleDMIntegrationTest {
     private static String RESOURCE_REAL_PATH;
     private static String kstIp = "127.0.0.1";
     private Registry registry;
-    private SapphireObjectID sapphireObjId = null;
+    private MicroServiceID sapphireObjId = null;
 
     @BeforeClass
     public static void bootstrap() throws Exception {
@@ -422,10 +422,10 @@ public class SimpleDMIntegrationTest {
     @Test
     public void runTwoPCCohortTest() throws Exception {
         MicroServiceSpec kvStoreSpec = getMicroServiceSpecForDM("TwoPCCohortDM.yaml");
-        SapphireObjectID store1SapphireObjectID = registry.create(kvStoreSpec.toString());
-        KVStore store1 = (KVStore) registry.acquireStub(store1SapphireObjectID);
-        SapphireObjectID store2SapphireObjectID = registry.create(kvStoreSpec.toString());
-        KVStore store2 = (KVStore) registry.acquireStub(store2SapphireObjectID);
+        MicroServiceID store1MicroServiceID = registry.create(kvStoreSpec.toString());
+        KVStore store1 = (KVStore) registry.acquireStub(store1MicroServiceID);
+        MicroServiceID store2MicroServiceID = registry.create(kvStoreSpec.toString());
+        KVStore store2 = (KVStore) registry.acquireStub(store2MicroServiceID);
         String key1 = "k1";
         String value1 = "v1";
         String key2 = "k2";
@@ -435,9 +435,9 @@ public class SimpleDMIntegrationTest {
         store1.set(key1, value1);
         store2.set(key2, value3);
         MicroServiceSpec coordinatoreSpec = getMicroServiceSpecForDM("TwoPCCoordinatorDM.yaml");
-        SapphireObjectID coordinatorSapphireObjectID =
+        MicroServiceID coordinatorMicroServiceID =
                 registry.create(coordinatoreSpec.toString(), store1, store2);
-        Coordinator coordinator = (Coordinator) registry.acquireStub(coordinatorSapphireObjectID);
+        Coordinator coordinator = (Coordinator) registry.acquireStub(coordinatorMicroServiceID);
 
         /* During the invocation of migrate method for every participant method invocation ,
         Two PC Coordinator DM's server policy initiates  invocation in following sequence

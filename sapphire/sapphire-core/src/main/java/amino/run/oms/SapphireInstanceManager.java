@@ -1,9 +1,9 @@
 package amino.run.oms;
 
 import amino.run.common.AppObjectStub;
+import amino.run.common.MicroServiceID;
 import amino.run.common.MicroServiceNotFoundException;
 import amino.run.common.MicroServiceReplicaNotFoundException;
-import amino.run.common.SapphireObjectID;
 import amino.run.common.SapphireReplicaID;
 import amino.run.policy.Policy;
 import amino.run.runtime.EventHandler;
@@ -19,7 +19,7 @@ import java.util.logging.Logger;
 public class SapphireInstanceManager {
     private static final Logger logger = Logger.getLogger(SapphireInstanceManager.class.getName());
 
-    private SapphireObjectID oid;
+    private MicroServiceID oid;
     private String name;
     private AtomicInteger referenceCount;
     private EventHandler instanceDispatcher;
@@ -51,7 +51,7 @@ public class SapphireInstanceManager {
         return new SapphireReplicaID(oid, UUID.randomUUID());
     }
 
-    public SapphireInstanceManager(SapphireObjectID oid, EventHandler dispatcher) {
+    public SapphireInstanceManager(MicroServiceID oid, EventHandler dispatcher) {
         this.oid = oid;
         instanceDispatcher = dispatcher;
         replicaDispatchers = new HashMap<SapphireReplicaID, EventHandler>();
@@ -184,7 +184,7 @@ public class SapphireInstanceManager {
         replicaDispatchers.clear();
     }
 
-    public SapphireObjectID getOid() {
+    public MicroServiceID getOid() {
         return oid;
     }
 

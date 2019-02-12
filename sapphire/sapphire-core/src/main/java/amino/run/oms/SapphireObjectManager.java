@@ -1,10 +1,10 @@
 package amino.run.oms;
 
 import amino.run.common.AppObjectStub;
+import amino.run.common.MicroServiceID;
 import amino.run.common.MicroServiceNameModificationException;
 import amino.run.common.MicroServiceNotFoundException;
 import amino.run.common.MicroServiceReplicaNotFoundException;
-import amino.run.common.SapphireObjectID;
 import amino.run.common.SapphireReplicaID;
 import amino.run.policy.Policy;
 import amino.run.runtime.EventHandler;
@@ -14,7 +14,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class SapphireObjectManager {
-    private ConcurrentHashMap<SapphireObjectID, SapphireInstanceManager> sapphireObjects;
+    private ConcurrentHashMap<MicroServiceID, SapphireInstanceManager> sapphireObjects;
     private ConcurrentHashMap<String, SapphireInstanceManager> sapphireObjectsByName;
 
     /**
@@ -22,12 +22,12 @@ public class SapphireObjectManager {
      *
      * @return
      */
-    private SapphireObjectID generateSapphireObjectID() {
-        return new SapphireObjectID(UUID.randomUUID());
+    private MicroServiceID generateSapphireObjectID() {
+        return new MicroServiceID(UUID.randomUUID());
     }
 
     public SapphireObjectManager() {
-        sapphireObjects = new ConcurrentHashMap<SapphireObjectID, SapphireInstanceManager>();
+        sapphireObjects = new ConcurrentHashMap<MicroServiceID, SapphireInstanceManager>();
         sapphireObjectsByName = new ConcurrentHashMap<String, SapphireInstanceManager>();
     }
 
@@ -37,8 +37,8 @@ public class SapphireObjectManager {
      * @param dispatcher
      * @return Returns a new sapphire object id
      */
-    public SapphireObjectID addInstance(EventHandler dispatcher) {
-        SapphireObjectID oid = generateSapphireObjectID();
+    public MicroServiceID addInstance(EventHandler dispatcher) {
+        MicroServiceID oid = generateSapphireObjectID();
         SapphireInstanceManager instance = new SapphireInstanceManager(oid, dispatcher);
         sapphireObjects.put(oid, instance);
         return oid;
@@ -51,7 +51,7 @@ public class SapphireObjectManager {
      * @param dispatcher
      * @throws MicroServiceNotFoundException
      */
-    public void setInstanceDispatcher(SapphireObjectID sapphireObjId, EventHandler dispatcher)
+    public void setInstanceDispatcher(MicroServiceID sapphireObjId, EventHandler dispatcher)
             throws MicroServiceNotFoundException {
         SapphireInstanceManager instance = sapphireObjects.get(sapphireObjId);
         if (instance == null) {
@@ -67,7 +67,7 @@ public class SapphireObjectManager {
      * @return Sapphire Group Policy Object
      * @throws MicroServiceNotFoundException
      */
-    public Policy.GroupPolicy getRootGroupPolicy(SapphireObjectID oid)
+    public Policy.GroupPolicy getRootGroupPolicy(MicroServiceID oid)
             throws MicroServiceNotFoundException {
         SapphireInstanceManager instanceManager = sapphireObjects.get(oid);
         if (instanceManager == null) {
@@ -76,7 +76,7 @@ public class SapphireObjectManager {
         return instanceManager.getRootGroupPolicy();
     }
 
-    public void setRootGroupPolicy(SapphireObjectID oid, Policy.GroupPolicy rootGroupPolicy)
+    public void setRootGroupPolicy(MicroServiceID oid, Policy.GroupPolicy rootGroupPolicy)
             throws MicroServiceNotFoundException {
         SapphireInstanceManager instanceManager = sapphireObjects.get(oid);
         if (instanceManager == null) {
@@ -92,7 +92,7 @@ public class SapphireObjectManager {
      * @param objectStub
      * @throws MicroServiceNotFoundException
      */
-    public void setInstanceObjectStub(SapphireObjectID sapphireObjId, AppObjectStub objectStub)
+    public void setInstanceObjectStub(MicroServiceID sapphireObjId, AppObjectStub objectStub)
             throws MicroServiceNotFoundException {
         SapphireInstanceManager instance = sapphireObjects.get(sapphireObjId);
         if (instance == null) {
@@ -109,7 +109,7 @@ public class SapphireObjectManager {
      * @return Returns a new sapphire replica id
      * @throws MicroServiceNotFoundException
      */
-    public SapphireReplicaID addReplica(SapphireObjectID sapphireObjId, EventHandler dispatcher)
+    public SapphireReplicaID addReplica(MicroServiceID sapphireObjId, EventHandler dispatcher)
             throws MicroServiceNotFoundException {
         SapphireInstanceManager instance = sapphireObjects.get(sapphireObjId);
         if (instance == null) {
@@ -131,7 +131,7 @@ public class SapphireObjectManager {
      * @param sapphireObjId sapphire object ID
      * @throws MicroServiceNotFoundException
      */
-    public void removeInstance(SapphireObjectID sapphireObjId)
+    public void removeInstance(MicroServiceID sapphireObjId)
             throws MicroServiceNotFoundException, RemoteException {
         SapphireInstanceManager instanceManager = sapphireObjects.get(sapphireObjId);
         if (instanceManager == null) {
@@ -152,8 +152,8 @@ public class SapphireObjectManager {
      *
      * @throws java.rmi.RemoteException
      */
-    public ArrayList<SapphireObjectID> getAllSapphireObjects() throws RemoteException {
-        ArrayList<SapphireObjectID> arr = new ArrayList<SapphireObjectID>(sapphireObjects.keySet());
+    public ArrayList<MicroServiceID> getAllSapphireObjects() throws RemoteException {
+        ArrayList<MicroServiceID> arr = new ArrayList<MicroServiceID>(sapphireObjects.keySet());
         return arr;
     }
 
@@ -164,7 +164,7 @@ public class SapphireObjectManager {
      * @param name
      * @throws MicroServiceNotFoundException
      */
-    public void setInstanceName(SapphireObjectID sapphireObjId, String name)
+    public void setInstanceName(MicroServiceID sapphireObjId, String name)
             throws MicroServiceNotFoundException, MicroServiceNameModificationException {
         SapphireInstanceManager instance = sapphireObjects.get(sapphireObjId);
         if (instance == null) {
@@ -239,7 +239,7 @@ public class SapphireObjectManager {
      * @throws MicroServiceNotFoundException
      * @deprecated
      */
-    public EventHandler getInstanceDispatcher(SapphireObjectID sapphireObjId)
+    public EventHandler getInstanceDispatcher(MicroServiceID sapphireObjId)
             throws MicroServiceNotFoundException {
         SapphireInstanceManager instance = sapphireObjects.get(sapphireObjId);
         if (instance == null) {
@@ -256,7 +256,7 @@ public class SapphireObjectManager {
      * @return
      * @throws MicroServiceNotFoundException
      */
-    public AppObjectStub getInstanceObjectStub(SapphireObjectID sapphireObjId)
+    public AppObjectStub getInstanceObjectStub(MicroServiceID sapphireObjId)
             throws MicroServiceNotFoundException {
         SapphireInstanceManager instance = sapphireObjects.get(sapphireObjId);
         if (instance == null) {
@@ -290,7 +290,7 @@ public class SapphireObjectManager {
      * @return
      * @throws MicroServiceNotFoundException
      */
-    public SapphireObjectID getSapphireInstanceIdByName(String sapphireObjName)
+    public MicroServiceID getSapphireInstanceIdByName(String sapphireObjName)
             throws MicroServiceNotFoundException {
         SapphireInstanceManager instance = sapphireObjectsByName.get(sapphireObjName);
         if (instance == null) {
@@ -307,7 +307,7 @@ public class SapphireObjectManager {
      * @return
      * @throws MicroServiceNotFoundException
      */
-    public EventHandler[] getSapphireReplicasById(SapphireObjectID oid)
+    public EventHandler[] getSapphireReplicasById(MicroServiceID oid)
             throws MicroServiceNotFoundException {
         SapphireInstanceManager instance = sapphireObjects.get(oid);
         if (instance == null) {
@@ -317,7 +317,7 @@ public class SapphireObjectManager {
         return instance.getReplicas();
     }
 
-    public int incrRefCountAndGet(SapphireObjectID sapphireObjId)
+    public int incrRefCountAndGet(MicroServiceID sapphireObjId)
             throws MicroServiceNotFoundException {
         SapphireInstanceManager instance = sapphireObjects.get(sapphireObjId);
         if (instance == null) {
@@ -331,7 +331,7 @@ public class SapphireObjectManager {
         }
     }
 
-    public int decrRefCountAndGet(SapphireObjectID sapphireObjId)
+    public int decrRefCountAndGet(MicroServiceID sapphireObjId)
             throws MicroServiceNotFoundException {
         SapphireInstanceManager instance = sapphireObjects.get(sapphireObjId);
         if (instance == null) {

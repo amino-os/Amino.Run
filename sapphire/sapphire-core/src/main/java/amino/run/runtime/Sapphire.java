@@ -11,9 +11,9 @@ import amino.run.app.SapphireObject;
 import amino.run.common.AppObject;
 import amino.run.common.AppObjectStub;
 import amino.run.common.MicroServiceCreationException;
+import amino.run.common.MicroServiceID;
 import amino.run.common.MicroServiceNotFoundException;
 import amino.run.common.MicroServiceReplicaNotFoundException;
-import amino.run.common.SapphireObjectID;
 import amino.run.common.SapphireReplicaID;
 import amino.run.common.Utils;
 import amino.run.compiler.GlobalStubConstants;
@@ -72,7 +72,7 @@ public class Sapphire {
             }
 
             /* Register for a sapphire object Id from OMS */
-            SapphireObjectID sapphireObjId =
+            MicroServiceID sapphireObjId =
                     GlobalKernelReferences.nodeServer.oms.registerSapphireObject();
 
             /* Get the region of current server */
@@ -120,7 +120,7 @@ public class Sapphire {
                             .create();
 
             /* Register for a sapphire object Id from OMS */
-            SapphireObjectID sapphireObjId =
+            MicroServiceID sapphireObjId =
                     GlobalKernelReferences.nodeServer.oms.registerSapphireObject();
 
             /* Get the region of current server */
@@ -196,7 +196,7 @@ public class Sapphire {
      * @throws CloneNotSupportedException
      */
     public static AppObjectStub createPolicy(
-            SapphireObjectID sapphireObjId,
+            MicroServiceID sapphireObjId,
             MicroServiceSpec spec,
             List<SapphirePolicyContainer> policyNameChain,
             List<SapphirePolicyContainer> processedPolicies,
@@ -321,7 +321,7 @@ public class Sapphire {
             throw new RuntimeException("Tried to delete invalid sapphire object");
         }
 
-        SapphireObjectID sapphireObjId = null;
+        MicroServiceID sapphireObjId = null;
         try {
             AppObjectStub appObjectStub = (AppObjectStub) stub;
             Field field =
@@ -354,7 +354,7 @@ public class Sapphire {
      * @throws MicroServiceNotFoundException
      */
     public static Policy.GroupPolicy createGroupPolicy(
-            Class<?> policyClass, SapphireObjectID sapphireObjId)
+            Class<?> policyClass, MicroServiceID sapphireObjId)
             throws RemoteException, ClassNotFoundException, KernelObjectNotCreatedException,
                     MicroServiceNotFoundException {
         Policy.GroupPolicy groupPolicyStub = (GroupPolicy) getPolicyStub(policyClass);
@@ -520,9 +520,7 @@ public class Sapphire {
      * @throws RemoteException
      */
     private static void registerSapphireReplica(
-            SapphireObjectID sapphireObjId,
-            ServerPolicy serverPolicy,
-            ServerPolicy serverPolicyStub)
+            MicroServiceID sapphireObjId, ServerPolicy serverPolicy, ServerPolicy serverPolicyStub)
             throws MicroServiceNotFoundException, MicroServiceReplicaNotFoundException,
                     RemoteException {
         /* Register for a replica ID from OMS */

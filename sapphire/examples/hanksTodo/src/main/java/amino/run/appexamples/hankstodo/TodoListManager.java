@@ -8,7 +8,7 @@ import amino.run.app.DMSpec;
 import amino.run.app.Language;
 import amino.run.app.SapphireObject;
 import amino.run.app.MicroServiceSpec;
-import amino.run.common.SapphireObjectCreationException;
+import amino.run.common.MicroServiceCreationException;
 import amino.run.policy.dht.DHTPolicy;
 import amino.run.policy.replication.ConsensusRSMPolicy;
 
@@ -26,7 +26,7 @@ public class TodoListManager implements SapphireObject {
 		System.out.println("Input received: " + input);
 	}
 
-	public TodoList newTodoList(String id) throws SapphireObjectCreationException {
+	public TodoList newTodoList(String id) throws MicroServiceCreationException {
 		TodoList t = todoLists.get(id);
 		if (t == null) {
 			MicroServiceSpec spec;

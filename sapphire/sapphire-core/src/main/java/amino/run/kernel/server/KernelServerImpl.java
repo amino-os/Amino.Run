@@ -2,7 +2,7 @@ package amino.run.kernel.server;
 
 import amino.run.app.MicroServiceSpec;
 import amino.run.common.AppObjectStub;
-import amino.run.common.SapphireObjectCreationException;
+import amino.run.common.MicroServiceCreationException;
 import amino.run.common.SapphireObjectNotFoundException;
 import amino.run.common.SapphireObjectReplicaNotFoundException;
 import amino.run.kernel.client.KernelClient;
@@ -350,7 +350,7 @@ public class KernelServerImpl implements KernelServer {
 
     @Override
     public AppObjectStub createSapphireObject(String soSpecYaml, Object... args)
-            throws SapphireObjectCreationException {
+            throws MicroServiceCreationException {
         logger.log(
                 Level.INFO,
                 String.format(

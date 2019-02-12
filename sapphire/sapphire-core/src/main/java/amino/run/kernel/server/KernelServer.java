@@ -1,7 +1,7 @@
 package amino.run.kernel.server;
 
 import amino.run.common.AppObjectStub;
-import amino.run.common.SapphireObjectCreationException;
+import amino.run.common.MicroServiceCreationException;
 import amino.run.common.SapphireObjectNotFoundException;
 import amino.run.common.SapphireObjectReplicaNotFoundException;
 import amino.run.kernel.common.KernelOID;
@@ -35,9 +35,9 @@ public interface KernelServer extends Remote {
      * @param args parameters to sapphire object constructor
      * @return sapphire object stub
      * @throws RemoteException
-     * @throws SapphireObjectCreationException
+     * @throws MicroServiceCreationException
      * @throws ClassNotFoundException
      */
     AppObjectStub createSapphireObject(String sapphireObjectSpec, Object... args)
-            throws RemoteException, SapphireObjectCreationException, ClassNotFoundException;
+            throws RemoteException, MicroServiceCreationException, ClassNotFoundException;
 }

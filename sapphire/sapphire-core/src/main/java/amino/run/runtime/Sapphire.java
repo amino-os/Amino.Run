@@ -10,7 +10,7 @@ import amino.run.app.MicroServiceSpec;
 import amino.run.app.SapphireObject;
 import amino.run.common.AppObject;
 import amino.run.common.AppObjectStub;
-import amino.run.common.SapphireObjectCreationException;
+import amino.run.common.MicroServiceCreationException;
 import amino.run.common.SapphireObjectID;
 import amino.run.common.SapphireObjectNotFoundException;
 import amino.run.common.SapphireObjectReplicaNotFoundException;
@@ -54,7 +54,7 @@ public class Sapphire {
      * @return sapphire object stub
      */
     public static Object new_(MicroServiceSpec spec, Object... args)
-            throws SapphireObjectCreationException {
+            throws MicroServiceCreationException {
         AppObjectStub appStub = null;
         try {
             logger.info("Creating object for spec:" + spec);
@@ -83,7 +83,7 @@ public class Sapphire {
         } catch (Exception e) {
             String msg = String.format("Failed to create sapphire object '%s'", spec);
             logger.log(Level.SEVERE, msg, e);
-            throw new SapphireObjectCreationException(msg, e);
+            throw new MicroServiceCreationException(msg, e);
         }
 
         return appStub;

@@ -1,7 +1,7 @@
 package amino.run.app;
 
 import amino.run.common.AppObjectStub;
-import amino.run.common.SapphireObjectCreationException;
+import amino.run.common.MicroServiceCreationException;
 import amino.run.common.SapphireObjectID;
 import amino.run.common.SapphireObjectNotFoundException;
 import amino.run.graal.io.SerializeValue;
@@ -48,10 +48,10 @@ public class OMSClient {
      * @param args arguments to sapphire object constructor
      * @return ID of the newly created sapphire object
      * @throws RemoteException unable to reach OMS server
-     * @throws SapphireObjectCreationException unable to create sapphire object.
+     * @throws MicroServiceCreationException unable to create sapphire object.
      */
     public SapphireObjectID createSapphireObject(MicroServiceSpec spec, Object... args)
-            throws RemoteException, SapphireObjectCreationException {
+            throws RemoteException, MicroServiceCreationException {
 
         // convert graal...Value to serializable object
         Object[] serializableObjects = new Object[args.length];
@@ -63,8 +63,8 @@ public class OMSClient {
                 } catch (Exception e) {
                     // TODO: Add Serialization exception for
                     // amino.run.graal.Serialization/Deserialization
-                    // currently sending SapphireObjectCreationException
-                    throw new SapphireObjectCreationException("Failed to serialize");
+                    // currently sending MicroServiceCreationException
+                    throw new MicroServiceCreationException("Failed to serialize");
                 }
                 continue;
             }

@@ -47,13 +47,13 @@ public class SapphireObjectManager {
     /**
      * Set the Event handler of sapphire object
      *
-     * @param sapphireObjId
+     * @param MicroServiceId
      * @param dispatcher
      * @throws MicroServiceNotFoundException
      */
-    public void setInstanceDispatcher(MicroServiceID sapphireObjId, EventHandler dispatcher)
+    public void setInstanceDispatcher(MicroServiceID MicroServiceId, EventHandler dispatcher)
             throws MicroServiceNotFoundException {
-        SapphireInstanceManager instance = sapphireObjects.get(sapphireObjId);
+        SapphireInstanceManager instance = sapphireObjects.get(MicroServiceId);
         if (instance == null) {
             throw new MicroServiceNotFoundException("Not a valid Sapphire object id.");
         }
@@ -88,13 +88,13 @@ public class SapphireObjectManager {
     /**
      * Set the object stub of sapphire object
      *
-     * @param sapphireObjId
+     * @param MicroServiceId
      * @param objectStub
      * @throws MicroServiceNotFoundException
      */
-    public void setInstanceObjectStub(MicroServiceID sapphireObjId, AppObjectStub objectStub)
+    public void setInstanceObjectStub(MicroServiceID MicroServiceId, AppObjectStub objectStub)
             throws MicroServiceNotFoundException {
-        SapphireInstanceManager instance = sapphireObjects.get(sapphireObjId);
+        SapphireInstanceManager instance = sapphireObjects.get(MicroServiceId);
         if (instance == null) {
             throw new MicroServiceNotFoundException("Not a valid Sapphire object id.");
         }
@@ -104,14 +104,14 @@ public class SapphireObjectManager {
     /**
      * Adds a sapphire replica of given sapphire object
      *
-     * @param sapphireObjId
+     * @param MicroServiceId
      * @param dispatcher
      * @return Returns a new sapphire replica id
      * @throws MicroServiceNotFoundException
      */
-    public SapphireReplicaID addReplica(MicroServiceID sapphireObjId, EventHandler dispatcher)
+    public SapphireReplicaID addReplica(MicroServiceID MicroServiceId, EventHandler dispatcher)
             throws MicroServiceNotFoundException {
-        SapphireInstanceManager instance = sapphireObjects.get(sapphireObjId);
+        SapphireInstanceManager instance = sapphireObjects.get(MicroServiceId);
         if (instance == null) {
             throw new MicroServiceNotFoundException("Not a valid Sapphire object id.");
         }
@@ -128,15 +128,15 @@ public class SapphireObjectManager {
     /**
      * Removes the sapphire object with the given ID.
      *
-     * @param sapphireObjId sapphire object ID
+     * @param MicroServiceId sapphire object ID
      * @throws MicroServiceNotFoundException
      */
-    public void removeInstance(MicroServiceID sapphireObjId)
+    public void removeInstance(MicroServiceID MicroServiceId)
             throws MicroServiceNotFoundException, RemoteException {
-        SapphireInstanceManager instanceManager = sapphireObjects.get(sapphireObjId);
+        SapphireInstanceManager instanceManager = sapphireObjects.get(MicroServiceId);
         if (instanceManager == null) {
             throw new MicroServiceNotFoundException(
-                    "Cannot find sapphire object with ID " + sapphireObjId);
+                    "Cannot find sapphire object with ID " + MicroServiceId);
         }
 
         instanceManager.clear();
@@ -144,7 +144,7 @@ public class SapphireObjectManager {
         if (instanceManager.getName() != null) {
             sapphireObjectsByName.remove(instanceManager.getName());
         }
-        sapphireObjects.remove(sapphireObjId);
+        sapphireObjects.remove(MicroServiceId);
     }
 
     /**
@@ -160,13 +160,13 @@ public class SapphireObjectManager {
     /**
      * Sets the name to sapphire object
      *
-     * @param sapphireObjId
+     * @param MicroServiceId
      * @param name
      * @throws MicroServiceNotFoundException
      */
-    public void setInstanceName(MicroServiceID sapphireObjId, String name)
+    public void setInstanceName(MicroServiceID MicroServiceId, String name)
             throws MicroServiceNotFoundException, MicroServiceNameModificationException {
-        SapphireInstanceManager instance = sapphireObjects.get(sapphireObjId);
+        SapphireInstanceManager instance = sapphireObjects.get(MicroServiceId);
         if (instance == null) {
             throw new MicroServiceNotFoundException("Not a valid Sapphire object id.");
         }
@@ -174,7 +174,7 @@ public class SapphireObjectManager {
         /* Object name is not allowed to change once set. Because reference count are updated based
         on attachByName and detachByName. And name change would affect it */
         if (instance.getName() != null) {
-            throw new MicroServiceNameModificationException(sapphireObjId, instance.getName());
+            throw new MicroServiceNameModificationException(MicroServiceId, instance.getName());
         }
 
         /* This name is already used for some other sapphire object */
@@ -234,14 +234,14 @@ public class SapphireObjectManager {
     /**
      * Get the event handler of sapphire object
      *
-     * @param sapphireObjId
+     * @param MicroServiceId
      * @return
      * @throws MicroServiceNotFoundException
      * @deprecated
      */
-    public EventHandler getInstanceDispatcher(MicroServiceID sapphireObjId)
+    public EventHandler getInstanceDispatcher(MicroServiceID MicroServiceId)
             throws MicroServiceNotFoundException {
-        SapphireInstanceManager instance = sapphireObjects.get(sapphireObjId);
+        SapphireInstanceManager instance = sapphireObjects.get(MicroServiceId);
         if (instance == null) {
             throw new MicroServiceNotFoundException("Not a valid Sapphire object id.");
         }
@@ -252,13 +252,13 @@ public class SapphireObjectManager {
     /**
      * Get the object stub of sapphire object
      *
-     * @param sapphireObjId
+     * @param MicroServiceId
      * @return
      * @throws MicroServiceNotFoundException
      */
-    public AppObjectStub getInstanceObjectStub(MicroServiceID sapphireObjId)
+    public AppObjectStub getInstanceObjectStub(MicroServiceID MicroServiceId)
             throws MicroServiceNotFoundException {
-        SapphireInstanceManager instance = sapphireObjects.get(sapphireObjId);
+        SapphireInstanceManager instance = sapphireObjects.get(MicroServiceId);
         if (instance == null) {
             throw new MicroServiceNotFoundException("Not a valid Sapphire object id.");
         }
@@ -317,9 +317,9 @@ public class SapphireObjectManager {
         return instance.getReplicas();
     }
 
-    public int incrRefCountAndGet(MicroServiceID sapphireObjId)
+    public int incrRefCountAndGet(MicroServiceID MicroServiceId)
             throws MicroServiceNotFoundException {
-        SapphireInstanceManager instance = sapphireObjects.get(sapphireObjId);
+        SapphireInstanceManager instance = sapphireObjects.get(MicroServiceId);
         if (instance == null) {
             throw new MicroServiceNotFoundException("Not a valid Sapphire object id.");
         }
@@ -331,9 +331,9 @@ public class SapphireObjectManager {
         }
     }
 
-    public int decrRefCountAndGet(MicroServiceID sapphireObjId)
+    public int decrRefCountAndGet(MicroServiceID MicroServiceId)
             throws MicroServiceNotFoundException {
-        SapphireInstanceManager instance = sapphireObjects.get(sapphireObjId);
+        SapphireInstanceManager instance = sapphireObjects.get(MicroServiceId);
         if (instance == null) {
             throw new MicroServiceNotFoundException("Not a valid Sapphire object id.");
         }

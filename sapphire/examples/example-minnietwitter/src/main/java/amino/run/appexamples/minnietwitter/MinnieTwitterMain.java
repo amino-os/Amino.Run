@@ -84,11 +84,11 @@ public class MinnieTwitterMain {
               .setJavaClassName("amino.run.appexamples.minnietwitter.TwitterManager")
               .create();
 
-      MicroServiceID sapphireObjId = server.create(spec.toString());
-      TwitterManager tm = (TwitterManager) server.acquireStub(sapphireObjId);
+      MicroServiceID MicroServiceId = server.create(spec.toString());
+      TwitterManager tm = (TwitterManager) server.acquireStub(MicroServiceId);
 
       /* To set a name to sapphire object. It is required to set the name if the object has to be shared */
-      server.setName(sapphireObjId, "MyTwitterManager");
+      server.setName(MicroServiceId, "MyTwitterManager");
 
       /* Attach to sapphire object is to get reference to shared sapphire object. Generally it
       is not done in the same thread which creates sapphire object. In this example,
@@ -133,7 +133,7 @@ public class MinnieTwitterMain {
       /* Explicit deletion from app */
       userManager.deleteUser("user" + 0);
       tm.deInitialize();
-      server.delete(sapphireObjId);
+      server.delete(MicroServiceId);
     } catch (Exception e) {
       e.printStackTrace();
     }
@@ -151,10 +151,10 @@ public class MinnieTwitterMain {
       KernelServer nodeServer = new KernelServerImpl(hostAddr, omsAddr);
 
       /* Get Twitter and User Manager */
-      MicroServiceID sapphireObjId =
+      MicroServiceID MicroServiceId =
           server.create(
               "amino.run.appexamples.minnietwitter.TwitterManager", new Object[0]);
-      TwitterManager tm = (TwitterManager) server.acquireStub(sapphireObjId);
+      TwitterManager tm = (TwitterManager) server.acquireStub(MicroServiceId);
       UserManager userManager = tm.getUserManager();
       TagManager tagManager = tm.getTagManager();
 

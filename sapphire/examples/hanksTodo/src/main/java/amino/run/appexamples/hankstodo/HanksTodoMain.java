@@ -51,8 +51,8 @@ public class HanksTodoMain {
                             .setJavaClassName("amino.run.appexamples.hankstodo.TodoListManager")
                             .create();
 
-            MicroServiceID sapphireObjId = server.create(spec.toString());
-            TodoListManager tlm = (TodoListManager) server.acquireStub(sapphireObjId);
+            MicroServiceID MicroServiceId = server.create(spec.toString());
+            TodoListManager tlm = (TodoListManager) server.acquireStub(MicroServiceId);
             System.out.println("Received tlm: " + tlm);
 
             TodoList td1 = tlm.newTodoList(ListName);
@@ -97,7 +97,7 @@ public class HanksTodoMain {
 
             // Delete the created SapphireObjects
             tlm.deleteTodoList(ListName);
-            server.delete(sapphireObjId);
+            server.delete(MicroServiceId);
 
         } catch (Exception e) {
             // TODO Auto-generated catch block

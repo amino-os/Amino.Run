@@ -40,12 +40,12 @@ public class HelloWorldMain {
                             .create())
                     .create();
 
-            MicroServiceID sapphireObjId =
+            MicroServiceID MicroServiceId =
                     server.create(spec.toString(), world);
-            HelloWorld helloWorld = (HelloWorld) server.acquireStub(sapphireObjId);
+            HelloWorld helloWorld = (HelloWorld) server.acquireStub(MicroServiceId);
             System.out.println(helloWorld.sayHello());
 
-            server.delete(sapphireObjId);
+            server.delete(MicroServiceId);
         } catch (Exception e) {
             e.printStackTrace();
         }

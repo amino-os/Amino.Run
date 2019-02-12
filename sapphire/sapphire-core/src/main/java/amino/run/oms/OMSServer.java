@@ -42,13 +42,13 @@ public interface OMSServer extends Remote {
     void heartbeatKernelServer(ServerInfo srvinfo)
             throws RemoteException, NotBoundException, KernelServerNotFoundException;
 
-    Policy.GroupPolicy createGroupPolicy(Class<?> policyClass, MicroServiceID sapphireObjId)
+    Policy.GroupPolicy createGroupPolicy(Class<?> policyClass, MicroServiceID MicroServiceId)
             throws RemoteException, ClassNotFoundException, KernelObjectNotCreatedException,
                     MicroServiceNotFoundException;
 
     MicroServiceID registerSapphireObject() throws RemoteException;
 
-    SapphireReplicaID registerSapphireReplica(MicroServiceID sapphireObjId)
+    SapphireReplicaID registerSapphireReplica(MicroServiceID MicroServiceId)
             throws RemoteException, MicroServiceNotFoundException;
 
     void setSapphireReplicaDispatcher(SapphireReplicaID replicaId, EventHandler dispatcher)
@@ -57,7 +57,7 @@ public interface OMSServer extends Remote {
 
     boolean delete(MicroServiceID id) throws RemoteException, MicroServiceNotFoundException;
 
-    void unRegisterSapphireObject(MicroServiceID sapphireObjId)
+    void unRegisterSapphireObject(MicroServiceID MicroServiceId)
             throws RemoteException, MicroServiceNotFoundException;
 
     void unRegisterSapphireReplica(SapphireReplicaID replicaId)

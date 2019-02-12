@@ -72,14 +72,14 @@ public class Sapphire {
             }
 
             /* Register for a sapphire object Id from OMS */
-            MicroServiceID sapphireObjId =
+            MicroServiceID MicroServiceId =
                     GlobalKernelReferences.nodeServer.oms.registerSapphireObject();
 
             /* Get the region of current server */
             String region = GlobalKernelReferences.nodeServer.getRegion();
             appStub =
                     createPolicy(
-                            sapphireObjId, spec, policyNameChain, processedPolicies, region, args);
+                            MicroServiceId, spec, policyNameChain, processedPolicies, region, args);
         } catch (Exception e) {
             String msg = String.format("Failed to create sapphire object '%s'", spec);
             logger.log(Level.SEVERE, msg, e);
@@ -120,14 +120,14 @@ public class Sapphire {
                             .create();
 
             /* Register for a sapphire object Id from OMS */
-            MicroServiceID sapphireObjId =
+            MicroServiceID MicroServiceId =
                     GlobalKernelReferences.nodeServer.oms.registerSapphireObject();
 
             /* Get the region of current server */
             String region = GlobalKernelReferences.nodeServer.getRegion();
             AppObjectStub appStub =
                     createPolicy(
-                            sapphireObjId, spec, policyNameChain, processedPolicies, region, args);
+                            MicroServiceId, spec, policyNameChain, processedPolicies, region, args);
             logger.info("Sapphire Object created: " + appObjectClass.getName());
             return appStub;
         } catch (Exception e) {
@@ -177,7 +177,7 @@ public class Sapphire {
      * processed for given policyNameChain to existing processed policy list and returns app object
      * stub to client.
      *
-     * @param sapphireObjId Sapphire object Id
+     * @param MicroServiceId Sapphire object Id
      * @param spec Sapphire object spec
      * @param policyNameChain List of policies that need to be created
      * @param processedPolicies List of policies that were already created. Policies created with
@@ -196,7 +196,7 @@ public class Sapphire {
      * @throws CloneNotSupportedException
      */
     public static AppObjectStub createPolicy(
-            MicroServiceID sapphireObjId,
+            MicroServiceID MicroServiceId,
             MicroServiceSpec spec,
             List<SapphirePolicyContainer> policyNameChain,
             List<SapphirePolicyContainer> processedPolicies,
@@ -227,7 +227,7 @@ public class Sapphire {
             /* Create the Kernel Object for the Group Policy and get the Group Policy Stub from OMS */
             groupPolicyStub =
                     GlobalKernelReferences.nodeServer.oms.createGroupPolicy(
-                            sapphireGroupPolicyClass, sapphireObjId);
+                            sapphireGroupPolicyClass, MicroServiceId);
         } else {
             groupPolicyStub = existingGroupPolicy;
             /* Get the app object to be cloned from the base server */
@@ -243,7 +243,7 @@ public class Sapphire {
 
         /* Initialize the server policy and return a local pointer to the object itself */
         Policy.ServerPolicy serverPolicy = initializeServerPolicy(serverPolicyStub);
-        registerSapphireReplica(sapphireObjId, serverPolicy, serverPolicyStub);
+        registerSapphireReplica(MicroServiceId, serverPolicy, serverPolicyStub);
 
         /* Link everything together */
         client.setServer(serverPolicyStub);
@@ -285,7 +285,7 @@ public class Sapphire {
 
         if (nextPoliciesToCreate.size() != 0) {
             createPolicy(
-                    sapphireObjId, spec, nextPoliciesToCreate, processedPolicies, region, appArgs);
+                    MicroServiceId, spec, nextPoliciesToCreate, processedPolicies, region, appArgs);
         }
 
         AppObjectStub appStub = null;
@@ -321,7 +321,7 @@ public class Sapphire {
             throw new RuntimeException("Tried to delete invalid sapphire object");
         }
 
-        MicroServiceID sapphireObjId = null;
+        MicroServiceID MicroServiceId = null;
         try {
             AppObjectStub appObjectStub = (AppObjectStub) stub;
             Field field =
@@ -330,13 +330,13 @@ public class Sapphire {
                             .getDeclaredField(GlobalStubConstants.APPSTUB_POLICY_CLIENT_FIELD_NAME);
             field.setAccessible(true);
             Policy.ClientPolicy clientPolicy = (Policy.ClientPolicy) field.get(appObjectStub);
-            sapphireObjId = clientPolicy.getGroup().getSapphireObjId();
-            GlobalKernelReferences.nodeServer.oms.delete(sapphireObjId);
+            MicroServiceId = clientPolicy.getGroup().getSapphireObjId();
+            GlobalKernelReferences.nodeServer.oms.delete(MicroServiceId);
         } catch (NoSuchFieldException e) {
             throw new RuntimeException("Tried to delete invalid sapphire object.", e);
         } catch (MicroServiceNotFoundException e) {
             /* Ignore it. It might have happened that sapphire object is already deleted and still hold reference */
-            logger.warning(String.format("%s is not found. Probably deleted.", sapphireObjId));
+            logger.warning(String.format("%s is not found. Probably deleted.", MicroServiceId));
         } catch (Exception e) {
             throw new RuntimeException("Failed to delete sapphire object.", e);
         }
@@ -346,7 +346,7 @@ public class Sapphire {
      * Creates the group policy instance returns group policy object Stub
      *
      * @param policyClass
-     * @param sapphireObjId
+     * @param MicroServiceId
      * @return Returns group policy object stub
      * @throws RemoteException
      * @throws ClassNotFoundException
@@ -354,14 +354,14 @@ public class Sapphire {
      * @throws MicroServiceNotFoundException
      */
     public static Policy.GroupPolicy createGroupPolicy(
-            Class<?> policyClass, MicroServiceID sapphireObjId)
+            Class<?> policyClass, MicroServiceID MicroServiceId)
             throws RemoteException, ClassNotFoundException, KernelObjectNotCreatedException,
                     MicroServiceNotFoundException {
         Policy.GroupPolicy groupPolicyStub = (GroupPolicy) getPolicyStub(policyClass);
         try {
             GroupPolicy groupPolicy = initializeGroupPolicy(groupPolicyStub);
-            groupPolicyStub.setSapphireObjId(sapphireObjId);
-            groupPolicy.setSapphireObjId(sapphireObjId);
+            groupPolicyStub.setSapphireObjId(MicroServiceId);
+            groupPolicy.setSapphireObjId(MicroServiceId);
         } catch (KernelObjectNotFoundException e) {
             logger.severe(
                     "Failed to find the group kernel object created just before it. Exception info: "
@@ -512,7 +512,7 @@ public class Sapphire {
      * Processes Sapphire replica by registering for a replica ID and handler for the replica to
      * OMS.
      *
-     * @param sapphireObjId Sapphire object ID
+     * @param MicroServiceId Sapphire object ID
      * @param serverPolicy ServerPolicy
      * @param serverPolicyStub ServerPolicy stub
      * @throws MicroServiceNotFoundException
@@ -520,12 +520,12 @@ public class Sapphire {
      * @throws RemoteException
      */
     private static void registerSapphireReplica(
-            MicroServiceID sapphireObjId, ServerPolicy serverPolicy, ServerPolicy serverPolicyStub)
+            MicroServiceID MicroServiceId, ServerPolicy serverPolicy, ServerPolicy serverPolicyStub)
             throws MicroServiceNotFoundException, MicroServiceReplicaNotFoundException,
                     RemoteException {
         /* Register for a replica ID from OMS */
         SapphireReplicaID sapphireReplicaId =
-                GlobalKernelReferences.nodeServer.oms.registerSapphireReplica(sapphireObjId);
+                GlobalKernelReferences.nodeServer.oms.registerSapphireReplica(MicroServiceId);
 
         serverPolicyStub.setReplicaId(sapphireReplicaId);
         serverPolicy.setReplicaId(sapphireReplicaId);

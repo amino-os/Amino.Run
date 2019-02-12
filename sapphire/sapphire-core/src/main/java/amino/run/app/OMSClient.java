@@ -76,14 +76,14 @@ public class OMSClient {
     /**
      * Acquire the reference to the sapphire object with the specifid ID.
      *
-     * @param sapphireObjId sapphire object ID
+     * @param MicroServiceId sapphire object ID
      * @return sapphire object stub. Applications use stub to invoke methods on remote sapphire
      *     objects.
      * @throws RemoteException unable to reach OMS server
      * @throws MicroServiceNotFoundException unable to find a sapphire object with the given ID
      */
-    public AppObjectStub acquireSapphireObjectStub(MicroServiceID sapphireObjId)
+    public AppObjectStub acquireSapphireObjectStub(MicroServiceID MicroServiceId)
             throws RemoteException, MicroServiceNotFoundException {
-        return server.acquireStub(sapphireObjId);
+        return server.acquireStub(MicroServiceId);
     }
 }

@@ -41,8 +41,8 @@ public class MultiDMTestCases {
     }
 
     private void runTest(MicroServiceSpec spec, boolean consensus) throws Exception {
-        MicroServiceID sapphireObjId = registry.create(spec.toString());
-        KVStore store = (KVStore) registry.acquireStub(sapphireObjId);
+        MicroServiceID MicroServiceId = registry.create(spec.toString());
+        KVStore store = (KVStore) registry.acquireStub(MicroServiceId);
         // consensus DM needs some time to elect the leader other wise function call will fail
         if (consensus) {
             Thread.sleep(5000);

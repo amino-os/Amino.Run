@@ -1,8 +1,8 @@
 package amino.run.policy.replication;
 
 import amino.run.app.MicroServiceSpec;
-import amino.run.common.SapphireObjectNotFoundException;
-import amino.run.common.SapphireObjectReplicaNotFoundException;
+import amino.run.common.MicroServiceNotFoundException;
+import amino.run.common.MicroServiceReplicaNotFoundException;
 import amino.run.policy.DefaultPolicy;
 import amino.run.policy.Policy;
 import amino.run.policy.util.consensus.raft.AlreadyVotedException;
@@ -254,9 +254,9 @@ public class ConsensusRSMPolicy extends DefaultPolicy {
                 // the mean time convert to an Error.
                 throw new Error(
                         "Could not create new group policy because the oms is not available.", e);
-            } catch (SapphireObjectNotFoundException e) {
+            } catch (MicroServiceNotFoundException e) {
                 throw new Error("Failed to find sapphire object.", e);
-            } catch (SapphireObjectReplicaNotFoundException e) {
+            } catch (MicroServiceReplicaNotFoundException e) {
                 throw new Error("Failed to find sapphire object replica.", e);
             }
         }

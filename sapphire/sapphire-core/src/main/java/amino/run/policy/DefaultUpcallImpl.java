@@ -1,7 +1,7 @@
 package amino.run.policy;
 
-import amino.run.common.SapphireObjectNotFoundException;
-import amino.run.common.SapphireObjectReplicaNotFoundException;
+import amino.run.common.MicroServiceNotFoundException;
+import amino.run.common.MicroServiceReplicaNotFoundException;
 import amino.run.policy.transaction.IllegalComponentException;
 import amino.run.policy.transaction.TransactionContext;
 import amino.run.policy.transaction.TwoPCClient;
@@ -64,8 +64,8 @@ public abstract class DefaultUpcallImpl extends Library {
         /* This function is added here just to generate the stub for this function in all Policies server policy */
         @Override
         public void sapphire_pin_to_server(InetSocketAddress server)
-                throws RemoteException, SapphireObjectNotFoundException,
-                        SapphireObjectReplicaNotFoundException {
+                throws RemoteException, MicroServiceNotFoundException,
+                        MicroServiceReplicaNotFoundException {
             super.sapphire_pin_to_server(server);
         }
 

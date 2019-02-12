@@ -1,9 +1,9 @@
 package amino.run.oms;
 
 import amino.run.common.AppObjectStub;
+import amino.run.common.MicroServiceNotFoundException;
+import amino.run.common.MicroServiceReplicaNotFoundException;
 import amino.run.common.SapphireObjectID;
-import amino.run.common.SapphireObjectNotFoundException;
-import amino.run.common.SapphireObjectReplicaNotFoundException;
 import amino.run.common.SapphireReplicaID;
 import amino.run.policy.Policy;
 import amino.run.runtime.EventHandler;
@@ -118,13 +118,13 @@ public class SapphireInstanceManager {
      *
      * @param rid
      * @return Returns event handler of the replica
-     * @throws SapphireObjectNotFoundException
+     * @throws MicroServiceNotFoundException
      */
     public EventHandler getReplicaDispatcher(SapphireReplicaID rid)
-            throws SapphireObjectReplicaNotFoundException {
+            throws MicroServiceReplicaNotFoundException {
         EventHandler dispatcher = replicaDispatchers.get(rid);
         if (dispatcher == null) {
-            throw new SapphireObjectReplicaNotFoundException(
+            throw new MicroServiceReplicaNotFoundException(
                     "Failed to find sapphire object replica dispatcher");
         }
         return dispatcher;
@@ -137,11 +137,11 @@ public class SapphireInstanceManager {
      * @param dispatcher
      */
     public void setReplicaDispatcher(SapphireReplicaID rid, EventHandler dispatcher)
-            throws SapphireObjectReplicaNotFoundException {
+            throws MicroServiceReplicaNotFoundException {
         if (replicaDispatchers.containsKey(rid)) {
             replicaDispatchers.put(rid, dispatcher);
         } else {
-            throw new SapphireObjectReplicaNotFoundException(
+            throw new MicroServiceReplicaNotFoundException(
                     "Failed to find sapphire object replica");
         }
     }

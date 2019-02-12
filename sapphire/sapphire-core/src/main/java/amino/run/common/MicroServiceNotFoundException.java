@@ -1,22 +1,22 @@
 package amino.run.common;
 
-public class SapphireObjectNotFoundException extends Exception {
+public class MicroServiceNotFoundException extends Exception {
 
-    public SapphireObjectNotFoundException() {
+    public MicroServiceNotFoundException() {
         // TODO Auto-generated constructor stub
     }
 
-    public SapphireObjectNotFoundException(String message) {
+    public MicroServiceNotFoundException(String message) {
         super(message);
         // TODO Auto-generated constructor stub
     }
 
-    public SapphireObjectNotFoundException(Throwable cause) {
+    public MicroServiceNotFoundException(Throwable cause) {
         super(cause);
         // TODO Auto-generated constructor stub
     }
 
-    public SapphireObjectNotFoundException(String message, Throwable cause) {
+    public MicroServiceNotFoundException(String message, Throwable cause) {
         super(message, cause);
         // TODO Auto-generated constructor stub
     }

@@ -11,9 +11,9 @@ import amino.run.app.SapphireObject;
 import amino.run.common.AppObject;
 import amino.run.common.AppObjectStub;
 import amino.run.common.MicroServiceCreationException;
+import amino.run.common.MicroServiceNotFoundException;
+import amino.run.common.MicroServiceReplicaNotFoundException;
 import amino.run.common.SapphireObjectID;
-import amino.run.common.SapphireObjectNotFoundException;
-import amino.run.common.SapphireObjectReplicaNotFoundException;
 import amino.run.common.SapphireReplicaID;
 import amino.run.common.Utils;
 import amino.run.compiler.GlobalStubConstants;
@@ -189,8 +189,8 @@ public class Sapphire {
      * @throws ClassNotFoundException
      * @throws KernelObjectNotFoundException
      * @throws KernelObjectNotCreatedException
-     * @throws SapphireObjectNotFoundException
-     * @throws SapphireObjectReplicaNotFoundException
+     * @throws MicroServiceNotFoundException
+     * @throws MicroServiceReplicaNotFoundException
      * @throws InstantiationException
      * @throws IllegalAccessException
      * @throws CloneNotSupportedException
@@ -203,8 +203,8 @@ public class Sapphire {
             String region,
             Object[] appArgs)
             throws IOException, ClassNotFoundException, KernelObjectNotFoundException,
-                    KernelObjectNotCreatedException, SapphireObjectNotFoundException,
-                    SapphireObjectReplicaNotFoundException, InstantiationException,
+                    KernelObjectNotCreatedException, MicroServiceNotFoundException,
+                    MicroServiceReplicaNotFoundException, InstantiationException,
                     IllegalAccessException, CloneNotSupportedException {
         if (policyNameChain == null || policyNameChain.size() == 0) return null;
         String policyName = policyNameChain.get(0).getPolicyName();
@@ -334,7 +334,7 @@ public class Sapphire {
             GlobalKernelReferences.nodeServer.oms.delete(sapphireObjId);
         } catch (NoSuchFieldException e) {
             throw new RuntimeException("Tried to delete invalid sapphire object.", e);
-        } catch (SapphireObjectNotFoundException e) {
+        } catch (MicroServiceNotFoundException e) {
             /* Ignore it. It might have happened that sapphire object is already deleted and still hold reference */
             logger.warning(String.format("%s is not found. Probably deleted.", sapphireObjId));
         } catch (Exception e) {
@@ -351,12 +351,12 @@ public class Sapphire {
      * @throws RemoteException
      * @throws ClassNotFoundException
      * @throws KernelObjectNotCreatedException
-     * @throws SapphireObjectNotFoundException
+     * @throws MicroServiceNotFoundException
      */
     public static Policy.GroupPolicy createGroupPolicy(
             Class<?> policyClass, SapphireObjectID sapphireObjId)
             throws RemoteException, ClassNotFoundException, KernelObjectNotCreatedException,
-                    SapphireObjectNotFoundException {
+                    MicroServiceNotFoundException {
         Policy.GroupPolicy groupPolicyStub = (GroupPolicy) getPolicyStub(policyClass);
         try {
             GroupPolicy groupPolicy = initializeGroupPolicy(groupPolicyStub);
@@ -515,15 +515,15 @@ public class Sapphire {
      * @param sapphireObjId Sapphire object ID
      * @param serverPolicy ServerPolicy
      * @param serverPolicyStub ServerPolicy stub
-     * @throws SapphireObjectNotFoundException
-     * @throws SapphireObjectReplicaNotFoundException
+     * @throws MicroServiceNotFoundException
+     * @throws MicroServiceReplicaNotFoundException
      * @throws RemoteException
      */
     private static void registerSapphireReplica(
             SapphireObjectID sapphireObjId,
             ServerPolicy serverPolicy,
             ServerPolicy serverPolicyStub)
-            throws SapphireObjectNotFoundException, SapphireObjectReplicaNotFoundException,
+            throws MicroServiceNotFoundException, MicroServiceReplicaNotFoundException,
                     RemoteException {
         /* Register for a replica ID from OMS */
         SapphireReplicaID sapphireReplicaId =

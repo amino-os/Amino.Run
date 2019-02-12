@@ -2,9 +2,9 @@ package amino.run.app;
 
 import amino.run.common.AppObjectStub;
 import amino.run.common.MicroServiceCreationException;
-import amino.run.common.SapphireObjectID;
 import amino.run.common.MicroServiceNameModificationException;
-import amino.run.common.SapphireObjectNotFoundException;
+import amino.run.common.MicroServiceNotFoundException;
+import amino.run.common.SapphireObjectID;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
@@ -29,10 +29,10 @@ public interface Registry extends Remote {
      * @param microServiceId
      * @return Application client side instance of microservice
      * @throws RemoteException
-     * @throws SapphireObjectNotFoundException
+     * @throws MicroServiceNotFoundException
      */
     AppObjectStub acquireStub(SapphireObjectID microServiceId)
-            throws RemoteException, SapphireObjectNotFoundException;
+            throws RemoteException, MicroServiceNotFoundException;
 
     /**
      * Attaches the client to an existing named microservice and returns the application client side
@@ -41,9 +41,9 @@ public interface Registry extends Remote {
      * @param name Name of the microservice to attach to
      * @return Application client side instance of microservice
      * @throws RemoteException
-     * @throws SapphireObjectNotFoundException
+     * @throws MicroServiceNotFoundException
      */
-    AppObjectStub attachTo(String name) throws RemoteException, SapphireObjectNotFoundException;
+    AppObjectStub attachTo(String name) throws RemoteException, MicroServiceNotFoundException;
 
     /**
      * Detaches the client from an existing named microservice.
@@ -52,9 +52,9 @@ public interface Registry extends Remote {
      * @param name Name of microservice to detach from
      * @return True or False indicating success or failure
      * @throws RemoteException
-     * @throws SapphireObjectNotFoundException
+     * @throws MicroServiceNotFoundException
      */
-    boolean detachFrom(String name) throws RemoteException, SapphireObjectNotFoundException;
+    boolean detachFrom(String name) throws RemoteException, MicroServiceNotFoundException;
 
     /**
      * Assigns a name to a microservice.
@@ -63,12 +63,12 @@ public interface Registry extends Remote {
      * @param id
      * @param name
      * @throws RemoteException
-     * @throws SapphireObjectNotFoundException
+     * @throws MicroServiceNotFoundException
      * @throws MicroServiceNameModificationException
      */
     void setName(SapphireObjectID id, String name)
-            throws RemoteException, SapphireObjectNotFoundException,
-            MicroServiceNameModificationException;
+            throws RemoteException, MicroServiceNotFoundException,
+                    MicroServiceNameModificationException;
 
     /**
      * Deletes a microservice.
@@ -77,7 +77,7 @@ public interface Registry extends Remote {
      * @param id
      * @return True or False indicating success or failure
      * @throws RemoteException
-     * @throws SapphireObjectNotFoundException
+     * @throws MicroServiceNotFoundException
      */
-    boolean delete(SapphireObjectID id) throws RemoteException, SapphireObjectNotFoundException;
+    boolean delete(SapphireObjectID id) throws RemoteException, MicroServiceNotFoundException;
 }

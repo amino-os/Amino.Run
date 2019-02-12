@@ -1,7 +1,7 @@
 package amino.run.policy.cache;
 
 import amino.run.common.AppObject;
-import amino.run.common.SapphireObjectNotAvailableException;
+import amino.run.common.MicroServiceNotAvailableException;
 import amino.run.kernel.common.KernelObjectNotFoundException;
 import amino.run.policy.DefaultPolicy;
 import java.io.IOException;
@@ -127,10 +127,10 @@ public class CacheLeasePolicy extends DefaultPolicy {
                 lease = cachelease.getLease();
                 leaseTimeout = cachelease.getLeaseTimeout();
             } catch (RemoteException e) {
-                throw new SapphireObjectNotAvailableException(
+                throw new MicroServiceNotAvailableException(
                         "Could not contact Sapphire server.", e);
             } catch (KernelObjectNotFoundException e) {
-                throw new SapphireObjectNotAvailableException(
+                throw new MicroServiceNotAvailableException(
                         "Could not find server policy object.", e);
             }
         }

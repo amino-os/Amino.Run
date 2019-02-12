@@ -5,7 +5,7 @@ import amino.run.common.MicroServiceID;
 import amino.run.common.MicroServiceNameModificationException;
 import amino.run.common.MicroServiceNotFoundException;
 import amino.run.common.MicroServiceReplicaNotFoundException;
-import amino.run.common.SapphireReplicaID;
+import amino.run.common.ReplicaID;
 import amino.run.policy.Policy;
 import amino.run.runtime.EventHandler;
 import java.rmi.RemoteException;
@@ -109,7 +109,7 @@ public class SapphireObjectManager {
      * @return Returns a new sapphire replica id
      * @throws MicroServiceNotFoundException
      */
-    public SapphireReplicaID addReplica(MicroServiceID microServiceId, EventHandler dispatcher)
+    public ReplicaID addReplica(MicroServiceID microServiceId, EventHandler dispatcher)
             throws MicroServiceNotFoundException {
         SapphireInstanceManager instance = sapphireObjects.get(microServiceId);
         if (instance == null) {
@@ -197,7 +197,7 @@ public class SapphireObjectManager {
      * @param replicaId
      * @throws MicroServiceNotFoundException
      */
-    public void removeReplica(SapphireReplicaID replicaId) throws MicroServiceNotFoundException {
+    public void removeReplica(ReplicaID replicaId) throws MicroServiceNotFoundException {
         SapphireInstanceManager instance = sapphireObjects.get(replicaId.getOID());
         if (instance == null) {
             throw new MicroServiceNotFoundException("Not a valid Sapphire object id.");
@@ -215,7 +215,7 @@ public class SapphireObjectManager {
      * @param dispatcher
      * @throws MicroServiceNotFoundException
      */
-    public void setReplicaDispatcher(SapphireReplicaID replicaId, EventHandler dispatcher)
+    public void setReplicaDispatcher(ReplicaID replicaId, EventHandler dispatcher)
             throws MicroServiceNotFoundException, MicroServiceReplicaNotFoundException {
         SapphireInstanceManager instance = sapphireObjects.get(replicaId.getOID());
         if (instance == null) {
@@ -273,7 +273,7 @@ public class SapphireObjectManager {
      * @return
      * @throws MicroServiceNotFoundException
      */
-    public EventHandler getReplicaDispatcher(SapphireReplicaID replicaId)
+    public EventHandler getReplicaDispatcher(ReplicaID replicaId)
             throws MicroServiceNotFoundException, MicroServiceReplicaNotFoundException {
         SapphireInstanceManager instance = sapphireObjects.get(replicaId.getOID());
         if (instance == null) {

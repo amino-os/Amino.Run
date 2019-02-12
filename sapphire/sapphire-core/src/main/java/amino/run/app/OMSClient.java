@@ -2,8 +2,8 @@ package amino.run.app;
 
 import amino.run.common.AppObjectStub;
 import amino.run.common.MicroServiceCreationException;
+import amino.run.common.MicroServiceNotFoundException;
 import amino.run.common.SapphireObjectID;
-import amino.run.common.SapphireObjectNotFoundException;
 import amino.run.graal.io.SerializeValue;
 import amino.run.kernel.server.KernelServer;
 import amino.run.kernel.server.KernelServerImpl;
@@ -80,10 +80,10 @@ public class OMSClient {
      * @return sapphire object stub. Applications use stub to invoke methods on remote sapphire
      *     objects.
      * @throws RemoteException unable to reach OMS server
-     * @throws SapphireObjectNotFoundException unable to find a sapphire object with the given ID
+     * @throws MicroServiceNotFoundException unable to find a sapphire object with the given ID
      */
     public AppObjectStub acquireSapphireObjectStub(SapphireObjectID sapphireObjId)
-            throws RemoteException, SapphireObjectNotFoundException {
+            throws RemoteException, MicroServiceNotFoundException {
         return server.acquireStub(sapphireObjId);
     }
 }

@@ -5,10 +5,10 @@ import amino.run.app.NodeSelectorSpec;
 import amino.run.app.Registry;
 import amino.run.common.AppObjectStub;
 import amino.run.common.MicroServiceCreationException;
-import amino.run.common.SapphireObjectID;
 import amino.run.common.MicroServiceNameModificationException;
-import amino.run.common.SapphireObjectNotFoundException;
-import amino.run.common.SapphireObjectReplicaNotFoundException;
+import amino.run.common.MicroServiceNotFoundException;
+import amino.run.common.MicroServiceReplicaNotFoundException;
+import amino.run.common.SapphireObjectID;
 import amino.run.common.SapphireReplicaID;
 import amino.run.compiler.GlobalStubConstants;
 import amino.run.kernel.common.KernelOID;
@@ -191,28 +191,28 @@ public class OMSServerImpl implements OMSServer, Registry {
     }
 
     @Override
-    public AppObjectStub acquireStub(SapphireObjectID id) throws SapphireObjectNotFoundException {
+    public AppObjectStub acquireStub(SapphireObjectID id) throws MicroServiceNotFoundException {
 
         try {
             AppObjectStub appObjStub = objectManager.getInstanceObjectStub(id);
             appObjStub.$__initialize(false);
             return appObjStub;
         } catch (Exception e) {
-            throw new SapphireObjectNotFoundException(
+            throw new MicroServiceNotFoundException(
                     "Failed to acquire stub for sapphire object " + id, e);
         }
     }
 
     @Override
     public void setName(SapphireObjectID id, String name)
-            throws RemoteException, SapphireObjectNotFoundException,
-            MicroServiceNameModificationException {
+            throws RemoteException, MicroServiceNotFoundException,
+                    MicroServiceNameModificationException {
         objectManager.setInstanceName(id, name);
     }
 
     @Override
     public AppObjectStub attachTo(String name)
-            throws RemoteException, SapphireObjectNotFoundException {
+            throws RemoteException, MicroServiceNotFoundException {
         SapphireObjectID sapphireObjId = objectManager.getSapphireInstanceIdByName(name);
         AppObjectStub appObjStub = acquireStub(sapphireObjId);
         objectManager.incrRefCountAndGet(sapphireObjId);
@@ -220,12 +220,12 @@ public class OMSServerImpl implements OMSServer, Registry {
     }
 
     @Override
-    public boolean detachFrom(String name) throws RemoteException, SapphireObjectNotFoundException {
+    public boolean detachFrom(String name) throws RemoteException, MicroServiceNotFoundException {
         return delete(objectManager.getSapphireInstanceIdByName(name));
     }
 
     @Override
-    public boolean delete(SapphireObjectID id) throws SapphireObjectNotFoundException {
+    public boolean delete(SapphireObjectID id) throws MicroServiceNotFoundException {
 
         if (objectManager.decrRefCountAndGet(id) != 0) {
             return true;
@@ -257,13 +257,13 @@ public class OMSServerImpl implements OMSServer, Registry {
      * @throws RemoteException
      * @throws ClassNotFoundException
      * @throws KernelObjectNotCreatedException
-     * @throws SapphireObjectNotFoundException
+     * @throws MicroServiceNotFoundException
      */
     @Override
     public Policy.GroupPolicy createGroupPolicy(
             Class<?> policyClass, SapphireObjectID sapphireObjId)
             throws RemoteException, ClassNotFoundException, KernelObjectNotCreatedException,
-                    SapphireObjectNotFoundException {
+                    MicroServiceNotFoundException {
         Policy.GroupPolicy group = Sapphire.createGroupPolicy(policyClass, sapphireObjId);
 
         /* TODO: This rootGroupPolicy is used in sapphire object deletion. Need to handle for multiDM case. In case of
@@ -341,11 +341,11 @@ public class OMSServerImpl implements OMSServer, Registry {
      * @param sapphireObjId
      * @return Return sapphire replica id
      * @throws RemoteException
-     * @throws SapphireObjectNotFoundException
+     * @throws MicroServiceNotFoundException
      */
     @Override
     public SapphireReplicaID registerSapphireReplica(SapphireObjectID sapphireObjId)
-            throws RemoteException, SapphireObjectNotFoundException {
+            throws RemoteException, MicroServiceNotFoundException {
         return objectManager.addReplica(sapphireObjId, null);
     }
 
@@ -355,13 +355,13 @@ public class OMSServerImpl implements OMSServer, Registry {
      * @param replicaId
      * @param dispatcher
      * @throws RemoteException
-     * @throws SapphireObjectNotFoundException
-     * @throws SapphireObjectReplicaNotFoundException
+     * @throws MicroServiceNotFoundException
+     * @throws MicroServiceReplicaNotFoundException
      */
     @Override
     public void setSapphireReplicaDispatcher(SapphireReplicaID replicaId, EventHandler dispatcher)
-            throws RemoteException, SapphireObjectNotFoundException,
-                    SapphireObjectReplicaNotFoundException {
+            throws RemoteException, MicroServiceNotFoundException,
+                    MicroServiceReplicaNotFoundException {
         objectManager.setReplicaDispatcher(replicaId, dispatcher);
     }
 
@@ -370,10 +370,10 @@ public class OMSServerImpl implements OMSServer, Registry {
      *
      * @param sapphireObjId
      * @throws RemoteException
-     * @throws SapphireObjectNotFoundException:w
+     * @throws MicroServiceNotFoundException :w
      */
     public void unRegisterSapphireObject(SapphireObjectID sapphireObjId)
-            throws RemoteException, SapphireObjectNotFoundException {
+            throws RemoteException, MicroServiceNotFoundException {
         objectManager.removeInstance(sapphireObjId);
     }
 
@@ -382,10 +382,10 @@ public class OMSServerImpl implements OMSServer, Registry {
      *
      * @param replicaId
      * @throws RemoteException
-     * @throws SapphireObjectNotFoundException
+     * @throws MicroServiceNotFoundException
      */
     public void unRegisterSapphireReplica(SapphireReplicaID replicaId)
-            throws RemoteException, SapphireObjectNotFoundException {
+            throws RemoteException, MicroServiceNotFoundException {
         objectManager.removeReplica(replicaId);
     }
 
@@ -407,7 +407,7 @@ public class OMSServerImpl implements OMSServer, Registry {
      * @throws RemoteException
      */
     public EventHandler[] getSapphireReplicasById(SapphireObjectID oid)
-            throws SapphireObjectNotFoundException {
+            throws MicroServiceNotFoundException {
         return objectManager.getSapphireReplicasById(oid);
     }
 

@@ -1,9 +1,9 @@
 package amino.run.oms;
 
 import amino.run.app.NodeSelectorSpec;
+import amino.run.common.MicroServiceNotFoundException;
+import amino.run.common.MicroServiceReplicaNotFoundException;
 import amino.run.common.SapphireObjectID;
-import amino.run.common.SapphireObjectNotFoundException;
-import amino.run.common.SapphireObjectReplicaNotFoundException;
 import amino.run.common.SapphireReplicaID;
 import amino.run.kernel.common.KernelOID;
 import amino.run.kernel.common.KernelObjectNotCreatedException;
@@ -44,22 +44,22 @@ public interface OMSServer extends Remote {
 
     Policy.GroupPolicy createGroupPolicy(Class<?> policyClass, SapphireObjectID sapphireObjId)
             throws RemoteException, ClassNotFoundException, KernelObjectNotCreatedException,
-                    SapphireObjectNotFoundException;
+                    MicroServiceNotFoundException;
 
     SapphireObjectID registerSapphireObject() throws RemoteException;
 
     SapphireReplicaID registerSapphireReplica(SapphireObjectID sapphireObjId)
-            throws RemoteException, SapphireObjectNotFoundException;
+            throws RemoteException, MicroServiceNotFoundException;
 
     void setSapphireReplicaDispatcher(SapphireReplicaID replicaId, EventHandler dispatcher)
-            throws RemoteException, SapphireObjectNotFoundException,
-                    SapphireObjectReplicaNotFoundException;
+            throws RemoteException, MicroServiceNotFoundException,
+                    MicroServiceReplicaNotFoundException;
 
-    boolean delete(SapphireObjectID id) throws RemoteException, SapphireObjectNotFoundException;
+    boolean delete(SapphireObjectID id) throws RemoteException, MicroServiceNotFoundException;
 
     void unRegisterSapphireObject(SapphireObjectID sapphireObjId)
-            throws RemoteException, SapphireObjectNotFoundException;
+            throws RemoteException, MicroServiceNotFoundException;
 
     void unRegisterSapphireReplica(SapphireReplicaID replicaId)
-            throws RemoteException, SapphireObjectNotFoundException;
+            throws RemoteException, MicroServiceNotFoundException;
 }

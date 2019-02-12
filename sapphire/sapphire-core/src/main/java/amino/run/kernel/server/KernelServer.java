@@ -2,8 +2,8 @@ package amino.run.kernel.server;
 
 import amino.run.common.AppObjectStub;
 import amino.run.common.MicroServiceCreationException;
-import amino.run.common.SapphireObjectNotFoundException;
-import amino.run.common.SapphireObjectReplicaNotFoundException;
+import amino.run.common.MicroServiceNotFoundException;
+import amino.run.common.MicroServiceReplicaNotFoundException;
 import amino.run.kernel.common.KernelOID;
 import amino.run.kernel.common.KernelObjectMigratingException;
 import amino.run.kernel.common.KernelObjectNotFoundException;
@@ -25,8 +25,8 @@ public interface KernelServer extends Remote {
 
     void copyKernelObject(KernelOID oid, KernelObject object)
             throws RemoteException, KernelObjectNotFoundException,
-                    KernelObjectStubNotCreatedException, SapphireObjectNotFoundException,
-                    SapphireObjectReplicaNotFoundException;
+                    KernelObjectStubNotCreatedException, MicroServiceNotFoundException,
+                    MicroServiceReplicaNotFoundException;
 
     /**
      * Create sapphire object in kernel server

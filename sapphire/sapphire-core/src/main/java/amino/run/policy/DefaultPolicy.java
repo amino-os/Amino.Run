@@ -1,8 +1,8 @@
 package amino.run.policy;
 
 import amino.run.app.MicroServiceSpec;
-import amino.run.common.SapphireObjectNotFoundException;
-import amino.run.common.SapphireObjectReplicaNotFoundException;
+import amino.run.common.MicroServiceNotFoundException;
+import amino.run.common.MicroServiceReplicaNotFoundException;
 import amino.run.kernel.common.KernelObjectStub;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
@@ -101,13 +101,13 @@ public class DefaultPolicy extends Policy {
          *     kernel server belonging to the region
          * @return New replica of server policy
          * @throws RemoteException
-         * @throws SapphireObjectNotFoundException
-         * @throws SapphireObjectReplicaNotFoundException
+         * @throws MicroServiceNotFoundException
+         * @throws MicroServiceReplicaNotFoundException
          */
         protected ServerPolicy replicate(
                 ServerPolicy replicaSource, InetSocketAddress dest, String region)
-                throws RemoteException, SapphireObjectNotFoundException,
-                        SapphireObjectReplicaNotFoundException {
+                throws RemoteException, MicroServiceNotFoundException,
+                        MicroServiceReplicaNotFoundException {
             ServerPolicy replica =
                     replicaSource.sapphire_replicate(replicaSource.getProcessedPolicies(), region);
             if (replicaSource.isLastPolicy()) {
@@ -123,13 +123,13 @@ public class DefaultPolicy extends Policy {
          *
          * @param server
          * @param host
-         * @throws SapphireObjectReplicaNotFoundException
+         * @throws MicroServiceReplicaNotFoundException
          * @throws RemoteException
-         * @throws SapphireObjectNotFoundException
+         * @throws MicroServiceNotFoundException
          */
         protected void pin(ServerPolicy server, InetSocketAddress host)
-                throws SapphireObjectReplicaNotFoundException, RemoteException,
-                        SapphireObjectNotFoundException {
+                throws MicroServiceReplicaNotFoundException, RemoteException,
+                        MicroServiceNotFoundException {
             server.sapphire_pin_to_server(host);
             ((KernelObjectStub) server).$__updateHostname(host);
         }

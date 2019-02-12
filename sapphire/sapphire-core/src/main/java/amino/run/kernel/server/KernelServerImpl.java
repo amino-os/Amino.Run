@@ -3,8 +3,8 @@ package amino.run.kernel.server;
 import amino.run.app.MicroServiceSpec;
 import amino.run.common.AppObjectStub;
 import amino.run.common.MicroServiceCreationException;
-import amino.run.common.SapphireObjectNotFoundException;
-import amino.run.common.SapphireObjectReplicaNotFoundException;
+import amino.run.common.MicroServiceNotFoundException;
+import amino.run.common.MicroServiceReplicaNotFoundException;
 import amino.run.kernel.client.KernelClient;
 import amino.run.kernel.common.*;
 import amino.run.oms.OMSServer;
@@ -127,8 +127,8 @@ public class KernelServerImpl implements KernelServer {
      */
     public void copyKernelObject(KernelOID oid, KernelObject object)
             throws RemoteException, KernelObjectNotFoundException,
-                    KernelObjectStubNotCreatedException, SapphireObjectNotFoundException,
-                    SapphireObjectReplicaNotFoundException {
+                    KernelObjectStubNotCreatedException, MicroServiceNotFoundException,
+                    MicroServiceReplicaNotFoundException {
         // To add Kernel Object to local object manager
         Serializable realObj = object.getObject();
 
@@ -217,12 +217,12 @@ public class KernelServerImpl implements KernelServer {
      * @param host
      * @throws RemoteException
      * @throws KernelObjectNotFoundException
-     * @throws SapphireObjectNotFoundException
-     * @throws SapphireObjectReplicaNotFoundException
+     * @throws MicroServiceNotFoundException
+     * @throws MicroServiceReplicaNotFoundException
      */
     public void moveKernelObjectToServer(Policy.ServerPolicy serverPolicy, InetSocketAddress host)
-            throws RemoteException, KernelObjectNotFoundException, SapphireObjectNotFoundException,
-                    SapphireObjectReplicaNotFoundException {
+            throws RemoteException, KernelObjectNotFoundException, MicroServiceNotFoundException,
+                    MicroServiceReplicaNotFoundException {
 
         if (host.equals(this.host)) {
             return;

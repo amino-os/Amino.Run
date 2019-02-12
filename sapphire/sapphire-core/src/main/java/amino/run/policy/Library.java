@@ -6,9 +6,9 @@ import amino.run.app.NodeSelectorSpec;
 import amino.run.common.AppObject;
 import amino.run.common.AppObjectStub;
 import amino.run.common.GraalObject;
+import amino.run.common.MicroServiceNotFoundException;
+import amino.run.common.MicroServiceReplicaNotFoundException;
 import amino.run.common.SapphireObjectID;
-import amino.run.common.SapphireObjectNotFoundException;
-import amino.run.common.SapphireObjectReplicaNotFoundException;
 import amino.run.common.SapphireReplicaID;
 import amino.run.common.Utils;
 import amino.run.compiler.GlobalStubConstants;
@@ -182,11 +182,11 @@ public abstract class Library implements Upcalls {
             } catch (KernelObjectNotFoundException e) {
                 logger.severe(e.getMessage());
                 throw new Error("Could not find object to replicate!", e);
-            } catch (SapphireObjectNotFoundException e) {
+            } catch (MicroServiceNotFoundException e) {
                 KernelObjectFactory.delete(serverPolicyStub.$__getKernelOID());
                 logger.severe(e.getMessage());
                 throw new Error("Could not find sapphire object on OMS", e);
-            } catch (SapphireObjectReplicaNotFoundException e) {
+            } catch (MicroServiceReplicaNotFoundException e) {
                 KernelObjectFactory.delete(serverPolicyStub.$__getKernelOID());
                 logger.severe(e.getMessage());
                 throw new Error("Could not find sapphire object replica on OMS", e);
@@ -215,12 +215,12 @@ public abstract class Library implements Upcalls {
          *
          * @param server
          * @throws RemoteException
-         * @throws SapphireObjectNotFoundException
-         * @throws SapphireObjectReplicaNotFoundException
+         * @throws MicroServiceNotFoundException
+         * @throws MicroServiceReplicaNotFoundException
          */
         public void sapphire_pin_to_server(InetSocketAddress server)
-                throws RemoteException, SapphireObjectNotFoundException,
-                        SapphireObjectReplicaNotFoundException {
+                throws RemoteException, MicroServiceNotFoundException,
+                        MicroServiceReplicaNotFoundException {
             ServerPolicy serverPolicy = (ServerPolicy) this;
 
             // Ensure that we start from the first Server Policy.
@@ -256,11 +256,11 @@ public abstract class Library implements Upcalls {
                 String msg = "Could not find myself on this server!";
                 logger.severe(msg);
                 throw new Error(msg, e);
-            } catch (SapphireObjectNotFoundException e) {
+            } catch (MicroServiceNotFoundException e) {
                 String msg = "Could not find Sapphire object on this server!";
                 logger.severe(msg);
                 throw new Error(msg, e);
-            } catch (SapphireObjectReplicaNotFoundException e) {
+            } catch (MicroServiceReplicaNotFoundException e) {
                 String msg = "Could not find Sapphire replica on this server!";
                 logger.severe(msg);
                 throw new Error(msg, e);
@@ -277,7 +277,7 @@ public abstract class Library implements Upcalls {
         public void sapphire_terminate() throws RemoteException {
             try {
                 GlobalKernelReferences.nodeServer.oms.unRegisterSapphireReplica(getReplicaId());
-            } catch (SapphireObjectNotFoundException e) {
+            } catch (MicroServiceNotFoundException e) {
                 /* Sapphire object not found */
                 logger.severe(e.getMessage());
                 // TODO (Sungwook, 2018-10-2): Investigate whether exception should be thrown.
@@ -292,7 +292,7 @@ public abstract class Library implements Upcalls {
                     ServerPolicy sp = policyContainer.getServerPolicy();
                     oms().unRegisterSapphireReplica(sp.getReplicaId());
                 }
-            } catch (SapphireObjectNotFoundException e) {
+            } catch (MicroServiceNotFoundException e) {
                 /* Sapphire object not found */
                 logger.severe(e.getMessage());
             }

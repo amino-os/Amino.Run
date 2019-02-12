@@ -1,7 +1,7 @@
 package amino.run.kernel.client;
 
-import amino.run.common.SapphireObjectNotFoundException;
-import amino.run.common.SapphireObjectReplicaNotFoundException;
+import amino.run.common.MicroServiceNotFoundException;
+import amino.run.common.MicroServiceReplicaNotFoundException;
 import amino.run.kernel.common.GlobalKernelReferences;
 import amino.run.kernel.common.KernelOID;
 import amino.run.kernel.common.KernelObjectMigratingException;
@@ -150,8 +150,8 @@ public class KernelClient {
 
     public void copyObjectToServer(InetSocketAddress host, KernelOID oid, KernelObject object)
             throws RemoteException, KernelObjectNotFoundException,
-                    KernelObjectStubNotCreatedException, SapphireObjectNotFoundException,
-                    SapphireObjectReplicaNotFoundException {
+                    KernelObjectStubNotCreatedException, MicroServiceNotFoundException,
+                    MicroServiceReplicaNotFoundException {
         getServer(host).copyKernelObject(oid, object);
     }
 }

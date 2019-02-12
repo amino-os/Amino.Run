@@ -1,9 +1,9 @@
 package amino.run.policy.dht;
 
 import amino.run.app.MicroServiceSpec;
+import amino.run.common.MicroServiceNotFoundException;
+import amino.run.common.MicroServiceReplicaNotFoundException;
 import amino.run.common.NoKernelServerFoundException;
-import amino.run.common.SapphireObjectNotFoundException;
-import amino.run.common.SapphireObjectReplicaNotFoundException;
 import amino.run.common.Utils;
 import amino.run.policy.DefaultPolicy;
 import java.net.InetSocketAddress;
@@ -125,9 +125,9 @@ public class DHTPolicy extends DefaultPolicy {
             } catch (RemoteException e) {
                 throw new Error(
                         "Could not create new group policy because the oms is not available.");
-            } catch (SapphireObjectNotFoundException e) {
+            } catch (MicroServiceNotFoundException e) {
                 throw new Error("Could not find Sapphire Object to pin to " + newServerAddress);
-            } catch (SapphireObjectReplicaNotFoundException e) {
+            } catch (MicroServiceReplicaNotFoundException e) {
                 throw new Error("Could not find replica to pin to " + newServerAddress);
             } catch (NoKernelServerFoundException e) {
                 throw new Error("No kernel servers were found");
@@ -162,8 +162,8 @@ public class DHTPolicy extends DefaultPolicy {
          * @param region
          * @throws NoKernelServerFoundException
          * @throws RemoteException
-         * @throws SapphireObjectNotFoundException
-         * @throws SapphireObjectReplicaNotFoundException
+         * @throws MicroServiceNotFoundException
+         * @throws MicroServiceReplicaNotFoundException
          */
         // TODO: Consider moving to Library so that other DMs can use this. Note that
         // some DMs may want a different behavior for exception e.g., null list should be fine if

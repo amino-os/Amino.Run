@@ -1,8 +1,8 @@
 package amino.run.policy.scalability;
 
 import amino.run.app.MicroServiceSpec;
-import amino.run.common.SapphireObjectNotFoundException;
-import amino.run.common.SapphireObjectReplicaNotFoundException;
+import amino.run.common.MicroServiceNotFoundException;
+import amino.run.common.MicroServiceReplicaNotFoundException;
 import amino.run.common.Utils;
 import amino.run.kernel.common.KernelObjectStub;
 import amino.run.kernel.common.KernelServerNotFoundException;
@@ -219,9 +219,9 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultPolicy {
                 }
             } catch (RemoteException e) {
                 throw new RuntimeException("failed to create group: " + e, e);
-            } catch (SapphireObjectNotFoundException e) {
+            } catch (MicroServiceNotFoundException e) {
                 throw new RuntimeException("Failed to find sapphire object: " + e, e);
-            } catch (SapphireObjectReplicaNotFoundException e) {
+            } catch (MicroServiceReplicaNotFoundException e) {
                 throw new RuntimeException("Failed to find sapphire object replica: " + e, e);
             } catch (KernelServerNotFoundException e) {
                 throw new RuntimeException("No matching servers found", e);

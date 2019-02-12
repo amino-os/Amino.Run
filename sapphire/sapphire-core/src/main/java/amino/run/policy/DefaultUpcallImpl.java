@@ -49,15 +49,14 @@ public abstract class DefaultUpcallImpl extends Library {
         }
 
         @Deprecated
-        public Policy.ServerPolicy sapphire_replicate(
-                List<SapphirePolicyContainer> processedPolicies) throws RemoteException {
+        public Policy.ServerPolicy sapphire_replicate(List<PolicyContainer> processedPolicies)
+                throws RemoteException {
             return super.sapphire_replicate(processedPolicies, "");
         }
 
         @Override
         public Policy.ServerPolicy sapphire_replicate(
-                List<SapphirePolicyContainer> processedPolicies, String region)
-                throws RemoteException {
+                List<PolicyContainer> processedPolicies, String region) throws RemoteException {
             return super.sapphire_replicate(processedPolicies, region);
         }
 

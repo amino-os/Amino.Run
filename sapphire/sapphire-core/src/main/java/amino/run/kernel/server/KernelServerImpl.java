@@ -10,7 +10,7 @@ import amino.run.kernel.common.*;
 import amino.run.oms.OMSServer;
 import amino.run.policy.Library;
 import amino.run.policy.Policy;
-import amino.run.policy.SapphirePolicyContainer;
+import amino.run.policy.PolicyContainer;
 import amino.run.policy.util.ResettableTimer;
 import amino.run.runtime.EventHandler;
 import amino.run.runtime.Sapphire;
@@ -138,7 +138,7 @@ public class KernelServerImpl implements KernelServer {
         }
 
         Library.ServerPolicyLibrary firstServerPolicy = (Library.ServerPolicyLibrary) realObj;
-        List<SapphirePolicyContainer> spContainers = firstServerPolicy.getProcessedPolicies();
+        List<PolicyContainer> spContainers = firstServerPolicy.getProcessedPolicies();
 
         logger.log(
                 Level.INFO,
@@ -147,7 +147,7 @@ public class KernelServerImpl implements KernelServer {
 
         List<String> serverPolicies = new ArrayList<>();
 
-        for (SapphirePolicyContainer spContainer : firstServerPolicy.getProcessedPolicies()) {
+        for (PolicyContainer spContainer : firstServerPolicy.getProcessedPolicies()) {
             // Add Server Policy object in the same order as client side has created.
             Library.ServerPolicyLibrary serverPolicy = spContainer.getServerPolicy();
 

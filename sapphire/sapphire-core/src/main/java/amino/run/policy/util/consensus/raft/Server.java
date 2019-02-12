@@ -515,7 +515,6 @@ public class Server
                                             vState.getCommitIndex());
                     success = true;
                     respondToRemoteTerm(remoteTerm); // Might lose leadership.
-
                 } catch (InvalidTermException e) {
                     logger.warning(e.toString());
                     respondToRemoteTerm(e.currentTerm);

@@ -10,7 +10,6 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.UUID;
 
 /** Created by Vishwajeet on 18/1/19. */
 
@@ -19,17 +18,27 @@ import java.util.UUID;
  * added to the log. Currently the data is stored to a file on the local disk using memory map.
  */
 public class PersistentArrayList<E> extends ArrayList {
+    /**
+     * Position starts at 104 for LogEntries as the file stores currentTerm, votedFor and myServerID
+     * till this point. So to avoid overwriting these fields in the file, log entries are written
+     * beyond 104.
+     */
     public int position = 104;
-    public UUID myServerID = null;
+
+    ByteBuffer bb;
     File file;
     FileChannel fc;
-    ByteArrayOutputStream bos;
-    ObjectOutputStream objectOut;
-    ByteBuffer bb;
 
-    PersistentArrayList(UUID myServerID) {
-        this.myServerID = myServerID;
-        file = new File("/var/tmp/" + myServerID + ".txt");
+    PersistentArrayList(String fileName) {
+        file = new File("/var/tmp/" + fileName + ".txt");
+        try {
+            fc = new RandomAccessFile(file, "rw").getChannel();
+            bb = fc.map(FileChannel.MapMode.READ_WRITE, position, position + 4000);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -37,30 +46,20 @@ public class PersistentArrayList<E> extends ArrayList {
         boolean addStatus = super.add(o);
         if (addStatus) {
             try {
-                fc = new RandomAccessFile(file, "rw").getChannel();
-                bos = new ByteArrayOutputStream();
-                objectOut = new ObjectOutputStream(bos);
+                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                ObjectOutputStream objectOut = new ObjectOutputStream(bos);
                 objectOut.writeObject(o);
 
                 Integer index = indexOf(o);
-                if (file.length() < position) {
-                    bb = fc.map(FileChannel.MapMode.READ_WRITE, position, Integer.SIZE);
-                    bb.put(index.toString().getBytes());
-                } else {
-                    bb = fc.map(FileChannel.MapMode.READ_WRITE, file.length(), Integer.SIZE);
-                    bb.put(index.toString().getBytes());
-                }
                 byte[] data = bos.toByteArray();
                 Integer size = data.length;
-                bb = fc.map(FileChannel.MapMode.READ_WRITE, file.length(), Integer.SIZE);
+                int length = index.toString().length() + size.toString().getBytes().length + size;
+                if (bb.remaining() < length) {
+                    bb = fc.map(FileChannel.MapMode.READ_WRITE, bb.position(), bb.position() + 4000);
+                }
+                bb.put(index.toString().getBytes());
                 bb.put(size.toString().getBytes());
-                bb = fc.map(FileChannel.MapMode.READ_WRITE, file.length(), data.length);
                 bb.put(data);
-
-                objectOut.close();
-                fc.close();
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -75,35 +74,33 @@ public class PersistentArrayList<E> extends ArrayList {
             Object[] a = c.toArray();
             for (int i = 0; i < a.length; i++) {
                 try {
-                    fc = new RandomAccessFile(file, "rw").getChannel();
-                    bos = new ByteArrayOutputStream();
-                    objectOut = new ObjectOutputStream(bos);
+                    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                    ObjectOutputStream objectOut = new ObjectOutputStream(bos);
                     objectOut.writeObject(a[i]);
 
                     Integer index = indexOf(a[i]);
-                    if (file.length() < position) {
-                        bb = fc.map(FileChannel.MapMode.READ_WRITE, position, Integer.SIZE);
-                        bb.put(index.toString().getBytes());
-                    } else {
-                        bb = fc.map(FileChannel.MapMode.READ_WRITE, file.length(), Integer.SIZE);
-                        bb.put(index.toString().getBytes());
-                    }
                     byte[] data = bos.toByteArray();
                     Integer size = data.length;
-                    bb = fc.map(FileChannel.MapMode.READ_WRITE, file.length(), Integer.SIZE);
+                    int length =
+                            index.toString().length() + size.toString().getBytes().length + size;
+                    if (bb.remaining() < length) {
+                        bb = fc.map(FileChannel.MapMode.READ_WRITE, bb.position(), bb.position() + 4000);
+                    }
+                    bb.put(index.toString().getBytes());
                     bb.put(size.toString().getBytes());
-                    bb = fc.map(FileChannel.MapMode.READ_WRITE, file.length(), data.length);
                     bb.put(data);
-
-                    objectOut.close();
-                    fc.close();
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
         }
         return addAllStatus;
+    }
+
+    public void closeChannel() throws IOException {
+        // Closing the FileChannel
+        if (fc != null) {
+            fc.close();
+        }
     }
 }

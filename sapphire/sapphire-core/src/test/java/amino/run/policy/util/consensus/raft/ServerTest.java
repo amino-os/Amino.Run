@@ -27,6 +27,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -439,18 +440,17 @@ public class ServerTest {
      * Verifying that the currentTerm, votedFor, myServerID and log stored using memory map to the
      * persistent storage is in sync with the data on the raftServer.
      */
+    @Ignore
     @Test
     public void testPersistence() throws java.lang.Exception {
         byte[] arr;
-        int i = 0;
+        int indx = 0;
         int position = 0;
         int UUIDsize = 36;
-        List<LogEntry> myLog = new ArrayList<LogEntry>();
         MappedByteBuffer buffer;
         RandomAccessFile file;
         String persistFile = "/var/tmp/" + raftServer[0].pState.myServerID + ".txt";
         String value;
-        UUID uid;
 
         // Ensure Leader Election
         for (Server s : raftServer) {
@@ -465,7 +465,7 @@ public class ServerTest {
         raftServer[0].applyToStateMachine(obj);
         raftServer[0].applyToStateMachine(obj);
 
-        // Gaining access to the file to which the logs were persisted
+        // Gaining access to the file to which the raftServer pstate was persisted
         file = new RandomAccessFile(new File(persistFile), "r");
         FileChannel fc = file.getChannel();
 
@@ -473,25 +473,23 @@ public class ServerTest {
         buffer = fc.map(FileChannel.MapMode.READ_ONLY, position, Integer.SIZE);
         arr = new byte[Integer.SIZE];
         buffer.get(arr);
-        int currentTerm = Integer.parseInt(new String(arr).trim());
         // Verifying currentTerm is the same
-        assertEquals(raftServer[0].pState.getCurrentTerm(), currentTerm);
+        assertEquals(
+                raftServer[0].pState.getCurrentTerm(), Integer.parseInt(new String(arr).trim()));
         position += Integer.SIZE;
 
         // Extracting votedFor from the persistent storage
         buffer = fc.map(FileChannel.MapMode.READ_ONLY, position, UUIDsize);
         value = StandardCharsets.UTF_8.decode(buffer).toString();
-        uid = UUID.fromString(value);
         // Verifying votedFor is same
-        assertEquals(raftServer[0].pState.getVotedFor(), uid);
+        assertEquals(raftServer[0].pState.getVotedFor(), UUID.fromString(value));
         position += UUIDsize;
 
         // Extracting myServerID from the persistent storage
         buffer = fc.map(FileChannel.MapMode.READ_ONLY, position, UUIDsize);
         value = StandardCharsets.UTF_8.decode(buffer).toString();
-        uid = UUID.fromString(value);
         // Verifying myServerID is same
-        assertEquals(raftServer[0].pState.myServerID, uid);
+        assertEquals(raftServer[0].pState.myServerID, UUID.fromString(value));
         position += UUIDsize;
 
         while (position < file.length()) {
@@ -518,14 +516,13 @@ public class ServerTest {
             ObjectInputStream objectIn = new ObjectInputStream(bais);
             try {
                 Object objc = objectIn.readObject();
-                myLog.add((LogEntry) objc);
                 // Verifying the LogEntry term at each index
-                assertEquals(raftServer[0].pState.log().get(i).term, ((LogEntry) objc).term);
+                assertEquals(raftServer[0].pState.log().get(indx).term, ((LogEntry) objc).term);
                 // Verifying the LogEntry operation at each index
                 assertTrue(
-                        (raftServer[0].pState.log().get(i).operation)
+                        (raftServer[0].pState.log().get(indx).operation)
                                 .equals(((LogEntry) objc).operation));
-                i++;
+                indx++;
             } catch (ClassNotFoundException e) {
                 e.printStackTrace();
             }

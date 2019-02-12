@@ -45,11 +45,21 @@ public class ConsensusRSMPolicy extends DefaultPolicy {
          * be compared rather than just comparing their reference.
          */
         @Override
-        public boolean equals(Object obj) {
-            if (this.method.equals(((RPC) obj).method) && this.params.equals(((RPC) obj).params)) {
-                return true;
-            }
-            return false;
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            RPC rpc = (RPC) o;
+
+            if (!method.equals(rpc.method)) return false;
+            return params.equals(rpc.params);
+        }
+
+        @Override
+        public int hashCode() {
+            int result = method.hashCode();
+            result = 31 * result + (params != null ? params.hashCode() : 0);
+            return result;
         }
     }
 

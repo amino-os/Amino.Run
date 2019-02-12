@@ -17,7 +17,7 @@ class PersistentState {
         this.currentTerm = 0;
         this.votedFor = NO_LEADER;
         this.myServerID = UUID.randomUUID();
-        this.log = new PersistentArrayList<LogEntry>(myServerID);
+        this.log = new PersistentArrayList<LogEntry>(myServerID.toString());
     }
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // Constants
@@ -29,6 +29,7 @@ class PersistentState {
     private volatile List<LogEntry>
             log; // TODO: Garbage collection - log growth currently unbounded.
     public final UUID myServerID;
+
     /**
      * Get the current term. Is thread-safe.
      *
@@ -116,19 +117,17 @@ class PersistentState {
      * disk.
      */
     void persist() throws IOException {
-        int position = 0;
-        int UUIDsize = 36;
         File file = new File("/var/tmp/" + myServerID + ".txt");
         FileChannel fc = new RandomAccessFile(file, "rw").getChannel();
-        ByteBuffer bb = fc.map(FileChannel.MapMode.READ_WRITE, position, Integer.SIZE);
+        int length =
+                currentTerm.toString().getBytes().length
+                        + votedFor.toString().getBytes().length
+                        + myServerID.toString().getBytes().length;
+        ByteBuffer bb = fc.map(FileChannel.MapMode.READ_WRITE, 0, length);
         // persisting currentTerm to the file.
         bb.put(currentTerm.toString().getBytes());
-        position += Integer.SIZE;
-        bb = fc.map(FileChannel.MapMode.READ_WRITE, position, UUIDsize);
         // persisting votedFor to the file.
         bb.put(votedFor.toString().getBytes());
-        position += UUIDsize;
-        bb = fc.map(FileChannel.MapMode.READ_WRITE, position, UUIDsize);
         // persisting myServerID to the file.
         bb.put(myServerID.toString().getBytes());
         fc.close();

@@ -26,7 +26,7 @@ import amino.run.kernel.common.KernelObjectStub;
 import amino.run.kernel.common.KernelObjectStubNotCreatedException;
 import amino.run.policy.DefaultPolicy;
 import amino.run.policy.Policy;
-import amino.run.policy.SapphirePolicyContainer;
+import amino.run.policy.PolicyContainer;
 import amino.run.policy.Upcalls;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
@@ -63,12 +63,12 @@ public class Sapphire {
                 return new_(appObjectClass, args);
             }
 
-            List<SapphirePolicyContainer> processedPolicies = new ArrayList<>();
-            List<SapphirePolicyContainer> policyNameChain = getPolicyNameChain(spec);
+            List<PolicyContainer> processedPolicies = new ArrayList<>();
+            List<PolicyContainer> policyNameChain = getPolicyNameChain(spec);
 
             if (policyNameChain.size() == 0) {
                 String defaultPolicyName = DefaultPolicy.class.getName();
-                policyNameChain.add(new SapphirePolicyContainer(defaultPolicyName, null));
+                policyNameChain.add(new PolicyContainer(defaultPolicyName, null));
             }
 
             /* Register for a sapphire object Id from OMS */
@@ -104,13 +104,12 @@ public class Sapphire {
             Annotation[] annotations = appObjectClass.getAnnotations();
             Map<String, Upcalls.SapphirePolicyConfig> configMap =
                     Utils.toSapphirePolicyConfig(annotations);
-            List<SapphirePolicyContainer> processedPolicies =
-                    new ArrayList<SapphirePolicyContainer>();
-            List<SapphirePolicyContainer> policyNameChain = getPolicyNameChain(annotations);
+            List<PolicyContainer> processedPolicies = new ArrayList<PolicyContainer>();
+            List<PolicyContainer> policyNameChain = getPolicyNameChain(annotations);
 
             if (policyNameChain.size() == 0) {
                 String defaultPolicyName = DefaultPolicy.class.getName();
-                policyNameChain.add(new SapphirePolicyContainer(defaultPolicyName, null));
+                policyNameChain.add(new PolicyContainer(defaultPolicyName, null));
             }
 
             MicroServiceSpec spec =
@@ -137,14 +136,14 @@ public class Sapphire {
     }
 
     /**
-     * Creates a policy name chain based on annotations and return list of SapphirePolicyContainer.
+     * Creates a policy name chain based on annotations and return list of PolicyContainer.
      *
      * @param annotations Annotations that contain chain of policy names.
-     * @return List of SapphirePolicyContainer with the policy names parsed from annotations.
+     * @return List of PolicyContainer with the policy names parsed from annotations.
      * @throws Exception
      */
-    private static List<SapphirePolicyContainer> getPolicyNameChain(Annotation[] annotations) {
-        List<SapphirePolicyContainer> policyNameChain = new ArrayList<SapphirePolicyContainer>();
+    private static List<PolicyContainer> getPolicyNameChain(Annotation[] annotations) {
+        List<PolicyContainer> policyNameChain = new ArrayList<PolicyContainer>();
 
         for (Annotation annotation : annotations) {
             if (annotation instanceof SapphireConfiguration) {
@@ -152,7 +151,7 @@ public class Sapphire {
                 for (String policyAnnotation : policyAnnotations) {
                     String[] policyNames = policyAnnotation.split(",");
                     for (String policyName : policyNames) {
-                        policyNameChain.add(new SapphirePolicyContainer(policyName.trim(), null));
+                        policyNameChain.add(new PolicyContainer(policyName.trim(), null));
                     }
                 }
             }
@@ -161,11 +160,11 @@ public class Sapphire {
         return policyNameChain;
     }
 
-    private static List<SapphirePolicyContainer> getPolicyNameChain(MicroServiceSpec spec) {
-        List<SapphirePolicyContainer> policyNameChain = new ArrayList<SapphirePolicyContainer>();
+    private static List<PolicyContainer> getPolicyNameChain(MicroServiceSpec spec) {
+        List<PolicyContainer> policyNameChain = new ArrayList<PolicyContainer>();
 
         for (DMSpec dm : spec.getDmList()) {
-            SapphirePolicyContainer c = new SapphirePolicyContainer(dm.getName(), null);
+            PolicyContainer c = new PolicyContainer(dm.getName(), null);
             policyNameChain.add(c);
         }
 
@@ -198,8 +197,8 @@ public class Sapphire {
     public static AppObjectStub createPolicy(
             MicroServiceID microServiceId,
             MicroServiceSpec spec,
-            List<SapphirePolicyContainer> policyNameChain,
-            List<SapphirePolicyContainer> processedPolicies,
+            List<PolicyContainer> policyNameChain,
+            List<PolicyContainer> processedPolicies,
             String region,
             Object[] appArgs)
             throws IOException, ClassNotFoundException, KernelObjectNotFoundException,
@@ -249,7 +248,7 @@ public class Sapphire {
         client.setServer(serverPolicyStub);
         client.onCreate(groupPolicyStub, spec);
 
-        SapphirePolicyContainer prevContainer = null;
+        PolicyContainer prevContainer = null;
         /* Check and get the previous DM's container if available. So that, server side and client side chain links can
         be updated between the current DM and previous DM. If the previous DM's container is not available,
         then DM/Policy being created is either for single DM based SO or It is the first DM/Policy in Multi DM based SO
@@ -265,21 +264,20 @@ public class Sapphire {
         }
 
         // Note that subList is non serializable; hence, the new list creation.
-        List<SapphirePolicyContainer> nextPoliciesToCreate =
+        List<PolicyContainer> nextPoliciesToCreate =
                 new ArrayList<>(policyNameChain.subList(1, policyNameChain.size()));
 
         serverPolicy.onCreate(groupPolicyStub, spec);
         serverPolicy.setNextPolicies(nextPoliciesToCreate);
         serverPolicyStub.setIsLastPolicy(nextPoliciesToCreate.size() == 0);
 
-        SapphirePolicyContainer processedPolicy =
-                new SapphirePolicyContainer(policyName, groupPolicyStub);
+        PolicyContainer processedPolicy = new PolicyContainer(policyName, groupPolicyStub);
         processedPolicy.setServerPolicy(serverPolicy);
         processedPolicy.setServerPolicyStub((KernelObjectStub) serverPolicyStub);
         processedPolicies.add(processedPolicy);
 
         // Create a copy to set processed policies up to this point.
-        List<SapphirePolicyContainer> processedPoliciesSoFar = new ArrayList<>(processedPolicies);
+        List<PolicyContainer> processedPoliciesSoFar = new ArrayList<>(processedPolicies);
         serverPolicy.setProcessedPolicies(processedPoliciesSoFar);
         serverPolicyStub.setProcessedPolicies(processedPoliciesSoFar);
 
@@ -555,7 +553,7 @@ public class Sapphire {
      */
     private static void initServerPolicy(
             ServerPolicy serverPolicy,
-            SapphirePolicyContainer prevContainer,
+            PolicyContainer prevContainer,
             Policy.ClientPolicy clientPolicy)
             throws IOException, ClassNotFoundException {
         KernelObjectStub prevServerPolicyStub = prevContainer.getServerPolicyStub();

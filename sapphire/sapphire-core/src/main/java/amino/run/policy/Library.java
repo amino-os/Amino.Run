@@ -60,16 +60,14 @@ public abstract class Library implements Upcalls {
         // (farthest from actual app object).
         // It means these were the last in order in the client side of chain. New groups should be
         // created for this list of chain.
-        protected List<SapphirePolicyContainer> nextPolicies =
-                new ArrayList<SapphirePolicyContainer>();
+        protected List<PolicyContainer> nextPolicies = new ArrayList<PolicyContainer>();
 
         // List of ServerPolicies that were created previously. They are upper level in group
         // hierarchy. Therefore, this list of chain
         // should not create new group policies. When creating replicas, group stub information
         // stored in this chain will be copied over
         // to the new replicas so that they can reference the same group stubs.
-        protected List<SapphirePolicyContainer> processedPolicies =
-                new ArrayList<SapphirePolicyContainer>();
+        protected List<PolicyContainer> processedPolicies = new ArrayList<PolicyContainer>();
 
         // Indicates whether this policy is the inner most policy of the chain.
         protected boolean isLastPolicy = false;
@@ -85,7 +83,7 @@ public abstract class Library implements Upcalls {
         /*
          * SAPPHIRE API FOR SERVER POLICIES
          */
-        public List<SapphirePolicyContainer> getProcessedPolicies() {
+        public List<PolicyContainer> getProcessedPolicies() {
             return this.processedPolicies;
         }
 
@@ -97,7 +95,7 @@ public abstract class Library implements Upcalls {
             this.previousServerPolicy = serverPolicy;
         }
 
-        public void setNextPolicies(List<SapphirePolicyContainer> nextPolicies) {
+        public void setNextPolicies(List<PolicyContainer> nextPolicies) {
             this.nextPolicies = nextPolicies;
         }
 
@@ -115,7 +113,7 @@ public abstract class Library implements Upcalls {
             this.isLastPolicy = isLastPolicy;
         }
 
-        public void setProcessedPolicies(List<SapphirePolicyContainer> processedPolicies) {
+        public void setProcessedPolicies(List<PolicyContainer> processedPolicies) {
             this.processedPolicies = processedPolicies;
         }
 
@@ -138,16 +136,14 @@ public abstract class Library implements Upcalls {
 
         /** Creates a replica of this server and registers it with the group. */
         public ServerPolicy sapphire_replicate(
-                List<SapphirePolicyContainer> processedPolicies, String region)
-                throws RemoteException {
+                List<PolicyContainer> processedPolicies, String region) throws RemoteException {
             KernelObjectStub serverPolicyStub = null;
 
             // Construct list of policies that will come after this policy on the server side.
             try {
                 // Create a new replica chain from already created policies before this policy and
                 // this policy.
-                List<SapphirePolicyContainer> processedPoliciesReplica =
-                        new ArrayList<SapphirePolicyContainer>();
+                List<PolicyContainer> processedPoliciesReplica = new ArrayList<PolicyContainer>();
                 Sapphire.createPolicy(
                         this.getGroup().microServiceId,
                         spec,
@@ -230,10 +226,10 @@ public abstract class Library implements Upcalls {
 
             // Before pinning the Sapphire Object replica to the provided KernelServer, need to
             // update the Hostname.
-            List<SapphirePolicyContainer> processedPolicyList = serverPolicy.getProcessedPolicies();
-            Iterator<SapphirePolicyContainer> itr = processedPolicyList.iterator();
+            List<PolicyContainer> processedPolicyList = serverPolicy.getProcessedPolicies();
+            Iterator<PolicyContainer> itr = processedPolicyList.iterator();
             while (itr.hasNext()) {
-                SapphirePolicyContainer container = itr.next();
+                PolicyContainer container = itr.next();
                 ServerPolicy tempServerPolicy = container.getServerPolicy();
                 container.getServerPolicyStub().$__updateHostname(server);
                 /* AppObject holds the previous DM's server policy stub(instead of So stub) in case of DM chain on the
@@ -285,10 +281,10 @@ public abstract class Library implements Upcalls {
             KernelObjectFactory.delete($__getKernelOID());
         }
 
-        public void sapphire_terminate(List<SapphirePolicyContainer> processedPolicies)
+        public void sapphire_terminate(List<PolicyContainer> processedPolicies)
                 throws RemoteException {
             try {
-                for (SapphirePolicyContainer policyContainer : processedPolicies) {
+                for (PolicyContainer policyContainer : processedPolicies) {
                     ServerPolicy sp = policyContainer.getServerPolicy();
                     oms().unRegisterSapphireReplica(sp.getReplicaId());
                 }

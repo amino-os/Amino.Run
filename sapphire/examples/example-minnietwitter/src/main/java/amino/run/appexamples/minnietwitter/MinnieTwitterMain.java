@@ -9,7 +9,7 @@ import java.util.Random;
 import amino.run.app.Language;
 import amino.run.app.MicroServiceSpec;
 import amino.run.app.Registry;
-import amino.run.common.SapphireObjectID;
+import amino.run.common.MicroServiceID;
 import amino.run.kernel.server.KernelServer;
 import amino.run.kernel.server.KernelServerImpl;
 
@@ -84,11 +84,11 @@ public class MinnieTwitterMain {
               .setJavaClassName("amino.run.appexamples.minnietwitter.TwitterManager")
               .create();
 
-      SapphireObjectID sapphireObjId = server.create(spec.toString());
-      TwitterManager tm = (TwitterManager) server.acquireStub(sapphireObjId);
+      MicroServiceID microServiceId = server.create(spec.toString());
+      TwitterManager tm = (TwitterManager) server.acquireStub(microServiceId);
 
       /* To set a name to sapphire object. It is required to set the name if the object has to be shared */
-      server.setName(sapphireObjId, "MyTwitterManager");
+      server.setName(microServiceId, "MyTwitterManager");
 
       /* Attach to sapphire object is to get reference to shared sapphire object. Generally it
       is not done in the same thread which creates sapphire object. In this example,
@@ -133,7 +133,7 @@ public class MinnieTwitterMain {
       /* Explicit deletion from app */
       userManager.deleteUser("user" + 0);
       tm.deInitialize();
-      server.delete(sapphireObjId);
+      server.delete(microServiceId);
     } catch (Exception e) {
       e.printStackTrace();
     }
@@ -151,10 +151,10 @@ public class MinnieTwitterMain {
       KernelServer nodeServer = new KernelServerImpl(hostAddr, omsAddr);
 
       /* Get Twitter and User Manager */
-      SapphireObjectID sapphireObjId =
+      MicroServiceID microServiceId =
           server.create(
               "amino.run.appexamples.minnietwitter.TwitterManager", new Object[0]);
-      TwitterManager tm = (TwitterManager) server.acquireStub(sapphireObjId);
+      TwitterManager tm = (TwitterManager) server.acquireStub(microServiceId);
       UserManager userManager = tm.getUserManager();
       TagManager tagManager = tm.getTagManager();
 

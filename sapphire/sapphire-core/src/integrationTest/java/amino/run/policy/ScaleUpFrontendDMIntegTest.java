@@ -4,7 +4,7 @@ import static amino.run.kernel.IntegrationTestBase.startOmsAndKernelServers;
 
 import amino.run.app.MicroServiceSpec;
 import amino.run.app.Registry;
-import amino.run.common.SapphireObjectID;
+import amino.run.common.MicroServiceID;
 import amino.run.demo.KVStore;
 import amino.run.kernel.IntegrationTestBase;
 import amino.run.kernel.common.KernelObjectMigratingException;
@@ -51,8 +51,8 @@ public class ScaleUpFrontendDMIntegTest {
     }
 
     private void runTest(MicroServiceSpec spec) throws Exception {
-        SapphireObjectID sapphireObjId = registry.create(spec.toString());
-        KVStore store = (KVStore) registry.acquireStub(sapphireObjId);
+        MicroServiceID microServiceId = registry.create(spec.toString());
+        KVStore store = (KVStore) registry.acquireStub(microServiceId);
         String key = "k";
         String value = "v";
         List<FutureTask<Object>> taskList = new ArrayList<FutureTask<Object>>();

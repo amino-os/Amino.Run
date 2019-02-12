@@ -3,10 +3,10 @@ package amino.run.common;
 import java.io.Serializable;
 import java.util.UUID;
 
-public class SapphireObjectID implements Serializable {
+public class MicroServiceID implements Serializable {
     private final UUID oid;
 
-    public SapphireObjectID(UUID oid) {
+    public MicroServiceID(UUID oid) {
         this.oid = oid;
     }
 
@@ -19,7 +19,7 @@ public class SapphireObjectID implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        SapphireObjectID that = (SapphireObjectID) o;
+        MicroServiceID that = (MicroServiceID) o;
 
         return oid.equals(that.oid);
     }
@@ -31,7 +31,7 @@ public class SapphireObjectID implements Serializable {
 
     @Override
     public String toString() {
-        String ret = "SapphireObject(" + oid + ")";
+        String ret = "MicroService(" + oid + ")";
         return ret;
     }
 }

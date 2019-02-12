@@ -7,7 +7,7 @@ import amino.run.app.DMSpec;
 import amino.run.app.Language;
 import amino.run.app.MicroServiceSpec;
 import amino.run.app.Registry;
-import amino.run.common.SapphireObjectID;
+import amino.run.common.MicroServiceID;
 import amino.run.kernel.server.KernelServer;
 import amino.run.kernel.server.KernelServerImpl;
 import amino.run.policy.atleastoncerpc.AtLeastOnceRPCPolicy;
@@ -40,12 +40,12 @@ public class HelloWorldMain {
                             .create())
                     .create();
 
-            SapphireObjectID sapphireObjId =
+            MicroServiceID microServiceId =
                     server.create(spec.toString(), world);
-            HelloWorld helloWorld = (HelloWorld) server.acquireStub(sapphireObjId);
+            HelloWorld helloWorld = (HelloWorld) server.acquireStub(microServiceId);
             System.out.println(helloWorld.sayHello());
 
-            server.delete(sapphireObjId);
+            server.delete(microServiceId);
         } catch (Exception e) {
             e.printStackTrace();
         }

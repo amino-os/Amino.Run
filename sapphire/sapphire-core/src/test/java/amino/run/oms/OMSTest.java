@@ -5,7 +5,7 @@ import static org.junit.Assert.assertEquals;
 import amino.run.app.Language;
 import amino.run.app.MicroServiceSpec;
 import amino.run.common.BaseTest;
-import amino.run.common.SapphireObjectID;
+import amino.run.common.MicroServiceID;
 import amino.run.common.SapphireReplicaID;
 import amino.run.common.TestUtils;
 import amino.run.kernel.common.KernelOID;
@@ -62,7 +62,7 @@ public class OMSTest extends BaseTest {
 
     @Test
     public void acquireSapphireObjectStubSuccessTest() throws Exception {
-        SapphireObjectID sid = group.getSapphireObjId();
+        MicroServiceID sid = group.getSapphireObjId();
         SO appObjstub = (SO) registry.acquireStub(sid);
         assertEquals(
                 1,
@@ -131,7 +131,7 @@ public class OMSTest extends BaseTest {
         /* register a new sapphire object, set the handler, get the handler back, verify if it is same as what we have
         set, add a replica to it, set replica handler, get the handler and verify if it same as what is set and
         then unregister the replica and the sapphire object */
-        SapphireObjectID sapphireObjId = omsImpl.registerSapphireObject();
+        MicroServiceID microServiceId = omsImpl.registerSapphireObject();
 
         /* Count becomes 2 after registering new sapphire object */
         assertEquals(new Integer(2), new Integer(omsImpl.getAllSapphireObjects().size()));
@@ -144,13 +144,14 @@ public class OMSTest extends BaseTest {
                                 add(group);
                             }
                         });
-        fieldValue.setInstanceDispatcher(sapphireObjId, groupHandler);
-        assertEquals(groupHandler, fieldValue.getInstanceDispatcher(sapphireObjId));
+        fieldValue.setInstanceDispatcher(microServiceId, groupHandler);
+        assertEquals(groupHandler, fieldValue.getInstanceDispatcher(microServiceId));
 
         /* Register a replica to this SO, check if it is added, set handler, get it back and verify if it is same */
-        SapphireReplicaID replicaId = omsImpl.registerSapphireReplica(sapphireObjId);
+        SapphireReplicaID replicaId = omsImpl.registerSapphireReplica(microServiceId);
         assertEquals(
-                new Integer(1), new Integer(omsImpl.getSapphireReplicasById(sapphireObjId).length));
+                new Integer(1),
+                new Integer(omsImpl.getSapphireReplicasById(microServiceId).length));
 
         EventHandler replicaHandler =
                 new EventHandler(
@@ -166,10 +167,11 @@ public class OMSTest extends BaseTest {
         /* unregister the replica and check it is removed from sapphire object */
         omsImpl.unRegisterSapphireReplica(replicaId);
         assertEquals(
-                new Integer(0), new Integer(omsImpl.getSapphireReplicasById(sapphireObjId).length));
+                new Integer(0),
+                new Integer(omsImpl.getSapphireReplicasById(microServiceId).length));
 
         /* unregister the sapphire object */
-        omsImpl.unRegisterSapphireObject(sapphireObjId);
+        omsImpl.unRegisterSapphireObject(microServiceId);
 
         /* Count becomes 1 after unregistering the sapphire object */
         assertEquals(new Integer(1), new Integer(omsImpl.getAllSapphireObjects().size()));

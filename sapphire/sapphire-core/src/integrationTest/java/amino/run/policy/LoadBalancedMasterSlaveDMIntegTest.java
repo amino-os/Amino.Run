@@ -11,7 +11,7 @@ import static amino.run.kernel.IntegrationTestBase.startOmsAndKernelServers;
 
 import amino.run.app.MicroServiceSpec;
 import amino.run.app.Registry;
-import amino.run.common.SapphireObjectID;
+import amino.run.common.MicroServiceID;
 import amino.run.demo.KVStore;
 import amino.run.kernel.server.KernelServerImpl;
 import java.io.File;
@@ -40,8 +40,8 @@ public class LoadBalancedMasterSlaveDMIntegTest {
     }
 
     private void runTest(MicroServiceSpec spec) throws Exception {
-        SapphireObjectID sapphireObjId = registry.create(spec.toString());
-        KVStore store = (KVStore) registry.acquireStub(sapphireObjId);
+        MicroServiceID microServiceId = registry.create(spec.toString());
+        KVStore store = (KVStore) registry.acquireStub(microServiceId);
         for (int i = 0; i < 10; i++) {
             String key = "k1_" + i;
             String value = "v1_" + i;

@@ -8,7 +8,7 @@ import amino.run.app.DMSpec;
 import amino.run.app.Language;
 import amino.run.app.MicroServiceSpec;
 import amino.run.app.Registry;
-import amino.run.common.SapphireObjectID;
+import amino.run.common.MicroServiceID;
 import amino.run.kernel.server.KernelServer;
 import amino.run.kernel.server.KernelServerImpl;
 import amino.run.policy.transaction.TwoPCCoordinatorPolicy;
@@ -59,21 +59,21 @@ public class FundmoverMain {
                                    .create())
                            .create();
 
-            SapphireObjectID walletSapphireObjectID = server.create(walletSpec.toString());
+            MicroServiceID walletMicroServiceID = server.create(walletSpec.toString());
 
-            Wallet wallet = (Wallet)server.acquireStub(walletSapphireObjectID);;
+            Wallet wallet = (Wallet)server.acquireStub(walletMicroServiceID);;
 
             wallet.credit(100);
 
-            SapphireObjectID bankAccountSapphireObjectID = server.create(bankAccountSpec.toString());
+            MicroServiceID bankAccountMicroServiceID = server.create(bankAccountSpec.toString());
 
-            BankAccount bankaccount = (BankAccount)server.acquireStub(bankAccountSapphireObjectID);
+            BankAccount bankaccount = (BankAccount)server.acquireStub(bankAccountMicroServiceID);
 
             System.out.println("creating the finance object...");
 
-            SapphireObjectID financeSapphireObjectID = server.create(financeSpec.toString(),wallet,bankaccount);
+            MicroServiceID financeMicroServiceID = server.create(financeSpec.toString(),wallet,bankaccount);
 
-            Finance finance = (Finance) server.acquireStub(financeSapphireObjectID);
+            Finance finance = (Finance) server.acquireStub(financeMicroServiceID);
 
             System.out.println("transfering fund between 2 entities...");
 

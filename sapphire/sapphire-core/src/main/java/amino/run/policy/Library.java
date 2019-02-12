@@ -6,9 +6,9 @@ import amino.run.app.NodeSelectorSpec;
 import amino.run.common.AppObject;
 import amino.run.common.AppObjectStub;
 import amino.run.common.GraalObject;
+import amino.run.common.MicroServiceID;
 import amino.run.common.MicroServiceNotFoundException;
 import amino.run.common.MicroServiceReplicaNotFoundException;
-import amino.run.common.SapphireObjectID;
 import amino.run.common.SapphireReplicaID;
 import amino.run.common.Utils;
 import amino.run.compiler.GlobalStubConstants;
@@ -149,7 +149,7 @@ public abstract class Library implements Upcalls {
                 List<SapphirePolicyContainer> processedPoliciesReplica =
                         new ArrayList<SapphirePolicyContainer>();
                 Sapphire.createPolicy(
-                        this.getGroup().sapphireObjId,
+                        this.getGroup().microServiceId,
                         spec,
                         processedPolicies,
                         processedPoliciesReplica,
@@ -165,7 +165,7 @@ public abstract class Library implements Upcalls {
                 // Complete the chain by creating new instances of server policies and stub that
                 // should be created after this policy.
                 Sapphire.createPolicy(
-                        this.getGroup().sapphireObjId,
+                        this.getGroup().microServiceId,
                         spec,
                         this.nextPolicies,
                         processedPoliciesReplica,
@@ -388,7 +388,7 @@ public abstract class Library implements Upcalls {
         protected String appObjectClassName;
         protected ArrayList<Object> params;
         protected KernelOID oid;
-        protected SapphireObjectID sapphireObjId;
+        protected MicroServiceID microServiceId;
 
         static Logger logger = Logger.getLogger(GroupPolicyLibrary.class.getName());
 
@@ -439,12 +439,12 @@ public abstract class Library implements Upcalls {
             return this.oid;
         }
 
-        public void setSapphireObjId(SapphireObjectID sapphireId) {
-            sapphireObjId = sapphireId;
+        public void setSapphireObjId(MicroServiceID sapphireId) {
+            microServiceId = sapphireId;
         }
 
-        public SapphireObjectID getSapphireObjId() {
-            return sapphireObjId;
+        public MicroServiceID getSapphireObjId() {
+            return microServiceId;
         }
 
         /**
@@ -453,9 +453,9 @@ public abstract class Library implements Upcalls {
          * {@code KernelObjectManager}, and 3) remove replica ID from OMS.
          *
          * <p><strong>Warning:</strong> Do not try to call OMS to unregister the sapphire object.
-         * {@link OMSServer#delete(SapphireObjectID)} is the public entry point to delete a sapphire
+         * {@link OMSServer#delete(MicroServiceID)} is the public entry point to delete a sapphire
          * object. OMS will take care of deleting sapphire object at {@link
-         * amino.run.oms.OMSServerImpl#delete(SapphireObjectID)}.
+         * amino.run.oms.OMSServerImpl#delete(MicroServiceID)}.
          *
          * @throws RemoteException
          */

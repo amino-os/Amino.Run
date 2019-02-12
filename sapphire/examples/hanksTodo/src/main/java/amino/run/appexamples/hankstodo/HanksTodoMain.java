@@ -6,7 +6,7 @@ import java.rmi.registry.LocateRegistry;
 import amino.run.app.Language;
 import amino.run.app.MicroServiceSpec;
 import amino.run.app.Registry;
-import amino.run.common.SapphireObjectID;
+import amino.run.common.MicroServiceID;
 import amino.run.kernel.server.KernelServer;
 import amino.run.kernel.server.KernelServerImpl;
 
@@ -51,8 +51,8 @@ public class HanksTodoMain {
                             .setJavaClassName("amino.run.appexamples.hankstodo.TodoListManager")
                             .create();
 
-            SapphireObjectID sapphireObjId = server.create(spec.toString());
-            TodoListManager tlm = (TodoListManager) server.acquireStub(sapphireObjId);
+            MicroServiceID microServiceId = server.create(spec.toString());
+            TodoListManager tlm = (TodoListManager) server.acquireStub(microServiceId);
             System.out.println("Received tlm: " + tlm);
 
             TodoList td1 = tlm.newTodoList(ListName);
@@ -97,7 +97,7 @@ public class HanksTodoMain {
 
             // Delete the created SapphireObjects
             tlm.deleteTodoList(ListName);
-            server.delete(sapphireObjId);
+            server.delete(microServiceId);
 
         } catch (Exception e) {
             // TODO Auto-generated catch block

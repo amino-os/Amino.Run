@@ -8,7 +8,7 @@ import static org.mockito.Mockito.spy;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 
 import amino.run.app.MicroServiceSpec;
-import amino.run.app.SapphireObjectServer;
+import amino.run.app.Registry;
 import amino.run.kernel.common.GlobalKernelReferences;
 import amino.run.kernel.common.KernelOID;
 import amino.run.kernel.common.KernelObjectFactory;
@@ -54,7 +54,7 @@ public class BaseTest {
     protected DefaultPolicy.DefaultGroupPolicy group;
     protected SO soStub; // client side stub
     protected OMSServer spiedOms;
-    protected SapphireObjectServer sapphireObjServer;
+    protected Registry registry;
     protected KernelServer spiedksOnOms;
     protected KernelServer spiedKs1;
     protected KernelServer spiedKs2;
@@ -74,7 +74,7 @@ public class BaseTest {
         spiedksOnOms = spy(GlobalKernelReferences.nodeServer);
         KernelServerImpl.oms = spiedOms;
         this.spiedOms = spiedOms;
-        sapphireObjServer = spiedOms;
+        registry = spiedOms;
 
         String[] regions;
         if (serversInSameRegion) {
@@ -166,9 +166,9 @@ public class BaseTest {
                     }
                 });
 
-        SapphireObjectID sapphireObjId = sapphireObjServer.createSapphireObject(spec.toString());
+        SapphireObjectID sapphireObjId = registry.create(spec.toString());
 
-        soStub = (SO) sapphireObjServer.acquireSapphireObjectStub(sapphireObjId);
+        soStub = (SO) registry.acquireStub(sapphireObjId);
         client =
                 (DefaultPolicy.DefaultClientPolicy)
                         extractFieldValueOnInstance(soStub, "$__client");
@@ -216,6 +216,6 @@ public class BaseTest {
     }
 
     public void tearDown() throws Exception {
-        sapphireObjServer.deleteSapphireObject(group.getSapphireObjId());
+        registry.delete(group.getSapphireObjId());
     }
 }

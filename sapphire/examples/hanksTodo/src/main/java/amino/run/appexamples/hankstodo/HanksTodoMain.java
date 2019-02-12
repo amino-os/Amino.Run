@@ -2,11 +2,10 @@ package amino.run.appexamples.hankstodo;
 
 import java.net.InetSocketAddress;
 import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
 
 import amino.run.app.Language;
 import amino.run.app.MicroServiceSpec;
-import amino.run.app.SapphireObjectServer;
+import amino.run.app.Registry;
 import amino.run.common.SapphireObjectID;
 import amino.run.kernel.server.KernelServer;
 import amino.run.kernel.server.KernelServerImpl;
@@ -34,11 +33,11 @@ public class HanksTodoMain {
             System.exit(1);
         }
 
-        Registry registry;
+        java.rmi.registry.Registry registry;
 
         try {
             registry = LocateRegistry.getRegistry(args[0], Integer.parseInt(args[1]));
-            SapphireObjectServer server = (SapphireObjectServer) registry.lookup("SapphireOMS");
+            Registry server = (Registry) registry.lookup("SapphireOMS");
             System.out.println(server);
 
             KernelServer nodeServer =
@@ -52,8 +51,8 @@ public class HanksTodoMain {
                             .setJavaClassName("amino.run.appexamples.hankstodo.TodoListManager")
                             .create();
 
-            SapphireObjectID sapphireObjId = server.createSapphireObject(spec.toString());
-            TodoListManager tlm = (TodoListManager) server.acquireSapphireObjectStub(sapphireObjId);
+            SapphireObjectID sapphireObjId = server.create(spec.toString());
+            TodoListManager tlm = (TodoListManager) server.acquireStub(sapphireObjId);
             System.out.println("Received tlm: " + tlm);
 
             TodoList td1 = tlm.newTodoList(ListName);
@@ -98,7 +97,7 @@ public class HanksTodoMain {
 
             // Delete the created SapphireObjects
             tlm.deleteTodoList(ListName);
-            server.deleteSapphireObject(sapphireObjId);
+            server.delete(sapphireObjId);
 
         } catch (Exception e) {
             // TODO Auto-generated catch block

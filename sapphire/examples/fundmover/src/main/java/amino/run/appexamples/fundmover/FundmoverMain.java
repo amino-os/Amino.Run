@@ -3,12 +3,11 @@ package amino.run.appexamples.fundmover;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
 
 import amino.run.app.DMSpec;
 import amino.run.app.Language;
 import amino.run.app.MicroServiceSpec;
-import amino.run.app.SapphireObjectServer;
+import amino.run.app.Registry;
 import amino.run.common.SapphireObjectID;
 import amino.run.kernel.server.KernelServer;
 import amino.run.kernel.server.KernelServerImpl;
@@ -26,10 +25,10 @@ public class FundmoverMain {
         String hostIp = args[0], hostPort = args[1], omsIp = args[2], omsPort = args[3];
         InetSocketAddress hostAddr = new InetSocketAddress(hostIp, Integer.parseInt(hostPort)), omsAddr = new InetSocketAddress(omsIp, Integer.parseInt(omsPort));
 
-        Registry registry;
+        java.rmi.registry.Registry registry;
         try{
             registry = LocateRegistry.getRegistry(args[0],Integer.parseInt(args[1]));
-            SapphireObjectServer server = (SapphireObjectServer) registry.lookup("SapphireOMS");
+            Registry server = (Registry) registry.lookup("SapphireOMS");
             System.out.println(server);
 
             KernelServer nodeServer = new KernelServerImpl(new InetSocketAddress(args[2], Integer.parseInt(args[3])), new InetSocketAddress(args[0], Integer.parseInt(args[1])));
@@ -60,21 +59,21 @@ public class FundmoverMain {
                                    .create())
                            .create();
 
-            SapphireObjectID walletSapphireObjectID = server.createSapphireObject(walletSpec.toString());
+            SapphireObjectID walletSapphireObjectID = server.create(walletSpec.toString());
 
-            Wallet wallet = (Wallet)server.acquireSapphireObjectStub(walletSapphireObjectID);;
+            Wallet wallet = (Wallet)server.acquireStub(walletSapphireObjectID);;
 
             wallet.credit(100);
 
-            SapphireObjectID bankAccountSapphireObjectID = server.createSapphireObject(bankAccountSpec.toString());
+            SapphireObjectID bankAccountSapphireObjectID = server.create(bankAccountSpec.toString());
 
-            BankAccount bankaccount = (BankAccount)server.acquireSapphireObjectStub(bankAccountSapphireObjectID);
+            BankAccount bankaccount = (BankAccount)server.acquireStub(bankAccountSapphireObjectID);
 
             System.out.println("creating the finance object...");
 
-            SapphireObjectID financeSapphireObjectID = server.createSapphireObject(financeSpec.toString(),wallet,bankaccount);
+            SapphireObjectID financeSapphireObjectID = server.create(financeSpec.toString(),wallet,bankaccount);
 
-            Finance finance = (Finance) server.acquireSapphireObjectStub(financeSapphireObjectID);
+            Finance finance = (Finance) server.acquireStub(financeSapphireObjectID);
 
             System.out.println("transfering fund between 2 entities...");
 

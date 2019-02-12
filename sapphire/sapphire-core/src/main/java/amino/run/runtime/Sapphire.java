@@ -331,7 +331,7 @@ public class Sapphire {
             field.setAccessible(true);
             Policy.ClientPolicy clientPolicy = (Policy.ClientPolicy) field.get(appObjectStub);
             sapphireObjId = clientPolicy.getGroup().getSapphireObjId();
-            GlobalKernelReferences.nodeServer.oms.deleteSapphireObject(sapphireObjId);
+            GlobalKernelReferences.nodeServer.oms.delete(sapphireObjId);
         } catch (NoSuchFieldException e) {
             throw new RuntimeException("Tried to delete invalid sapphire object.", e);
         } catch (SapphireObjectNotFoundException e) {

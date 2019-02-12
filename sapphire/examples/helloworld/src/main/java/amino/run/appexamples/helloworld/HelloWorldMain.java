@@ -2,12 +2,11 @@ package amino.run.appexamples.helloworld;
 
 import java.net.InetSocketAddress;
 import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
 
 import amino.run.app.DMSpec;
 import amino.run.app.Language;
 import amino.run.app.MicroServiceSpec;
-import amino.run.app.SapphireObjectServer;
+import amino.run.app.Registry;
 import amino.run.common.SapphireObjectID;
 import amino.run.kernel.server.KernelServer;
 import amino.run.kernel.server.KernelServerImpl;
@@ -28,8 +27,8 @@ public class HelloWorldMain {
         }
 
         try {
-            Registry registry = LocateRegistry.getRegistry(args[0], Integer.parseInt(args[1]));
-            SapphireObjectServer server = (SapphireObjectServer) registry.lookup("SapphireOMS");
+            java.rmi.registry.Registry registry = LocateRegistry.getRegistry(args[0], Integer.parseInt(args[1]));
+            Registry server = (Registry) registry.lookup("SapphireOMS");
 
             KernelServer nodeServer = new KernelServerImpl(new InetSocketAddress(args[2], Integer.parseInt(args[3])), new InetSocketAddress(args[0], Integer.parseInt(args[1])));
 
@@ -42,11 +41,11 @@ public class HelloWorldMain {
                     .create();
 
             SapphireObjectID sapphireObjId =
-                    server.createSapphireObject(spec.toString(), world);
-            HelloWorld helloWorld = (HelloWorld) server.acquireSapphireObjectStub(sapphireObjId);
+                    server.create(spec.toString(), world);
+            HelloWorld helloWorld = (HelloWorld) server.acquireStub(sapphireObjId);
             System.out.println(helloWorld.sayHello());
 
-            server.deleteSapphireObject(sapphireObjId);
+            server.delete(sapphireObjId);
         } catch (Exception e) {
             e.printStackTrace();
         }

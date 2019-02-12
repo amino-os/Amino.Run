@@ -63,7 +63,7 @@ public class OMSTest extends BaseTest {
     @Test
     public void acquireSapphireObjectStubSuccessTest() throws Exception {
         SapphireObjectID sid = group.getSapphireObjId();
-        SO appObjstub = (SO) sapphireObjServer.acquireSapphireObjectStub(sid);
+        SO appObjstub = (SO) registry.acquireStub(sid);
         assertEquals(
                 1,
                 TestUtils.getOmsSapphireInstance(spiedOms, group.getSapphireObjId())
@@ -78,9 +78,9 @@ public class OMSTest extends BaseTest {
 
     @Test
     public void attachAndDetactSapphireObjectSuccessTest() throws Exception {
-        sapphireObjServer.setSapphireObjectName(group.getSapphireObjId(), "MySapphireObject");
+        registry.setName(group.getSapphireObjId(), "MySapphireObject");
 
-        SO appObjstub = (SO) sapphireObjServer.attachToSapphireObject("MySapphireObject");
+        SO appObjstub = (SO) registry.attachTo("MySapphireObject");
 
         /* Reference count must become 2. Once user created it and other attached to it */
         assertEquals(
@@ -95,7 +95,7 @@ public class OMSTest extends BaseTest {
         assertEquals(new Integer(100), so.getI());
 
         /* Reference count must become 1(decrement by 1) upon detach */
-        sapphireObjServer.detachFromSapphireObject("MySapphireObject");
+        registry.detachFrom("MySapphireObject");
         assertEquals(
                 1,
                 TestUtils.getOmsSapphireInstance(spiedOms, group.getSapphireObjId())

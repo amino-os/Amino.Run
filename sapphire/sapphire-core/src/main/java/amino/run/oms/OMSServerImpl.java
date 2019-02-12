@@ -2,7 +2,7 @@ package amino.run.oms;
 
 import amino.run.app.MicroServiceSpec;
 import amino.run.app.NodeSelectorSpec;
-import amino.run.app.SapphireObjectServer;
+import amino.run.app.Registry;
 import amino.run.common.AppObjectStub;
 import amino.run.common.SapphireObjectCreationException;
 import amino.run.common.SapphireObjectID;
@@ -27,7 +27,6 @@ import java.net.InetSocketAddress;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -41,7 +40,7 @@ import org.json.JSONException;
  *
  * @author iyzhang
  */
-public class OMSServerImpl implements OMSServer, SapphireObjectServer {
+public class OMSServerImpl implements OMSServer, Registry {
 
     private static Logger logger = Logger.getLogger(OMSServerImpl.class.getName());
     private static String SERVICE_PORT = "--servicePort";
@@ -154,20 +153,11 @@ public class OMSServerImpl implements OMSServer, SapphireObjectServer {
         return (Policy.ClientPolicy) field.get(appObjStub);
     }
 
-    /**
-     * Create the sapphire object of given class on one of the servers
-     *
-     * @param sapphireObjectSpec sapphire object specification in YAML
-     * @param args parameters to sapphire object constructor
-     * @return Returns sapphire object id
-     * @throws RemoteException
-     * @throws SapphireObjectCreationException
-     */
     @Override
-    public SapphireObjectID createSapphireObject(String sapphireObjectSpec, Object... args)
+    public SapphireObjectID create(String microServiceSpec, Object... args)
             throws RemoteException, SapphireObjectCreationException {
 
-        MicroServiceSpec spec = MicroServiceSpec.fromYaml(sapphireObjectSpec);
+        MicroServiceSpec spec = MicroServiceSpec.fromYaml(microServiceSpec);
         /* Get a best server from the given spec */
         InetSocketAddress host = serverManager.getBestSuitableServer(spec);
         if (host == null) {
@@ -187,7 +177,7 @@ public class OMSServerImpl implements OMSServer, SapphireObjectServer {
 
         /* Invoke create sapphire object on the kernel server */
         try {
-            AppObjectStub appObjStub = server.createSapphireObject(sapphireObjectSpec, args);
+            AppObjectStub appObjStub = server.createSapphireObject(microServiceSpec, args);
             assert appObjStub != null;
             Policy.ClientPolicy clientPolicy = extractClientPolicy(appObjStub);
             SapphireObjectID sid = clientPolicy.getGroup().getSapphireObjId();
@@ -200,101 +190,57 @@ public class OMSServerImpl implements OMSServer, SapphireObjectServer {
         }
     }
 
-    /**
-     * Gets the sapphire object stub of given sapphire object id
-     *
-     * @param sapphireObjId
-     * @return Returns sapphire object stub
-     * @throws SapphireObjectNotFoundException
-     */
     @Override
-    public AppObjectStub acquireSapphireObjectStub(SapphireObjectID sapphireObjId)
-            throws SapphireObjectNotFoundException {
+    public AppObjectStub acquireStub(SapphireObjectID id) throws SapphireObjectNotFoundException {
 
         try {
-            AppObjectStub appObjStub = objectManager.getInstanceObjectStub(sapphireObjId);
+            AppObjectStub appObjStub = objectManager.getInstanceObjectStub(id);
             appObjStub.$__initialize(false);
             return appObjStub;
         } catch (Exception e) {
             throw new SapphireObjectNotFoundException(
-                    "Failed to acquire stub for sapphire object " + sapphireObjId, e);
+                    "Failed to acquire stub for sapphire object " + id, e);
         }
     }
 
-    /**
-     * Assigns the name to given sapphire object
-     *
-     * @param sapphireObjId
-     * @param sapphireObjName
-     * @throws RemoteException
-     * @throws SapphireObjectNotFoundException
-     * @throws SapphireObjectNameModificationException
-     */
     @Override
-    public void setSapphireObjectName(SapphireObjectID sapphireObjId, String sapphireObjName)
+    public void setName(SapphireObjectID id, String name)
             throws RemoteException, SapphireObjectNotFoundException,
                     SapphireObjectNameModificationException {
-        objectManager.setInstanceName(sapphireObjId, sapphireObjName);
+        objectManager.setInstanceName(id, name);
     }
 
-    /**
-     * Attach to the given sapphire object
-     *
-     * @param sapphireObjName
-     * @return Returns sapphire object stub
-     * @throws RemoteException
-     * @throws SapphireObjectNotFoundException
-     */
     @Override
-    public AppObjectStub attachToSapphireObject(String sapphireObjName)
+    public AppObjectStub attachTo(String name)
             throws RemoteException, SapphireObjectNotFoundException {
-        SapphireObjectID sapphireObjId = objectManager.getSapphireInstanceIdByName(sapphireObjName);
-        AppObjectStub appObjStub = acquireSapphireObjectStub(sapphireObjId);
+        SapphireObjectID sapphireObjId = objectManager.getSapphireInstanceIdByName(name);
+        AppObjectStub appObjStub = acquireStub(sapphireObjId);
         objectManager.incrRefCountAndGet(sapphireObjId);
         return appObjStub;
     }
 
-    /**
-     * Detach from the given sapphire object
-     *
-     * @param sapphireObjName
-     * @return Returns true on success and false on failure
-     * @throws RemoteException
-     * @throws SapphireObjectNotFoundException
-     */
     @Override
-    public boolean detachFromSapphireObject(String sapphireObjName)
-            throws RemoteException, SapphireObjectNotFoundException {
-        return deleteSapphireObject(objectManager.getSapphireInstanceIdByName(sapphireObjName));
+    public boolean detachFrom(String name) throws RemoteException, SapphireObjectNotFoundException {
+        return delete(objectManager.getSapphireInstanceIdByName(name));
     }
 
-    /**
-     * Delete the sapphire object of given sapphire object id
-     *
-     * @param sapphireObjId
-     * @return Returns true on success and false on failure
-     * @throws RemoteException
-     * @throws SapphireObjectNotFoundException
-     */
     @Override
-    public boolean deleteSapphireObject(SapphireObjectID sapphireObjId)
-            throws SapphireObjectNotFoundException {
+    public boolean delete(SapphireObjectID id) throws SapphireObjectNotFoundException {
 
-        if (objectManager.decrRefCountAndGet(sapphireObjId) != 0) {
+        if (objectManager.decrRefCountAndGet(id) != 0) {
             return true;
         }
 
         boolean successfullyRemoved = true;
         try {
-            objectManager.removeInstance(sapphireObjId);
+            objectManager.removeInstance(id);
             logger.log(
                     Level.FINE,
-                    String.format(
-                            "Successfully removed sapphire object with oid %s", sapphireObjId));
+                    String.format("Successfully removed sapphire object with oid %s", id));
         } catch (Exception e) {
             logger.log(
                     Level.SEVERE,
-                    String.format("Failed to remove sapphire object with oid %s", sapphireObjId),
+                    String.format("Failed to remove sapphire object with oid %s", id),
                     e);
             successfullyRemoved = false;
         }
@@ -356,7 +302,7 @@ public class OMSServerImpl implements OMSServer, SapphireObjectServer {
         try {
             OMSServerImpl oms = new OMSServerImpl();
             OMSServer omsStub = (OMSServer) UnicastRemoteObject.exportObject(oms, servicePort);
-            Registry registry = LocateRegistry.createRegistry(port);
+            java.rmi.registry.Registry registry = LocateRegistry.createRegistry(port);
             registry.rebind("SapphireOMS", omsStub);
 
             /* Create an instance of kernel server and export kernel server service */

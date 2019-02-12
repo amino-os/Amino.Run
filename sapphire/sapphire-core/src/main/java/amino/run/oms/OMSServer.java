@@ -55,8 +55,7 @@ public interface OMSServer extends Remote {
             throws RemoteException, SapphireObjectNotFoundException,
                     SapphireObjectReplicaNotFoundException;
 
-    boolean deleteSapphireObject(SapphireObjectID sapphireObjId)
-            throws RemoteException, SapphireObjectNotFoundException;
+    boolean delete(SapphireObjectID id) throws RemoteException, SapphireObjectNotFoundException;
 
     void unRegisterSapphireObject(SapphireObjectID sapphireObjId)
             throws RemoteException, SapphireObjectNotFoundException;

@@ -11,7 +11,6 @@ import java.net.InetSocketAddress;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
 import org.graalvm.polyglot.Value;
 
 /**
@@ -21,11 +20,11 @@ import org.graalvm.polyglot.Value;
  *
  * <p>Ruby application: <code>
  *      omsClient = Java.type('amino.run.app.OMSClient').new(host, oms)
- *      so = omsClient.createSapphireObject(...)
+ *      so = omsClient.create(...)
  * </code>
  */
 public class OMSClient {
-    private SapphireObjectServer server;
+    private Registry server;
 
     /**
      * Create OMS client object.
@@ -37,8 +36,9 @@ public class OMSClient {
      */
     public OMSClient(InetSocketAddress host, InetSocketAddress omsHost)
             throws RemoteException, NotBoundException {
-        Registry registry = LocateRegistry.getRegistry(omsHost.getHostName(), omsHost.getPort());
-        server = (SapphireObjectServer) registry.lookup("SapphireOMS");
+        java.rmi.registry.Registry registry =
+                LocateRegistry.getRegistry(omsHost.getHostName(), omsHost.getPort());
+        server = (Registry) registry.lookup("SapphireOMS");
         KernelServer nodeServer = new KernelServerImpl(host, omsHost);
     }
     /**
@@ -70,7 +70,7 @@ public class OMSClient {
             }
             serializableObjects[i] = args[i];
         }
-        return server.createSapphireObject(spec.toString(), serializableObjects);
+        return server.create(spec.toString(), serializableObjects);
     }
 
     /**
@@ -84,6 +84,6 @@ public class OMSClient {
      */
     public AppObjectStub acquireSapphireObjectStub(SapphireObjectID sapphireObjId)
             throws RemoteException, SapphireObjectNotFoundException {
-        return server.acquireSapphireObjectStub(sapphireObjId);
+        return server.acquireStub(sapphireObjId);
     }
 }

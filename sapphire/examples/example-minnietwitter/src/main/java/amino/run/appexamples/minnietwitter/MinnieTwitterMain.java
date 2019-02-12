@@ -2,14 +2,13 @@ package amino.run.appexamples.minnietwitter;
 
 import java.net.InetSocketAddress;
 import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
 import amino.run.app.Language;
 import amino.run.app.MicroServiceSpec;
-import amino.run.app.SapphireObjectServer;
+import amino.run.app.Registry;
 import amino.run.common.SapphireObjectID;
 import amino.run.kernel.server.KernelServer;
 import amino.run.kernel.server.KernelServerImpl;
@@ -70,11 +69,11 @@ public class MinnieTwitterMain {
    * method adds a single user and send tweet messages for predefined times.
    */
   private static void ExecuteSingleUserDemo(InetSocketAddress hostAddr, InetSocketAddress omsAddr) {
-    Registry registry;
+    java.rmi.registry.Registry registry;
 
     try {
       registry = LocateRegistry.getRegistry(omsAddr.getHostName(), omsAddr.getPort());
-      SapphireObjectServer server = (SapphireObjectServer) registry.lookup("SapphireOMS");
+      Registry server = (Registry) registry.lookup("SapphireOMS");
 
       KernelServer nodeServer = new KernelServerImpl(hostAddr, omsAddr);
 
@@ -85,23 +84,23 @@ public class MinnieTwitterMain {
               .setJavaClassName("amino.run.appexamples.minnietwitter.TwitterManager")
               .create();
 
-      SapphireObjectID sapphireObjId = server.createSapphireObject(spec.toString());
-      TwitterManager tm = (TwitterManager) server.acquireSapphireObjectStub(sapphireObjId);
+      SapphireObjectID sapphireObjId = server.create(spec.toString());
+      TwitterManager tm = (TwitterManager) server.acquireStub(sapphireObjId);
 
       /* To set a name to sapphire object. It is required to set the name if the object has to be shared */
-      server.setSapphireObjectName(sapphireObjId, "MyTwitterManager");
+      server.setName(sapphireObjId, "MyTwitterManager");
 
       /* Attach to sapphire object is to get reference to shared sapphire object. Generally it
       is not done in the same thread which creates sapphire object. In this example,
       Twitter manager sapphire object is created just above in same thread. Below attach call
       has no significance. It is just used to show the usage of API. */
       TwitterManager tmAttached =
-          (TwitterManager) server.attachToSapphireObject("MyTwitterManager");
+          (TwitterManager) server.attachTo("MyTwitterManager");
 
       /* Detach from the shared sapphire object. It is necessary to explicitly call detach to
       un-reference the sapphire object. This call is not required here if attach call was not
       made above */
-      server.detachFromSapphireObject("MyTwitterManager");
+      server.detachFrom("MyTwitterManager");
 
       UserManager userManager = tm.getUserManager();
       TagManager tagManager = tm.getTagManager();
@@ -134,7 +133,7 @@ public class MinnieTwitterMain {
       /* Explicit deletion from app */
       userManager.deleteUser("user" + 0);
       tm.deInitialize();
-      server.deleteSapphireObject(sapphireObjId);
+      server.delete(sapphireObjId);
     } catch (Exception e) {
       e.printStackTrace();
     }
@@ -142,20 +141,20 @@ public class MinnieTwitterMain {
 
   private static void ExecuteFullDemo(InetSocketAddress hostAddr, InetSocketAddress omsAddr) {
 
-    Registry registry;
+    java.rmi.registry.Registry registry;
     List<Timeline> timelines = new ArrayList<Timeline>();
 
     try {
       registry = LocateRegistry.getRegistry(omsAddr.getHostString(), omsAddr.getPort());
-      SapphireObjectServer server = (SapphireObjectServer) registry.lookup("SapphireOMS");
+      Registry server = (Registry) registry.lookup("SapphireOMS");
 
       KernelServer nodeServer = new KernelServerImpl(hostAddr, omsAddr);
 
       /* Get Twitter and User Manager */
       SapphireObjectID sapphireObjId =
-          server.createSapphireObject(
+          server.create(
               "amino.run.appexamples.minnietwitter.TwitterManager", new Object[0]);
-      TwitterManager tm = (TwitterManager) server.acquireSapphireObjectStub(sapphireObjId);
+      TwitterManager tm = (TwitterManager) server.acquireStub(sapphireObjId);
       UserManager userManager = tm.getUserManager();
       TagManager tagManager = tm.getTagManager();
 

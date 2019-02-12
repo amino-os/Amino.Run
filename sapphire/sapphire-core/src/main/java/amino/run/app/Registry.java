@@ -1,7 +1,7 @@
 package amino.run.app;
 
 import amino.run.common.AppObjectStub;
-import amino.run.common.SapphireObjectCreationException;
+import amino.run.common.MicroServiceCreationException;
 import amino.run.common.SapphireObjectID;
 import amino.run.common.SapphireObjectNameModificationException;
 import amino.run.common.SapphireObjectNotFoundException;
@@ -17,10 +17,10 @@ public interface Registry extends Remote {
      * @param args Arguments to the constructor of the Microservice.
      * @return Id of the created microservice
      * @throws RemoteException
-     * @throws SapphireObjectCreationException
+     * @throws MicroServiceCreationException
      */
     SapphireObjectID create(String spec, Object... args)
-            throws RemoteException, SapphireObjectCreationException;
+            throws RemoteException, MicroServiceCreationException;
 
     /**
      * Gets the application client side instance of microservice. It is used by client to do further

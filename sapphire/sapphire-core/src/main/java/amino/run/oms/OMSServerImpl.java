@@ -4,7 +4,7 @@ import amino.run.app.MicroServiceSpec;
 import amino.run.app.NodeSelectorSpec;
 import amino.run.app.Registry;
 import amino.run.common.AppObjectStub;
-import amino.run.common.SapphireObjectCreationException;
+import amino.run.common.MicroServiceCreationException;
 import amino.run.common.SapphireObjectID;
 import amino.run.common.SapphireObjectNameModificationException;
 import amino.run.common.SapphireObjectNotFoundException;
@@ -155,20 +155,20 @@ public class OMSServerImpl implements OMSServer, Registry {
 
     @Override
     public SapphireObjectID create(String microServiceSpec, Object... args)
-            throws RemoteException, SapphireObjectCreationException {
+            throws RemoteException, MicroServiceCreationException {
 
         MicroServiceSpec spec = MicroServiceSpec.fromYaml(microServiceSpec);
         /* Get a best server from the given spec */
         InetSocketAddress host = serverManager.getBestSuitableServer(spec);
         if (host == null) {
-            throw new SapphireObjectCreationException(
+            throw new MicroServiceCreationException(
                     "Failed to create sapphire object. Kernel server is not available  with the given requirements");
         }
 
         /* Get the kernel server stub */
         KernelServer server = serverManager.getServer(host);
         if (server == null) {
-            throw new SapphireObjectCreationException(
+            throw new MicroServiceCreationException(
                     "Failed to create sapphire object. Kernel server not found.");
         }
 
@@ -185,7 +185,7 @@ public class OMSServerImpl implements OMSServer, Registry {
             objectManager.setRootGroupPolicy(sid, clientPolicy.getGroup());
             return clientPolicy.getGroup().getSapphireObjId();
         } catch (Exception e) {
-            throw new SapphireObjectCreationException(
+            throw new MicroServiceCreationException(
                     "Failed to create sapphire object. Exception occurred at kernel server.", e);
         }
     }

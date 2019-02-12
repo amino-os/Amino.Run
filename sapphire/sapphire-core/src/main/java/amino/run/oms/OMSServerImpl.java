@@ -9,7 +9,7 @@ import amino.run.common.MicroServiceID;
 import amino.run.common.MicroServiceNameModificationException;
 import amino.run.common.MicroServiceNotFoundException;
 import amino.run.common.MicroServiceReplicaNotFoundException;
-import amino.run.common.SapphireReplicaID;
+import amino.run.common.ReplicaID;
 import amino.run.compiler.GlobalStubConstants;
 import amino.run.kernel.common.KernelOID;
 import amino.run.kernel.common.KernelObjectNotCreatedException;
@@ -343,7 +343,7 @@ public class OMSServerImpl implements OMSServer, Registry {
      * @throws MicroServiceNotFoundException
      */
     @Override
-    public SapphireReplicaID registerSapphireReplica(MicroServiceID microServiceId)
+    public ReplicaID registerSapphireReplica(MicroServiceID microServiceId)
             throws RemoteException, MicroServiceNotFoundException {
         return objectManager.addReplica(microServiceId, null);
     }
@@ -358,7 +358,7 @@ public class OMSServerImpl implements OMSServer, Registry {
      * @throws MicroServiceReplicaNotFoundException
      */
     @Override
-    public void setSapphireReplicaDispatcher(SapphireReplicaID replicaId, EventHandler dispatcher)
+    public void setSapphireReplicaDispatcher(ReplicaID replicaId, EventHandler dispatcher)
             throws RemoteException, MicroServiceNotFoundException,
                     MicroServiceReplicaNotFoundException {
         objectManager.setReplicaDispatcher(replicaId, dispatcher);
@@ -383,7 +383,7 @@ public class OMSServerImpl implements OMSServer, Registry {
      * @throws RemoteException
      * @throws MicroServiceNotFoundException
      */
-    public void unRegisterSapphireReplica(SapphireReplicaID replicaId)
+    public void unRegisterSapphireReplica(ReplicaID replicaId)
             throws RemoteException, MicroServiceNotFoundException {
         objectManager.removeReplica(replicaId);
     }

@@ -4,7 +4,7 @@ import amino.run.app.NodeSelectorSpec;
 import amino.run.common.MicroServiceID;
 import amino.run.common.MicroServiceNotFoundException;
 import amino.run.common.MicroServiceReplicaNotFoundException;
-import amino.run.common.SapphireReplicaID;
+import amino.run.common.ReplicaID;
 import amino.run.kernel.common.KernelOID;
 import amino.run.kernel.common.KernelObjectNotCreatedException;
 import amino.run.kernel.common.KernelObjectNotFoundException;
@@ -48,10 +48,10 @@ public interface OMSServer extends Remote {
 
     MicroServiceID registerSapphireObject() throws RemoteException;
 
-    SapphireReplicaID registerSapphireReplica(MicroServiceID microServiceId)
+    ReplicaID registerSapphireReplica(MicroServiceID microServiceId)
             throws RemoteException, MicroServiceNotFoundException;
 
-    void setSapphireReplicaDispatcher(SapphireReplicaID replicaId, EventHandler dispatcher)
+    void setSapphireReplicaDispatcher(ReplicaID replicaId, EventHandler dispatcher)
             throws RemoteException, MicroServiceNotFoundException,
                     MicroServiceReplicaNotFoundException;
 
@@ -60,6 +60,6 @@ public interface OMSServer extends Remote {
     void unRegisterSapphireObject(MicroServiceID microServiceId)
             throws RemoteException, MicroServiceNotFoundException;
 
-    void unRegisterSapphireReplica(SapphireReplicaID replicaId)
+    void unRegisterSapphireReplica(ReplicaID replicaId)
             throws RemoteException, MicroServiceNotFoundException;
 }

@@ -14,7 +14,7 @@ import amino.run.common.MicroServiceCreationException;
 import amino.run.common.MicroServiceID;
 import amino.run.common.MicroServiceNotFoundException;
 import amino.run.common.MicroServiceReplicaNotFoundException;
-import amino.run.common.SapphireReplicaID;
+import amino.run.common.ReplicaID;
 import amino.run.common.Utils;
 import amino.run.compiler.GlobalStubConstants;
 import amino.run.kernel.common.GlobalKernelReferences;
@@ -524,11 +524,11 @@ public class Sapphire {
             throws MicroServiceNotFoundException, MicroServiceReplicaNotFoundException,
                     RemoteException {
         /* Register for a replica ID from OMS */
-        SapphireReplicaID sapphireReplicaId =
+        ReplicaID replicaId =
                 GlobalKernelReferences.nodeServer.oms.registerSapphireReplica(microServiceId);
 
-        serverPolicyStub.setReplicaId(sapphireReplicaId);
-        serverPolicy.setReplicaId(sapphireReplicaId);
+        serverPolicyStub.setReplicaId(replicaId);
+        serverPolicy.setReplicaId(replicaId);
 
         EventHandler replicaHandler =
                 new EventHandler(
@@ -541,7 +541,7 @@ public class Sapphire {
 
         /* Register the handler for this replica to OMS */
         GlobalKernelReferences.nodeServer.oms.setSapphireReplicaDispatcher(
-                sapphireReplicaId, replicaHandler);
+                replicaId, replicaHandler);
     }
 
     /**

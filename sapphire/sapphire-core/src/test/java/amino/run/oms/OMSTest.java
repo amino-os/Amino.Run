@@ -6,7 +6,7 @@ import amino.run.app.Language;
 import amino.run.app.MicroServiceSpec;
 import amino.run.common.BaseTest;
 import amino.run.common.MicroServiceID;
-import amino.run.common.SapphireReplicaID;
+import amino.run.common.ReplicaID;
 import amino.run.common.TestUtils;
 import amino.run.kernel.common.KernelOID;
 import amino.run.kernel.server.KernelServerImpl;
@@ -148,7 +148,7 @@ public class OMSTest extends BaseTest {
         assertEquals(groupHandler, fieldValue.getInstanceDispatcher(microServiceId));
 
         /* Register a replica to this SO, check if it is added, set handler, get it back and verify if it is same */
-        SapphireReplicaID replicaId = omsImpl.registerSapphireReplica(microServiceId);
+        ReplicaID replicaId = omsImpl.registerSapphireReplica(microServiceId);
         assertEquals(
                 new Integer(1),
                 new Integer(omsImpl.getSapphireReplicasById(microServiceId).length));

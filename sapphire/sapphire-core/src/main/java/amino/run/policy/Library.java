@@ -9,7 +9,7 @@ import amino.run.common.GraalObject;
 import amino.run.common.MicroServiceID;
 import amino.run.common.MicroServiceNotFoundException;
 import amino.run.common.MicroServiceReplicaNotFoundException;
-import amino.run.common.SapphireReplicaID;
+import amino.run.common.ReplicaID;
 import amino.run.common.Utils;
 import amino.run.compiler.GlobalStubConstants;
 import amino.run.kernel.common.GlobalKernelReferences;
@@ -43,7 +43,7 @@ public abstract class Library implements Upcalls {
     public abstract static class ServerPolicyLibrary implements ServerUpcalls {
         protected AppObject appObject;
         protected KernelOID oid;
-        protected SapphireReplicaID replicaId;
+        protected ReplicaID replicaId;
         protected Policy.GroupPolicy group;
         protected MicroServiceSpec spec;
         protected Map<String, SapphirePolicyConfig> configMap;
@@ -375,11 +375,11 @@ public abstract class Library implements Upcalls {
             return oid;
         }
 
-        public void setReplicaId(SapphireReplicaID rid) {
+        public void setReplicaId(ReplicaID rid) {
             replicaId = rid;
         }
 
-        public SapphireReplicaID getReplicaId() {
+        public ReplicaID getReplicaId() {
             return replicaId;
         }
     }

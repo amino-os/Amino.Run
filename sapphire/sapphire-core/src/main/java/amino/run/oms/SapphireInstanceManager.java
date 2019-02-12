@@ -4,7 +4,7 @@ import amino.run.common.AppObjectStub;
 import amino.run.common.MicroServiceID;
 import amino.run.common.MicroServiceNotFoundException;
 import amino.run.common.MicroServiceReplicaNotFoundException;
-import amino.run.common.SapphireReplicaID;
+import amino.run.common.ReplicaID;
 import amino.run.policy.Policy;
 import amino.run.runtime.EventHandler;
 import java.rmi.RemoteException;
@@ -24,7 +24,7 @@ public class SapphireInstanceManager {
     private AtomicInteger referenceCount;
     private EventHandler instanceDispatcher;
     private AppObjectStub objectStub;
-    private HashMap<SapphireReplicaID, EventHandler> replicaDispatchers;
+    private HashMap<ReplicaID, EventHandler> replicaDispatchers;
     private Random oidGenerator;
     /**
      * Root group policy is the <strong>outmost</strong> group policy of this sapphire object.
@@ -47,14 +47,14 @@ public class SapphireInstanceManager {
      *
      * @return Returns a new replica id
      */
-    private SapphireReplicaID generateSapphireReplicaID() {
-        return new SapphireReplicaID(oid, UUID.randomUUID());
+    private ReplicaID generateSapphireReplicaID() {
+        return new ReplicaID(oid, UUID.randomUUID());
     }
 
     public SapphireInstanceManager(MicroServiceID oid, EventHandler dispatcher) {
         this.oid = oid;
         instanceDispatcher = dispatcher;
-        replicaDispatchers = new HashMap<SapphireReplicaID, EventHandler>();
+        replicaDispatchers = new HashMap<ReplicaID, EventHandler>();
         oidGenerator = new Random(new Date().getTime());
         referenceCount = new AtomicInteger(1);
     }
@@ -120,7 +120,7 @@ public class SapphireInstanceManager {
      * @return Returns event handler of the replica
      * @throws MicroServiceNotFoundException
      */
-    public EventHandler getReplicaDispatcher(SapphireReplicaID rid)
+    public EventHandler getReplicaDispatcher(ReplicaID rid)
             throws MicroServiceReplicaNotFoundException {
         EventHandler dispatcher = replicaDispatchers.get(rid);
         if (dispatcher == null) {
@@ -136,7 +136,7 @@ public class SapphireInstanceManager {
      * @param rid
      * @param dispatcher
      */
-    public void setReplicaDispatcher(SapphireReplicaID rid, EventHandler dispatcher)
+    public void setReplicaDispatcher(ReplicaID rid, EventHandler dispatcher)
             throws MicroServiceReplicaNotFoundException {
         if (replicaDispatchers.containsKey(rid)) {
             replicaDispatchers.put(rid, dispatcher);
@@ -152,8 +152,8 @@ public class SapphireInstanceManager {
      * @param dispatcher
      * @return returns a new replica id
      */
-    public SapphireReplicaID addReplica(EventHandler dispatcher) {
-        SapphireReplicaID rid = generateSapphireReplicaID();
+    public ReplicaID addReplica(EventHandler dispatcher) {
+        ReplicaID rid = generateSapphireReplicaID();
         replicaDispatchers.put(rid, dispatcher);
         return rid;
     }
@@ -163,7 +163,7 @@ public class SapphireInstanceManager {
      *
      * @param replicaId
      */
-    public void removeReplica(SapphireReplicaID replicaId) {
+    public void removeReplica(ReplicaID replicaId) {
         replicaDispatchers.remove(replicaId);
     }
 

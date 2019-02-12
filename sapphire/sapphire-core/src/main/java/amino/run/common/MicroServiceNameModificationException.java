@@ -3,11 +3,11 @@ package amino.run.common;
 /** Created by Venugopal Reddy K 00900280 on 16/7/18. */
 
 /** Sapphire object name modification exception */
-public class SapphireObjectNameModificationException extends Exception {
+public class MicroServiceNameModificationException extends Exception {
     String name;
     SapphireObjectID sapphireObjId;
 
-    public SapphireObjectNameModificationException(SapphireObjectID sapphireObjId, String name) {
+    public MicroServiceNameModificationException(SapphireObjectID sapphireObjId, String name) {
         this.sapphireObjId = sapphireObjId;
         this.name = name;
     }

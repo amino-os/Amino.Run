@@ -3,7 +3,7 @@ package amino.run.app;
 import amino.run.common.AppObjectStub;
 import amino.run.common.MicroServiceCreationException;
 import amino.run.common.SapphireObjectID;
-import amino.run.common.SapphireObjectNameModificationException;
+import amino.run.common.MicroServiceNameModificationException;
 import amino.run.common.SapphireObjectNotFoundException;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
@@ -64,11 +64,11 @@ public interface Registry extends Remote {
      * @param name
      * @throws RemoteException
      * @throws SapphireObjectNotFoundException
-     * @throws SapphireObjectNameModificationException
+     * @throws MicroServiceNameModificationException
      */
     void setName(SapphireObjectID id, String name)
             throws RemoteException, SapphireObjectNotFoundException,
-                    SapphireObjectNameModificationException;
+            MicroServiceNameModificationException;
 
     /**
      * Deletes a microservice.

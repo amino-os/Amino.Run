@@ -8,11 +8,11 @@ import java.util.concurrent.TimeoutException;
 // AtLeastOnceRPC: automatically retry RPCs for bounded amount of time
 public class AtLeastOnceRPCPolicy extends DefaultPolicy {
 
-    public static class AtLeastOnceRPCClientPolicy extends DefaultClientPolicy {
+    public static class ClientPolicy extends DefaultClientPolicy {
         // 5s looks like a reasonable default timeout for production
         private long timeoutMilliSeconds = 5000L;
 
-        public AtLeastOnceRPCClientPolicy() {}
+        public ClientPolicy() {}
 
         // for unit test use
         public void setTimeout(long timeoutMilliSeconds) {
@@ -40,7 +40,7 @@ public class AtLeastOnceRPCPolicy extends DefaultPolicy {
         }
     }
 
-    public static class AtLeastOnceRPCServerPolicy extends DefaultServerPolicy {}
+    public static class ServerPolicy extends DefaultServerPolicy {}
 
-    public static class AtLeastOnceRPCGroupPolicy extends DefaultGroupPolicy {}
+    public static class GroupPolicy extends DefaultGroupPolicy {}
 }

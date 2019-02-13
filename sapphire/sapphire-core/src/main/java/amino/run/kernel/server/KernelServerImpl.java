@@ -1,33 +1,27 @@
 package amino.run.kernel.server;
 
 import amino.run.app.MicroServiceSpec;
-import amino.run.common.AppObjectStub;
-import amino.run.common.MicroServiceCreationException;
-import amino.run.common.MicroServiceNotFoundException;
-import amino.run.common.MicroServiceReplicaNotFoundException;
+import amino.run.common.*;
 import amino.run.kernel.client.KernelClient;
 import amino.run.kernel.common.*;
 import amino.run.oms.OMSServer;
 import amino.run.policy.Library;
 import amino.run.policy.Policy;
 import amino.run.policy.PolicyContainer;
-import amino.run.common.SapphireStatusObject;
-import amino.run.runtime.Sapphire;
-
-import java.net.InetSocketAddress;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.Set;
-import java.util.logging.Level;
 import amino.run.policy.util.ResettableTimer;
 import amino.run.runtime.EventHandler;
+import amino.run.runtime.Sapphire;
 import java.io.Serializable;
-import java.rmi.NotBoundException;
+import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.*;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -44,9 +38,8 @@ public class KernelServerImpl implements KernelServer {
     public static String SERVICE_PORT = "--servicePort";
     public static String DEFAULT_REGION = "default-region";
     public static String REGION_KEY = "region";
-    private static int HEARTBEAT_MAX_TRIES = 2;
-    private int HEARBEAT_FAIL_COUNT = 0;
-    private ArrayList<SapphireStatusObject> statusObjBatch;
+    // list of microServiceStatus inorder to send those in batch
+    private ArrayList<MicroServiceStatus> microserviceStatusBatch;
     private static final int BATCH_SIZE = 50;
 
     private InetSocketAddress host;
@@ -85,7 +78,7 @@ public class KernelServerImpl implements KernelServer {
         objectManager = new KernelObjectManager();
         client = new KernelClient(oms);
         GlobalKernelReferences.nodeServer = this;
-        statusObjBatch = new ArrayList<>();
+        microserviceStatusBatch = new ArrayList<>();
     }
 
     public void setRegion(String region) {
@@ -108,9 +101,6 @@ public class KernelServerImpl implements KernelServer {
     public Object makeKernelRPC(KernelRPC rpc)
             throws RemoteException, KernelObjectNotFoundException, KernelObjectMigratingException,
                     KernelRPCException {
-        if (GlobalKernelReferences.KernelServerDown) {
-            throw new KernelRPCException("Kernel server is down");
-        }
         KernelObject object = null;
         object = objectManager.lookupObject(rpc.getOID());
 
@@ -361,11 +351,11 @@ public class KernelServerImpl implements KernelServer {
      *
      * @return Returns list of status objects
      */
-    public ArrayList<SapphireStatusObject> geStatusObjects() {
+    public ArrayList<MicroServiceStatus> getMicroserviceStatuses() {
         KernelObject kernelObject;
         boolean status;
         Set<Map.Entry<KernelOID, KernelObject>> set = objectManager.getKernelObjects();
-        ArrayList<SapphireStatusObject> statusObjects = new ArrayList();
+        ArrayList<MicroServiceStatus> microServiceStatuses = new ArrayList();
         for (Map.Entry<KernelOID, KernelObject> entry : set) {
             if (entry.getValue().getObject() instanceof Policy.ServerPolicy) {
                 kernelObject = entry.getValue();
@@ -373,8 +363,8 @@ public class KernelServerImpl implements KernelServer {
                         ((Policy.ServerPolicy) kernelObject.getObject()).getGroup();
                 if (group != null) {
                     status = kernelObject.isStatus();
-                    statusObjects.add(
-                            new SapphireStatusObject(
+                    microServiceStatuses.add(
+                            new MicroServiceStatus(
                                     group.getSapphireObjId(),
                                     group.$__getKernelOID(),
                                     entry.getKey(),
@@ -383,7 +373,7 @@ public class KernelServerImpl implements KernelServer {
             }
         }
 
-        return statusObjects;
+        return microServiceStatuses;
     }
 
     /**
@@ -441,34 +431,26 @@ public class KernelServerImpl implements KernelServer {
     }
 
     /** Send heartbeats to OMS. */
-    private void startheartbeat(ServerInfo srvinfo, ArrayList<SapphireStatusObject> statusObjects) {
-        logger.fine("heartbeat KernelServer" + srvinfo + statusObjects);
-        /*Update the status of policy objects too */
+    private void sendHeartBeat(
+            ServerInfo srvinfo, ArrayList<MicroServiceStatus> microServiceStatuses) {
+        logger.fine("heartbeat KernelServer" + srvinfo + microServiceStatuses);
+        /*Update the status of policy objects too in batch */
         try {
-            for (SapphireStatusObject statusObject : statusObjects) {
-                statusObjBatch.add(statusObject);
-                if (statusObjBatch.size() == BATCH_SIZE) {
-                    oms.heartbeatKernelServer(srvinfo, statusObjBatch);
-                    statusObjBatch.clear();
+            for (MicroServiceStatus microServiceStatus : microServiceStatuses) {
+                microserviceStatusBatch.add(microServiceStatus);
+                if (microserviceStatusBatch.size() == BATCH_SIZE) {
+                    oms.receiveHeartBeat(srvinfo, microserviceStatusBatch);
+                    microserviceStatusBatch.clear();
                 }
             }
-            oms.heartbeatKernelServer(srvinfo, statusObjBatch);
+            oms.receiveHeartBeat(srvinfo, microserviceStatusBatch);
         } catch (Exception e) {
-            checkKernelServerStatus();
             logger.severe("Cannot heartbeat KernelServer" + srvinfo);
             e.printStackTrace();
         }
         ksHeartbeatSendTimer.reset();
     }
 
-    private void checkKernelServerStatus() {
-        HEARBEAT_FAIL_COUNT++;
-        GlobalKernelReferences.KernelServerDown = false;
-        if (HEARBEAT_FAIL_COUNT == HEARTBEAT_MAX_TRIES) {
-            GlobalKernelReferences.KernelServerDown = true;
-            HEARBEAT_FAIL_COUNT = 0;
-        }
-    }
     /**
      * At startup, contact the OMS.
      *
@@ -510,7 +492,7 @@ public class KernelServerImpl implements KernelServer {
             server.setRegion(srvInfo.getRegion());
 
             // Start heartbeat timer
-            server.startHeartbeats(srvInfo, server.geStatusObjects());
+            server.startHeartbeats(srvInfo);
 
             // Start a thread that print memory stats
             server.getMemoryStatThread().start();
@@ -521,13 +503,12 @@ public class KernelServerImpl implements KernelServer {
         }
     }
 
-    private void startHeartbeats(ServerInfo srvInfo, ArrayList<SapphireStatusObject> statusObjects)
-            throws RemoteException, NotBoundException, KernelServerNotFoundException {
+    private void startHeartbeats(ServerInfo srvInfo) {
         ksHeartbeatSendTimer =
                 new ResettableTimer(
                         new TimerTask() {
                             public void run() {
-                                startheartbeat(srvInfo, geStatusObjects());
+                                sendHeartBeat(srvInfo, getMicroserviceStatuses());
                             }
                         },
                         KS_HEARTBEAT_PERIOD);

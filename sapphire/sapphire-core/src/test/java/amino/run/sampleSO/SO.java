@@ -1,13 +1,13 @@
 package amino.run.sampleSO;
 
 /** Created by Venugopal Reddy K on 6/9/18. */
-import amino.run.app.AbstractSapphireObject;
+import amino.run.app.StatusReporter;
 import amino.run.runtime.SapphireConfiguration;
 
 @SapphireConfiguration(Policies = "amino.run.policy.DefaultPolicy")
-public class SO extends AbstractSapphireObject {
+public class SO extends StatusReporter {
     boolean status = true;
-    public Integer i = 1;
+    public Integer i = 0;
 
     public Integer getI() {
         return i;

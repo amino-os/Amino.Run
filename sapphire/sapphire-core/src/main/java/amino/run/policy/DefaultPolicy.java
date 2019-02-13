@@ -12,9 +12,11 @@ import java.rmi.RemoteException;
 import java.util.*;
 
 public class DefaultPolicy extends Policy {
-    protected static int replicaCount = 3;
+    protected static final int REPLICA_COUNT = 3;
 
     public static class DefaultServerPolicy extends ServerPolicy {
+        // This interval is equal to thrice the kernelserver heartbeat period which is equal to
+        // hearbeat timeout period
         protected long HEALTH_STATUS_QUERY_INTERVAL = OMSServer.KS_HEARTBEAT_TIMEOUT;
         protected transient ResettableTimer healthCheckTimer;
         private String statusMethodName;
@@ -39,7 +41,8 @@ public class DefaultPolicy extends Policy {
                                 .toGenericString();
             } catch (NoSuchMethodException e) {
                 /* get health status method is not found in SO class. It means, SO did not extend
-                AbstractSapphireObject class.*/
+                StatusReporter class.*/
+                logger.warning("Microservice should extend StatusReporter to enable health check");
                 return;
             }
 
@@ -56,6 +59,7 @@ public class DefaultPolicy extends Policy {
                                             sapphire_update_status(status);
                                             healthCheckTimer.reset();
                                         } catch (KernelObjectNotFoundException e) {
+                                            throw new Error("kernel object does not exist");
                                         } catch (Exception e) {
                                             e.printStackTrace();
                                         }
@@ -104,7 +108,10 @@ public class DefaultPolicy extends Policy {
         private ArrayList<ServerPolicy> servers = new ArrayList<ServerPolicy>();
         protected String region = "";
         protected MicroServiceSpec spec = null;
+        // allowing maxminum of 3 ticks to receive notification from server polciy
         protected int HEALTH_STATUS_MAX_SKIP_TICKS = 3;
+        // This interval is equal to thrice the kernelserver heartbeat period which is equal to
+        // hearbeat timeout period
         protected long HEALTH_STATUS_REPORT_INTERVAL = OMSServer.KS_HEARTBEAT_TIMEOUT;
         protected transient volatile int healthStatusTick = 1;
         protected transient ResettableTimer healthCheckTimer;
@@ -113,7 +120,7 @@ public class DefaultPolicy extends Policy {
          * it is advisable that defer putting this server policy into group policy until the server
          * policy is complete with full policy chain.
          */
-        public synchronized void addServer(ServerPolicy server) throws RemoteException {
+        protected synchronized void addServer(ServerPolicy server) throws RemoteException {
             if (servers == null) {
                 // TODO: Need to change it to proper exception
                 throw new RemoteException("Group object deleted");
@@ -121,7 +128,7 @@ public class DefaultPolicy extends Policy {
             servers.add(server);
         }
 
-        public synchronized void removeServer(ServerPolicy server) throws RemoteException {
+        protected synchronized void removeServer(ServerPolicy server) throws RemoteException {
             if (servers != null) {
                 servers.remove(server);
             }
@@ -140,6 +147,7 @@ public class DefaultPolicy extends Policy {
                 throws RemoteException {
             this.region = region;
             this.spec = spec;
+            addServer(server);
             if (healthCheckTimer == null) {
                 healthCheckTimer =
                         new ResettableTimer(
@@ -161,35 +169,103 @@ public class DefaultPolicy extends Policy {
                 healthCheckTimer.cancel();
                 healthCheckTimer = null;
             }
-            servers = null;
+            servers.clear();
         }
 
+        /** Below methods can be used by all the DMs extending this default DM. */
+
+        /**
+         * This method is used to replicate a server policy at the given source considering itself
+         * as reference copy and pin it to kernel server with specified host. And adds it to its
+         * local server list.
+         *
+         * @param replicaSource Server policy on which a new replica is created considering itself
+         *     as reference copy
+         * @param dest Host address on which replicated copy need to pin
+         * @param region Region in which replicated server has to be pinned. It is passed down to
+         *     all downstream DMs till leaf. And downstream DM pinning the chain ensures to pin on
+         *     kernel server belonging to the region
+         * @return New replica of server policy
+         * @throws RemoteException
+         * @throws MicroServiceNotFoundException
+         * @throws MicroServiceReplicaNotFoundException
+         */
+        protected ServerPolicy replicate(
+                ServerPolicy replicaSource, InetSocketAddress dest, String region)
+                throws RemoteException, MicroServiceNotFoundException,
+                        MicroServiceReplicaNotFoundException {
+            ServerPolicy replica =
+                    replicaSource.sapphire_replicate(replicaSource.getProcessedPolicies(), region);
+            if (replicaSource.isLastPolicy()) {
+                pin(replica, dest);
+            }
+
+            addServer(replica);
+            return replica;
+        }
+
+        /**
+         * Pin the server policy to kernel server with specified host
+         *
+         * @param server
+         * @param host
+         * @throws MicroServiceReplicaNotFoundException
+         * @throws RemoteException
+         * @throws MicroServiceNotFoundException
+         */
+        protected void pin(ServerPolicy server, InetSocketAddress host)
+                throws MicroServiceReplicaNotFoundException, RemoteException,
+                        MicroServiceNotFoundException {
+            server.sapphire_pin_to_server(host);
+            ((KernelObjectStub) server).$__updateHostname(host);
+        }
+
+        /**
+         * Destroys the given server policy from the kernel server where it resides. And removes it
+         * from its local server list
+         *
+         * @param server
+         * @throws RemoteException
+         */
+        protected void terminate(ServerPolicy server) throws RemoteException {
+            server.sapphire_terminate();
+            removeServer(server);
+        }
+
+        /**
+         * MicroServiceStatus is received from oms. If status is healthy, LastSeenTick value is set,
+         * otherwise that replica will be removed and a new replica will be added
+         *
+         * @param notificationObject
+         * @throws RemoteException
+         */
         @Override
         @AddEvent(event = "NOTIFY")
         public void onNotification(NotificationObject notificationObject) throws RemoteException {
             super.onNotification(notificationObject);
-            if (!(notificationObject instanceof SapphireStatusObject)) {
+            if (!(notificationObject instanceof MicroServiceStatus)) {
                 /* Unsupported notification received */
                 return;
             }
 
             try {
-                SapphireStatusObject statusObject = (SapphireStatusObject) notificationObject;
-                KernelObjectStub server = (KernelObjectStub) getServer(statusObject.getServerId());
-                ServerPolicy serverPolicy = getServer(statusObject.getServerId());
-                if (statusObject.isStatus()) {
+                MicroServiceStatus microServiceStatus = (MicroServiceStatus) notificationObject;
+                KernelObjectStub server =
+                        (KernelObjectStub) getServer(microServiceStatus.getServerId());
+                ServerPolicy serverPolicy = getServer(microServiceStatus.getServerId());
+                if (microServiceStatus.isStatus()) {
                     /* Mark the server as healthy */
                     server.$__setLastSeenTick(healthStatusTick);
                     return;
                 }
-                removeReplica(serverPolicy);
+                terminate(serverPolicy);
                 addReplicas(region);
             } catch (KernelObjectNotFoundException e) {
-                e.toString();
+                throw new Error("this kernel object does not exist");
             } catch (MicroServiceNotFoundException e) {
-                e.toString();
+                throw new Error("Failed to find Microservice inorder to add replicas");
             } catch (MicroServiceReplicaNotFoundException e) {
-                e.toString();
+                throw new Error("Failed to find Microservice Replica");
             }
         }
 
@@ -213,10 +289,10 @@ public class DefaultPolicy extends Policy {
         }
 
         /**
-         * Check the status of appobject from each replica and add healthy ones in the list
+         * Check the LastSeenTick value from each replica and return healthy one
          *
-         * @return List of healthy replicas
-         * @throws RemoteException
+         * @return Healthy Replica
+         * @throws Exception
          */
         private ServerPolicy getHealthyReplicas() throws Exception {
             ArrayList<ServerPolicy> servers = getServers();
@@ -231,9 +307,18 @@ public class DefaultPolicy extends Policy {
             throw new Exception("Healthy replica not available");
         }
 
+        /**
+         * A new replica will be added whenever a replica is unhealthy and got removed from group
+         * policy
+         *
+         * @param region
+         * @throws RemoteException
+         * @throws MicroServiceNotFoundException
+         * @throws MicroServiceReplicaNotFoundException
+         */
         private void addReplicas(String region)
                 throws RemoteException, MicroServiceNotFoundException,
-                MicroServiceReplicaNotFoundException {
+                        MicroServiceReplicaNotFoundException {
             ArrayList<ServerPolicy> servers = getServers();
 
             /* Get the list of available servers in region */
@@ -245,7 +330,7 @@ public class DefaultPolicy extends Policy {
             }
 
             int remainingReplicaCount;
-            remainingReplicaCount = replicaCount - servers.size();
+            remainingReplicaCount = REPLICA_COUNT - servers.size();
             List<InetSocketAddress> ksToBeUsed = new ArrayList<>(fullKernelList);
             Set<InetSocketAddress> ksList = new HashSet<>();
             // add the kernelservers in which replica is already present in the list
@@ -262,14 +347,14 @@ public class DefaultPolicy extends Policy {
                 if (!ksToBeUsed.isEmpty()) {
                     InetSocketAddress currentKS = ksToBeUsed.get(0);
                     ServerPolicy replicaSource = null;
-                    //adding new replica
+                    // adding new replica
                     try {
                         replicaSource = getHealthyReplicas();
-                    } catch (Exception e){
+                    } catch (Exception e) {
                         logger.warning("Healthy replica not available");
                         return;
                     }
-                    addReplica(replicaSource, currentKS, region, false);
+                    replicate(replicaSource, currentKS, region);
                     ksToBeUsed.remove(currentKS);
                     remainingReplicaCount--;
                 } else {

@@ -3,12 +3,12 @@ package amino.run.appexamples.minnietwitter;
 import java.util.ArrayList;
 import java.util.List;
 
-import amino.run.app.AbstractSapphireObject;
+import amino.run.app.StatusReporter;
 
 import static amino.run.runtime.Sapphire.delete_;
 import static amino.run.runtime.Sapphire.new_;
 
-public class User extends AbstractSapphireObject {
+public class User extends StatusReporter {
     private Timeline timeline;
     private UserInfo ui;
     List<User> followers;

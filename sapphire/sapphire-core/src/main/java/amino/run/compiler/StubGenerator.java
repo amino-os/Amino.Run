@@ -1,7 +1,7 @@
 package amino.run.compiler;
 
-import amino.run.app.AbstractSapphireObject;
 import amino.run.app.SapphireObject;
+import amino.run.app.StatusReporter;
 import amino.run.policy.Policy;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -103,7 +103,7 @@ public class StubGenerator {
                         StubGenerator.generateStub("policy", sapphireGroupPolicyClass, destFolder);
                     } else if (SapphireObject.class.isAssignableFrom(c))
                         StubGenerator.generateStub("app", c, destFolder);
-                    else if (AbstractSapphireObject.class.isAssignableFrom(c))
+                    else if (StatusReporter.class.isAssignableFrom(c))
                         StubGenerator.generateStub("app", c, destFolder);
                 } catch (Exception e) {
                     e.printStackTrace();

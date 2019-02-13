@@ -1,6 +1,7 @@
 package amino.run.policy;
 
 import amino.run.kernel.common.KernelOID;
+import java.rmi.RemoteException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,7 +32,11 @@ public class DefaultPolicyTest {
                             new Runnable() {
                                 @Override
                                 public void run() {
-                                    group.addServer(s);
+                                    try {
+                                        group.addServer(s);
+                                    } catch (RemoteException e) {
+                                        e.toString();
+                                    }
                                 }
                             });
         }
@@ -43,7 +48,11 @@ public class DefaultPolicyTest {
                             new Runnable() {
                                 @Override
                                 public void run() {
-                                    group.removeServer(s);
+                                    try {
+                                        group.removeServer(s);
+                                    } catch (RemoteException e) {
+                                        e.toString();
+                                    }
                                 }
                             });
         }

@@ -422,7 +422,9 @@ public class ServerTest {
     @Test
     public void doRPC() throws java.lang.Exception {
         successfulLeaderElection();
-        String[] methods = {"fooMethod", "barMethod"};
+        String[] methods = {
+            "public int amino.run.policy.util.consensus.raft.ServerTest$SO.getValue() throws amino.run.policy.util.consensus.raft.Exception"
+        };
         ArrayList<Object> args = new ArrayList<Object>();
         for (String method : methods) {
             // Apply to stateMachine is invoked only on leader

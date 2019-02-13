@@ -100,6 +100,12 @@ public abstract class DefaultUpcallImpl extends Library {
             super.onDestroy();
         }
 
+        /**
+         * To notify group policy regarding microservice status
+         *
+         * @param notificationObject
+         * @throws RemoteException
+         */
         public void onNotification(NotificationObject notificationObject) throws RemoteException {}
     }
 }

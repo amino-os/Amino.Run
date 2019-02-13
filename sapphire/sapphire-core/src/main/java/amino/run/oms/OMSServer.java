@@ -4,8 +4,8 @@ import amino.run.app.NodeSelectorSpec;
 import amino.run.common.MicroServiceID;
 import amino.run.common.MicroServiceNotFoundException;
 import amino.run.common.MicroServiceReplicaNotFoundException;
+import amino.run.common.MicroServiceStatus;
 import amino.run.common.ReplicaID;
-import amino.run.common.SapphireStatusObject;
 import amino.run.kernel.common.KernelOID;
 import amino.run.kernel.common.KernelObjectNotCreatedException;
 import amino.run.kernel.common.KernelObjectNotFoundException;
@@ -40,7 +40,7 @@ public interface OMSServer extends Remote {
 
     void registerKernelServer(ServerInfo info) throws RemoteException, NotBoundException;
 
-    void heartbeatKernelServer(ServerInfo srvinfo, ArrayList<SapphireStatusObject> statusObjects)
+    void receiveHeartBeat(ServerInfo srvinfo, ArrayList<MicroServiceStatus> microServiceStatuses)
             throws RemoteException, NotBoundException, KernelServerNotFoundException;
 
     Policy.GroupPolicy createGroupPolicy(Class<?> policyClass, MicroServiceID microServiceId)
@@ -58,9 +58,12 @@ public interface OMSServer extends Remote {
 
     boolean delete(MicroServiceID id) throws RemoteException, MicroServiceNotFoundException;
 
+    /* To register the handler for the microservice.Added so that oms can get the group policy
+    handler and notify it about the health status of Microservice*/
     void setSapphireObjectDispatcher(MicroServiceID microServiceId, EventHandler dispatcher)
             throws RemoteException, MicroServiceNotFoundException;
 
+    /*To get group policy eventhandler*/
     EventHandler getSapphireObjectDispatcher(MicroServiceID microServiceId)
             throws RemoteException, MicroServiceNotFoundException;
 

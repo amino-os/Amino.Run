@@ -17,7 +17,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class DHTPolicy extends DefaultPolicy {
-    private static final int DEFAULT_NUM_OF_SHARDS = replicaCount;
+    private static final int DEFAULT_NUM_OF_SHARDS = REPLICA_COUNT;
 
     /** Configuration for DHT Policy. */
     public static class Config implements SapphirePolicyConfig {
@@ -136,13 +136,13 @@ public class DHTPolicy extends DefaultPolicy {
         }
 
         @Override
-        protected void addServer(Policy.ServerPolicy server) {
+        protected void addServer(Policy.ServerPolicy server) throws RemoteException {
             super.addServer(server);
             dhtChord.add((ServerPolicy) server);
         }
 
         @Override
-        protected void removeServer(Policy.ServerPolicy server) {
+        protected void removeServer(Policy.ServerPolicy server) throws RemoteException {
             super.removeServer(server);
             // TODO: Need to remove from chord too
         }

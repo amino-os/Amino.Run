@@ -14,5 +14,4 @@ import amino.run.kernel.server.KernelServerImpl;
  */
 public class GlobalKernelReferences {
     public static KernelServerImpl nodeServer;
-    public static boolean KernelServerDown;
 }

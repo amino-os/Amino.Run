@@ -13,7 +13,10 @@ import amino.run.policy.util.ResettableTimer;
 import amino.run.sampleSO.SO;
 import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import org.junit.*;
 import org.junit.contrib.java.lang.system.ExpectedSystemExit;
 import org.junit.rules.ExpectedException;
@@ -26,7 +29,6 @@ public class KSTest extends BaseTest {
     SO so;
     KernelServerImpl ks;
     KernelObjectManager kom;
-    ResettableTimer value;
     KernelServerManager kernelServerManager;
     ResettableTimer heartbeatTimer;
     @Rule public ExpectedException thrown = ExpectedException.none();
@@ -49,7 +51,6 @@ public class KSTest extends BaseTest {
                         extractFieldValueOnInstance(KernelServerImpl.oms, "serverManager");
         kom = (KernelObjectManager) extractFieldValueOnInstance(ks, "objectManager");
         heartbeatTimer = (ResettableTimer) extractFieldValueOnInstance(ks, "ksHeartbeatSendTimer");
-        heartbeatTimer.reset();
     }
 
     @Test
@@ -90,6 +91,7 @@ public class KSTest extends BaseTest {
      */
     @Test
     public void testHealth() throws Exception {
+        heartbeatTimer.reset();
         List<KernelOID> kIdsBeforeFailure = Arrays.asList(kom.getAllKernelObjectOids());
         // Testing unhealthy state
         so.setStatus(false);
@@ -110,36 +112,6 @@ public class KSTest extends BaseTest {
         for (KernelOID id : kIdsAfterSuccess) {
             Assert.assertEquals(true, kom.lookupObject(id).isStatus());
         }
-    }
-
-    /**
-     * Testing kernelserver failure
-     *
-     * @throws Exception
-     */
-    // Limitation: This testcase doesn't test the scenario in which one kernelserver and one or more
-    // replicas
-    // are present and making kernelserver down will make the replicas removed from group policy and
-    // add replica cannot be done
-    @Test
-    public void testKernelServerFail() throws Exception {
-        // stopping kernel rpc
-        Method method = KernelServerImpl.class.getDeclaredMethod("checkKernelServerStatus", null);
-        method.setAccessible(true);
-        method.invoke(ks);
-        method.invoke(ks);
-        // starting the timer in kernelservermanager so that the kernelserver which is not sending
-        // its heartbeat will be removed from the list
-        Map<InetSocketAddress, ResettableTimer> heartbeatTimers =
-                (Map<InetSocketAddress, ResettableTimer>)
-                        extractFieldValueOnInstance(kernelServerManager, "ksHeartBeatTimers");
-        ResettableTimer ksHeartBeatTimer = heartbeatTimers.get(ks.getLocalHost());
-        ksHeartBeatTimer.reset();
-        Thread.sleep(
-                OMSServer.KS_HEARTBEAT_TIMEOUT // waiting for timeout and stopheartbeat to happen
-                        + KernelServerImpl.KS_HEARTBEAT_PERIOD // heartbeat timer in kernelserver
-                        + (OMSServer.KS_HEARTBEAT_TIMEOUT
-                                * 2)); // healthchecktimer in serverpolicy and group policy
     }
 
     @Test

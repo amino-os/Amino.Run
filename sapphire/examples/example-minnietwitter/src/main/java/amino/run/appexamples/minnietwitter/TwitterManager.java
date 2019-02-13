@@ -1,11 +1,11 @@
 package amino.run.appexamples.minnietwitter;
 
-import amino.run.app.AbstractSapphireObject;
+import amino.run.app.StatusReporter;
 
 import static amino.run.runtime.Sapphire.delete_;
 import static amino.run.runtime.Sapphire.new_;
 
-public class TwitterManager extends AbstractSapphireObject {
+public class TwitterManager extends StatusReporter {
     private UserManager userManager;
     private TagManager tagManager;
 

@@ -1,7 +1,6 @@
 package amino.run.policy.checkpoint;
 
 import amino.run.policy.DefaultPolicy;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;

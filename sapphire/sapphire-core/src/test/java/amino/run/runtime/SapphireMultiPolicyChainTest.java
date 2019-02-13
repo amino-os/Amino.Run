@@ -8,6 +8,7 @@ import amino.run.app.Language;
 import amino.run.app.MicroServiceSpec;
 import amino.run.common.BaseTest;
 import amino.run.common.MicroServiceID;
+import amino.run.policy.DefaultPolicy;
 import amino.run.policy.PolicyContainer;
 import amino.run.policy.dht.DHTPolicy;
 import amino.run.sampleSO.SO;

@@ -5,16 +5,16 @@ import amino.run.kernel.common.KernelOID;
 /** Created by Venugopal Reddy K on 26/8/18. */
 
 /**
- * Sapphire status object is a DTO to notify the health status from server policy(on kernel server)
- * to group policy(on OMS)
+ * MicroServiceStatus is a DTO to notify the health status from server policy(on kernel server) to
+ * group policy(on OMS)
  */
-public class SapphireStatusObject implements NotificationObject {
+public class MicroServiceStatus implements NotificationObject {
     public final MicroServiceID sapphireObjId;
     public final KernelOID groupId;
     public final KernelOID serverId;
     public final boolean status;
 
-    public SapphireStatusObject(
+    public MicroServiceStatus(
             MicroServiceID sapphireObjId, KernelOID groupId, KernelOID serverId, boolean status) {
         this.sapphireObjId = sapphireObjId;
         this.groupId = groupId;
@@ -43,7 +43,7 @@ public class SapphireStatusObject implements NotificationObject {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        SapphireStatusObject that = (SapphireStatusObject) o;
+        MicroServiceStatus that = (MicroServiceStatus) o;
 
         if (!groupId.equals(that.groupId)) return false;
         return serverId.equals(that.serverId);

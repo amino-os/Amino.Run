@@ -379,6 +379,13 @@ public abstract class Library implements Upcalls {
             return replicaId;
         }
 
+        /**
+         * To find the host for a kernel object
+         *
+         * @param oid
+         * @return
+         * @throws RemoteException
+         */
         public InetSocketAddress sapphire_locate_kernel_object(KernelOID oid)
                 throws RemoteException {
             InetSocketAddress addr;
@@ -393,14 +400,12 @@ public abstract class Library implements Upcalls {
             return addr;
         }
 
-        public boolean isAlreadyPinned() {
-            return this.alreadyPinned;
-        }
-
-        public void setAlreadyPinned(boolean alreadyPinned) {
-            this.alreadyPinned = alreadyPinned;
-        }
-
+        /**
+         * To update status in kernel object
+         *
+         * @param status
+         * @throws KernelObjectNotFoundException
+         */
         public void sapphire_update_status(boolean status) throws KernelObjectNotFoundException {
             kernel().updateObjectStatus($__getKernelOID(), status);
         }
@@ -465,62 +470,6 @@ public abstract class Library implements Upcalls {
             microServiceId = sapphireId;
         }
 
-        /**
-         * Creates a replica based on replicaSource and pin to the dest host if not pinned before.
-         *
-         * @param replicaSource server policy where the replica creation operation will be
-         *     performed.
-         * @param dest address for KernelServer that will host this replica.
-         * @param region region where this replica needs to be located within.
-         * @param pinned whether the policy chain was already pinned by downstream policy.
-         * @return newly created replica.
-         * @throws RemoteException
-         * @throws MicroServiceNotFoundException
-         * @throws MicroServiceReplicaNotFoundException
-         */
-        protected ServerPolicy addReplica(
-                ServerPolicy replicaSource,
-                InetSocketAddress dest,
-                String region,
-                boolean pinned)
-                throws RemoteException, MicroServiceNotFoundException,
-                        MicroServiceReplicaNotFoundException {
-
-            ServerPolicy replica =
-                    replicaSource.sapphire_replicate(replicaSource.getProcessedPolicies(), region);
-            if (pinned) {
-                // This chain was already pinned by the downstream policy; hence, skips pinning.
-                return replica;
-            }
-
-            try {
-                replicaSource.sapphire_pin_to_server(replica, dest);
-                updateReplicaHostName(replica, dest);
-            } catch (Exception e) {
-                String msgDetail =
-                        String.format(
-                                "Region:%s Dest:%s ReplicaSrc:%s", region, dest, replicaSource);
-                logger.log(Level.SEVERE, "Replica pinning failed. " + msgDetail, e);
-                try {
-                    removeReplica(replica);
-                } catch (Exception innerException) {
-                    logger.log(
-                            Level.WARNING,
-                            "Replica removal failed after pinning has failed. " + msgDetail,
-                            e);
-                }
-                throw e;
-            }
-            return replica;
-        }
-
-        protected void removeReplica(ServerPolicy server)
-                throws RemoteException, MicroServiceReplicaNotFoundException,
-                        MicroServiceNotFoundException {
-            server.sapphire_remove_replica();
-            removeServer(server);
-        }
-
         public MicroServiceID getSapphireObjId() {
             return microServiceId;
         }
@@ -537,7 +486,6 @@ public abstract class Library implements Upcalls {
             throw new KernelObjectNotFoundException(
                     String.format("Kernel object %s not found", serverId));
         }
-
         /**
          * Notifies server policies to exit. Each server policy should do three tasks: 1) remove
          * itself from {@code KernelObjectManager} on local kernel server, 2) remove itself of OMS's

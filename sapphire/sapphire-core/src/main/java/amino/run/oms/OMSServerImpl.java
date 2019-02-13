@@ -1,25 +1,14 @@
 package amino.run.oms;
 
 import amino.run.app.MicroServiceSpec;
-
 import amino.run.app.NodeSelectorSpec;
 import amino.run.app.Registry;
-import amino.run.common.AppObjectStub;
-import amino.run.common.MicroServiceCreationException;
-import amino.run.common.MicroServiceID;
-import amino.run.common.MicroServiceNameModificationException;
-import amino.run.common.MicroServiceNotFoundException;
-import amino.run.common.MicroServiceReplicaNotFoundException;
-import amino.run.common.ReplicaID;
-import amino.run.common.SapphireStatusObject;
 import amino.run.common.*;
 import amino.run.compiler.GlobalStubConstants;
 import amino.run.kernel.common.*;
 import amino.run.kernel.server.KernelServer;
 import amino.run.kernel.server.KernelServerImpl;
 import amino.run.policy.Policy;
-import amino.run.runtime.EventHandler;
-import amino.run.runtime.Sapphire;
 import amino.run.runtime.*;
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -46,12 +35,16 @@ public class OMSServerImpl implements OMSServer, Registry {
 
     private static Logger logger = Logger.getLogger(OMSServerImpl.class.getName());
     private static String SERVICE_PORT = "--servicePort";
-    private static String NOTIFICATION_METHOD = "onNotification";
+    // Name of the notify event used when oms has to notify the healthstatus of microservice to
+    // group policy
+    private static final String NOTIFY_EVENT_NAME = "NOTIFY";
 
     private GlobalKernelObjectManager kernelObjectManager;
     private KernelServerManager serverManager;
     private SapphireObjectManager objectManager;
 
+    // ExecutorService is used by oms to notify respective group policy regarding the status
+    // received from microserviceStatuses
     private ExecutorService executorService;
 
     /** CONSTRUCTOR * */
@@ -63,11 +56,12 @@ public class OMSServerImpl implements OMSServer, Registry {
         executorService = null;
     }
 
-    public ExecutorService getExecutorService() {
+    private ExecutorService getExecutorService() {
         return executorService;
     }
 
-    public void setExecutorService(ExecutorService executorService) {
+    // Sets executorService with the specified number of threads
+    private void setExecutorService(ExecutorService executorService) {
         this.executorService = executorService;
     }
 
@@ -121,11 +115,20 @@ public class OMSServerImpl implements OMSServer, Registry {
         serverManager.registerKernelServer(info);
     }
 
+    /**
+     * Receives hearbeat from kernelserver with microservice status
+     *
+     * @param srvinfo
+     * @param microServiceStatuses
+     * @throws RemoteException
+     * @throws NotBoundException
+     * @throws KernelServerNotFoundException
+     */
     @Override
-    public void heartbeatKernelServer(
-            ServerInfo srvinfo, ArrayList<SapphireStatusObject> statusObjects)
+    public void receiveHeartBeat(
+            ServerInfo srvinfo, ArrayList<MicroServiceStatus> microServiceStatuses)
             throws RemoteException, NotBoundException, KernelServerNotFoundException {
-        for (SapphireStatusObject statusObj : statusObjects) {
+        for (MicroServiceStatus microServiceStatus : microServiceStatuses) {
             executorService.execute(
                     new Runnable() {
                         @Override
@@ -134,27 +137,22 @@ public class OMSServerImpl implements OMSServer, Registry {
                                 /* Get the group policy handler and notify it */
                                 EventHandler handler =
                                         objectManager.getInstanceDispatcher(
-                                                statusObj.getSapphireObjId());
+                                                microServiceStatus.getSapphireObjId());
                                 if (handler == null) {
+                                    logger.warning(
+                                            "handler is not registered for this microservice");
                                     return;
                                 }
 
                                 ArrayList<Object> params =
                                         new ArrayList<Object>() {
                                             {
-                                                add(statusObj);
+                                                add(microServiceStatus);
                                             }
                                         };
                                 Class groupPolicyStubClass = handler.getObjects().get(0).getClass();
                                 handler.notifyEvent(
-                                        groupPolicyStubClass,
-                                        groupPolicyStubClass
-                                                .getDeclaredMethod(
-                                                        NOTIFICATION_METHOD,
-                                                        NotificationObject.class)
-                                                .getAnnotation(AddEvent.class)
-                                                .event(),
-                                        params);
+                                        groupPolicyStubClass, NOTIFY_EVENT_NAME, params);
                             } catch (Exception e) {
                                 logger.warning("Exception occurred : " + e);
                             }
@@ -329,12 +327,29 @@ public class OMSServerImpl implements OMSServer, Registry {
         return group;
     }
 
+    /**
+     * To get group policy event handler
+     *
+     * @param sapphireObjId
+     * @return
+     * @throws RemoteException
+     * @throws MicroServiceNotFoundException
+     */
     @Override
     public EventHandler getSapphireObjectDispatcher(MicroServiceID sapphireObjId)
             throws RemoteException, MicroServiceNotFoundException {
         return objectManager.getInstanceDispatcher(sapphireObjId);
     }
 
+    /**
+     * To register the handler for the microservice.Added so that oms can get the group policy
+     * handler and notify it about the health status of Microservice
+     *
+     * @param sapphireObjId
+     * @param dispatcher
+     * @throws RemoteException
+     * @throws MicroServiceNotFoundException
+     */
     @Override
     public void setSapphireObjectDispatcher(MicroServiceID sapphireObjId, EventHandler dispatcher)
             throws RemoteException, MicroServiceNotFoundException {

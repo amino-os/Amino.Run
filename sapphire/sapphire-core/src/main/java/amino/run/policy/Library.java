@@ -163,9 +163,9 @@ public abstract class Library implements Upcalls {
 
                 // 2. Clones appObject in the outermost policy of the already created chain
                 // (original one), and assigns to the outermost policy of this replica chain.
-                ServerPolicy outermostPolicy = processedPolicies.get(0).getServerPolicy();
-                Sapphire.initAppStub(
-                        spec, outermostPolicy, null, outermostPolicy.sapphire_getAppObject());
+                ServerPolicy originalPolicy = processedPolicies.get(0).getServerPolicy();
+                ServerPolicy replicaPolicy = processedPoliciesReplica.get(0).getServerPolicy();
+                Sapphire.cloneAppObject(replicaPolicy, originalPolicy.sapphire_getAppObject());
 
                 // 3. Creates a rest of the replica policy chain from the next of this policy
                 // (inner)

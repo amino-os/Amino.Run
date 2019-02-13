@@ -131,7 +131,7 @@ public class Sapphire {
         /* Register for a sapphire object Id from OMS */
         MicroServiceID microServiceID =
                 GlobalKernelReferences.nodeServer.oms.registerSapphireObject();
-        List<DMSpec> dmList = spec.getDmList();
+
         /* Create a policy chain based on policy names in the spec */
         List<String> policyNames = MultiDMConstructionHelper.getPolicyNameChain(spec, 0);
 
@@ -144,7 +144,7 @@ public class Sapphire {
         ClientPolicy clientPolicy = processedPolicies.get(0).getClientPolicy();
 
         // Creates an appObject and allocate to the outermost policy.
-        AppObjectStub appStub = initAppStub(spec, serverPolicy, appArgs, null);
+        AppObjectStub appStub = initAppStub(spec, serverPolicy, appArgs);
         // TODO(multi-lang): We may need to create a clone for non-java app object stub.
         appStub = spec.getLang() == Language.java ? createClientAppStub(appStub) : appStub;
         appStub.$__initialize(clientPolicy);
@@ -498,20 +498,27 @@ public class Sapphire {
      * @param spec sapphire object spec
      * @param serverPolicy server policy
      * @param appArgs app arguments
-     * @param appObject app Object
      * @throws ClassNotFoundException
      * @throws IOException
      */
     public static AppObjectStub initAppStub(
-            MicroServiceSpec spec, ServerPolicy serverPolicy, Object[] appArgs, AppObject appObject)
+            MicroServiceSpec spec, ServerPolicy serverPolicy, Object[] appArgs) {
+        return serverPolicy.$__initialize(spec, appArgs);
+    }
+
+    /**
+     * Clones the given appObject and returns the clone.
+     *
+     * @param serverPolicy server policy
+     * @param appObject app Object
+     * @throws ClassNotFoundException
+     * @throws IOException
+     */
+    public static AppObject cloneAppObject(ServerPolicy serverPolicy, AppObject appObject)
             throws ClassNotFoundException, IOException {
-        if (appObject != null) {
-            appObject = (AppObject) Utils.ObjectCloner.deepCopy(appObject);
-            serverPolicy.$__initialize(appObject);
-            return (AppObjectStub) appObject;
-        } else {
-            return serverPolicy.$__initialize(spec, appArgs);
-        }
+        appObject = (AppObject) Utils.ObjectCloner.deepCopy(appObject);
+        serverPolicy.$__initialize(appObject);
+        return appObject;
     }
 
     public static Class<?>[] getParamsClasses(Object[] params) throws ClassNotFoundException {
@@ -525,6 +532,7 @@ public class Sapphire {
 
     /**
      * Sets the DMSpec with a default DM and returns it.
+     *
      * @param spec
      * @return
      */

@@ -6,6 +6,7 @@ import amino.run.common.MicroServiceReplicaNotFoundException;
 import amino.run.common.NoKernelServerFoundException;
 import amino.run.common.Utils;
 import amino.run.policy.DefaultPolicy;
+import amino.run.policy.Policy;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -44,15 +45,15 @@ public class DHTPolicy extends DefaultPolicy {
         }
     }
 
-    public static class DHTClientPolicy extends DefaultClientPolicy {
-        private static Logger logger = Logger.getLogger(DHTClientPolicy.class.getName());
+    public static class ClientPolicy extends DefaultClientPolicy {
+        private static Logger logger = Logger.getLogger(ClientPolicy.class.getName());
         private DHTChord dhtChord;
 
         @Override
         public Object onRPC(String method, ArrayList<Object> params) throws Exception {
             DHTKey key = new DHTKey(params.get(0).toString());
             if (dhtChord == null) {
-                dhtChord = ((DHTGroupPolicy) getGroup()).getChord();
+                dhtChord = ((GroupPolicy) getGroup()).getChord();
             }
 
             DHTNode node = dhtChord.getResponsibleNode(key);
@@ -61,15 +62,15 @@ public class DHTPolicy extends DefaultPolicy {
         }
     }
 
-    public static class DHTServerPolicy extends DefaultServerPolicy {}
+    public static class ServerPolicy extends DefaultServerPolicy {}
 
-    public static class DHTGroupPolicy extends DefaultGroupPolicy {
-        private static Logger logger = Logger.getLogger(DHTGroupPolicy.class.getName());
+    public static class GroupPolicy extends DefaultGroupPolicy {
+        private static Logger logger = Logger.getLogger(GroupPolicy.class.getName());
         private int numOfShards = DEFAULT_NUM_OF_SHARDS;
         private DHTChord dhtChord;
 
         @Override
-        public void onCreate(String region, ServerPolicy server, MicroServiceSpec spec)
+        public void onCreate(String region, Policy.ServerPolicy server, MicroServiceSpec spec)
                 throws RemoteException {
             InetSocketAddress newServerAddress = null;
             dhtChord = new DHTChord();
@@ -135,13 +136,13 @@ public class DHTPolicy extends DefaultPolicy {
         }
 
         @Override
-        protected void addServer(ServerPolicy server) {
+        protected void addServer(Policy.ServerPolicy server) {
             super.addServer(server);
-            dhtChord.add((DHTServerPolicy) server);
+            dhtChord.add((ServerPolicy) server);
         }
 
         @Override
-        protected void removeServer(ServerPolicy server) {
+        protected void removeServer(Policy.ServerPolicy server) {
             super.removeServer(server);
             // TODO: Need to remove from chord too
         }
@@ -151,7 +152,7 @@ public class DHTPolicy extends DefaultPolicy {
         }
 
         @Override
-        public ServerPolicy onRefRequest() {
+        public Policy.ServerPolicy onRefRequest() {
             // TODO
             return null;
         }

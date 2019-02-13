@@ -22,7 +22,7 @@ public class DHTChordTest {
         this.dhtChord = new DHTChord();
 
         for (int i = 0; i < 5; i++) {
-            dhtChord.add(new DHTPolicy.DHTServerPolicy());
+            dhtChord.add(new DHTPolicy.ServerPolicy());
         }
     }
 
@@ -59,17 +59,17 @@ public class DHTChordTest {
     @Test
     public void testChordVirtualNodes() {
         int numOfKeys = 100;
-        Map<DHTPolicy.DHTServerPolicy, AtomicInteger> counts = new HashMap<>();
+        Map<DHTPolicy.ServerPolicy, AtomicInteger> counts = new HashMap<>();
         DHTChord chord = new DHTChord(20);
         for (int i = 0; i < 5; i++) {
-            DHTPolicy.DHTServerPolicy server = new DHTPolicy.DHTServerPolicy();
+            DHTPolicy.ServerPolicy server = new DHTPolicy.ServerPolicy();
             chord.add(server);
         }
 
         for (int i = 0; i < numOfKeys; i++) {
             String key = "key_" + i;
             DHTNode node = chord.getResponsibleNode(new DHTKey(key));
-            DHTPolicy.DHTServerPolicy server = node.server;
+            DHTPolicy.ServerPolicy server = node.server;
             if (!counts.containsKey(server)) {
                 counts.put(server, new AtomicInteger());
             }

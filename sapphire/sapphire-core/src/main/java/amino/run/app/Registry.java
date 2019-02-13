@@ -1,5 +1,6 @@
 package amino.run.app;
 
+import amino.run.app.labelselector.Selector;
 import amino.run.common.AppObjectStub;
 import amino.run.common.MicroServiceCreationException;
 import amino.run.common.MicroServiceID;
@@ -7,6 +8,7 @@ import amino.run.common.MicroServiceNameModificationException;
 import amino.run.common.MicroServiceNotFoundException;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 
 /** Interface used by application client to interact with Amino.Run system. */
 public interface Registry extends Remote {
@@ -32,6 +34,18 @@ public interface Registry extends Remote {
      * @throws MicroServiceNotFoundException
      */
     AppObjectStub acquireStub(MicroServiceID microServiceId)
+            throws RemoteException, MicroServiceNotFoundException;
+
+    /**
+     * Gets the application client side instances of MicroServices filtered by Selector. It is used
+     * by client to do further operations on MicroServices.
+     *
+     * @param selector criterion for client side object selection
+     * @return Application client side instances for MicroService
+     * @throws RemoteException
+     * @throws MicroServiceNotFoundException
+     */
+    ArrayList<AppObjectStub> acquireStub(Selector selector)
             throws RemoteException, MicroServiceNotFoundException;
 
     /**

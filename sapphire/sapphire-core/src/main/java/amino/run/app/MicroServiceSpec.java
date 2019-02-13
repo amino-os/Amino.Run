@@ -39,8 +39,7 @@ import org.yaml.snakeyaml.Yaml;
  * lang: js
  * name: com.org.College
  * sourceFileLocation: src/main/js/college.js
- * microServiceLabels:
- *   labels: {key1: value1, key2: value2}
+ * labels: {key1: value1, key2: value2}
  * </code>
  */
 public class MicroServiceSpec implements Serializable {
@@ -62,8 +61,8 @@ public class MicroServiceSpec implements Serializable {
     /** List of Deployment Managers to be applied on microservice */
     private List<DMSpec> dmList = new ArrayList<>();
 
-    /** List of tags (key-value) applied on Sapphire object */
-    private Labels microServiceLabels;
+    /** List of tags (key-value) applied on microservice */
+    private Labels labels;
 
     private NodeSelectorSpec nodeSelectorSpec;
 
@@ -131,12 +130,12 @@ public class MicroServiceSpec implements Serializable {
         this.nodeSelectorSpec = nodeSelectorSpec;
     }
 
-    public Labels getMicroServiceLabels() {
-        return microServiceLabels;
+    public Labels getLabels() {
+        return labels;
     }
 
-    public void setMicroServiceLabels(Labels labels) {
-        this.microServiceLabels = labels;
+    public void setLabels(Labels labels) {
+        this.labels = labels;
     }
 
     public static MicroServiceSpec fromYaml(String yamlString) {
@@ -155,7 +154,7 @@ public class MicroServiceSpec implements Serializable {
                 && Objects.equals(sourceFileLocation, that.sourceFileLocation)
                 && Objects.equals(constructorName, that.constructorName)
                 && Objects.equals(dmList, that.dmList)
-                && Objects.equals(microServiceLabels, that.microServiceLabels);
+                && Objects.equals(labels, that.labels);
     }
 
     @Override
@@ -168,7 +167,7 @@ public class MicroServiceSpec implements Serializable {
                 constructorName,
                 dmList,
                 nodeSelectorSpec,
-                microServiceLabels);
+                labels);
     }
 
     @Override
@@ -185,7 +184,7 @@ public class MicroServiceSpec implements Serializable {
         private String constructorName;
         private List<DMSpec> dmList = new ArrayList<>();
         private NodeSelectorSpec nodeSelectorSpec;
-        private Labels labels = Labels.newBuilder().create();
+        private Labels labels = new Labels();
 
         public Builder setName(String name) {
             this.name = name;
@@ -240,7 +239,7 @@ public class MicroServiceSpec implements Serializable {
             spec.setConstructorName(constructorName);
             spec.setDmList(dmList);
             spec.setNodeSelectorSpec(nodeSelectorSpec);
-            spec.setMicroServiceLabels(labels);
+            spec.setLabels(labels);
             return spec;
         }
     }

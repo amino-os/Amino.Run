@@ -117,20 +117,20 @@ public class InstanceManager {
     }
 
     /**
-     * Gets saphhire object specifications
+     * Gets microservice specifications
      *
      * @return Returns object stub
      */
-    public MicroServiceSpec getMicroServiceSpec() {
+    public MicroServiceSpec getSpec() {
         return spec;
     }
 
     /**
-     * Sets saphhire object specifications
+     * Sets microservice object specifications
      *
      * @param spec
      */
-    public void setMicroServiceSpec(MicroServiceSpec spec) {
+    public void setSpec(MicroServiceSpec spec) {
         this.spec = spec;
     }
 

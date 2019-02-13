@@ -8,11 +8,10 @@ import java.util.*;
  *
  * <p>Each requirement can represent one of different condition such as equal/in/notin.
  *
- * <p>Application should use {@link Requirement.Builder} for creating Requirement. <code>
- *    Requirement req = Requirement.newBuilder().key("key1")
- *                 .equal()
- *                 .value("value1")
- *                 .create();
+ * <p>Application can create multiple requirements and add them in {@link Selector}. <code>
+ *    Requirement req = new Requirement(
+ *                         "key1", Requirement.Equal, new ArrayList<>(Arrays.asList("value1")));
+ *        Selector selector = new Selector().add(req);
  *    </code>
  */
 public class Requirement implements Serializable {
@@ -25,7 +24,20 @@ public class Requirement implements Serializable {
     private String operator;
     private List<String> values;
 
-    private Requirement(String key, String operator, List<String> values) {
+    public Requirement(String key, String operator, List<String> values)
+            throws RequirementInvalidException {
+        switch (operator) {
+            case Equal:
+                if (values == null || values.isEmpty() || values.size() > 1) {
+                    throw new RequirementInvalidException("invalid value for <Equal> operation");
+                }
+                break;
+            case Exists:
+                if (values != null && !values.isEmpty()) {
+                    throw new RequirementInvalidException("values provided for <Exists> operation");
+                }
+                break;
+        }
         this.key = key;
         this.operator = operator;
         this.values = values;
@@ -33,35 +45,6 @@ public class Requirement implements Serializable {
 
     private boolean hasValue(String value) {
         return values != null && values.contains(value);
-    }
-
-    /**
-     * Get requirement key
-     *
-     * @return key
-     */
-    public String key() {
-        return key;
-    }
-
-    /**
-     * Get list of conditions's values
-     *
-     * @return return list of values
-     */
-    public Set<String> values() {
-        Set<String> valueSet = new HashSet<>();
-        valueSet.addAll(values);
-        return valueSet;
-    }
-
-    /**
-     * Get operation in condition
-     *
-     * @return return operation
-     */
-    public String operator() {
-        return operator;
     }
 
     /**
@@ -73,22 +56,18 @@ public class Requirement implements Serializable {
     public boolean matches(Labels labels) {
         switch (operator) {
             case Equal:
-                if (!labels.has(key)) {
-                    return false;
-                }
-                return hasValue(labels.get(key));
             case In:
-                if (!labels.has(key)) {
+                if (!labels.containsKey(key)) {
                     return false;
                 }
                 return hasValue(labels.get(key));
             case NotIn:
-                if (!labels.has(key)) {
+                if (!labels.containsKey(key)) {
                     return true;
                 }
                 return !hasValue(labels.get(key));
             case Exists:
-                return labels.has(key);
+                return labels.containsKey(key);
         }
 
         return false;
@@ -96,11 +75,9 @@ public class Requirement implements Serializable {
 
     @Override
     public String toString() {
-        StringBuffer buffer = new StringBuffer();
-
+        StringBuilder buffer = new StringBuilder();
         // insert key
         buffer.append(key);
-
         // insert operator
         switch (operator) {
             case Equal:
@@ -130,62 +107,5 @@ public class Requirement implements Serializable {
         }
 
         return buffer.toString();
-    }
-
-    /**
-     * Create {@link Requirement.Builder} instance
-     *
-     * @return
-     */
-    public static Requirement.Builder newBuilder() {
-        return new Requirement.Builder();
-    }
-
-    public static class Builder {
-        private String key;
-        private String operator;
-        private List<String> values;
-
-        public Requirement.Builder key(String key) {
-            this.key = key;
-            return this;
-        }
-
-        public Requirement.Builder value(String label) {
-            this.values = new ArrayList<>(Arrays.asList(label));
-            return this;
-        }
-
-        public Requirement.Builder values(String... label) {
-            this.values = new ArrayList<>(Arrays.asList(label));
-            return this;
-        }
-
-        public Requirement.Builder equal() {
-            this.operator = Equal;
-            return this;
-        }
-
-        public Requirement.Builder in() {
-            this.operator = In;
-            return this;
-        }
-
-        public Requirement.Builder notIn() {
-            this.operator = NotIn;
-            return this;
-        }
-
-        public Requirement.Builder exists() {
-            this.operator = Exists;
-            return this;
-        }
-
-        // TODO: add operator specific checks
-        // Equal operator should no have any values more than one
-        // Exists should not have any values
-        public Requirement create() {
-            return new Requirement(key, operator, values);
-        }
     }
 }

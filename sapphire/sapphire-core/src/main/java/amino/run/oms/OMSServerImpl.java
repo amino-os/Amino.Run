@@ -3,6 +3,7 @@ package amino.run.oms;
 import amino.run.app.MicroServiceSpec;
 import amino.run.app.NodeSelectorSpec;
 import amino.run.app.Registry;
+import amino.run.app.labelselector.Selector;
 import amino.run.common.AppObjectStub;
 import amino.run.common.MicroServiceCreationException;
 import amino.run.common.MicroServiceID;
@@ -10,9 +11,6 @@ import amino.run.common.MicroServiceNameModificationException;
 import amino.run.common.MicroServiceNotFoundException;
 import amino.run.common.MicroServiceReplicaNotFoundException;
 import amino.run.common.ReplicaID;
-import amino.run.app.SapphireObjectServer;
-import amino.run.app.labelselector.Selector;
-import amino.run.compiler.GlobalStubConstants;
 import amino.run.kernel.common.KernelOID;
 import amino.run.kernel.common.KernelObjectNotCreatedException;
 import amino.run.kernel.common.KernelObjectNotFoundException;
@@ -162,9 +160,9 @@ public class OMSServerImpl implements OMSServer, Registry {
         try {
             AppObjectStub appObjStub = server.createSapphireObject(microServiceSpec, args);
             assert appObjStub != null;
-	    MicroServiceID mid = appObjStub.$__getMicroServiceId();
+            MicroServiceID mid = appObjStub.$__getMicroServiceId();
             objectManager.setInstanceObjectStub(mid, appObjStub);
-            objectManager.setSapphireObjectSpec(mid, spec);
+            objectManager.setSpec(mid, spec);
             return mid;
         } catch (Exception e) {
             throw new MicroServiceCreationException(
@@ -185,16 +183,9 @@ public class OMSServerImpl implements OMSServer, Registry {
         }
     }
 
-    /**
-     * Gets the sapphire object stub of given sapphire object id
-     *
-     * @param selector
-     * @return Returns list of sapphire object stub
-     * @throws SapphireObjectNotFoundException
-     */
     @Override
-    public ArrayList<AppObjectStub> acquireSapphireObjectStub(Selector selector)
-            throws SapphireObjectNotFoundException {
+    public ArrayList<AppObjectStub> acquireStub(Selector selector)
+            throws MicroServiceNotFoundException {
 
         try {
             ArrayList<AppObjectStub> appObjStubs = objectManager.getInstanceObjectStub(selector);
@@ -203,23 +194,12 @@ public class OMSServerImpl implements OMSServer, Registry {
             }
             return appObjStubs;
         } catch (Exception e) {
-            e.printStackTrace();
-            throw new SapphireObjectNotFoundException(
-                    String.format(
-                            "Failed to acquire sapphire object stub with selector %s : %s",
-                            selector, e.getMessage()));
+            throw new MicroServiceNotFoundException(
+                    String.format("Failed to acquire microservice stub with selector %s", selector),
+                    e);
         }
     }
 
-    /**
-     * Assigns the name to given sapphire object
-     *
-     * @param sapphireObjId
-     * @param sapphireObjName
-     * @throws RemoteException
-     * @throws SapphireObjectNotFoundException
-     * @throws SapphireObjectNameModificationException
-     */
     @Override
     public void setName(MicroServiceID id, String name)
             throws RemoteException, MicroServiceNotFoundException,

@@ -104,23 +104,23 @@ public class MicroServiceManager {
     }
 
     /**
-     * Set the object stub of sapphire object
+     * Link and store microservice specifications with microservice.
      *
-     * @param sapphireObjId
+     * @param oid
      * @param spec
-     * @throws SapphireObjectNotFoundException
+     * @throws MicroServiceNotFoundException
      */
-    public void setSapphireObjectSpec(SapphireObjectID sapphireObjId, MicroServiceSpec spec)
-            throws SapphireObjectNotFoundException {
-        SapphireInstanceManager instance = sapphireObjects.get(sapphireObjId);
+    public void setSpec(MicroServiceID oid, MicroServiceSpec spec)
+            throws MicroServiceNotFoundException {
+        InstanceManager instance = microServices.get(oid);
         if (instance == null) {
-            throw new SapphireObjectNotFoundException("Not a valid Sapphire object id.");
+            throw new MicroServiceNotFoundException(String.format("%s is not available", oid));
         }
-        instance.setMicroServiceSpec(spec);
+        instance.setSpec(spec);
     }
 
     /**
-     * Add a replica of a microservice 
+     * Add a replica of a microservice
      *
      * @param microServiceId
      * @param dispatcher
@@ -270,28 +270,27 @@ public class MicroServiceManager {
     /**
      * Get list of object stub.
      *
-     * <p>As Stubs are filtered based on {@link Selector}, List can have stubs of different sapphire
-     * object.
+     * <p>As Stubs are filtered based on {@link Selector}, List can have stubs of different
+     * microservice
      *
      * @param selector
-     * @return
-     * @throws SapphireObjectNotFoundException
+     * @return List of AppObject
      */
     public ArrayList<AppObjectStub> getInstanceObjectStub(Selector selector) {
-        ArrayList<AppObjectStub> appStubList = new ArrayList<>();
-        sapphireObjects.forEach(
-                (k, instance) -> {
-                    MicroServiceSpec spec = instance.getMicroServiceSpec();
-                    if (spec != null && selector.matches(spec.getMicroServiceLabels())) {
-                        appStubList.add(instance.getInstanceObjectStub());
-                    }
-                });
+        ArrayList<AppObjectStub> appStubList = new ArrayList<AppObjectStub>();
+        MicroServiceSpec spec;
+        for (InstanceManager manager : microServices.values()) {
+            spec = manager.getSpec();
+            if (spec != null && selector.matches(spec.getLabels())) {
+                appStubList.add(manager.getInstanceObjectStub());
+            }
+        }
 
         return appStubList;
     }
 
     /**
-     * Get the object stub of microservice 
+     * Get the object stub of microservice
      *
      * @param microServiceId
      * @return

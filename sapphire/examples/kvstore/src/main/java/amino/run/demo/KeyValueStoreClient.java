@@ -5,6 +5,7 @@ import amino.run.common.ArgumentParser.AppArgumentParser;
 import amino.run.common.MicroServiceID;
 import amino.run.kernel.server.KernelServerImpl;
 import com.google.devtools.common.options.OptionsParser;
+import amino.run.app.labelselector.Operator;
 import amino.run.app.labelselector.Requirement;
 import amino.run.app.labelselector.Selector;
 import amino.run.common.AppObjectStub;
@@ -15,6 +16,7 @@ import java.nio.file.Files;
 import java.rmi.registry.LocateRegistry;
 import java.util.Collections;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -58,22 +60,21 @@ public class KeyValueStoreClient {
         }
 
         // create requirement
-        Requirement req = Requirement.newBuilder().key("key1")
-                .equal()
-                .value("value1")
-                .create();
+        Requirement req = new Requirement("name",
+                Operator.Equal,
+                new ArrayList<String>(Arrays.asList("KVStore")));
         // create selector
         Selector select = new Selector();
         select.add(req);
 
         // acquire sapphire objects based on selector
-        ArrayList<AppObjectStub> sapphireStubList = server.acquireSapphireObjectStub(select);
+        ArrayList<AppObjectStub> sapphireStubList = registry.acquireStub(select);
 
-        if(sapphireStubList.size() != 1 ){
+        if (sapphireStubList.size() != 1 ) {
             throw new Exception("invalid list of stubs");
         }
 
-        for(AppObjectStub stub:sapphireStubList){
+        for (AppObjectStub stub:sapphireStubList) {
             store = (KeyValueStore)stub;
         }
 

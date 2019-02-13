@@ -3,7 +3,6 @@ package amino.run.app.labelselector;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 /**
  * Selector hosts set of condition used for filtering labeled objects.
@@ -12,7 +11,7 @@ import java.util.List;
  * condition return true.
  */
 public class Selector implements Serializable {
-    private ArrayList<Requirement> requirements = new ArrayList<>();
+    private ArrayList<Requirement> requirements = new ArrayList<Requirement>();
 
     /**
      * Test a label against all Selector conditions
@@ -45,11 +44,6 @@ public class Selector implements Serializable {
 
     @Override
     public String toString() {
-        List<String> selectors = new ArrayList<>();
-        for (Requirement requirement : requirements) {
-            selectors.add(requirement.toString());
-        }
-
-        return String.join(",", selectors);
+        return requirements.toString();
     }
 }

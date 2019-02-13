@@ -10,13 +10,13 @@ import java.util.ArrayList;
 import java.util.concurrent.TimeoutException;
 
 public class AtLeastOnceRPCPolicyTest {
-    AtLeastOnceRPCPolicy.AtLeastOnceRPCClientPolicy clientPolicy;
-    AtLeastOnceRPCPolicy.AtLeastOnceRPCServerPolicy serverPolicy;
+    AtLeastOnceRPCPolicy.ClientPolicy clientPolicy;
+    AtLeastOnceRPCPolicy.ServerPolicy serverPolicy;
 
     @org.junit.Before
     public void setUp() throws Exception {
-        this.clientPolicy = new AtLeastOnceRPCPolicy.AtLeastOnceRPCClientPolicy();
-        this.serverPolicy = mock(AtLeastOnceRPCPolicy.AtLeastOnceRPCServerPolicy.class);
+        this.clientPolicy = new AtLeastOnceRPCPolicy.ClientPolicy();
+        this.serverPolicy = mock(AtLeastOnceRPCPolicy.ServerPolicy.class);
         this.clientPolicy.setServer(this.serverPolicy);
     }
 

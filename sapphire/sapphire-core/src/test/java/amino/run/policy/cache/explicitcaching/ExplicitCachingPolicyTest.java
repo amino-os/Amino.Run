@@ -13,13 +13,13 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class ExplicitCachingPolicyTest {
-    ExplicitCachingPolicy.ExplicitCachingClientPolicy client;
-    ExplicitCachingPolicy.ExplicitCachingServerPolicy server;
+    ExplicitCachingPolicy.ClientPolicy client;
+    ExplicitCachingPolicy.ServerPolicy server;
 
     @Before
     public void setUp() throws Exception {
-        this.client = new ExplicitCachingPolicy.ExplicitCachingClientPolicy();
-        this.server = mock(ExplicitCachingPolicy.ExplicitCachingServerPolicy.class);
+        this.client = new ExplicitCachingPolicy.ClientPolicy();
+        this.server = mock(ExplicitCachingPolicy.ServerPolicy.class);
         this.client.setServer(this.server);
     }
 

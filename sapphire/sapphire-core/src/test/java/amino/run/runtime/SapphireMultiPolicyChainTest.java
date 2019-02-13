@@ -50,8 +50,7 @@ public class SapphireMultiPolicyChainTest extends BaseTest {
 
     @Test
     public void testCreatePolicyChain() throws Exception {
-        String region = "IND";
-        AppObjectStub aos = Sapphire.createPolicyChain(spec, region, null);
+        AppObjectStub aos = Sapphire.createPolicyChain(spec, "IND", null);
         assertNotNull(aos);
     }
 
@@ -68,6 +67,7 @@ public class SapphireMultiPolicyChainTest extends BaseTest {
         for (int i = 0; i < 2; i++) {
             Sapphire.createConnectedPolicy(
                     i, null, policyNameChain, processedPolicies, soid, spec, null);
+            policyNameChain.remove(0);
         }
         assertEquals(2, processedPolicies.size());
     }

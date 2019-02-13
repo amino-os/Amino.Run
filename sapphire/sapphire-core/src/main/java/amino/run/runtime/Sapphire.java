@@ -64,13 +64,6 @@ public class Sapphire {
                 return new_(appObjectClass, args);
             }
 
-            if (spec.getDmList().isEmpty()) {
-                List<DMSpec> list = new ArrayList<>();
-                DMSpec dmSpec = new DMSpec();
-                dmSpec.setName(DefaultPolicy.class.getName());
-                spec.setDmList(list);
-            }
-
             /* Get the region of current server */
             String region = GlobalKernelReferences.nodeServer.getRegion();
             return createPolicyChain(spec, region, args);
@@ -129,10 +122,14 @@ public class Sapphire {
             throws IOException, CloneNotSupportedException, SapphireObjectCreationException {
         List<SapphirePolicyContainer> processedPolicies = new ArrayList<>();
 
+        if (spec.getDmList().isEmpty()) {
+            spec = setsDefaultDMSpec(spec);
+        }
+
         /* Register for a sapphire object Id from OMS */
         MicroServiceID microServiceID =
                 GlobalKernelReferences.nodeServer.oms.registerSapphireObject();
-
+        List<DMSpec> dmList = spec.getDmList();
         /* Create a policy chain based on policy names in the spec */
         List<String> policyNames = MultiDMConstructionHelper.getPolicyNameChain(spec, 0);
 
@@ -521,5 +518,19 @@ public class Sapphire {
         }
         Class<?>[] argClasses = new Class<?>[argClassesList.size()];
         return argClassesList.toArray(argClasses);
+    }
+
+    /**
+     * Sets the DMSpec with a default DM and returns it.
+     * @param spec
+     * @return
+     */
+    private static MicroServiceSpec setsDefaultDMSpec(MicroServiceSpec spec) {
+        List<DMSpec> list = new ArrayList<>();
+        DMSpec dmSpec = new DMSpec();
+        dmSpec.setName(DefaultPolicy.class.getName());
+        list.add(dmSpec);
+        spec.setDmList(list);
+        return spec;
     }
 }

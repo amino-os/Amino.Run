@@ -43,7 +43,7 @@ import org.apache.harmony.rmi.common.RMIUtil;
  * @author aaasz
  */
 // TODO: There are many methods that can be moved to helper or util classes. Move them into
-// appropriate the classes.
+// appropriate classes.
 public class Sapphire {
     static Logger logger = Logger.getLogger(Sapphire.class.getName());
 
@@ -119,10 +119,12 @@ public class Sapphire {
      */
     public static AppObjectStub createPolicyChain(
             MicroServiceSpec spec, String region, Object[] appArgs)
-            throws IOException, CloneNotSupportedException, SapphireObjectCreationException {
+            throws IOException, CloneNotSupportedException, ClassNotFoundException,
+                    SapphireObjectCreationException {
         List<SapphirePolicyContainer> processedPolicies = new ArrayList<>();
 
         if (spec.getDmList().isEmpty()) {
+            // Adds default DM when there is no DMs specified in the spec.
             spec = setsDefaultDMSpec(spec);
         }
 
@@ -134,18 +136,15 @@ public class Sapphire {
         List<String> policyNames = MultiDMConstructionHelper.getPolicyNameChain(spec, 0);
 
         for (int i = 0; i < spec.getDmList().size(); i++) {
-            createConnectedPolicy(
-                    i, null, policyNames, processedPolicies, sapphireObjId, spec, appArgs);
+            createConnectedPolicy(i, null, policyNames, processedPolicies, sapphireObjId, spec);
             policyNames.remove(0);
         }
 
         ServerPolicy serverPolicy = processedPolicies.get(0).getServerPolicy();
         ClientPolicy clientPolicy = processedPolicies.get(0).getClientPolicy();
 
-        // This is a primary chain.
-        AppObjectStub appStub = serverPolicy.$__initialize(spec, appArgs);
-        //        AppObjectStub appStub = (AppObjectStub)
-        // serverPolicy.sapphire_getAppObject().getObject();
+        // Creates an appObject and allocate to the outermost policy.
+        AppObjectStub appStub = initAppStub(spec, serverPolicy, appArgs, null);
         // TODO(multi-lang): We may need to create a clone for non-java app object stub.
         appStub = spec.getLang() == Language.java ? createClientAppStub(appStub) : appStub;
         appStub.$__initialize(clientPolicy);
@@ -182,7 +181,6 @@ public class Sapphire {
      * @param sapphireObjId Object ID registred to OMS which is one per AminoMicroservice chain (all
      *     replicas of the chain will have the same object ID.
      * @param spec Amino object spec
-     * @param appArgs Application arguments
      * @return list of processed policies so far
      * @throws SapphireObjectCreationException thrown when policy object creation fails
      */
@@ -194,8 +192,7 @@ public class Sapphire {
             List<String> policyNames,
             List<SapphirePolicyContainer> processedPolicies,
             SapphireObjectID sapphireObjId,
-            MicroServiceSpec spec,
-            Object[] appArgs)
+            MicroServiceSpec spec)
             throws SapphireObjectCreationException {
         if (groupPolicy == null) {
             groupPolicy = PolicyCreationHelper.createGroupPolicy(policyNames.get(0), sapphireObjId);
@@ -209,36 +206,20 @@ public class Sapphire {
         be updated between the current DM and previous DM. If the previous DM's container is not available,
         then DM/Policy being created is either for single DM based SO or It is the first DM/Policy in Multi DM based SO
         (i.e., last mile server policy to SO */
-        // TODO: See if below logic can be separated out to a method and shared with replicate()
         SapphirePolicyContainer currentSPC = processedPolicies.get(idx);
         ServerPolicy serverPolicy = currentSPC.getServerPolicy();
 
         try {
-            if (idx == 0) {
-                /*  This is the outermost DM which has access to the actual appObject. */
-                System.out.println("This is a new chain for primary.");
-                //                if (newChain) {
-                //                    // This is an original chain (primary) created by kernel.
-                //                    serverPolicy.$__initialize(spec, appArgs);
-                //                } else {
-                //                    // This is a replica chain created by Library; therefore, it
-                // needs to copy the
-                //                    // existing appObject.
-                //                    AppObject appObject =
-                //
-                // processedPolicies.get(0).getServerPolicy().sapphire_getAppObject();
-                //                    appObject = (AppObject)
-                // Utils.ObjectCloner.deepCopy(appObject);
-                //                    serverPolicy.$__initialize(appObject);
-                //                }
-            } else {
-                System.out.println("This is a inner chain for primary.");
-                /* Previous server policy stub object acts as Sapphire Object(SO) to the current server policy */
+            if (idx > 0) {
+                // Previous server policy stub object acts as Sapphire Object(SO) to the current
+                // server policy. Outermost policy is linked to an actual app object;hence, it is
+                // not needed here.
                 SapphirePolicyContainer outerSPC = processedPolicies.get(idx - 1);
                 KernelObjectStub outerStub = outerSPC.getServerPolicyStub();
                 ServerPolicy outerSP = outerSPC.getServerPolicy();
                 ClientPolicy clientPolicy = currentSPC.getClientPolicy();
 
+                // Links this serverPolicy to stub for outer policy.
                 serverPolicy.$__initialize(new AppObject(Utils.ObjectCloner.deepCopy(outerStub)));
                 outerSP.setPreviousServerPolicy(serverPolicy);
                 outerStub.$__setNextClientPolicy(clientPolicy);
@@ -509,6 +490,28 @@ public class Sapphire {
         /* Register the handler for this replica to OMS */
         GlobalKernelReferences.nodeServer.oms.setSapphireReplicaDispatcher(
                 sapphireReplicaId, replicaHandler);
+    }
+
+    /**
+     * Initializes server policy and stub with app object.
+     *
+     * @param spec sapphire object spec
+     * @param serverPolicy server policy
+     * @param appArgs app arguments
+     * @param appObject app Object
+     * @throws ClassNotFoundException
+     * @throws IOException
+     */
+    public static AppObjectStub initAppStub(
+            MicroServiceSpec spec, ServerPolicy serverPolicy, Object[] appArgs, AppObject appObject)
+            throws ClassNotFoundException, IOException {
+        if (appObject != null) {
+            appObject = (AppObject) Utils.ObjectCloner.deepCopy(appObject);
+            serverPolicy.$__initialize(appObject);
+            return (AppObjectStub) appObject;
+        } else {
+            return serverPolicy.$__initialize(spec, appArgs);
+        }
     }
 
     public static Class<?>[] getParamsClasses(Object[] params) throws ClassNotFoundException {

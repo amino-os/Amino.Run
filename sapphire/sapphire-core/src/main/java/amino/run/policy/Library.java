@@ -124,8 +124,12 @@ public abstract class Library implements Upcalls {
         }
 
         /**
-         * Creates a replica chain of this server, registers it with the group and returns the
-         * replica chain it created.
+         * Creates a replica chain. There are two big steps in this: 1) Creates a replica chain from
+         * outermost policy up to this policy. This is upstream policies of this one (and including
+         * this one). Since group policies were already created by upstream policies, this part of
+         * the chain points to the already created group policy. 2) Creates a replica chain for
+         * downsteam policies. Downstream policies create new group policies as those group policies
+         * belong to themselves. Details of each step is described in the code.
          *
          * @param region
          * @return A replica (server stub) it just created.
@@ -135,21 +139,17 @@ public abstract class Library implements Upcalls {
             List<SapphirePolicyContainer> processedPoliciesReplica = new ArrayList<>();
             int outerPolicySize = processedPolicies.size();
 
-            // TODO: Split each logic into different methods if at all possible and makes sense.
             try {
                 SapphireObjectID soid = getReplicaId().getOID();
-                //                ServerPolicy primaryServerPolicy =
-                // processedPolicies.get(0).getServerPolicy();
-                //                AppObject appObject = primaryServerPolicy.sapphire_getAppObject();
-                //                appObject = (AppObject) Utils.ObjectCloner.deepCopy(appObject);
 
-                // Names of policies that were already created.
+                // Gets the names of policies that were already created (outer policies).
                 List<String> policyNames =
                         MultiDMConstructionHelper.getPolicyNames(processedPolicies, 0);
 
-                // 1. Create a new replica policy chain from already created policies before this
+                // 1. Creates a new replica policy chain from already created policies before this
                 // policy (outer policies). Specifically, create instances from outermost up to this
-                // policy. Note that Group policy points to the previouly created policies.
+                // policy. Note that the newly created policy instances will point to already
+                // created group policies.
                 for (int i = 0; i < outerPolicySize; i++) {
                     Sapphire.createConnectedPolicy(
                             i,
@@ -157,34 +157,32 @@ public abstract class Library implements Upcalls {
                             policyNames,
                             processedPoliciesReplica,
                             soid,
-                            spec,
-                            null);
+                            spec);
                     policyNames.remove(0);
                 }
 
-                AppObject appObject =
-                        processedPolicies.get(0).getServerPolicy().sapphire_getAppObject();
-                appObject = (AppObject) Utils.ObjectCloner.deepCopy(appObject);
-                processedPoliciesReplica.get(0).getServerPolicy().$__initialize(appObject);
+                // 2. Clones appObject in the outermost policy of the already created chain
+                // (original one), and assigns to the outermost policy of this replica chain.
+                ServerPolicy outermostPolicy = processedPolicies.get(0).getServerPolicy();
+                Sapphire.initAppStub(
+                        spec, outermostPolicy, null, outermostPolicy.sapphire_getAppObject());
 
-                // Sets the clone of appObject to the outermost policy.
-                //                ServerPolicy outermostSP =
-                // processedPoliciesReplica.get(0).getServerPolicy();
-                //                outermostSP.$__initialize(appObject);
-
-                // 2. Create a rest of the replica policy chain from the next of this policy (inner)
+                // 3. Creates a rest of the replica policy chain from the next of this policy
+                // (inner)
                 // to the innermost policy. Note that it does not include the current policy. This
                 // creates new group policies as well.
                 policyNames = new ArrayList<>(this.nextPolicyNames);
                 int innerPolicySize = this.nextPolicyNames.size();
                 for (int j = outerPolicySize; j < innerPolicySize + outerPolicySize; j++) {
                     Sapphire.createConnectedPolicy(
-                            j, null, policyNames, processedPoliciesReplica, soid, spec, null);
+                            j, null, policyNames, processedPoliciesReplica, soid, spec);
                     policyNames.remove(0);
                 }
 
-                // 3. Execute GroupPolicy.onCreate() in the chain starting from the inner most
-                // instance.
+                // 4. Executes GroupPolicy.onCreate() in the chain starting from the inner most
+                // instance up to outer policy of this replica. This is because group policy of this
+                // one and outer policies have been already executed. i.e.,) DM1->DM2->DM3->DM4, and
+                // if this DM is DM2, it will execute group policy for DM3 & DM4 only.
                 for (int k = innerPolicySize + outerPolicySize - 1; k >= outerPolicySize; k--) {
                     Policy.GroupPolicy groupPolicyStub =
                             processedPoliciesReplica.get(k).getGroupPolicyStub();

@@ -48,12 +48,26 @@ public class SapphireMultiPolicyChainTest extends BaseTest {
         assertNotEquals(null, temp);
     }
 
+    /**
+     * This tests the DMs set up in baseTest, and then, tests the createPolicyChain with given spec.
+     * It checks whether returned appStub is null.
+     *
+     * @throws Exception
+     */
+    // TODO: setUp() adds the DMs and create policy chain already which tests this scenario (hence,
+    // tests seem duplicate).
     @Test
     public void testCreatePolicyChain() throws Exception {
         AppObjectStub aos = Sapphire.createPolicyChain(spec, "IND", null);
         assertNotNull(aos);
     }
 
+    /**
+     * This tests the DMs set up in baseTest, and then, tests createConnectedPolicy in iterative
+     * fashion for two DMs which are the same ones as set up in setUp().
+     *
+     * @throws Exception
+     */
     @Test
     public void testCreateConnectedPolicyTwoPolicies() throws Exception {
         List<String> policyNameChain = new ArrayList<>();
@@ -62,11 +76,10 @@ public class SapphireMultiPolicyChainTest extends BaseTest {
         /* Register for a sapphire object Id from OMS */
         SapphireObjectID soid = spiedOms.registerSapphireObject();
 
-        policyNameChain.add("amino.run.policy.dht.DHTPolicy");
         policyNameChain.add(("amino.run.policy.DefaultPolicy"));
+        policyNameChain.add("amino.run.policy.dht.DHTPolicy");
         for (int i = 0; i < 2; i++) {
-            Sapphire.createConnectedPolicy(
-                    i, null, policyNameChain, processedPolicies, soid, spec, null);
+            Sapphire.createConnectedPolicy(i, null, policyNameChain, processedPolicies, soid, spec);
             policyNameChain.remove(0);
         }
         assertEquals(2, processedPolicies.size());

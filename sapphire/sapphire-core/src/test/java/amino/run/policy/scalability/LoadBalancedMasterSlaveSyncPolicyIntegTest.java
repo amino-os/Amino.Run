@@ -136,10 +136,10 @@ public class LoadBalancedMasterSlaveSyncPolicyIntegTest {
                                 params,
                                 MethodInvocationRequest.MethodType.MUTABLE);
 
-                LoadBalancedMasterSlaveBase.GroupBase group =
-                        (LoadBalancedMasterSlaveBase.GroupBase) client.getGroup();
-                LoadBalancedMasterSlaveBase.ServerBase server =
-                        (LoadBalancedMasterSlaveBase.ServerBase) group.getMaster();
+                LoadBalancedMasterSlaveBase.GroupPolicy group =
+                        (LoadBalancedMasterSlaveBase.GroupPolicy) client.getGroup();
+                LoadBalancedMasterSlaveBase.ServerPolicy server =
+                        (LoadBalancedMasterSlaveBase.ServerPolicy) group.getMaster();
 
                 return server.onRPC(request);
             } catch (Exception e) {

@@ -1,6 +1,6 @@
 package amino.run.policy.scalability.masterslave;
 
-import static amino.run.policy.scalability.LoadBalancedMasterSlaveBase.GroupBase;
+import static amino.run.policy.scalability.LoadBalancedMasterSlaveBase.GroupPolicy;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -20,10 +20,10 @@ import java.util.logging.Logger;
 public class RequestReplicator implements Replicator, Closeable {
     private static final Logger logger = Logger.getLogger(RequestReplicator.class.getName());
     private final Configuration config;
-    private final GroupBase group;
+    private final GroupPolicy group;
     private volatile ScheduledExecutorService replicator;
 
-    public RequestReplicator(Configuration config, GroupBase group) {
+    public RequestReplicator(Configuration config, GroupPolicy group) {
         this.config = config;
         this.group = group;
     }

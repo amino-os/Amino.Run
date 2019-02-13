@@ -59,7 +59,7 @@ public final class StateManager {
     /** The current state of the state manager */
     private State currentState;
 
-    private final LoadBalancedMasterSlaveBase.GroupBase group;
+    private final LoadBalancedMasterSlaveBase.GroupPolicy group;
 
     private final Configuration config;
 
@@ -67,7 +67,7 @@ public final class StateManager {
         this.serverId = serverId;
         this.name = String.format("StateManager_%s", serverId);
         this.config = context.getConfig();
-        this.group = (LoadBalancedMasterSlaveBase.GroupBase) context.getGroup();
+        this.group = (LoadBalancedMasterSlaveBase.GroupPolicy) context.getGroup();
 
         this.SLAVE_STATE = State.Slave.getInstance(context);
         this.MASTER_STATE = State.Master.getInstance(context);

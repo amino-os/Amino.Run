@@ -28,7 +28,7 @@ import java.util.logging.Logger;
 public class Processor implements Closeable {
     private static final Logger logger = Logger.getLogger(Processor.class.getName());
     private final Configuration config;
-    private final LoadBalancedMasterSlaveBase.GroupBase group;
+    private final LoadBalancedMasterSlaveBase.GroupPolicy group;
     private final Committer commitExecutor;
     private final Replicator replicator;
     private volatile ExecutorService processor;
@@ -37,7 +37,7 @@ public class Processor implements Closeable {
 
     public Processor(
             Configuration config,
-            LoadBalancedMasterSlaveBase.GroupBase group,
+            LoadBalancedMasterSlaveBase.GroupPolicy group,
             Committer commitExecutor,
             Replicator replicator) {
         this.config = config;
@@ -104,13 +104,13 @@ public class Processor implements Closeable {
 
     private static class RequestProcessor implements Callable<MethodInvocationResponse> {
         private MethodInvocationRequest request;
-        private final LoadBalancedMasterSlaveBase.GroupBase group;
+        private final LoadBalancedMasterSlaveBase.GroupPolicy group;
         private Committer commitExecutor;
         private Replicator replicator;
         private Map<String, CachedResult> cachedResults;
 
         public RequestProcessor(
-                LoadBalancedMasterSlaveBase.GroupBase group,
+                LoadBalancedMasterSlaveBase.GroupPolicy group,
                 Committer commitExecutor,
                 Replicator replicator,
                 MethodInvocationRequest request,

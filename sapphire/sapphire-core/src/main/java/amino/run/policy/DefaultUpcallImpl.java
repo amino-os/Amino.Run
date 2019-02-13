@@ -47,12 +47,13 @@ public abstract class DefaultUpcallImpl extends Library {
             return appObject.invoke(method, params);
         }
 
+        /* This function is here just to generate the stub for this function in all server policies */
         @Override
         public Policy.ServerPolicy sapphire_replicate(String region) throws RemoteException {
             return super.sapphire_replicate(region);
         }
 
-        /* This function is added here just to generate the stub for this function in all Policies server policy */
+        /* This function is here just to generate the stub for this function in all server policies */
         @Override
         public void sapphire_pin_to_server(InetSocketAddress server)
                 throws RemoteException, MicroServiceNotFoundException,

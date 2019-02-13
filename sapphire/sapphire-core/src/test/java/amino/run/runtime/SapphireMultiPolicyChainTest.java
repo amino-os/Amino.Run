@@ -2,19 +2,17 @@ package amino.run.runtime;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 
 import amino.run.app.DMSpec;
 import amino.run.app.Language;
 import amino.run.app.MicroServiceSpec;
-import amino.run.common.BaseTest;
-import amino.run.common.MicroServiceID;
+import amino.run.common.*;
 import amino.run.policy.DefaultPolicy;
 import amino.run.policy.PolicyContainer;
 import amino.run.policy.dht.DHTPolicy;
 import amino.run.sampleSO.SO;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -37,51 +35,40 @@ public class SapphireMultiPolicyChainTest extends BaseTest {
                 MicroServiceSpec.newBuilder()
                         .setLang(Language.java)
                         .setJavaClassName("amino.run.sampleSO.SO")
-                        .addDMSpec(DMSpec.newBuilder().setName(DHTPolicy.class.getName()).create())
                         .addDMSpec(
                                 DMSpec.newBuilder().setName(DefaultPolicy.class.getName()).create())
+                        .addDMSpec(DMSpec.newBuilder().setName(DHTPolicy.class.getName()).create())
                         .create();
         super.setUp(2, spec);
     }
 
     @Test
-    public void testNew_() throws Exception {
+    public void testNew_() {
         Object temp = Sapphire.new_(SO.class);
         assertNotEquals(null, temp);
     }
 
     @Test
-    public void testCreatePolicy() throws Exception {
-        List<String> policyNameChain = new ArrayList<>();
-        List<PolicyContainer> processedPolicies = new ArrayList<>();
-
-        /* Register for a sapphire object Id from OMS */
-        MicroServiceID microServiceId = spiedOms.registerSapphireObject();
-
-        policyNameChain.add(new SapphirePolicyContainer("amino.run.policy.dht.DHTPolicy", null));
-        HashMap<String, Class<?>> policyMap =
-                Sapphire.getPolicyMap(policyNameChain.get(0).getPolicyName());
-        Sapphire.createPolicyInstance(
-                sapphireObjId, group, policyMap, policyNameChain, processedPolicies, spec);
-        assertEquals(1, processedPolicies.size());
+    public void testCreatePolicyChain() throws Exception {
+        String region = "IND";
+        AppObjectStub aos = Sapphire.createPolicyChain(spec, region, null);
+        assertNotNull(aos);
     }
 
     @Test
-    public void testCreatePolicyTwoPolicies() throws Exception {
+    public void testCreateConnectedPolicyTwoPolicies() throws Exception {
         List<String> policyNameChain = new ArrayList<>();
-        List<PolicyContainer> processedPolicies = new ArrayList<>();
+        List<SapphirePolicyContainer> processedPolicies = new ArrayList<>();
 
         /* Register for a sapphire object Id from OMS */
-        MicroServiceID microServiceId = spiedOms.registerSapphireObject();
+        SapphireObjectID soid = spiedOms.registerSapphireObject();
 
         policyNameChain.add("amino.run.policy.dht.DHTPolicy");
         policyNameChain.add(("amino.run.policy.DefaultPolicy"));
-        HashMap<String, Class<?>> policyMap = Sapphire.getPolicyMap(policyNameChain.get(0));
-        Sapphire.createPolicyObject(
-                sapphireObjId, group, policyMap, policyNameChain, processedPolicies, spec);
-
-        Sapphire.createPolicyObject(
-                sapphireObjId, group, policyMap, policyNameChain, processedPolicies, spec);
+        for (int i = 0; i < 2; i++) {
+            Sapphire.createConnectedPolicy(
+                    i, null, policyNameChain, processedPolicies, soid, spec, null);
+        }
         assertEquals(2, processedPolicies.size());
     }
 

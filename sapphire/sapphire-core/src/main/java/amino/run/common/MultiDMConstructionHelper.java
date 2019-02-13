@@ -3,45 +3,22 @@ package amino.run.common;
 import amino.run.app.DMSpec;
 import amino.run.app.MicroServiceSpec;
 import amino.run.policy.SapphirePolicyContainer;
-import amino.run.runtime.SapphireConfiguration;
-import java.lang.annotation.Annotation;
 import java.util.*;
 
 /** Helper class for construction of multi-DM chain. */
 public class MultiDMConstructionHelper {
     /**
-     * Creates a policy name chain based on annotations and return list of policy names.
-     *
-     * @param annotations Annotations that contain chain of policy names.
-     * @return List of policy names.
-     */
-    public static List<String> getPolicyNameChain(Annotation[] annotations) {
-        List<String> policyNameChain = new ArrayList<>();
-        for (Annotation annotation : annotations) {
-            if (annotation instanceof SapphireConfiguration) {
-                String[] policyAnnotations = ((SapphireConfiguration) annotation).Policies();
-                for (String policyAnnotation : policyAnnotations) {
-                    String[] policyNames = policyAnnotation.split(",");
-                    for (String policyName : policyNames) {
-                        policyNameChain.add(policyName.trim());
-                    }
-                }
-            }
-        }
-
-        return policyNameChain;
-    }
-
-    /**
      * Creates a policy name chain based on MicroServicerSpec and return list of policy names.
      *
      * @param spec
+     * @param idx starting index of spec where DM lists should be created from
      * @return list of policy names
      */
-    public static List<String> getPolicyNameChain(MicroServiceSpec spec) {
+    public static List<String> getPolicyNameChain(MicroServiceSpec spec, int idx) {
         List<String> policyNameChain = new ArrayList<>();
-        for (DMSpec dm : spec.getDmList()) {
-            policyNameChain.add(dm.getName());
+        List<DMSpec> dmList = spec.getDmList();
+        for (int i = idx; i < dmList.size(); i++) {
+            policyNameChain.add(dmList.get(i).getName());
         }
 
         return policyNameChain;

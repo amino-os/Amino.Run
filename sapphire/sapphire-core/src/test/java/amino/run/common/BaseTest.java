@@ -166,7 +166,9 @@ public class BaseTest {
                     }
                 });
 
-        MicroServiceID microServiceId = registry.create(spec.toString());
+        // TODO: why creating a SO? It will conflict with the actual tests as it will register SO to
+        // Kernels.
+        SapphireObjectID sapphireObjId = sapphireObjServer.createSapphireObject(spec.toString());
 
         soStub = (SO) registry.acquireStub(microServiceId);
         client =

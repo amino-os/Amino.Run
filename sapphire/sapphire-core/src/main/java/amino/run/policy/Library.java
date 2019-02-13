@@ -8,7 +8,6 @@ import amino.run.compiler.GlobalStubConstants;
 import amino.run.kernel.common.GlobalKernelReferences;
 import amino.run.kernel.common.KernelOID;
 import amino.run.kernel.common.KernelObjectFactory;
-import amino.run.kernel.common.KernelObjectNotCreatedException;
 import amino.run.kernel.common.KernelObjectNotFoundException;
 import amino.run.kernel.common.KernelObjectStub;
 import amino.run.kernel.server.KernelServerImpl;
@@ -133,139 +132,66 @@ public abstract class Library implements Upcalls {
          * @throws RemoteException
          */
         public ServerPolicy sapphire_replicate(String region) throws RemoteException {
-            ServerPolicy serverPolicyStub = null;
-            ServerPolicy outerServerPolicy = null;
-            KernelObjectStub outerServerPolicyStub = null;
             List<SapphirePolicyContainer> processedPoliciesReplica = new ArrayList<>();
-            int sizeOfProcessedPolicies = processedPolicies.size();
+            int outerPolicySize = processedPolicies.size();
 
             // TODO: Split each logic into different methods if at all possible and makes sense.
             try {
-                // TODO: would it better to pass as a parameter than RPC to group policy to get the
-                // object ID?
-                SapphireObjectID sapphireObjId = getReplicaId().getOID();
-                AppObject appObject =
-                        processedPolicies.get(0).getServerPolicy().sapphire_getAppObject();
+                SapphireObjectID soid = getReplicaId().getOID();
+                //                ServerPolicy primaryServerPolicy =
+                // processedPolicies.get(0).getServerPolicy();
+                //                AppObject appObject = primaryServerPolicy.sapphire_getAppObject();
+                //                appObject = (AppObject) Utils.ObjectCloner.deepCopy(appObject);
+
+                // Names of policies that were already created.
+                List<String> policyNames =
+                        MultiDMConstructionHelper.getPolicyNames(processedPolicies, 0);
 
                 // 1. Create a new replica policy chain from already created policies before this
                 // policy (outer policies). Specifically, create instances from outermost up to this
                 // policy. Note that Group policy points to the previouly created policies.
-                for (int i = 0; i < sizeOfProcessedPolicies; i++) {
-                    HashMap<String, Class<?>> policyMap =
-                            Sapphire.getPolicyMap(processedPolicies.get(i).getPolicyName());
-                    List<String> policiesToCreate =
-                            MultiDMConstructionHelper.getPolicyNames(processedPolicies, i);
-                    Policy.GroupPolicy groupPolicyStub =
-                            processedPolicies.get(i).getGroupPolicyStub();
-
-                    Sapphire.createPolicyObject(
-                            sapphireObjId,
-                            groupPolicyStub,
-                            policyMap,
-                            policiesToCreate,
+                for (int i = 0; i < outerPolicySize; i++) {
+                    Sapphire.createConnectedPolicy(
+                            i,
+                            processedPolicies.get(i).getGroupPolicyStub(),
+                            policyNames,
                             processedPoliciesReplica,
-                            spec);
-
-                    ServerPolicy serverPolicy = processedPoliciesReplica.get(i).getServerPolicy();
-                    Policy.ClientPolicy clientPolicy =
-                            processedPoliciesReplica.get(i).getClientPolicy();
-
-                    if (i == 0) {
-                        appObject = (AppObject) Utils.ObjectCloner.deepCopy(appObject);
-                        serverPolicy.$__initialize(appObject);
-                    } else {
-                        // Previous server policy stub object acts as Sapphire Object(SO) to the
-                        // current server policy */
-                        serverPolicy.$__initialize(
-                                new AppObject(Utils.ObjectCloner.deepCopy(outerServerPolicyStub)));
-                        outerServerPolicy.setPreviousServerPolicy(serverPolicy);
-                        outerServerPolicyStub.$__setNextClientPolicy(clientPolicy);
-                    }
-
-                    outerServerPolicyStub = processedPoliciesReplica.get(i).getServerPolicyStub();
-                    outerServerPolicy = serverPolicy;
+                            soid,
+                            spec,
+                            null);
+                    policyNames.remove(0);
                 }
 
-                // Last policy in the returned chain is replica of this policy.
-                serverPolicyStub =
-                        (ServerPolicy)
-                                processedPoliciesReplica
-                                        .get(processedPoliciesReplica.size() - 1)
-                                        .getServerPolicyStub();
+                AppObject appObject =
+                        processedPolicies.get(0).getServerPolicy().sapphire_getAppObject();
+                appObject = (AppObject) Utils.ObjectCloner.deepCopy(appObject);
+                processedPoliciesReplica.get(0).getServerPolicy().$__initialize(appObject);
+
+                // Sets the clone of appObject to the outermost policy.
+                //                ServerPolicy outermostSP =
+                // processedPoliciesReplica.get(0).getServerPolicy();
+                //                outermostSP.$__initialize(appObject);
 
                 // 2. Create a rest of the replica policy chain from the next of this policy (inner)
                 // to the innermost policy. Note that it does not include the current policy. This
                 // creates new group policies as well.
-                int sizeOfNextPolicies = this.nextPolicyNames.size();
-                for (int j = 0; j < sizeOfNextPolicies; j++) {
-                    // Note that when there is only a single DM defined in spec, it doesn't go in
-                    // here because it was already processed in the previous step.
-                    List<String> policiesToCreate =
-                            new ArrayList(this.nextPolicyNames.subList(j, sizeOfNextPolicies));
-                    HashMap<String, Class<?>> policyMap =
-                            Sapphire.getPolicyMap(this.nextPolicyNames.get(j));
-                    Class<?> sapphireGroupPolicyClass = policyMap.get("sapphireGroupPolicyClass");
-
-                    // Create the Kernel Object for the Group Policy and get the Group Policy Stub
-                    // from OMS.
-                    Policy.GroupPolicy groupPolicyStub =
-                            GlobalKernelReferences.nodeServer.oms.createGroupPolicy(
-                                    sapphireGroupPolicyClass, sapphireObjId);
-
-                    Sapphire.createPolicyObject(
-                            sapphireObjId,
-                            groupPolicyStub,
-                            policyMap,
-                            policiesToCreate,
-                            processedPoliciesReplica,
-                            spec);
-
-                    ServerPolicy serverPolicy =
-                            processedPoliciesReplica
-                                    .get(sizeOfProcessedPolicies + j)
-                                    .getServerPolicy();
-                    Policy.ClientPolicy clientPolicy =
-                            processedPoliciesReplica
-                                    .get(sizeOfProcessedPolicies + j)
-                                    .getClientPolicy();
-
-                    // Previous server policy stub object acts as Sapphire Object(SO) to the current
-                    // server policy
-                    serverPolicy.$__initialize(
-                            new AppObject(Utils.ObjectCloner.deepCopy(outerServerPolicyStub)));
-                    outerServerPolicy.setPreviousServerPolicy(serverPolicy);
-                    outerServerPolicyStub.$__setNextClientPolicy(clientPolicy);
-
-                    outerServerPolicyStub = processedPolicies.get(j).getServerPolicyStub();
-                    outerServerPolicy = serverPolicy;
+                policyNames = new ArrayList<>(this.nextPolicyNames);
+                int innerPolicySize = this.nextPolicyNames.size();
+                for (int j = outerPolicySize; j < innerPolicySize + outerPolicySize; j++) {
+                    Sapphire.createConnectedPolicy(
+                            j, null, policyNames, processedPoliciesReplica, soid, spec, null);
+                    policyNames.remove(0);
                 }
 
                 // 3. Execute GroupPolicy.onCreate() in the chain starting from the inner most
                 // instance.
-                for (int k = 0; k < this.nextPolicyNames.size(); k++) {
+                for (int k = innerPolicySize + outerPolicySize - 1; k >= outerPolicySize; k--) {
                     Policy.GroupPolicy groupPolicyStub =
-                            processedPoliciesReplica
-                                    .get(sizeOfProcessedPolicies + k)
-                                    .getGroupPolicyStub();
+                            processedPoliciesReplica.get(k).getGroupPolicyStub();
                     ServerPolicy stub =
-                            (ServerPolicy)
-                                    processedPoliciesReplica
-                                            .get(sizeOfProcessedPolicies + k)
-                                            .getServerPolicyStub();
+                            (ServerPolicy) processedPoliciesReplica.get(k).getServerPolicyStub();
                     groupPolicyStub.onCreate(region, stub, spec);
                 }
-            } catch (ClassNotFoundException e) {
-                // TODO Auto-generated catch block
-                logger.severe(e.getMessage());
-                throw new Error("Could not find the class for replication!", e);
-            } catch (KernelObjectNotCreatedException e) {
-                // TODO Auto-generated catch block
-                logger.severe(e.getMessage());
-                throw new Error("Could not create a replica!", e);
-            } catch (SapphireObjectNotFoundException e) {
-                KernelObjectFactory.delete(serverPolicyStub.$__getKernelOID());
-                logger.severe(e.getMessage());
-                throw new Error("Could not find sapphire object on OMS", e);
             } catch (RemoteException e) {
                 sapphire_terminate(processedPolicies);
                 logger.severe(e.getMessage());
@@ -275,7 +201,8 @@ public abstract class Library implements Upcalls {
                 throw new Error("Unknown exception occurred!", e);
             }
 
-            return serverPolicyStub;
+            return (ServerPolicy)
+                    processedPoliciesReplica.get(outerPolicySize - 1).getServerPolicyStub();
         }
 
         public AppObject sapphire_getAppObject() {

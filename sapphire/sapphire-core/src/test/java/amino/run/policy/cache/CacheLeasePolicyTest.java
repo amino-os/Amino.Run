@@ -16,9 +16,9 @@ import org.junit.rules.ExpectedException;
 
 /** Created by Vishwajeet on 13/2/18. */
 public class CacheLeasePolicyTest {
-    CacheLeasePolicy.CacheLeaseClientPolicy client;
-    CacheLeasePolicy.CacheLeaseClientPolicy clientOne;
-    CacheLeasePolicy.CacheLeaseServerPolicy server;
+    CacheLeasePolicy.ClientPolicy client;
+    CacheLeasePolicy.ClientPolicy clientOne;
+    CacheLeasePolicy.ServerPolicy server;
 
     private AppObject appObject;
     private UUID lease;
@@ -26,13 +26,13 @@ public class CacheLeasePolicyTest {
 
     @Before
     public void setUp() throws Exception {
-        this.client = spy(CacheLeasePolicy.CacheLeaseClientPolicy.class);
+        this.client = spy(CacheLeasePolicy.ClientPolicy.class);
         appObject = mock(AppObject.class);
-        this.server = spy(CacheLeasePolicy.CacheLeaseServerPolicy.class);
+        this.server = spy(CacheLeasePolicy.ServerPolicy.class);
         this.server.$__initialize(appObject);
         this.client.setServer(this.server);
 
-        this.clientOne = spy(CacheLeasePolicy.CacheLeaseClientPolicy.class);
+        this.clientOne = spy(CacheLeasePolicy.ClientPolicy.class);
         this.clientOne.setServer(this.server);
     }
 

@@ -69,7 +69,7 @@ public class CacheLeasePolicy extends DefaultPolicy {
      *
      * @author iyzhang
      */
-    public static class CacheLeaseClientPolicy extends DefaultClientPolicy {
+    public static class ClientPolicy extends DefaultClientPolicy {
         protected UUID lease = CacheLease.NO_LEASE;
         protected Date leaseTimeout;
         protected AppObject cachedObject = null;
@@ -90,7 +90,7 @@ public class CacheLeasePolicy extends DefaultPolicy {
         }
 
         protected void sync() {
-            ((CacheLeaseServerPolicy) getServer()).syncObject(lease, cachedObject.getObject());
+            ((ServerPolicy) getServer()).syncObject(lease, cachedObject.getObject());
         }
 
         @Override
@@ -110,10 +110,9 @@ public class CacheLeasePolicy extends DefaultPolicy {
             try {
                 CacheLease cachelease = null;
                 if (!lease.equals(CacheLease.NO_LEASE)) {
-                    cachelease =
-                            ((CacheLeaseServerPolicy) getServer()).getLease(lease, timeoutMillisec);
+                    cachelease = ((ServerPolicy) getServer()).getLease(lease, timeoutMillisec);
                 } else {
-                    cachelease = ((CacheLeaseServerPolicy) getServer()).getLease(timeoutMillisec);
+                    cachelease = ((ServerPolicy) getServer()).getLease(timeoutMillisec);
                 }
 
                 if (cachelease == null) {
@@ -137,7 +136,7 @@ public class CacheLeasePolicy extends DefaultPolicy {
 
         protected void releaseCurrentLease() throws Exception {
             try {
-                ((CacheLeaseServerPolicy) getServer()).releaseLease(lease);
+                ((ServerPolicy) getServer()).releaseLease(lease);
             } finally {
                 lease = CacheLease.NO_LEASE;
                 leaseTimeout = new Date(0L); // The beginning of time.
@@ -151,8 +150,8 @@ public class CacheLeasePolicy extends DefaultPolicy {
         }
 
         protected void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-            // server = (CacheLeaseServerPolicy) in.readObject();
-            // group = (CacheLeaseGroupPolicy) in.readObject();
+            // server = (ServerPolicy) in.readObject();
+            // group = (GroupPolicy) in.readObject();
             lease = CacheLease.NO_LEASE;
             cachedObject = null;
         }
@@ -163,12 +162,12 @@ public class CacheLeasePolicy extends DefaultPolicy {
      *
      * @author iyzhang
      */
-    public static class CacheLeaseServerPolicy extends DefaultServerPolicy {
-        private static Logger logger = Logger.getLogger(CacheLeaseServerPolicy.class.getName());
+    public static class ServerPolicy extends DefaultServerPolicy {
+        private static Logger logger = Logger.getLogger(ServerPolicy.class.getName());
         private UUID lease;
         private Date leaseTimeout;
 
-        public CacheLeaseServerPolicy() {
+        public ServerPolicy() {
             lease = CacheLease.NO_LEASE;
         }
 
@@ -257,5 +256,5 @@ public class CacheLeasePolicy extends DefaultPolicy {
      *
      * @author iyzhang
      */
-    public static class CacheLeaseGroupPolicy extends DefaultGroupPolicy {}
+    public static class GroupPolicy extends DefaultGroupPolicy {}
 }

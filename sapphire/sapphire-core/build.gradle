@@ -122,67 +122,71 @@ genStubs {
     inputs.dir src   // Declare inputs, so gradle will run if they have been changed
 }
 
-task genUnitTestStubs(type :JavaExec){
-    main = "amino.run.compiler.StubGenerator"
+task compileSampleSO(type: JavaCompile) {
+    source = file(project.projectDir.toString() + '/src/test/java/amino/run/sampleSO')
+    exclude('**/*_Stub*')  // Added for excluding older Stub files, while compiling Sample SO package.
     classpath = sourceSets.main.runtimeClasspath
-    classpath += files("$projectDir/build/classes/java/test/")
+    destinationDir = sourceSets.test.output.classesDir
+    options.incremental = true
+}
+
+task genUnitTestStubs(type :JavaExec){
+    dependsOn compileSampleSO
+    main = "amino.run.compiler.StubGenerator"
+    classpath += files(sourceSets.test.output.classesDir)
+
     def pkg = 'amino.run.sampleSO'
     def src = file(project.buildDir.toString() + '/classes/java/test/amino/run/sampleSO/')
     def dst = file(project.projectDir.toString() + '/src/test/java/amino/run/sampleSO/stubs/')
     args src.toString(), pkg, dst.toString()
-    outputs.dir dst
     inputs.dir src
-}
-
-task compileSampleSO(type: JavaCompile) {
-    source = file(project.projectDir.toString() + '/src/test/java/amino/run/sampleSO')
-    exclude('**/*_Stub*')  // Added for excluding older Stub files, while compiling Sample SO package.
-    classpath = files(sourceSets.main.output.classesDir)
-    destinationDir = file(project.buildDir.toString() + '/classes/java/test/')
-    options.incremental = true
+    outputs.dir dst
 }
 
 // Task for Graal Test Stubs Generation:
 // Run `gradlew genGraalTestStubs` to generate Graal test stub files
 task genGraalTestStubs(type: JavaExec) {
+    dependsOn compileJava
     main = "amino.run.compiler.GraalStubGenerator"
-    classpath += files(sourceSets.main.output.classesDir)
+
     def sapphireObjectPath = "$projectDir/src/test/resources/student.js"
     def outPath = "$projectDir/src/test/java"
     def packageName = "amino.run.stubs"
     def sapphireClasses = "Student"
     args sapphireObjectPath, outPath, packageName, sapphireClasses
-    outputs.dir outPath + "/amino/run/stubs" // Declare outputs, so gradle will run if they have been changed
     inputs.dir sapphireObjectPath   // Declare inputs, so gradle will run if they have been changed
+    outputs.dir outPath + "/amino/run/stubs" // Declare outputs, so gradle will run if they have been changed
 }
 // Task for Graal Test stubs compilation
 task compileGraalTestStubs(type: JavaCompile) {
+    dependsOn genGraalTestStubs
     source = "$projectDir/src/test/java/amino/run/stubs"
-    classpath = files(sourceSets.main.output.classesDir)
+    classpath = sourceSets.main.runtimeClasspath
     destinationDir = sourceSets.test.output.classesDir
     options.incremental = true
     inputs.dir genGraalTestStubs.outputs
     outputs.dir destinationDir
 }
 
-task genIntegTestStubs(type :JavaExec) {
-    main = "amino.run.compiler.StubGenerator"
-    classpath = sourceSets.main.runtimeClasspath
-    classpath += files("$projectDir/build/classes/java/integrationTest/")
-    def pkg = 'amino.run.demo'
-    def src = file(project.buildDir.toString() + '/classes/java/integrationTest/amino/run/demo')
-    def dst = file(project.projectDir.toString() + '/src/integrationTest/java/amino/run/demo/stubs')
-    args src.toString(), pkg, dst.toString()
-    outputs.dir dst // Declare outputs, so gradle will run if they have been changed
-    inputs.dir src // Declare inputs, so gradle will run if they have been change
-}
-
 task compileIntegTestDemoPkg(type: JavaCompile) {
     source = file(project.projectDir.toString() + '/src/integrationTest/java/amino/run/demo/')
     exclude('**/*_Stub*')  // Added for excluding older Stub files, while compiling Integration Test Demo package.
     classpath = sourceSets.integrationTest.compileClasspath
-    destinationDir = file(project.buildDir.toString() + '/classes/java/integrationTest/')
+    destinationDir = sourceSets.integrationTest.output.classesDir
     options.incremental = true
+}
+
+task genIntegTestStubs(type :JavaExec) {
+    dependsOn compileIntegTestDemoPkg
+    main = "amino.run.compiler.StubGenerator"
+    classpath += files(sourceSets.integrationTest.output.classesDir)
+
+    def pkg = 'amino.run.demo'
+    def src = file(project.buildDir.toString() + '/classes/java/integrationTest/amino/run/demo')
+    def dst = file(project.projectDir.toString() + '/src/integrationTest/java/amino/run/demo/stubs')
+    args src.toString(), pkg, dst.toString()
+    inputs.dir src // Declare inputs, so gradle will run if they have been changed
+    outputs.dir dst // Declare outputs, so gradle will run if they have been changed
 }
 
 clean {
@@ -195,25 +199,15 @@ clean {
     }
 }
 
-tasks.googleJavaFormat.mustRunAfter genStubs
-tasks.googleJavaFormat.mustRunAfter genGraalTestStubs
-tasks.googleJavaFormat.mustRunAfter genUnitTestStubs
-tasks.googleJavaFormat.mustRunAfter genIntegTestStubs
-
-genGraalTestStubs.dependsOn compileJava
-compileGraalTestStubs.dependsOn genGraalTestStubs
-compileTestJava.dependsOn compileGraalTestStubs
-genUnitTestStubs.dependsOn compileSampleSO
-compileTestJava.dependsOn genUnitTestStubs
-genIntegTestStubs.dependsOn compileIntegTestDemoPkg
+compileJava.dependsOn checkGraalVmVersion
+compileTestJava {
+    dependsOn compileGraalTestStubs
+    dependsOn genUnitTestStubs
+}
 compileIntegrationTestJava.dependsOn genIntegTestStubs
 
-tasks.googleJavaFormat.dependsOn genStubs
-tasks.googleJavaFormat.dependsOn genGraalTestStubs
-tasks.googleJavaFormat.dependsOn genIntegTestStubs
-
+tasks.googleJavaFormat.dependsOn tasks.withType(AbstractCompile)
 check.dependsOn tasks.googleJavaFormat
-check.dependsOn integTest
-compileJava.dependsOn checkGraalVmVersion
+
 integTest.mustRunAfter test
-jar.inputs.dir compileStubsJava.outputs // jar needs to be rebuilt if stubs got recompiled
+check.dependsOn integTest

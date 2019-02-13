@@ -92,6 +92,11 @@ subprojects {
         }
     }
 
+    // Common rules for all JavaExec tasks, being added before execution.
+    tasks.withType(JavaExec).whenTaskAdded {
+        classpath += sourceSets.main.runtimeClasspath
+    }
+
     // SourceSet for generated stubs
     sourceSets {
         stubs
@@ -101,7 +106,6 @@ subprojects {
     // Run `gradlew genStubs` to generate stub files
     task genStubs(type: JavaExec) {
         main = "amino.run.compiler.StubGenerator"
-        classpath = sourceSets.main.runtimeClasspath
     }
 
     // Configure "stubs" sourceSet compile task, with additional rules.
@@ -121,5 +125,12 @@ subprojects {
     // Include stubs sourceSet classes in the jar file.
     jar {
         from sourceSets.stubs.output.classesDir
+        // Java jar file depends on compile tasks of all sourceSets.
+        // Currently there are two sourceSets - "main" and "stubs".
+        // Java modules will have "main" and "stubs" sourceSets and
+        // non-Java examples will have only "main" sourceSet.
+        inputs.dir tasks.withType(AbstractCompile)   // jar needs to be rebuilt if any compileTask gets executed.
     }
+
+    check.dependsOn tasks.withType(AbstractCompile)  // Ensure that all compileTasks are executed, as part of check.
 }

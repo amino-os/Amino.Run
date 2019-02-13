@@ -10,11 +10,11 @@ import java.util.ArrayList;
 // TODO: stub generator to generate related methods
 // TODO: inherit from a common caching base class which has getCopy/syncCopy methods
 public class ExplicitCachingPolicy extends DefaultPolicy {
-    public static class ExplicitCachingClientPolicy extends DefaultClientPolicy {
+    public static class ClientPolicy extends DefaultClientPolicy {
         private AppObject cachedCopy = null;
 
         private void pull() {
-            AppObject appObject = ((ExplicitCachingServerPolicy) this.getServer()).getCopy();
+            AppObject appObject = ((ServerPolicy) this.getServer()).getCopy();
             if (!(appObject.getObject() instanceof ExplicitCacher)) {
                 throw new IllegalArgumentException("should be subclass of ExplicitCacher");
             }
@@ -24,8 +24,7 @@ public class ExplicitCachingPolicy extends DefaultPolicy {
 
         private void push() {
             if (this.cachedCopy != null) {
-                ((ExplicitCachingServerPolicy) this.getServer())
-                        .syncCopy(this.cachedCopy.getObject());
+                ((ServerPolicy) this.getServer()).syncCopy(this.cachedCopy.getObject());
                 this.cachedCopy = null;
             }
         }
@@ -63,7 +62,7 @@ public class ExplicitCachingPolicy extends DefaultPolicy {
         }
     }
 
-    public static class ExplicitCachingServerPolicy extends DefaultServerPolicy {
+    public static class ServerPolicy extends DefaultServerPolicy {
         public AppObject getCopy() {
             return this.appObject;
         }
@@ -73,5 +72,5 @@ public class ExplicitCachingPolicy extends DefaultPolicy {
         }
     }
 
-    public static class ExplicitCachingGroupPolicy extends DefaultGroupPolicy {}
+    public static class GroupPolicy extends DefaultGroupPolicy {}
 }

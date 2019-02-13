@@ -49,10 +49,10 @@ public class DHTChord implements Serializable {
      * <p>When {@code virtualNodeFactor} is specified, the chord will add the specified number of
      * virtual nodes for the given server in the chord.
      *
-     * @param server {@code DHTServerPolicy} instance
+     * @param server {@code ServerPolicy} instance
      * @throws NullPointerException when server is {@code null}.
      */
-    public void add(DHTPolicy.DHTServerPolicy server) {
+    public void add(DHTPolicy.ServerPolicy server) {
         if (server == null) {
             throw new NullPointerException("server must not be null");
         }

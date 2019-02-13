@@ -4,9 +4,9 @@ import java.io.Serializable;
 
 public class DHTNode implements Comparable<DHTNode>, Serializable {
     public DHTKey id;
-    public DHTPolicy.DHTServerPolicy server;
+    public DHTPolicy.ServerPolicy server;
 
-    public DHTNode(DHTKey id, DHTPolicy.DHTServerPolicy server) {
+    public DHTNode(DHTKey id, DHTPolicy.ServerPolicy server) {
         this.id = id;
         this.server = server;
     }

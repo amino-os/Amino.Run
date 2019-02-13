@@ -11,7 +11,7 @@ import java.util.ArrayList;
 
 public class DurableOnDemandCachedList extends DefaultPolicy {
 
-    public static class DurableOnDemandCachedListClientPolicy extends DefaultClientPolicy {
+    public static class ClientPolicy extends DefaultClientPolicy {
         @Override
         public Object onRPC(String method, ArrayList<Object> params) throws Exception {
             /* Switch on the method we need to execute */
@@ -20,7 +20,7 @@ public class DurableOnDemandCachedList extends DefaultPolicy {
     }
 
     // TODO: think about concurrency
-    public static class DurableOnDemandCachedListServerPolicy extends DefaultServerPolicy {
+    public static class ServerPolicy extends DefaultServerPolicy {
         int listSize; // cache the size of the list
         int numMisses; // to automatically grow the cache if possible
 
@@ -30,5 +30,5 @@ public class DurableOnDemandCachedList extends DefaultPolicy {
         }
     }
 
-    public static class DurableOnDemandCachedListGroupPolicy extends DefaultGroupPolicy {}
+    public static class GroupPolicy extends DefaultGroupPolicy {}
 }

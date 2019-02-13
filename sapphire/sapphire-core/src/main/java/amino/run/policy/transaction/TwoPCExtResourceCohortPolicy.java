@@ -3,11 +3,11 @@ package amino.run.policy.transaction;
 /** DM for 2PC participants with external resource */
 public class TwoPCExtResourceCohortPolicy extends TwoPCCohortPolicy {
     /** DCAP distributed transaction default client policy */
-    public static class TwoPCExtResourceCohortClientPolicy extends TwoPCCohortClientPolicy {}
+    public static class ClientPolicy extends TwoPCCohortPolicy.ClientPolicy {}
 
     /** DCAP distributed transaction default server policy */
-    public static class TwoPCExtResourceCohortServerPolicy extends TwoPCCohortServerPolicy {
-        public TwoPCExtResourceCohortServerPolicy() {
+    public static class ServerPolicy extends TwoPCCohortPolicy.ServerPolicy {
+        public ServerPolicy() {
             super(null);
 
             TLSTransactionManager internalTransactionManager = new TLSTransactionManager();
@@ -21,5 +21,5 @@ public class TwoPCExtResourceCohortPolicy extends TwoPCCohortPolicy {
     }
 
     /** DCAP distributed transaction default group policy */
-    public static class TwoPCExtResourceCohortGroupPolicy extends TwoPCCohortGroupPolicy {}
+    public static class GroupPolicy extends TwoPCCohortPolicy.GroupPolicy {}
 }

@@ -227,7 +227,7 @@ public class LoadBalancedFrontendPolicy extends DefaultPolicy {
                                     + (count + 1));
                 }
             } catch (RemoteException e) {
-                logger.severe("Received RemoteException may be oms is down ");
+                 logger.severe("Received RemoteException may be oms is down ");
                 throw new Error(
                         "Could not create new group policy because the oms is not available.", e);
             } catch (MicroServiceNotFoundException e) {

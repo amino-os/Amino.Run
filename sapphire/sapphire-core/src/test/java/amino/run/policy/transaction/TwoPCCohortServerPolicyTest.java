@@ -1,7 +1,6 @@
 package amino.run.policy.transaction;
 
 import static amino.run.policy.Upcalls.ServerUpcalls;
-import static amino.run.policy.transaction.TwoPCCohortPolicy.TwoPCCohortServerPolicy;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
 
@@ -15,7 +14,7 @@ import org.junit.Test;
 public class TwoPCCohortServerPolicyTest {
     private SandboxProvider sandboxProvider = mock(SandboxProvider.class);
     private TransactionManager transactionManager = mock(TransactionManager.class);
-    private TwoPCCohortServerPolicy serverPolicy = new TwoPCCohortServerPolicy();
+    private TwoPCCohortPolicy.ServerPolicy serverPolicy = new TwoPCCohortPolicy.ServerPolicy();
 
     @Before
     public void Setup() throws NoSuchFieldException, IllegalAccessException {

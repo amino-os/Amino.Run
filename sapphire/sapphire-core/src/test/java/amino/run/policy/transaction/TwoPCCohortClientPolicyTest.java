@@ -20,9 +20,9 @@ public class TwoPCCohortClientPolicyTest {
 
     @Test
     public void test_regular_passthrough_if_no_txn() throws Exception {
-        TwoPCCohortServerPolicy serverPolicy = mock(TwoPCCohortServerPolicy.class);
+        TwoPCCohortPolicy.ServerPolicy serverPolicy = mock(TwoPCCohortPolicy.ServerPolicy.class);
 
-        TwoPCCohortClientPolicy clientPolicy = new TwoPCCohortClientPolicy();
+        TwoPCCohortPolicy.ClientPolicy clientPolicy = new TwoPCCohortPolicy.ClientPolicy();
         clientPolicy.setServer(serverPolicy);
 
         clientPolicy.onRPC("foo", null);
@@ -33,9 +33,9 @@ public class TwoPCCohortClientPolicyTest {
     @Test
     public void test_register_if_in_tx() throws Exception {
         final TwoPCParticipants participants = mock(TwoPCParticipants.class);
-        TwoPCCohortServerPolicy serverPolicy = mock(TwoPCCohortServerPolicy.class);
+        TwoPCCohortPolicy.ServerPolicy serverPolicy = mock(TwoPCCohortPolicy.ServerPolicy.class);
 
-        TwoPCCohortClientPolicy clientPolicy = new TwoPCCohortClientPolicy();
+        TwoPCCohortPolicy.ClientPolicy clientPolicy = new TwoPCCohortPolicy.ClientPolicy();
         clientPolicy.setServer(serverPolicy);
 
         UUID txnId = UUID.randomUUID();

@@ -1,6 +1,5 @@
 package amino.run.policy.transaction;
 
-import static amino.run.policy.transaction.TwoPCCoordinatorPolicy.TwoPCCoordinatorServerPolicy;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.fail;
@@ -16,8 +15,8 @@ import org.junit.Test;
 import org.mockito.InOrder;
 
 public class TwoPCCoordinatorServerPolicyTest {
-    private TwoPCCoordinatorServerPolicy coordinatorServerPolicy =
-            new TwoPCCoordinatorServerPolicy();
+    private TwoPCCoordinatorPolicy.ServerPolicy coordinatorServerPolicy =
+            new TwoPCCoordinatorPolicy.ServerPolicy();
     private TwoPCCoordinator coordinator = mock(TwoPCCoordinator.class);
     private SandboxProvider sandboxProvider = mock(SandboxProvider.class);
     private AppObjectShimServerPolicy sandbox = mock(AppObjectShimServerPolicy.class);

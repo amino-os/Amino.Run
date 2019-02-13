@@ -13,8 +13,7 @@ public class AppObjectSandboxProviderTest {
         UUID txId = UUID.randomUUID();
         Serializable coreOrigin = "aaa";
         AppObject originAppObject = new AppObject(coreOrigin);
-        TwoPCCohortPolicy.TwoPCCohortServerPolicy origin =
-                new TwoPCCohortPolicy.TwoPCCohortServerPolicy();
+        TwoPCCohortPolicy.ServerPolicy origin = new TwoPCCohortPolicy.ServerPolicy();
         origin.$__initialize(originAppObject);
 
         AppObjectSandboxProvider provider = new AppObjectSandboxProvider();

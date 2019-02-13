@@ -52,7 +52,7 @@ public class DHTChord implements Serializable {
      * @param server {@code DHTServerPolicy} instance
      * @throws NullPointerException when server is {@code null}.
      */
-    public void add(DHTPolicy.DHTServerPolicy server) {
+    public void add(DHTPolicy.ServerPolicy server) {
         if (server == null) {
             throw new NullPointerException("server must not be null");
         }

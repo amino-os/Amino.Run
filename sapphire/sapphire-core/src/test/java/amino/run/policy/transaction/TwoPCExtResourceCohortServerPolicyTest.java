@@ -1,6 +1,5 @@
 package amino.run.policy.transaction;
 
-import static amino.run.policy.transaction.TwoPCExtResourceCohortPolicy.TwoPCExtResourceCohortServerPolicy;
 import static org.mockito.Mockito.*;
 
 import amino.run.common.AppObject;
@@ -14,7 +13,8 @@ public class TwoPCExtResourceCohortServerPolicyTest {
     public void test_tx_engages_extResource_on_join() throws Exception {
         UUID transactionId = UUID.randomUUID();
 
-        TwoPCExtResourceCohortServerPolicy serverPolicy = new TwoPCExtResourceCohortServerPolicy();
+        TwoPCExtResourceCohortPolicy.ServerPolicy serverPolicy =
+                new TwoPCExtResourceCohortPolicy.ServerPolicy();
         SandboxProvider sandboxProvider = mock(SandboxProvider.class);
         ReflectionTestUtil.setField(serverPolicy, "sandboxProvider", sandboxProvider);
         TransactionManager transactionManager = mock(TransactionManager.class);

@@ -15,10 +15,10 @@ import java.util.logging.Logger;
  */
 public class ShiftPolicy extends DefaultPolicy {
 
-    public static class ShiftClientPolicy extends DefaultPolicy.DefaultClientPolicy {}
+    public static class ClientPolicy extends DefaultPolicy.DefaultClientPolicy {}
 
-    public static class ShiftServerPolicy extends DefaultPolicy.DefaultServerPolicy {
-        private static Logger logger = Logger.getLogger(ShiftServerPolicy.class.getName());
+    public static class ServerPolicy extends DefaultPolicy.DefaultServerPolicy {
+        private static Logger logger = Logger.getLogger(ServerPolicy.class.getName());
 
         private static int LOAD = 5;
         private static int shiftRPCLoad = 0;
@@ -77,5 +77,5 @@ public class ShiftPolicy extends DefaultPolicy {
         }
     }
 
-    public static class ShiftGroupPolicy extends DefaultPolicy.DefaultGroupPolicy {}
+    public static class GroupPolicy extends DefaultPolicy.DefaultGroupPolicy {}
 }

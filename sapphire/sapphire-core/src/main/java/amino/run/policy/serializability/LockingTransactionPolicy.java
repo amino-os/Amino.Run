@@ -14,7 +14,7 @@ public class LockingTransactionPolicy extends CacheLeasePolicy {
      * Locking Transaction client policy. The client side proxy that holds the cached object, gets
      * leases from the server and writes locally during transactions.
      */
-    public static class ClientPolicy extends CacheLeasePolicy.CacheLeaseClientPolicy {
+    public static class ClientPolicy extends CacheLeasePolicy.ClientPolicy {
         protected boolean transactionInProgress; // Has this client begun a transaction?
 
         @Override
@@ -127,7 +127,7 @@ public class LockingTransactionPolicy extends CacheLeasePolicy {
         }
     }
 
-    public static class ServerPolicy extends CacheLeasePolicy.CacheLeaseServerPolicy {}
+    public static class ServerPolicy extends CacheLeasePolicy.ServerPolicy {}
 
-    public static class GroupPolicy extends CacheLeasePolicy.CacheLeaseGroupPolicy {}
+    public static class GroupPolicy extends CacheLeasePolicy.GroupPolicy {}
 }

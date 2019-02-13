@@ -10,11 +10,11 @@ public class TwoPCCoordinatorPolicy extends DefaultPolicy {
     public static class TwoPCCoordinatorClientPolicy extends DefaultClientPolicy {}
 
     /** DCAP distributed transaction coordinator server policy */
-    public static class TwoPCCoordinatorServerPolicy extends DefaultServerPolicy {
+    public static class ServerPolicy extends DefaultServerPolicy {
         private final transient TwoPCCoordinator coordinator;
         private final transient SandboxProvider sandboxProvider = new AppObjectSandboxProvider();
 
-        public TwoPCCoordinatorServerPolicy() {
+        public ServerPolicy() {
             NonconcurrentTransactionValidator validator =
                     new NonconcurrentTransactionValidator(
                             this.sapphire_getAppObject(), this.sandboxProvider);
@@ -59,5 +59,5 @@ public class TwoPCCoordinatorPolicy extends DefaultPolicy {
     }
 
     /** DCAP distributed transaction coordinator group policy */
-    public static class TwoPCCoordinatorGroupPolicy extends DefaultGroupPolicy {}
+    public static class GroupPolicy extends DefaultGroupPolicy {}
 }

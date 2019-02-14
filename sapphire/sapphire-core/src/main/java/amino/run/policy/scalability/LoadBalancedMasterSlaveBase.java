@@ -7,6 +7,7 @@ import amino.run.common.Utils;
 import amino.run.kernel.common.KernelObjectStub;
 import amino.run.kernel.common.KernelServerNotFoundException;
 import amino.run.policy.DefaultPolicy;
+import amino.run.policy.Policy;
 import amino.run.policy.scalability.masterslave.Lock;
 import amino.run.policy.scalability.masterslave.MethodInvocationRequest;
 import amino.run.policy.scalability.masterslave.MethodInvocationResponse;
@@ -32,12 +33,12 @@ import java.util.logging.Logger;
  */
 public abstract class LoadBalancedMasterSlaveBase extends DefaultPolicy {
     /** Base implementation of client side policy */
-    public abstract static class ClientBase extends DefaultClientPolicy {
-        private static Logger logger = Logger.getLogger(ClientBase.class.getName());
+    public abstract static class ClientPolicy extends DefaultClientPolicy {
+        private static Logger logger = Logger.getLogger(ClientPolicy.class.getName());
         private final AtomicLong SeqGenerator = new AtomicLong();
         private transient UUID CLIENT_ID;
 
-        public ClientBase() {}
+        public ClientPolicy() {}
 
         @Override
         public Object onRPC(String method, ArrayList<Object> params) throws Exception {
@@ -50,11 +51,11 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultPolicy {
                 CLIENT_ID = UUID.randomUUID();
             }
 
-            GroupBase group = (GroupBase) getGroup();
+            GroupPolicy group = (GroupPolicy) getGroup();
             MethodInvocationRequest.MethodType type = MethodInvocationRequest.MethodType.MUTABLE;
 
             do {
-                ServerBase server = (ServerBase) getServer();
+                ServerPolicy server = (ServerPolicy) getServer();
                 if (isImmutable(server.getClass(), method)) {
                     server = group.getRandomServer();
                     type = MethodInvocationRequest.MethodType.IMMUTABLE;
@@ -114,7 +115,7 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultPolicy {
     }
 
     /** Base implementation of master slave server policy */
-    public abstract static class ServerBase extends DefaultServerPolicy {
+    public abstract static class ServerPolicy extends DefaultServerPolicy {
         /** @return the ID of the server */
         public String getServerId() {
             return $__getKernelOID().toString();
@@ -164,7 +165,7 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultPolicy {
      * <p>TODO (Terry): Make Group Policy highly available. At present group policy has only one
      * instance which does not satisfy the high available requirement.
      */
-    public abstract static class GroupBase extends DefaultGroupPolicy {
+    public abstract static class GroupPolicy extends DefaultGroupPolicy {
         private static final int NUM_OF_REPLICAS = 2;
         private Logger logger;
         private Random random = new Random(System.currentTimeMillis());
@@ -172,9 +173,9 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultPolicy {
         private Map<String, String> nodeLabels;
 
         @Override
-        public void onCreate(String region, ServerPolicy server, MicroServiceSpec spec)
+        public void onCreate(String region, Policy.ServerPolicy server, MicroServiceSpec spec)
                 throws RemoteException {
-            logger = Logger.getLogger(GroupBase.class.getName());
+            logger = Logger.getLogger(GroupPolicy.class.getName());
             super.onCreate(region, server, spec);
             boolean isLastPolicy = server.isLastPolicy();
             logger.info(String.format("Creating master and slave instance in region %s", region));
@@ -197,7 +198,7 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultPolicy {
                                 "Creating master and slave instances in servers: %s", addressList));
 
                 List<InetSocketAddress> unavailable = new ArrayList<InetSocketAddress>();
-                ServerBase s = (ServerBase) server;
+                ServerPolicy s = (ServerPolicy) server;
                 InetSocketAddress dest = null;
 
                 if (isLastPolicy) {
@@ -213,7 +214,7 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultPolicy {
                     if (isLastPolicy) {
                         dest = getAvailable(i + 1, addressList, unavailable);
                     }
-                    ServerBase replica = (ServerBase) replicate(s, dest, region);
+                    ServerPolicy replica = (ServerPolicy) replicate(s, dest, region);
                     replica.start();
                     logger.info("created slave on " + dest);
                 }
@@ -292,13 +293,13 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultPolicy {
         }
 
         /** @return master server, or <code>null</code> if no master available */
-        public ServerBase getMaster() throws RemoteException {
+        public ServerPolicy getMaster() throws RemoteException {
             // TODO: cache master to avoid calling group policy remotely for RPC
             if (masterLock != null) {
-                ArrayList<ServerPolicy> servers = getServers();
-                for (ServerPolicy server : servers) {
+                ArrayList<Policy.ServerPolicy> servers = getServers();
+                for (Policy.ServerPolicy server : servers) {
                     try {
-                        ServerBase s = (ServerBase) server;
+                        ServerPolicy s = (ServerPolicy) server;
                         if (s.getServerId() != null
                                 && s.getServerId().equals(masterLock.getClientId())) {
                             return s;
@@ -313,20 +314,20 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultPolicy {
             return null;
         }
 
-        public ServerBase getSlave() throws RemoteException {
-            ServerBase master = getMaster();
-            ArrayList<ServerPolicy> servers = getServers();
-            for (ServerPolicy s : servers) {
+        public ServerPolicy getSlave() throws RemoteException {
+            ServerPolicy master = getMaster();
+            ArrayList<Policy.ServerPolicy> servers = getServers();
+            for (Policy.ServerPolicy s : servers) {
                 if (!s.equals(master)) {
-                    return (ServerBase) s;
+                    return (ServerPolicy) s;
                 }
             }
             return null;
         }
 
-        public ServerBase getRandomServer() throws RemoteException {
-            ArrayList<ServerPolicy> servers = getServers();
-            return (ServerBase) servers.get(random.nextInt(Integer.MAX_VALUE) % servers.size());
+        public ServerPolicy getRandomServer() throws RemoteException {
+            ArrayList<Policy.ServerPolicy> servers = getServers();
+            return (ServerPolicy) servers.get(random.nextInt(Integer.MAX_VALUE) % servers.size());
         }
     }
 }

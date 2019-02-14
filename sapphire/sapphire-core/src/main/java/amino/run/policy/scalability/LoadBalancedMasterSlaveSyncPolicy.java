@@ -32,10 +32,10 @@ import java.util.logging.Logger;
 public class LoadBalancedMasterSlaveSyncPolicy extends LoadBalancedMasterSlaveBase {
 
     /** Client side policy */
-    public static class ClientPolicy extends ClientBase {}
+    public static class ClientPolicy extends LoadBalancedMasterSlaveBase.ClientPolicy {}
 
     /** Server side policy */
-    public static class ServerPolicy extends ServerBase {
+    public static class ServerPolicy extends LoadBalancedMasterSlaveBase.ServerPolicy {
         private transient Logger logger;
         private transient Committer commitExecutor;
         private transient StateManager stateMgr;
@@ -162,5 +162,5 @@ public class LoadBalancedMasterSlaveSyncPolicy extends LoadBalancedMasterSlaveBa
     }
 
     /** Group policy */
-    public static class GroupPolicy extends LoadBalancedMasterSlaveBase.GroupBase {}
+    public static class GroupPolicy extends LoadBalancedMasterSlaveBase.GroupPolicy {}
 }

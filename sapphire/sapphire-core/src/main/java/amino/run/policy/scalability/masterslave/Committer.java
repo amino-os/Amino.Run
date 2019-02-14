@@ -204,7 +204,7 @@ public class Committer implements Closeable {
      *
      * @param server destination server
      */
-    public void syncObject(LoadBalancedMasterSlaveBase.ServerBase server) {
+    public void syncObject(LoadBalancedMasterSlaveBase.ServerPolicy server) {
         synchronized (appObject) {
             server.syncObject(appObject.getObject(), getIndexOfLargestCommittedEntry());
         }

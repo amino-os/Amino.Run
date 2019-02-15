@@ -49,6 +49,97 @@ subprojects {
     }
 }
 
+// Added for running the Test environment consisting of OMS, 4 Kernel Servers and the test application together.
+// The environment can be launched by running below command from amino rootDir: 
+// "./gradlew :examples:hanksTodo:runenv" for executing the hanksTodo example.
+// The handling has been inspired based on the below description by Tomas Lins
+// https://fbflex.wordpress.com/2013/03/14/gradle-madness-execwait-a-task-that-waits-for-commandline-calls-to-be-ready/
+class ExecWait extends DefaultTask {
+    String command
+
+    @TaskAction
+    def spawnProcess() {
+        def rootDir = project.rootDir
+        def taskName = command.split(':').last()
+        def readyExpr = "ready!"
+        def line
+
+        Process process = new ProcessBuilder(command.split(' '))
+                .directory(rootDir)
+                .redirectErrorStream(true)
+                .start()
+        InputStream stdout = process.getInputStream()
+        BufferedReader reader = new BufferedReader(new InputStreamReader(stdout))
+
+        while ((line = reader.readLine()) != null) {
+            if (line.contains(readyExpr)) {
+                println line
+                break;
+            }
+            // In the case of application, the stream contents are printed for user validation.
+            if(taskName.equals("runapp")) {
+                println line
+            }
+        }
+    }
+}
+subprojects {
+    def project = "$it.path"
+    task runenvoms(type: ExecWait) {
+        command './gradlew ' + project + ':runoms'
+
+        doLast {
+            println "Launched OMS Server. !!!"
+        }
+    }
+    task runenvks(type: ExecWait, dependsOn: runenvoms) {
+        command './gradlew ' + project + ':runks'
+
+        doLast {
+            println "Launched Kernel Server 1. !!!"
+        }
+    }
+    task runenvks2(type: ExecWait, dependsOn: runenvks) {
+        command './gradlew ' + project + ':runks2'
+
+        doLast {
+            println "Launched Kernel Server 2. !!!"
+        }
+    }
+    task runenvks3(type: ExecWait, dependsOn: runenvks2) {
+        command './gradlew ' + project + ':runks3'
+
+        doLast {
+            println "Launched Kernel Server 3. !!!"
+        }
+    }
+    task runenvks4(type: ExecWait, dependsOn: runenvks3) {
+        command './gradlew ' + project + ':runks4'
+
+        doLast {
+            println "Launched Kernel Server 4. !!!"
+        }
+    }
+    task runenvapp(type: ExecWait, dependsOn: runenvks4) {
+        command './gradlew ' + project + ':runapp'
+    }
+
+    task runenv (dependsOn: runenvapp) {
+        // Need to cleanup all the background processes which were launched, before exiting.
+        doLast {
+            def ports = ["$omsPort", "$kernelServerPort", "$kernelServerPort2", "$kernelServerPort3", "$kernelServerPort4"]
+            ports.each { port ->
+                def cmd = "lsof -Fp -i :$port"
+                def process = cmd.execute()
+                process.in.eachLine { line ->
+                    def killProcess = "kill -9 ${line.substring(1)}".execute()
+                    killProcess.waitFor()
+                }
+            }
+        }
+    }
+}
+
 // For the parent examples project itself, we disable inherited tasks that don't make sense at this level.
 genStubs {
     onlyIf() { false } // Disable

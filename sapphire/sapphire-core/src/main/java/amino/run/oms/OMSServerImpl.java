@@ -288,7 +288,7 @@ public class OMSServerImpl implements OMSServer, Registry {
                     (KernelServer) UnicastRemoteObject.exportObject(localKernelServer, servicePort);
             registry.rebind("SapphireKernelServer", localKernelServerStub);
 
-            logger.info("OMS ready");
+            logger.info("OMS ready!");
             // to get all the kernel server's addresses passing null in oms.getServers
             for (Iterator<InetSocketAddress> it = oms.getServers(null).iterator(); it.hasNext(); ) {
                 InetSocketAddress address = it.next();

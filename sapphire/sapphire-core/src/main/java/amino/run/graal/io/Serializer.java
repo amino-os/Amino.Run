@@ -1,10 +1,15 @@
 package amino.run.graal.io;
 
 import amino.run.app.Language;
-import java.io.*;
-import java.util.*;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
-import org.graalvm.polyglot.*;
+import org.graalvm.polyglot.Value;
 
 // DUPLICATE represents duplicate objects that has been serialized once.
 enum GraalType {

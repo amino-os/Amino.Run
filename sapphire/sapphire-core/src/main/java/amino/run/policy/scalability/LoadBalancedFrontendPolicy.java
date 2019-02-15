@@ -25,13 +25,13 @@ import java.util.logging.Logger;
  * consistency
  */
 public class LoadBalancedFrontendPolicy extends DefaultPolicy {
-    public static final int STATIC_REPLICA_COUNT = 2;
-    public static final int MAX_CONCURRENT_REQUESTS = 20;
+    public static final int DEFAULT_REPLICA_COUNT = 2;
+    public static final int DEFAULT_MAX_CONCURRENT_REQUESTS = 20;
 
     /** Configurations for LoadBalancedFrontendPolicy */
     public static class Config implements SapphirePolicyConfig {
-        private int maxConcurrentReq = MAX_CONCURRENT_REQUESTS;
-        private int replicaCount = STATIC_REPLICA_COUNT;
+        private int maxConcurrentReq = DEFAULT_MAX_CONCURRENT_REQUESTS;
+        private int replicaCount = DEFAULT_REPLICA_COUNT;
 
         public int getMaxConcurrentReq() {
             return maxConcurrentReq;
@@ -67,9 +67,9 @@ public class LoadBalancedFrontendPolicy extends DefaultPolicy {
     @Retention(RetentionPolicy.RUNTIME)
     @Target({ElementType.TYPE})
     public @interface LoadBalancedFrontendPolicyConfigAnnotation {
-        int maxConcurrentReq() default MAX_CONCURRENT_REQUESTS;
+        int maxConcurrentReq() default DEFAULT_MAX_CONCURRENT_REQUESTS;
 
-        int replicaCount() default STATIC_REPLICA_COUNT;
+        int replicaCount() default DEFAULT_REPLICA_COUNT;
     }
 
     private static Config getConfig(MicroServiceSpec spec) {
@@ -126,7 +126,7 @@ public class LoadBalancedFrontendPolicy extends DefaultPolicy {
     public static class ServerPolicy extends DefaultPolicy.DefaultServerPolicy {
         private static Logger logger = Logger.getLogger(ServerPolicy.class.getName());
         // we can read from default config or annotations
-        protected int maxConcurrentReq = MAX_CONCURRENT_REQUESTS;
+        protected int maxConcurrentReq = DEFAULT_MAX_CONCURRENT_REQUESTS;
         protected Semaphore limiter;
 
         @Override
@@ -171,7 +171,7 @@ public class LoadBalancedFrontendPolicy extends DefaultPolicy {
      */
     public static class GroupPolicy extends DefaultPolicy.DefaultGroupPolicy {
         private static Logger logger = Logger.getLogger(GroupPolicy.class.getName());
-        private int replicaCount = STATIC_REPLICA_COUNT; // we can read from config or annotations
+        private int replicaCount = DEFAULT_REPLICA_COUNT; // we can read from config or annotations
 
         @Override
         public void onCreate(String region, Policy.ServerPolicy server, MicroServiceSpec spec)

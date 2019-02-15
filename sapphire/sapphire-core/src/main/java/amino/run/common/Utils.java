@@ -3,10 +3,12 @@ package amino.run.common;
 import static amino.run.policy.Upcalls.SapphirePolicyConfig;
 
 import amino.run.app.DMSpec;
+import amino.run.app.Language;
 import amino.run.runtime.annotations.AnnotationConfig;
 import amino.run.runtime.annotations.Immutable;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectInputStream;
@@ -16,9 +18,15 @@ import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.graalvm.polyglot.Context;
+import org.graalvm.polyglot.Source;
 
 public class Utils {
     private static final Logger logger = Logger.getLogger(Utils.class.getName());
@@ -300,5 +308,53 @@ public class Utils {
         }
 
         return map;
+    }
+
+    /**
+     * Method creates and returns a Graal Context based on the language specified and loads the
+     * files, in the path provided, to the created context. If there are no files in the specified
+     * path, then a Graal context is created with default configuration and the same will be
+     * returned.
+     *
+     * @param language language of the sapphireObject which needs to be loaded in the Graal context.
+     * @param sapphireObjectPath path of sapphireObject and corresponding files.
+     * @return created Graal context based on the provided sapphireObject and language.
+     * @throws IOException
+     */
+    public static Context getGraalContext(Language language, String sapphireObjectPath)
+            throws IOException {
+        Context context;
+
+        // If provided language and sapphireObjectPath is null, then
+        // return a default Graal context.
+        if ((language == null) && (sapphireObjectPath == null)) {
+            context = Context.create();
+            return context;
+        }
+
+        // If provided sapphireObjectPath is null, return a Graal context
+        // for the requested language.
+        if (sapphireObjectPath == null) {
+            context = Context.create(language.toString());
+            return context;
+        }
+
+        // Create a Graal context with default configuration.
+        context = Context.create();
+
+        File[] files = (new File(sapphireObjectPath)).listFiles();
+        // If there are no files in the sapphireObjectPath, the default
+        // Graal context will be returned to the caller.
+        if (files == null) return context;
+
+        for (File f : files) {
+            try {
+                logger.log(Level.INFO, String.format("Found file %s %s", f.getPath(), f.getName()));
+                context.eval(Source.newBuilder(language.toString(), f).build());
+            } catch (IOException e) {
+                logger.log(Level.WARNING, e.toString());
+            }
+        }
+        return context;
     }
 }

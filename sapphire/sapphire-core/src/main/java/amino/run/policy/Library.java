@@ -431,6 +431,24 @@ public abstract class Library implements Upcalls {
             return serversInRegion;
         }
 
+        /**
+         * Gets the server policy having the given kernel oid from this group policy's server list
+         *
+         * @param serverId
+         * @return server policy object
+         * @throws RemoteException
+         */
+        protected ServerPolicy getServer(KernelOID serverId) throws RemoteException {
+            ArrayList<ServerPolicy> servers = getServers();
+            for (ServerPolicy serverPolicyStub : servers) {
+                if (serverPolicyStub.$__getKernelOID().equals(serverId)) {
+                    return serverPolicyStub;
+                }
+            }
+
+            return null;
+        }
+
         public void $__setKernelOID(KernelOID oid) {
             this.oid = oid;
         }

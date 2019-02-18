@@ -305,7 +305,7 @@ public class SimpleDMIntegrationTest {
         */
 
         /* Migrate SO to first server and verify the value */
-        store.migrateObject(new InetSocketAddress(ksIp, ksPort[0]));
+        store.migrateMicroServiceInstance(new InetSocketAddress(ksIp, ksPort[0]));
         Assert.assertEquals(value0, store.get(key0));
 
         /* Add another key-value entry and verify */
@@ -315,7 +315,7 @@ public class SimpleDMIntegrationTest {
         Assert.assertEquals(value1, store.get(key1));
 
         /* Migrate SO to second server and verify the values */
-        store.migrateObject(new InetSocketAddress(ksIp, ksPort[1]));
+        store.migrateMicroServiceInstance(new InetSocketAddress(ksIp, ksPort[1]));
         Assert.assertEquals(value0, store.get(key0));
         Assert.assertEquals(value1, store.get(key1));
     }

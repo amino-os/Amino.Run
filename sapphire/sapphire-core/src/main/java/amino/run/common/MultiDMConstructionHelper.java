@@ -2,7 +2,7 @@ package amino.run.common;
 
 import amino.run.app.DMSpec;
 import amino.run.app.MicroServiceSpec;
-import amino.run.policy.SapphirePolicyContainer;
+import amino.run.policy.PolicyContainer;
 import java.util.*;
 
 /** Helper class for construction of multi-DM chain. */
@@ -32,7 +32,7 @@ public class MultiDMConstructionHelper {
      * @return list of policy names
      */
     public static List<String> getPolicyNames(
-            List<SapphirePolicyContainer> policyContainers, int startIdx) {
+            List<PolicyContainer> policyContainers, int startIdx) {
         List<String> policyNames = new ArrayList<>();
         for (int m = startIdx; m < policyContainers.size(); m++) {
             policyNames.add(policyContainers.get(m).getPolicyName());

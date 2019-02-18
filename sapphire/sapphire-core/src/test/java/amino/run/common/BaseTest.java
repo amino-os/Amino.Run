@@ -169,7 +169,7 @@ public class BaseTest {
         // TODO: SO is created here which tests the whole chain every time setUp is run. Is there a
         // need for it? (i.e., can we remove this part as this will be duplicate with tests that use
         // setUp?
-        SapphireObjectID sapphireObjId = sapphireObjServer.createSapphireObject(spec.toString());
+        MicroServiceID microServiceId = registry.create(spec.toString());
 
         soStub = (SO) registry.acquireStub(microServiceId);
         client =

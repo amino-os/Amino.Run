@@ -8,6 +8,7 @@ import amino.run.app.DMSpec;
 import amino.run.app.Language;
 import amino.run.app.MicroServiceSpec;
 import amino.run.app.SapphireObject;
+import amino.run.common.*;
 import amino.run.common.AppObject;
 import amino.run.common.AppObjectStub;
 import amino.run.common.MicroServiceCreationException;
@@ -16,7 +17,6 @@ import amino.run.common.MicroServiceNotFoundException;
 import amino.run.common.MicroServiceReplicaNotFoundException;
 import amino.run.common.ReplicaID;
 import amino.run.common.Utils;
-import amino.run.common.*;
 import amino.run.compiler.GlobalStubConstants;
 import amino.run.kernel.common.GlobalKernelReferences;
 import amino.run.kernel.common.KernelOID;
@@ -26,7 +26,7 @@ import amino.run.kernel.common.KernelObjectNotFoundException;
 import amino.run.kernel.common.KernelObjectStub;
 import amino.run.policy.DefaultPolicy;
 import amino.run.policy.Policy;
-import amino.run.policy.SapphirePolicyContainer;
+import amino.run.policy.PolicyContainer;
 import amino.run.runtime.util.PolicyCreationHelper;
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -115,13 +115,13 @@ public class Sapphire {
      * @return client side appObjectStub
      * @throws IOException
      * @throws CloneNotSupportedException
-     * @throws SapphireObjectCreationException
+     * @throws MicroServiceCreationException
      */
     public static AppObjectStub createPolicyChain(
             MicroServiceSpec spec, String region, Object[] appArgs)
             throws IOException, CloneNotSupportedException, ClassNotFoundException,
-                    SapphireObjectCreationException {
-        List<SapphirePolicyContainer> processedPolicies = new ArrayList<>();
+                    MicroServiceCreationException {
+        List<PolicyContainer> processedPolicies = new ArrayList<>();
 
         if (spec.getDmList().isEmpty()) {
             // Adds default DM when there is no DMs specified in the spec.
@@ -136,7 +136,7 @@ public class Sapphire {
         List<String> policyNames = MultiDMConstructionHelper.getPolicyNameChain(spec, 0);
 
         for (int i = 0; i < spec.getDmList().size(); i++) {
-            createConnectedPolicy(i, null, policyNames, processedPolicies, sapphireObjId, spec);
+            createConnectedPolicy(i, null, policyNames, processedPolicies, microServiceID, spec);
             policyNames.remove(0);
         }
 
@@ -178,35 +178,36 @@ public class Sapphire {
      *     list is created in this method. The rest is set as next policy names in the server
      *     policy.
      * @param processedPolicies Policies processed so far (created and linked)
-     * @param sapphireObjId Object ID registred to OMS which is one per AminoMicroservice chain (all
-     *     replicas of the chain will have the same object ID.
+     * @param microServiceID Object ID registred to OMS which is one per AminoMicroservice chain
+     *     (all replicas of the chain will have the same object ID.
      * @param spec Amino object spec
      * @return list of processed policies so far
-     * @throws SapphireObjectCreationException thrown when policy object creation fails
+     * @throws MicroServiceCreationException thrown when policy object creation fails
      */
     // TODO: which is better choice? split for each of Kernel initiated and Library initiated or
     // combine them?
-    public static List<SapphirePolicyContainer> createConnectedPolicy(
+    public static List<PolicyContainer> createConnectedPolicy(
             int idx,
             GroupPolicy groupPolicy,
             List<String> policyNames,
-            List<SapphirePolicyContainer> processedPolicies,
-            SapphireObjectID sapphireObjId,
+            List<PolicyContainer> processedPolicies,
+            MicroServiceID microServiceID,
             MicroServiceSpec spec)
-            throws SapphireObjectCreationException {
+            throws MicroServiceCreationException {
         if (groupPolicy == null) {
-            groupPolicy = PolicyCreationHelper.createGroupPolicy(policyNames.get(0), sapphireObjId);
+            groupPolicy =
+                    PolicyCreationHelper.createGroupPolicy(policyNames.get(0), microServiceID);
         }
 
         processedPolicies =
                 createPolicyInstance(
-                        sapphireObjId, groupPolicy, policyNames, processedPolicies, spec);
+                        microServiceID, groupPolicy, policyNames, processedPolicies, spec);
 
         /* Check and get the previous DM's container if available. So that, server side and client side chain links can
         be updated between the current DM and previous DM. If the previous DM's container is not available,
         then DM/Policy being created is either for single DM based SO or It is the first DM/Policy in Multi DM based SO
         (i.e., last mile server policy to SO */
-        SapphirePolicyContainer currentSPC = processedPolicies.get(idx);
+        PolicyContainer currentSPC = processedPolicies.get(idx);
         ServerPolicy serverPolicy = currentSPC.getServerPolicy();
 
         try {
@@ -214,7 +215,7 @@ public class Sapphire {
                 // Previous server policy stub object acts as Sapphire Object(SO) to the current
                 // server policy. Outermost policy is linked to an actual app object;hence, it is
                 // not needed here.
-                SapphirePolicyContainer outerSPC = processedPolicies.get(idx - 1);
+                PolicyContainer outerSPC = processedPolicies.get(idx - 1);
                 KernelObjectStub outerStub = outerSPC.getServerPolicyStub();
                 ServerPolicy outerSP = outerSPC.getServerPolicy();
                 ClientPolicy clientPolicy = currentSPC.getClientPolicy();
@@ -226,7 +227,7 @@ public class Sapphire {
             }
         } catch (ClassNotFoundException | IOException e) {
             logger.severe("Creation of AppObject has failed: " + policyNames.get(0));
-            throw new SapphireObjectCreationException(e);
+            throw new MicroServiceCreationException(e);
         }
 
         return processedPolicies;
@@ -245,15 +246,15 @@ public class Sapphire {
      * @param processedPolicies Policies processed so far (created and linked)
      * @param spec Amino object spec
      * @return list of policies that had been created so far including the one just created here
-     * @throws SapphireObjectCreationException thrown when policy object creation fails
+     * @throws MicroServiceCreationException thrown when policy object creation fails
      */
-    public static List<SapphirePolicyContainer> createPolicyInstance(
-            SapphireObjectID sapphireObjId,
+    public static List<PolicyContainer> createPolicyInstance(
+            MicroServiceID microServiceID,
             GroupPolicy groupPolicyStub,
             List<String> policyNamesToCreate,
             List<PolicyContainer> processedPolicies,
             MicroServiceSpec spec)
-            throws SapphireObjectCreationException {
+            throws MicroServiceCreationException {
         String policyName = policyNamesToCreate.get(0);
         try {
             HashMap<String, Class<?>> policyMap = PolicyCreationHelper.getPolicyMap(policyName);
@@ -271,7 +272,7 @@ public class Sapphire {
             /* Initialize the server policy and return a local pointer to the object itself */
             Policy.ServerPolicy serverPolicy = initializeServerPolicy(serverPolicyStub);
 
-            registerSapphireReplica(sapphireObjId, serverPolicy, serverPolicyStub);
+            registerSapphireReplica(microServiceID, serverPolicy, serverPolicyStub);
 
             /* Link everything together */
             // TODO: client is unncessary for outer policies of a replica.
@@ -288,15 +289,14 @@ public class Sapphire {
             serverPolicyStub.setIsLastPolicy(nextPolicyNames.size() == 0);
 
             /* Updates the list of processed policies. */
-            SapphirePolicyContainer processedPolicy =
-                    new SapphirePolicyContainer(policyName, groupPolicyStub);
+            PolicyContainer processedPolicy = new PolicyContainer(policyName, groupPolicyStub);
             processedPolicy.setServerPolicy(serverPolicy);
             processedPolicy.setServerPolicyStub((KernelObjectStub) serverPolicyStub);
             processedPolicy.setClientPolicy(client);
             processedPolicies.add(processedPolicy);
 
             /* Create a copy to set processed policies up to this point. */
-            List<SapphirePolicyContainer> processedPoliciesSoFar = new ArrayList(processedPolicies);
+            List<PolicyContainer> processedPoliciesSoFar = new ArrayList(processedPolicies);
             serverPolicy.setProcessedPolicies(processedPoliciesSoFar);
             serverPolicyStub.setProcessedPolicies(processedPoliciesSoFar);
 
@@ -304,18 +304,18 @@ public class Sapphire {
             serverPolicy.onCreate(groupPolicyStub, spec);
         } catch (KernelObjectNotCreatedException | ClassNotFoundException e) {
             logger.severe("Failed while creating stub for " + policyName);
-            throw new SapphireObjectCreationException(e);
+            throw new MicroServiceCreationException(e);
         } catch (KernelObjectNotFoundException e) {
             logger.severe("Failed while creating server policy for " + policyName);
-            throw new SapphireObjectCreationException(e);
-        } catch (SapphireObjectReplicaNotFoundException
-                | SapphireObjectNotFoundException
+            throw new MicroServiceCreationException(e);
+        } catch (MicroServiceNotFoundException
+                | MicroServiceReplicaNotFoundException
                 | RemoteException e) {
             logger.severe("Failed while registering a replica for " + policyName);
-            throw new SapphireObjectCreationException(e);
+            throw new MicroServiceCreationException(e);
         } catch (IllegalAccessException | InstantiationException e) {
             logger.severe("Failed while instantiating client class for " + policyName);
-            throw new SapphireObjectCreationException(e);
+            throw new MicroServiceCreationException(e);
         }
 
         return processedPolicies;
@@ -365,7 +365,7 @@ public class Sapphire {
      */
     // TODO: Duplicate name as in the one in PolicyCreationHelper but this is called by OMS.
     public static Policy.GroupPolicy createGroupPolicy(
-            Class<?> policyClass, SapphireObjectID sapphireObjId)
+            Class<?> policyClass, MicroServiceID microServiceId)
             throws ClassNotFoundException, KernelObjectNotCreatedException {
         Policy.GroupPolicy groupPolicyStub = (GroupPolicy) getPolicyStub(policyClass);
         try {
@@ -489,7 +489,7 @@ public class Sapphire {
 
         /* Register the handler for this replica to OMS */
         GlobalKernelReferences.nodeServer.oms.setSapphireReplicaDispatcher(
-                sapphireReplicaId, replicaHandler);
+                replicaId, replicaHandler);
     }
 
     /**

@@ -136,11 +136,11 @@ public abstract class Library implements Upcalls {
          * @throws RemoteException
          */
         public ServerPolicy sapphire_replicate(String region) throws RemoteException {
-            List<SapphirePolicyContainer> processedPoliciesReplica = new ArrayList<>();
+            List<PolicyContainer> processedPoliciesReplica = new ArrayList<>();
             int outerPolicySize = processedPolicies.size();
 
             try {
-                SapphireObjectID soid = getReplicaId().getOID();
+                MicroServiceID soid = getReplicaId().getOID();
 
                 // Gets the names of policies that were already created (outer policies).
                 List<String> policyNames =

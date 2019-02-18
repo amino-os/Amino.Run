@@ -1,8 +1,8 @@
 package amino.run.runtime.util;
 
-import amino.run.common.SapphireObjectCreationException;
-import amino.run.common.SapphireObjectID;
-import amino.run.common.SapphireObjectNotFoundException;
+import amino.run.common.MicroServiceCreationException;
+import amino.run.common.MicroServiceID;
+import amino.run.common.MicroServiceNotFoundException;
 import amino.run.kernel.common.GlobalKernelReferences;
 import amino.run.kernel.common.KernelObjectNotCreatedException;
 import amino.run.policy.DefaultPolicy;
@@ -22,11 +22,10 @@ public class PolicyCreationHelper {
      * @param policyName
      * @param sapphireObjId
      * @return
-     * @throws SapphireObjectCreationException
+     * @throws amino.run.common.MicroServiceCreationException
      */
     public static Policy.GroupPolicy createGroupPolicy(
-            String policyName, SapphireObjectID sapphireObjId)
-            throws SapphireObjectCreationException {
+            String policyName, MicroServiceID sapphireObjId) throws MicroServiceCreationException {
         try {
             /* Create the Kernel Object for the Group Policy and get the Group Policy Stub from OMS */
             Class<?> sapphireGroupPolicyClass =
@@ -40,9 +39,9 @@ public class PolicyCreationHelper {
         } catch (ClassNotFoundException
                 | KernelObjectNotCreatedException
                 | RemoteException
-                | SapphireObjectNotFoundException e) {
+                | MicroServiceNotFoundException e) {
             logger.severe("Failed to create a group policy: " + policyName);
-            throw new SapphireObjectCreationException(e);
+            throw new MicroServiceCreationException(e);
         }
     }
 

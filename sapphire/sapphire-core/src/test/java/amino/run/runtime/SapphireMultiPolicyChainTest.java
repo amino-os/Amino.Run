@@ -71,10 +71,10 @@ public class SapphireMultiPolicyChainTest extends BaseTest {
     @Test
     public void testCreateConnectedPolicyTwoPolicies() throws Exception {
         List<String> policyNameChain = new ArrayList<>();
-        List<SapphirePolicyContainer> processedPolicies = new ArrayList<>();
+        List<PolicyContainer> processedPolicies = new ArrayList<>();
 
         /* Register for a sapphire object Id from OMS */
-        SapphireObjectID soid = spiedOms.registerSapphireObject();
+        MicroServiceID soid = spiedOms.registerSapphireObject();
 
         policyNameChain.add(("amino.run.policy.DefaultPolicy"));
         policyNameChain.add("amino.run.policy.dht.DHTPolicy");

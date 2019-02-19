@@ -49,7 +49,8 @@ public class ExplicitMigrationPolicy extends DefaultPolicy {
     public static class GroupPolicy extends DefaultGroupPolicy {
         private static Logger logger = Logger.getLogger(GroupPolicy.class.getName());
         /**
-         * Method to migrate server policy object(sapphire replica) to the given destination address
+         * Method to migrate server policy object(and microservice instance) to the given
+         * destination address
          *
          * @param server server policy object to migrate
          * @param destinationAddress where to migrate address

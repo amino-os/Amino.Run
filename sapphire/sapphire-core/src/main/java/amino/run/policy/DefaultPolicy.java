@@ -59,7 +59,6 @@ public class DefaultPolicy extends Policy {
     public static class DefaultGroupPolicy extends GroupPolicy {
         private ConcurrentHashMap<ReplicaID, ServerPolicy> servers =
                 new ConcurrentHashMap<ReplicaID, ServerPolicy>();
-        protected String region = "";
         protected MicroServiceSpec spec = null;
 
         protected void addServer(ServerPolicy server) {
@@ -78,7 +77,6 @@ public class DefaultPolicy extends Policy {
         @Override
         public void onCreate(String region, ServerPolicy server, MicroServiceSpec spec)
                 throws RemoteException {
-            this.region = region;
             this.spec = spec;
             addServer(server);
         }

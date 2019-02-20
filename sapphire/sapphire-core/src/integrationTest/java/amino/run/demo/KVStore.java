@@ -78,8 +78,7 @@ public class KVStore
     public void restoreCheckpoint() throws Exception {}
 
     @Override
-    public void migrateMicroServiceInstance(InetSocketAddress destinationAddr)
-            throws MigrationException {}
+    public void migrateTo(InetSocketAddress destinationAddr) throws MigrationException {}
 
     @Override
     public void join(UUID transactionId) throws TransactionAlreadyStartedException {}

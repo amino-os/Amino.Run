@@ -21,7 +21,7 @@ public class ExplicitMigrationPolicyTest extends BaseTest {
     String appIncIMethod = "public void amino.run.sampleSO.SO.incI()";
     String appGetIMethod = "public java.lang.Integer amino.run.sampleSO.SO.getI()";
     String migrateMethod =
-            "public void amino.run.sampleSO.SO.migrateMicroServiceInstance(java.net.InetSocketAddress)";
+            "public void amino.run.sampleSO.SO.migrateTo(java.net.InetSocketAddress)";
 
     @Before
     public void setup() throws Exception {
@@ -77,7 +77,7 @@ public class ExplicitMigrationPolicyTest extends BaseTest {
         assertEquals(new Integer(2), client.onRPC(appGetIMethod, new ArrayList()));
     }
 
-    @Test(expected = NotFoundDestinationKernelServerException.class)
+    @Test(expected = MigrationException.class)
     public void migrateToNonExistentHost() throws Exception {
         /* Note: Kernel Server 1 and 2 are started during setup. So, kernel server 3 is nonexistent */
         InetSocketAddress nonExistentHost = new InetSocketAddress(LOOP_BACK_IP_ADDR, kernelPort3);

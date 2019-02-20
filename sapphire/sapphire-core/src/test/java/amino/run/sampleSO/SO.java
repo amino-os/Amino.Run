@@ -41,6 +41,5 @@ public class SO implements MicroService, ExplicitMigrator {
     }
 
     @Override
-    public void migrateMicroServiceInstance(InetSocketAddress destinationAddr)
-            throws MigrationException {}
+    public void migrateTo(InetSocketAddress destinationAddr) throws MigrationException {}
 }

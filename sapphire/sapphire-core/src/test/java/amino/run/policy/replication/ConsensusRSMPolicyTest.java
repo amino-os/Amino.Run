@@ -22,6 +22,8 @@ import amino.run.app.Language;
 import amino.run.app.MicroServiceSpec;
 import amino.run.app.NodeSelectorSpec;
 import amino.run.common.BaseTest;
+import amino.run.common.MicroServiceID;
+import amino.run.common.ReplicaID;
 import amino.run.common.Utils;
 import amino.run.kernel.common.KernelOID;
 import amino.run.policy.Policy;
@@ -32,6 +34,7 @@ import amino.run.sampleSO.SO;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -158,6 +161,9 @@ public class ConsensusRSMPolicyTest extends BaseTest {
     public void groupPolicyOnCreateFailure() throws Exception {
         Policy.ServerPolicy server = spy(ConsensusRSMPolicy.ServerPolicy.class);
         Policy.GroupPolicy group = spy(ConsensusRSMPolicy.GroupPolicy.class);
+        when(server.getReplicaId())
+                .thenReturn(
+                        new ReplicaID(new MicroServiceID(UUID.randomUUID()), UUID.randomUUID()));
         when(group.getServers()).thenThrow(new RemoteException());
         thrown.expect(Error.class);
         group.onCreate("", server, new MicroServiceSpec());

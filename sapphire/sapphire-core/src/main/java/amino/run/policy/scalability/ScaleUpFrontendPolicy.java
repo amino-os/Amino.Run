@@ -262,14 +262,7 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
                         "Cannot scale down. Current replica count is " + serverList.size());
             }
 
-            Policy.ServerPolicy serverToRemove = null;
-            for (Policy.ServerPolicy serverPolicyStub : serverList) {
-                if (serverPolicyStub.$__getKernelOID().equals(server.$__getKernelOID())) {
-                    serverToRemove = serverPolicyStub;
-                    break;
-                }
-            }
-
+            Policy.ServerPolicy serverToRemove = getServer(server.getReplicaId());
             if (serverToRemove != null) {
                 try {
                     terminate(serverToRemove);

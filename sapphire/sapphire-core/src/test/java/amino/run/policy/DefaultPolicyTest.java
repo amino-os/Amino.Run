@@ -1,6 +1,9 @@
 package amino.run.policy;
 
+import amino.run.common.MicroServiceID;
+import amino.run.common.ReplicaID;
 import amino.run.kernel.common.KernelOID;
+import java.util.UUID;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -16,12 +19,14 @@ public class DefaultPolicyTest {
     public void setup() throws Exception {
         cnt = 1000;
         group = new DefaultPolicy.DefaultGroupPolicy();
+        MicroServiceID serviceId = new MicroServiceID(UUID.randomUUID());
         addThreads = new Thread[cnt];
         delThreads = new Thread[cnt];
         servers = new DefaultPolicy.DefaultServerPolicy[cnt];
         for (int i = 0; i < addThreads.length; i++) {
             servers[i] = new DefaultPolicy.DefaultServerPolicy();
             servers[i].$__setKernelOID(new KernelOID(i));
+            servers[i].setReplicaId(new ReplicaID(serviceId, UUID.randomUUID()));
         }
 
         for (int i = 0; i < addThreads.length; i++) {

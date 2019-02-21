@@ -119,13 +119,12 @@ public class Sapphire {
      */
     public static AppObjectStub createPolicyChain(
             MicroServiceSpec spec, String region, Object[] appArgs)
-            throws IOException, CloneNotSupportedException, ClassNotFoundException,
-                    MicroServiceCreationException {
+            throws IOException, CloneNotSupportedException, MicroServiceCreationException {
         List<PolicyContainer> processedPolicies = new ArrayList<>();
 
         if (spec.getDmList().isEmpty()) {
             // Adds default DM when there is no DMs specified in the spec.
-            spec = setsDefaultDMSpec(spec);
+            spec = setDefaultDMSpec(spec);
         }
 
         /* Register for a sapphire object Id from OMS */
@@ -536,7 +535,7 @@ public class Sapphire {
      * @param spec
      * @return
      */
-    private static MicroServiceSpec setsDefaultDMSpec(MicroServiceSpec spec) {
+    private static MicroServiceSpec setDefaultDMSpec(MicroServiceSpec spec) {
         List<DMSpec> list = new ArrayList<>();
         DMSpec dmSpec = new DMSpec();
         dmSpec.setName(DefaultPolicy.class.getName());

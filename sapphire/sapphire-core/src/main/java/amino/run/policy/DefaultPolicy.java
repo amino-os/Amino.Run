@@ -3,10 +3,12 @@ package amino.run.policy;
 import amino.run.app.MicroServiceSpec;
 import amino.run.common.MicroServiceNotFoundException;
 import amino.run.common.MicroServiceReplicaNotFoundException;
+import amino.run.common.ReplicaID;
 import amino.run.kernel.common.KernelObjectStub;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class DefaultPolicy extends Policy {
 
@@ -55,21 +57,22 @@ public class DefaultPolicy extends Policy {
     }
 
     public static class DefaultGroupPolicy extends GroupPolicy {
-        private ArrayList<ServerPolicy> servers = new ArrayList<ServerPolicy>();
+        private ConcurrentHashMap<ReplicaID, ServerPolicy> servers =
+                new ConcurrentHashMap<ReplicaID, ServerPolicy>();
         protected String region = "";
         protected MicroServiceSpec spec = null;
 
-        protected synchronized void addServer(ServerPolicy server) {
-            servers.add(server);
+        protected void addServer(ServerPolicy server) {
+            servers.put(server.getReplicaId(), server);
         }
 
-        protected synchronized void removeServer(ServerPolicy server) {
-            servers.remove(server);
+        protected void removeServer(ServerPolicy server) {
+            servers.remove(server.getReplicaId());
         }
 
         @Override
         public ArrayList<ServerPolicy> getServers() throws RemoteException {
-            return new ArrayList<ServerPolicy>(servers);
+            return new ArrayList<ServerPolicy>(servers.values());
         }
 
         @Override
@@ -87,6 +90,16 @@ public class DefaultPolicy extends Policy {
         }
 
         /** Below methods can be used by all the DMs extending this default DM. */
+
+        /**
+         * Gets the server policy having the given replica Id from this group policy's servers map
+         *
+         * @param serverId Server policy replica Id
+         * @return Server policy
+         */
+        protected ServerPolicy getServer(ReplicaID serverId) {
+            return servers.get(serverId);
+        }
 
         /**
          * This method is used to replicate a server policy at the given source considering itself

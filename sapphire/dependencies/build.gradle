@@ -3,8 +3,4 @@ allprojects {
     genStubs {
         onlyIf() { false } // Disable
     }
-
-    compileStubs {
-        onlyIf() { false } // Disable
-    }
 }

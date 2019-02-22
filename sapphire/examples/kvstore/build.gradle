@@ -1,5 +1,3 @@
-apply plugin: 'java-library'
-
 // Customize app stub generation for this example
 genStubs {
     def pkg = 'amino.run.demo'
@@ -9,13 +7,6 @@ genStubs {
     outputs.dir dst // Declare outputs, so gradle will run if they have been changed
     inputs.dir src   // Declare inputs, so gradle will run if they have been changed
 }
-
-// Customize stub compilation for this example
-compileStubs {
-    outputs.dir "$buildDir/classes/java/stubs/amino/run/appexamples/demo/stubs/"
-}
-
-jar.dependsOn compileStubs
 
 // Customize runapp for this example
 runapp {

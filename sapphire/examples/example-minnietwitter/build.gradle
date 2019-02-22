@@ -1,5 +1,3 @@
-apply plugin: 'java-library'
-
 // Customize app stub generation for this example
 genStubs {
     def src = file(project.buildDir.toString() + '/classes/java/main/amino/run/appexamples/minnietwitter/')
@@ -10,14 +8,7 @@ genStubs {
     outputs.dir dst
 }
 
-// Customize stub compilation for this example
-compileStubs {
-    outputs.dir "$buildDir/classes/java/stubs/amino/run/appexamples/minnietwitter/stubs/"
-}
-
 // Customize runapp for this example
 runapp {
     main = "amino.run.appexamples.minnietwitter.MinnieTwitterMain"
 }
-
-jar.dependsOn compileStubs

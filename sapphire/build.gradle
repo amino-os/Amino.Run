@@ -102,22 +102,20 @@ subprojects {
     task genStubs(type: JavaExec) {
         main = "amino.run.compiler.StubGenerator"
         classpath = sourceSets.main.runtimeClasspath
-     }
+    }
+
+    // Configure "stubs" sourceSet compile task, with additional rules.
+    compileStubsJava {
+        classpath = sourceSets.main.runtimeClasspath
+        options.incremental = true
+        inputs.dir genStubs.outputs
+    }
 
     clean {
         delete genStubs.outputs.files // Add generated stubs to what the clean task must delete
         doLast {
             logger.info('Clean will delete ' + clean.targetFiles.asCollection())
         }
-    }
-
-    // Task for stub compilation
-    task compileStubs(type: JavaCompile) {
-        source = sourceSets.stubs.java.srcDirs  // Added generated stubs sourceSet, to the source list for compilation.
-        classpath = sourceSets.main.runtimeClasspath
-        destinationDir = sourceSets.stubs.output.classesDir
-        options.incremental = true
-        inputs.dir genStubs.outputs
     }
 
     // Include stubs sourceSet classes in the jar file.

@@ -7,11 +7,9 @@ import amino.run.kernel.common.KernelObjectStub;
 import amino.run.oms.OMSServer;
 import amino.run.policy.util.ResettableTimer;
 import amino.run.runtime.AddEvent;
-
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
-import java.util.ArrayList;
-import java.util.TimerTask;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class DefaultPolicy extends Policy {
@@ -23,7 +21,7 @@ public class DefaultPolicy extends Policy {
         protected long HEALTH_STATUS_QUERY_INTERVAL = OMSServer.KS_HEARTBEAT_TIMEOUT;
         protected transient ResettableTimer healthCheckTimer;
         private String statusMethodName;
-		
+
         @Override
         public GroupPolicy getGroup() {
             return group;
@@ -261,8 +259,6 @@ public class DefaultPolicy extends Policy {
                 }
                 terminate(serverPolicy);
                 addReplicas(region);
-            } catch (KernelObjectNotFoundException e) {
-                throw new Error("this kernel object does not exist");
             } catch (MicroServiceNotFoundException e) {
                 throw new Error("Failed to find Microservice inorder to add replicas");
             } catch (MicroServiceReplicaNotFoundException e) {
@@ -286,6 +282,81 @@ public class DefaultPolicy extends Policy {
                 }
             } catch (Exception e) {
                 e.printStackTrace();
+            }
+        }
+
+        /**
+         * Check the LastSeenTick value from each replica and return healthy one
+         *
+         * @return Healthy Replica
+         * @throws Exception
+         */
+        private ServerPolicy getHealthyReplicas() throws Exception {
+            ArrayList<ServerPolicy> servers = getServers();
+            for (ServerPolicy server : servers) {
+                KernelObjectStub serverStub = (KernelObjectStub) server;
+                // return healthy server
+                if ((healthStatusTick - serverStub.$__getLastSeenTick())
+                        <= HEALTH_STATUS_MAX_SKIP_TICKS) {
+                    return server;
+                }
+            }
+            throw new Exception("Healthy replica not available");
+        }
+
+        /**
+         * A new replica will be added whenever a replica is unhealthy and got removed from group
+         * policy
+         *
+         * @param region
+         * @throws RemoteException
+         * @throws MicroServiceNotFoundException
+         * @throws MicroServiceReplicaNotFoundException
+         */
+        private void addReplicas(String region)
+                throws RemoteException, MicroServiceNotFoundException,
+                        MicroServiceReplicaNotFoundException {
+            ArrayList<ServerPolicy> servers = getServers();
+
+            /* Get the list of available servers in region */
+            List<InetSocketAddress> fullKernelList;
+            fullKernelList = sapphire_getAddressList(null, region);
+            if (fullKernelList.isEmpty()) {
+                // Kernel Servers not available in the region
+                return;
+            }
+
+            int remainingReplicaCount;
+            remainingReplicaCount = REPLICA_COUNT - servers.size();
+            List<InetSocketAddress> ksToBeUsed = new ArrayList<>(fullKernelList);
+            Set<InetSocketAddress> ksList = new HashSet<>();
+            // add the kernelservers in which replica is already present in the list
+            for (ServerPolicy s : servers) {
+                ksList.add(s.sapphire_locate_kernel_object(s.$__getKernelOID()));
+            }
+
+            // remove the kernelserver in which replica is already present in order to make the
+            // replicas distributed across kernel servers
+            for (InetSocketAddress i : ksList) {
+                ksToBeUsed.remove(i);
+            }
+            while (remainingReplicaCount > 0) {
+                if (!ksToBeUsed.isEmpty()) {
+                    InetSocketAddress currentKS = ksToBeUsed.get(0);
+                    ServerPolicy replicaSource = null;
+                    // adding new replica
+                    try {
+                        replicaSource = getHealthyReplicas();
+                    } catch (Exception e) {
+                        logger.warning("Healthy replica not available");
+                        return;
+                    }
+                    replicate(replicaSource, currentKS, region);
+                    ksToBeUsed.remove(currentKS);
+                    remainingReplicaCount--;
+                } else {
+                    ksToBeUsed = fullKernelList;
+                }
             }
         }
     }

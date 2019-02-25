@@ -1,6 +1,7 @@
 package amino.run.policy;
 
 import amino.run.app.MicroServiceSpec;
+import amino.run.common.NotificationObject;
 import java.io.Serializable;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -220,5 +221,13 @@ public interface Upcalls {
         // void onFailure(ServerPolicy server) throws RemoteException;
 
         Policy.ServerPolicy onRefRequest() throws RemoteException;
+
+        /**
+         * Invoked to notify group policy regarding the health status of microservice
+         *
+         * @param notificationObject
+         * @throws RemoteException
+         */
+        void onNotification(NotificationObject notificationObject) throws RemoteException;
     }
 }

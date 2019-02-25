@@ -170,6 +170,14 @@ public class LoadBalancedMasterSlaveSyncPolicyIntegTest {
 
         @Override
         public void $__setNextClientPolicy(Policy.ClientPolicy clientPolicy) {}
+
+        @Override
+        public int $__getLastSeenTick() {
+            return 0;
+        }
+
+        @Override
+        public void $__setLastSeenTick(int lastSeenTick) {}
     }
 
     private static class GroupMock extends LoadBalancedMasterSlaveSyncPolicy.GroupPolicy {}

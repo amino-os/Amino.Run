@@ -331,6 +331,19 @@ public class KernelServerImpl implements KernelServer {
     }
 
     /**
+     * Updates the health status of kernel object
+     *
+     * @param oid
+     * @param status
+     * @throws KernelObjectNotFoundException
+     */
+    public void updateObjectStatus(KernelOID oid, boolean status)
+            throws KernelObjectNotFoundException {
+        KernelObject object = objectManager.lookupObject(oid);
+        object.setStatus(status);
+    }
+
+    /**
      * Get the local hostname
      *
      * @return IP address of host that this server is running on

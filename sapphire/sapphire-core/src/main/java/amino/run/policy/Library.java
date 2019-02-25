@@ -378,6 +378,37 @@ public abstract class Library implements Upcalls {
         public ReplicaID getReplicaId() {
             return replicaId;
         }
+
+        /**
+         * To find the host for a kernel object
+         *
+         * @param oid
+         * @return
+         * @throws RemoteException
+         */
+        public InetSocketAddress sapphire_locate_kernel_object(KernelOID oid)
+                throws RemoteException {
+            InetSocketAddress addr;
+            try {
+                addr = oms().lookupKernelObject(oid);
+            } catch (RemoteException e) {
+                throw new RemoteException("Could not contact oms.");
+            } catch (KernelObjectNotFoundException e) {
+                e.printStackTrace();
+                throw new Error("Could not find myself on this server!");
+            }
+            return addr;
+        }
+
+        /**
+         * To update status in kernel object
+         *
+         * @param status
+         * @throws KernelObjectNotFoundException
+         */
+        public void sapphire_update_status(boolean status) throws KernelObjectNotFoundException {
+            kernel().updateObjectStatus($__getKernelOID(), status);
+        }
     }
 
     public abstract static class GroupPolicyLibrary implements GroupUpcalls {

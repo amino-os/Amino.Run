@@ -3,7 +3,7 @@ package amino.run.common;
 public class AppObject extends ObjectHandler {
 
     @Override
-    protected Class<?> getClass(Object obj) {
+    public Class<?> getClass(Object obj) {
         if (isGraalObject(obj)) {
             return obj.getClass();
         }

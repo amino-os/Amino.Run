@@ -58,7 +58,7 @@ public class SapphireMultiPolicyChainTest extends BaseTest {
         MicroServiceID microServiceId = spiedOms.registerSapphireObject();
 
         policyNameChain.add(new PolicyContainer("amino.run.policy.dht.DHTPolicy", null));
-        Sapphire.createPolicy(microServiceId, spec, policyNameChain, processedPolicies, "", null);
+        Sapphire.createPolicy(microServiceId, spec, policyNameChain, processedPolicies, null);
         assertEquals(1, processedPolicies.size());
     }
 
@@ -73,7 +73,7 @@ public class SapphireMultiPolicyChainTest extends BaseTest {
         policyNameChain.add(new PolicyContainer("amino.run.policy.dht.DHTPolicy", null));
         policyNameChain.add(new PolicyContainer("amino.run.policy.DefaultPolicy", null));
 
-        Sapphire.createPolicy(microServiceId, spec, policyNameChain, processedPolicies, "", null);
+        Sapphire.createPolicy(microServiceId, spec, policyNameChain, processedPolicies, null);
         assertEquals(2, processedPolicies.size());
     }
 

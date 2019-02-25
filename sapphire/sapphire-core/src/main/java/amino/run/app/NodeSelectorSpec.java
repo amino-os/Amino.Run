@@ -30,6 +30,7 @@ import org.yaml.snakeyaml.Yaml;
 public class NodeSelectorSpec implements Serializable {
     public Set<String> orLabels = new HashSet<>();
     public Set<String> andLabels = new HashSet<>();
+    public boolean topologicalAffinity = true;
 
     public Set<String> getOrLabels() {
         return Collections.unmodifiableSet(orLabels);
@@ -39,6 +40,13 @@ public class NodeSelectorSpec implements Serializable {
         return Collections.unmodifiableSet(andLabels);
     }
 
+    public boolean isTopologicalAffinity() {
+        return topologicalAffinity;
+    }
+
+    public void enableTopologicalAffinity() {
+        topologicalAffinity = true;
+    }
     /**
      * Adds the label into {@code andLabels} set Null label or empty label is ignored.
      *

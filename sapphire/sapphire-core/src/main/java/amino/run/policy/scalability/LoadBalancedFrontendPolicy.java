@@ -3,18 +3,17 @@ package amino.run.policy.scalability;
 import amino.run.app.MicroServiceSpec;
 import amino.run.common.MicroServiceNotFoundException;
 import amino.run.common.MicroServiceReplicaNotFoundException;
+import amino.run.common.NoKernelServerFoundException;
 import amino.run.common.Utils;
-import amino.run.kernel.common.KernelObjectStub;
+import amino.run.kernel.common.KernelObjectNotFoundException;
 import amino.run.policy.DefaultPolicy;
 import amino.run.policy.Policy;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.Semaphore;
@@ -174,9 +173,9 @@ public class LoadBalancedFrontendPolicy extends DefaultPolicy {
         private int replicaCount = STATIC_REPLICA_COUNT; // we can read from config or annotations
 
         @Override
-        public void onCreate(String region, Policy.ServerPolicy server, MicroServiceSpec spec)
+        public void onCreate(Policy.ServerPolicy server, MicroServiceSpec spec)
                 throws RemoteException {
-            super.onCreate(region, server, spec);
+            super.onCreate(server, spec);
 
             Config config = getConfig(spec);
             if (config != null) {
@@ -192,21 +191,8 @@ public class LoadBalancedFrontendPolicy extends DefaultPolicy {
             sapphire objects on them based on the static replica count */
             try {
 
-                /* Find the current region and the kernel server on which this first instance of
-                sapphire object is being created. And try to replicate the
-                sapphire objects in the same region(excluding this kernel server) */
-                InetSocketAddress addr = ((KernelObjectStub) server).$__getHostname();
-                List<InetSocketAddress> addressList =
-                        sapphire_getAddressList(spec.getNodeSelectorSpec(), region);
-
-                /* Create the replicas on different kernelServers belongs to same region*/
-                if (addressList != null) {
-                    addressList.remove(addr);
-                    numnodes = addressList.size();
-
-                    for (count = 0; count < numnodes && count < replicaCount - 1; count++) {
-                        replicate(server, addressList.get(count), region);
-                    }
+                for (count = 0; count < numnodes && count < replicaCount - 1; count++) {
+                    replicate(server);
                 }
 
                 /* If the replicas created are less than the number of replicas configured,
@@ -234,6 +220,10 @@ public class LoadBalancedFrontendPolicy extends DefaultPolicy {
                 throw new Error("Failed to find sapphire object.", e);
             } catch (MicroServiceReplicaNotFoundException e) {
                 throw new Error("Failed to find sapphire object replica.", e);
+            } catch (NoKernelServerFoundException e) {
+                e.printStackTrace();
+            } catch (KernelObjectNotFoundException e) {
+                e.printStackTrace();
             }
         }
     }

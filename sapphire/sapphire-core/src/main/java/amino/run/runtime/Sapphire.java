@@ -77,9 +77,7 @@ public class Sapphire {
 
             /* Get the region of current server */
             String region = GlobalKernelReferences.nodeServer.getRegion();
-            appStub =
-                    createPolicy(
-                            microServiceId, spec, policyNameChain, processedPolicies, region, args);
+            appStub = createPolicy(microServiceId, spec, policyNameChain, processedPolicies, args);
         } catch (Exception e) {
             String msg = String.format("Failed to create sapphire object '%s'", spec);
             logger.log(Level.SEVERE, msg, e);
@@ -123,10 +121,8 @@ public class Sapphire {
                     GlobalKernelReferences.nodeServer.oms.registerSapphireObject();
 
             /* Get the region of current server */
-            String region = GlobalKernelReferences.nodeServer.getRegion();
             AppObjectStub appStub =
-                    createPolicy(
-                            microServiceId, spec, policyNameChain, processedPolicies, region, args);
+                    createPolicy(microServiceId, spec, policyNameChain, processedPolicies, args);
             logger.info("Sapphire Object created: " + appObjectClass.getName());
             return appStub;
         } catch (Exception e) {
@@ -181,7 +177,6 @@ public class Sapphire {
      * @param policyNameChain List of policies that need to be created
      * @param processedPolicies List of policies that were already created. Policies created with
      *     this invocation gets appended to existing list
-     * @param region Region
      * @param appArgs Arguments for application object
      * @return client side appObjectStub
      * @throws IOException
@@ -199,7 +194,6 @@ public class Sapphire {
             MicroServiceSpec spec,
             List<PolicyContainer> policyNameChain,
             List<PolicyContainer> processedPolicies,
-            String region,
             Object[] appArgs)
             throws IOException, ClassNotFoundException, KernelObjectNotFoundException,
                     KernelObjectNotCreatedException, MicroServiceNotFoundException,
@@ -282,15 +276,14 @@ public class Sapphire {
         serverPolicyStub.setProcessedPolicies(processedPoliciesSoFar);
 
         if (nextPoliciesToCreate.size() != 0) {
-            createPolicy(
-                    microServiceId, spec, nextPoliciesToCreate, processedPolicies, region, appArgs);
+            createPolicy(microServiceId, spec, nextPoliciesToCreate, processedPolicies, appArgs);
         }
 
         AppObjectStub appStub = null;
 
         // server policy stub at this moment has the full policy chain; safe to add to group
         if (existingGroupPolicy == null) {
-            groupPolicyStub.onCreate(region, serverPolicyStub, spec);
+            groupPolicyStub.onCreate(serverPolicyStub, spec);
 
             /* Build client side appObjectStub from appObjectStub within AppObject of first DM's server policy in chain
             and inject its client policy into it. An instance of Client side AppObjectStub is created at the end of

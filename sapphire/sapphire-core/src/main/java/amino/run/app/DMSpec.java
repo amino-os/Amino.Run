@@ -15,6 +15,7 @@ import org.yaml.snakeyaml.Yaml;
 public final class DMSpec implements Serializable {
     private String name;
     private List<SapphirePolicyConfig> configs = new ArrayList<>();
+    private NodeSelectorSpec nodeSpec;
 
     /**
      * Returns a builder class for DMSpec.
@@ -32,6 +33,10 @@ public final class DMSpec implements Serializable {
      */
     public String getName() {
         return name;
+    }
+
+    public NodeSelectorSpec getNodeSpec() {
+        return nodeSpec;
     }
 
     /**

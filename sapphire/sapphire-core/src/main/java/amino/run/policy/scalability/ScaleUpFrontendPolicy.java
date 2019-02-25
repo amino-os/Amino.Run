@@ -3,7 +3,9 @@ package amino.run.policy.scalability;
 import amino.run.app.MicroServiceSpec;
 import amino.run.common.MicroServiceNotFoundException;
 import amino.run.common.MicroServiceReplicaNotFoundException;
+import amino.run.common.NoKernelServerFoundException;
 import amino.run.common.Utils;
+import amino.run.kernel.common.KernelObjectNotFoundException;
 import amino.run.kernel.common.KernelObjectStub;
 import amino.run.policy.Policy;
 import amino.run.policy.util.ResettableTimer;
@@ -174,9 +176,9 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
         private transient ResettableTimer timer; // Timer for limiting
 
         @Override
-        public void onCreate(String region, Policy.ServerPolicy server, MicroServiceSpec spec)
+        public void onCreate(Policy.ServerPolicy server, MicroServiceSpec spec)
                 throws RemoteException {
-            super.onCreate(region, server, spec);
+            super.onCreate(server, spec);
 
             Config config = getConfig(spec);
             if (config != null) {
@@ -238,13 +240,17 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
                      * is set to false for now but may need to be updated properly when run-time
                      * addition is supported.
                      */
-                    replicate(servers.get(0), addressList.get(0), region);
+                    replicate(servers.get(0));
                 } catch (MicroServiceNotFoundException e) {
                     throw new ScaleUpException(
                             "Failed to find sapphire object. Probably deleted.", e);
                 } catch (MicroServiceReplicaNotFoundException e) {
                     throw new ScaleUpException(
                             "Failed to find replicate sapphire object. Probably deleted.", e);
+                } catch (NoKernelServerFoundException e) {
+                    e.printStackTrace();
+                } catch (KernelObjectNotFoundException e) {
+                    e.printStackTrace();
                 }
             } else {
                 throw new ScaleUpException(

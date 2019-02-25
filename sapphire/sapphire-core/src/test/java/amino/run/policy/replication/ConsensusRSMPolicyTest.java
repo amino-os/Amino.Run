@@ -166,7 +166,7 @@ public class ConsensusRSMPolicyTest extends BaseTest {
                         new ReplicaID(new MicroServiceID(UUID.randomUUID()), UUID.randomUUID()));
         when(group.getServers()).thenThrow(new RemoteException());
         thrown.expect(Error.class);
-        group.onCreate("", server, new MicroServiceSpec());
+        group.onCreate(server, new MicroServiceSpec());
     }
 
     /**

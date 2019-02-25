@@ -187,8 +187,7 @@ public interface Upcalls {
          * @param spec sapphire object spec. This contains configuration parameters that may be used
          *     to configure this group policy.
          */
-        void onCreate(String region, Policy.ServerPolicy server, MicroServiceSpec spec)
-                throws RemoteException;
+        void onCreate(Policy.ServerPolicy server, MicroServiceSpec spec) throws RemoteException;
 
         /**
          * Event handler for sapphire object destruction. Called immediately before the group policy

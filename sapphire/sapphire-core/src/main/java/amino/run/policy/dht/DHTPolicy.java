@@ -1,10 +1,12 @@
 package amino.run.policy.dht;
 
+import amino.run.app.DMSpec;
 import amino.run.app.MicroServiceSpec;
 import amino.run.common.MicroServiceNotFoundException;
 import amino.run.common.MicroServiceReplicaNotFoundException;
 import amino.run.common.NoKernelServerFoundException;
 import amino.run.common.Utils;
+import amino.run.kernel.common.KernelObjectNotFoundException;
 import amino.run.policy.DefaultPolicy;
 import amino.run.policy.Policy;
 import java.net.InetSocketAddress;
@@ -70,19 +72,28 @@ public class DHTPolicy extends DefaultPolicy {
         private DHTChord dhtChord;
 
         @Override
-        public void onCreate(String region, Policy.ServerPolicy server, MicroServiceSpec spec)
+        public void onCreate(Policy.ServerPolicy server, MicroServiceSpec spec)
                 throws RemoteException {
             InetSocketAddress newServerAddress = null;
             dhtChord = new DHTChord();
-            super.onCreate(region, server, spec);
+            super.onCreate(server, spec);
 
             if (spec != null) {
+                List<DMSpec> dmSpecList = spec.getDmList();
                 Map<String, SapphirePolicyConfig> configMap =
-                        Utils.fromDMSpecListToFlatConfigMap(spec.getDmList());
+                        Utils.fromDMSpecListToFlatConfigMap(dmSpecList);
                 if (configMap != null) {
                     SapphirePolicyConfig config = configMap.get(DHTPolicy.Config.class.getName());
                     if (config != null) {
                         this.numOfShards = ((Config) config).getNumOfShards();
+                    }
+                }
+
+                if (dmSpecList != null) {
+                    for (DMSpec dmSpec : dmSpecList) {
+                        if (dmSpec.getName().equals(DHTPolicy.Config.class.getName())) {
+                            dmSpec.getNodeSpec().enableTopologicalAffinity();
+                        }
                     }
                 }
             }
@@ -93,35 +104,13 @@ public class DHTPolicy extends DefaultPolicy {
                 if (server.isLastPolicy()) {
                     // TODO: Make deployment kernel pin primary replica once node selection
                     // constraint is implemented.
-                    InetSocketAddress address = getAddress(region);
+                    InetSocketAddress address = getKernelServer();
                     pin(server, address);
                 }
 
-                // TODO: Current implementation assumes shards are spread out across regions.
-                // This assumption may not be true if the policy wants to locate all shards per
-                // region.
-                /* In current implementation, each replica is in a different region. And each replica serves as a shard.
-                Skips the region where first shard was created. If number of regions are less than the required number
-                of replicas, once we reach the end of regions, start from first region again and continue in
-                round robin fashion until all the necessary replicas are created. In effect, ensuring replicas are
-                created in unique regions and are evenly distributed to the best. */
-                int primaryReplicaIndex = regions.indexOf(region);
-                int shardCount = primaryReplicaIndex < numOfShards ? numOfShards : numOfShards - 1;
                 // Create replicas based on annotation
-                for (int i = 0; i < shardCount; i++) {
-                    region = regions.get(i % regions.size());
-                    if (region == null) {
-                        throw new IllegalStateException("no region available for DHT DM");
-                    }
-
-                    if (i == primaryReplicaIndex) {
-                        /* Skip the region where first shard was created */
-                        continue;
-                    }
-
-                    logger.info(String.format("Creating shard %s in region %s", i, region));
-                    InetSocketAddress address = getAddress(region);
-                    replicate(server, address, region);
+                for (int i = 1; i < numOfShards; i++) {
+                    replicate(server);
                 }
             } catch (RemoteException e) {
                 throw new Error(
@@ -130,7 +119,7 @@ public class DHTPolicy extends DefaultPolicy {
                 throw new Error("Could not find Sapphire Object to pin to " + newServerAddress);
             } catch (MicroServiceReplicaNotFoundException e) {
                 throw new Error("Could not find replica to pin to " + newServerAddress);
-            } catch (NoKernelServerFoundException e) {
+            } catch (NoKernelServerFoundException | KernelObjectNotFoundException e) {
                 throw new Error("No kernel servers were found");
             }
         }

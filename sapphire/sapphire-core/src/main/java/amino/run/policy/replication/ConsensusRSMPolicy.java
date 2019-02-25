@@ -3,6 +3,8 @@ package amino.run.policy.replication;
 import amino.run.app.MicroServiceSpec;
 import amino.run.common.MicroServiceNotFoundException;
 import amino.run.common.MicroServiceReplicaNotFoundException;
+import amino.run.common.NoKernelServerFoundException;
+import amino.run.kernel.common.KernelObjectNotFoundException;
 import amino.run.policy.DefaultPolicy;
 import amino.run.policy.Policy;
 import amino.run.policy.util.consensus.raft.AlreadyVotedException;
@@ -211,28 +213,22 @@ public class ConsensusRSMPolicy extends DefaultPolicy {
         private static Logger logger = Logger.getLogger(GroupPolicy.class.getName());
 
         @Override
-        public void onCreate(String region, Policy.ServerPolicy server, MicroServiceSpec spec)
+        public void onCreate(Policy.ServerPolicy server, MicroServiceSpec spec)
                 throws RemoteException {
-            super.onCreate(region, server, spec);
+            super.onCreate(server, spec);
             List<InetSocketAddress> addressList = new ArrayList<>();
 
             try {
                 ServerPolicy consensusServer = (ServerPolicy) server;
 
                 if (server.isLastPolicy()) {
-                    // TODO: Make deployment kernel pin primary replica once node selection
-                    // constraint is implemented.
-                    addressList = sapphire_getAddressList(spec.getNodeSelectorSpec(), region);
-                    // The first in the addressList is for primary policy chain.
-                    // TODO: Improve node allocation so that other servers can be used instead of
-                    // the first one in the region.
-                    pin(consensusServer, addressList.get(0));
+                    pin(consensusServer, getKernelServer());
                 }
 
                 // Create additional replicas, one per region. TODO:  Create N-1 replicas on
                 // different servers in the same zone.
                 for (int i = 1; i < addressList.size(); i++) {
-                    replicate(consensusServer, addressList.get(i), region);
+                    replicate(consensusServer);
                 }
 
                 // Tell all the servers about one another
@@ -258,6 +254,10 @@ public class ConsensusRSMPolicy extends DefaultPolicy {
                 throw new Error("Failed to find sapphire object.", e);
             } catch (MicroServiceReplicaNotFoundException e) {
                 throw new Error("Failed to find sapphire object replica.", e);
+            } catch (NoKernelServerFoundException e) {
+                e.printStackTrace();
+            } catch (KernelObjectNotFoundException e) {
+                e.printStackTrace();
             }
         }
     }

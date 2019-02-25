@@ -3,7 +3,9 @@ package amino.run.policy.scalability;
 import amino.run.app.MicroServiceSpec;
 import amino.run.common.MicroServiceNotFoundException;
 import amino.run.common.MicroServiceReplicaNotFoundException;
+import amino.run.common.NoKernelServerFoundException;
 import amino.run.common.Utils;
+import amino.run.kernel.common.KernelObjectNotFoundException;
 import amino.run.kernel.common.KernelObjectStub;
 import amino.run.kernel.common.KernelServerNotFoundException;
 import amino.run.policy.DefaultPolicy;
@@ -173,50 +175,46 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultPolicy {
         private Map<String, String> nodeLabels;
 
         @Override
-        public void onCreate(String region, Policy.ServerPolicy server, MicroServiceSpec spec)
+        public void onCreate(Policy.ServerPolicy server, MicroServiceSpec spec)
                 throws RemoteException {
             logger = Logger.getLogger(GroupPolicy.class.getName());
-            super.onCreate(region, server, spec);
+            super.onCreate(server, spec);
             boolean isLastPolicy = server.isLastPolicy();
-            logger.info(String.format("Creating master and slave instance in region %s", region));
 
             try {
-                List<InetSocketAddress> addressList =
-                        sapphire_getAddressList(spec.getNodeSelectorSpec(), region);
-                if (addressList.size() < NUM_OF_REPLICAS) {
-                    logger.warning(
-                            String.format(
-                                    "Number of kernel servers (%s) is less than "
-                                            + "number of replicas (%s). We will run both master replica "
-                                            + "and slave replica on the same server which will decrease "
-                                            + "availability.",
-                                    addressList.size(), NUM_OF_REPLICAS));
-                }
+                //                List<InetSocketAddress> addressList =
+                //                        sapphire_getAddressList(spec.getNodeSelectorSpec(),
+                // region);
+                //                if (addressList.size() < NUM_OF_REPLICAS) {
+                //                    logger.warning(
+                //                            String.format(
+                //                                    "Number of kernel servers (%s) is less than "
+                //                                            + "number of replicas (%s). We will
+                // run both master replica "
+                //                                            + "and slave replica on the same
+                // server which will decrease "
+                //                                            + "availability.",
+                //                                    addressList.size(), NUM_OF_REPLICAS));
+                //                }
+                //
+                //                logger.info(
+                //                        String.format(
+                //                                "Creating master and slave instances in servers:
+                // %s", addressList));
 
-                logger.info(
-                        String.format(
-                                "Creating master and slave instances in servers: %s", addressList));
-
-                List<InetSocketAddress> unavailable = new ArrayList<InetSocketAddress>();
                 ServerPolicy s = (ServerPolicy) server;
-                InetSocketAddress dest = null;
+                // InetSocketAddress dest = null;
 
                 if (isLastPolicy) {
-                    // TODO: Make deployment kernel pin primary replica once node selection
-                    // constraint is implemented.
-                    dest = getAvailable(0, addressList, unavailable);
-                    pin(s, dest);
-                    logger.info("Created master on " + dest);
+                    pin(s, getKernelServer());
+                    // logger.info("Created master on " + dest);
                 }
                 s.start();
 
                 for (int i = 0; i < NUM_OF_REPLICAS - 1; i++) {
-                    if (isLastPolicy) {
-                        dest = getAvailable(i + 1, addressList, unavailable);
-                    }
-                    ServerPolicy replica = (ServerPolicy) replicate(s, dest, region);
+                    ServerPolicy replica = (ServerPolicy) replicate(s);
                     replica.start();
-                    logger.info("created slave on " + dest);
+                    // logger.info("created slave on " + dest);
                 }
             } catch (RemoteException e) {
                 throw new RuntimeException("failed to create group: " + e, e);
@@ -224,8 +222,10 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultPolicy {
                 throw new RuntimeException("Failed to find sapphire object: " + e, e);
             } catch (MicroServiceReplicaNotFoundException e) {
                 throw new RuntimeException("Failed to find sapphire object replica: " + e, e);
-            } catch (KernelServerNotFoundException e) {
-                throw new RuntimeException("No matching servers found", e);
+            } catch (NoKernelServerFoundException e) {
+                e.printStackTrace();
+            } catch (KernelObjectNotFoundException e) {
+                e.printStackTrace();
             }
         }
 

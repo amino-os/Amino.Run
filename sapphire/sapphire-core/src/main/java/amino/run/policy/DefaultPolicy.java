@@ -1,14 +1,19 @@
 package amino.run.policy;
 
+import amino.run.app.DMSpec;
 import amino.run.app.MicroServiceSpec;
+import amino.run.app.NodeSelectorSpec;
 import amino.run.common.MicroServiceNotFoundException;
 import amino.run.common.MicroServiceReplicaNotFoundException;
+import amino.run.common.NoKernelServerFoundException;
 import amino.run.common.ReplicaID;
+import amino.run.kernel.common.KernelObjectNotFoundException;
 import amino.run.kernel.common.KernelObjectStub;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
 
 public class DefaultPolicy extends Policy {
 
@@ -75,8 +80,7 @@ public class DefaultPolicy extends Policy {
         }
 
         @Override
-        public void onCreate(String region, ServerPolicy server, MicroServiceSpec spec)
-                throws RemoteException {
+        public void onCreate(ServerPolicy server, MicroServiceSpec spec) throws RemoteException {
             this.spec = spec;
             addServer(server);
         }
@@ -105,24 +109,21 @@ public class DefaultPolicy extends Policy {
          * local server list.
          *
          * @param replicaSource Server policy on which a new replica is created considering itself
-         *     as reference copy
-         * @param dest Host address on which replicated copy need to pin
-         * @param region Region in which replicated server has to be pinned. It is passed down to
-         *     all downstream DMs till leaf. And downstream DM pinning the chain ensures to pin on
-         *     kernel server belonging to the region
+         *     as reference copy all downstream DMs till leaf. And downstream DM pinning the chain
+         *     ensures to pin on kernel server belonging to the region
          * @return New replica of server policy
          * @throws RemoteException
          * @throws MicroServiceNotFoundException
          * @throws MicroServiceReplicaNotFoundException
          */
-        protected ServerPolicy replicate(
-                ServerPolicy replicaSource, InetSocketAddress dest, String region)
+        protected ServerPolicy replicate(ServerPolicy replicaSource)
                 throws RemoteException, MicroServiceNotFoundException,
-                        MicroServiceReplicaNotFoundException {
+                        MicroServiceReplicaNotFoundException, NoKernelServerFoundException,
+                        KernelObjectNotFoundException {
             ServerPolicy replica =
-                    replicaSource.sapphire_replicate(replicaSource.getProcessedPolicies(), region);
+                    replicaSource.sapphire_replicate(replicaSource.getProcessedPolicies());
             if (replicaSource.isLastPolicy()) {
-                pin(replica, dest);
+                pin(replica, getKernelServer());
             }
 
             addServer(replica);
@@ -155,6 +156,129 @@ public class DefaultPolicy extends Policy {
         protected void terminate(ServerPolicy server) throws RemoteException {
             server.sapphire_terminate();
             removeServer(server);
+        }
+
+        /**
+         * Select kernel server address for based on MicroServiceSpec
+         *
+         * @return
+         * @throws NoKernelServerFoundException
+         * @throws RemoteException
+         */
+        protected InetSocketAddress getKernelServer()
+                throws NoKernelServerFoundException, RemoteException,
+                        KernelObjectNotFoundException {
+            NodeSelectorSpec nodeSelector = spec.getNodeSelectorSpec();
+            List<InetSocketAddress> serversInRegion;
+
+            String region = selectRegion();
+
+            nodeSelector = new NodeSelectorSpec();
+            // TODO: append node selector from user in MicroService spec and DM spec
+            nodeSelector.addAndLabel(region);
+            serversInRegion = oms().getServers(nodeSelector);
+            if (serversInRegion == null || serversInRegion.isEmpty()) {
+                String msg =
+                        String.format(
+                                "No kernel servers were found for %s & %s",
+                                spec.getNodeSelectorSpec(), region);
+                logger.log(Level.SEVERE, msg);
+                throw new NoKernelServerFoundException();
+            }
+
+            // logic for selecting region with round robin fashion
+            // check server count of each region
+            HashMap<InetSocketAddress, Integer> serversCount = new HashMap<>();
+            InetSocketAddress serverSocketAddress;
+            Integer count;
+            for (ServerPolicy server : servers.values()) {
+                serverSocketAddress = ((KernelObjectStub) server).$__getHostname();
+                count = serversCount.get(serverSocketAddress);
+                if (count == null) {
+                    serversCount.put(serverSocketAddress, 1);
+                    continue;
+                }
+
+                serversCount.put(serverSocketAddress, count + 1);
+            }
+
+            // get region with least count
+            int selectedAddressCount = 0;
+            int addressCount;
+            InetSocketAddress selectedAddress = null;
+            for (InetSocketAddress server : serversInRegion) {
+                addressCount = serversCount.get(server);
+                if (addressCount == 0) {
+                    return server;
+                }
+                if (selectedAddressCount < addressCount) {
+                    continue;
+                }
+
+                selectedAddress = server;
+                selectedAddressCount = addressCount;
+            }
+
+            return selectedAddress;
+        }
+
+        private String selectRegion() throws RemoteException {
+            NodeSelectorSpec microServiceNodeSpec = spec.getNodeSelectorSpec();
+            boolean topologicalAffinity = microServiceNodeSpec.isTopologicalAffinity();
+
+            // check for topological affinity and get region
+            ArrayList<String> regions = oms().getRegions();
+            for (DMSpec dmSpec : spec.getDmList()) {
+                NodeSelectorSpec dmNodeSpec = dmSpec.getNodeSpec();
+                if (dmNodeSpec != null && !dmNodeSpec.isTopologicalAffinity()) {
+                    topologicalAffinity = !dmNodeSpec.isTopologicalAffinity();
+                }
+            }
+
+            if (topologicalAffinity) {
+                if (servers.size() == 0) {
+                    return regions.get(new Random().nextInt(regions.size()));
+                }
+                // return region of first server
+                for (ServerPolicy server : servers.values()) {
+                    return server.sapphire_getRegion();
+                }
+            }
+
+            // logic for selecting region with round robin fashion
+            // check server count of each region
+            HashMap<String, Integer> serversRegions = new HashMap<>();
+            String serverRegion;
+            Integer count;
+            for (ServerPolicy server : servers.values()) {
+                serverRegion = server.sapphire_getRegion();
+                count = serversRegions.get(serverRegion);
+                if (count == null) {
+                    serversRegions.put(serverRegion, 1);
+                    continue;
+                }
+
+                serversRegions.put(serverRegion, count + 1);
+            }
+
+            // get region with least count
+            int selectedRegionServerCount = 0;
+            String selectedRegion = "";
+            int regionServerCount;
+            for (String region : regions) {
+                regionServerCount = serversRegions.get(region);
+                if (regionServerCount == 0) {
+                    return region;
+                }
+                if (selectedRegionServerCount < regionServerCount) {
+                    continue;
+                }
+
+                selectedRegion = region;
+                selectedRegionServerCount = regionServerCount;
+            }
+
+            return selectedRegion;
         }
     }
 }

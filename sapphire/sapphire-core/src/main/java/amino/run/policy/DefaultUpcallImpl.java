@@ -48,16 +48,10 @@ public abstract class DefaultUpcallImpl extends Library {
             return appObject.invoke(method, params);
         }
 
-        @Deprecated
+        @Override
         public Policy.ServerPolicy sapphire_replicate(List<PolicyContainer> processedPolicies)
                 throws RemoteException {
-            return super.sapphire_replicate(processedPolicies, "");
-        }
-
-        @Override
-        public Policy.ServerPolicy sapphire_replicate(
-                List<PolicyContainer> processedPolicies, String region) throws RemoteException {
-            return super.sapphire_replicate(processedPolicies, region);
+            return super.sapphire_replicate(processedPolicies);
         }
 
         /* This function is added here just to generate the stub for this function in all Policies server policy */
@@ -75,6 +69,11 @@ public abstract class DefaultUpcallImpl extends Library {
 
         @Override
         public void onDestroy() {}
+
+        @Override
+        public String sapphire_getRegion() {
+            return super.sapphire_getRegion();
+        }
     }
 
     public abstract static class GroupPolicy extends GroupPolicyLibrary {

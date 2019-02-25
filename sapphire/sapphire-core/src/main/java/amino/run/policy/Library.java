@@ -135,8 +135,8 @@ public abstract class Library implements Upcalls {
         }
 
         /** Creates a replica of this server and registers it with the group. */
-        public ServerPolicy sapphire_replicate(
-                List<PolicyContainer> processedPolicies, String region) throws RemoteException {
+        public ServerPolicy sapphire_replicate(List<PolicyContainer> processedPolicies)
+                throws RemoteException {
             KernelObjectStub serverPolicyStub = null;
 
             // Construct list of policies that will come after this policy on the server side.
@@ -149,7 +149,6 @@ public abstract class Library implements Upcalls {
                         spec,
                         processedPolicies,
                         processedPoliciesReplica,
-                        region,
                         null);
 
                 // Last policy in the returned chain is replica of this policy.
@@ -165,7 +164,6 @@ public abstract class Library implements Upcalls {
                         spec,
                         this.nextPolicies,
                         processedPoliciesReplica,
-                        region,
                         null);
             } catch (ClassNotFoundException e) {
                 // TODO Auto-generated catch block

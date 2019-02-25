@@ -341,6 +341,8 @@ public class KernelServerImpl implements KernelServer {
                 kernelObject = entry.getValue();
                 Policy.GroupPolicy group =
                         ((Policy.ServerPolicy) kernelObject.getObject()).getGroup();
+                ReplicaID replicaId =
+                        ((Policy.ServerPolicy) kernelObject.getObject()).getReplicaId();
                 if (group != null) {
                     status = kernelObject.isStatus();
                     microServiceStatuses.add(
@@ -348,6 +350,7 @@ public class KernelServerImpl implements KernelServer {
                                     group.getSapphireObjId(),
                                     group.$__getKernelOID(),
                                     entry.getKey(),
+                                    replicaId,
                                     status));
                 }
             }

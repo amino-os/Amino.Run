@@ -12,18 +12,28 @@ public class MicroServiceStatus implements NotificationObject {
     public final MicroServiceID sapphireObjId;
     public final KernelOID groupId;
     public final KernelOID serverId;
+    public final ReplicaID replicaId;
     public final boolean status;
 
     public MicroServiceStatus(
-            MicroServiceID sapphireObjId, KernelOID groupId, KernelOID serverId, boolean status) {
+            MicroServiceID sapphireObjId,
+            KernelOID groupId,
+            KernelOID serverId,
+            ReplicaID replicaId,
+            boolean status) {
         this.sapphireObjId = sapphireObjId;
         this.groupId = groupId;
         this.serverId = serverId;
+        this.replicaId = replicaId;
         this.status = status;
     }
 
     public MicroServiceID getSapphireObjId() {
         return sapphireObjId;
+    }
+
+    public ReplicaID getReplicaID() {
+        return replicaId;
     }
 
     public KernelOID getGroupId() {

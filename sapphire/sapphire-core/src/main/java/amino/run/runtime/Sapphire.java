@@ -360,11 +360,27 @@ public class Sapphire {
             GroupPolicy groupPolicy = initializeGroupPolicy(groupPolicyStub);
             groupPolicyStub.setSapphireObjId(microServiceId);
             groupPolicy.setSapphireObjId(microServiceId);
+            EventHandler sapphireHandler =
+                    new EventHandler(
+                            GlobalKernelReferences.nodeServer.getLocalHost(),
+                            new ArrayList() {
+                                {
+                                    add(groupPolicyStub);
+                                }
+                            });
+
+            /* Register the handler for the sapphire object */
+            GlobalKernelReferences.nodeServer.oms.setSapphireObjectDispatcher(
+                    microServiceId, sapphireHandler);
         } catch (KernelObjectNotFoundException e) {
             logger.severe(
                     "Failed to find the group kernel object created just before it. Exception info: "
                             + e);
             throw new KernelObjectNotCreatedException("Failed to find the kernel object", e);
+        } catch (MicroServiceNotFoundException e) {
+            logger.warning("Failed to find sapphire object. Exception info: " + e);
+            KernelObjectFactory.delete(groupPolicyStub.$__getKernelOID());
+            throw e;
         }
 
         return groupPolicyStub;

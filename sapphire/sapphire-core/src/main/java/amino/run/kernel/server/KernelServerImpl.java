@@ -1,10 +1,7 @@
 package amino.run.kernel.server;
 
 import amino.run.app.MicroServiceSpec;
-import amino.run.common.AppObjectStub;
-import amino.run.common.MicroServiceCreationException;
-import amino.run.common.MicroServiceNotFoundException;
-import amino.run.common.MicroServiceReplicaNotFoundException;
+import amino.run.common.*;
 import amino.run.kernel.client.KernelClient;
 import amino.run.kernel.common.*;
 import amino.run.oms.OMSServer;
@@ -16,7 +13,6 @@ import amino.run.runtime.EventHandler;
 import amino.run.runtime.Sapphire;
 import java.io.Serializable;
 import java.net.InetSocketAddress;
-import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -331,6 +327,36 @@ public class KernelServerImpl implements KernelServer {
     }
 
     /**
+     * Forms the list of status objects from its local kernel objects
+     *
+     * @return Returns list of status objects
+     */
+    public ArrayList<MicroServiceStatus> getMicroserviceStatuses() {
+        KernelObject kernelObject;
+        boolean status;
+        Set<Map.Entry<KernelOID, KernelObject>> set = objectManager.getKernelObjects();
+        ArrayList<MicroServiceStatus> microServiceStatuses = new ArrayList();
+        for (Map.Entry<KernelOID, KernelObject> entry : set) {
+            if (entry.getValue().getObject() instanceof Policy.ServerPolicy) {
+                kernelObject = entry.getValue();
+                Policy.GroupPolicy group =
+                        ((Policy.ServerPolicy) kernelObject.getObject()).getGroup();
+                if (group != null) {
+                    status = kernelObject.isStatus();
+                    microServiceStatuses.add(
+                            new MicroServiceStatus(
+                                    group.getSapphireObjId(),
+                                    group.$__getKernelOID(),
+                                    entry.getKey(),
+                                    status));
+                }
+            }
+        }
+
+        return microServiceStatuses;
+    }
+
+    /**
      * Get the local hostname
      *
      * @return IP address of host that this server is running on
@@ -385,10 +411,12 @@ public class KernelServerImpl implements KernelServer {
     }
 
     /** Send heartbeats to OMS. */
-    private void startheartbeat(ServerInfo srvinfo) {
+    private void sendHeartBeat(
+            ServerInfo srvinfo, ArrayList<MicroServiceStatus> microServiceStatuses) {
         logger.fine("heartbeat KernelServer" + srvinfo);
+        /*Update the status of policy objects too */
         try {
-            oms.heartbeatKernelServer(srvinfo);
+            oms.receiveHeartBeat(srvinfo, microServiceStatuses);
         } catch (Exception e) {
             logger.severe("Cannot heartbeat KernelServer" + srvinfo);
             e.printStackTrace();
@@ -447,14 +475,12 @@ public class KernelServerImpl implements KernelServer {
         }
     }
 
-    private void startHeartbeats(ServerInfo srvInfo)
-            throws RemoteException, NotBoundException, KernelServerNotFoundException {
-        oms.heartbeatKernelServer(srvInfo);
+    private void startHeartbeats(ServerInfo srvInfo) {
         ksHeartbeatSendTimer =
                 new ResettableTimer(
                         new TimerTask() {
                             public void run() {
-                                startheartbeat(srvInfo);
+                                sendHeartBeat(srvInfo, getMicroserviceStatuses());
                             }
                         },
                         KS_HEARTBEAT_PERIOD);

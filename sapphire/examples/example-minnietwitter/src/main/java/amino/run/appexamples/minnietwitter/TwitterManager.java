@@ -1,11 +1,11 @@
 package amino.run.appexamples.minnietwitter;
 
-import amino.run.app.SapphireObject;
+import amino.run.app.StatusReporter;
 
 import static amino.run.runtime.Sapphire.delete_;
 import static amino.run.runtime.Sapphire.new_;
 
-public class TwitterManager implements SapphireObject {
+public class TwitterManager extends StatusReporter {
     private UserManager userManager;
     private TagManager tagManager;
 
@@ -26,4 +26,8 @@ public class TwitterManager implements SapphireObject {
         delete_(tagManager);
         delete_(userManager);
     }
+	@Override
+	public boolean getStatus() {
+		return true;
+	}
 }

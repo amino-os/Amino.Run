@@ -25,6 +25,10 @@ import org.powermock.modules.junit4.PowerMockRunner;
 @RunWith(PowerMockRunner.class)
 public class KSTest extends BaseTest {
     SO so;
+    KernelServerImpl ks;
+    KernelObjectManager kom;
+    KernelServerManager kernelServerManager;
+    ResettableTimer heartbeatTimer;
     @Rule public ExpectedException thrown = ExpectedException.none();
     // Added to allow SystemExit in order to prevent termination of code
     @Rule public final ExpectedSystemExit exit = ExpectedSystemExit.none();
@@ -38,6 +42,13 @@ public class KSTest extends BaseTest {
                         .create();
         super.setUp(1, spec);
         so = ((SO) (server1.sapphire_getAppObject().getObject()));
+
+        ks = (KernelServerImpl) spiedKs1;
+        kernelServerManager =
+                (KernelServerManager)
+                        extractFieldValueOnInstance(KernelServerImpl.oms, "serverManager");
+        kom = (KernelObjectManager) extractFieldValueOnInstance(ks, "objectManager");
+        heartbeatTimer = (ResettableTimer) extractFieldValueOnInstance(ks, "ksHeartbeatSendTimer");
     }
 
     @Test
@@ -54,16 +65,12 @@ public class KSTest extends BaseTest {
 
     @Test
     public void getKernelObjectTest() throws Exception {
-        KernelServerImpl ks = (KernelServerImpl) spiedKs1;
-
         // Get the existing kernel object
         ks.getKernelObject(client.getServer().$__getKernelOID());
     }
 
     @Test(expected = KernelObjectNotFoundException.class)
     public void getNonExistentKernelObjectTest() throws Exception {
-        KernelServerImpl ks = (KernelServerImpl) spiedKs1;
-
         // Get the non-existent kernel object. It must throw kernel object not found exception.
         ks.getKernelObject(new KernelOID(0));
     }
@@ -75,10 +82,38 @@ public class KSTest extends BaseTest {
                 new String[] {LOOP_BACK_IP_ADDR, Integer.toString(kernelPort1), LOOP_BACK_IP_ADDR});
     }
 
+    /**
+     * Testing kernelobject unhealthy and healthy states
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testHealth() throws Exception {
+        heartbeatTimer.reset();
+        List<KernelOID> kIdsBeforeFailure = Arrays.asList(kom.getAllKernelObjectOids());
+        // Testing unhealthy state
+        so.setStatus(false);
+        Thread.sleep(
+                KernelServerImpl.KS_HEARTBEAT_PERIOD // heartbeattimer in KernelServer
+                        + OMSServer.KS_HEARTBEAT_TIMEOUT // healthCheckTimer in serverPolicy
+                        + OMSServer.KS_HEARTBEAT_TIMEOUT); // healthCheckTimer in groupPolicy
+        List<KernelOID> kIdsAfterFailure = Arrays.asList(kom.getAllKernelObjectOids());
+        Assert.assertNotEquals(kIdsBeforeFailure, kIdsAfterFailure);
+        // Testing healthy state
+        so.setStatus(true);
+        Thread.sleep(
+                KernelServerImpl.KS_HEARTBEAT_PERIOD // heartbeattimer in KernelServer
+                        + OMSServer.KS_HEARTBEAT_TIMEOUT // healthCheckTimer in serverPolicy
+                        + OMSServer.KS_HEARTBEAT_TIMEOUT); // healthCheckTimer in groupPolicy
+        List<KernelOID> kIdsAfterSuccess = Arrays.asList(kom.getAllKernelObjectOids());
+        Assert.assertEquals(kIdsAfterFailure, kIdsAfterSuccess);
+        for (KernelOID id : kIdsAfterSuccess) {
+            Assert.assertEquals(true, kom.lookupObject(id).isStatus());
+        }
+    }
+
     @Test
     public void getAllKernelObjectOidsTest() throws Exception {
-        KernelObjectManager kom =
-                (KernelObjectManager) extractFieldValueOnInstance(spiedKs1, "objectManager");
         // As KernelObjectManager.addObject is called once during
         // create, length returned should be 1.
         assertEquals(new Integer(1), new Integer(kom.getAllKernelObjectOids().length));

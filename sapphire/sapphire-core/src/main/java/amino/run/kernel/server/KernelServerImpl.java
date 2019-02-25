@@ -1,10 +1,7 @@
 package amino.run.kernel.server;
 
 import amino.run.app.MicroServiceSpec;
-import amino.run.common.AppObjectStub;
-import amino.run.common.MicroServiceCreationException;
-import amino.run.common.MicroServiceNotFoundException;
-import amino.run.common.MicroServiceReplicaNotFoundException;
+import amino.run.common.*;
 import amino.run.kernel.client.KernelClient;
 import amino.run.kernel.common.*;
 import amino.run.oms.OMSServer;
@@ -39,6 +36,9 @@ public class KernelServerImpl implements KernelServer {
     public static String SERVICE_PORT = "--servicePort";
     public static String DEFAULT_REGION = "default-region";
     public static String REGION_KEY = "region";
+    // list of microServiceStatus inorder to send those in batch
+    private ArrayList<MicroServiceStatus> microserviceStatusBatch;
+    private static final int BATCH_SIZE = 50;
 
     private InetSocketAddress host;
     private String region;
@@ -76,6 +76,7 @@ public class KernelServerImpl implements KernelServer {
         objectManager = new KernelObjectManager();
         client = new KernelClient(oms);
         GlobalKernelReferences.nodeServer = this;
+        microserviceStatusBatch = new ArrayList<>();
     }
 
     public void setRegion(String region) {
@@ -385,10 +386,19 @@ public class KernelServerImpl implements KernelServer {
     }
 
     /** Send heartbeats to OMS. */
-    private void startheartbeat(ServerInfo srvinfo) {
-        logger.fine("heartbeat KernelServer" + srvinfo);
+    private void sendHeartBeat(
+            ServerInfo srvinfo, ArrayList<MicroServiceStatus> microServiceStatuses) {
+        logger.fine("heartbeat KernelServer" + srvinfo + microServiceStatuses);
+        /*Update the status of policy objects too in batch */
         try {
-            oms.heartbeatKernelServer(srvinfo);
+            for (MicroServiceStatus microServiceStatus : microServiceStatuses) {
+                microserviceStatusBatch.add(microServiceStatus);
+                if (microserviceStatusBatch.size() == BATCH_SIZE) {
+                    oms.receiveHeartBeat(srvinfo, microserviceStatusBatch);
+                    microserviceStatusBatch.clear();
+                }
+            }
+            oms.receiveHeartBeat(srvinfo, microserviceStatusBatch);
         } catch (Exception e) {
             logger.severe("Cannot heartbeat KernelServer" + srvinfo);
             e.printStackTrace();

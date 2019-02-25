@@ -1,5 +1,8 @@
 package amino.run.compiler;
 
+import amino.run.runtime.AddEvent;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -199,6 +202,10 @@ public abstract class Stub implements RmicConstants {
         /** The generic name of the method */
         final String genericName;
 
+        final int numAnnotations;
+
+        final Annotation[] annotationsClass;
+
         public String getGenericName() {
             return genericName;
         }
@@ -219,6 +226,10 @@ public abstract class Stub implements RmicConstants {
             return declaringClass;
         }
 
+        public Annotation[] getAnnotations() {
+            return annotationsClass;
+        }
+
         /**
          * Creates method stub instance.
          *
@@ -234,6 +245,8 @@ public abstract class Stub implements RmicConstants {
             this.retTypeName = RMIUtil.getCanonicalName(retType);
             this.shortSign = RMIUtil.getShortMethodSignature(method);
             this.declaringClass = method.getDeclaringClass();
+            this.annotationsClass = method.getAnnotations();
+            this.numAnnotations = annotationsClass.length;
 
             // Create parameter names array & string.
             paramClassNames = new String[numParams];
@@ -266,12 +279,47 @@ public abstract class Stub implements RmicConstants {
          * @return Stub implementation for this method.
          */
         String getStubImpl(boolean isDMMethod) {
-            return (getStubImplHeader()
+            return (indenter.indent()
+                    + "// Implementation of "
+                    + shortSign
+                    + EOLN //$NON-NLS-1$
+                    + getAddEventAnnotations()
+                    + getStubImplHeader()
                     + indenter.hIncrease()
                     + getMethodContent(this, isDMMethod)
                     + indenter.decrease()
                     + '}'
                     + EOLN);
+        }
+
+        private String getAddEventAnnotations() {
+            StringBuilder buffer = new StringBuilder();
+            try {
+                for (int i = 0; i < numAnnotations; i++) {
+                    if (annotationsClass[i].annotationType().equals(AddEvent.class)) {
+                        Class<? extends Annotation> type = annotationsClass[i].annotationType();
+                        for (Method method : type.getDeclaredMethods()) {
+                            if (method.getName().equals("event")) {
+                                Object value = method.invoke(annotationsClass[i], (Object[]) null);
+                                int start =
+                                        annotationsClass[i].toString().indexOf(value.toString());
+                                StringBuilder s = new StringBuilder();
+                                s.append("\"").append(value).append("\"");
+                                buffer.append(annotationsClass[i])
+                                        .replace(
+                                                start,
+                                                annotationsClass[i].toString().length() - 1,
+                                                s.toString());
+                            }
+                        }
+                    }
+                }
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            } catch (InvocationTargetException e) {
+                e.printStackTrace();
+            }
+            return buffer.toString();
         }
 
         /**
@@ -283,10 +331,6 @@ public abstract class Stub implements RmicConstants {
             StringBuilder buffer =
                     new StringBuilder(
                             indenter.indent()
-                                    + "// Implementation of "
-                                    + shortSign
-                                    + EOLN //$NON-NLS-1$
-                                    + indenter.indent()
                                     + "public "
                                     + retTypeName //$NON-NLS-1$
                                     + ' '

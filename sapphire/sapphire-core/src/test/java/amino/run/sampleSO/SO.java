@@ -1,11 +1,12 @@
 package amino.run.sampleSO;
 
 /** Created by Venugopal Reddy K on 6/9/18. */
-import amino.run.app.SapphireObject;
+import amino.run.app.StatusReporter;
 import amino.run.runtime.SapphireConfiguration;
 
 @SapphireConfiguration(Policies = "amino.run.policy.DefaultPolicy")
-public class SO implements SapphireObject {
+public class SO extends StatusReporter {
+    boolean status = true;
     public Integer i = 0;
 
     public Integer getI() {
@@ -35,5 +36,14 @@ public class SO implements SapphireObject {
 
         }
         return i;
+    }
+
+    @Override
+    public boolean getStatus() {
+        return status;
+    }
+
+    public void setStatus(boolean status) {
+        this.status = status;
     }
 }

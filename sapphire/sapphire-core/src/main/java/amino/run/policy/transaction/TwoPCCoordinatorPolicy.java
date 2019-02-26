@@ -17,7 +17,7 @@ public class TwoPCCoordinatorPolicy extends DefaultPolicy {
         public TwoPCCoordinatorServerPolicy() {
             NonconcurrentTransactionValidator validator =
                     new NonconcurrentTransactionValidator(
-                            this.sapphire_getAppObject(), this.sandboxProvider);
+                            this.getAppObject(), this.sandboxProvider);
             this.coordinator = new TLS2PCCoordinator(validator);
         }
 

@@ -148,9 +148,7 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultPolicy {
          */
         public MethodInvocationResponse onRPC(MethodInvocationRequest request) {
             try {
-                Object ret =
-                        sapphire_getAppObject()
-                                .invoke(request.getMethodName(), request.getParams());
+                Object ret = getAppObject().invoke(request.getMethodName(), request.getParams());
                 return new MethodInvocationResponse(
                         MethodInvocationResponse.ReturnCode.SUCCESS, ret);
             } catch (Exception e) {
@@ -182,7 +180,7 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultPolicy {
 
             try {
                 List<InetSocketAddress> addressList =
-                        sapphire_getAddressList(spec.getNodeSelectorSpec(), region);
+                        getAddressList(spec.getNodeSelectorSpec(), region);
                 if (addressList.size() < NUM_OF_REPLICAS) {
                     logger.warning(
                             String.format(

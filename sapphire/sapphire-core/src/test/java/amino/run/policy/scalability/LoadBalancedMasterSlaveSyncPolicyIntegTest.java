@@ -86,11 +86,11 @@ public class LoadBalancedMasterSlaveSyncPolicyIntegTest {
         Assert.assertNull(ret);
 
         // verify app object1 in server1 has been updated
-        Data d1 = (Data) server1.sapphire_getAppObject().getObject();
+        Data d1 = (Data) server1.getAppObject().getObject();
         Assert.assertEquals(newData, d1.getData());
 
         // verify app object1 in server2 has been udpated (via replication)
-        Data d2 = (Data) server2.sapphire_getAppObject().getObject();
+        Data d2 = (Data) server2.getAppObject().getObject();
         Assert.assertEquals(newData, d2.getData());
     }
 
@@ -109,11 +109,11 @@ public class LoadBalancedMasterSlaveSyncPolicyIntegTest {
         }
 
         // verify app object1 in server1 has been updated
-        Data d1 = (Data) server1.sapphire_getAppObject().getObject();
+        Data d1 = (Data) server1.getAppObject().getObject();
         Assert.assertTrue(1 == d1.getCnt());
 
         // verify app object1 in server2 has been udpated (via replication)
-        Data d2 = (Data) server2.sapphire_getAppObject().getObject();
+        Data d2 = (Data) server2.getAppObject().getObject();
         Assert.assertTrue(1 == d2.getCnt());
     }
 

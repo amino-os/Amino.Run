@@ -78,9 +78,9 @@ public class ConsensusRSMPolicyTest extends BaseTest {
 
         assertTrue(raftServer[verifyLeaderElected(raftServer)] == raftServer[2]);
 
-        so1 = ((SO) (server1.sapphire_getAppObject().getObject()));
-        so2 = ((SO) (server2.sapphire_getAppObject().getObject()));
-        so3 = ((SO) (server3.sapphire_getAppObject().getObject()));
+        so1 = ((SO) (server1.getAppObject().getObject()));
+        so2 = ((SO) (server2.getAppObject().getObject()));
+        so3 = ((SO) (server3.getAppObject().getObject()));
     }
 
     /**
@@ -376,7 +376,7 @@ public class ConsensusRSMPolicyTest extends BaseTest {
         Server newRaftServer[] = new Server[SERVER_COUNT - 1];
 
         /* Bring down the raft leader */
-        this.server3.sapphire_terminate();
+        this.server3.terminate();
 
         // Creating a new array with the running raftServers
         newRaftServer[0] = raftServer[0];

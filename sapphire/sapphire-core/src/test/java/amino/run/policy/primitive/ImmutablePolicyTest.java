@@ -68,7 +68,7 @@ public class ImmutablePolicyTest {
         verify(server, never()).onRPC(methodName, new ArrayList<Object>());
 
         // verify that server.getObject was only invoked once
-        verify(server, times(1)).sapphire_getAppObject();
+        verify(server, times(1)).getAppObject();
     }
 
     public static class SO implements Serializable {

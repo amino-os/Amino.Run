@@ -88,7 +88,7 @@ public class DHTPolicy extends DefaultPolicy {
             }
 
             try {
-                ArrayList<String> regions = sapphire_getRegions();
+                ArrayList<String> regions = getRegions();
 
                 if (server.isLastPolicy()) {
                     // TODO: Make deployment kernel pin primary replica once node selection
@@ -172,7 +172,7 @@ public class DHTPolicy extends DefaultPolicy {
         private InetSocketAddress getAddress(String region)
                 throws NoKernelServerFoundException, RemoteException {
             List<InetSocketAddress> addressList =
-                    sapphire_getAddressList(spec.getNodeSelectorSpec(), region);
+                    getAddressList(spec.getNodeSelectorSpec(), region);
             if (addressList == null || addressList.isEmpty()) {
                 String msg =
                         String.format(

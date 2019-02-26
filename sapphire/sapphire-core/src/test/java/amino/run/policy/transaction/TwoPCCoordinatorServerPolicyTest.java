@@ -84,7 +84,7 @@ public class TwoPCCoordinatorServerPolicyTest {
             coordinatorServerPolicy.onRPC("foo", null);
         } catch (TransactionAbortException e) {
             // as expected exception
-            assertSame(originalAppObject, this.coordinatorServerPolicy.sapphire_getAppObject());
+            assertSame(originalAppObject, this.coordinatorServerPolicy.getAppObject());
             return;
         }
 
@@ -100,6 +100,6 @@ public class TwoPCCoordinatorServerPolicyTest {
 
         coordinatorServerPolicy.onRPC("foo", null);
 
-        assertNotSame(originalAppObject, this.coordinatorServerPolicy.sapphire_getAppObject());
+        assertNotSame(originalAppObject, this.coordinatorServerPolicy.getAppObject());
     }
 }

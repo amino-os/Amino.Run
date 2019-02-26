@@ -127,7 +127,7 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
                             "Replica creation rate exceeded for this sapphire object.");
                 }
 
-                ((GroupPolicy) getGroup()).scaleUpReplica(sapphire_getRegion());
+                ((GroupPolicy) getGroup()).scaleUpReplica(getRegion());
                 throw e;
             }
         }
@@ -214,7 +214,7 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
 
             /* Get the list of available servers in region */
             List<InetSocketAddress> addressList =
-                    sapphire_getAddressList(spec.getNodeSelectorSpec(), region);
+                    getAddressList(spec.getNodeSelectorSpec(), region);
 
             if (null == addressList) {
                 throw new ScaleUpException("Scaleup failed. Couldn't fetch kernel server list.");

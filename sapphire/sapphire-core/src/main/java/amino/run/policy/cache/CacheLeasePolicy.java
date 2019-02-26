@@ -169,7 +169,7 @@ public class CacheLeasePolicy extends DefaultPolicy {
             // Always generate a positive lease id
             lease = UUID.randomUUID();
             leaseTimeout = generateTimeout(timeoutMillisec);
-            return new CacheLease(lease, leaseTimeout, sapphire_getAppObject());
+            return new CacheLease(lease, leaseTimeout, getAppObject());
         }
 
         private Boolean leaseStillValid() {

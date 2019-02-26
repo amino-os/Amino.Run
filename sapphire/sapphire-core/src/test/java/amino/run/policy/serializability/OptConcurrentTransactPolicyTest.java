@@ -81,7 +81,7 @@ public class OptConcurrentTransactPolicyTest {
         this.client1.onRPC(methodName, noParams);
         verify(this.server).onRPC(methodName, noParams);
         // Check that DM methods were not called
-        verify(this.server, never()).sapphire_getAppObject();
+        verify(this.server, never()).getAppObject();
     }
 
     @Test
@@ -97,7 +97,7 @@ public class OptConcurrentTransactPolicyTest {
         // We need to mock the get app object method to avoid that.
         // Client operates on the cloned copy of appObject. And server operates on appObject
         AppObject clonedAppObject = (AppObject) Utils.ObjectCloner.deepCopy(appObject);
-        doReturn(clonedAppObject).when(this.server).sapphire_getAppObject();
+        doReturn(clonedAppObject).when(this.server).getAppObject();
 
         OptConcurrentTransactionTest clonedSo =
                 (OptConcurrentTransactionTest) clonedAppObject.getObject();
@@ -113,7 +113,7 @@ public class OptConcurrentTransactPolicyTest {
         verify(this.server, never()).onRPC(setMethodName, twoParam);
 
         // Server need to get the actual appObject(not the clone). Set back to real method call.
-        when(this.server.sapphire_getAppObject()).thenCallRealMethod();
+        when(this.server.getAppObject()).thenCallRealMethod();
 
         // Commit the transaction for first client
         this.client1.onRPC(commitMethodName, noParams);
@@ -139,7 +139,7 @@ public class OptConcurrentTransactPolicyTest {
         // We need to mock the get app object method to avoid that.
         // Client operates on the cloned copy of appObject. And server operates on appObject
         AppObject clonedAppObject = (AppObject) Utils.ObjectCloner.deepCopy(appObject);
-        doReturn(clonedAppObject).when(this.server).sapphire_getAppObject();
+        doReturn(clonedAppObject).when(this.server).getAppObject();
 
         OptConcurrentTransactionTest clonedSo =
                 (OptConcurrentTransactionTest) clonedAppObject.getObject();
@@ -173,7 +173,7 @@ public class OptConcurrentTransactPolicyTest {
         // We need to mock the get app object method to avoid that.
         // Client operates on the cloned copy of appObject. And server operates on appObject
         AppObject clonedAppObject1 = (AppObject) Utils.ObjectCloner.deepCopy(appObject);
-        doReturn(clonedAppObject1).when(this.server).sapphire_getAppObject();
+        doReturn(clonedAppObject1).when(this.server).getAppObject();
 
         OptConcurrentTransactionTest clonedSo1 =
                 (OptConcurrentTransactionTest) clonedAppObject1.getObject();
@@ -185,7 +185,7 @@ public class OptConcurrentTransactPolicyTest {
         // We need to mock the get app object method to avoid that.
         // Client operates on the cloned copy of appObject. And server operates on appObject
         AppObject clonedAppObject2 = (AppObject) Utils.ObjectCloner.deepCopy(appObject);
-        doReturn(clonedAppObject2).when(this.server).sapphire_getAppObject();
+        doReturn(clonedAppObject2).when(this.server).getAppObject();
 
         OptConcurrentTransactionTest clonedSo2 =
                 (OptConcurrentTransactionTest) clonedAppObject2.getObject();
@@ -201,7 +201,7 @@ public class OptConcurrentTransactPolicyTest {
         verify(this.server, never()).onRPC(setMethodName, twoParam);
 
         // Server need to get the actual appObject(not the clone). Set back to real method call.
-        when(this.server.sapphire_getAppObject()).thenCallRealMethod();
+        when(this.server.getAppObject()).thenCallRealMethod();
 
         // Commit the transaction of first client
         this.client1.onRPC(commitMethodName, noParams);
@@ -236,7 +236,7 @@ public class OptConcurrentTransactPolicyTest {
         // We need to mock the get app object method to avoid that.
         // Client operates on the cloned copy of appObject. And server operates on appObject
         AppObject clonedAppObject = (AppObject) Utils.ObjectCloner.deepCopy(appObject);
-        doReturn(clonedAppObject).when(this.server).sapphire_getAppObject();
+        doReturn(clonedAppObject).when(this.server).getAppObject();
 
         OptConcurrentTransactionTest clonedSo =
                 (OptConcurrentTransactionTest) clonedAppObject.getObject();
@@ -275,7 +275,7 @@ public class OptConcurrentTransactPolicyTest {
         // RMI does not occur, so client and server DM's end up referring to the same object (rather
         // than
         // different objects, due to RMI serialization.
-        doReturn(clonedAppObject).when(this.server).sapphire_getAppObject();
+        doReturn(clonedAppObject).when(this.server).getAppObject();
 
         this.client1.onRPC(startMethodName, noParams);
 
@@ -309,7 +309,7 @@ public class OptConcurrentTransactPolicyTest {
         // RMI does not occur, so client and server DM's end up referring to the same object (rather
         // than
         // different objects, due to RMI serialization.
-        doReturn(clonedAppObject).when(this.server).sapphire_getAppObject();
+        doReturn(clonedAppObject).when(this.server).getAppObject();
 
         this.client1.onRPC(startMethodName, noParams);
 

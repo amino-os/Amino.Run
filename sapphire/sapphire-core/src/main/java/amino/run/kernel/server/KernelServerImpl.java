@@ -248,8 +248,8 @@ public class KernelServerImpl implements KernelServer {
         If the AppObject is pointing to KernelObjectStub, i.e. having intermediate DMs, need to get those kernel objects
         and coalesce them. */
         Object objectStub;
-        while ((nextPolicy.sapphire_getAppObject() != null)
-                && ((objectStub = nextPolicy.sapphire_getAppObject().getObject()) != null)
+        while ((nextPolicy.getAppObject() != null)
+                && ((objectStub = nextPolicy.getAppObject().getObject()) != null)
                 && (objectStub instanceof KernelObjectStub)) {
             nextPolicy = (Policy.ServerPolicy) objectStub;
             try {
@@ -295,8 +295,8 @@ public class KernelServerImpl implements KernelServer {
                                 + serverPolicy.$__getKernelOID().getID();
                 logger.warning(msg);
             }
-        } while ((serverPolicy.sapphire_getAppObject() != null)
-                && ((objectStub = serverPolicy.sapphire_getAppObject().getObject()) != null)
+        } while ((serverPolicy.getAppObject() != null)
+                && ((objectStub = serverPolicy.getAppObject().getObject()) != null)
                 && (objectStub instanceof KernelObjectStub));
     }
 

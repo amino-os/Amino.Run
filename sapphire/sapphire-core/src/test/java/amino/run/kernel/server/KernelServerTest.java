@@ -37,7 +37,7 @@ public class KernelServerTest extends BaseTest {
                         .setJavaClassName("amino.run.sampleSO.SO")
                         .create();
         super.setUp(1, spec);
-        so = ((SO) (server1.sapphire_getAppObject().getObject()));
+        so = ((SO) (server1.getAppObject().getObject()));
     }
 
     @Test

@@ -17,8 +17,7 @@ public class AppObjectSandboxProvider implements SandboxProvider, Serializable {
             throws Exception {
         if (!this.sandboxes.containsKey(transactionId)) {
             AppObjectShimServerPolicy sandbox =
-                    AppObjectShimServerPolicy.cloneInShimServerPolicy(
-                            origin.sapphire_getAppObject());
+                    AppObjectShimServerPolicy.cloneInShimServerPolicy(origin.getAppObject());
             this.sandboxes.put(transactionId, sandbox);
         }
 

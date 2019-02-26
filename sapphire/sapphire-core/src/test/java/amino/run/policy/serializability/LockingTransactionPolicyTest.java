@@ -104,7 +104,7 @@ public class LockingTransactionPolicyTest {
         // RMI does not occur, so client and server DM's end up referring to the same object (rather
         // than
         // different objects, due to RMI serialization.
-        doReturn(clone).when(this.server).sapphire_getAppObject();
+        doReturn(clone).when(this.server).getAppObject();
         this.client.onRPC(startMethodName, noParams);
         // Update the object again, this time to 2
         this.client.onRPC(setMethodName, twoParam);

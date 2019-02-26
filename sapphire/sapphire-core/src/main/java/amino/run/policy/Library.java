@@ -135,7 +135,7 @@ public abstract class Library implements Upcalls {
          * @return A replica (server stub) it just created.
          * @throws RemoteException
          */
-        public ServerPolicy sapphire_replicate(String region) throws RemoteException {
+        public ServerPolicy replicate(String region) throws RemoteException {
             List<PolicyContainer> processedPoliciesReplica = new ArrayList<>();
             int outerPolicySize = processedPolicies.size();
 
@@ -164,7 +164,7 @@ public abstract class Library implements Upcalls {
                 // (original one), and assigns to the outermost policy of this replica chain.
                 ServerPolicy originalPolicy = processedPolicies.get(0).getServerPolicy();
                 ServerPolicy replicaPolicy = processedPoliciesReplica.get(0).getServerPolicy();
-                Sapphire.cloneAppObject(replicaPolicy, originalPolicy.sapphire_getAppObject());
+                Sapphire.cloneAppObject(replicaPolicy, originalPolicy.getAppObject());
 
                 // 3. Creates a rest of the replica policy chain from the next of this policy
                 // (inner)
@@ -190,7 +190,7 @@ public abstract class Library implements Upcalls {
                     groupPolicyStub.onCreate(region, stub, spec);
                 }
             } catch (RemoteException e) {
-                sapphire_terminate(processedPolicies);
+                terminate(processedPolicies);
                 logger.severe(e.getMessage());
                 throw new Error("Could not create a replica of " + appObject.getObject(), e);
             } catch (Exception e) {
@@ -202,7 +202,7 @@ public abstract class Library implements Upcalls {
                     processedPoliciesReplica.get(outerPolicySize - 1).getServerPolicyStub();
         }
 
-        public AppObject sapphire_getAppObject() {
+        public AppObject getAppObject() {
             return appObject;
         }
 
@@ -218,7 +218,7 @@ public abstract class Library implements Upcalls {
          * @throws MicroServiceNotFoundException
          * @throws MicroServiceReplicaNotFoundException
          */
-        public void sapphire_pin_to_server(InetSocketAddress server)
+        public void pin_to_server(InetSocketAddress server)
                 throws RemoteException, MicroServiceNotFoundException,
                         MicroServiceReplicaNotFoundException {
             ServerPolicy serverPolicy = (ServerPolicy) this;
@@ -241,9 +241,8 @@ public abstract class Library implements Upcalls {
 
                 /* AppObject holds the previous DM's server policy stub(instead of So stub) in case of DM chain on the
                 server side. Update host name in the server stub within AppObject */
-                if (tempServerPolicy.sapphire_getAppObject().getObject()
-                        instanceof KernelObjectStub) {
-                    ((KernelObjectStub) tempServerPolicy.sapphire_getAppObject().getObject())
+                if (tempServerPolicy.getAppObject().getObject() instanceof KernelObjectStub) {
+                    ((KernelObjectStub) tempServerPolicy.getAppObject().getObject())
                             .$__updateHostname(server);
                 }
             }
@@ -277,7 +276,7 @@ public abstract class Library implements Upcalls {
         }
 
         // TODO (2018-9-26, Sungwook) Remove after verification.
-        public void sapphire_terminate() throws RemoteException {
+        public void terminate() throws RemoteException {
             try {
                 GlobalKernelReferences.nodeServer.oms.unRegisterSapphireReplica(getReplicaId());
             } catch (MicroServiceNotFoundException e) {
@@ -288,8 +287,7 @@ public abstract class Library implements Upcalls {
             KernelObjectFactory.delete($__getKernelOID());
         }
 
-        public void sapphire_terminate(List<PolicyContainer> processedPolicies)
-                throws RemoteException {
+        public void terminate(List<PolicyContainer> processedPolicies) throws RemoteException {
             try {
                 for (PolicyContainer policyContainer : processedPolicies) {
                     ServerPolicy sp = policyContainer.getServerPolicy();
@@ -361,7 +359,7 @@ public abstract class Library implements Upcalls {
             return actualAppObject;
         }
 
-        public String sapphire_getRegion() {
+        public String getRegion() {
             return kernel().getRegion();
         }
 
@@ -402,7 +400,7 @@ public abstract class Library implements Upcalls {
          * SAPPHIRE API FOR GROUP POLICIES
          */
 
-        public ArrayList<String> sapphire_getRegions() throws RemoteException {
+        public ArrayList<String> getRegions() throws RemoteException {
             return oms().getRegions();
         }
 
@@ -415,8 +413,8 @@ public abstract class Library implements Upcalls {
          * @throws RemoteException
          */
         // TODO: Remove region parameter after spec is applied to all DMs and scripts.
-        public List<InetSocketAddress> sapphire_getAddressList(
-                NodeSelectorSpec nodeSelector, String region) throws RemoteException {
+        public List<InetSocketAddress> getAddressList(NodeSelectorSpec nodeSelector, String region)
+                throws RemoteException {
             List<InetSocketAddress> serversInRegion;
 
             if (null != nodeSelector) { // spec takes priority over region
@@ -468,7 +466,7 @@ public abstract class Library implements Upcalls {
             for (Iterator<ServerPolicy> itr = servers.iterator(); itr.hasNext(); ) {
                 Policy.ServerPolicy server = itr.next();
                 try {
-                    server.sapphire_terminate();
+                    server.terminate();
                     itr.remove();
                 } catch (Exception e) {
 

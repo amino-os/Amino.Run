@@ -47,9 +47,9 @@ public class DHTPolicyTest extends BaseTest {
         /* Verify that all requests have been processed. Aggregate of I value in all the shards must be equal
         to (loopCount * (loopCount + 1))/2 */
         int cnt = 0;
-        cnt += ((SO) server1.sapphire_getAppObject().getObject()).getI();
-        cnt += ((SO) server2.sapphire_getAppObject().getObject()).getI();
-        cnt += ((SO) server3.sapphire_getAppObject().getObject()).getI();
+        cnt += ((SO) server1.getAppObject().getObject()).getI();
+        cnt += ((SO) server2.getAppObject().getObject()).getI();
+        cnt += ((SO) server3.getAppObject().getObject()).getI();
 
         Assert.assertEquals((loopCount * (loopCount + 1)) / 2, cnt);
     }

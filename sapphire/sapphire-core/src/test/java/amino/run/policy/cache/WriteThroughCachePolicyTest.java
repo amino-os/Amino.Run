@@ -63,7 +63,7 @@ public class WriteThroughCachePolicyTest {
 
         // verify that server side object has been modified
         TestCase.assertEquals(
-                expectedResult.toString(), server.sapphire_getAppObject().getObject().toString());
+                expectedResult.toString(), server.getAppObject().getObject().toString());
 
         // read from cache one more time to verify that cached object is correct
         String m = "public java.lang.String java.util.AbstractCollection.toString()";

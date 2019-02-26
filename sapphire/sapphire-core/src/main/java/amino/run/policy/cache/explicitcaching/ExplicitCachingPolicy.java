@@ -13,7 +13,7 @@ public class ExplicitCachingPolicy extends DefaultPolicy {
     public static class ClientPolicy extends DefaultClientPolicy {
         private AppObject cachedCopy = null;
 
-        private void pull() {
+        private void pull() throws Exception {
             AppObject appObject = ((ServerPolicy) this.getServer()).getCopy();
             if (!(appObject.getObject() instanceof ExplicitCacher)) {
                 throw new IllegalArgumentException("should be subclass of ExplicitCacher");
@@ -22,7 +22,7 @@ public class ExplicitCachingPolicy extends DefaultPolicy {
             this.cachedCopy = appObject;
         }
 
-        private void push() {
+        private void push() throws Exception {
             if (this.cachedCopy != null) {
                 ((ServerPolicy) this.getServer()).syncCopy(this.cachedCopy.getObject());
                 this.cachedCopy = null;

@@ -41,7 +41,11 @@ public class DefaultPolicy extends Policy {
         }
 
         @Override
-        public ServerPolicy getServer() {
+        public ServerPolicy getServer() throws RemoteException {
+            if (server == null) {
+                server = (DefaultServerPolicy) getGroup().onRefRequest();
+            }
+
             return server;
         }
 
@@ -51,9 +55,8 @@ public class DefaultPolicy extends Policy {
         }
 
         @Override
-        public void onCreate(GroupPolicy group, ServerPolicy server, MicroServiceSpec spec) {
+        public void onCreate(GroupPolicy group, MicroServiceSpec spec) {
             this.group = (DefaultGroupPolicy) group;
-            setServer(server);
         }
     }
 

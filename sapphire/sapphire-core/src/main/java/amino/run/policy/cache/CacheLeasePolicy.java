@@ -4,9 +4,6 @@ import amino.run.common.AppObject;
 import amino.run.common.MicroServiceNotAvailableException;
 import amino.run.kernel.common.KernelObjectNotFoundException;
 import amino.run.policy.DefaultPolicy;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -89,7 +86,7 @@ public class CacheLeasePolicy extends DefaultPolicy {
             }
         }
 
-        protected void sync() {
+        protected void sync() throws Exception {
             ((ServerPolicy) getServer()).syncObject(lease, cachedObject.getObject());
         }
 
@@ -142,18 +139,6 @@ public class CacheLeasePolicy extends DefaultPolicy {
                 leaseTimeout = new Date(0L); // The beginning of time.
                 cachedObject = null;
             }
-        }
-
-        protected void writeObject(ObjectOutputStream out) throws IOException {
-            // out.writeObject(server);
-            // out.writeObject(group);
-        }
-
-        protected void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-            // server = (ServerPolicy) in.readObject();
-            // group = (GroupPolicy) in.readObject();
-            lease = CacheLease.NO_LEASE;
-            cachedObject = null;
         }
     }
 
@@ -245,7 +230,7 @@ public class CacheLeasePolicy extends DefaultPolicy {
             }
         }
 
-        public void syncObject(UUID lease, Serializable object) {
+        public void syncObject(UUID lease, Serializable object) throws Exception {
             appObject.setObject(object);
         }
     }

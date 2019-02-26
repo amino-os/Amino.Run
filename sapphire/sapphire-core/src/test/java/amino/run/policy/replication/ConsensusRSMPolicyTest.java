@@ -180,9 +180,9 @@ public class ConsensusRSMPolicyTest extends BaseTest {
     public void onRPCWithoutLeader() throws Exception {
         String method = "public void amino.run.sampleSO.SO.incI()";
         ArrayList<Object> params = new ArrayList<Object>();
-        Policy.ClientPolicy client = spy(ConsensusRSMPolicy.ClientPolicy.class);
+        ConsensusRSMPolicy.ClientPolicy client = spy(ConsensusRSMPolicy.ClientPolicy.class);
         Policy.ServerPolicy server = spy(ConsensusRSMPolicy.ServerPolicy.class);
-        client.onCreate(spy(ConsensusRSMPolicy.GroupPolicy.class), server, null);
+        client.setServer(server);
         doThrow(new LeaderException("leaderException", null)).when(server).onRPC(method, params);
         thrown.expect(RemoteException.class);
         client.onRPC(method, params);
@@ -207,10 +207,10 @@ public class ConsensusRSMPolicyTest extends BaseTest {
         ConsensusRSMPolicy.ServerPolicy leaderServer =
                 (ConsensusRSMPolicy.ServerPolicy) this.client.getServer();
 
-        Policy.ClientPolicy localClient = spy(ConsensusRSMPolicy.ClientPolicy.class);
+        ConsensusRSMPolicy.ClientPolicy localClient = spy(ConsensusRSMPolicy.ClientPolicy.class);
         Policy.ServerPolicy server = spy(ConsensusRSMPolicy.ServerPolicy.class);
         /* Inject the stubbed server to be an rpc sever to client policy object and make the RPC to fail with leader exception containing actual leaderServer's reference in exception */
-        localClient.onCreate(spy(ConsensusRSMPolicy.GroupPolicy.class), server, null);
+        localClient.setServer(server);
         doThrow(new LeaderException("leaderException", leaderServer))
                 .when(server)
                 .onRPC(method, params);
@@ -229,7 +229,7 @@ public class ConsensusRSMPolicyTest extends BaseTest {
         ArrayList<Object> params = new ArrayList<Object>();
 
         /* Create a client policy, 3 server policy, group policy objects and inject group and current rpc server to client */
-        Policy.ClientPolicy client = spy(ConsensusRSMPolicy.ClientPolicy.class);
+        ConsensusRSMPolicy.ClientPolicy client = spy(ConsensusRSMPolicy.ClientPolicy.class);
         Policy.ServerPolicy server1 = spy(ConsensusRSMPolicy.ServerPolicy.class);
         Policy.ServerPolicy server2 = spy(ConsensusRSMPolicy.ServerPolicy.class);
         Policy.ServerPolicy server3 = spy(ConsensusRSMPolicy.ServerPolicy.class);
@@ -239,7 +239,8 @@ public class ConsensusRSMPolicyTest extends BaseTest {
         list.add(server2);
         list.add(server3);
         doReturn(list).when(group).getServers();
-        client.onCreate(group, server1, null);
+        client.setServer(server1);
+        client.onCreate(group, null);
 
         /* Make server1 and server2 to throw remote exceptions and server3 to return successfully */
         doThrow(RemoteException.class).when(server1).onRPC(method, params);
@@ -272,7 +273,7 @@ public class ConsensusRSMPolicyTest extends BaseTest {
                 (ConsensusRSMPolicy.ServerPolicy) this.client.getServer();
 
         /* Create a client policy, 3 server policy, group policy objects and inject group and current rpc server to client */
-        Policy.ClientPolicy localClient = spy(ConsensusRSMPolicy.ClientPolicy.class);
+        ConsensusRSMPolicy.ClientPolicy localClient = spy(ConsensusRSMPolicy.ClientPolicy.class);
         Policy.ServerPolicy server1 = spy(ConsensusRSMPolicy.ServerPolicy.class);
         Policy.ServerPolicy server2 = spy(ConsensusRSMPolicy.ServerPolicy.class);
         Policy.GroupPolicy group = spy(ConsensusRSMPolicy.GroupPolicy.class);
@@ -282,7 +283,8 @@ public class ConsensusRSMPolicyTest extends BaseTest {
         doReturn(list).when(group).getServers();
 
         /* Inject stubbed server to be an rpc sever to client object */
-        localClient.onCreate(group, server1, null);
+        localClient.setServer(server1);
+        localClient.onCreate(group, null);
 
         /* Make server1 to throw remote exception, server2 to throw leader exception with actual leader's reference in exception */
         doThrow(RemoteException.class).when(server1).onRPC(method, params);
@@ -308,7 +310,7 @@ public class ConsensusRSMPolicyTest extends BaseTest {
         ArrayList<Object> params = new ArrayList<Object>();
 
         /* Create a client policy, 3 server policy, group policy objects and inject group and current rpc server to client */
-        Policy.ClientPolicy localClient = spy(ConsensusRSMPolicy.ClientPolicy.class);
+        ConsensusRSMPolicy.ClientPolicy localClient = spy(ConsensusRSMPolicy.ClientPolicy.class);
         Policy.ServerPolicy server1 = spy(ConsensusRSMPolicy.ServerPolicy.class);
         Policy.ServerPolicy server2 = spy(ConsensusRSMPolicy.ServerPolicy.class);
         Policy.GroupPolicy group = spy(ConsensusRSMPolicy.GroupPolicy.class);
@@ -318,7 +320,8 @@ public class ConsensusRSMPolicyTest extends BaseTest {
         doReturn(list).when(group).getServers();
 
         /* Inject stubbed server to be an rpc sever to client object */
-        localClient.onCreate(group, server1, null);
+        localClient.setServer(server1);
+        localClient.onCreate(group, null);
 
         /* Make server1 to throw remote exception, server2 to throw leader exception with actual leader's reference in exception */
         doThrow(RemoteException.class).when(server1).onRPC(method, params);
@@ -342,7 +345,7 @@ public class ConsensusRSMPolicyTest extends BaseTest {
 
         /* Create a client policy, 2 server policy, group policy objects and inject group and current rpc server to client */
 
-        Policy.ClientPolicy client = spy(ConsensusRSMPolicy.ClientPolicy.class);
+        ConsensusRSMPolicy.ClientPolicy client = spy(ConsensusRSMPolicy.ClientPolicy.class);
         Policy.ServerPolicy server1 = spy(ConsensusRSMPolicy.ServerPolicy.class);
         Policy.ServerPolicy server2 = spy(ConsensusRSMPolicy.ServerPolicy.class);
         Policy.GroupPolicy group = spy(ConsensusRSMPolicy.GroupPolicy.class);
@@ -350,7 +353,8 @@ public class ConsensusRSMPolicyTest extends BaseTest {
         list.add(server1);
         list.add(server2);
         doReturn(list).when(group).getServers();
-        client.onCreate(group, server1, null);
+        client.setServer(server1);
+        client.onCreate(group, null);
 
         /* Make both server1 and server2 to throw remote exceptions(i.e., none of them are reachable) */
         doThrow(RemoteException.class).when(server1).onRPC(method, params);

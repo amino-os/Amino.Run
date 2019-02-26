@@ -275,7 +275,7 @@ public class Sapphire {
 
             /* Link everything together */
             // TODO: client is unncessary for outer policies of a replica.
-            client.onCreate(groupPolicyStub, serverPolicyStub, spec);
+            client.onCreate(groupPolicyStub, spec);
 
             // TODO: Separate out the following code block.
             // Note that subList is non serializable; hence, the new list creation.

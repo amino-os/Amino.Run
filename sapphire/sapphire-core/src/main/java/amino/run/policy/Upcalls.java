@@ -40,13 +40,12 @@ public interface Upcalls {
          * are contained in spec.
          *
          * @param group the group policy for the newly created sapphire object.
-         * @param server the default server policy for the newly created sapphire object.
          * @param spec sapphire object spec, which contains configuration parameters for the client
          *     TODO: Check that there really are configuration parameters for the client buried in
          *     there, and also change this parameter to more specifically be client configuration
          *     parameters.
          */
-        void onCreate(Policy.GroupPolicy group, Policy.ServerPolicy server, MicroServiceSpec spec);
+        void onCreate(Policy.GroupPolicy group, MicroServiceSpec spec);
 
         /**
          * Event handler for remote procedure calls/method invocations against the sapphire object.

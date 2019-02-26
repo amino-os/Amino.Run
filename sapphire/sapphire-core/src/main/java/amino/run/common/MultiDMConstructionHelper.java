@@ -11,13 +11,12 @@ public class MultiDMConstructionHelper {
      * Creates a policy name chain based on MicroServicerSpec and return list of policy names.
      *
      * @param spec
-     * @param idx starting index of spec where DM lists should be created from
      * @return list of policy names
      */
-    public static List<String> getPolicyNameChain(MicroServiceSpec spec, int idx) {
+    public static List<String> getPolicyNameChain(MicroServiceSpec spec) {
         List<String> policyNameChain = new ArrayList<>();
         List<DMSpec> dmList = spec.getDmList();
-        for (int i = idx; i < dmList.size(); i++) {
+        for (int i = 0; i < dmList.size(); i++) {
             policyNameChain.add(dmList.get(i).getName());
         }
 
@@ -28,13 +27,11 @@ public class MultiDMConstructionHelper {
      * Gets the policy names from the policyContainers.
      *
      * @param policyContainers
-     * @param startIdx
      * @return list of policy names
      */
-    public static List<String> getPolicyNames(
-            List<PolicyContainer> policyContainers, int startIdx) {
+    public static List<String> getPolicyNames(List<PolicyContainer> policyContainers) {
         List<String> policyNames = new ArrayList<>();
-        for (int m = startIdx; m < policyContainers.size(); m++) {
+        for (int m = 0; m < policyContainers.size(); m++) {
             policyNames.add(policyContainers.get(m).getPolicyName());
         }
 

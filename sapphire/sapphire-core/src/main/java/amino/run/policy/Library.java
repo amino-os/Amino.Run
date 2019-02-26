@@ -144,7 +144,7 @@ public abstract class Library implements Upcalls {
 
                 // Gets the names of policies that were already created (outer policies).
                 List<String> policyNames =
-                        MultiDMConstructionHelper.getPolicyNames(processedPolicies, 0);
+                        MultiDMConstructionHelper.getPolicyNames(processedPolicies);
 
                 // 1. Creates a new replica policy chain from already created policies before this
                 // policy (outer policies). Specifically, create instances from outermost up to this
@@ -152,7 +152,6 @@ public abstract class Library implements Upcalls {
                 // created group policies.
                 for (int i = 0; i < outerPolicySize; i++) {
                     Sapphire.createConnectedPolicy(
-                            i,
                             processedPolicies.get(i).getGroupPolicyStub(),
                             policyNames,
                             processedPoliciesReplica,
@@ -175,7 +174,7 @@ public abstract class Library implements Upcalls {
                 int innerPolicySize = this.nextPolicyNames.size();
                 for (int j = outerPolicySize; j < innerPolicySize + outerPolicySize; j++) {
                     Sapphire.createConnectedPolicy(
-                            j, null, policyNames, processedPoliciesReplica, soid, spec);
+                            null, policyNames, processedPoliciesReplica, soid, spec);
                     policyNames.remove(0);
                 }
 

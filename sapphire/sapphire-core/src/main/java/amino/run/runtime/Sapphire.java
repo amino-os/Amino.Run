@@ -132,10 +132,10 @@ public class Sapphire {
                 GlobalKernelReferences.nodeServer.oms.registerSapphireObject();
 
         /* Create a policy chain based on policy names in the spec */
-        List<String> policyNames = MultiDMConstructionHelper.getPolicyNameChain(spec, 0);
+        List<String> policyNames = MultiDMConstructionHelper.getPolicyNameChain(spec);
 
         for (int i = 0; i < spec.getDmList().size(); i++) {
-            createConnectedPolicy(i, null, policyNames, processedPolicies, microServiceID, spec);
+            createConnectedPolicy(null, policyNames, processedPolicies, microServiceID, spec);
             policyNames.remove(0);
         }
 
@@ -169,8 +169,6 @@ public class Sapphire {
      * server policy. Returns the list of processed policies which include the newly created policy
      * instances.
      *
-     * @param idx index of currently processing policy. i.e.,) if there were 2 outer DMs created
-     *     already, idx will be 3.
      * @param groupPolicy group policy is null when kernel creates AminoMicroservice; existing group
      *     policy is passed for outer policies when crearting a replica from Library.
      * @param policyNames a list of policy names that are not created yet. Only the first one in the
@@ -186,7 +184,6 @@ public class Sapphire {
     // TODO: which is better choice? split for each of Kernel initiated and Library initiated or
     // combine them?
     public static List<PolicyContainer> createConnectedPolicy(
-            int idx,
             GroupPolicy groupPolicy,
             List<String> policyNames,
             List<PolicyContainer> processedPolicies,
@@ -202,27 +199,30 @@ public class Sapphire {
                 createPolicyInstance(
                         microServiceID, groupPolicy, policyNames, processedPolicies, spec);
 
-        /* Check and get the previous DM's container if available. So that, server side and client side chain links can
-        be updated between the current DM and previous DM. If the previous DM's container is not available,
-        then DM/Policy being created is either for single DM based SO or It is the first DM/Policy in Multi DM based SO
-        (i.e., last mile server policy to SO */
-        PolicyContainer currentSPC = processedPolicies.get(idx);
-        ServerPolicy serverPolicy = currentSPC.getServerPolicy();
+        // index of currently processing policy. i.e.,) if there were 2 outer DMs created already,
+        // idx will be 3.
+        int idx = processedPolicies.size() - 1;
 
         try {
             if (idx > 0) {
+                /* Check and get the previous DM's container if available. So that, server side and client side chain links can
+                be updated between the current DM and previous DM. If the previous DM's container is not available (idx > 0),
+                then DM/Policy being created is either for single DM based SO or It is the first DM/Policy in Multi DM based SO
+                (i.e., last mile server policy to SO */
+                PolicyContainer currentSPC = processedPolicies.get(idx);
+                ServerPolicy serverPolicy = currentSPC.getServerPolicy();
+
                 // Previous server policy stub object acts as Sapphire Object(SO) to the current
                 // server policy. Outermost policy is linked to an actual app object;hence, it is
                 // not needed here.
                 PolicyContainer outerSPC = processedPolicies.get(idx - 1);
                 KernelObjectStub outerStub = outerSPC.getServerPolicyStub();
                 ServerPolicy outerSP = outerSPC.getServerPolicy();
-                ClientPolicy clientPolicy = currentSPC.getClientPolicy();
 
                 // Links this serverPolicy to stub for outer policy.
                 serverPolicy.$__initialize(new AppObject(Utils.ObjectCloner.deepCopy(outerStub)));
                 outerSP.setPreviousServerPolicy(serverPolicy);
-                outerStub.$__setNextClientPolicy(clientPolicy);
+                outerStub.$__setNextClientPolicy(currentSPC.getClientPolicy());
             }
         } catch (ClassNotFoundException | IOException e) {
             logger.severe("Creation of AppObject has failed: " + policyNames.get(0));

@@ -79,7 +79,7 @@ public class SapphireMultiPolicyChainTest extends BaseTest {
         policyNameChain.add(("amino.run.policy.DefaultPolicy"));
         policyNameChain.add("amino.run.policy.dht.DHTPolicy");
         for (int i = 0; i < 2; i++) {
-            Sapphire.createConnectedPolicy(i, null, policyNameChain, processedPolicies, soid, spec);
+            Sapphire.createConnectedPolicy(null, policyNameChain, processedPolicies, soid, spec);
             policyNameChain.remove(0);
         }
         assertEquals(2, processedPolicies.size());

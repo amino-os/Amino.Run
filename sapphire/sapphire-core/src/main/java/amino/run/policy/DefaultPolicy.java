@@ -121,8 +121,7 @@ public class DefaultPolicy extends Policy {
                 ServerPolicy replicaSource, InetSocketAddress dest, String region)
                 throws RemoteException, MicroServiceNotFoundException,
                         MicroServiceReplicaNotFoundException {
-            ServerPolicy replica =
-                    replicaSource.sapphire_replicate(replicaSource.getProcessedPolicies(), region);
+            ServerPolicy replica = replicaSource.sapphire_replicate(region);
             if (replicaSource.isLastPolicy()) {
                 pin(replica, dest);
             }

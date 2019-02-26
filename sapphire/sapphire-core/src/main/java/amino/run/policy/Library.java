@@ -3,19 +3,11 @@ package amino.run.policy;
 import amino.run.app.Language;
 import amino.run.app.MicroServiceSpec;
 import amino.run.app.NodeSelectorSpec;
-import amino.run.common.AppObject;
-import amino.run.common.AppObjectStub;
-import amino.run.common.GraalObject;
-import amino.run.common.MicroServiceID;
-import amino.run.common.MicroServiceNotFoundException;
-import amino.run.common.MicroServiceReplicaNotFoundException;
-import amino.run.common.ReplicaID;
-import amino.run.common.Utils;
+import amino.run.common.*;
 import amino.run.compiler.GlobalStubConstants;
 import amino.run.kernel.common.GlobalKernelReferences;
 import amino.run.kernel.common.KernelOID;
 import amino.run.kernel.common.KernelObjectFactory;
-import amino.run.kernel.common.KernelObjectNotCreatedException;
 import amino.run.kernel.common.KernelObjectNotFoundException;
 import amino.run.kernel.common.KernelObjectStub;
 import amino.run.kernel.server.KernelServerImpl;
@@ -24,10 +16,7 @@ import amino.run.policy.Policy.ServerPolicy;
 import amino.run.runtime.Sapphire;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.harmony.rmi.common.RMIUtil;
@@ -60,7 +49,7 @@ public abstract class Library implements Upcalls {
         // (farthest from actual app object).
         // It means these were the last in order in the client side of chain. New groups should be
         // created for this list of chain.
-        protected List<PolicyContainer> nextPolicies = new ArrayList<PolicyContainer>();
+        protected List<String> nextPolicyNames = new ArrayList<>();
 
         // List of ServerPolicies that were created previously. They are upper level in group
         // hierarchy. Therefore, this list of chain
@@ -95,8 +84,8 @@ public abstract class Library implements Upcalls {
             this.previousServerPolicy = serverPolicy;
         }
 
-        public void setNextPolicies(List<PolicyContainer> nextPolicies) {
-            this.nextPolicies = nextPolicies;
+        public void setNextPolicyNames(List<String> nextPolicyNames) {
+            this.nextPolicyNames = nextPolicyNames;
         }
 
         /**
@@ -134,58 +123,72 @@ public abstract class Library implements Upcalls {
             }
         }
 
-        /** Creates a replica of this server and registers it with the group. */
-        public ServerPolicy sapphire_replicate(
-                List<PolicyContainer> processedPolicies, String region) throws RemoteException {
-            KernelObjectStub serverPolicyStub = null;
+        /**
+         * Creates a replica chain. There are two big steps in this: 1) Creates a replica chain from
+         * outermost policy up to this policy. This is upstream policies of this one (and including
+         * this one). Since group policies were already created by upstream policies, this part of
+         * the chain points to the already created group policy. 2) Creates a replica chain for
+         * downsteam policies. Downstream policies create new group policies as those group policies
+         * belong to themselves. Details of each step is described in the code.
+         *
+         * @param region
+         * @return A replica (server stub) it just created.
+         * @throws RemoteException
+         */
+        public ServerPolicy sapphire_replicate(String region) throws RemoteException {
+            List<PolicyContainer> processedPoliciesReplica = new ArrayList<>();
+            int outerPolicySize = processedPolicies.size();
 
-            // Construct list of policies that will come after this policy on the server side.
             try {
-                // Create a new replica chain from already created policies before this policy and
-                // this policy.
-                List<PolicyContainer> processedPoliciesReplica = new ArrayList<PolicyContainer>();
-                Sapphire.createPolicy(
-                        this.getGroup().microServiceId,
-                        spec,
-                        processedPolicies,
-                        processedPoliciesReplica,
-                        region,
-                        null);
+                MicroServiceID soid = getReplicaId().getOID();
 
-                // Last policy in the returned chain is replica of this policy.
-                serverPolicyStub =
-                        processedPoliciesReplica
-                                .get(processedPoliciesReplica.size() - 1)
-                                .getServerPolicyStub();
+                // Gets the names of policies that were already created (outer policies).
+                List<String> policyNames =
+                        MultiDMConstructionHelper.getPolicyNames(processedPolicies);
 
-                // Complete the chain by creating new instances of server policies and stub that
-                // should be created after this policy.
-                Sapphire.createPolicy(
-                        this.getGroup().microServiceId,
-                        spec,
-                        this.nextPolicies,
-                        processedPoliciesReplica,
-                        region,
-                        null);
-            } catch (ClassNotFoundException e) {
-                // TODO Auto-generated catch block
-                logger.severe(e.getMessage());
-                throw new Error("Could not find the class for replication!", e);
-            } catch (KernelObjectNotCreatedException e) {
-                // TODO Auto-generated catch block
-                logger.severe(e.getMessage());
-                throw new Error("Could not create a replica!", e);
-            } catch (KernelObjectNotFoundException e) {
-                logger.severe(e.getMessage());
-                throw new Error("Could not find object to replicate!", e);
-            } catch (MicroServiceNotFoundException e) {
-                KernelObjectFactory.delete(serverPolicyStub.$__getKernelOID());
-                logger.severe(e.getMessage());
-                throw new Error("Could not find sapphire object on OMS", e);
-            } catch (MicroServiceReplicaNotFoundException e) {
-                KernelObjectFactory.delete(serverPolicyStub.$__getKernelOID());
-                logger.severe(e.getMessage());
-                throw new Error("Could not find sapphire object replica on OMS", e);
+                // 1. Creates a new replica policy chain from already created policies before this
+                // policy (outer policies). Specifically, create instances from outermost up to this
+                // policy. Note that the newly created policy instances will point to already
+                // created group policies.
+                for (int i = 0; i < outerPolicySize; i++) {
+                    Sapphire.createConnectedPolicy(
+                            processedPolicies.get(i).getGroupPolicyStub(),
+                            policyNames,
+                            processedPoliciesReplica,
+                            soid,
+                            spec);
+                    policyNames.remove(0);
+                }
+
+                // 2. Clones appObject in the outermost policy of the already created chain
+                // (original one), and assigns to the outermost policy of this replica chain.
+                ServerPolicy originalPolicy = processedPolicies.get(0).getServerPolicy();
+                ServerPolicy replicaPolicy = processedPoliciesReplica.get(0).getServerPolicy();
+                Sapphire.cloneAppObject(replicaPolicy, originalPolicy.sapphire_getAppObject());
+
+                // 3. Creates a rest of the replica policy chain from the next of this policy
+                // (inner)
+                // to the innermost policy. Note that it does not include the current policy. This
+                // creates new group policies as well.
+                policyNames = new ArrayList<>(this.nextPolicyNames);
+                int innerPolicySize = this.nextPolicyNames.size();
+                for (int j = outerPolicySize; j < innerPolicySize + outerPolicySize; j++) {
+                    Sapphire.createConnectedPolicy(
+                            null, policyNames, processedPoliciesReplica, soid, spec);
+                    policyNames.remove(0);
+                }
+
+                // 4. Executes GroupPolicy.onCreate() in the chain starting from the inner most
+                // instance up to outer policy of this replica. This is because group policy of this
+                // one and outer policies have been already executed. i.e.,) DM1->DM2->DM3->DM4, and
+                // if this DM is DM2, it will execute group policy for DM3 & DM4 only.
+                for (int k = innerPolicySize + outerPolicySize - 1; k >= outerPolicySize; k--) {
+                    Policy.GroupPolicy groupPolicyStub =
+                            processedPoliciesReplica.get(k).getGroupPolicyStub();
+                    ServerPolicy stub =
+                            (ServerPolicy) processedPoliciesReplica.get(k).getServerPolicyStub();
+                    groupPolicyStub.onCreate(region, stub, spec);
+                }
             } catch (RemoteException e) {
                 sapphire_terminate(processedPolicies);
                 logger.severe(e.getMessage());
@@ -195,7 +198,8 @@ public abstract class Library implements Upcalls {
                 throw new Error("Unknown exception occurred!", e);
             }
 
-            return (ServerPolicy) serverPolicyStub;
+            return (ServerPolicy)
+                    processedPoliciesReplica.get(outerPolicySize - 1).getServerPolicyStub();
         }
 
         public AppObject sapphire_getAppObject() {
@@ -220,6 +224,8 @@ public abstract class Library implements Upcalls {
             ServerPolicy serverPolicy = (ServerPolicy) this;
 
             // Ensure that we start from the first Server Policy.
+            // TODO: Consider using a reference to the innermost policy directly instead of going
+            // through the chain.
             while (serverPolicy.getPreviousServerPolicy() != null) {
                 serverPolicy = serverPolicy.getPreviousServerPolicy();
             }
@@ -232,6 +238,7 @@ public abstract class Library implements Upcalls {
                 PolicyContainer container = itr.next();
                 ServerPolicy tempServerPolicy = container.getServerPolicy();
                 container.getServerPolicyStub().$__updateHostname(server);
+
                 /* AppObject holds the previous DM's server policy stub(instead of So stub) in case of DM chain on the
                 server side. Update host name in the server stub within AppObject */
                 if (tempServerPolicy.sapphire_getAppObject().getObject()
@@ -325,7 +332,6 @@ public abstract class Library implements Upcalls {
                                         appObjectStubClass
                                                 .getConstructor(argClasses)
                                                 .newInstance(params);
-
                     } else {
                         actualAppObject = (AppObjectStub) appObjectStubClass.newInstance();
                     }

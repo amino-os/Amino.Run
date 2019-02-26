@@ -8,7 +8,6 @@ import amino.run.policy.transaction.TwoPCClient;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 public abstract class DefaultUpcallImpl extends Library {
@@ -48,19 +47,13 @@ public abstract class DefaultUpcallImpl extends Library {
             return appObject.invoke(method, params);
         }
 
-        @Deprecated
-        public Policy.ServerPolicy sapphire_replicate(List<PolicyContainer> processedPolicies)
-                throws RemoteException {
-            return super.sapphire_replicate(processedPolicies, "");
-        }
-
+        /* This function is here just to generate the stub for this function in all server policies */
         @Override
-        public Policy.ServerPolicy sapphire_replicate(
-                List<PolicyContainer> processedPolicies, String region) throws RemoteException {
-            return super.sapphire_replicate(processedPolicies, region);
+        public Policy.ServerPolicy sapphire_replicate(String region) throws RemoteException {
+            return super.sapphire_replicate(region);
         }
 
-        /* This function is added here just to generate the stub for this function in all Policies server policy */
+        /* This function is here just to generate the stub for this function in all server policies */
         @Override
         public void sapphire_pin_to_server(InetSocketAddress server)
                 throws RemoteException, MicroServiceNotFoundException,

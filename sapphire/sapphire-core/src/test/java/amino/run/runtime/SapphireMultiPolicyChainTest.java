@@ -2,18 +2,17 @@ package amino.run.runtime;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 
 import amino.run.app.DMSpec;
 import amino.run.app.Language;
 import amino.run.app.MicroServiceSpec;
-import amino.run.common.BaseTest;
-import amino.run.common.MicroServiceID;
+import amino.run.common.*;
 import amino.run.policy.DefaultPolicy;
 import amino.run.policy.PolicyContainer;
 import amino.run.policy.dht.DHTPolicy;
 import amino.run.sampleSO.SO;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -36,44 +35,53 @@ public class SapphireMultiPolicyChainTest extends BaseTest {
                 MicroServiceSpec.newBuilder()
                         .setLang(Language.java)
                         .setJavaClassName("amino.run.sampleSO.SO")
-                        .addDMSpec(DMSpec.newBuilder().setName(DHTPolicy.class.getName()).create())
                         .addDMSpec(
                                 DMSpec.newBuilder().setName(DefaultPolicy.class.getName()).create())
+                        .addDMSpec(DMSpec.newBuilder().setName(DHTPolicy.class.getName()).create())
                         .create();
         super.setUp(2, spec);
     }
 
     @Test
-    public void testNew_() throws Exception {
+    public void testNew_() {
         Object temp = Sapphire.new_(SO.class);
         assertNotEquals(null, temp);
     }
 
+    /**
+     * This tests the DMs set up in baseTest, and then, tests the createPolicyChain with given spec.
+     * It checks whether returned appStub is null.
+     *
+     * @throws Exception
+     */
+    // TODO: setUp() adds the DMs and create policy chain already which tests this scenario (hence,
+    // tests seem duplicate).
     @Test
-    public void testCreatePolicy() throws Exception {
-        List<PolicyContainer> policyNameChain = new ArrayList<PolicyContainer>();
-        List<PolicyContainer> processedPolicies = new ArrayList<PolicyContainer>();
-
-        /* Register for a sapphire object Id from OMS */
-        MicroServiceID microServiceId = spiedOms.registerSapphireObject();
-
-        policyNameChain.add(new PolicyContainer("amino.run.policy.dht.DHTPolicy", null));
-        Sapphire.createPolicy(microServiceId, spec, policyNameChain, processedPolicies, "", null);
-        assertEquals(1, processedPolicies.size());
+    public void testCreatePolicyChain() throws Exception {
+        AppObjectStub aos = Sapphire.createPolicyChain(spec, "IND", null);
+        assertNotNull(aos);
     }
 
+    /**
+     * This tests the DMs set up in baseTest, and then, tests createConnectedPolicy in iterative
+     * fashion for two DMs which are the same ones as set up in setUp().
+     *
+     * @throws Exception
+     */
     @Test
-    public void testCreatePolicyTwoPolicies() throws Exception {
-        List<PolicyContainer> policyNameChain = new ArrayList<PolicyContainer>();
-        List<PolicyContainer> processedPolicies = new ArrayList<PolicyContainer>();
+    public void testCreateConnectedPolicyTwoPolicies() throws Exception {
+        List<String> policyNameChain = new ArrayList<>();
+        List<PolicyContainer> processedPolicies = new ArrayList<>();
 
         /* Register for a sapphire object Id from OMS */
-        MicroServiceID microServiceId = spiedOms.registerSapphireObject();
+        MicroServiceID soid = spiedOms.registerSapphireObject();
 
-        policyNameChain.add(new PolicyContainer("amino.run.policy.dht.DHTPolicy", null));
-        policyNameChain.add(new PolicyContainer("amino.run.policy.DefaultPolicy", null));
-
-        Sapphire.createPolicy(microServiceId, spec, policyNameChain, processedPolicies, "", null);
+        policyNameChain.add(("amino.run.policy.DefaultPolicy"));
+        policyNameChain.add("amino.run.policy.dht.DHTPolicy");
+        for (int i = 0; i < 2; i++) {
+            Sapphire.createConnectedPolicy(null, policyNameChain, processedPolicies, soid, spec);
+            policyNameChain.remove(0);
+        }
         assertEquals(2, processedPolicies.size());
     }
 

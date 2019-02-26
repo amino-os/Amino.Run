@@ -22,15 +22,15 @@ import java.util.logging.Logger;
  * ExplicitMigratorImpl class). TODO: improve this by using annotations instead
  */
 public class ExplicitMigrationPolicy extends DefaultPolicy {
-    public static final int RETRYTIMEOUTINMILLIS = 15000;
-    public static final int MINWAITINTERVALINMILLIS = 100;
-    public static final String MIGRATEOBJECTMETHODNAME = "migrateObject";
+    public static final int DEFAULT_RETRY_TIMEOUT_IN_MILLISEC = 15000;
+    public static final int DEFAULT_MIN_WAIT_INTERVAL_IN_MILLISEC = 100;
+    public static final String DEFAULT_MIGRATE_OBJECT_METHOD_NAME = "migrateObject";
 
     /** Configurations for ExplicitMigrationPolicy */
     public static class Config implements SapphirePolicyConfig {
-        private int retryTimeoutInMillis = RETRYTIMEOUTINMILLIS;
-        private int minWaitIntervalInMillis = MINWAITINTERVALINMILLIS;
-        private String migrateObjectMethodName = MIGRATEOBJECTMETHODNAME;
+        private int retryTimeoutInMillis = DEFAULT_RETRY_TIMEOUT_IN_MILLISEC;
+        private int minWaitIntervalInMillis = DEFAULT_MIN_WAIT_INTERVAL_IN_MILLISEC;
+        private String migrateObjectMethodName = DEFAULT_MIGRATE_OBJECT_METHOD_NAME;
 
         public int getretryTimeoutInMillis() {
             return retryTimeoutInMillis;
@@ -76,9 +76,9 @@ public class ExplicitMigrationPolicy extends DefaultPolicy {
         private static Logger logger = Logger.getLogger(ClientPolicy.class.getName());
 
         // Maximum time interval for wait before timing out (in milliseconds)
-        private long retryTimeoutInMillis = RETRYTIMEOUTINMILLIS;
+        private long retryTimeoutInMillis = DEFAULT_RETRY_TIMEOUT_IN_MILLISEC;
         // Minimum time interval for wait before retrying (in milliseconds)
-        private long minWaitIntervalInMillis = MINWAITINTERVALINMILLIS;
+        private long minWaitIntervalInMillis = DEFAULT_MIN_WAIT_INTERVAL_IN_MILLISEC;
 
         @Override
         public void onCreate(Policy.GroupPolicy group, MicroServiceSpec spec) {
@@ -127,7 +127,7 @@ public class ExplicitMigrationPolicy extends DefaultPolicy {
 
     public static class ServerPolicy extends DefaultServerPolicy {
         private static Logger logger = Logger.getLogger(ServerPolicy.class.getName());
-        private String migrateObjectMethodName = MIGRATEOBJECTMETHODNAME;
+        private String migrateObjectMethodName = DEFAULT_MIGRATE_OBJECT_METHOD_NAME;
 
         @Override
         public void onCreate(Policy.GroupPolicy group, MicroServiceSpec spec) {

@@ -23,7 +23,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 /** Created by Vishwajeet on 11/9/18. */
 @RunWith(PowerMockRunner.class)
-public class KSTest extends BaseTest {
+public class KernelServerTest extends BaseTest {
     SO so;
     @Rule public ExpectedException thrown = ExpectedException.none();
     // Added to allow SystemExit in order to prevent termination of code

@@ -1,9 +1,17 @@
 package amino.run.graal.io;
 
+import static amino.run.common.Utils.getGraalContext;
+
 import amino.run.app.Language;
-import java.io.*;
-import java.util.*;
-import org.graalvm.polyglot.*;
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import org.graalvm.polyglot.Context;
+import org.graalvm.polyglot.Value;
 
 public class Deserializer implements AutoCloseable {
 
@@ -16,7 +24,7 @@ public class Deserializer implements AutoCloseable {
         this.in = new DataInputStream(in);
         this.context = c;
         if (this.context == null) {
-            this.context = context;
+            this.context = getGraalContext(null, null);
         }
     }
 

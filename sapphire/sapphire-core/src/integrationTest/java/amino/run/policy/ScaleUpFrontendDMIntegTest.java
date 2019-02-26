@@ -101,7 +101,7 @@ public class ScaleUpFrontendDMIntegTest {
                         // ServerOverLoadException or KernelObjectMigratingException
                         // or ScaleUpException is thrown
                         for (int k = 0; k < i; k++) {
-                            int replica_count = LoadBalancedFrontendPolicy.STATIC_REPLICA_COUNT;
+                            int replica_count = LoadBalancedFrontendPolicy.DEFAULT_REPLICA_COUNT;
                             // There is a possibility that set happens in one server and get from a
                             // different server.So,we are checking for the value in all the
                             // available servers.

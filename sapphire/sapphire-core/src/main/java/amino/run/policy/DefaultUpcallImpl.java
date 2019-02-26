@@ -72,7 +72,7 @@ public abstract class DefaultUpcallImpl extends Library {
 
         /* This function is here just to generate the stub for this function in all server policies */
         @Override
-        public Policy.ServerPolicy sapphire_replicate(String region) throws RemoteException {
+        public Policy.ServerPolicy replicate(String region) throws RemoteException {
             return super.replicate(region);
         }
 

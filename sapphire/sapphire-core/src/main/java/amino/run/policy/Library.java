@@ -135,7 +135,7 @@ public abstract class Library implements Upcalls {
          * @return A replica (server stub) it just created.
          * @throws RemoteException
          */
-        public ServerPolicy sapphire_replicate(String region) throws RemoteException {
+        public ServerPolicy replicate(String region) throws RemoteException {
             List<PolicyContainer> processedPoliciesReplica = new ArrayList<>();
             int outerPolicySize = processedPolicies.size();
 

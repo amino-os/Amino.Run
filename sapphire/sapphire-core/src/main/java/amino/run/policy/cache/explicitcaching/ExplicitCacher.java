@@ -1,7 +1,7 @@
 package amino.run.policy.cache.explicitcaching;
 
 public interface ExplicitCacher {
-    void pull();
+    void pull() throws Exception;
 
-    void push();
+    void push() throws Exception;
 }

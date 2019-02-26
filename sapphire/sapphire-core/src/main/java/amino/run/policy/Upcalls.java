@@ -48,34 +48,6 @@ public interface Upcalls {
         void onCreate(Policy.GroupPolicy group, MicroServiceSpec spec);
 
         /**
-         * TODO: Move this method out of this interface. It is not intended to be an upcall from the
-         * DK to the DM. In the current code however it is called before {@link onCreate} (currently
-         * in {@link sapphire.runtime.Sapphire.createPolicy}. This is not correct. It is intended to
-         * be an internal method in the DM, used to set the internal server instance variable, for
-         * example: 1. DefaultUpcallImpl.ClientPolicy.onRPC() upon RemoteException when primary
-         * server dies. 2. ConsensusRSMPolicy.ClientPolicy.onRPC() upon LeaderException.
-         *
-         * <p>It should also presumably be called to initialise the client (in {@link onCreate()})
-         *
-         * @param server
-         */
-        void setServer(Policy.ServerPolicy server);
-
-        /**
-         * Get the cached reference to the primary sapphire object's remote server policy.
-         *
-         * @return the primary sapphire object's server policy
-         */
-        Policy.ServerPolicy getServer();
-
-        /**
-         * Get the cached reference to the remote group policy (on OMS) for this sapphire object.
-         *
-         * @return the group policy for this sapphire object
-         */
-        Policy.GroupPolicy getGroup();
-
-        /**
          * Event handler for remote procedure calls/method invocations against the sapphire object.
          * Usually the default handling is simply to invoke onRPC against the remote server policy
          * of the cached primary replica. But DM's may over-ride this to direct the call to other

@@ -76,9 +76,11 @@ public final class AppStub extends Stub {
         StringBuilder buffer = new StringBuilder();
         buffer.append(
                 indenter.indent()
-                        + "amino.run.policy.Policy.ClientPolicy "
-                        + GlobalStubConstants.APPSTUB_POLICY_CLIENT_FIELD_NAME
-                        + " = null;"
+                        + "amino.run.common.MicroServiceID $__microServiceId = null;"
+                        + EOLN);
+        buffer.append(
+                indenter.indent()
+                        + "amino.run.policy.Policy.ClientPolicy $__client = null;"
                         + EOLN);
         buffer.append(indenter.indent() + "boolean $__directInvocation = false;" + EOLN);
         return buffer.toString();
@@ -120,19 +122,23 @@ public final class AppStub extends Stub {
         /* The $__initialize function */
         buffer.append(
                 indenter.indent()
-                        + "public void $__initialize(amino.run.policy.Policy.ClientPolicy client) {"
+                        + "public void $__initialize(amino.run.common.MicroServiceID microServiceId, amino.run.policy.Policy.ClientPolicy client) {"
                         + EOLN);
-        buffer.append(
-                indenter.tIncrease()
-                        + GlobalStubConstants.APPSTUB_POLICY_CLIENT_FIELD_NAME
-                        + " = client;"
-                        + EOLN);
+        buffer.append(indenter.tIncrease() + "$__client = client;" + EOLN);
+        buffer.append(indenter.tIncrease() + "$__microServiceId = microServiceId;" + EOLN);
         buffer.append(indenter.indent() + "}" + EOLN + EOLN);
 
         /* The $__initialize function for directInvocation */
         buffer.append(
                 indenter.indent() + "public void $__initialize(boolean directInvocation) {" + EOLN);
         buffer.append(indenter.tIncrease() + "$__directInvocation = directInvocation;" + EOLN);
+        buffer.append(indenter.indent() + "}" + EOLN + EOLN);
+
+        buffer.append(
+                indenter.indent()
+                        + "public amino.run.common.MicroServiceID $__getMicroServiceId() {"
+                        + EOLN);
+        buffer.append(indenter.tIncrease() + "return $__microServiceId;" + EOLN);
         buffer.append(indenter.indent() + "}" + EOLN + EOLN);
 
         /* Implement the $__clone() method */
@@ -229,9 +235,7 @@ public final class AppStub extends Stub {
         buffer.append(indenter.tIncrease(tabWidth) + "try {" + EOLN); // $NON-NLS-1$
         buffer.append(
                 indenter.tIncrease(tabWidth + 1)
-                        + "$__result = "
-                        + GlobalStubConstants.APPSTUB_POLICY_CLIENT_FIELD_NAME
-                        + ".onRPC($__method, $__params);"
+                        + "$__result = $__client.onRPC($__method, $__params);"
                         + EOLN); // $NON-NLS-1$
         buffer.append(
                 indenter.tIncrease(tabWidth)

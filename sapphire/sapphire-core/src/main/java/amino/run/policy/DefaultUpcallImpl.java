@@ -8,6 +8,7 @@ import amino.run.policy.transaction.TwoPCClient;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.Random;
 import java.util.UUID;
 
 public abstract class DefaultUpcallImpl extends Library {
@@ -32,6 +33,28 @@ public abstract class DefaultUpcallImpl extends Library {
             }
             return ret;
         }
+
+        /**
+         * Set the remote server policy in cache.
+         *
+         * @param server Remote server policy
+         */
+        protected abstract void setServer(Policy.ServerPolicy server);
+
+        /**
+         * Get the cached reference to remote server policy object.
+         *
+         * @return Remote server policy
+         * @throws RemoteException
+         */
+        protected abstract Policy.ServerPolicy getServer() throws RemoteException;
+
+        /**
+         * Get the cached reference to remote group policy object.
+         *
+         * @return Remote group policy
+         */
+        protected abstract Policy.GroupPolicy getGroup();
 
         protected UUID getCurrentTransaction() {
             return TransactionContext.getCurrentTransaction();
@@ -83,8 +106,7 @@ public abstract class DefaultUpcallImpl extends Library {
         @Override
         public Policy.ServerPolicy onRefRequest() throws RemoteException {
             ArrayList<Policy.ServerPolicy> servers = getServers();
-            // By default just return the primary/first replica.  All DM's have at least one.
-            return servers.get(0);
+            return servers.get(new Random().nextInt(servers.size()));
         }
 
         @Override

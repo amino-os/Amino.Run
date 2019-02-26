@@ -122,7 +122,7 @@ public class LockingTransactionPolicy extends CacheLeasePolicy {
 
         // To make visible for unit testing, because superclass is in a different package.
         @Override
-        protected void sync() {
+        protected void sync() throws Exception {
             super.sync();
         }
     }

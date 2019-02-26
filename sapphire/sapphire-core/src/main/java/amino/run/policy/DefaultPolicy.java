@@ -41,7 +41,11 @@ public class DefaultPolicy extends Policy {
         }
 
         @Override
-        public ServerPolicy getServer() {
+        public ServerPolicy getServer() throws RemoteException {
+            if (server == null) {
+                server = (DefaultServerPolicy) getGroup().onRefRequest();
+            }
+
             return server;
         }
 

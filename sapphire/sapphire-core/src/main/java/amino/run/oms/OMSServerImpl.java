@@ -10,7 +10,6 @@ import amino.run.common.MicroServiceNameModificationException;
 import amino.run.common.MicroServiceNotFoundException;
 import amino.run.common.MicroServiceReplicaNotFoundException;
 import amino.run.common.ReplicaID;
-import amino.run.compiler.GlobalStubConstants;
 import amino.run.kernel.common.KernelOID;
 import amino.run.kernel.common.KernelObjectNotCreatedException;
 import amino.run.kernel.common.KernelObjectNotFoundException;
@@ -22,7 +21,6 @@ import amino.run.policy.Policy;
 import amino.run.runtime.EventHandler;
 import amino.run.runtime.Sapphire;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.net.InetSocketAddress;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -135,24 +133,6 @@ public class OMSServerImpl implements OMSServer, Registry {
         return serverManager.getServers(spec);
     }
 
-    /**
-     * Extracts sapphire client policy from app object stub
-     *
-     * @param appObjStub
-     * @return Returns sapphire client policy
-     * @throws NoSuchFieldException
-     * @throws IllegalAccessException
-     */
-    private Policy.ClientPolicy extractClientPolicy(AppObjectStub appObjStub)
-            throws NoSuchFieldException, IllegalAccessException {
-        Field field =
-                appObjStub
-                        .getClass()
-                        .getDeclaredField(GlobalStubConstants.APPSTUB_POLICY_CLIENT_FIELD_NAME);
-        field.setAccessible(true);
-        return (Policy.ClientPolicy) field.get(appObjStub);
-    }
-
     @Override
     public MicroServiceID create(String microServiceSpec, Object... args)
             throws RemoteException, MicroServiceCreationException {
@@ -179,11 +159,8 @@ public class OMSServerImpl implements OMSServer, Registry {
         try {
             AppObjectStub appObjStub = server.createSapphireObject(microServiceSpec, args);
             assert appObjStub != null;
-            Policy.ClientPolicy clientPolicy = extractClientPolicy(appObjStub);
-            MicroServiceID sid = clientPolicy.getGroup().getSapphireObjId();
-            objectManager.setInstanceObjectStub(sid, appObjStub);
-            objectManager.setRootGroupPolicy(sid, clientPolicy.getGroup());
-            return clientPolicy.getGroup().getSapphireObjId();
+            objectManager.setInstanceObjectStub(appObjStub.$__getMicroServiceId(), appObjStub);
+            return appObjStub.$__getMicroServiceId();
         } catch (Exception e) {
             throw new MicroServiceCreationException(
                     "Failed to create sapphire object. Exception occurred at kernel server.", e);

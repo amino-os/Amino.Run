@@ -180,7 +180,7 @@ public class ConsensusRSMPolicyTest extends BaseTest {
     public void onRPCWithoutLeader() throws Exception {
         String method = "public void amino.run.sampleSO.SO.incI()";
         ArrayList<Object> params = new ArrayList<Object>();
-        Policy.ClientPolicy client = spy(ConsensusRSMPolicy.ClientPolicy.class);
+        ConsensusRSMPolicy.ClientPolicy client = spy(ConsensusRSMPolicy.ClientPolicy.class);
         Policy.ServerPolicy server = spy(ConsensusRSMPolicy.ServerPolicy.class);
         client.setServer(server);
         doThrow(new LeaderException("leaderException", null)).when(server).onRPC(method, params);
@@ -207,7 +207,7 @@ public class ConsensusRSMPolicyTest extends BaseTest {
         ConsensusRSMPolicy.ServerPolicy leaderServer =
                 (ConsensusRSMPolicy.ServerPolicy) this.client.getServer();
 
-        Policy.ClientPolicy localClient = spy(ConsensusRSMPolicy.ClientPolicy.class);
+        ConsensusRSMPolicy.ClientPolicy localClient = spy(ConsensusRSMPolicy.ClientPolicy.class);
         Policy.ServerPolicy server = spy(ConsensusRSMPolicy.ServerPolicy.class);
         /* Inject the stubbed server to be an rpc sever to client policy object and make the RPC to fail with leader exception containing actual leaderServer's reference in exception */
         localClient.setServer(server);
@@ -229,7 +229,7 @@ public class ConsensusRSMPolicyTest extends BaseTest {
         ArrayList<Object> params = new ArrayList<Object>();
 
         /* Create a client policy, 3 server policy, group policy objects and inject group and current rpc server to client */
-        Policy.ClientPolicy client = spy(ConsensusRSMPolicy.ClientPolicy.class);
+        ConsensusRSMPolicy.ClientPolicy client = spy(ConsensusRSMPolicy.ClientPolicy.class);
         Policy.ServerPolicy server1 = spy(ConsensusRSMPolicy.ServerPolicy.class);
         Policy.ServerPolicy server2 = spy(ConsensusRSMPolicy.ServerPolicy.class);
         Policy.ServerPolicy server3 = spy(ConsensusRSMPolicy.ServerPolicy.class);
@@ -273,7 +273,7 @@ public class ConsensusRSMPolicyTest extends BaseTest {
                 (ConsensusRSMPolicy.ServerPolicy) this.client.getServer();
 
         /* Create a client policy, 3 server policy, group policy objects and inject group and current rpc server to client */
-        Policy.ClientPolicy localClient = spy(ConsensusRSMPolicy.ClientPolicy.class);
+        ConsensusRSMPolicy.ClientPolicy localClient = spy(ConsensusRSMPolicy.ClientPolicy.class);
         Policy.ServerPolicy server1 = spy(ConsensusRSMPolicy.ServerPolicy.class);
         Policy.ServerPolicy server2 = spy(ConsensusRSMPolicy.ServerPolicy.class);
         Policy.GroupPolicy group = spy(ConsensusRSMPolicy.GroupPolicy.class);
@@ -310,7 +310,7 @@ public class ConsensusRSMPolicyTest extends BaseTest {
         ArrayList<Object> params = new ArrayList<Object>();
 
         /* Create a client policy, 3 server policy, group policy objects and inject group and current rpc server to client */
-        Policy.ClientPolicy localClient = spy(ConsensusRSMPolicy.ClientPolicy.class);
+        ConsensusRSMPolicy.ClientPolicy localClient = spy(ConsensusRSMPolicy.ClientPolicy.class);
         Policy.ServerPolicy server1 = spy(ConsensusRSMPolicy.ServerPolicy.class);
         Policy.ServerPolicy server2 = spy(ConsensusRSMPolicy.ServerPolicy.class);
         Policy.GroupPolicy group = spy(ConsensusRSMPolicy.GroupPolicy.class);
@@ -345,7 +345,7 @@ public class ConsensusRSMPolicyTest extends BaseTest {
 
         /* Create a client policy, 2 server policy, group policy objects and inject group and current rpc server to client */
 
-        Policy.ClientPolicy client = spy(ConsensusRSMPolicy.ClientPolicy.class);
+        ConsensusRSMPolicy.ClientPolicy client = spy(ConsensusRSMPolicy.ClientPolicy.class);
         Policy.ServerPolicy server1 = spy(ConsensusRSMPolicy.ServerPolicy.class);
         Policy.ServerPolicy server2 = spy(ConsensusRSMPolicy.ServerPolicy.class);
         Policy.GroupPolicy group = spy(ConsensusRSMPolicy.GroupPolicy.class);

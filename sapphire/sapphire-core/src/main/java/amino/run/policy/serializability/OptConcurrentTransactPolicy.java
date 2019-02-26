@@ -146,14 +146,17 @@ public class OptConcurrentTransactPolicy extends DefaultPolicy {
 
     public static class ServerPolicy extends DefaultServerPolicy {
 
-        public AppObject getAppObject() throws Exception {
-            return sapphire_getAppObject();
+        @Override
+        public AppObject
+                getAppObject() { // TODO: quinton: Why do integration tests fail if this seemingly
+            // unnecessary method is removed?
+            return super.getAppObject();
         }
 
         public synchronized void syncObject(byte[] msgDigest, Serializable object)
                 throws Exception {
             /* TODO :  Have serialized object to generate the digest. This approach is slow. Need to be optimized later */
-            byte[] oldDigest = calculateMessageDigest(sapphire_getAppObject().getObject());
+            byte[] oldDigest = calculateMessageDigest(getAppObject().getObject());
             if (MessageDigest.isEqual(msgDigest, oldDigest)) {
                 /* App object synchronization is allowed only when object snapshot has not been
                 modified since the beginning of transaction */

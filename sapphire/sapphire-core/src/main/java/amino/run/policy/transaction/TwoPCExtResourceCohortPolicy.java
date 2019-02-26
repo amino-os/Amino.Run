@@ -13,7 +13,7 @@ public class TwoPCExtResourceCohortPolicy extends TwoPCCohortPolicy {
             TLSTransactionManager internalTransactionManager = new TLSTransactionManager();
             internalTransactionManager.setValidator(
                     new NonconcurrentTransactionValidator(
-                            this.sapphire_getAppObject(), this.sandboxProvider));
+                            this.getAppObject(), this.sandboxProvider));
             this.setTransactionManager(
                     new ExtResourceTransactionManager(
                             this.sandboxProvider, internalTransactionManager));

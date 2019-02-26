@@ -73,20 +73,20 @@ public abstract class DefaultUpcallImpl extends Library {
         /* This function is here just to generate the stub for this function in all server policies */
         @Override
         public Policy.ServerPolicy sapphire_replicate(String region) throws RemoteException {
-            return super.sapphire_replicate(region);
+            return super.replicate(region);
         }
 
         /* This function is here just to generate the stub for this function in all server policies */
         @Override
-        public void sapphire_pin_to_server(InetSocketAddress server)
+        public void pin_to_server(InetSocketAddress server)
                 throws RemoteException, MicroServiceNotFoundException,
                         MicroServiceReplicaNotFoundException {
-            super.sapphire_pin_to_server(server);
+            super.pin_to_server(server);
         }
 
         @Override
-        public void sapphire_terminate() throws RemoteException {
-            super.sapphire_terminate(this.getProcessedPolicies());
+        public void terminate() throws RemoteException {
+            super.terminate(this.getProcessedPolicies());
         }
 
         @Override

@@ -65,8 +65,8 @@ public class LoadBalancedFrontendPolicyTest extends BaseTest {
         params.add(new Integer(2));
         this.client.onRPC(setMethodName, params);
         this.client.onRPC(setMethodName, params);
-        assertEquals(((SO) server1.sapphire_getAppObject().getObject()).getI().intValue(), 2);
-        assertEquals(((SO) server2.sapphire_getAppObject().getObject()).getI().intValue(), 2);
+        assertEquals(((SO) server1.getAppObject().getObject()).getI().intValue(), 2);
+        assertEquals(((SO) server2.getAppObject().getObject()).getI().intValue(), 2);
     }
 
     /**

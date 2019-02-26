@@ -54,7 +54,7 @@ public class WriteThroughCachePolicy extends DefaultPolicy {
 
     public static class ServerPolicy extends DefaultServerPolicy {
         public AppObject getObject() {
-            return sapphire_getAppObject();
+            return getAppObject();
         }
     }
 

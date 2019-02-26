@@ -48,7 +48,7 @@ public class OMSTest extends BaseTest {
                         .setJavaClassName("amino.run.sampleSO.SO")
                         .create();
         super.setUp(1, spec);
-        so = ((SO) (server1.sapphire_getAppObject().getObject()));
+        so = ((SO) (server1.getAppObject().getObject()));
         omsImpl = (OMSServerImpl) spiedOms;
 
         // In order to access the methods in SapphireObjectManager, reflection is used to get the

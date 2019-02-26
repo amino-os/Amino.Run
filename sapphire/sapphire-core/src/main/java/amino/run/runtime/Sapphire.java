@@ -286,6 +286,7 @@ public class Sapphire {
             serverPolicy.setNextPolicyNames(nextPolicyNames);
             serverPolicyStub.setIsLastPolicy(nextPolicyNames.size() == 0);
 
+<<<<<<< HEAD
             /* Updates the list of processed policies. */
             PolicyContainer processedPolicy = new PolicyContainer(policyName, groupPolicyStub);
             processedPolicy.setServerPolicy(serverPolicy);
@@ -314,6 +315,17 @@ public class Sapphire {
         } catch (IllegalAccessException | InstantiationException e) {
             logger.severe("Failed while instantiating client class for " + policyName);
             throw new MicroServiceCreationException(e);
+=======
+            /* Build client side appObjectStub from appObjectStub within AppObject of first DM's server policy in chain
+            and inject its client policy into it. An instance of Client side AppObjectStub is created at the end of
+            successful creation of SO. */
+            if (processedPolicies.get(0).getServerPolicy() == serverPolicy) {
+                appStub = (AppObjectStub) serverPolicy.getAppObject().getObject();
+                // TODO(multi-lang): We may need to create a clone for non-java app object stub.
+                appStub = spec.getLang() == Language.java ? createClientAppStub(appStub) : appStub;
+                appStub.$__initialize(client);
+            }
+>>>>>>> Removed sapphire_ prefixes from method names.
         }
 
         return processedPolicies;

@@ -96,7 +96,7 @@ public abstract class DefaultUpcallImpl extends Library {
     public abstract static class GroupPolicy extends GroupPolicyLibrary {
 
         /*
-         * INTERNAL FUNCTIONS (Used by Sapphire runtime)
+         * INTERNAL FUNCTIONS (Used by MicroService runtime)
          */
         public void $__initialize(String appObjectClassName, ArrayList<Object> params) {
             this.appObjectClassName = appObjectClassName;

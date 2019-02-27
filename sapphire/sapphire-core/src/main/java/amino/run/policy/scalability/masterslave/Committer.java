@@ -264,7 +264,7 @@ public class Committer implements Closeable {
                         new Object[] {request, response});
             } catch (ExecutionException e) {
                 // Method invocation on application object failed.
-                // This is caused by application errors, not Sapphire errors
+                // This is caused by application errors, not MicroService errors
                 AppExecutionException ex =
                         new AppExecutionException("method invocation on app object failed", e);
                 logger.log(
@@ -274,7 +274,8 @@ public class Committer implements Closeable {
                         ex);
                 response = new MethodInvocationResponse(FAILURE, ex);
             } catch (Exception e) {
-                // This is likely caused by Sapphire errors. We treat it as an application error for
+                // This is likely caused by MicroService errors. We treat it as an application error
+                // for
                 // now.
                 // The problem is: the other replica may not run into this exception. This exception
                 // may cause two replicas out of sync.

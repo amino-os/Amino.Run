@@ -4,18 +4,16 @@ import java.security.MessageDigest;
 import java.util.Hashtable;
 import java.util.Map;
 
-import amino.run.app.SapphireObject;
+import amino.run.app.MicroService;
 import amino.run.policy.dht.DHTKey;
-import amino.run.app.SapphireObject;
-import static amino.run.runtime.Sapphire.*;
 
-import amino.run.policy.dht.DHTKey;
-import amino.run.policy.dht.DHTPolicy;
-import amino.run.runtime.SapphireConfiguration;
+import static amino.run.runtime.MicroService.*;
+
+import amino.run.runtime.MicroServiceConfiguration;
 
 
-@SapphireConfiguration(Policies = "amino.run.policy.atleastoncerpc.AtLeastOnceRPCPolicy")
-public class UserManager implements SapphireObject {
+@MicroServiceConfiguration(Policies = "amino.run.policy.atleastoncerpc.AtLeastOnceRPCPolicy")
+public class UserManager implements MicroService {
     Map<DHTKey, User> users;
     private TagManager tm;
 

@@ -107,7 +107,7 @@ public class OptConcurrentTransactPolicy extends DefaultPolicy {
                 cachedObject = localCachedObject;
             } else {
                 throw new TransactionAlreadyStartedException(
-                        "Transaction already started on Sapphire object.  Rollback or commit before starting a new transaction.");
+                        "Transaction already started on MicroService object.  Rollback or commit before starting a new transaction.");
             }
         }
 

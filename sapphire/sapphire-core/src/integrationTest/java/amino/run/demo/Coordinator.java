@@ -1,9 +1,9 @@
 package amino.run.demo;
 
-import amino.run.app.SapphireObject;
+import amino.run.app.MicroService;
 import java.io.Serializable;
 
-public class Coordinator implements SapphireObject {
+public class Coordinator implements MicroService {
 
     private KVStore store1;
     private KVStore store2;

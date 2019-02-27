@@ -46,20 +46,20 @@ public interface OMSServer extends Remote {
             throws RemoteException, ClassNotFoundException, KernelObjectNotCreatedException,
                     MicroServiceNotFoundException;
 
-    MicroServiceID registerSapphireObject() throws RemoteException;
+    MicroServiceID registerMicroService() throws RemoteException;
 
-    ReplicaID registerSapphireReplica(MicroServiceID microServiceId)
+    ReplicaID registerReplica(MicroServiceID microServiceId)
             throws RemoteException, MicroServiceNotFoundException;
 
-    void setSapphireReplicaDispatcher(ReplicaID replicaId, EventHandler dispatcher)
+    void setReplicaDispatcher(ReplicaID replicaId, EventHandler dispatcher)
             throws RemoteException, MicroServiceNotFoundException,
                     MicroServiceReplicaNotFoundException;
 
     boolean delete(MicroServiceID id) throws RemoteException, MicroServiceNotFoundException;
 
-    void unRegisterSapphireObject(MicroServiceID microServiceId)
+    void unRegisterMicroService(MicroServiceID microServiceId)
             throws RemoteException, MicroServiceNotFoundException;
 
-    void unRegisterSapphireReplica(ReplicaID replicaId)
+    void unRegisterReplica(ReplicaID replicaId)
             throws RemoteException, MicroServiceNotFoundException;
 }

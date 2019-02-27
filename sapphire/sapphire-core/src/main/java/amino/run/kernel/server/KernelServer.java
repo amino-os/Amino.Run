@@ -14,7 +14,7 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 
 /**
- * Interface for the Sapphire Kernel Server
+ * Interface for the MicroService Kernel Server
  *
  * @author iyzhang
  */

@@ -85,7 +85,7 @@ public class LoadBalancedFrontendPolicy extends DefaultPolicy {
     }
 
     /**
-     * LoadBalancedFrontend client policy. The client will LoadBalance among the Sapphire Server
+     * LoadBalancedFrontend client policy. The client will LoadBalance among the MicroService Server
      * replica objects. client side DM instance should randomise the order in which it performs
      * round robin against replicas
      *

@@ -124,7 +124,7 @@ public class CacheLeasePolicy extends DefaultPolicy {
                 leaseTimeout = cachelease.getLeaseTimeout();
             } catch (RemoteException e) {
                 throw new MicroServiceNotAvailableException(
-                        "Could not contact Sapphire server.", e);
+                        "Could not contact MicroService server.", e);
             } catch (KernelObjectNotFoundException e) {
                 throw new MicroServiceNotAvailableException(
                         "Could not find server policy object.", e);

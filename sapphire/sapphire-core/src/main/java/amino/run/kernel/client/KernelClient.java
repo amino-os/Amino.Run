@@ -23,7 +23,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Client-side object for making Sapphire kernel RPCs.
+ * Client-side object for making MicroService kernel RPCs.
  *
  * @author iyzhang
  */
@@ -47,7 +47,7 @@ public class KernelClient {
             servers.put(host, server);
             return server;
         } catch (Exception e) {
-            logger.severe("Could not find Sapphire server on host: " + e.toString());
+            logger.severe("Could not find MicroService server on host: " + e.toString());
         }
         return null;
     }

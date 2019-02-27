@@ -7,8 +7,8 @@ import java.util.concurrent.Semaphore;
 import java.util.logging.Logger;
 
 /**
- * A single Sapphire kernel object that can receive RPCs. These are stored in the Sapphire kernel
- * server.
+ * A single MicroService kernel object that can receive RPCs. These are stored in the MicroService
+ * kernel server.
  *
  * @author iyzhang
  */

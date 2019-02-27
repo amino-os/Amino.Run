@@ -6,7 +6,7 @@ import java.util.*;
 import org.graalvm.polyglot.*;
 
 /**
- * Sapphire Kernel RPC Includes the object being called, the method and the parameters
+ * MicroService Kernel RPC Includes the object being called, the method and the parameters
  *
  * @author iyzhang
  */

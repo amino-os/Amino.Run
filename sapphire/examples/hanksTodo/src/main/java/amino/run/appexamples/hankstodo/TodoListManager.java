@@ -6,16 +6,16 @@ import java.util.Map;
 
 import amino.run.app.DMSpec;
 import amino.run.app.Language;
-import amino.run.app.SapphireObject;
+import amino.run.app.MicroService;
 import amino.run.app.MicroServiceSpec;
 import amino.run.common.MicroServiceCreationException;
 import amino.run.policy.dht.DHTPolicy;
 import amino.run.policy.replication.ConsensusRSMPolicy;
 
-import static amino.run.runtime.Sapphire.delete_;
-import static amino.run.runtime.Sapphire.new_;
+import static amino.run.runtime.MicroService.delete_;
+import static amino.run.runtime.MicroService.new_;
 
-public class TodoListManager implements SapphireObject {
+public class TodoListManager implements MicroService {
 	Map<String, TodoList> todoLists = new Hashtable<String, TodoList>();
 
 	public TodoListManager() {

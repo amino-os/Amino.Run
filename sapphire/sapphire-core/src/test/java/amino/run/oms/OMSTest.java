@@ -119,7 +119,7 @@ public class OMSTest extends BaseTest {
     @Test
     public void getAllKernalObjectTest() throws Exception {
         ArrayList<KernelOID> arr = omsImpl.getAllKernelObjects();
-        /* Sapphire Object Created with the default DM  and number Kernel object should be two */
+        /* MicroService Object Created with the default DM  and number Kernel object should be two */
         assertEquals(new Integer(2), new Integer(arr.size()));
     }
 
@@ -131,7 +131,7 @@ public class OMSTest extends BaseTest {
         /* register a new sapphire object, set the handler, get the handler back, verify if it is same as what we have
         set, add a replica to it, set replica handler, get the handler and verify if it same as what is set and
         then unregister the replica and the sapphire object */
-        MicroServiceID microServiceId = omsImpl.registerSapphireObject();
+        MicroServiceID microServiceId = omsImpl.registerMicroService();
 
         /* Count becomes 2 after registering new sapphire object */
         assertEquals(new Integer(2), new Integer(omsImpl.getAllSapphireObjects().size()));
@@ -148,7 +148,7 @@ public class OMSTest extends BaseTest {
         assertEquals(groupHandler, fieldValue.getInstanceDispatcher(microServiceId));
 
         /* Register a replica to this SO, check if it is added, set handler, get it back and verify if it is same */
-        ReplicaID replicaId = omsImpl.registerSapphireReplica(microServiceId);
+        ReplicaID replicaId = omsImpl.registerReplica(microServiceId);
         assertEquals(
                 new Integer(1),
                 new Integer(omsImpl.getSapphireReplicasById(microServiceId).length));
@@ -165,13 +165,13 @@ public class OMSTest extends BaseTest {
         assertEquals(replicaHandler, fieldValue.getReplicaDispatcher(replicaId));
 
         /* unregister the replica and check it is removed from sapphire object */
-        omsImpl.unRegisterSapphireReplica(replicaId);
+        omsImpl.unRegisterReplica(replicaId);
         assertEquals(
                 new Integer(0),
                 new Integer(omsImpl.getSapphireReplicasById(microServiceId).length));
 
         /* unregister the sapphire object */
-        omsImpl.unRegisterSapphireObject(microServiceId);
+        omsImpl.unRegisterMicroService(microServiceId);
 
         /* Count becomes 1 after unregistering the sapphire object */
         assertEquals(new Integer(1), new Integer(omsImpl.getAllSapphireObjects().size()));

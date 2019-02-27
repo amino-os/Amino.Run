@@ -57,7 +57,7 @@ public class HanksTodoMain {
 
             TodoList td1 = tlm.newTodoList(ListName);
 
-            // Consensus policy needs some time after creating new Sapphire object; otherwise,
+            // Consensus policy needs some time after creating new MicroService object; otherwise,
             // leader election may fail.
             sleep(7000);
             System.out.println("new to do list for 1");

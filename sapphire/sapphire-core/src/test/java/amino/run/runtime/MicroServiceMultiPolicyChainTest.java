@@ -22,7 +22,7 @@ import org.junit.runner.RunWith;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 @RunWith(PowerMockRunner.class)
-public class SapphireMultiPolicyChainTest extends BaseTest {
+public class MicroServiceMultiPolicyChainTest extends BaseTest {
 
     @Rule public ExpectedException thrown = ExpectedException.none();
 
@@ -44,7 +44,7 @@ public class SapphireMultiPolicyChainTest extends BaseTest {
 
     @Test
     public void testNew_() {
-        Object temp = Sapphire.new_(SO.class);
+        Object temp = MicroService.new_(SO.class);
         assertNotEquals(null, temp);
     }
 
@@ -58,7 +58,7 @@ public class SapphireMultiPolicyChainTest extends BaseTest {
     // tests seem duplicate).
     @Test
     public void testCreatePolicyChain() throws Exception {
-        AppObjectStub aos = Sapphire.createPolicyChain(spec, "IND", null);
+        AppObjectStub aos = MicroService.createPolicyChain(spec, "IND", null);
         assertNotNull(aos);
     }
 
@@ -74,12 +74,13 @@ public class SapphireMultiPolicyChainTest extends BaseTest {
         List<PolicyContainer> processedPolicies = new ArrayList<>();
 
         /* Register for a sapphire object Id from OMS */
-        MicroServiceID soid = spiedOms.registerSapphireObject();
+        MicroServiceID soid = spiedOms.registerMicroService();
 
         policyNameChain.add(("amino.run.policy.DefaultPolicy"));
         policyNameChain.add("amino.run.policy.dht.DHTPolicy");
         for (int i = 0; i < 2; i++) {
-            Sapphire.createConnectedPolicy(null, policyNameChain, processedPolicies, soid, spec);
+            MicroService.createConnectedPolicy(
+                    null, policyNameChain, processedPolicies, soid, spec);
             policyNameChain.remove(0);
         }
         assertEquals(2, processedPolicies.size());
@@ -87,7 +88,7 @@ public class SapphireMultiPolicyChainTest extends BaseTest {
 
     @After
     public void tearDown() throws Exception {
-        System.out.println("Deleting SapphireObject: " + group.getSapphireObjId());
+        System.out.println("Deleting MicroService: " + group.getSapphireObjId());
         super.tearDown();
     }
 }

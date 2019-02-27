@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.Value;
 
-/** Created by AmitRoushan on 9/29/18. Wrapper of graal object for polyglot Sapphire object */
+/** Created by AmitRoushan on 9/29/18. Wrapper of graal object for polyglot MicroService object */
 // TODO: Need to update how to serialize Graal Object
 public class GraalObject implements Serializable {
     private static final long serialVersionUID = 6529685098267757690L;

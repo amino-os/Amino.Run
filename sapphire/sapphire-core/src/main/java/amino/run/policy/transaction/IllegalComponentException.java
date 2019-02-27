@@ -1,7 +1,7 @@
 package amino.run.policy.transaction;
 
 /**
- * Exception of Sapphire object that is not intended in transaction was engaged in transaction
+ * Exception of MicroService object that is not intended in transaction was engaged in transaction
  * somehow
  */
 public class IllegalComponentException extends Exception {

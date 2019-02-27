@@ -169,7 +169,7 @@ public class TestUtils {
                 (MicroServiceManager) extractFieldValueOnInstance(oms, "objectManager");
         ConcurrentHashMap<MicroServiceID, InstanceManager> sapphireObjects =
                 (ConcurrentHashMap<MicroServiceID, InstanceManager>)
-                        extractFieldValueOnInstance(objMgr, "sapphireObjects");
+                        extractFieldValueOnInstance(objMgr, "microServices");
         return sapphireObjects.get(microServiceId);
     }
 }

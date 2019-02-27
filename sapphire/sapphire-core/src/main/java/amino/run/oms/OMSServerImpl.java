@@ -45,14 +45,14 @@ public class OMSServerImpl implements OMSServer, Registry {
 
     private GlobalKernelObjectManager kernelObjectManager;
     private KernelServerManager serverManager;
-    private SapphireObjectManager objectManager;
+    private MicroServiceManager objectManager;
 
     /** CONSTRUCTOR * */
     // TODO Should receive a List of servers
     public OMSServerImpl() throws IOException, NotBoundException, JSONException {
         kernelObjectManager = new GlobalKernelObjectManager();
         serverManager = new KernelServerManager();
-        objectManager = new SapphireObjectManager();
+        objectManager = new MicroServiceManager();
     }
 
     /** KERNEL METHODS * */

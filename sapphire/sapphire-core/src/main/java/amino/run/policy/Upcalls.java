@@ -166,7 +166,7 @@ public interface Upcalls {
          * Event handler for sapphire object destruction. Called immediately before the group policy
          * is deleted, as part of object deletion. Usually used to tear down a group policy's local
          * resources, for example, timers, network connections, etc. Currently called by
-         * SapphireInstanceManager.clear, which is called by SapphireObjectManager.removeInstance.
+         * InstanceManager.clear, which is called by MicroServiceManager.removeInstance.
          *
          * @throws RemoteException
          */

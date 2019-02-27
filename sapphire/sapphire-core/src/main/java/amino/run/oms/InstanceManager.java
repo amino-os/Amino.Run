@@ -16,8 +16,8 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 
-public class SapphireInstanceManager {
-    private static final Logger logger = Logger.getLogger(SapphireInstanceManager.class.getName());
+public class InstanceManager {
+    private static final Logger logger = Logger.getLogger(InstanceManager.class.getName());
 
     private MicroServiceID oid;
     private String name;
@@ -51,7 +51,7 @@ public class SapphireInstanceManager {
         return new ReplicaID(oid, UUID.randomUUID());
     }
 
-    public SapphireInstanceManager(MicroServiceID oid, EventHandler dispatcher) {
+    public InstanceManager(MicroServiceID oid, EventHandler dispatcher) {
         this.oid = oid;
         instanceDispatcher = dispatcher;
         replicaDispatchers = new HashMap<ReplicaID, EventHandler>();

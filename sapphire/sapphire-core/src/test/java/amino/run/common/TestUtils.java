@@ -8,11 +8,11 @@ import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import amino.run.kernel.common.GlobalKernelReferences;
 import amino.run.kernel.server.KernelServer;
 import amino.run.kernel.server.KernelServerImpl;
+import amino.run.oms.InstanceManager;
 import amino.run.oms.KernelServerManager;
+import amino.run.oms.MicroServiceManager;
 import amino.run.oms.OMSServer;
 import amino.run.oms.OMSServerImpl;
-import amino.run.oms.SapphireInstanceManager;
-import amino.run.oms.SapphireObjectManager;
 import amino.run.policy.util.ResettableTimer;
 import java.net.InetSocketAddress;
 import java.rmi.AccessException;
@@ -163,12 +163,12 @@ public class TestUtils {
         servers.put(((KernelServerImpl) ks).getLocalHost(), ks);
     }
 
-    public static SapphireInstanceManager getOmsSapphireInstance(
+    public static InstanceManager getOmsSapphireInstance(
             OMSServer oms, MicroServiceID microServiceId) throws Exception {
-        SapphireObjectManager objMgr =
-                (SapphireObjectManager) extractFieldValueOnInstance(oms, "objectManager");
-        ConcurrentHashMap<MicroServiceID, SapphireInstanceManager> sapphireObjects =
-                (ConcurrentHashMap<MicroServiceID, SapphireInstanceManager>)
+        MicroServiceManager objMgr =
+                (MicroServiceManager) extractFieldValueOnInstance(oms, "objectManager");
+        ConcurrentHashMap<MicroServiceID, InstanceManager> sapphireObjects =
+                (ConcurrentHashMap<MicroServiceID, InstanceManager>)
                         extractFieldValueOnInstance(objMgr, "sapphireObjects");
         return sapphireObjects.get(microServiceId);
     }

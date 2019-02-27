@@ -32,9 +32,9 @@ public class OMSTest extends BaseTest {
     SO so;
     @Rule public ExpectedException thrown;
 
-    // To access the methods in SapphireObjectManager through Reflection
+    // To access the methods in MicroServiceManager through Reflection
     OMSServerImpl omsImpl;
-    SapphireObjectManager fieldValue;
+    MicroServiceManager fieldValue;
 
     public OMSTest() {
         thrown = ExpectedException.none();
@@ -51,13 +51,13 @@ public class OMSTest extends BaseTest {
         so = ((SO) (server1.getAppObject().getObject()));
         omsImpl = (OMSServerImpl) spiedOms;
 
-        // In order to access the methods in SapphireObjectManager, reflection is used to get the
-        // SapphireObjectManager instance from OMSServerImpl
+        // In order to access the methods in MicroServiceManager, reflection is used to get the
+        // MicroServiceManager instance from OMSServerImpl
         Field field = OMSServerImpl.class.getDeclaredField("objectManager");
 
         // To access the private field
         field.setAccessible(true);
-        fieldValue = (SapphireObjectManager) field.get(omsImpl);
+        fieldValue = (MicroServiceManager) field.get(omsImpl);
     }
 
     @Test

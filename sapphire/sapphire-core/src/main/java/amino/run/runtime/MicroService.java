@@ -59,7 +59,7 @@ public class MicroService {
             throws MicroServiceCreationException {
         AppObjectStub appStub = null;
         try {
-            logger.info("Creating object for spec:" + spec);
+            logger.info("Creating microservice for spec:" + spec);
             if (spec.getLang() == Language.java && spec.getDmList().isEmpty()) {
                 Class<?> appObjectClass = Class.forName(spec.getJavaClassName());
                 return new_(appObjectClass, args);
@@ -184,7 +184,7 @@ public class MicroService {
      * @param processedPolicies Policies processed so far (created and linked)
      * @param microServiceID Object ID registred to OMS which is one per AminoMicroservice chain
      *     (all replicas of the chain will have the same object ID.
-     * @param spec Amino object spec
+     * @param spec Microservice spec
      * @return list of processed policies so far
      * @throws MicroServiceCreationException thrown when policy object creation fails
      */
@@ -256,7 +256,7 @@ public class MicroService {
      * @param parentGroupPolicyStub Group policy creating the policy object
      * @param policyNamesToCreate name of polices that need to be created (this and inner policies)
      * @param processedPolicies Policies processed so far (created and linked)
-     * @param spec Amino object spec
+     * @param spec Microservice spec
      * @return list of policies that had been created so far including the one just created here
      * @throws MicroServiceCreationException thrown when policy object creation fails
      */
@@ -291,7 +291,6 @@ public class MicroService {
             // TODO: client is unncessary for outer policies of a replica.
             client.onCreate(groupPolicyStub);
 
-            // TODO: Separate out the following code block.
             // Note that subList is non serializable; hence, the new list creation.
             List<String> nextPolicyNames = new ArrayList<String>(policyNamesToCreate);
 

@@ -149,11 +149,11 @@ public class KernelServerImpl implements KernelServer {
 
         for (PolicyContainer spContainer : firstServerPolicy.getProcessedPolicies()) {
             // Add Server Policy object in the same order as client side has created.
-            Library.ServerPolicyLibrary serverPolicy = spContainer.getServerPolicy();
+            Library.ServerPolicyLibrary serverPolicy = spContainer.serverPolicy;
 
             // Added for setting the ReplicaId and registering handler for this replica to OMS.
             Policy.ServerPolicy serverPolicyStub =
-                    (Policy.ServerPolicy) spContainer.getServerPolicyStub();
+                    (Policy.ServerPolicy) spContainer.serverPolicyStub;
             ArrayList<Object> policyObjList = new ArrayList<>();
             EventHandler policyHandler = new EventHandler(host, policyObjList);
             policyObjList.add(serverPolicyStub);

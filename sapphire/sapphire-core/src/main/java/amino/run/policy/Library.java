@@ -152,7 +152,7 @@ public abstract class Library implements Upcalls {
                 // created group policies.
                 for (int i = 0; i < outerPolicySize; i++) {
                     MicroService.createConnectedPolicy(
-                            processedPolicies.get(i).getGroupPolicyStub(),
+                            processedPolicies.get(i).groupPolicy,
                             policyNames,
                             processedPoliciesReplica,
                             soid,
@@ -162,8 +162,8 @@ public abstract class Library implements Upcalls {
 
                 // 2. Clones appObject in the outermost policy of the already created chain
                 // (original one), and assigns to the outermost policy of this replica chain.
-                ServerPolicy originalPolicy = processedPolicies.get(0).getServerPolicy();
-                ServerPolicy replicaPolicy = processedPoliciesReplica.get(0).getServerPolicy();
+                ServerPolicy originalPolicy = processedPolicies.get(0).serverPolicy;
+                ServerPolicy replicaPolicy = processedPoliciesReplica.get(0).serverPolicy;
                 MicroService.cloneAppObject(replicaPolicy, originalPolicy.getAppObject());
 
                 // 3. Creates a rest of the replica policy chain from the next of this policy
@@ -184,9 +184,9 @@ public abstract class Library implements Upcalls {
                 // if this DM is DM2, it will execute group policy for DM3 & DM4 only.
                 for (int k = innerPolicySize + outerPolicySize - 1; k >= outerPolicySize; k--) {
                     Policy.GroupPolicy groupPolicyStub =
-                            processedPoliciesReplica.get(k).getGroupPolicyStub();
+                            processedPoliciesReplica.get(k).groupPolicy;
                     ServerPolicy stub =
-                            (ServerPolicy) processedPoliciesReplica.get(k).getServerPolicyStub();
+                            (ServerPolicy) processedPoliciesReplica.get(k).serverPolicyStub;
                     groupPolicyStub.onCreate(region, stub, spec);
                 }
             } catch (RemoteException e) {
@@ -199,7 +199,7 @@ public abstract class Library implements Upcalls {
             }
 
             return (ServerPolicy)
-                    processedPoliciesReplica.get(outerPolicySize - 1).getServerPolicyStub();
+                    processedPoliciesReplica.get(outerPolicySize - 1).serverPolicyStub;
         }
 
         public AppObject getAppObject() {
@@ -236,8 +236,8 @@ public abstract class Library implements Upcalls {
             Iterator<PolicyContainer> itr = processedPolicyList.iterator();
             while (itr.hasNext()) {
                 PolicyContainer container = itr.next();
-                ServerPolicy tempServerPolicy = container.getServerPolicy();
-                container.getServerPolicyStub().$__updateHostname(server);
+                ServerPolicy tempServerPolicy = container.serverPolicy;
+                container.serverPolicyStub.$__updateHostname(server);
 
                 /* AppObject holds the previous DM's server policy stub(instead of So stub) in case of DM chain on the
                 server side. Update host name in the server stub within AppObject */
@@ -290,7 +290,7 @@ public abstract class Library implements Upcalls {
         public void terminate(List<PolicyContainer> processedPolicies) throws RemoteException {
             try {
                 for (PolicyContainer policyContainer : processedPolicies) {
-                    ServerPolicy sp = policyContainer.getServerPolicy();
+                    ServerPolicy sp = policyContainer.serverPolicy;
                     oms().unRegisterReplica(sp.getReplicaId());
                 }
             } catch (MicroServiceNotFoundException e) {

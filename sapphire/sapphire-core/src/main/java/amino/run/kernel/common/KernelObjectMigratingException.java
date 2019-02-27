@@ -1,8 +1,8 @@
 package amino.run.kernel.common;
 
 /**
- * Sapphire Kernel throws this exception if it receives an RPC for a kernel object that is currently
- * migrating. The caller is expected to contact the OMS later and try again.
+ * MicroService Kernel throws this exception if it receives an RPC for a kernel object that is
+ * currently migrating. The caller is expected to contact the OMS later and try again.
  *
  * @author iyzhang
  */

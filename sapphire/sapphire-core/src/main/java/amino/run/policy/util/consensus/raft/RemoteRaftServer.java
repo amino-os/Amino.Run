@@ -4,9 +4,9 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Remote methods exposed by all RAFT servers. In Sapphire, these RMI method calls are received by
- * ServerPolicy DM (from remote RAFT servers), and delegated to the local RAFT Server instance. See
- * the RAFT paper for details:
+ * Remote methods exposed by all RAFT servers. In MicroService, these RMI method calls are received
+ * by ServerPolicy DM (from remote RAFT servers), and delegated to the local RAFT Server instance.
+ * See the RAFT paper for details:
  * https://www.usenix.org/system/files/conference/atc14/atc14-paper-ongaro.pdf Created by quinton on
  * 4/24/18.
  */

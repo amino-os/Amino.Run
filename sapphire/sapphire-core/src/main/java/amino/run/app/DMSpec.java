@@ -7,7 +7,7 @@ import java.util.*;
 import org.yaml.snakeyaml.Yaml;
 
 /**
- * Deployment Manager Specification. Also known as Sapphire Policy Specification.
+ * Deployment Manager Specification. Also known as MicroService Policy Specification.
  *
  * <p>Each DM specification contains a sapphire policy name and an optional list of sapphire policy
  * configurations.

@@ -10,6 +10,6 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Inherited
 @Retention(RetentionPolicy.RUNTIME)
-public @interface SapphireConfiguration {
+public @interface MicroServiceConfiguration {
     String[] Policies();
 }

@@ -3,7 +3,7 @@ package amino.run.kernel.common;
 import java.io.Serializable;
 
 /**
- * ID for a Sapphire kernel object
+ * ID for a MicroService kernel object
  *
  * @author iyzhang
  */

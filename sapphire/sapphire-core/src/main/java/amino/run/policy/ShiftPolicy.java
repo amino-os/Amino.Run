@@ -10,8 +10,8 @@ import java.util.logging.Logger;
 /**
  * This class defines ShiftPolicy which serves the purpose of demonstration only. Note that it does
  * not provide any values; thus, should not be used outside of testing or demonstration. It moves
- * the Sapphire object to another Sapphire Kernel server when the number of RPC (RMI) is more than
- * 5.
+ * the MicroService object to another MicroService Kernel server when the number of RPC (RMI) is
+ * more than 5.
  */
 public class ShiftPolicy extends DefaultPolicy {
 
@@ -42,10 +42,10 @@ public class ShiftPolicy extends DefaultPolicy {
 
                 if (shiftWinner.equals(localAddress)) {
                     logger.info(
-                            "[ShiftPolicy] There are no targets to migrate Sapphire object to.");
+                            "[ShiftPolicy] There are no targets to migrate MicroService object to.");
                 } else {
                     logger.info(
-                            "[ShiftPolicy] Shifting Sapphire object "
+                            "[ShiftPolicy] Shifting MicroService object "
                                     + this.oid
                                     + " to "
                                     + shiftWinner);

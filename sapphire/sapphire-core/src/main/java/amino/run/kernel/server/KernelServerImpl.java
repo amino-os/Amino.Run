@@ -13,7 +13,7 @@ import amino.run.policy.Policy;
 import amino.run.policy.PolicyContainer;
 import amino.run.policy.util.ResettableTimer;
 import amino.run.runtime.EventHandler;
-import amino.run.runtime.Sapphire;
+import amino.run.runtime.MicroService;
 import java.io.Serializable;
 import java.net.InetSocketAddress;
 import java.rmi.NotBoundException;
@@ -26,8 +26,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Sapphire Kernel Server. Runs on every Sapphire node, knows how to talk to the OMS, handles RPCs
- * and has a client for making RPCs.
+ * MicroService Kernel Server. Runs on every MicroService node, knows how to talk to the OMS,
+ * handles RPCs and has a client for making RPCs.
  *
  * @author iyzhang
  */
@@ -158,7 +158,7 @@ public class KernelServerImpl implements KernelServer {
             EventHandler policyHandler = new EventHandler(host, policyObjList);
             policyObjList.add(serverPolicyStub);
             serverPolicyStub.setReplicaId(serverPolicy.getReplicaId());
-            oms.setSapphireReplicaDispatcher(serverPolicy.getReplicaId(), policyHandler);
+            oms.setReplicaDispatcher(serverPolicy.getReplicaId(), policyHandler);
 
             KernelOID koid = serverPolicy.$__getKernelOID();
 
@@ -357,7 +357,7 @@ public class KernelServerImpl implements KernelServer {
                         "Got request to create sapphire object with spec '%s' and %d parameters.",
                         soSpecYaml, args.length));
         MicroServiceSpec spec = MicroServiceSpec.fromYaml(soSpecYaml);
-        return (AppObjectStub) Sapphire.new_(spec, args);
+        return (AppObjectStub) MicroService.new_(spec, args);
     }
 
     public class MemoryStatThread extends Thread {

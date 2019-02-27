@@ -71,7 +71,7 @@ public class InstanceManager {
     /**
      * Gets the root group policy object of this sapphire instance
      *
-     * @return Sapphire Group Policy Object
+     * @return MicroService Group Policy Object
      */
     public Policy.GroupPolicy getRootGroupPolicy() {
         return rootGroupPolicy;

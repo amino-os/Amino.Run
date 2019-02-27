@@ -9,7 +9,7 @@ public interface TwoPCParticipants {
     /**
      * registers as participant of the transaction
      *
-     * @param cohort the client proxy of the Sapphire object that involves in transaction
+     * @param cohort the client proxy of the MicroService object that involves in transaction
      */
     public void register(ClientPolicy cohort);
 

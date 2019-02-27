@@ -1,9 +1,9 @@
 package amino.run.appexamples.fundmover;
 
-import amino.run.app.SapphireObject;
+import amino.run.app.MicroService;
 
 
-public class Finance implements SapphireObject {
+public class Finance implements MicroService {
     private Wallet wallet;
     private BankAccount bankaccount;
 

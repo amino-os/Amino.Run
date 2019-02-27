@@ -1,7 +1,7 @@
 package amino.run.runtime.exception;
 
 /**
- * SapphireException is the superclass of those exceptions that can be thrown due to Sapphire
+ * SapphireException is the superclass of those exceptions that can be thrown due to MicroService
  * runtime issues.
  *
  * @author terryz

@@ -18,8 +18,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Manages Sapphire kernel servers. Tracks which servers are up, which regions each server belongs
- * to, etc.
+ * Manages MicroService kernel servers. Tracks which servers are up, which regions each server
+ * belongs to, etc.
  *
  * @author iyzhang
  */

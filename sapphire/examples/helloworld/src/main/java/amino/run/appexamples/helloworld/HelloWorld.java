@@ -1,11 +1,10 @@
 package amino.run.appexamples.helloworld;
 
-import amino.run.app.SapphireObject;
-import amino.run.app.*;
-import amino.run.runtime.SapphireConfiguration;
+import amino.run.app.MicroService;
+import amino.run.runtime.MicroServiceConfiguration;
 
-@SapphireConfiguration(Policies = "amino.run.policy.atleastoncerpc.AtLeastOnceRPCPolicy")
-public class HelloWorld implements SapphireObject {
+@MicroServiceConfiguration(Policies = "amino.run.policy.atleastoncerpc.AtLeastOnceRPCPolicy")
+public class HelloWorld implements MicroService {
     private String world = "DCAP World";
 
     public HelloWorld(){}

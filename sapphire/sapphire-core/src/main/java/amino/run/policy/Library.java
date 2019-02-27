@@ -13,7 +13,7 @@ import amino.run.kernel.common.KernelObjectStub;
 import amino.run.kernel.server.KernelServerImpl;
 import amino.run.oms.OMSServer;
 import amino.run.policy.Policy.ServerPolicy;
-import amino.run.runtime.Sapphire;
+import amino.run.runtime.MicroService;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.*;
@@ -151,7 +151,7 @@ public abstract class Library implements Upcalls {
                 // policy. Note that the newly created policy instances will point to already
                 // created group policies.
                 for (int i = 0; i < outerPolicySize; i++) {
-                    Sapphire.createConnectedPolicy(
+                    MicroService.createConnectedPolicy(
                             processedPolicies.get(i).getGroupPolicyStub(),
                             policyNames,
                             processedPoliciesReplica,
@@ -164,7 +164,7 @@ public abstract class Library implements Upcalls {
                 // (original one), and assigns to the outermost policy of this replica chain.
                 ServerPolicy originalPolicy = processedPolicies.get(0).getServerPolicy();
                 ServerPolicy replicaPolicy = processedPoliciesReplica.get(0).getServerPolicy();
-                Sapphire.cloneAppObject(replicaPolicy, originalPolicy.getAppObject());
+                MicroService.cloneAppObject(replicaPolicy, originalPolicy.getAppObject());
 
                 // 3. Creates a rest of the replica policy chain from the next of this policy
                 // (inner)
@@ -173,7 +173,7 @@ public abstract class Library implements Upcalls {
                 policyNames = new ArrayList<>(this.nextPolicyNames);
                 int innerPolicySize = this.nextPolicyNames.size();
                 for (int j = outerPolicySize; j < innerPolicySize + outerPolicySize; j++) {
-                    Sapphire.createConnectedPolicy(
+                    MicroService.createConnectedPolicy(
                             null, policyNames, processedPoliciesReplica, soid, spec);
                     policyNames.remove(0);
                 }
@@ -230,7 +230,7 @@ public abstract class Library implements Upcalls {
                 serverPolicy = serverPolicy.getPreviousServerPolicy();
             }
 
-            // Before pinning the Sapphire Object replica to the provided KernelServer, need to
+            // Before pinning the MicroService Object replica to the provided KernelServer, need to
             // update the Hostname.
             List<PolicyContainer> processedPolicyList = serverPolicy.getProcessedPolicies();
             Iterator<PolicyContainer> itr = processedPolicyList.iterator();
@@ -259,11 +259,11 @@ public abstract class Library implements Upcalls {
                 logger.severe(msg);
                 throw new Error(msg, e);
             } catch (MicroServiceNotFoundException e) {
-                String msg = "Could not find Sapphire object on this server!";
+                String msg = "Could not find MicroService object on this server!";
                 logger.severe(msg);
                 throw new Error(msg, e);
             } catch (MicroServiceReplicaNotFoundException e) {
-                String msg = "Could not find Sapphire replica on this server!";
+                String msg = "Could not find MicroService replica on this server!";
                 logger.severe(msg);
                 throw new Error(msg, e);
             }
@@ -278,9 +278,9 @@ public abstract class Library implements Upcalls {
         // TODO (2018-9-26, Sungwook) Remove after verification.
         public void terminate() throws RemoteException {
             try {
-                GlobalKernelReferences.nodeServer.oms.unRegisterSapphireReplica(getReplicaId());
+                GlobalKernelReferences.nodeServer.oms.unRegisterReplica(getReplicaId());
             } catch (MicroServiceNotFoundException e) {
-                /* Sapphire object not found */
+                /* MicroService object not found */
                 logger.severe(e.getMessage());
                 // TODO (Sungwook, 2018-10-2): Investigate whether exception should be thrown.
             }
@@ -291,10 +291,10 @@ public abstract class Library implements Upcalls {
             try {
                 for (PolicyContainer policyContainer : processedPolicies) {
                     ServerPolicy sp = policyContainer.getServerPolicy();
-                    oms().unRegisterSapphireReplica(sp.getReplicaId());
+                    oms().unRegisterReplica(sp.getReplicaId());
                 }
             } catch (MicroServiceNotFoundException e) {
-                /* Sapphire object not found */
+                /* MicroService object not found */
                 logger.severe(e.getMessage());
             }
             KernelObjectFactory.delete($__getKernelOID());
@@ -324,7 +324,7 @@ public abstract class Library implements Upcalls {
                     Class<?> appObjectStubClass = Class.forName(appStubClassName);
                     // Construct the list of classes of the arguments as Class[]
                     if (params != null) {
-                        Class<?>[] argClasses = Sapphire.getParamsClasses(params);
+                        Class<?>[] argClasses = MicroService.getParamsClasses(params);
                         actualAppObject =
                                 (AppObjectStub)
                                         appObjectStubClass

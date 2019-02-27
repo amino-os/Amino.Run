@@ -26,7 +26,7 @@ import java.util.logging.Logger;
  * decide the leader by itself when run in two nodes. It relies on some arbitrator to decide the
  * leader. In this implementation, it is the Group policy who decides the leader. The Group policy
  * itself has only one instance - it is not highly available. This should be addressed after we
- * integrates Sapphire with Diamond and Tapir. TODO: Support multiple slaves and enable
+ * integrates MicroService with Diamond and Tapir. TODO: Support multiple slaves and enable
  * semi-synchronous replication
  */
 public class LoadBalancedMasterSlaveSyncPolicy extends LoadBalancedMasterSlaveBase {

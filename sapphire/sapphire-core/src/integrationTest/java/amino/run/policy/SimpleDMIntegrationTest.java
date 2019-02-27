@@ -300,7 +300,7 @@ public class SimpleDMIntegrationTest {
         store.set(key0, value0);
         Assert.assertEquals(value0, store.get(key0));
 
-        /* Sapphire object is created on a random server. It is not known on which server SO is created.
+        /* MicroService object is created on a random server. It is not known on which server SO is created.
            Migrate SO twice to ensure migration to other server happens atleast once.
         */
 

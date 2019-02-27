@@ -2,7 +2,7 @@ package amino.run.common;
 
 /** Created by Venugopal Reddy K 00900280 on 16/7/18. */
 
-/** Sapphire object name modification exception */
+/** MicroService object name modification exception */
 public class MicroServiceNameModificationException extends Exception {
     String name;
     MicroServiceID microServiceId;

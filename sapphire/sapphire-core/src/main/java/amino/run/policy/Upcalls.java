@@ -1,18 +1,20 @@
 package amino.run.policy;
 
 import amino.run.app.MicroServiceSpec;
+import amino.run.runtime.MicroService;
 import java.io.Serializable;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 
 /**
  * Upcall interface used by sapphire kernel to invoke event handlers on client, server and group
- * policies//deployment managers. Note that in the Sapphire paper these are discussed and referred
- * to variously as the "Deployment Managers Upcall API" (in general), and "proxy" (for client),
- * "instance manager" (for server) and "coordinator" (for group). These methods should only be
- * invoked by the kernel, not by DM's (other than when extending default/inherited implementations),
- * and not by applications. TODO: Restructure code so that it's not possible/easy for these to be
- * involked from the wrong places, as is for example currently done in ConsensusRSMPolicy.
+ * policies//deployment managers. Note that in the MicroService paper these are discussed and
+ * referred to variously as the "Deployment Managers Upcall API" (in general), and "proxy" (for
+ * client), "instance manager" (for server) and "coordinator" (for group). These methods should only
+ * be invoked by the kernel, not by DM's (other than when extending default/inherited
+ * implementations), and not by applications. TODO: Restructure code so that it's not possible/easy
+ * for these to be involked from the wrong places, as is for example currently done in
+ * ConsensusRSMPolicy.
  */
 public interface Upcalls {
 
@@ -34,10 +36,10 @@ public interface Upcalls {
         /**
          * Event handler for sapphire object creation. Called after a primary sapphire object is
          * first created (i.e. before any replicas are created). This is called after {@link
-         * setServer} (currently in {@link amino.run.runtime.Sapphire.createPolicy} and before
-         * {@link ServerUpcalls.onCreate}. It is usually used to store a reference to the group
-         * policy for this SO, and to initialize the client. Configuration parameters for the client
-         * are contained in spec.
+         * setServer} (currently in {@link MicroService.createPolicy} and before {@link
+         * ServerUpcalls.onCreate}. It is usually used to store a reference to the group policy for
+         * this SO, and to initialize the client. Configuration parameters for the client are
+         * contained in spec.
          *
          * @param group the group policy for the newly created sapphire object.
          * @param spec sapphire object spec, which contains configuration parameters for the client
@@ -72,10 +74,10 @@ public interface Upcalls {
         /**
          * Event handler for sapphire replica creation. Called after a sapphire replica (including
          * the first one) is first created. This is called after {@link ClientUpcalls.onCreate}
-         * (currently in {@link amino.run.runtime.Sapphire.createPolicy} and before {@link
-         * GroupUpcalls.onCreate} and before {@link GroupUpcalls.addServer}. It is usually used to
-         * store a reference to the group policy for this SO, and to otherwise initialize the
-         * server. Configuration parameters for the server are contained in spec.
+         * (currently in {@link MicroService.createPolicy} and before {@link GroupUpcalls.onCreate}
+         * and before {@link GroupUpcalls.addServer}. It is usually used to store a reference to the
+         * group policy for this SO, and to otherwise initialize the server. Configuration
+         * parameters for the server are contained in spec.
          *
          * @param group the group policy for the newly created sapphire object.
          * @param spec sapphire object spec, which contains configuration parameters for the server

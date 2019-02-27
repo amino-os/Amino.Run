@@ -7,7 +7,6 @@ import static amino.run.policy.Policy.ServerPolicy;
 import amino.run.app.DMSpec;
 import amino.run.app.Language;
 import amino.run.app.MicroServiceSpec;
-import amino.run.app.SapphireObject;
 import amino.run.common.*;
 import amino.run.common.AppObject;
 import amino.run.common.AppObjectStub;
@@ -37,20 +36,20 @@ import java.util.logging.Logger;
 import org.apache.harmony.rmi.common.RMIUtil;
 
 /**
- * Used by the developer to create a Sapphire Object given the Application Object class and the
- * Policy Object class.
+ * Used by the developer to create a MicroService given the Application Object class and the Policy
+ * Object class.
  *
  * @author aaasz
  */
 // TODO: There are many methods that can be moved to helper or util classes. Move them into
 // appropriate classes.
-public class Sapphire {
-    static Logger logger = Logger.getLogger(Sapphire.class.getName());
+public class MicroService {
+    static Logger logger = Logger.getLogger(MicroService.class.getName());
 
     /**
      * Creates a sapphire object.
      *
-     * @param spec Sapphire object specification
+     * @param spec MicroService object specification
      * @param args parameters to sapphire object constructor
      * @return sapphire object stub
      */
@@ -95,7 +94,7 @@ public class Sapphire {
             /* Get the region of current server */
             String region = GlobalKernelReferences.nodeServer.getRegion();
             AppObjectStub appStub = createPolicyChain(spec, region, args);
-            logger.info("Sapphire Object created: " + appObjectClass.getName());
+            logger.info("MicroService Object created: " + appObjectClass.getName());
             return appStub;
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Failed to create sapphire object:", e);
@@ -109,7 +108,7 @@ public class Sapphire {
      * (stub->nextClient, server -> outerServer). 4. Executes onCreate for group policy from
      * innermost to outermost. Returns appStub which points to the first client policy in the chain.
      *
-     * @param spec Sapphire object spec
+     * @param spec MicroService object spec
      * @param region Region
      * @param appArgs Arguments for application object
      * @return client side appObjectStub
@@ -129,7 +128,7 @@ public class Sapphire {
 
         /* Register for a sapphire object Id from OMS */
         MicroServiceID microServiceID =
-                GlobalKernelReferences.nodeServer.oms.registerSapphireObject();
+                GlobalKernelReferences.nodeServer.oms.registerMicroService();
 
         /* Create a policy chain based on policy names in the spec */
         List<String> policyNames = MultiDMConstructionHelper.getPolicyNameChain(spec);
@@ -212,7 +211,7 @@ public class Sapphire {
                 PolicyContainer currentSPC = processedPolicies.get(idx);
                 ServerPolicy serverPolicy = currentSPC.getServerPolicy();
 
-                // Previous server policy stub object acts as Sapphire Object(SO) to the current
+                // Previous server policy stub object acts as MicroService Object(SO) to the current
                 // server policy. Outermost policy is linked to an actual app object;hence, it is
                 // not needed here.
                 PolicyContainer outerSPC = processedPolicies.get(idx - 1);
@@ -258,7 +257,7 @@ public class Sapphire {
         try {
             HashMap<String, Class<?>> policyMap = PolicyCreationHelper.getPolicyMap(policyName);
 
-            /* Get the policy used by the Sapphire Object we need to create */
+            /* Get the policy used by the MicroService Object we need to create */
             Class<?> sapphireServerPolicyClass = policyMap.get("sapphireServerPolicyClass");
             Class<?> sapphireClientPolicyClass = policyMap.get("sapphireClientPolicyClass");
 
@@ -370,9 +369,9 @@ public class Sapphire {
         return groupPolicyStub;
     }
 
-    /* Returns a pointer to the given Sapphire Object */
+    /* Returns a pointer to the given MicroService Object */
     // TODO: how to implement this ?
-    public static Object this_(SapphireObject so) {
+    public static Object this_(amino.run.app.MicroService so) {
 
         AppObjectStub appObject = (AppObjectStub) so;
         return null;
@@ -445,10 +444,10 @@ public class Sapphire {
     }
 
     /**
-     * Processes Sapphire replica by registering for a replica ID and handler for the replica to
+     * Processes MicroService replica by registering for a replica ID and handler for the replica to
      * OMS.
      *
-     * @param microServiceId Sapphire object ID
+     * @param microServiceId MicroService object ID
      * @param serverPolicy ServerPolicy
      * @param serverPolicyStub ServerPolicy stub
      * @throws MicroServiceNotFoundException
@@ -460,8 +459,7 @@ public class Sapphire {
             throws MicroServiceNotFoundException, MicroServiceReplicaNotFoundException,
                     RemoteException {
         /* Register for a replica ID from OMS */
-        ReplicaID replicaId =
-                GlobalKernelReferences.nodeServer.oms.registerSapphireReplica(microServiceId);
+        ReplicaID replicaId = GlobalKernelReferences.nodeServer.oms.registerReplica(microServiceId);
 
         serverPolicyStub.setReplicaId(replicaId);
         serverPolicy.setReplicaId(replicaId);
@@ -476,8 +474,7 @@ public class Sapphire {
                         });
 
         /* Register the handler for this replica to OMS */
-        GlobalKernelReferences.nodeServer.oms.setSapphireReplicaDispatcher(
-                replicaId, replicaHandler);
+        GlobalKernelReferences.nodeServer.oms.setReplicaDispatcher(replicaId, replicaHandler);
     }
 
     /**

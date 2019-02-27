@@ -5,12 +5,12 @@ import amino.run.policy.DefaultPolicy;
 import java.util.ArrayList;
 
 /**
- * Serializes all RPCs to Sapphire object with server side locking.
+ * Serializes all RPCs to MicroService object with server side locking.
  *
  * <p><em>Notes:</em>
  *
  * <p>This implementation closely follows the DM definition by maintaining one lock for the whole
- * Sapphire object in which case <i>all RPCs</i> on this Sapphire object will be serialized.
+ * MicroService object in which case <i>all RPCs</i> on this MicroService object will be serialized.
  *
  * @author terryz
  */

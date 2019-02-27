@@ -1,11 +1,11 @@
 package amino.run.sampleSO;
 
 /** Created by Venugopal Reddy K on 6/9/18. */
-import amino.run.app.SapphireObject;
-import amino.run.runtime.SapphireConfiguration;
+import amino.run.app.MicroService;
+import amino.run.runtime.MicroServiceConfiguration;
 
-@SapphireConfiguration(Policies = "amino.run.policy.DefaultPolicy")
-public class SO implements SapphireObject {
+@MicroServiceConfiguration(Policies = "amino.run.policy.DefaultPolicy")
+public class SO implements MicroService {
     public Integer i = 0;
 
     public Integer getI() {

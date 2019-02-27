@@ -314,7 +314,7 @@ public class OptConcurrentTransactPolicyTest {
         this.client1.onRPC(startMethodName, noParams);
 
         thrown.expect(TransactionAlreadyStartedException.class);
-        thrown.expectMessage(containsString("Transaction already started on Sapphire object."));
+        thrown.expectMessage(containsString("Transaction already started on MicroService object."));
         this.client1.onRPC(startMethodName, noParams);
     }
 

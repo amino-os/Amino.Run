@@ -3,11 +3,9 @@ package amino.run.appexamples.hankstodo;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import amino.run.app.SapphireObject;
-import amino.run.app.*;
-import amino.run.runtime.SapphireConfiguration;
+import amino.run.app.MicroService;
 
-public class TodoList implements SapphireObject {
+public class TodoList implements MicroService {
     HashMap<String, String> toDos;
     String id = "0";
 

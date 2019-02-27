@@ -151,7 +151,7 @@ public class ExplicitMigrationPolicy extends DefaultPolicy {
         }
 
         /**
-         * Migrates Sapphire Object to different Server
+         * Migrates MicroService Object to different Server
          *
          * @throws Exception migrateObject migrates the object to the specified Kernel Server
          */

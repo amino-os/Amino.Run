@@ -1,6 +1,6 @@
 package amino.run.compiler;
 
-import amino.run.app.SapphireObject;
+import amino.run.app.MicroService;
 import amino.run.policy.Policy;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -100,7 +100,7 @@ public class StubGenerator {
                         }
                         StubGenerator.generateStub("policy", sapphireServerPolicyClass, destFolder);
                         StubGenerator.generateStub("policy", sapphireGroupPolicyClass, destFolder);
-                    } else if (SapphireObject.class.isAssignableFrom(c))
+                    } else if (MicroService.class.isAssignableFrom(c))
                         StubGenerator.generateStub("app", c, destFolder);
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -121,7 +121,7 @@ public class StubGenerator {
      * @param args[2] Path to the folder where to put the resulting java files.
      */
 
-    /* TODO: Support for multiple packages for app stubs; right now you must run this for each app package that contains a SapphireObject */
+    /* TODO: Support for multiple packages for app stubs; right now you must run this for each app package that contains a MicroService */
     public static void main(String args[]) throws java.io.FileNotFoundException {
         String src = args[0];
         String pkg = args[1];

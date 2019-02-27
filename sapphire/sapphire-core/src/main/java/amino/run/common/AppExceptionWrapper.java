@@ -2,8 +2,8 @@ package amino.run.common;
 
 /** Created by Venugopal Reddy K 00900280 on 11/8/18. */
 /**
- * Sapphire object exceptions are wrapped into this runtime exception to isolate them from sapphire
- * framework exceptions
+ * MicroService object exceptions are wrapped into this runtime exception to isolate them from
+ * sapphire framework exceptions
  */
 public class AppExceptionWrapper extends RuntimeException {
     private Exception e;

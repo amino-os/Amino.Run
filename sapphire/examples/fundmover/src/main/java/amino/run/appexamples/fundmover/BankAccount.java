@@ -2,12 +2,12 @@ package amino.run.appexamples.fundmover;
 
 import java.util.UUID;
 
-import amino.run.app.SapphireObject;
+import amino.run.app.MicroService;
 import amino.run.policy.serializability.TransactionAlreadyStartedException;
 import amino.run.policy.transaction.TransactionExecutionException;
 import amino.run.policy.transaction.TransactionManager;
 
-public class BankAccount implements SapphireObject, TransactionManager {
+public class BankAccount implements MicroService, TransactionManager {
     private int balance;
     public BankAccount() {
     }

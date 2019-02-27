@@ -127,7 +127,7 @@ public class DHTPolicy extends DefaultPolicy {
                 throw new Error(
                         "Could not create new group policy because the oms is not available.");
             } catch (MicroServiceNotFoundException e) {
-                throw new Error("Could not find Sapphire Object to pin to " + newServerAddress);
+                throw new Error("Could not find MicroService Object to pin to " + newServerAddress);
             } catch (MicroServiceReplicaNotFoundException e) {
                 throw new Error("Could not find replica to pin to " + newServerAddress);
             } catch (NoKernelServerFoundException e) {

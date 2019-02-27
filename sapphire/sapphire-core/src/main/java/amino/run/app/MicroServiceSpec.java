@@ -24,7 +24,7 @@ import org.yaml.snakeyaml.Yaml;
  *                                      .setLang(Language.Java)
  *                                      .addDMSpec(dm)
  *                                      .create();
- * </code> Yaml of one Sapphire Object Specification Example: <code>
+ * </code> Yaml of one MicroService Object Specification Example: <code>
  * !!amino.run.app.MicroServiceSpec
  * constructorName: college
  * dmList:

@@ -6,7 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation for identifying immutable operations in Sapphire objects.
+ * Annotation for identifying immutable operations in MicroService objects.
  *
  * @author terryz
  */

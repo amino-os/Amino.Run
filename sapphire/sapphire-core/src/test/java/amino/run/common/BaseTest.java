@@ -21,7 +21,7 @@ import amino.run.oms.OMSServer;
 import amino.run.oms.OMSServerImpl;
 import amino.run.policy.DefaultPolicy;
 import amino.run.policy.Policy;
-import amino.run.runtime.Sapphire;
+import amino.run.runtime.MicroService;
 import amino.run.sampleSO.SO;
 import java.net.InetSocketAddress;
 import java.rmi.registry.LocateRegistry;
@@ -39,7 +39,7 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 /** Created by Venugopal Reddy K on 12/9/18. */
 @PrepareForTest({
     KernelServerImpl.class,
-    Sapphire.class,
+    MicroService.class,
     KernelObjectFactory.class,
     LocateRegistry.class,
     TestUtils.class,
@@ -150,7 +150,7 @@ public class BaseTest {
 
         // Stub static sapphire methods
         mockStatic(
-                Sapphire.class,
+                MicroService.class,
                 new Answer<Object>() {
                     @Override
                     public Object answer(InvocationOnMock invocation) throws Throwable {

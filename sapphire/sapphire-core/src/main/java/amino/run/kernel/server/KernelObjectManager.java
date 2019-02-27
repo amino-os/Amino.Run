@@ -9,7 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 /**
- * Manages kernel objects in the Sapphire server. Keeps references for all local kernel objects
+ * Manages kernel objects in the MicroService server. Keeps references for all local kernel objects
  *
  * @author iyzhang
  */

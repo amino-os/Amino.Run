@@ -250,7 +250,8 @@ public class ConsensusRSMPolicy extends DefaultPolicy {
                     s.initializeRaft(allServers);
                 }
             } catch (RemoteException e) {
-                // TODO: Sapphire Group Policy Interface does not allow throwing exceptions, so in
+                // TODO: MicroService Group Policy Interface does not allow throwing exceptions, so
+                // in
                 // the mean time convert to an Error.
                 throw new Error(
                         "Could not create new group policy because the oms is not available.", e);

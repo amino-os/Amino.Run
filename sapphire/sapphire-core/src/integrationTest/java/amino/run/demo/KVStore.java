@@ -1,6 +1,6 @@
 package amino.run.demo;
 
-import amino.run.app.SapphireObject;
+import amino.run.app.MicroService;
 import amino.run.policy.cache.explicitcaching.ExplicitCacher;
 import amino.run.policy.checkpoint.explicitcheckpoint.ExplicitCheckpointer;
 import amino.run.policy.mobility.explicitmigration.ExplicitMigrator;
@@ -21,11 +21,11 @@ import java.util.UUID;
  * A simple key value class for integration tests.
  *
  * Note: Make <code>KVStore</code> implementing
- * <code>SapphireObject</> interface in order to
+ * <code>MicroService</> interface in order to
  * backward compatible with annotation based sapphire
  * object specification.
  *
- * We can remove <code>SapphireObject</code> interface
+ * We can remove <code>MicroService</code> interface
  * after we completely deprecate annotation based
  * specification.
  */
@@ -35,7 +35,7 @@ public class KVStore
                 ExplicitCheckpointer,
                 ExplicitMigrator,
                 TransactionManager,
-                SapphireObject {
+                MicroService {
     private Map<String, Serializable> kvStore = new HashMap<>();
 
     public void set(String key, Serializable value) {

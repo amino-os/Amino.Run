@@ -82,7 +82,7 @@ public class LockingTransactionPolicy extends CacheLeasePolicy {
                 transactionInProgress = true;
             } else {
                 throw new TransactionAlreadyStartedException(
-                        "Transaction already started on Sapphire object. Rollback or commit before starting a new transaction.");
+                        "Transaction already started on MicroService object. Rollback or commit before starting a new transaction.");
             }
         }
 

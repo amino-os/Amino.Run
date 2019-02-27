@@ -32,7 +32,7 @@ public class MultiDMConstructionHelper {
     public static List<String> getPolicyNames(List<PolicyContainer> policyContainers) {
         List<String> policyNames = new ArrayList<>();
         for (int m = 0; m < policyContainers.size(); m++) {
-            policyNames.add(policyContainers.get(m).getPolicyName());
+            policyNames.add(policyContainers.get(m).policyName);
         }
 
         return policyNames;

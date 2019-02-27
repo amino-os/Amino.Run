@@ -7,13 +7,13 @@ import static amino.run.policy.Policy.ServerPolicy;
 import amino.run.app.DMSpec;
 import amino.run.app.Language;
 import amino.run.app.MicroServiceSpec;
-import amino.run.common.*;
 import amino.run.common.AppObject;
 import amino.run.common.AppObjectStub;
 import amino.run.common.MicroServiceCreationException;
 import amino.run.common.MicroServiceID;
 import amino.run.common.MicroServiceNotFoundException;
 import amino.run.common.MicroServiceReplicaNotFoundException;
+import amino.run.common.MultiDMConstructionHelper;
 import amino.run.common.ReplicaID;
 import amino.run.common.Utils;
 import amino.run.compiler.GlobalStubConstants;
@@ -30,7 +30,9 @@ import amino.run.runtime.util.PolicyCreationHelper;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.rmi.RemoteException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.harmony.rmi.common.RMIUtil;
@@ -138,8 +140,8 @@ public class MicroService {
             policyNames.remove(0);
         }
 
-        ServerPolicy serverPolicy = processedPolicies.get(0).getServerPolicy();
-        ClientPolicy clientPolicy = processedPolicies.get(0).getClientPolicy();
+        ServerPolicy serverPolicy = processedPolicies.get(0).serverPolicy;
+        ClientPolicy clientPolicy = processedPolicies.get(0).clientPolicy;
 
         // Creates an appObject and allocate to the outermost policy.
         AppObjectStub appStub = initAppStub(spec, serverPolicy, appArgs);
@@ -151,9 +153,9 @@ public class MicroService {
         // TODO: Can node selection constraints be passed to the next (inner) group policy in an
         // iterative way?
         for (int j = processedPolicies.size() - 1; j >= 0; j--) {
-            GroupPolicy groupPolicyStub = processedPolicies.get(j).getGroupPolicyStub();
+            GroupPolicy groupPolicyStub = processedPolicies.get(j).groupPolicy;
             ServerPolicy serverPolicyStub =
-                    (ServerPolicy) processedPolicies.get(j).getServerPolicyStub();
+                    (ServerPolicy) processedPolicies.get(j).serverPolicyStub;
             groupPolicyStub.onCreate(region, serverPolicyStub, spec);
         }
 
@@ -209,19 +211,19 @@ public class MicroService {
                 then DM/Policy being created is either for single DM based SO or It is the first DM/Policy in Multi DM based SO
                 (i.e., last mile server policy to SO */
                 PolicyContainer currentSPC = processedPolicies.get(idx);
-                ServerPolicy serverPolicy = currentSPC.getServerPolicy();
+                ServerPolicy serverPolicy = currentSPC.serverPolicy;
 
                 // Previous server policy stub object acts as MicroService Object(SO) to the current
                 // server policy. Outermost policy is linked to an actual app object;hence, it is
                 // not needed here.
                 PolicyContainer outerSPC = processedPolicies.get(idx - 1);
-                KernelObjectStub outerStub = outerSPC.getServerPolicyStub();
-                ServerPolicy outerSP = outerSPC.getServerPolicy();
+                KernelObjectStub outerStub = outerSPC.serverPolicyStub;
+                ServerPolicy outerSP = outerSPC.serverPolicy;
 
                 // Links this serverPolicy to stub for outer policy.
                 serverPolicy.$__initialize(new AppObject(Utils.ObjectCloner.deepCopy(outerStub)));
                 outerSP.setPreviousServerPolicy(serverPolicy);
-                outerStub.$__setNextClientPolicy(currentSPC.getClientPolicy());
+                outerStub.$__setNextClientPolicy(currentSPC.clientPolicy);
             }
         } catch (ClassNotFoundException | IOException e) {
             logger.severe("Creation of AppObject has failed: " + policyNames.get(0));
@@ -258,14 +260,14 @@ public class MicroService {
             HashMap<String, Class<?>> policyMap = PolicyCreationHelper.getPolicyMap(policyName);
 
             /* Get the policy used by the MicroService Object we need to create */
-            Class<?> sapphireServerPolicyClass = policyMap.get("sapphireServerPolicyClass");
-            Class<?> sapphireClientPolicyClass = policyMap.get("sapphireClientPolicyClass");
+            Class<?> serverPolicyClass = policyMap.get(PolicyCreationHelper.ServerPolicyClass);
+            Class<?> clientPolicyClass = policyMap.get(PolicyCreationHelper.ClientPolicyClass);
 
             /* Create the Kernel Object for the Server Policy, and get the Server Policy Stub */
-            ServerPolicy serverPolicyStub = (ServerPolicy) getPolicyStub(sapphireServerPolicyClass);
+            ServerPolicy serverPolicyStub = (ServerPolicy) getPolicyStub(serverPolicyClass);
 
             /* Create the Client Policy Object */
-            ClientPolicy client = (ClientPolicy) sapphireClientPolicyClass.newInstance();
+            ClientPolicy client = (ClientPolicy) clientPolicyClass.newInstance();
 
             /* Initialize the server policy and return a local pointer to the object itself */
             Policy.ServerPolicy serverPolicy = initializeServerPolicy(serverPolicyStub);
@@ -286,10 +288,11 @@ public class MicroService {
             serverPolicyStub.setIsLastPolicy(nextPolicyNames.size() == 0);
 
             /* Updates the list of processed policies. */
-            PolicyContainer processedPolicy = new PolicyContainer(policyName, groupPolicyStub);
-            processedPolicy.setServerPolicy(serverPolicy);
-            processedPolicy.setServerPolicyStub((KernelObjectStub) serverPolicyStub);
-            processedPolicy.setClientPolicy(client);
+            PolicyContainer processedPolicy = new PolicyContainer(policyName);
+            processedPolicy.groupPolicy = groupPolicyStub;
+            processedPolicy.serverPolicy = serverPolicy;
+            processedPolicy.serverPolicyStub = ((KernelObjectStub) serverPolicyStub);
+            processedPolicy.clientPolicy = client;
             processedPolicies.add(processedPolicy);
 
             /* Create a copy to set processed policies up to this point. */

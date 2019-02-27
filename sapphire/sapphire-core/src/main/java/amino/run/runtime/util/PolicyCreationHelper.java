@@ -13,6 +13,10 @@ import java.util.logging.Logger;
 
 /** Collection of helper methods that are necessary for creating policy instances. */
 public class PolicyCreationHelper {
+    public static final String GroupPolicyClass = "GroupPolicyClass";
+    public static final String ServerPolicyClass = "ServerPolicyClass";
+    public static final String ClientPolicyClass = "ClientPolicyClass";
+
     static Logger logger = java.util.logging.Logger.getLogger(PolicyCreationHelper.class.getName());
 
     /**
@@ -28,8 +32,7 @@ public class PolicyCreationHelper {
             String policyName, MicroServiceID sapphireObjId) throws MicroServiceCreationException {
         try {
             /* Create the Kernel Object for the Group Policy and get the Group Policy Stub from OMS */
-            Class<?> sapphireGroupPolicyClass =
-                    getPolicyMap(policyName).get("sapphireGroupPolicyClass");
+            Class<?> sapphireGroupPolicyClass = getPolicyMap(policyName).get(GroupPolicyClass);
 
             Policy.GroupPolicy groupPolicyStub =
                     GlobalKernelReferences.nodeServer.oms.createGroupPolicy(
@@ -65,26 +68,26 @@ public class PolicyCreationHelper {
         */
         for (Class<?> c : policyClasses) {
             if (Policy.ServerPolicy.class.isAssignableFrom(c)) {
-                policyMap.put("sapphireServerPolicyClass", c);
+                policyMap.put(ServerPolicyClass, c);
                 continue;
             }
             if (Policy.ClientPolicy.class.isAssignableFrom(c)) {
-                policyMap.put("sapphireClientPolicyClass", c);
+                policyMap.put(ClientPolicyClass, c);
                 continue;
             }
             if (Policy.GroupPolicy.class.isAssignableFrom(c)) {
-                policyMap.put("sapphireGroupPolicyClass", c);
+                policyMap.put(GroupPolicyClass, c);
                 continue;
             }
         }
 
         /* If no policies specified use the defaults */
-        if (!policyMap.containsKey("sapphireServerPolicyClass"))
-            policyMap.put("sapphireServerPolicyClass", DefaultPolicy.DefaultServerPolicy.class);
-        if (!policyMap.containsKey("sapphireClientPolicyClass"))
-            policyMap.put("sapphireClientPolicyClass", DefaultPolicy.DefaultClientPolicy.class);
-        if (!policyMap.containsKey("sapphireGroupPolicyClass"))
-            policyMap.put("sapphireGroupPolicyClass", DefaultPolicy.DefaultGroupPolicy.class);
+        if (!policyMap.containsKey(ServerPolicyClass))
+            policyMap.put(ServerPolicyClass, DefaultPolicy.DefaultServerPolicy.class);
+        if (!policyMap.containsKey(ClientPolicyClass))
+            policyMap.put(ClientPolicyClass, DefaultPolicy.DefaultClientPolicy.class);
+        if (!policyMap.containsKey(GroupPolicyClass))
+            policyMap.put(GroupPolicyClass, DefaultPolicy.DefaultGroupPolicy.class);
 
         return policyMap;
     }

@@ -85,21 +85,21 @@ public class StubGenerator {
                     if (Policy.class.isAssignableFrom(c)) {
                         Class<?>[] policyClasses = c.getDeclaredClasses();
 
-                        Class<?> sapphireServerPolicyClass = null;
-                        Class<?> sapphireGroupPolicyClass = null;
+                        Class<?> serverPolicyClass = null;
+                        Class<?> groupPolicyClass = null;
 
                         for (Class<?> cls : policyClasses) {
                             if (Policy.ServerPolicy.class.isAssignableFrom(cls)) {
-                                sapphireServerPolicyClass = cls;
+                                serverPolicyClass = cls;
                                 continue;
                             }
                             if (Policy.GroupPolicy.class.isAssignableFrom(cls)) {
-                                sapphireGroupPolicyClass = cls;
+                                groupPolicyClass = cls;
                                 continue;
                             }
                         }
-                        StubGenerator.generateStub("policy", sapphireServerPolicyClass, destFolder);
-                        StubGenerator.generateStub("policy", sapphireGroupPolicyClass, destFolder);
+                        StubGenerator.generateStub("policy", serverPolicyClass, destFolder);
+                        StubGenerator.generateStub("policy", groupPolicyClass, destFolder);
                     } else if (MicroService.class.isAssignableFrom(c))
                         StubGenerator.generateStub("app", c, destFolder);
                 } catch (Exception e) {

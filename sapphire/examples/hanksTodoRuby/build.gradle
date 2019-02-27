@@ -46,4 +46,3 @@ runapp {
 }
 
 compileJava.dependsOn genStubs
-runapp.dependsOn compileJava

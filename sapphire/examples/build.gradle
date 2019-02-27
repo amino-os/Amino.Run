@@ -7,59 +7,44 @@ subprojects {
         compile project(':sapphire-core')
     }
 
-    // Java jar file depends on compile tasks of all sourceSets.
-    // Currently there are two sourceSets - "main" and "stubs".
-    // Java examples will have "main" and "stubs" sourceSets and
-    // non-Java examples will have only "main" sourceSet.
-    jar.dependsOn tasks.withType(AbstractCompile)
-
-    // Run OMS
-    task runoms(type: JavaExec) {
-        classpath = sourceSets.main.runtimeClasspath
+    // Common rules for all JavaExec tasks, are added before execution.
+    tasks.withType(JavaExec).whenTaskAdded {
         classpath += sourceSets.stubs.runtimeClasspath
         jvmArgs '-Djava.util.logging.config.file=' + project.projectDir + '/../../logging.properties'
+    }
+    
+    // Run OMS
+    task runoms(type: JavaExec) {
         main = 'amino.run.oms.OMSServerImpl'
         args project.property('omsIp'), project.property('omsPort')
     }
 
     // Run a kernel server
     task runks(type: JavaExec) {
-        classpath = sourceSets.main.runtimeClasspath
-        classpath += sourceSets.stubs.runtimeClasspath
-        jvmArgs '-Djava.util.logging.config.file=' + project.projectDir + '/../../logging.properties'
         main = 'amino.run.kernel.server.KernelServerImpl'
         args project.property('kernelServerIp'), project.property('kernelServerPort'), project.property('omsIp'), project.property('omsPort'), project.property("kernelServerRegion")
     }
 
     // Run a second kernel server
     task runks2(type: JavaExec) {
-        classpath = runks.classpath // TODO: How do we create a new task that inherits from an existing task, or takes a parameter?  Hack for now.
-        jvmArgs runks.jvmArgs
-        main = runks.main
+        main = 'amino.run.kernel.server.KernelServerImpl'
         args project.property('kernelServerIp'), project.property('kernelServerPort2'), project.property('omsIp'), project.property('omsPort'), project.property("kernelServerRegion2")
     }
 
     // Run a third kernel server
     task runks3(type: JavaExec) {
-        classpath = runks.classpath
-        jvmArgs runks.jvmArgs
-        main = runks.main
+        main = 'amino.run.kernel.server.KernelServerImpl'
         args project.property('kernelServerIp'), project.property('kernelServerPort3'), project.property('omsIp'), project.property('omsPort'), project.property("kernelServerRegion3")
     }
 
     // Run a fourth kernel server
     task runks4(type: JavaExec) {
-        classpath = runks.classpath
-        jvmArgs runks.jvmArgs
-        main = runks.main
+        main = 'amino.run.kernel.server.KernelServerImpl'
         args project.property('kernelServerIp'), project.property('kernelServerPort4'), project.property('omsIp'), project.property('omsPort'), project.property("kernelServerRegion4")
     }
 
     // Run application
     task runapp(type: JavaExec) {
-        classpath = sourceSets.main.runtimeClasspath
-        classpath += sourceSets.stubs.runtimeClasspath
-        jvmArgs '-Djava.util.logging.config.file=' + project.projectDir + '/../../logging.properties'
         args project.property('omsIp'), project.property('omsPort'), project.property('embeddedKernelServerIp'), project.property('kernelServerPort')
     }
 }

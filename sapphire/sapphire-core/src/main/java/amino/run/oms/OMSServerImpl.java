@@ -190,7 +190,7 @@ public class OMSServerImpl implements OMSServer, Registry {
     @Override
     public AppObjectStub attachTo(String name)
             throws RemoteException, MicroServiceNotFoundException {
-        MicroServiceID microServiceId = objectManager.getSapphireInstanceIdByName(name);
+        MicroServiceID microServiceId = objectManager.getMicroServiceByName(name);
         AppObjectStub appObjStub = acquireStub(microServiceId);
         objectManager.incrRefCountAndGet(microServiceId);
         return appObjStub;
@@ -198,7 +198,7 @@ public class OMSServerImpl implements OMSServer, Registry {
 
     @Override
     public boolean detachFrom(String name) throws RemoteException, MicroServiceNotFoundException {
-        return delete(objectManager.getSapphireInstanceIdByName(name));
+        return delete(objectManager.getMicroServiceByName(name));
     }
 
     @Override
@@ -372,7 +372,7 @@ public class OMSServerImpl implements OMSServer, Registry {
      * @throws RemoteException
      */
     public ArrayList<MicroServiceID> getAllSapphireObjects() throws RemoteException {
-        ArrayList<MicroServiceID> arr = objectManager.getAllSapphireObjects();
+        ArrayList<MicroServiceID> arr = objectManager.getAllMicroServices();
         return arr;
     }
 
@@ -384,7 +384,7 @@ public class OMSServerImpl implements OMSServer, Registry {
      */
     public EventHandler[] getSapphireReplicasById(MicroServiceID oid)
             throws MicroServiceNotFoundException {
-        return objectManager.getSapphireReplicasById(oid);
+        return objectManager.getReplicasById(oid);
     }
 
     /**

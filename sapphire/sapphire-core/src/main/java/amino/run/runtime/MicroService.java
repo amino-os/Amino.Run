@@ -49,17 +49,17 @@ public class MicroService {
     static Logger logger = Logger.getLogger(MicroService.class.getName());
 
     /**
-     * Creates a sapphire object.
+     * Creates a Amino microservice.
      *
      * @param spec MicroService object specification
-     * @param args parameters to sapphire object constructor
-     * @return sapphire object stub
+     * @param args parameters to microservice constructor
+     * @return Microservice stub for application
      */
     public static Object new_(MicroServiceSpec spec, Object... args)
             throws MicroServiceCreationException {
         AppObjectStub appStub = null;
         try {
-            logger.info("Creating object for spec:" + spec);
+            logger.info("Creating microservice for spec:" + spec);
             if (spec.getLang() == Language.java && spec.getDmList().isEmpty()) {
                 Class<?> appObjectClass = Class.forName(spec.getJavaClassName());
                 return new_(appObjectClass, args);
@@ -69,16 +69,16 @@ public class MicroService {
             String region = GlobalKernelReferences.nodeServer.getRegion();
             return createPolicyChain(spec, region, args);
         } catch (Exception e) {
-            String msg = String.format("Failed to create sapphire object '%s'", spec);
+            String msg = String.format("Failed to create a microservice'%s'", spec);
             logger.log(Level.SEVERE, msg, e);
             throw new MicroServiceCreationException(msg, e);
         }
     }
 
     /**
-     * WARN: This method only works for Java sapphire object. This method has been deprecated.
-     * Please use {@link #new_(MicroServiceSpec, Object...)}. We keep this method because we have
-     * Java demo apps that call this method directly.
+     * WARN: This method only works for Java microservice. This method has been deprecated. Please
+     * use {@link #new_(MicroServiceSpec, Object...)}. We keep this method because we have Java demo
+     * apps that call this method directly.
      *
      * @param appObjectClass the class of the app object
      * @param args the arguments to app object constructor
@@ -99,7 +99,7 @@ public class MicroService {
             logger.info("MicroService Object created: " + appObjectClass.getName());
             return appStub;
         } catch (Exception e) {
-            logger.log(Level.SEVERE, "Failed to create sapphire object:", e);
+            logger.log(Level.SEVERE, "Failed to create MicroService object:", e);
             return null;
         }
     }
@@ -128,7 +128,7 @@ public class MicroService {
             spec = setDefaultDMSpec(spec);
         }
 
-        /* Register for a sapphire object Id from OMS */
+        /* Register for a Microservice Id from OMS */
         MicroServiceID microServiceID =
                 GlobalKernelReferences.nodeServer.oms.registerMicroService();
 
@@ -178,7 +178,7 @@ public class MicroService {
      * @param processedPolicies Policies processed so far (created and linked)
      * @param microServiceID Object ID registred to OMS which is one per AminoMicroservice chain
      *     (all replicas of the chain will have the same object ID.
-     * @param spec Amino object spec
+     * @param spec Microservice spec
      * @return list of processed policies so far
      * @throws MicroServiceCreationException thrown when policy object creation fails
      */
@@ -244,7 +244,7 @@ public class MicroService {
      * @param groupPolicyStub Group Policy stub
      * @param policyNamesToCreate name of polices that need to be created (this and inner policies)
      * @param processedPolicies Policies processed so far (created and linked)
-     * @param spec Amino object spec
+     * @param spec Microservice spec
      * @return list of policies that had been created so far including the one just created here
      * @throws MicroServiceCreationException thrown when policy object creation fails
      */
@@ -278,7 +278,6 @@ public class MicroService {
             // TODO: client is unncessary for outer policies of a replica.
             client.onCreate(groupPolicyStub, spec);
 
-            // TODO: Separate out the following code block.
             // Note that subList is non serializable; hence, the new list creation.
             List<String> nextPolicyNames = new ArrayList<>(policyNamesToCreate);
 
@@ -322,23 +321,23 @@ public class MicroService {
     }
 
     /**
-     * Deletes the given sapphire object
+     * Deletes the given microservice object
      *
      * @param stub
      */
     public static void delete_(Object stub) {
         if (!(stub instanceof AppObjectStub)) {
-            throw new RuntimeException("Tried to delete invalid sapphire object");
+            throw new RuntimeException("Tried to delete invalid microservice object");
         }
 
         MicroServiceID microServiceId = ((AppObjectStub) stub).$__getMicroServiceId();
         try {
             GlobalKernelReferences.nodeServer.oms.delete(microServiceId);
         } catch (MicroServiceNotFoundException e) {
-            /* Ignore it. It might have happened that sapphire object is already deleted and still hold reference */
+            /* Ignore it. It might have happened that microservice object is already deleted and still hold reference */
             logger.warning(String.format("%s is not found. Probably deleted.", microServiceId));
         } catch (Exception e) {
-            throw new RuntimeException("Failed to delete sapphire object.", e);
+            throw new RuntimeException("Failed to delete microservice object.", e);
         }
     }
 
@@ -360,8 +359,8 @@ public class MicroService {
         Policy.GroupPolicy groupPolicyStub = (GroupPolicy) getPolicyStub(policyClass);
         try {
             GroupPolicy groupPolicy = initializeGroupPolicy(groupPolicyStub);
-            groupPolicyStub.setSapphireObjId(microServiceId);
-            groupPolicy.setSapphireObjId(microServiceId);
+            groupPolicyStub.setMicroServiceId(microServiceId);
+            groupPolicy.setMicroServiceId(microServiceId);
         } catch (KernelObjectNotFoundException e) {
             logger.severe(
                     "Failed to find the group kernel object created just before it. Exception info: "
@@ -483,7 +482,7 @@ public class MicroService {
     /**
      * Initializes server policy and stub with app object.
      *
-     * @param spec sapphire object spec
+     * @param spec microservice spec
      * @param serverPolicy server policy
      * @param appArgs app arguments
      * @throws ClassNotFoundException

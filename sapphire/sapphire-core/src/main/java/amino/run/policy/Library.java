@@ -25,7 +25,7 @@ public abstract class Library implements Upcalls {
     public abstract static class ClientPolicyLibrary implements ClientUpcalls {
 
         /*
-         * INTERNAL FUNCTIONS (Used by sapphire runtime system)
+         * INTERNAL FUNCTIONS (Used by Amino Microservice DMs)
          */
     }
 
@@ -275,7 +275,6 @@ public abstract class Library implements Upcalls {
                             + server);
         }
 
-        // TODO (2018-9-26, Sungwook) Remove after verification.
         public void terminate() throws RemoteException {
             try {
                 GlobalKernelReferences.nodeServer.oms.unRegisterReplica(getReplicaId());
@@ -439,8 +438,8 @@ public abstract class Library implements Upcalls {
             return this.oid;
         }
 
-        public void setSapphireObjId(MicroServiceID sapphireId) {
-            microServiceId = sapphireId;
+        public void setMicroServiceId(MicroServiceID microServiceId) {
+            this.microServiceId = microServiceId;
         }
 
         public MicroServiceID getSapphireObjId() {
@@ -452,9 +451,9 @@ public abstract class Library implements Upcalls {
          * itself from {@code KernelObjectManager} on local kernel server, 2) remove itself of OMS's
          * {@code KernelObjectManager}, and 3) remove replica ID from OMS.
          *
-         * <p><strong>Warning:</strong> Do not try to call OMS to unregister the sapphire object.
-         * {@link OMSServer#delete(MicroServiceID)} is the public entry point to delete a sapphire
-         * object. OMS will take care of deleting sapphire object at {@link
+         * <p><strong>Warning:</strong> Do not try to call OMS to unregister the microservice.
+         * {@link OMSServer#delete(MicroServiceID)} is the public entry point to delete a
+         * microservice. OMS will take care of deleting microservice at {@link
          * amino.run.oms.OMSServerImpl#delete(MicroServiceID)}.
          *
          * @throws RemoteException

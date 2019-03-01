@@ -8,5 +8,5 @@ import java.net.InetSocketAddress;
  * provided, so that SO's can just extend that.
  */
 public interface ExplicitMigrator {
-    public void migrateObject(InetSocketAddress destinationAddr) throws MigrationException;
+    public void migrateTo(InetSocketAddress destinationAddr) throws MigrationException;
 }

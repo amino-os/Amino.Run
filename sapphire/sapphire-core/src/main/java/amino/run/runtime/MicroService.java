@@ -29,6 +29,7 @@ import amino.run.policy.PolicyContainer;
 import amino.run.runtime.util.PolicyCreationHelper;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -51,7 +52,7 @@ public class MicroService {
     /**
      * Creates a microservice.
      *
-     * @param spec MicroService object specification
+     * @param spec MicroService specification
      * @param args parameters to microservice constructor
      * @return microservice stub
      */
@@ -95,6 +96,7 @@ public class MicroService {
 
             /* Get the region of current server */
             String region = GlobalKernelReferences.nodeServer.getRegion();
+
             AppObjectStub appStub = createPolicyChain(spec, region, args);
             logger.info("MicroService Object created: " + appObjectClass.getName());
             return appStub;
@@ -108,9 +110,10 @@ public class MicroService {
      * Creates a complete policy chain using the spec. 1. Creates an app object stub. 2. Creates
      * client, stub, group and server policy instance for each DM in the chain. 3. Links them
      * (stub->nextClient, server -> outerServer). 4. Executes onCreate for group policy from
-     * innermost to outermost. Returns appStub which points to the first client policy in the chain.
+     * innermost to outermost. 5. Pins the original Microservice. 6. Returns appStub which points to
+     * the first client policy in the chain.
      *
-     * @param spec MicroService object spec
+     * @param spec MicroService spec
      * @param region Region
      * @param appArgs Arguments for application object
      * @return client side appObjectStub
@@ -162,7 +165,9 @@ public class MicroService {
         /* Remove the next DM client link for all server policy stubs on server side */
         for (PolicyContainer container : processedPolicies) {
             container.serverPolicyStub.$__setNextClientPolicy(null);
-        }
+
+        InetSocketAddress address = null;
+        PolicyCreationHelper.pinOriginalMicroservice(processedPolicies);
 
         return appStub;
     }
@@ -490,7 +495,7 @@ public class MicroService {
      * Processes MicroService replica by registering for a replica ID and handler for the replica to
      * OMS.
      *
-     * @param microServiceId MicroService object ID
+     * @param microServiceId MicroService ID
      * @param serverPolicy ServerPolicy
      * @param serverPolicyStub ServerPolicy stub
      * @throws MicroServiceNotFoundException

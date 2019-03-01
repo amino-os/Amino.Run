@@ -51,7 +51,7 @@ public class MicroService {
     /**
      * Creates a microservice.
      *
-     * @param spec MicroService object specification
+     * @param spec MicroService specification
      * @param args parameters to microservice constructor
      * @return microservice stub
      */
@@ -110,7 +110,7 @@ public class MicroService {
      * (stub->nextClient, server -> outerServer). 4. Executes onCreate for group policy from
      * innermost to outermost. Returns appStub which points to the first client policy in the chain.
      *
-     * @param spec MicroService object spec
+     * @param spec MicroService spec
      * @param region Region
      * @param appArgs Arguments for application object
      * @return client side appObjectStub
@@ -490,7 +490,7 @@ public class MicroService {
      * Processes MicroService replica by registering for a replica ID and handler for the replica to
      * OMS.
      *
-     * @param microServiceId MicroService object ID
+     * @param microServiceId MicroService ID
      * @param serverPolicy ServerPolicy
      * @param serverPolicyStub ServerPolicy stub
      * @throws MicroServiceNotFoundException

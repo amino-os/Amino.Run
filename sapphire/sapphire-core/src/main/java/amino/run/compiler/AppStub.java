@@ -90,6 +90,7 @@ public final class AppStub extends Stub {
     public String getStubConstructors() {
         StringBuilder buffer = new StringBuilder();
         StringBuilder paramNames;
+        StringBuilder exceptionNames;
 
         Constructor<?>[] constructors = stubClass.getConstructors();
 
@@ -107,7 +108,19 @@ public final class AppStub extends Stub {
                 paramNames.append(
                         ((i > 0) ? ", " : "") + RmicUtil.getParameterName(params[i], i + 1));
             }
-            buffer.append(") {" + EOLN);
+
+            buffer.append(")");
+            Class<?>[] exceptions = constructor.getExceptionTypes();
+            exceptionNames = new StringBuilder();
+            if (exceptions.length > 0) {
+                buffer.append(" throws ");
+                exceptionNames.append(exceptions[0].getName());
+                for (int i = 1; i < exceptions.length; i++) {
+                    exceptionNames.append(", " + exceptions[i].getName());
+                }
+            }
+
+            buffer.append(exceptionNames + " {" + EOLN);
             buffer.append(indenter.tIncrease() + "super(" + paramNames + ");" + EOLN);
 
             buffer.append(indenter.indent() + "}" + EOLN + EOLN);

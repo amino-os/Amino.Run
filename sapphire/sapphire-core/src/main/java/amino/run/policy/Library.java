@@ -49,7 +49,7 @@ public abstract class Library implements Upcalls {
         // (farthest from actual app object).
         // It means these were the last in order in the client side of chain. New groups should be
         // created for this list of chain.
-        protected List<String> nextPolicyNames = new ArrayList<>();
+        protected List<String> nextPolicyNames = new ArrayList<String>();
 
         // List of ServerPolicies that were created previously. They are upper level in group
         // hierarchy. Therefore, this list of chain
@@ -136,7 +136,7 @@ public abstract class Library implements Upcalls {
          * @throws RemoteException
          */
         public ServerPolicy replicate(String region) throws RemoteException {
-            List<PolicyContainer> processedPoliciesReplica = new ArrayList<>();
+            List<PolicyContainer> processedPoliciesReplica = new ArrayList<PolicyContainer>();
             int outerPolicySize = processedPolicies.size();
 
             try {
@@ -170,7 +170,7 @@ public abstract class Library implements Upcalls {
                 // (inner)
                 // to the innermost policy. Note that it does not include the current policy. This
                 // creates new group policies as well.
-                policyNames = new ArrayList<>(this.nextPolicyNames);
+                policyNames = new ArrayList<String>(this.nextPolicyNames);
                 int innerPolicySize = this.nextPolicyNames.size();
                 for (int j = outerPolicySize; j < innerPolicySize + outerPolicySize; j++) {
                     MicroService.createConnectedPolicy(

@@ -121,7 +121,7 @@ public class MicroService {
     public static AppObjectStub createPolicyChain(
             MicroServiceSpec spec, String region, Object[] appArgs)
             throws IOException, CloneNotSupportedException, MicroServiceCreationException {
-        List<PolicyContainer> processedPolicies = new ArrayList<>();
+        List<PolicyContainer> processedPolicies = new ArrayList<PolicyContainer>();
 
         if (spec.getDmList().isEmpty()) {
             // Adds default DM when there is no DMs specified in the spec.
@@ -225,7 +225,10 @@ public class MicroService {
                 outerSP.setPreviousServerPolicy(serverPolicy);
                 outerStub.$__setNextClientPolicy(currentSPC.clientPolicy);
             }
-        } catch (ClassNotFoundException | IOException e) {
+        } catch (ClassNotFoundException e) {
+            logger.severe("Creation of AppObject has failed: " + policyNames.get(0));
+            throw new MicroServiceCreationException(e);
+        } catch (IOException e) {
             logger.severe("Creation of AppObject has failed: " + policyNames.get(0));
             throw new MicroServiceCreationException(e);
         }
@@ -280,7 +283,7 @@ public class MicroService {
 
             // TODO: Separate out the following code block.
             // Note that subList is non serializable; hence, the new list creation.
-            List<String> nextPolicyNames = new ArrayList<>(policyNamesToCreate);
+            List<String> nextPolicyNames = new ArrayList<String>(policyNamesToCreate);
 
             // Remove itself from the next policy names.
             nextPolicyNames.remove(0);
@@ -302,18 +305,28 @@ public class MicroService {
 
             /* Execute onCreate for ServerPolicy */
             serverPolicy.onCreate(groupPolicyStub, spec);
-        } catch (KernelObjectNotCreatedException | ClassNotFoundException e) {
+        } catch (KernelObjectNotCreatedException e) {
+            logger.severe("Failed while creating stub for " + policyName);
+            throw new MicroServiceCreationException(e);
+        } catch (ClassNotFoundException e) {
             logger.severe("Failed while creating stub for " + policyName);
             throw new MicroServiceCreationException(e);
         } catch (KernelObjectNotFoundException e) {
             logger.severe("Failed while creating server policy for " + policyName);
             throw new MicroServiceCreationException(e);
-        } catch (MicroServiceNotFoundException
-                | MicroServiceReplicaNotFoundException
-                | RemoteException e) {
+        } catch (MicroServiceNotFoundException e) {
             logger.severe("Failed while registering a replica for " + policyName);
             throw new MicroServiceCreationException(e);
-        } catch (IllegalAccessException | InstantiationException e) {
+        } catch (MicroServiceReplicaNotFoundException e) {
+            logger.severe("Failed while registering a replica for " + policyName);
+            throw new MicroServiceCreationException(e);
+        } catch (RemoteException e) {
+            logger.severe("Failed while registering a replica for " + policyName);
+            throw new MicroServiceCreationException(e);
+        } catch (IllegalAccessException e) {
+            logger.severe("Failed while instantiating client class for " + policyName);
+            throw new MicroServiceCreationException(e);
+        } catch (InstantiationException e) {
             logger.severe("Failed while instantiating client class for " + policyName);
             throw new MicroServiceCreationException(e);
         }
@@ -458,7 +471,9 @@ public class MicroService {
      * @throws RemoteException
      */
     private static void registerSapphireReplica(
-            MicroServiceID microServiceId, ServerPolicy serverPolicy, ServerPolicy serverPolicyStub)
+            MicroServiceID microServiceId,
+            ServerPolicy serverPolicy,
+            final ServerPolicy serverPolicyStub)
             throws MicroServiceNotFoundException, MicroServiceReplicaNotFoundException,
                     RemoteException {
         /* Register for a replica ID from OMS */
@@ -525,7 +540,7 @@ public class MicroService {
      * @return
      */
     private static MicroServiceSpec setDefaultDMSpec(MicroServiceSpec spec) {
-        List<DMSpec> list = new ArrayList<>();
+        List<DMSpec> list = new ArrayList<DMSpec>();
         DMSpec dmSpec = new DMSpec();
         dmSpec.setName(DefaultPolicy.class.getName());
         list.add(dmSpec);

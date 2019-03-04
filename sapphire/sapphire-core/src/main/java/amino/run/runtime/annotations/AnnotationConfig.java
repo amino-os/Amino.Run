@@ -14,7 +14,7 @@ import java.util.Map;
 public class AnnotationConfig implements Upcalls.SapphirePolicyConfig {
     private String annotationType;
 
-    private Map<String, String> properties = new HashMap<>();
+    private Map<String, String> properties = new HashMap<String, String>();
 
     public void addConfig(String key, String value) {
         properties.put(key, value);

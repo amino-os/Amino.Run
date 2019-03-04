@@ -122,8 +122,8 @@ public class SimpleDMIntegrationTest {
         CustomTask task1 = new CustomTask(client1, key1, value1);
         CustomTask task2 = new CustomTask(client2, key2, value2);
 
-        FutureTask<Void> futureTask1 = new FutureTask<>(task1);
-        FutureTask<Void> futureTask2 = new FutureTask<>(task2);
+        FutureTask<Void> futureTask1 = new FutureTask<Void>(task1);
+        FutureTask<Void> futureTask2 = new FutureTask<Void>(task2);
 
         executor.execute(futureTask1);
         executor.execute(futureTask2);

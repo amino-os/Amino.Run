@@ -53,7 +53,10 @@ public class Utils {
                 ois = new ObjectInputStream(bin);
                 // return the new object
                 return (Serializable) ois.readObject();
-            } catch (Exception e) {
+            } catch (IOException e) {
+                System.out.println("Exception in ObjectCloner = " + e);
+                throw (e);
+            } catch (ClassNotFoundException e) {
                 System.out.println("Exception in ObjectCloner = " + e);
                 throw (e);
             } finally {
@@ -221,7 +224,7 @@ public class Utils {
      */
     public static Map<String, SapphirePolicyConfig> toSapphirePolicyConfig(Annotation[] annotations)
             throws InvocationTargetException, IllegalAccessException {
-        Map<String, SapphirePolicyConfig> configMap = new TreeMap<>();
+        Map<String, SapphirePolicyConfig> configMap = new TreeMap<String, SapphirePolicyConfig>();
         for (Annotation a : annotations) {
             configMap.putAll(toSapphirePolicyConfig(a));
         }
@@ -231,7 +234,7 @@ public class Utils {
 
     private static Map<String, SapphirePolicyConfig> toSapphirePolicyConfig(Annotation annotation)
             throws InvocationTargetException, IllegalAccessException {
-        Map<String, SapphirePolicyConfig> map = new HashMap<>();
+        Map<String, SapphirePolicyConfig> map = new HashMap<String, SapphirePolicyConfig>();
         Class<? extends Annotation> type = annotation.annotationType();
         AnnotationConfig config = new AnnotationConfig();
         config.setAnnotationType(type.getName());
@@ -264,10 +267,12 @@ public class Utils {
      */
     public static Map<String, Map<String, SapphirePolicyConfig>> fromDMSpecListToConfigMap(
             List<DMSpec> dmSpecList) {
-        Map<String, Map<String, SapphirePolicyConfig>> map = new HashMap<>();
+        Map<String, Map<String, SapphirePolicyConfig>> map =
+                new HashMap<String, Map<String, SapphirePolicyConfig>>();
 
         for (DMSpec dmSpec : dmSpecList) {
-            Map<String, SapphirePolicyConfig> configMap = new HashMap<>();
+            Map<String, SapphirePolicyConfig> configMap =
+                    new HashMap<String, SapphirePolicyConfig>();
             map.put(dmSpec.getName(), configMap);
             for (SapphirePolicyConfig config : dmSpec.getConfigs()) {
                 configMap.put(config.getClass().getName(), config);
@@ -297,7 +302,7 @@ public class Utils {
      */
     public static Map<String, SapphirePolicyConfig> fromDMSpecListToFlatConfigMap(
             List<DMSpec> dmSpecList) {
-        Map<String, SapphirePolicyConfig> map = new HashMap<>();
+        Map<String, SapphirePolicyConfig> map = new HashMap<String, SapphirePolicyConfig>();
 
         if (dmSpecList != null) {
             for (DMSpec dmSpec : dmSpecList) {

@@ -14,7 +14,7 @@ public class MultiDMConstructionHelper {
      * @return list of policy names
      */
     public static List<String> getPolicyNameChain(MicroServiceSpec spec) {
-        List<String> policyNameChain = new ArrayList<>();
+        List<String> policyNameChain = new ArrayList<String>();
         List<DMSpec> dmList = spec.getDmList();
         for (int i = 0; i < dmList.size(); i++) {
             policyNameChain.add(dmList.get(i).getName());
@@ -30,7 +30,7 @@ public class MultiDMConstructionHelper {
      * @return list of policy names
      */
     public static List<String> getPolicyNames(List<PolicyContainer> policyContainers) {
-        List<String> policyNames = new ArrayList<>();
+        List<String> policyNames = new ArrayList<String>();
         for (int m = 0; m < policyContainers.size(); m++) {
             policyNames.add(policyContainers.get(m).policyName);
         }

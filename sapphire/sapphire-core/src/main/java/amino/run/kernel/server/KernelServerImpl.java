@@ -145,7 +145,7 @@ public class KernelServerImpl implements KernelServer {
                 String.format(
                         "Started adding %d objects. First OID: %s", spContainers.size(), oid));
 
-        List<String> serverPolicies = new ArrayList<>();
+        List<String> serverPolicies = new ArrayList<String>();
 
         for (PolicyContainer spContainer : firstServerPolicy.getProcessedPolicies()) {
             // Add Server Policy object in the same order as client side has created.
@@ -154,7 +154,7 @@ public class KernelServerImpl implements KernelServer {
             // Added for setting the ReplicaId and registering handler for this replica to OMS.
             Policy.ServerPolicy serverPolicyStub =
                     (Policy.ServerPolicy) spContainer.serverPolicyStub;
-            ArrayList<Object> policyObjList = new ArrayList<>();
+            ArrayList<Object> policyObjList = new ArrayList<Object>();
             EventHandler policyHandler = new EventHandler(host, policyObjList);
             policyObjList.add(serverPolicyStub);
             serverPolicyStub.setReplicaId(serverPolicy.getReplicaId());
@@ -447,7 +447,7 @@ public class KernelServerImpl implements KernelServer {
         }
     }
 
-    private void startHeartbeats(ServerInfo srvInfo)
+    private void startHeartbeats(final ServerInfo srvInfo)
             throws RemoteException, NotBoundException, KernelServerNotFoundException {
         oms.heartbeatKernelServer(srvInfo);
         ksHeartbeatSendTimer =

@@ -14,7 +14,7 @@ import org.yaml.snakeyaml.Yaml;
  */
 public final class DMSpec implements Serializable {
     private String name;
-    private List<SapphirePolicyConfig> configs = new ArrayList<>();
+    private List<SapphirePolicyConfig> configs = new ArrayList<SapphirePolicyConfig>();
 
     /**
      * Returns a builder class for DMSpec.
@@ -56,7 +56,7 @@ public final class DMSpec implements Serializable {
      * @return a sapphire policy configuration map that contains all configurations of this DM.
      */
     private Map<String, SapphirePolicyConfig> getConfigMap() {
-        Map<String, SapphirePolicyConfig> map = new HashMap<>();
+        Map<String, SapphirePolicyConfig> map = new HashMap<String, SapphirePolicyConfig>();
         for (SapphirePolicyConfig c : configs) {
             map.put(c.getClass().getSimpleName(), c);
         }
@@ -96,7 +96,7 @@ public final class DMSpec implements Serializable {
 
     public static class Builder {
         private String name;
-        private List<SapphirePolicyConfig> configs = new ArrayList<>();
+        private List<SapphirePolicyConfig> configs = new ArrayList<SapphirePolicyConfig>();
 
         public Builder setName(String name) {
             this.name = name;

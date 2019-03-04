@@ -79,7 +79,7 @@ public class ObjectHandler implements Serializable {
 
         Object[] p = params.toArray();
         if (isGraalObject()) {
-            ArrayList<Object> inParams = new ArrayList<>();
+            ArrayList<Object> inParams = new ArrayList<Object>();
             for (Object o : params) {
                 if (o instanceof Value) {
                     inParams.add(o);

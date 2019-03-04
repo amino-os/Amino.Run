@@ -121,9 +121,9 @@ public class Deserializer implements AutoCloseable {
                 }
                 return varStr;
             case js:
-                return new ArrayList<>(v.getMemberKeys());
+                return new ArrayList<String>(v.getMemberKeys());
         }
-        return new ArrayList<>();
+        return new ArrayList<String>();
     }
 
     private void setInstanceVariable(Value out, Value member, String key) {

@@ -214,7 +214,7 @@ public class ConsensusRSMPolicy extends DefaultPolicy {
         public void onCreate(String region, Policy.ServerPolicy server, MicroServiceSpec spec)
                 throws RemoteException {
             super.onCreate(region, server, spec);
-            List<InetSocketAddress> addressList = new ArrayList<>();
+            List<InetSocketAddress> addressList = new ArrayList<InetSocketAddress>();
 
             try {
                 ServerPolicy consensusServer = (ServerPolicy) server;

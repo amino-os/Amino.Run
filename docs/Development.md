@@ -24,6 +24,12 @@
 * Android Studio may show the bar for Gradle sync. If not: Tools &gt; Android &gt; Sync with Gradle files.
 * Build project in Android Studio.
 
+### Build with Android Studio or IntelliJ IDE
+* Go to `File` -> `Settings`
+* Inside `Settings` go to `Build, Execution, Deployment` -> `Build Tools` -> `Gradle` -> `Runner` 
+* Check the box `Delegate IDE build/run actions to gradle` (if it is unchecked) and select `Platform Test Runner` in drop-down menu of `Run tests using:`
+* Run the build gradle task from `Gradle tool Window` at `sapphire` -> `sapphire(root)` -> `Tasks` -> `build` -> `build`
+
 ## Run Demo App
 ### Run OMS and Kernel Server in Android Studio
 

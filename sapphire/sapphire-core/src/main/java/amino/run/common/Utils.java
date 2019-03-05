@@ -54,10 +54,10 @@ public class Utils {
                 // return the new object
                 return (Serializable) ois.readObject();
             } catch (IOException e) {
-                System.out.println("Exception in ObjectCloner = " + e);
+                logger.log(Level.SEVERE, "Exception in ObjectCloner = ", e);
                 throw (e);
             } catch (ClassNotFoundException e) {
-                System.out.println("Exception in ObjectCloner = " + e);
+                logger.log(Level.SEVERE, "Exception in ObjectCloner = ", e);
                 throw (e);
             } finally {
                 oos.close();

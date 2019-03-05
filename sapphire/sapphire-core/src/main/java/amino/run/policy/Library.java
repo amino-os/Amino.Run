@@ -33,6 +33,8 @@ public abstract class Library implements Upcalls {
         protected KernelOID oid;
         protected ReplicaID replicaId;
         private MicroServiceSpec spec;
+        protected Policy.GroupPolicy group;
+        protected boolean pinned;
 
         static Logger logger = Logger.getLogger(ServerPolicyLibrary.class.getName());
 
@@ -103,6 +105,14 @@ public abstract class Library implements Upcalls {
 
         public void setIsLastPolicy(boolean isLastPolicy) {
             this.isLastPolicy = isLastPolicy;
+        }
+
+        public boolean pinned() {
+            return this.pinned;
+        }
+
+        public void setPinned() {
+            this.pinned = true;
         }
 
         public void setProcessedPolicies(List<PolicyContainer> processedPolicies) {
@@ -279,6 +289,7 @@ public abstract class Library implements Upcalls {
                 container.serverPolicyStub.$__updateHostname(server);
             }
 
+            this.setPinned();
             logger.info(
                     "Finished pinning kernel object "
                             + serverPolicy.$__getKernelOID()

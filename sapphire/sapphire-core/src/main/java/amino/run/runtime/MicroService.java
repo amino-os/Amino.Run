@@ -29,6 +29,7 @@ import amino.run.policy.PolicyContainer;
 import amino.run.runtime.util.PolicyCreationHelper;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -95,6 +96,7 @@ public class MicroService {
 
             /* Get the region of current server */
             String region = GlobalKernelReferences.nodeServer.getRegion();
+
             AppObjectStub appStub = createPolicyChain(spec, region, args);
             logger.info("MicroService Object created: " + appObjectClass.getName());
             return appStub;
@@ -108,7 +110,8 @@ public class MicroService {
      * Creates a complete policy chain using the spec. 1. Creates an app object stub. 2. Creates
      * client, stub, group and server policy instance for each DM in the chain. 3. Links them
      * (stub->nextClient, server -> outerServer). 4. Executes onCreate for group policy from
-     * innermost to outermost. Returns appStub which points to the first client policy in the chain.
+     * innermost to outermost. 5. Pins the primary chain. 6. Returns appStub which points to the
+     * first client policy in the chain.
      *
      * @param spec MicroService spec
      * @param region Region
@@ -162,6 +165,26 @@ public class MicroService {
         /* Remove the next DM client link for all server policy stubs on server side */
         for (PolicyContainer container : processedPolicies) {
             container.serverPolicyStub.$__setNextClientPolicy(null);
+
+        InetSocketAddress address = null;
+        try {
+            ServerPolicy lastServerPolicy =
+                    processedPolicies.get(processedPolicies.size() - 1).serverPolicy;
+            if (!lastServerPolicy.pinned()) {
+                KernelObjectStub lastPolicyStub =
+                        processedPolicies.get(processedPolicies.size() - 1).serverPolicyStub;
+                address = lastPolicyStub.$__getHostname();
+                lastServerPolicy.pin_to_server(address);
+            }
+        } catch (MicroServiceNotFoundException e) {
+            logger.severe("Failed to pin the primary chain to " + address);
+            throw new MicroServiceCreationException(e);
+        } catch (MicroServiceReplicaNotFoundException e) {
+            logger.severe(
+                    "Failed to pin the primary chain to "
+                            + address
+                            + "because replica was not found. ");
+            throw new MicroServiceCreationException(e);
         }
 
         return appStub;

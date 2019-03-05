@@ -86,7 +86,7 @@ public class IntegrationTestBase {
             value = store.get(key);
         } while (!desiredValue.equals(value)
                 && (System.currentTimeMillis() - startTime) < timeoutMs);
-        Assert.assertEquals(value, desiredValue);
+        Assert.assertEquals(desiredValue, value);
     }
     /**
      * start the OMS process

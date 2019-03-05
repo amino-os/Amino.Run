@@ -1,0 +1,16 @@
+# Configuration for running KeyValueStore as a
+# sapphire object with DHT&Consensus policy.
+!!amino.run.app.MicroServiceSpec
+constructorName: null
+dmList:
+  - configs:
+      - !!amino.run.policy.dht.DHTPolicy$Config {numOfShards: 2}
+    name: amino.run.policy.dht.DHTPolicy
+nodeSelectorSpec:
+  andLabels: !!set {}
+  orLabels: !!set {}
+javaClassName: amino.run.demo.KVStore
+lang: java
+name: null
+sourceFileLocation: null
+labels: {key1: value1, key2: value2}

@@ -18,7 +18,7 @@ sourceSets {
     integrationTest {
         java {
             compileClasspath += main.output + test.output
-            runtimeClasspath += main.output + test.output
+            runtimeClasspath += main.output + stubs.output + test.output
             srcDir file('src/integrationTest/java')
         }
         resources.srcDir file('src/integrationTest/resources')
@@ -201,8 +201,10 @@ clean {
 
 compileJava.dependsOn checkGraalVmVersion
 compileTestJava {
+    dependsOn compileStubsJava
     dependsOn compileGraalTestStubs
     dependsOn genUnitTestStubs
+    classpath += sourceSets.stubs.output
 }
 compileIntegrationTestJava.dependsOn genIntegTestStubs
 

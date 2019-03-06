@@ -51,7 +51,7 @@ subprojects {
 
 // Added for running the Test environment consisting of OMS, 4 Kernel Servers and the test application together.
 // The environment can be launched by running below command from amino rootDir: 
-// "./gradlew :examples:hanksTodo:runenv" for executing the hanksTodo example.
+// "./gradlew :examples:hanksTodo:run" for executing the hanksTodo example.
 // The handling has been inspired based on the below description by Tomas Lins
 // https://fbflex.wordpress.com/2013/03/14/gradle-madness-execwait-a-task-that-waits-for-commandline-calls-to-be-ready/
 class ExecWait extends DefaultTask {
@@ -73,7 +73,6 @@ class ExecWait extends DefaultTask {
 
         while ((line = reader.readLine()) != null) {
             if (line.contains(readyExpr)) {
-                println line
                 break;
             }
             // In the case of application, the stream contents are printed for user validation.
@@ -124,7 +123,7 @@ subprojects {
         command './gradlew ' + project + ':runapp'
     }
 
-    task runenv (dependsOn: runenvapp) {
+    task run (dependsOn: runenvapp) {
         // Need to cleanup all the background processes which were launched, before exiting.
         doLast {
             def ports = ["$omsPort", "$kernelServerPort", "$kernelServerPort2", "$kernelServerPort3", "$kernelServerPort4"]
@@ -137,6 +136,15 @@ subprojects {
                 }
             }
         }
+    }
+}
+
+// Added for running all the amino examples together sequentially, with one gradle task.
+// The environment can be launched by running below command from amino rootDir:
+// "./gradlew :examples:run"
+task run {
+    subprojects.each { subproject ->
+            dependsOn subproject.path + ':run'
     }
 }
 

@@ -49,11 +49,11 @@ public class MicroService {
     static Logger logger = Logger.getLogger(MicroService.class.getName());
 
     /**
-     * Creates a sapphire object.
+     * Creates a microservice.
      *
      * @param spec MicroService object specification
-     * @param args parameters to sapphire object constructor
-     * @return sapphire object stub
+     * @param args parameters to microservice constructor
+     * @return microservice stub
      */
     public static Object new_(MicroServiceSpec spec, Object... args)
             throws MicroServiceCreationException {
@@ -69,14 +69,14 @@ public class MicroService {
             String region = GlobalKernelReferences.nodeServer.getRegion();
             return createPolicyChain(spec, region, args);
         } catch (Exception e) {
-            String msg = String.format("Failed to create sapphire object '%s'", spec);
+            String msg = String.format("Failed to create microservice '%s'", spec);
             logger.log(Level.SEVERE, msg, e);
             throw new MicroServiceCreationException(msg, e);
         }
     }
 
     /**
-     * WARN: This method only works for Java sapphire object. This method has been deprecated.
+     * WARN: This method only works for Java microservice. This method has been deprecated.
      * Please use {@link #new_(MicroServiceSpec, Object...)}. We keep this method because we have
      * Java demo apps that call this method directly.
      *
@@ -99,7 +99,7 @@ public class MicroService {
             logger.info("MicroService Object created: " + appObjectClass.getName());
             return appStub;
         } catch (Exception e) {
-            logger.log(Level.SEVERE, "Failed to create sapphire object:", e);
+            logger.log(Level.SEVERE, "Failed to create microservice:", e);
             return null;
         }
     }
@@ -128,7 +128,7 @@ public class MicroService {
             spec = setDefaultDMSpec(spec);
         }
 
-        /* Register for a sapphire object Id from OMS */
+        /* Register for a microservice Id from OMS */
         MicroServiceID microServiceID =
                 GlobalKernelReferences.nodeServer.oms.registerMicroService();
 
@@ -335,23 +335,23 @@ public class MicroService {
     }
 
     /**
-     * Deletes the given sapphire object
+     * Deletes the given microservice
      *
      * @param stub
      */
     public static void delete_(Object stub) {
         if (!(stub instanceof AppObjectStub)) {
-            throw new RuntimeException("Tried to delete invalid sapphire object");
+            throw new RuntimeException("Tried to delete invalid microservice");
         }
 
         MicroServiceID microServiceId = ((AppObjectStub) stub).$__getMicroServiceId();
         try {
             GlobalKernelReferences.nodeServer.oms.delete(microServiceId);
         } catch (MicroServiceNotFoundException e) {
-            /* Ignore it. It might have happened that sapphire object is already deleted and still hold reference */
+            /* Ignore it. It might have happened that microservice is already deleted and still hold reference */
             logger.warning(String.format("%s is not found. Probably deleted.", microServiceId));
         } catch (Exception e) {
-            throw new RuntimeException("Failed to delete sapphire object.", e);
+            throw new RuntimeException("Failed to delete microservice.", e);
         }
     }
 
@@ -498,7 +498,7 @@ public class MicroService {
     /**
      * Initializes server policy and stub with app object.
      *
-     * @param spec sapphire object spec
+     * @param spec microservice spec
      * @param serverPolicy server policy
      * @param appArgs app arguments
      * @throws ClassNotFoundException

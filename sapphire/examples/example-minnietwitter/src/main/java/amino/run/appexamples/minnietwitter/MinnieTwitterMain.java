@@ -87,18 +87,18 @@ public class MinnieTwitterMain {
       MicroServiceID microServiceId = server.create(spec.toString());
       TwitterManager tm = (TwitterManager) server.acquireStub(microServiceId);
 
-      /* To set a name to sapphire object. It is required to set the name if the object has to be shared */
+      /* To set a name to microservice. It is required to set the name if the object has to be shared */
       server.setName(microServiceId, "MyTwitterManager");
 
-      /* Attach to sapphire object is to get reference to shared sapphire object. Generally it
-      is not done in the same thread which creates sapphire object. In this example,
-      Twitter manager sapphire object is created just above in same thread. Below attach call
+      /* Attach to microservice is to get reference to shared microservice. Generally it
+      is not done in the same thread which creates microservice. In this example,
+      Twitter manager microservice is created just above in same thread. Below attach call
       has no significance. It is just used to show the usage of API. */
       TwitterManager tmAttached =
           (TwitterManager) server.attachTo("MyTwitterManager");
 
-      /* Detach from the shared sapphire object. It is necessary to explicitly call detach to
-      un-reference the sapphire object. This call is not required here if attach call was not
+      /* Detach from the shared microservice. It is necessary to explicitly call detach to
+      un-reference the microservice. This call is not required here if attach call was not
       made above */
       server.detachFrom("MyTwitterManager");
 

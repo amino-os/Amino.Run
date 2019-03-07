@@ -34,15 +34,15 @@ public interface Upcalls {
      */
     interface ClientUpcalls extends Serializable {
         /**
-         * Event handler for sapphire object creation. Called after a primary sapphire object is
+         * Event handler for microservice creation. Called after a primary microservice is
          * first created (i.e. before any replicas are created). This is called after {@link
          * setServer} (currently in {@link MicroService.createPolicy} and before {@link
          * ServerUpcalls.onCreate}. It is usually used to store a reference to the group policy for
          * this SO, and to initialize the client. Configuration parameters for the client are
          * contained in spec.
          *
-         * @param group the group policy for the newly created sapphire object.
-         * @param spec sapphire object spec, which contains configuration parameters for the client
+         * @param group the group policy for the newly created microservice.
+         * @param spec microservice spec, which contains configuration parameters for the client
          *     TODO: Check that there really are configuration parameters for the client buried in
          *     there, and also change this parameter to more specifically be client configuration
          *     parameters.
@@ -50,7 +50,7 @@ public interface Upcalls {
         void onCreate(Policy.GroupPolicy group, MicroServiceSpec spec);
 
         /**
-         * Event handler for remote procedure calls/method invocations against the sapphire object.
+         * Event handler for remote procedure calls/method invocations against the microservice.
          * Usually the default handling is simply to invoke onRPC against the remote server policy
          * of the cached primary replica. But DM's may over-ride this to direct the call to other
          * replicas, retry on failure, etc. NOTE: Strictly speaking this is not an upcall from the
@@ -79,8 +79,8 @@ public interface Upcalls {
          * group policy for this SO, and to otherwise initialize the server. Configuration
          * parameters for the server are contained in spec.
          *
-         * @param group the group policy for the newly created sapphire object.
-         * @param spec sapphire object spec, which contains configuration parameters for the server
+         * @param group the group policy for the newly created microservice.
+         * @param spec microservice spec, which contains configuration parameters for the server
          *     TODO: Check that there really are configuration parameters for the server buried in
          *     there, and also change this parameter to more specifically be server configuration
          *     parameters.
@@ -88,7 +88,7 @@ public interface Upcalls {
         void onCreate(Policy.GroupPolicy group, MicroServiceSpec spec);
 
         /**
-         * Event handler for sapphire object destruction. Called immediately before a sapphire
+         * Event handler for microservice destruction. Called immediately before a sapphire
          * object (or replica) is deleted from a kernel server. Usually used to tear down a server
          * policy's local resources, for example, timers, network connections, etc. Currently called
          * in {@link KernelServerImpl.deleteKernelObject} and {@link
@@ -112,8 +112,8 @@ public interface Upcalls {
 
         /**
          * Event handler for remote procedure calls/method invocations against this replica of the
-         * sapphire object. Invoked by every client policy/DM (indirectly, via the sapphire kernel).
-         * The standard implementation is simply to invoke the method on the local sapphire object
+         * microservice. Invoked by every client policy/DM (indirectly, via the sapphire kernel).
+         * The standard implementation is simply to invoke the method on the local microservice
          * replica. May be overidden in DM's to, for example, replicate the call to all replicas,
          * detect and handle server overloads, persist transaction logs, etc.
          *
@@ -150,7 +150,7 @@ public interface Upcalls {
 
     interface GroupUpcalls extends Serializable {
         /**
-         * Event handler for sapphire object creation. Called by the sapphire kernel on creation of
+         * Event handler for microservice creation. Called by the sapphire kernel on creation of
          * this group and it's first/primary replica. DM's may implement this method to initialize
          * the group policy, create additional replicas, etc. Currently this is invoked from {@link
          * Sapphire.createPolicy} during construction (new_ or create).
@@ -158,14 +158,14 @@ public interface Upcalls {
          * @param region TODO: Quinton: This parameter is deprecated and must be deleted.
          * @param server reference to the server policy of the first/primary replica that is managed
          *     by the group policy
-         * @param spec sapphire object spec. This contains configuration parameters that may be used
+         * @param spec microservice spec. This contains configuration parameters that may be used
          *     to configure this group policy.
          */
         void onCreate(String region, Policy.ServerPolicy server, MicroServiceSpec spec)
                 throws RemoteException;
 
         /**
-         * Event handler for sapphire object destruction. Called immediately before the group policy
+         * Event handler for microservice destruction. Called immediately before the group policy
          * is deleted, as part of object deletion. Usually used to tear down a group policy's local
          * resources, for example, timers, network connections, etc. Currently called by
          * InstanceManager.clear, which is called by MicroServiceManager.removeInstance.

@@ -127,7 +127,7 @@ public class Serializer implements AutoCloseable {
                 try {
                     return v.getMetaObject().getMember("className").asString();
                 } catch (Exception e) {
-                    // Although sapphire object is in js, the parameters could be in any language,
+                    // Although microservice is in js, the parameters could be in any language,
                     // for example the key value store, client could pass anything as value.
                     // In this case, we assume the class name is this. (currently looks like java
                     // and ruby

@@ -1,5 +1,5 @@
 # Configuration for running KeyValueStore as a
-# sapphire object with DHT&Consensus policy.
+# microservice with DHT&Consensus policy.
 !!amino.run.app.MicroServiceSpec
 constructorName: null
 dmList:

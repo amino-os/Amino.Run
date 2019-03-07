@@ -9,9 +9,9 @@ import org.yaml.snakeyaml.Yaml;
 
 /**
  * Specification for node selection. Users use {@code NodeSelectorSpec} to specify on which nodes
- * (i.e. kernel servers) to run their sapphire object.
+ * (i.e. kernel servers) to run their microservice.
  *
- * <p>At present we only support specifying {@code NodeSelectorSpec} at sapphire object level. We
+ * <p>At present we only support specifying {@code NodeSelectorSpec} at microservice level. We
  * will consider support specifying {@code NodeSelectorSpec} at DM level in the future if necessary.
  *
  * <p>{@code NodeSelectorSpec} contains two label sets, a {@code orLabels} set and a {@code

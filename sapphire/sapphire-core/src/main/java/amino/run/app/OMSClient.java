@@ -42,13 +42,13 @@ public class OMSClient {
         KernelServer nodeServer = new KernelServerImpl(host, omsHost);
     }
     /**
-     * Create sapphire object.
+     * Create microservice.
      *
-     * @param spec sapphire object specification in YAML
-     * @param args arguments to sapphire object constructor
-     * @return ID of the newly created sapphire object
+     * @param spec microservice specification in YAML
+     * @param args arguments to microservice constructor
+     * @return ID of the newly created microservice
      * @throws RemoteException unable to reach OMS server
-     * @throws MicroServiceCreationException unable to create sapphire object.
+     * @throws MicroServiceCreationException unable to create microservice.
      */
     public MicroServiceID createSapphireObject(MicroServiceSpec spec, Object... args)
             throws RemoteException, MicroServiceCreationException {
@@ -74,13 +74,13 @@ public class OMSClient {
     }
 
     /**
-     * Acquire the reference to the sapphire object with the specifid ID.
+     * Acquire the reference to the microservice with the specifid ID.
      *
-     * @param microServiceId sapphire object ID
-     * @return sapphire object stub. Applications use stub to invoke methods on remote sapphire
+     * @param microServiceId microservice ID
+     * @return microservice stub. Applications use stub to invoke methods on remote sapphire
      *     objects.
      * @throws RemoteException unable to reach OMS server
-     * @throws MicroServiceNotFoundException unable to find a sapphire object with the given ID
+     * @throws MicroServiceNotFoundException unable to find a microservice with the given ID
      */
     public AppObjectStub acquireSapphireObjectStub(MicroServiceID microServiceId)
             throws RemoteException, MicroServiceNotFoundException {

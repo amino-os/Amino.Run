@@ -51,7 +51,7 @@ public class LoadBalancedMasterSlaveDMIntegTest {
     }
 
     /**
-     * Test sapphire object specifications in <code>src/test/resources/specs</code> directory.
+     * Test microservice specifications in <code>src/test/resources/specs</code> directory.
      *
      * @throws Exception
      */

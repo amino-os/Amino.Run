@@ -219,9 +219,9 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultPolicy {
             } catch (RemoteException e) {
                 throw new RuntimeException("failed to create group: " + e, e);
             } catch (MicroServiceNotFoundException e) {
-                throw new RuntimeException("Failed to find sapphire object: " + e, e);
+                throw new RuntimeException("Failed to find microservice: " + e, e);
             } catch (MicroServiceReplicaNotFoundException e) {
-                throw new RuntimeException("Failed to find sapphire object replica: " + e, e);
+                throw new RuntimeException("Failed to find microservice replica: " + e, e);
             } catch (KernelServerNotFoundException e) {
                 throw new RuntimeException("No matching servers found", e);
             }

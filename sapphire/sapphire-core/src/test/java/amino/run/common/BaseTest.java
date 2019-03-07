@@ -32,7 +32,7 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 
 /**
  * This is the base test class with a setup to create a spied instance of oms, 3 kernel servers. And
- * has the necessary mocking of few methods in creating/deleting/replicating sapphire object flow.
+ * has the necessary mocking of few methods in creating/deleting/replicating microservice flow.
  * TestCase files can inherit this class and make their setup simple.
  */
 

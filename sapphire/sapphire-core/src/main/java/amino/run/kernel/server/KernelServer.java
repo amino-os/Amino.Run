@@ -29,11 +29,11 @@ public interface KernelServer extends Remote {
                     MicroServiceReplicaNotFoundException;
 
     /**
-     * Create sapphire object in kernel server
+     * Create microservice in kernel server
      *
-     * @param microServiceSpec sapphire object specification in YAML.
-     * @param args parameters to sapphire object constructor
-     * @return sapphire object stub
+     * @param microServiceSpec microservice specification in YAML.
+     * @param args parameters to microservice constructor
+     * @return microservice stub
      * @throws RemoteException
      * @throws MicroServiceCreationException
      * @throws ClassNotFoundException

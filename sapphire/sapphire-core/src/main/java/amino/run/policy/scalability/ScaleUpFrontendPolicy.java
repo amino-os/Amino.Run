@@ -208,12 +208,7 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
         // TODO: Verify it works in multi-DM scenario.
         public void scaleUpReplica(String region) throws ScaleUpException, RemoteException {
             if (!replicaCreateLimiter.tryAcquire()) {
-<<<<<<< HEAD
                 throw new ScaleUpException("Replica creation rate exceeded for this microservice.");
-=======
-                throw new ScaleUpException(
-                        "Replica creation rate exceeded for this microservice.");
->>>>>>> Replace 'sapphire object' with 'microservice' throughout.
             }
 
             /* Get the list of available servers in region */
@@ -244,12 +239,7 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
                      */
                     replicate(servers.get(0), addressList.get(0), region);
                 } catch (MicroServiceNotFoundException e) {
-<<<<<<< HEAD
                     throw new ScaleUpException("Failed to find microservice. Probably deleted.", e);
-=======
-                    throw new ScaleUpException(
-                            "Failed to find microservice. Probably deleted.", e);
->>>>>>> Replace 'sapphire object' with 'microservice' throughout.
                 } catch (MicroServiceReplicaNotFoundException e) {
                     throw new ScaleUpException(
                             "Failed to find replicate microservice. Probably deleted.", e);

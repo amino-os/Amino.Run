@@ -29,13 +29,8 @@ public class InstanceManager {
     /**
      * Root group policy is the <strong>outmost</strong> group policy of this microservice.
      *
-<<<<<<< HEAD
      * <p>For example, given a microservice with DM list [DHT, MasterSlave], its outmost DM is DHT.
      * In this case, {@code rootGroupPolicy} is the DHT group policy.
-=======
-     * <p>For example, given a microservice with DM list [DHT, MasterSlave], its outmost DM is
-     * DHT. In this case, {@code rootGroupPolicy} is the DHT group policy.
->>>>>>> Replace 'sapphire object' with 'microservice' throughout.
      *
      * <p>TODO(multi-dm): We actually need to maintain group policies of inner DMs too. We need to
      * organize group policies, their relationships, and their healthiness into a table as described
@@ -147,11 +142,15 @@ public class InstanceManager {
             replicaDispatchers.put(rid, dispatcher);
         } else {
 <<<<<<< HEAD
+<<<<<<< HEAD
             throw new MicroServiceReplicaNotFoundException("Failed to find microservice replica");
 =======
             throw new MicroServiceReplicaNotFoundException(
                     "Failed to find microservice replica");
 >>>>>>> Replace 'sapphire object' with 'microservice' throughout.
+=======
+            throw new MicroServiceReplicaNotFoundException("Failed to find microservice replica");
+>>>>>>> Rename 'Sapphire' in DMSpec.java and related files.
         }
     }
 

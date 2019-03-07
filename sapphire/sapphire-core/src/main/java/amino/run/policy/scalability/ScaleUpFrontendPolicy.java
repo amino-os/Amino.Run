@@ -26,7 +26,7 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
     static final int REPLICA_CREATE_MIN_TIME_IN_MSEC = 100;
 
     /** Configurations for ScaleUpFrontendPolicy */
-    public static class Config implements SapphirePolicyConfig {
+    public static class Config implements PolicyConfig {
         private int replicationRateInMs = REPLICA_CREATE_MIN_TIME_IN_MSEC;
 
         public int getReplicationRateInMs() {
@@ -54,7 +54,7 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
     private static Config getConfig(MicroServiceSpec spec) {
         Config config = null;
         if (spec != null) {
-            Map<String, SapphirePolicyConfig> configMap =
+            Map<String, PolicyConfig> configMap =
                     Utils.fromDMSpecListToFlatConfigMap(spec.getDmList());
             if (configMap != null) {
                 config = (Config) configMap.get(ScaleUpFrontendPolicy.Config.class.getName());
@@ -208,12 +208,7 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
         // TODO: Verify it works in multi-DM scenario.
         public void scaleUpReplica(String region) throws ScaleUpException, RemoteException {
             if (!replicaCreateLimiter.tryAcquire()) {
-<<<<<<< HEAD
                 throw new ScaleUpException("Replica creation rate exceeded for this microservice.");
-=======
-                throw new ScaleUpException(
-                        "Replica creation rate exceeded for this microservice.");
->>>>>>> Replace 'sapphire object' with 'microservice' throughout.
             }
 
             /* Get the list of available servers in region */
@@ -244,12 +239,7 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
                      */
                     replicate(servers.get(0), addressList.get(0), region);
                 } catch (MicroServiceNotFoundException e) {
-<<<<<<< HEAD
                     throw new ScaleUpException("Failed to find microservice. Probably deleted.", e);
-=======
-                    throw new ScaleUpException(
-                            "Failed to find microservice. Probably deleted.", e);
->>>>>>> Replace 'sapphire object' with 'microservice' throughout.
                 } catch (MicroServiceReplicaNotFoundException e) {
                     throw new ScaleUpException(
                             "Failed to find replicate microservice. Probably deleted.", e);

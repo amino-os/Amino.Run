@@ -149,7 +149,7 @@ public class GraalStubGenerator {
                     + "        String spec = getSpec(specYamlFile);\n"
                     + "        java.rmi.registry.Registry registry = LocateRegistry.getRegistry(omsIP, Integer.parseInt(omsPort));\n"
                     + "        new KernelServerImpl(new InetSocketAddress(hostIP, Integer.parseInt(hostPort)), new InetSocketAddress(omsIP, Integer.parseInt(omsPort)));\n"
-                    + "        Registry server = (Registry) registry.lookup(\"SapphireOMS\");\n"
+                    + "        Registry server = (Registry) registry.lookup(\"io.amino.run.oms\");\n"
                     + "\n"
                     + "        MicroServiceID oid = server.create(spec);\n"
                     + "        %s%s stub = (%s%s)server.acquireStub(oid);\n"

@@ -37,7 +37,7 @@ public class TestUtils {
                 @Override
                 public Remote lookup(String s)
                         throws RemoteException, NotBoundException, AccessException {
-                    if (s.equals("SapphireOMS")) {
+                    if (s.equals("io.amino.run.oms")) {
                         return KernelServerImpl.oms;
                     }
                     return null;
@@ -167,9 +167,9 @@ public class TestUtils {
             OMSServer oms, MicroServiceID microServiceId) throws Exception {
         MicroServiceManager objMgr =
                 (MicroServiceManager) extractFieldValueOnInstance(oms, "objectManager");
-        ConcurrentHashMap<MicroServiceID, InstanceManager> sapphireObjects =
+        ConcurrentHashMap<MicroServiceID, InstanceManager> microServices =
                 (ConcurrentHashMap<MicroServiceID, InstanceManager>)
                         extractFieldValueOnInstance(objMgr, "microServices");
-        return sapphireObjects.get(microServiceId);
+        return microServices.get(microServiceId);
     }
 }

@@ -34,7 +34,7 @@ public class KeyValueStoreClient {
     private static Registry getSapphireObjectServer(String omsIp, String omsPort) throws Exception {
         new KernelServerImpl(new InetSocketAddress("127.0.0.2", 11111), new InetSocketAddress(omsIp, Integer.parseInt(omsPort)));
         java.rmi.registry.Registry registry = LocateRegistry.getRegistry(omsIp, Integer.parseInt(omsPort));
-        Registry server = (Registry) registry.lookup("SapphireOMS");
+        Registry server = (Registry) registry.lookup("io.amino.run.oms");
         return server;
     }
 

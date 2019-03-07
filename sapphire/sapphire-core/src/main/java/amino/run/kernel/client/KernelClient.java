@@ -43,7 +43,7 @@ public class KernelClient {
     private KernelServer addHost(InetSocketAddress host) {
         try {
             Registry registry = LocateRegistry.getRegistry(host.getHostName(), host.getPort());
-            KernelServer server = (KernelServer) registry.lookup("SapphireKernelServer");
+            KernelServer server = (KernelServer) registry.lookup("io.amino.run.kernelserver");
             servers.put(host, server);
             return server;
         } catch (Exception e) {

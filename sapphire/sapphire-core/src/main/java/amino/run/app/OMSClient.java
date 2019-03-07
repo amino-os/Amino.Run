@@ -32,13 +32,13 @@ public class OMSClient {
      * @param host HOST InetSocketAddress
      * @param omsHost OMS InetSocketAddress
      * @throws RemoteException unable to reach OMS server
-     * @throws NotBoundException oms server not bind with "SapphireOMS" name
+     * @throws NotBoundException oms server not bind with "io.amino.run.oms" name
      */
     public OMSClient(InetSocketAddress host, InetSocketAddress omsHost)
             throws RemoteException, NotBoundException {
         java.rmi.registry.Registry registry =
                 LocateRegistry.getRegistry(omsHost.getHostName(), omsHost.getPort());
-        server = (Registry) registry.lookup("SapphireOMS");
+        server = (Registry) registry.lookup("io.amino.run.oms");
         KernelServer nodeServer = new KernelServerImpl(host, omsHost);
     }
     /**

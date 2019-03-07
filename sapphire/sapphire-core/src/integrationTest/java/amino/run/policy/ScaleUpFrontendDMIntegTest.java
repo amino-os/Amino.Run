@@ -44,7 +44,7 @@ public class ScaleUpFrontendDMIntegTest {
     public void setUp() throws Exception {
         java.rmi.registry.Registry registry =
                 LocateRegistry.getRegistry(IntegrationTestBase.omsIp, IntegrationTestBase.omsPort);
-        this.registry = (Registry) registry.lookup("SapphireOMS");
+        this.registry = (Registry) registry.lookup("io.amino.run.oms");
         new KernelServerImpl(
                 new InetSocketAddress(IntegrationTestBase.hostIp, IntegrationTestBase.hostPort),
                 new InetSocketAddress(IntegrationTestBase.omsIp, IntegrationTestBase.omsPort));

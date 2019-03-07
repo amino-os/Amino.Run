@@ -59,7 +59,7 @@ public class KernelServerImpl implements KernelServer {
         try {
             Registry registry =
                     LocateRegistry.getRegistry(omsHost.getHostName(), omsHost.getPort());
-            oms = (OMSServer) registry.lookup("SapphireOMS");
+            oms = (OMSServer) registry.lookup("io.amino.run.oms");
         } catch (Exception e) {
             logger.severe("Could not find OMS: " + e.toString());
         }
@@ -349,7 +349,7 @@ public class KernelServerImpl implements KernelServer {
     }
 
     @Override
-    public AppObjectStub createSapphireObject(String soSpecYaml, Object... args)
+    public AppObjectStub createMicroService(String soSpecYaml, Object... args)
             throws MicroServiceCreationException {
         logger.log(
                 Level.INFO,
@@ -428,7 +428,7 @@ public class KernelServerImpl implements KernelServer {
             KernelServer stub =
                     (KernelServer) UnicastRemoteObject.exportObject(server, servicePort);
             Registry registry = LocateRegistry.createRegistry(Integer.parseInt(args[1]));
-            registry.rebind("SapphireKernelServer", stub);
+            registry.rebind("io.amino.run.kernelserver", stub);
 
             // Register against OMS
             ServerInfo srvInfo = createServerInfo(host, labelStr);

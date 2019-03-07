@@ -96,8 +96,7 @@ public class KernelServerImpl implements KernelServer {
      */
     @Override
     public Object makeKernelRPC(KernelRPC rpc)
-            throws RemoteException, KernelObjectNotFoundException, KernelObjectMigratingException,
-                    KernelRPCException {
+            throws KernelObjectNotFoundException, KernelRPCException {
         KernelObject object = null;
         object = objectManager.lookupObject(rpc.getOID());
 
@@ -126,8 +125,7 @@ public class KernelServerImpl implements KernelServer {
      * @param object the kernel object to be stored on this server
      */
     public void copyKernelObject(KernelOID oid, KernelObject object)
-            throws RemoteException, KernelObjectNotFoundException,
-                    KernelObjectStubNotCreatedException, MicroServiceNotFoundException,
+            throws RemoteException, KernelObjectNotFoundException, MicroServiceNotFoundException,
                     MicroServiceReplicaNotFoundException {
         // To add Kernel Object to local object manager
         Serializable realObj = object.getObject();
@@ -440,7 +438,7 @@ public class KernelServerImpl implements KernelServer {
 
             // Start a thread that print memory stats
             server.getMemoryStatThread().start();
-            System.out.println("Server ready!");
+            logger.info(String.format("Kernel server ready at port(%s)!", servicePort));
         } catch (Exception e) {
             System.err.println("Failed to start kernel server: " + e.getMessage());
             printUsage();

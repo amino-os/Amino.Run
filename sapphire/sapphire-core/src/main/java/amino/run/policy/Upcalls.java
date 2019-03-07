@@ -34,9 +34,15 @@ public interface Upcalls {
      */
     interface ClientUpcalls extends Serializable {
         /**
+<<<<<<< HEAD
          * Event handler for microservice creation. Called after a primary microservice is first
          * created (i.e. before any replicas are created). This is called after {@link setServer}
          * (currently in {@link MicroService.createPolicy} and before {@link
+=======
+         * Event handler for microservice creation. Called after a primary microservice is
+         * first created (i.e. before any replicas are created). This is called after {@link
+         * setServer} (currently in {@link MicroService.createPolicy} and before {@link
+>>>>>>> Replace 'sapphire object' with 'microservice' throughout.
          * ServerUpcalls.onCreate}. It is usually used to store a reference to the group policy for
          * this SO, and to initialize the client. Configuration parameters for the client are
          * contained in spec.
@@ -88,10 +94,17 @@ public interface Upcalls {
         void onCreate(Policy.GroupPolicy group, MicroServiceSpec spec);
 
         /**
+<<<<<<< HEAD
          * Event handler for microservice destruction. Called immediately before a sapphire object
          * (or replica) is deleted from a kernel server. Usually used to tear down a server policy's
          * local resources, for example, timers, network connections, etc. Currently called in
          * {@link KernelServerImpl.deleteKernelObject} and {@link
+=======
+         * Event handler for microservice destruction. Called immediately before a sapphire
+         * object (or replica) is deleted from a kernel server. Usually used to tear down a server
+         * policy's local resources, for example, timers, network connections, etc. Currently called
+         * in {@link KernelServerImpl.deleteKernelObject} and {@link
+>>>>>>> Replace 'sapphire object' with 'microservice' throughout.
          * KernelServerImpl.moveKernelObjectToServer} (on the old server, after moving the object to
          * the new server). TODO: Quinton: It's not clear to my why the latter call is needed.
          * Surely moveKernelObjectToServer should just call deleteKernelObject on the old server?
@@ -158,15 +171,25 @@ public interface Upcalls {
          * @param region TODO: Quinton: This parameter is deprecated and must be deleted.
          * @param server reference to the server policy of the first/primary replica that is managed
          *     by the group policy
+<<<<<<< HEAD
          * @param spec microservice spec. This contains configuration parameters that may be used to
          *     configure this group policy.
+=======
+         * @param spec microservice spec. This contains configuration parameters that may be used
+         *     to configure this group policy.
+>>>>>>> Replace 'sapphire object' with 'microservice' throughout.
          */
         void onCreate(String region, Policy.ServerPolicy server, MicroServiceSpec spec)
                 throws RemoteException;
 
         /**
+<<<<<<< HEAD
          * Event handler for microservice destruction. Called immediately before the group policy is
          * deleted, as part of object deletion. Usually used to tear down a group policy's local
+=======
+         * Event handler for microservice destruction. Called immediately before the group policy
+         * is deleted, as part of object deletion. Usually used to tear down a group policy's local
+>>>>>>> Replace 'sapphire object' with 'microservice' throughout.
          * resources, for example, timers, network connections, etc. Currently called by
          * InstanceManager.clear, which is called by MicroServiceManager.removeInstance.
          *

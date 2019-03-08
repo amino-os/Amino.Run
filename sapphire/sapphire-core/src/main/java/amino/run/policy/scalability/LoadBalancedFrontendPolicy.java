@@ -187,14 +187,14 @@ public class LoadBalancedFrontendPolicy extends DefaultPolicy {
             int count = 0;
             int numnodes = 0; // num of nodes/servers in the selected region
 
-            /* Creation of group happens when the first instance of sapphire object is
+            /* Creation of group happens when the first instance of microservice is
             being created. Loop through all the kernel servers and replicate the
-            sapphire objects on them based on the static replica count */
+            microservices on them based on the static replica count */
             try {
 
                 /* Find the current region and the kernel server on which this first instance of
-                sapphire object is being created. And try to replicate the
-                sapphire objects in the same region(excluding this kernel server) */
+                microservice is being created. And try to replicate the
+                microservices in the same region(excluding this kernel server) */
                 InetSocketAddress addr = ((KernelObjectStub) server).$__getHostname();
                 List<InetSocketAddress> addressList =
                         getAddressList(spec.getNodeSelectorSpec(), region);
@@ -231,9 +231,9 @@ public class LoadBalancedFrontendPolicy extends DefaultPolicy {
                 throw new Error(
                         "Could not create new group policy because the oms is not available.", e);
             } catch (MicroServiceNotFoundException e) {
-                throw new Error("Failed to find sapphire object.", e);
+                throw new Error("Failed to find microservice.", e);
             } catch (MicroServiceReplicaNotFoundException e) {
-                throw new Error("Failed to find sapphire object replica.", e);
+                throw new Error("Failed to find microservice replica.", e);
             }
         }
     }

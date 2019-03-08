@@ -1,5 +1,5 @@
 # Configuration for running KVStore as a
-# sapphire object with OptConcurrentTransact policy.
+# microservice with OptConcurrentTransact policy.
 !!amino.run.app.MicroServiceSpec
 constructorName: null
 dmList:

@@ -11,7 +11,7 @@ import java.util.Hashtable;
 import java.util.Iterator;
 
 /**
- * Event handler holds the group policy stub or server policy stub object of the sapphire object or
+ * Event handler holds the group policy stub or server policy stub object of the microservice or
  * sapphire replica respectively created on the particular kernel server.
  */
 public class EventHandler implements Serializable {

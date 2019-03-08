@@ -27,9 +27,9 @@ public class InstanceManager {
     private HashMap<ReplicaID, EventHandler> replicaDispatchers;
     private Random oidGenerator;
     /**
-     * Root group policy is the <strong>outmost</strong> group policy of this sapphire object.
+     * Root group policy is the <strong>outmost</strong> group policy of this microservice.
      *
-     * <p>For example, given a sapphire object with DM list [DHT, MasterSlave], its outmost DM is
+     * <p>For example, given a microservice with DM list [DHT, MasterSlave], its outmost DM is
      * DHT. In this case, {@code rootGroupPolicy} is the DHT group policy.
      *
      * <p>TODO(multi-dm): We actually need to maintain group policies of inner DMs too. We need to
@@ -60,7 +60,7 @@ public class InstanceManager {
     }
 
     /**
-     * Sets the root group policy of this sapphire object.
+     * Sets the root group policy of this microservice.
      *
      * @param rootGroupPolicy root group policy
      */
@@ -125,7 +125,7 @@ public class InstanceManager {
         EventHandler dispatcher = replicaDispatchers.get(rid);
         if (dispatcher == null) {
             throw new MicroServiceReplicaNotFoundException(
-                    "Failed to find sapphire object replica dispatcher");
+                    "Failed to find microservice replica dispatcher");
         }
         return dispatcher;
     }
@@ -142,7 +142,7 @@ public class InstanceManager {
             replicaDispatchers.put(rid, dispatcher);
         } else {
             throw new MicroServiceReplicaNotFoundException(
-                    "Failed to find sapphire object replica");
+                    "Failed to find microservice replica");
         }
     }
 

@@ -89,7 +89,7 @@ public class ObjectHandler implements Serializable {
                 }
             }
 
-            // Note in graal sapphire object stub we use varargs (Object ...) as function
+            // Note in graal microservice stub we use varargs (Object ...) as function
             // parameters, so
             // we need to wrap parameters with another object array.
             // Please refer to unit test

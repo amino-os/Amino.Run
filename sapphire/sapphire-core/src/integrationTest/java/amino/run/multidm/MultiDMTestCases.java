@@ -58,7 +58,7 @@ public class MultiDMTestCases {
     }
 
     /**
-     * Test sapphire object specifications in <code>src/integrationTest/resources/specs/multi-dm
+     * Test microservice specifications in <code>src/integrationTest/resources/specs/multi-dm
      * </code> directory.
      *
      * @throws Exception
@@ -71,7 +71,7 @@ public class MultiDMTestCases {
     }
 
     /**
-     * Test sapphire object specifications in <code>src/integrationTest/resources/specs/multi-dm
+     * Test microservice specifications in <code>src/integrationTest/resources/specs/multi-dm
      * </code> directory.
      *
      * @throws Exception
@@ -84,7 +84,7 @@ public class MultiDMTestCases {
     }
 
     /**
-     * Test sapphire object specifications in <code>src/integrationTest/resources/specs/multi-dm
+     * Test microservice specifications in <code>src/integrationTest/resources/specs/multi-dm
      * </code> directory.
      *
      * @throws Exception
@@ -98,7 +98,7 @@ public class MultiDMTestCases {
     }
 
     /**
-     * Test sapphire object specifications in <code>src/integrationTest/resources/specs/multi-dm
+     * Test microservice specifications in <code>src/integrationTest/resources/specs/multi-dm
      * </code> directory.
      *
      * @throws Exception

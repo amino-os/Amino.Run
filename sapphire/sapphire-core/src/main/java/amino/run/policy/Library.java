@@ -452,9 +452,9 @@ public abstract class Library implements Upcalls {
          * itself from {@code KernelObjectManager} on local kernel server, 2) remove itself of OMS's
          * {@code KernelObjectManager}, and 3) remove replica ID from OMS.
          *
-         * <p><strong>Warning:</strong> Do not try to call OMS to unregister the sapphire object.
+         * <p><strong>Warning:</strong> Do not try to call OMS to unregister the microservice.
          * {@link OMSServer#delete(MicroServiceID)} is the public entry point to delete a sapphire
-         * object. OMS will take care of deleting sapphire object at {@link
+         * object. OMS will take care of deleting microservice at {@link
          * amino.run.oms.OMSServerImpl#delete(MicroServiceID)}.
          *
          * @throws RemoteException

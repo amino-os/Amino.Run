@@ -354,7 +354,7 @@ public class KernelServerImpl implements KernelServer {
         logger.log(
                 Level.INFO,
                 String.format(
-                        "Got request to create sapphire object with spec '%s' and %d parameters.",
+                        "Got request to create microservice with spec '%s' and %d parameters.",
                         soSpecYaml, args.length));
         MicroServiceSpec spec = MicroServiceSpec.fromYaml(soSpecYaml);
         return (AppObjectStub) MicroService.new_(spec, args);

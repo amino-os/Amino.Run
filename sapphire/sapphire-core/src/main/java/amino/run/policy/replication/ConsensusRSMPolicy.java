@@ -256,9 +256,9 @@ public class ConsensusRSMPolicy extends DefaultPolicy {
                 throw new Error(
                         "Could not create new group policy because the oms is not available.", e);
             } catch (MicroServiceNotFoundException e) {
-                throw new Error("Failed to find sapphire object.", e);
+                throw new Error("Failed to find microservice.", e);
             } catch (MicroServiceReplicaNotFoundException e) {
-                throw new Error("Failed to find sapphire object replica.", e);
+                throw new Error("Failed to find microservice replica.", e);
             }
         }
     }

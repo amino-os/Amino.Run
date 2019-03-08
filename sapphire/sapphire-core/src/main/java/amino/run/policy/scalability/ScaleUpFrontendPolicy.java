@@ -122,9 +122,9 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
                 return super.onRPC(method, params);
             } catch (ServerOverLoadException e) {
                 if (!replicaCreateLimiter.tryAcquire()) {
-                    logger.warning("Replica creation rate exceeded for this sapphire object.");
+                    logger.warning("Replica creation rate exceeded for this microservice.");
                     throw new ScaleUpException(
-                            "Replica creation rate exceeded for this sapphire object.");
+                            "Replica creation rate exceeded for this microservice.");
                 }
 
                 ((GroupPolicy) getGroup()).scaleUpReplica(getRegion());
@@ -209,7 +209,7 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
         public void scaleUpReplica(String region) throws ScaleUpException, RemoteException {
             if (!replicaCreateLimiter.tryAcquire()) {
                 throw new ScaleUpException(
-                        "Replica creation rate exceeded for this sapphire object.");
+                        "Replica creation rate exceeded for this microservice.");
             }
 
             /* Get the list of available servers in region */
@@ -228,7 +228,7 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
                 sappObjReplicatedKernelList.add(((KernelObjectStub) tmp).$__getHostname());
             }
 
-            /* Remove the servers which already have replicas of this sapphire object */
+            /* Remove the servers which already have replicas of this microservice */
             addressList.removeAll(sappObjReplicatedKernelList);
 
             if (!addressList.isEmpty()) {
@@ -241,14 +241,14 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
                     replicate(servers.get(0), addressList.get(0), region);
                 } catch (MicroServiceNotFoundException e) {
                     throw new ScaleUpException(
-                            "Failed to find sapphire object. Probably deleted.", e);
+                            "Failed to find microservice. Probably deleted.", e);
                 } catch (MicroServiceReplicaNotFoundException e) {
                     throw new ScaleUpException(
-                            "Failed to find replicate sapphire object. Probably deleted.", e);
+                            "Failed to find replicate microservice. Probably deleted.", e);
                 }
             } else {
                 throw new ScaleUpException(
-                        "Replica cannot be created for this sapphire object. All kernel servers have its replica.");
+                        "Replica cannot be created for this microservice. All kernel servers have its replica.");
             }
         }
 

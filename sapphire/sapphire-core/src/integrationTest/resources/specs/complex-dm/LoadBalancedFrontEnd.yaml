@@ -1,5 +1,5 @@
 # Configuration for running KeyValueStore as a
-# sapphire object with LoadBalancedFrontend policy.
+# microservice with LoadBalancedFrontend policy.
 !!amino.run.app.MicroServiceSpec
 constructorName: null
 dmList:

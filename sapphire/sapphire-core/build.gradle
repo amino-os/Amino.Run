@@ -148,7 +148,6 @@ task genUnitTestStubs(type :JavaExec){
 task genGraalTestStubs(type: JavaExec) {
     dependsOn compileJava
     main = "amino.run.compiler.GraalStubGenerator"
-
     def microServicePath = "$projectDir/src/test/resources/student.js"
     def outPath = "$projectDir/src/test/java"
     def packageName = "amino.run.stubs"

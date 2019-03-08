@@ -125,15 +125,15 @@ public class OMSTest extends BaseTest {
 
     @Test
     public void sapphireInstanceAndReplicaDispatcherTest() throws Exception {
-        /* Setup had created a sapphire object with default SO. Hence SO count is 1 */
+        /* Setup had created a microservice with default SO. Hence SO count is 1 */
         assertEquals(new Integer(1), new Integer(omsImpl.getAllMicroServices().size()));
 
-        /* register a new sapphire object, set the handler, get the handler back, verify if it is same as what we have
+        /* register a new microservice, set the handler, get the handler back, verify if it is same as what we have
         set, add a replica to it, set replica handler, get the handler and verify if it same as what is set and
-        then unregister the replica and the sapphire object */
+        then unregister the replica and the microservice */
         MicroServiceID microServiceId = omsImpl.registerMicroService();
 
-        /* Count becomes 2 after registering new sapphire object */
+        /* Count becomes 2 after registering new microservice */
         assertEquals(new Integer(2), new Integer(omsImpl.getAllMicroServices().size()));
 
         EventHandler groupHandler =
@@ -162,14 +162,14 @@ public class OMSTest extends BaseTest {
         fieldValue.setReplicaDispatcher(replicaId, replicaHandler);
         assertEquals(replicaHandler, fieldValue.getReplicaDispatcher(replicaId));
 
-        /* unregister the replica and check it is removed from sapphire object */
+        /* unregister the replica and check it is removed from microservice */
         omsImpl.unRegisterReplica(replicaId);
         assertEquals(new Integer(0), new Integer(omsImpl.getReplicasById(microServiceId).length));
 
-        /* unregister the sapphire object */
+        /* unregister the microservice */
         omsImpl.unRegisterMicroService(microServiceId);
 
-        /* Count becomes 1 after unregistering the sapphire object */
+        /* Count becomes 1 after unregistering the microservice */
         assertEquals(new Integer(1), new Integer(omsImpl.getAllMicroServices().size()));
     }
 

@@ -73,7 +73,7 @@ public class MicroServiceMultiPolicyChainTest extends BaseTest {
         List<String> policyNameChain = new ArrayList<String>();
         List<PolicyContainer> processedPolicies = new ArrayList<PolicyContainer>();
 
-        /* Register for a sapphire object Id from OMS */
+        /* Register for a microservice Id from OMS */
         MicroServiceID soid = spiedOms.registerMicroService();
 
         policyNameChain.add(("amino.run.policy.DefaultPolicy"));

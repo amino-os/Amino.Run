@@ -141,16 +141,7 @@ public class InstanceManager {
         if (replicaDispatchers.containsKey(rid)) {
             replicaDispatchers.put(rid, dispatcher);
         } else {
-<<<<<<< HEAD
-<<<<<<< HEAD
             throw new MicroServiceReplicaNotFoundException("Failed to find microservice replica");
-=======
-            throw new MicroServiceReplicaNotFoundException(
-                    "Failed to find microservice replica");
->>>>>>> Replace 'sapphire object' with 'microservice' throughout.
-=======
-            throw new MicroServiceReplicaNotFoundException("Failed to find microservice replica");
->>>>>>> Rename 'Sapphire' in DMSpec.java and related files.
         }
     }
 

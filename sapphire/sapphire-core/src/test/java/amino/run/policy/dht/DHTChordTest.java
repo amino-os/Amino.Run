@@ -59,7 +59,8 @@ public class DHTChordTest {
     @Test
     public void testChordVirtualNodes() {
         int numOfKeys = 100;
-        Map<DHTPolicy.ServerPolicy, AtomicInteger> counts = new HashMap<>();
+        Map<DHTPolicy.ServerPolicy, AtomicInteger> counts =
+                new HashMap<DHTPolicy.ServerPolicy, AtomicInteger>();
         DHTChord chord = new DHTChord(20);
         for (int i = 0; i < 5; i++) {
             DHTPolicy.ServerPolicy server = new DHTPolicy.ServerPolicy();
@@ -88,22 +89,34 @@ public class DHTChordTest {
     public void testSerializeChord() throws Exception {
         DHTChord chord = new DHTChord();
         byte[] bytes = serialize(chord);
-        DHTChord clone = (DHTChord) deserizlize(bytes);
+        DHTChord clone = (DHTChord) deserialize(bytes);
         System.out.println(clone);
     }
 
     private byte[] serialize(Object obj) throws Exception {
-        try (ByteArrayOutputStream bout = new ByteArrayOutputStream();
-                ObjectOutputStream out = new ObjectOutputStream(bout)) {
+        ByteArrayOutputStream bout = null;
+        ObjectOutputStream out = null;
+        try {
+            bout = new ByteArrayOutputStream();
+            out = new ObjectOutputStream(bout);
             out.writeObject(obj);
             return bout.toByteArray();
+        } finally {
+            out.close();
+            bout.close();
         }
     }
 
-    private Object deserizlize(byte[] bytes) throws Exception {
-        try (ByteArrayInputStream bin = new ByteArrayInputStream(bytes);
-                ObjectInputStream in = new ObjectInputStream(bin)) {
+    private Object deserialize(byte[] bytes) throws Exception {
+        ByteArrayInputStream bin = null;
+        ObjectInputStream in = null;
+        try {
+            bin = new ByteArrayInputStream(bytes);
+            in = new ObjectInputStream(bin);
             return in.readObject();
+        } finally {
+            in.close();
+            bin.close();
         }
     }
 }

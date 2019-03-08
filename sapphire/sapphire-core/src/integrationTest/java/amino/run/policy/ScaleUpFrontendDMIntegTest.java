@@ -52,12 +52,12 @@ public class ScaleUpFrontendDMIntegTest {
 
     private void runTest(MicroServiceSpec spec) throws Exception {
         MicroServiceID microServiceId = registry.create(spec.toString());
-        KVStore store = (KVStore) registry.acquireStub(microServiceId);
-        String key = "k";
-        String value = "v";
+        final KVStore store = (KVStore) registry.acquireStub(microServiceId);
+        final String key = "k";
+        final String value = "v";
         List<FutureTask<Object>> taskList = new ArrayList<FutureTask<Object>>();
         for (int i = 0; i < TASK_COUNT; i++) {
-            int finalI = i;
+            final int finalI = i;
             FutureTask<Object> task =
                     new FutureTask<Object>(
                             new Callable<Object>() {

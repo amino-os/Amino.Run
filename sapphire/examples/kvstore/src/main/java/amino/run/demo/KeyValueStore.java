@@ -11,7 +11,7 @@ import java.util.Map;
  * values are {@code Serializable}s.
  */
 public class KeyValueStore implements MicroService {
-    private Map<String, Serializable> kvStore = new Hashtable<>();
+    private Map<String, Serializable> kvStore = new Hashtable<String, Serializable>();
 
     public KeyValueStore() {}
 

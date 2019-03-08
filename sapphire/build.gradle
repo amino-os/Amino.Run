@@ -97,6 +97,11 @@ subprojects {
         classpath += sourceSets.main.runtimeClasspath
     }
 
+    // Added for enforcing Java 1.6 version compatibility.
+    def javaVersion = JavaVersion.VERSION_1_6
+    sourceCompatibility = javaVersion
+    targetCompatibility = javaVersion
+    
     // SourceSet for generated stubs
     sourceSets {
         stubs

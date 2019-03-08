@@ -33,7 +33,7 @@ public class KernelServerManager {
     private static final Random randgen = new Random();
 
     public KernelServerManager() {
-        serverInfos = Collections.newSetFromMap(new ConcurrentHashMap<>());
+        serverInfos = Collections.newSetFromMap(new ConcurrentHashMap<ServerInfo, Boolean>());
         servers = new ConcurrentHashMap<InetSocketAddress, KernelServer>();
         regions = new ConcurrentHashMap<String, ArrayList<InetSocketAddress>>();
         ksHeartBeatTimers = new ConcurrentHashMap<InetSocketAddress, ResettableTimer>();
@@ -144,7 +144,7 @@ public class KernelServerManager {
      * @return a list of {@code InetSocketAddress}
      */
     public List<InetSocketAddress> getServers(NodeSelectorSpec spec) {
-        List<InetSocketAddress> nodes = new ArrayList<>();
+        List<InetSocketAddress> nodes = new ArrayList<InetSocketAddress>();
         Set<String> orLabels = null;
         Set<String> andLabels = null;
         if (null != spec) {

@@ -148,9 +148,9 @@ public class Serializer implements AutoCloseable {
                 }
                 return varSte;
             case js:
-                return new ArrayList<>(v.getMemberKeys());
+                return new ArrayList<String>(v.getMemberKeys());
         }
-        return new ArrayList<>();
+        return new ArrayList<String>();
     }
 
     public void close() throws IOException {

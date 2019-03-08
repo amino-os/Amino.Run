@@ -36,7 +36,7 @@ public class KVStore
                 ExplicitMigrator,
                 TransactionManager,
                 MicroService {
-    private Map<String, Serializable> kvStore = new HashMap<>();
+    private Map<String, Serializable> kvStore = new HashMap<String, Serializable>();
 
     public void set(String key, Serializable value) {
         this.kvStore.put(key, value);

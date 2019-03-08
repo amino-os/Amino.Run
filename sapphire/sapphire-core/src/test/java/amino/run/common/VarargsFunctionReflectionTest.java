@@ -10,7 +10,7 @@ public class VarargsFunctionReflectionTest {
 
     @Test
     public void test() throws Exception {
-        Map<String, Method> methodMap = new HashMap<>();
+        Map<String, Method> methodMap = new HashMap<String, Method>();
         VarargsFunctionReflectionTest object = new VarargsFunctionReflectionTest();
         for (Method m : object.getClass().getMethods()) {
             methodMap.put(m.toGenericString(), m);

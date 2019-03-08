@@ -40,7 +40,7 @@ public class DHTPolicyTest extends BaseTest {
         for (int i = 0; i < loopCount; i++) {
             /* Increment value of I each time by 1,2,3,4 .. so on till loopCount. Each request would go to any one of
             the 3 available shards */
-            ArrayList<Object> params = new ArrayList<>(Arrays.asList(new Object[] {i + 1}));
+            ArrayList<Object> params = new ArrayList<Object>(Arrays.asList(new Object[] {i + 1}));
             client.onRPC(method, params);
         }
 

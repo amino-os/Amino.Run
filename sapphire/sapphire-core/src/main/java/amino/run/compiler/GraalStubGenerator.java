@@ -30,7 +30,7 @@ public class GraalStubGenerator {
 
         // Evaluate all polyglot files recursively.
         File f = new File(inputFile);
-        List<File> files = new ArrayList<>();
+        List<File> files = new ArrayList<File>();
         getFilesRecursively(files, f);
         for (File sub : files) {
             loadFile(sub, polyglot);
@@ -187,7 +187,7 @@ public class GraalStubGenerator {
                     + "        return $__directInvocation;\n"
                     + "    }\n\n"
                     + "    public java.util.List<SerializeValue> serializeParams(Object... args) throws Exception {\n"
-                    + "        java.util.List<SerializeValue> res = new ArrayList<>();\n"
+                    + "        java.util.List<SerializeValue> res = new ArrayList<SerializeValue>();\n"
                     + "        getContext().enter();\n"
                     + "        for (Object o : args) {\n"
                     + "            res.add(SerializeValue.getSerializeValue(Value.asValue(o), getLanguage()));\n"
@@ -218,7 +218,7 @@ public class GraalStubGenerator {
                     + "        java.lang.Object $__result = null;\n"
                     + "        if ($__directInvocation) {\n"
                     + "            try {\n"
-                    + "                java.util.ArrayList<Object> objs = new java.util.ArrayList<>();\n"
+                    + "                java.util.ArrayList<Object> objs = new java.util.ArrayList<Object>();\n"
                     + "                objs.addAll(Arrays.asList(args));\n"
                     + "                $__result = super.invoke(\"%s\", objs);\n"
                     + "            } catch (java.lang.Exception e) {\n"

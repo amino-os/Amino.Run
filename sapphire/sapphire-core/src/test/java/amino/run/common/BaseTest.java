@@ -70,7 +70,7 @@ public class BaseTest {
 
     public void setUp(int serverCount, MicroServiceSpec spec) throws Exception {
         // create a spied oms instance
-        OMSServerImpl spiedOms = startSpiedOms(LOOP_BACK_IP_ADDR, omsPort);
+        final OMSServerImpl spiedOms = startSpiedOms(LOOP_BACK_IP_ADDR, omsPort);
         spiedksOnOms = spy(GlobalKernelReferences.nodeServer);
         KernelServerImpl.oms = spiedOms;
         this.spiedOms = spiedOms;

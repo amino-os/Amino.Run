@@ -39,10 +39,16 @@ public class PolicyCreationHelper {
                             sapphireGroupPolicyClass, sapphireObjId);
 
             return groupPolicyStub;
-        } catch (ClassNotFoundException
-                | KernelObjectNotCreatedException
-                | RemoteException
-                | MicroServiceNotFoundException e) {
+        } catch (ClassNotFoundException e) {
+            logger.severe("Failed to create a group policy: " + policyName);
+            throw new MicroServiceCreationException(e);
+        } catch (KernelObjectNotCreatedException e) {
+            logger.severe("Failed to create a group policy: " + policyName);
+            throw new MicroServiceCreationException(e);
+        } catch (MicroServiceNotFoundException e) {
+            logger.severe("Failed to create a group policy: " + policyName);
+            throw new MicroServiceCreationException(e);
+        } catch (RemoteException e) {
             logger.severe("Failed to create a group policy: " + policyName);
             throw new MicroServiceCreationException(e);
         }

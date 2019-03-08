@@ -234,7 +234,7 @@ public class ConsensusRSMPolicyTest extends BaseTest {
         Policy.ServerPolicy server2 = spy(ConsensusRSMPolicy.ServerPolicy.class);
         Policy.ServerPolicy server3 = spy(ConsensusRSMPolicy.ServerPolicy.class);
         Policy.GroupPolicy group = spy(ConsensusRSMPolicy.GroupPolicy.class);
-        List<Policy.ServerPolicy> list = new ArrayList<>();
+        List<Policy.ServerPolicy> list = new ArrayList<Policy.ServerPolicy>();
         list.add(server1);
         list.add(server2);
         list.add(server3);
@@ -277,7 +277,7 @@ public class ConsensusRSMPolicyTest extends BaseTest {
         Policy.ServerPolicy server1 = spy(ConsensusRSMPolicy.ServerPolicy.class);
         Policy.ServerPolicy server2 = spy(ConsensusRSMPolicy.ServerPolicy.class);
         Policy.GroupPolicy group = spy(ConsensusRSMPolicy.GroupPolicy.class);
-        List<Policy.ServerPolicy> list = new ArrayList<>();
+        List<Policy.ServerPolicy> list = new ArrayList<Policy.ServerPolicy>();
         list.add(server1);
         list.add(server2);
         doReturn(list).when(group).getServers();
@@ -314,7 +314,7 @@ public class ConsensusRSMPolicyTest extends BaseTest {
         Policy.ServerPolicy server1 = spy(ConsensusRSMPolicy.ServerPolicy.class);
         Policy.ServerPolicy server2 = spy(ConsensusRSMPolicy.ServerPolicy.class);
         Policy.GroupPolicy group = spy(ConsensusRSMPolicy.GroupPolicy.class);
-        List<Policy.ServerPolicy> list = new ArrayList<>();
+        List<Policy.ServerPolicy> list = new ArrayList<Policy.ServerPolicy>();
         list.add(server1);
         list.add(server2);
         doReturn(list).when(group).getServers();
@@ -349,7 +349,7 @@ public class ConsensusRSMPolicyTest extends BaseTest {
         Policy.ServerPolicy server1 = spy(ConsensusRSMPolicy.ServerPolicy.class);
         Policy.ServerPolicy server2 = spy(ConsensusRSMPolicy.ServerPolicy.class);
         Policy.GroupPolicy group = spy(ConsensusRSMPolicy.GroupPolicy.class);
-        List<Policy.ServerPolicy> list = new ArrayList<>();
+        List<Policy.ServerPolicy> list = new ArrayList<Policy.ServerPolicy>();
         list.add(server1);
         list.add(server2);
         doReturn(list).when(group).getServers();

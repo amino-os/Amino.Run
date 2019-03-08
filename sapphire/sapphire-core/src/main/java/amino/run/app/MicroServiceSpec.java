@@ -56,7 +56,7 @@ public class MicroServiceSpec implements Serializable {
     private String constructorName;
 
     /** List of Deployment Managers to be applied on microservice */
-    private List<DMSpec> dmList = new ArrayList<>();
+    private List<DMSpec> dmList = new ArrayList<DMSpec>();
 
     private NodeSelectorSpec nodeSelectorSpec;
 
@@ -166,7 +166,7 @@ public class MicroServiceSpec implements Serializable {
         private String javaClassName;
         private String sourceFileLocation;
         private String constructorName;
-        private List<DMSpec> dmList = new ArrayList<>();
+        private List<DMSpec> dmList = new ArrayList<DMSpec>();
         private NodeSelectorSpec nodeSelectorSpec;
 
         public Builder setName(String name) {
@@ -196,7 +196,7 @@ public class MicroServiceSpec implements Serializable {
 
         public Builder addDMSpec(DMSpec dmSpec) {
             if (dmList == null) {
-                dmList = new ArrayList<>();
+                dmList = new ArrayList<DMSpec>();
             }
             dmList.add(dmSpec);
 

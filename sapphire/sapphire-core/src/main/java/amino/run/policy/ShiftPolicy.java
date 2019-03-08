@@ -34,7 +34,8 @@ public class ShiftPolicy extends DefaultPolicy {
                                 + this.LOAD
                                 + ". Shift policy triggered.");
                 OMSServer oms = GlobalKernelReferences.nodeServer.oms;
-                ArrayList<InetSocketAddress> servers = new ArrayList<>(oms.getServers(null));
+                ArrayList<InetSocketAddress> servers =
+                        new ArrayList<InetSocketAddress>(oms.getServers(null));
 
                 KernelServerImpl localKernel = GlobalKernelReferences.nodeServer;
                 InetSocketAddress localAddress = localKernel.getLocalHost();

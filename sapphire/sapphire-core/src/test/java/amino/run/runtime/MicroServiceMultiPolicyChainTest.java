@@ -70,8 +70,8 @@ public class MicroServiceMultiPolicyChainTest extends BaseTest {
      */
     @Test
     public void testCreateConnectedPolicyTwoPolicies() throws Exception {
-        List<String> policyNameChain = new ArrayList<>();
-        List<PolicyContainer> processedPolicies = new ArrayList<>();
+        List<String> policyNameChain = new ArrayList<String>();
+        List<PolicyContainer> processedPolicies = new ArrayList<PolicyContainer>();
 
         /* Register for a sapphire object Id from OMS */
         MicroServiceID soid = spiedOms.registerMicroService();

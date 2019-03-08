@@ -18,7 +18,7 @@ public class ServerInfoTest {
     @Test
     public void testHasAnyLabel() {
         ServerInfo server = createServer(numOfLabels);
-        Set<String> labels = new HashSet<>();
+        Set<String> labels = new HashSet<String>();
         labels.add(LABEL_PREFIX + "0");
         Assert.assertTrue(server.containsAny(labels));
     }
@@ -34,13 +34,13 @@ public class ServerInfoTest {
     @Test
     public void testHasAnyLabelWithEmptyLabels() {
         ServerInfo server = createServer(numOfLabels);
-        Assert.assertTrue(server.containsAny(Collections.emptySet()));
+        Assert.assertTrue(server.containsAny(Collections.<String>emptySet()));
     }
 
     @Test
     public void testHasAnyLabelFailure() {
         ServerInfo server = createServer(numOfLabels);
-        Set<String> labels = new HashSet<>(Arrays.asList(NON_EXISTENT_LABEL));
+        Set<String> labels = new HashSet<String>(Arrays.asList(NON_EXISTENT_LABEL));
         Assert.assertFalse(server.containsAny(labels));
     }
 
@@ -62,7 +62,7 @@ public class ServerInfoTest {
     @Test
     public void testHasAllLabelsWithEmptyLabels() {
         ServerInfo server = createServer(numOfLabels);
-        Assert.assertTrue(server.containsAll(Collections.emptySet()));
+        Assert.assertTrue(server.containsAll(Collections.<String>emptySet()));
     }
 
     private ServerInfo createServer(int numOfLabels) {
@@ -72,7 +72,7 @@ public class ServerInfoTest {
     }
 
     private Set<String> createLabels(int numOfLabels) {
-        Set<String> labels = new HashSet<>();
+        Set<String> labels = new HashSet<String>();
         for (int i = 0; i < numOfLabels; i++) {
             labels.add(LABEL_PREFIX + i);
         }

@@ -10,7 +10,7 @@ public class TodoList implements MicroService {
     String id = "0";
 
     public TodoList(String id) {
-        toDos = new HashMap<>();
+        toDos = new HashMap<String, String>();
         this.id = id;
     }
 

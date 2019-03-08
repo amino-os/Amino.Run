@@ -88,7 +88,7 @@ public class MicroServiceMultiPolicyChainTest extends BaseTest {
 
     @After
     public void tearDown() throws Exception {
-        System.out.println("Deleting MicroService: " + group.getSapphireObjId());
+        System.out.println("Deleting MicroService: " + group.getMicroServiceId());
         super.tearDown();
     }
 }

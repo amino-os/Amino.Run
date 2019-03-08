@@ -93,7 +93,7 @@ public class ObjectHandler implements Serializable {
             // parameters, so
             // we need to wrap parameters with another object array.
             // Please refer to unit test
-            // sapphire-core/src/test/java/amino/run/common/VarargsFunctionReflectionTest
+            // amino.run.common.VarargsFunctionReflectionTest
             p = new Object[] {inParams.toArray()};
         }
         Method m = methods.get(method);

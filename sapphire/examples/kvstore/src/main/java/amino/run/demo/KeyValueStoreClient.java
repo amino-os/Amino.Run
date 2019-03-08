@@ -15,10 +15,10 @@ import java.util.List;
  */
 public class KeyValueStoreClient {
     public static void main(String[] args) throws Exception {
-        Registry server = getSapphireObjectServer(args[0], args[1]);
+        Registry registry = getRegistry(args[0], args[1]);
 
-        MicroServiceID oid = server.create(getSpec());
-        KeyValueStore store = (KeyValueStore)server.acquireStub(oid);
+        MicroServiceID oid = registry.create(getSpec());
+        KeyValueStore store = (KeyValueStore)registry.acquireStub(oid);
 
         for (int i=0; i<30; ++i) {
             String key = "key_" + i;
@@ -31,11 +31,11 @@ public class KeyValueStoreClient {
         }
     }
 
-    private static Registry getSapphireObjectServer(String omsIp, String omsPort) throws Exception {
+    private static Registry getRegistry(String omsIp, String omsPort) throws Exception {
         new KernelServerImpl(new InetSocketAddress("127.0.0.2", 11111), new InetSocketAddress(omsIp, Integer.parseInt(omsPort)));
-        java.rmi.registry.Registry registry = LocateRegistry.getRegistry(omsIp, Integer.parseInt(omsPort));
-        Registry server = (Registry) registry.lookup("io.amino.run.oms");
-        return server;
+        java.rmi.registry.Registry rmiRegistry = LocateRegistry.getRegistry(omsIp, Integer.parseInt(omsPort));
+        Registry aminoRegistry = (Registry) rmiRegistry.lookup("io.amino.run.oms");
+        return aminoRegistry;
     }
 
     private static String getSpec() throws Exception {

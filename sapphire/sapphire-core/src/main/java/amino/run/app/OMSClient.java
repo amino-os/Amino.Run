@@ -50,7 +50,7 @@ public class OMSClient {
      * @throws RemoteException unable to reach OMS server
      * @throws MicroServiceCreationException unable to create microservice.
      */
-    public MicroServiceID createSapphireObject(MicroServiceSpec spec, Object... args)
+    public MicroServiceID createMicroService(MicroServiceSpec spec, Object... args)
             throws RemoteException, MicroServiceCreationException {
 
         // convert graal...Value to serializable object
@@ -77,12 +77,11 @@ public class OMSClient {
      * Acquire the reference to the microservice with the specifid ID.
      *
      * @param microServiceId microservice ID
-     * @return microservice stub. Applications use stub to invoke methods on remote sapphire
-     *     objects.
+     * @return microservice stub. Applications use stubs to invoke methods on remote microservices.
      * @throws RemoteException unable to reach OMS server
      * @throws MicroServiceNotFoundException unable to find a microservice with the given ID
      */
-    public AppObjectStub acquireSapphireObjectStub(MicroServiceID microServiceId)
+    public AppObjectStub acquireMicroServiceStub(MicroServiceID microServiceId)
             throws RemoteException, MicroServiceNotFoundException {
         return server.acquireStub(microServiceId);
     }

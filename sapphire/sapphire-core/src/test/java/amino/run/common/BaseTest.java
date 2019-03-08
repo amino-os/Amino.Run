@@ -148,7 +148,7 @@ public class BaseTest {
                     }
                 });
 
-        // Stub static sapphire methods
+        // Stub static methods
         mockStatic(
                 MicroService.class,
                 new Answer<Object>() {
@@ -219,6 +219,6 @@ public class BaseTest {
     }
 
     public void tearDown() throws Exception {
-        registry.delete(group.getSapphireObjId());
+        registry.delete(group.getMicroServiceId());
     }
 }

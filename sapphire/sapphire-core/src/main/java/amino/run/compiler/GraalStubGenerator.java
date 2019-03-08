@@ -18,7 +18,7 @@ public class GraalStubGenerator {
     public static void main(String[] args) throws Exception {
         if (args.length != 4) {
             System.out.println(
-                    "Invalid arguments, expected arguments:  [SapphireObjectFileOrFolder] [OutputFolder] [StubPackageName] [ClassNamesSeparatedByComma]");
+                    "Invalid arguments, expected arguments:  [MicroServiceSourceFileOrFolder] [OutputFolder] [StubPackageName] [ClassNamesSeparatedByComma]");
             return;
         }
 

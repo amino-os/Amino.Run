@@ -25,7 +25,7 @@ public abstract class Library implements Upcalls {
     public abstract static class ClientPolicyLibrary implements ClientUpcalls {
 
         /*
-         * INTERNAL FUNCTIONS (Used by sapphire runtime system)
+         * INTERNAL FUNCTIONS (Used by runtime system)
          */
     }
 
@@ -70,7 +70,7 @@ public abstract class Library implements Upcalls {
         }
 
         /*
-         * SAPPHIRE API FOR SERVER POLICIES
+         * API FOR SERVER POLICIES
          */
         public List<PolicyContainer> getProcessedPolicies() {
             return this.processedPolicies;
@@ -397,7 +397,7 @@ public abstract class Library implements Upcalls {
         }
 
         /*
-         * SAPPHIRE API FOR GROUP POLICIES
+         * API FOR GROUP POLICIES
          */
 
         public ArrayList<String> getRegions() throws RemoteException {
@@ -439,11 +439,11 @@ public abstract class Library implements Upcalls {
             return this.oid;
         }
 
-        public void setSapphireObjId(MicroServiceID sapphireId) {
-            microServiceId = sapphireId;
+        public void setMicroServiceId(MicroServiceID id) {
+            microServiceId = id;
         }
 
-        public MicroServiceID getSapphireObjId() {
+        public MicroServiceID getMicroServiceId() {
             return microServiceId;
         }
 
@@ -453,8 +453,8 @@ public abstract class Library implements Upcalls {
          * {@code KernelObjectManager}, and 3) remove replica ID from OMS.
          *
          * <p><strong>Warning:</strong> Do not try to call OMS to unregister the microservice.
-         * {@link OMSServer#delete(MicroServiceID)} is the public entry point to delete a sapphire
-         * object. OMS will take care of deleting microservice at {@link
+         * {@link OMSServer#delete(MicroServiceID)} is the public entry point to delete a
+         * microservice. OMS will take care of deleting microservice at {@link
          * amino.run.oms.OMSServerImpl#delete(MicroServiceID)}.
          *
          * @throws RemoteException

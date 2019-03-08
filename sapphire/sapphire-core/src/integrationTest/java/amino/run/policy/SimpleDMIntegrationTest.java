@@ -49,10 +49,10 @@ public class SimpleDMIntegrationTest {
 
     private MicroServiceSpec getMicroServiceSpecForDM(String dmFileName) throws Exception {
         File file = new File(RESOURCE_REAL_PATH + dmFileName);
-        return readSapphireSpec(file);
+        return readMicroServiceSpec(file);
     }
 
-    private MicroServiceSpec readSapphireSpec(File file) throws Exception {
+    private MicroServiceSpec readMicroServiceSpec(File file) throws Exception {
         List<String> lines = Files.readAllLines(file.toPath());
         String yamlStr = String.join("\n", lines);
         MicroServiceSpec spec = MicroServiceSpec.fromYaml(yamlStr);

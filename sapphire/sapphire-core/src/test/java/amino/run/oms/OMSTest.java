@@ -61,12 +61,12 @@ public class OMSTest extends BaseTest {
     }
 
     @Test
-    public void acquireSapphireObjectStubSuccessTest() throws Exception {
-        MicroServiceID sid = group.getSapphireObjId();
+    public void acquireMicroServiceStubSuccessTest() throws Exception {
+        MicroServiceID sid = group.getMicroServiceId();
         SO appObjstub = (SO) registry.acquireStub(sid);
         assertEquals(
                 1,
-                TestUtils.getOmsSapphireInstance(spiedOms, group.getSapphireObjId())
+                TestUtils.getOmsMicroService(spiedOms, group.getMicroServiceId())
                         .getReferenceCount());
 
         /* setI on the client side stub */
@@ -77,15 +77,15 @@ public class OMSTest extends BaseTest {
     }
 
     @Test
-    public void attachAndDetactSapphireObjectSuccessTest() throws Exception {
-        registry.setName(group.getSapphireObjId(), "MySapphireObject");
+    public void attachAndDetactMicroServiceSuccessTest() throws Exception {
+        registry.setName(group.getMicroServiceId(), "MyMicroService");
 
-        SO appObjstub = (SO) registry.attachTo("MySapphireObject");
+        SO appObjstub = (SO) registry.attachTo("MyMicroService");
 
         /* Reference count must become 2. Once user created it and other attached to it */
         assertEquals(
                 2,
-                TestUtils.getOmsSapphireInstance(spiedOms, group.getSapphireObjId())
+                TestUtils.getOmsMicroService(spiedOms, group.getMicroServiceId())
                         .getReferenceCount());
 
         /* setI on the client side stub */
@@ -95,10 +95,10 @@ public class OMSTest extends BaseTest {
         assertEquals(new Integer(100), so.getI());
 
         /* Reference count must become 1(decrement by 1) upon detach */
-        registry.detachFrom("MySapphireObject");
+        registry.detachFrom("MyMicroService");
         assertEquals(
                 1,
-                TestUtils.getOmsSapphireInstance(spiedOms, group.getSapphireObjId())
+                TestUtils.getOmsMicroService(spiedOms, group.getMicroServiceId())
                         .getReferenceCount());
     }
 
@@ -124,7 +124,7 @@ public class OMSTest extends BaseTest {
     }
 
     @Test
-    public void sapphireInstanceAndReplicaDispatcherTest() throws Exception {
+    public void microServiceAndReplicaDispatcherTest() throws Exception {
         /* Setup had created a microservice with default SO. Hence SO count is 1 */
         assertEquals(new Integer(1), new Integer(omsImpl.getAllMicroServices().size()));
 

@@ -76,9 +76,9 @@ public class MicroService {
     }
 
     /**
-     * WARN: This method only works for Java microservice. This method has been deprecated.
-     * Please use {@link #new_(MicroServiceSpec, Object...)}. We keep this method because we have
-     * Java demo apps that call this method directly.
+     * WARN: This method only works for Java microservice. This method has been deprecated. Please
+     * use {@link #new_(MicroServiceSpec, Object...)}. We keep this method because we have Java demo
+     * apps that call this method directly.
      *
      * @param appObjectClass the class of the app object
      * @param args the arguments to app object constructor

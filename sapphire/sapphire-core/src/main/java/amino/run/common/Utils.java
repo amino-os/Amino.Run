@@ -269,8 +269,7 @@ public class Utils {
                 new HashMap<String, Map<String, PolicyConfig>>();
 
         for (DMSpec dmSpec : dmSpecList) {
-            Map<String, PolicyConfig> configMap =
-                    new HashMap<String, PolicyConfig>();
+            Map<String, PolicyConfig> configMap = new HashMap<String, PolicyConfig>();
             map.put(dmSpec.getName(), configMap);
             for (PolicyConfig config : dmSpec.getConfigs()) {
                 configMap.put(config.getClass().getName(), config);
@@ -298,8 +297,7 @@ public class Utils {
      *     PolicyConfig} and the value is a {@link PolicyConfig} instance.
      * @deprecated recommend to use {@link #fromDMSpecListToConfigMap(List)}
      */
-    public static Map<String, PolicyConfig> fromDMSpecListToFlatConfigMap(
-            List<DMSpec> dmSpecList) {
+    public static Map<String, PolicyConfig> fromDMSpecListToFlatConfigMap(List<DMSpec> dmSpecList) {
         Map<String, PolicyConfig> map = new HashMap<String, PolicyConfig>();
 
         if (dmSpecList != null) {

@@ -65,7 +65,7 @@ class ExecWait extends DefaultTask {
         if (!command.isEmpty()) {
             def rootDir = project.rootDir
             def taskName = command.split(':').last()
-            def readyExpr = "ready!"
+            def readyExpr = "ready at port"
             def line
 
             Process process = new ProcessBuilder(command.split(' '))

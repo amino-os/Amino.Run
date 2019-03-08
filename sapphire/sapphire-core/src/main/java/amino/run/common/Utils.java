@@ -266,7 +266,7 @@ public class Utils {
     public static Map<String, Map<String, PolicyConfig>> fromDMSpecListToConfigMap(
             List<DMSpec> dmSpecList) {
         Map<String, Map<String, PolicyConfig>> map =
-                new HashMap<String, Map<String, SapphirePolicyConfig>>();
+                new HashMap<String, Map<String, PolicyConfig>>();
 
         for (DMSpec dmSpec : dmSpecList) {
             Map<String, PolicyConfig> configMap =

@@ -33,21 +33,9 @@ public interface Upcalls {
      */
     interface ClientUpcalls extends Serializable {
         /**
-<<<<<<< HEAD
-<<<<<<< HEAD
          * Event handler for microservice creation. Called after a primary microservice is first
          * created (i.e. before any replicas are created). This is called after {@link setServer}
          * (currently in {@link MicroService.createPolicy} and before {@link
-=======
-         * Event handler for microservice creation. Called after a primary microservice is
-         * first created (i.e. before any replicas are created). This is called after {@link
-         * setServer} (currently in {@link MicroService.createPolicy} and before {@link
->>>>>>> Replace 'sapphire object' with 'microservice' throughout.
-=======
-         * Event handler for microservice creation. Called after a primary microservice is first
-         * created (i.e. before any replicas are created). This is called after {@link setServer}
-         * (currently in {@link MicroService.createPolicy} and before {@link
->>>>>>> Rename 'Sapphire' in DMSpec.java and related files.
          * ServerUpcalls.onCreate}. It is usually used to store a reference to the group policy for
          * this SO, and to initialize the client. Configuration parameters for the client are
          * contained in spec.
@@ -99,24 +87,10 @@ public interface Upcalls {
         void onCreate(Policy.GroupPolicy group, MicroServiceSpec spec);
 
         /**
-<<<<<<< HEAD
-<<<<<<< HEAD
          * Event handler for microservice destruction. Called immediately before a sapphire object
          * (or replica) is deleted from a kernel server. Usually used to tear down a server policy's
          * local resources, for example, timers, network connections, etc. Currently called in
          * {@link KernelServerImpl.deleteKernelObject} and {@link
-=======
-         * Event handler for microservice destruction. Called immediately before a sapphire
-         * object (or replica) is deleted from a kernel server. Usually used to tear down a server
-         * policy's local resources, for example, timers, network connections, etc. Currently called
-         * in {@link KernelServerImpl.deleteKernelObject} and {@link
->>>>>>> Replace 'sapphire object' with 'microservice' throughout.
-=======
-         * Event handler for microservice destruction. Called immediately before a microservice (or
-         * replica) is deleted from a kernel server. Usually used to tear down a server policy's
-         * local resources, for example, timers, network connections, etc. Currently called in
-         * {@link KernelServerImpl.deleteKernelObject} and {@link
->>>>>>> Rename 'Sapphire' in DMSpec.java and related files.
          * KernelServerImpl.moveKernelObjectToServer} (on the old server, after moving the object to
          * the new server). TODO: Quinton: It's not clear to my why the latter call is needed.
          * Surely moveKernelObjectToServer should just call deleteKernelObject on the old server?

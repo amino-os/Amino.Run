@@ -270,7 +270,6 @@ public class Utils {
 
         for (DMSpec dmSpec : dmSpecList) {
             Map<String, PolicyConfig> configMap = new HashMap<String, PolicyConfig>();
-
             map.put(dmSpec.getName(), configMap);
             for (PolicyConfig config : dmSpec.getConfigs()) {
                 configMap.put(config.getClass().getName(), config);

@@ -35,7 +35,7 @@ public class MultiDMTestCases {
     @Before
     public void setUp() throws Exception {
         java.rmi.registry.Registry registry = LocateRegistry.getRegistry(omsIp, omsPort);
-        this.registry = (Registry) registry.lookup("SapphireOMS");
+        this.registry = (Registry) registry.lookup("io.amino.run.oms");
         new KernelServerImpl(
                 new InetSocketAddress(hostIp, hostPort), new InetSocketAddress(omsIp, omsPort));
     }

@@ -321,25 +321,25 @@ public class Utils {
      * path, then a Graal context is created with default configuration and the same will be
      * returned.
      *
-     * @param language language of the sapphireObject which needs to be loaded in the Graal context.
-     * @param sapphireObjectPath path of sapphireObject and corresponding files.
-     * @return created Graal context based on the provided sapphireObject and language.
+     * @param language language of the microService which needs to be loaded in the Graal context.
+     * @param microServicePath path of microService and corresponding files.
+     * @return created Graal context based on the provided microService and language.
      * @throws IOException
      */
-    public static Context getGraalContext(Language language, String sapphireObjectPath)
+    public static Context getGraalContext(Language language, String microServicePath)
             throws IOException {
         Context context;
 
-        // If provided language and sapphireObjectPath is null, then
+        // If provided language and microServicePath is null, then
         // return a default Graal context.
-        if ((language == null) && (sapphireObjectPath == null)) {
+        if ((language == null) && (microServicePath == null)) {
             context = Context.create();
             return context;
         }
 
-        // If provided sapphireObjectPath is null, return a Graal context
+        // If provided microServicePath is null, return a Graal context
         // for the requested language.
-        if (sapphireObjectPath == null) {
+        if (microServicePath == null) {
             context = Context.create(language.toString());
             return context;
         }
@@ -347,8 +347,8 @@ public class Utils {
         // Create a Graal context with default configuration.
         context = Context.create();
 
-        File[] files = (new File(sapphireObjectPath)).listFiles();
-        // If there are no files in the sapphireObjectPath, the default
+        File[] files = (new File(microServicePath)).listFiles();
+        // If there are no files in the microServicePath, the default
         // Graal context will be returned to the caller.
         if (files == null) return context;
 

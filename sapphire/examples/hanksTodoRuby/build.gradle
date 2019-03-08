@@ -2,13 +2,13 @@
 genStubs {
     main = "amino.run.compiler.GraalStubGenerator"
     classpath = files("$projectDir/../../sapphire-core/build/classes/java/main/")
-    def sapphireObjectPath = "$projectDir/src/main/ruby/amino/run/appexamples/hankstodo/todo_list_manager.rb"
+    def microServicePath = "$projectDir/src/main/ruby/amino/run/appexamples/hankstodo/todo_list_manager.rb"
     def outPath = "$projectDir/src/main/java"
     def packageName = "amino.run.appexamples.hankstodo.stubs"
     def sapphireClasses = "TodoListManager"
-    args sapphireObjectPath, outPath, packageName, sapphireClasses
+    args microServicePath, outPath, packageName, sapphireClasses
     outputs.dir "$projectDir/src/main/java/amino/run/appexamples/hankstodo/stubs" // Declare outputs, so gradle will run if they have been changed
-    inputs.dir sapphireObjectPath   // Declare inputs, so gradle will run if they have been changed
+    inputs.dir microServicePath   // Declare inputs, so gradle will run if they have been changed
 }
 
 // Task to run Ruby app

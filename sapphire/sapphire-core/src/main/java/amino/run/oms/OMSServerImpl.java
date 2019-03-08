@@ -142,28 +142,28 @@ public class OMSServerImpl implements OMSServer, Registry {
         InetSocketAddress host = serverManager.getBestSuitableServer(spec);
         if (host == null) {
             throw new MicroServiceCreationException(
-                    "Failed to create sapphire object. Kernel server is not available  with the given requirements");
+                    "Failed to create microservice. Kernel server with the given requirements is not available");
         }
 
         /* Get the kernel server stub */
         KernelServer server = serverManager.getServer(host);
         if (server == null) {
             throw new MicroServiceCreationException(
-                    "Failed to create sapphire object. Kernel server not found.");
+                    "Failed to create microservice. Kernel server not found.");
         }
 
         // TODO(multi-lang): Store spec together with object ID in objectManager
-        // MicroServiceSpec spec = MicroServiceSpec.fromYaml(sapphireObjectSpec);
+        // MicroServiceSpec spec = MicroServiceSpec.fromYaml(microserviceSpec);
 
-        /* Invoke create sapphire object on the kernel server */
+        /* Invoke create microservice on the kernel server */
         try {
-            AppObjectStub appObjStub = server.createSapphireObject(microServiceSpec, args);
+            AppObjectStub appObjStub = server.createMicroService(microServiceSpec, args);
             assert appObjStub != null;
             objectManager.setInstanceObjectStub(appObjStub.$__getMicroServiceId(), appObjStub);
             return appObjStub.$__getMicroServiceId();
         } catch (Exception e) {
             throw new MicroServiceCreationException(
-                    "Failed to create sapphire object. Exception occurred at kernel server.", e);
+                    "Failed to create microservice. Exception occurred at kernel server.", e);
         }
     }
 
@@ -176,7 +176,7 @@ public class OMSServerImpl implements OMSServer, Registry {
             return appObjStub;
         } catch (Exception e) {
             throw new MicroServiceNotFoundException(
-                    "Failed to acquire stub for sapphire object " + id, e);
+                    "Failed to acquire stub for microservice " + id, e);
         }
     }
 
@@ -212,12 +212,11 @@ public class OMSServerImpl implements OMSServer, Registry {
         try {
             objectManager.removeInstance(id);
             logger.log(
-                    Level.FINE,
-                    String.format("Successfully removed sapphire object with oid %s", id));
+                    Level.FINE, String.format("Successfully removed microservice with oid %s", id));
         } catch (Exception e) {
             logger.log(
                     Level.SEVERE,
-                    String.format("Failed to remove sapphire object with oid %s", id),
+                    String.format("Failed to remove microservice with oid %s", id),
                     e);
             successfullyRemoved = false;
         }
@@ -242,7 +241,7 @@ public class OMSServerImpl implements OMSServer, Registry {
                     MicroServiceNotFoundException {
         Policy.GroupPolicy group = MicroService.createGroupPolicy(policyClass, microServiceId);
 
-        /* TODO: This rootGroupPolicy is used in sapphire object deletion. Need to handle for multiDM case. In case of
+        /* TODO: This rootGroupPolicy is used in microservice deletion. Need to handle for multiDM case. In case of
         multiDM, multiple group policy objects are created in DM chain establishment. Currently, just ensuring not to
         overwrite the outermost DM's group policy reference(i.e., first created group policy in chain).So that deletion
         works for single DM case.
@@ -279,14 +278,14 @@ public class OMSServerImpl implements OMSServer, Registry {
             OMSServerImpl oms = new OMSServerImpl();
             OMSServer omsStub = (OMSServer) UnicastRemoteObject.exportObject(oms, servicePort);
             java.rmi.registry.Registry registry = LocateRegistry.createRegistry(port);
-            registry.rebind("SapphireOMS", omsStub);
+            registry.rebind("io.amino.run.oms", omsStub);
 
             /* Create an instance of kernel server and export kernel server service */
             KernelServer localKernelServer =
                     new KernelServerImpl(new InetSocketAddress(args[0], port), oms);
             KernelServer localKernelServerStub =
                     (KernelServer) UnicastRemoteObject.exportObject(localKernelServer, servicePort);
-            registry.rebind("SapphireKernelServer", localKernelServerStub);
+            registry.rebind("io.amino.run.kernelserver", localKernelServerStub);
 
             logger.info("OMS ready!");
             // to get all the kernel server's addresses passing null in oms.getServers
@@ -301,9 +300,9 @@ public class OMSServerImpl implements OMSServer, Registry {
     }
 
     /**
-     * Registers a sapphire object
+     * Registers a microservice
      *
-     * @return Returns sapphire object id
+     * @return Returns microservice id
      * @throws RemoteException
      */
     @Override
@@ -312,10 +311,10 @@ public class OMSServerImpl implements OMSServer, Registry {
     }
 
     /**
-     * Register a sapphire replica of a given sapphire object
+     * Register a replica of a given microservice
      *
      * @param microServiceId
-     * @return Return sapphire replica id
+     * @return Return replica id
      * @throws RemoteException
      * @throws MicroServiceNotFoundException
      */
@@ -326,7 +325,7 @@ public class OMSServerImpl implements OMSServer, Registry {
     }
 
     /**
-     * Sets the event handler of sapphire replica
+     * Set the event handler of a microservice replica
      *
      * @param replicaId
      * @param dispatcher
@@ -342,7 +341,7 @@ public class OMSServerImpl implements OMSServer, Registry {
     }
 
     /**
-     * Unregister the sapphire object
+     * Unregister the microservice
      *
      * @param microServiceId
      * @throws RemoteException
@@ -354,7 +353,7 @@ public class OMSServerImpl implements OMSServer, Registry {
     }
 
     /**
-     * Unregister the replica of sapphire object
+     * Unregister the replica of microservice
      *
      * @param replicaId
      * @throws RemoteException
@@ -366,12 +365,12 @@ public class OMSServerImpl implements OMSServer, Registry {
     }
 
     /**
-     * get all the sapphire objects in the system
+     * get all the microservices in the system
      *
      * @return Returns ArrayList<MicroServiceID>
      * @throws RemoteException
      */
-    public ArrayList<MicroServiceID> getAllSapphireObjects() throws RemoteException {
+    public ArrayList<MicroServiceID> getAllMicroServices() throws RemoteException {
         ArrayList<MicroServiceID> arr = objectManager.getAllMicroServices();
         return arr;
     }
@@ -382,8 +381,7 @@ public class OMSServerImpl implements OMSServer, Registry {
      * @return Returns ArrayList<EventHandler>
      * @throws RemoteException
      */
-    public EventHandler[] getSapphireReplicasById(MicroServiceID oid)
-            throws MicroServiceNotFoundException {
+    public EventHandler[] getReplicasById(MicroServiceID oid) throws MicroServiceNotFoundException {
         return objectManager.getReplicasById(oid);
     }
 

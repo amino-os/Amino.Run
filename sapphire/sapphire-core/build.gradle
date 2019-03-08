@@ -149,12 +149,12 @@ task genGraalTestStubs(type: JavaExec) {
     dependsOn compileJava
     main = "amino.run.compiler.GraalStubGenerator"
 
-    def sapphireObjectPath = "$projectDir/src/test/resources/student.js"
+    def microServicePath = "$projectDir/src/test/resources/student.js"
     def outPath = "$projectDir/src/test/java"
     def packageName = "amino.run.stubs"
     def sapphireClasses = "Student"
-    args sapphireObjectPath, outPath, packageName, sapphireClasses
-    inputs.dir sapphireObjectPath   // Declare inputs, so gradle will run if they have been changed
+    args microServicePath, outPath, packageName, sapphireClasses
+    inputs.dir microServicePath   // Declare inputs, so gradle will run if they have been changed
     outputs.dir outPath + "/amino/run/stubs" // Declare outputs, so gradle will run if they have been changed
 }
 // Task for Graal Test stubs compilation

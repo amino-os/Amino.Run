@@ -37,7 +37,7 @@ public class HanksTodoMain {
 
         try {
             registry = LocateRegistry.getRegistry(args[0], Integer.parseInt(args[1]));
-            Registry server = (Registry) registry.lookup("SapphireOMS");
+            Registry server = (Registry) registry.lookup("io.amino.run.oms");
             System.out.println(server);
 
             KernelServer nodeServer =

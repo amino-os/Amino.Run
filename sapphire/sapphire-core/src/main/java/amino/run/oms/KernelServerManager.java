@@ -175,7 +175,7 @@ public class KernelServerManager {
             try {
                 Registry registry =
                         LocateRegistry.getRegistry(address.getHostName(), address.getPort());
-                server = (KernelServer) registry.lookup("SapphireKernelServer");
+                server = (KernelServer) registry.lookup("io.amino.run.kernelserver");
                 servers.put(address, server);
             } catch (Exception e) {
                 logger.log(Level.SEVERE, "Could not find kernel server: " + e.toString());

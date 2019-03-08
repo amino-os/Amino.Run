@@ -73,7 +73,7 @@ public class MinnieTwitterMain {
 
     try {
       registry = LocateRegistry.getRegistry(omsAddr.getHostName(), omsAddr.getPort());
-      Registry server = (Registry) registry.lookup("SapphireOMS");
+      Registry server = (Registry) registry.lookup("io.amino.run.oms");
 
       KernelServer nodeServer = new KernelServerImpl(hostAddr, omsAddr);
 
@@ -146,7 +146,7 @@ public class MinnieTwitterMain {
 
     try {
       registry = LocateRegistry.getRegistry(omsAddr.getHostString(), omsAddr.getPort());
-      Registry server = (Registry) registry.lookup("SapphireOMS");
+      Registry server = (Registry) registry.lookup("io.amino.run.oms");
 
       KernelServer nodeServer = new KernelServerImpl(hostAddr, omsAddr);
 

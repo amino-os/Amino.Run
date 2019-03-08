@@ -31,13 +31,13 @@ public interface KernelServer extends Remote {
     /**
      * Create sapphire object in kernel server
      *
-     * @param sapphireObjectSpec sapphire object specification in YAML.
+     * @param microServiceSpec sapphire object specification in YAML.
      * @param args parameters to sapphire object constructor
      * @return sapphire object stub
      * @throws RemoteException
      * @throws MicroServiceCreationException
      * @throws ClassNotFoundException
      */
-    AppObjectStub createSapphireObject(String sapphireObjectSpec, Object... args)
+    AppObjectStub createMicroService(String microServiceSpec, Object... args)
             throws RemoteException, MicroServiceCreationException, ClassNotFoundException;
 }

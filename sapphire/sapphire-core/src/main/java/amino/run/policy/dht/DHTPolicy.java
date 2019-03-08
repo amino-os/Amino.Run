@@ -20,7 +20,7 @@ public class DHTPolicy extends DefaultPolicy {
     private static final int DEFAULT_NUM_OF_SHARDS = 3;
 
     /** Configuration for DHT Policy. */
-    public static class Config implements SapphirePolicyConfig {
+    public static class Config implements PolicyConfig {
         private int numOfShards = DEFAULT_NUM_OF_SHARDS;
 
         public int getNumOfShards() {
@@ -77,10 +77,10 @@ public class DHTPolicy extends DefaultPolicy {
             super.onCreate(region, server, spec);
 
             if (spec != null) {
-                Map<String, SapphirePolicyConfig> configMap =
+                Map<String, PolicyConfig> configMap =
                         Utils.fromDMSpecListToFlatConfigMap(spec.getDmList());
                 if (configMap != null) {
-                    SapphirePolicyConfig config = configMap.get(DHTPolicy.Config.class.getName());
+                    PolicyConfig config = configMap.get(DHTPolicy.Config.class.getName());
                     if (config != null) {
                         this.numOfShards = ((Config) config).getNumOfShards();
                     }

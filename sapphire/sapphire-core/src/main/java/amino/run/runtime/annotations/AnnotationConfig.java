@@ -5,13 +5,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * This class can be removed after we completely deprecated Java annotation based sapphire policy
+ * This class can be removed after we completely deprecated Java annotation based policy
  * configurations.
  *
- * @deprecated This class is created to support java annotation based sapphire policy
- *     configurations.
+ * @deprecated This class is created to support java annotation based policy configurations.
  */
-public class AnnotationConfig implements Upcalls.SapphirePolicyConfig {
+public class AnnotationConfig implements Upcalls.PolicyConfig {
     private String annotationType;
 
     private Map<String, String> properties = new HashMap<String, String>();

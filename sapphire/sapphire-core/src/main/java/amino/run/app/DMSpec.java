@@ -1,7 +1,8 @@
 package amino.run.app;
 
-import static amino.run.policy.Upcalls.SapphirePolicyConfig;
+import static amino.run.policy.Upcalls.PolicyConfig;
 
+import amino.run.policy.Upcalls;
 import java.io.Serializable;
 import java.util.*;
 import org.yaml.snakeyaml.Yaml;
@@ -9,12 +10,11 @@ import org.yaml.snakeyaml.Yaml;
 /**
  * Deployment Manager Specification. Also known as MicroService Policy Specification.
  *
- * <p>Each DM specification contains a sapphire policy name and an optional list of sapphire policy
- * configurations.
+ * <p>Each DM specification contains a policy name and an optional list of policy configurations.
  */
 public final class DMSpec implements Serializable {
     private String name;
-    private List<SapphirePolicyConfig> configs = new ArrayList<SapphirePolicyConfig>();
+    private List<PolicyConfig> configs = new ArrayList<PolicyConfig>();
 
     /**
      * Returns a builder class for DMSpec.
@@ -26,16 +26,16 @@ public final class DMSpec implements Serializable {
     }
 
     /**
-     * Returns sapphire policy name of this DM
+     * Returns policy name of this DM
      *
-     * @return the sapphire policy name
+     * @return the policy name
      */
     public String getName() {
         return name;
     }
 
     /**
-     * A list of sapphire policy configurations.
+     * A list of policy configurations.
      *
      * <p>One amino run policy usually has only one configuration. But in some cases, one amino run
      * policy may have multiple configurations. For example, @{@link
@@ -45,19 +45,19 @@ public final class DMSpec implements Serializable {
      * of configurations, one for scale up front end policy, and the other for load balanced front
      * end policy.
      */
-    public List<SapphirePolicyConfig> getConfigs() {
+    public List<PolicyConfig> getConfigs() {
         return configs;
     }
 
     /**
-     * Returns a sapphire policy configuration map where the key is the name of the configuration
-     * and the value is a {@link SapphirePolicyConfig} instance.
+     * Returns a policy configuration map where the key is the name of the configuration and the
+     * value is a {@link PolicyConfig} instance.
      *
-     * @return a sapphire policy configuration map that contains all configurations of this DM.
+     * @return a policy configuration map that contains all configurations of this DM.
      */
-    private Map<String, SapphirePolicyConfig> getConfigMap() {
-        Map<String, SapphirePolicyConfig> map = new HashMap<String, SapphirePolicyConfig>();
-        for (SapphirePolicyConfig c : configs) {
+    private Map<String, PolicyConfig> getConfigMap() {
+        Map<String, PolicyConfig> map = new HashMap<String, PolicyConfig>();
+        for (PolicyConfig c : configs) {
             map.put(c.getClass().getSimpleName(), c);
         }
         return map;
@@ -67,7 +67,7 @@ public final class DMSpec implements Serializable {
         this.name = name;
     }
 
-    public void setConfigs(List<SapphirePolicyConfig> configs) {
+    public void setConfigs(List<PolicyConfig> configs) {
         this.configs = configs;
     }
 
@@ -96,14 +96,14 @@ public final class DMSpec implements Serializable {
 
     public static class Builder {
         private String name;
-        private List<SapphirePolicyConfig> configs = new ArrayList<SapphirePolicyConfig>();
+        private List<PolicyConfig> configs = new ArrayList<PolicyConfig>();
 
         public Builder setName(String name) {
             this.name = name;
             return this;
         }
 
-        public Builder addConfig(SapphirePolicyConfig config) {
+        public Builder addConfig(Upcalls.PolicyConfig config) {
             this.configs.add(config);
             return this;
         }

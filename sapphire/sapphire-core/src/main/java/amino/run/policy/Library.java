@@ -35,7 +35,7 @@ public abstract class Library implements Upcalls {
         protected ReplicaID replicaId;
         protected Policy.GroupPolicy group;
         protected MicroServiceSpec spec;
-        protected Map<String, SapphirePolicyConfig> configMap;
+        protected Map<String, PolicyConfig> configMap;
 
         static Logger logger = Logger.getLogger(ServerPolicyLibrary.class.getName());
 

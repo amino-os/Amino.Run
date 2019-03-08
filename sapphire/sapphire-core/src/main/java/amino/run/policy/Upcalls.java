@@ -7,7 +7,7 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 
 /**
- * Upcall interface used by sapphire kernel to invoke event handlers on client, server and group
+ * Upcall interface used by Amino.Run kernel to invoke event handlers on client, server and group
  * policies//deployment managers. Note that in the MicroService paper these are discussed and
  * referred to variously as the "Deployment Managers Upcall API" (in general), and "proxy" (for
  * client), "instance manager" (for server) and "coordinator" (for group). These methods should only
@@ -19,18 +19,17 @@ import java.util.ArrayList;
 public interface Upcalls {
 
     /**
-     * Interface for sapphire policy configuration.
+     * Interface for policy configuration.
      *
-     * <p>Each sapphire policy can optionally define a Config class to allow programmers to pass
-     * configurations to the sapphire policy. All Config classes should implement this interface.
-     * TODO: Quinton: This does not belong in Upcalls interface. Move it to a more appropriate
-     * place.
+     * <p>Each policy can optionally define a Config class to allow programmers to pass
+     * configurations to the policy. All Config classes should implement this interface. TODO:
+     * Quinton: This does not belong in Upcalls interface. Move it to a more appropriate place.
      */
-    interface SapphirePolicyConfig extends Serializable {}
+    interface PolicyConfig extends Serializable {}
 
     /**
-     * Interface for client policy. These are the methods invoked by the sapphire kernel against all
-     * client policies to handle events.
+     * Interface for client policy. These are the methods invoked by the Amino.Run kernel against
+     * all client policies to handle events.
      */
     interface ClientUpcalls extends Serializable {
         /**
@@ -63,7 +62,7 @@ public interface Upcalls {
          * @return the return value from the remote method invocation. Again, return values are
          *     pass-by-value.
          * @throws Exception Either the exception thrown directly by the remote method invocation,
-         *     or an exception thrown by the sapphire kernel or network stack.
+         *     or an exception thrown by the Amino.Run kernel or network stack.
          */
         Object onRPC(String method, ArrayList<Object> params) throws Exception;
     }
@@ -72,12 +71,12 @@ public interface Upcalls {
     interface ServerUpcalls extends Serializable {
 
         /**
-         * Event handler for sapphire replica creation. Called after a sapphire replica (including
-         * the first one) is first created. This is called after {@link ClientUpcalls.onCreate}
-         * (currently in {@link MicroService.createPolicy} and before {@link GroupUpcalls.onCreate}
-         * and before {@link GroupUpcalls.addServer}. It is usually used to store a reference to the
-         * group policy for this SO, and to otherwise initialize the server. Configuration
-         * parameters for the server are contained in spec.
+         * Event handler for replica creation. Called after a replica (including the first one) is
+         * first created. This is called after {@link ClientUpcalls.onCreate} (currently in {@link
+         * MicroService.createPolicy} and before {@link GroupUpcalls.onCreate} and before {@link
+         * GroupUpcalls.addServer}. It is usually used to store a reference to the group policy for
+         * this SO, and to otherwise initialize the server. Configuration parameters for the server
+         * are contained in spec.
          *
          * @param group the group policy for the newly created microservice.
          * @param spec microservice spec, which contains configuration parameters for the server
@@ -106,13 +105,13 @@ public interface Upcalls {
         /**
          * Get a cached reference to the remote group policy running on OMS.
          *
-         * @return The group policy for this sapphire replica.
+         * @return The group policy for this replica.
          */
         Policy.GroupPolicy getGroup();
 
         /**
          * Event handler for remote procedure calls/method invocations against this replica of the
-         * microservice. Invoked by every client policy/DM (indirectly, via the sapphire kernel).
+         * microservice. Invoked by every client policy/DM (indirectly, via the Amino.Run kernel).
          * The standard implementation is simply to invoke the method on the local microservice
          * replica. May be overidden in DM's to, for example, replicate the call to all replicas,
          * detect and handle server overloads, persist transaction logs, etc.
@@ -135,9 +134,9 @@ public interface Upcalls {
          * changed. Usually used to refresh the locally cached set of replicas (if the DM keeps
          * one), by remotely calling the group policy on OMS to determine the new set of replicas.
          * TODO: Quinton: Curiously, as far as I can tell, this is never invoked anywhere by the
-         * sapphire kernel, or from anywhere else. It's also not implemented anywhere either, other
+         * Amino.Run kernel, or from anywhere else. It's also not implemented anywhere either, other
          * than no-op implementations to satisfy this interface. We need to fix this to invoke htis
-         * method correctly from the sapphire kernel every time a replica is created, destroyed or
+         * method correctly from the Amino.Run kernnel every time a replica is created, destroyed or
          * moved. TODO: Another todo. Why do we not just pass the new list of members in here as a
          * parameter, to avoid the DM having to make another round trip to the OMS to fetch the new
          * list? Perhaps that will be too expensive and we can leave that until later, if at all. In
@@ -150,10 +149,9 @@ public interface Upcalls {
 
     interface GroupUpcalls extends Serializable {
         /**
-         * Event handler for microservice creation. Called by the sapphire kernel on creation of
+         * Event handler for microservice creation. Called by the Amino.Run kernel on creation of
          * this group and it's first/primary replica. DM's may implement this method to initialize
-         * the group policy, create additional replicas, etc. Currently this is invoked from {@link
-         * Sapphire.createPolicy} during construction (new_ or create).
+         * the group policy, create additional replicas, etc.
          *
          * @param region TODO: Quinton: This parameter is deprecated and must be deleted.
          * @param server reference to the server policy of the first/primary replica that is managed

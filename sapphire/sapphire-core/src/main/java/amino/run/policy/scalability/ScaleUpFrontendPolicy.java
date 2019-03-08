@@ -26,7 +26,7 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
     static final int REPLICA_CREATE_MIN_TIME_IN_MSEC = 100;
 
     /** Configurations for ScaleUpFrontendPolicy */
-    public static class Config implements SapphirePolicyConfig {
+    public static class Config implements PolicyConfig {
         private int replicationRateInMs = REPLICA_CREATE_MIN_TIME_IN_MSEC;
 
         public int getReplicationRateInMs() {
@@ -54,7 +54,7 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
     private static Config getConfig(MicroServiceSpec spec) {
         Config config = null;
         if (spec != null) {
-            Map<String, SapphirePolicyConfig> configMap =
+            Map<String, PolicyConfig> configMap =
                     Utils.fromDMSpecListToFlatConfigMap(spec.getDmList());
             if (configMap != null) {
                 config = (Config) configMap.get(ScaleUpFrontendPolicy.Config.class.getName());

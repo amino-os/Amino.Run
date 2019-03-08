@@ -47,7 +47,7 @@ public class InstanceManager {
      *
      * @return Returns a new replica id
      */
-    private ReplicaID generateSapphireReplicaID() {
+    private ReplicaID generateReplicaID() {
         return new ReplicaID(oid, UUID.randomUUID());
     }
 
@@ -69,7 +69,7 @@ public class InstanceManager {
     }
 
     /**
-     * Gets the root group policy object of this sapphire instance
+     * Gets the root group policy object of this microservice instance
      *
      * @return MicroService Group Policy Object
      */
@@ -78,7 +78,7 @@ public class InstanceManager {
     }
 
     /**
-     * Gets the event handler of this sapphire instance
+     * Gets the event handler of this microservice instance
      *
      * @return Returns event handler
      */
@@ -87,7 +87,7 @@ public class InstanceManager {
     }
 
     /**
-     * Sets the event handler of this sapphire instance
+     * Sets the event handler of this microservice instance
      *
      * @param dispatcher
      */
@@ -96,7 +96,7 @@ public class InstanceManager {
     }
 
     /**
-     * Gets the object stub of this sapphire instance
+     * Gets the object stub of this microservice instance
      *
      * @return Returns object stub
      */
@@ -105,7 +105,7 @@ public class InstanceManager {
     }
 
     /**
-     * Sets the object stub of this sapphire instance
+     * Sets the object stub of this microservice instance
      *
      * @param objStub
      */
@@ -114,7 +114,7 @@ public class InstanceManager {
     }
 
     /**
-     * Gets the event handler for the given replica of this sapphire instance
+     * Gets the event handler for the given replica of this microservice instance
      *
      * @param rid
      * @return Returns event handler of the replica
@@ -131,7 +131,7 @@ public class InstanceManager {
     }
 
     /**
-     * Sets the event handler for the given replica of this sapphire instance
+     * Sets the event handler for the given replica of this microservice instance
      *
      * @param rid
      * @param dispatcher
@@ -146,19 +146,19 @@ public class InstanceManager {
     }
 
     /**
-     * Generates a replica id and add replica to this sapphire instance
+     * Generates a replica id and add replica to this microservice instance
      *
      * @param dispatcher
      * @return returns a new replica id
      */
     public ReplicaID addReplica(EventHandler dispatcher) {
-        ReplicaID rid = generateSapphireReplicaID();
+        ReplicaID rid = generateReplicaID();
         replicaDispatchers.put(rid, dispatcher);
         return rid;
     }
 
     /**
-     * Removes the replica from this sapphire instance
+     * Removes the replica from this microservice instance
      *
      * @param replicaId
      */
@@ -167,7 +167,7 @@ public class InstanceManager {
     }
 
     /**
-     * Gets replica handlers of this sapphire instance
+     * Gets replica handlers of this microservice instance
      *
      * @return Returns array of event handlers
      */
@@ -187,8 +187,8 @@ public class InstanceManager {
         return oid;
     }
 
-    public void setName(String sapphireObjName) {
-        name = sapphireObjName;
+    public void setName(String microServiceName) {
+        name = microServiceName;
     }
 
     public String getName() {

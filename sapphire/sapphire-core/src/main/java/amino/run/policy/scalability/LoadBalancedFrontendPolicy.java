@@ -29,7 +29,7 @@ public class LoadBalancedFrontendPolicy extends DefaultPolicy {
     public static final int DEFAULT_MAX_CONCURRENT_REQUESTS = 20;
 
     /** Configurations for LoadBalancedFrontendPolicy */
-    public static class Config implements SapphirePolicyConfig {
+    public static class Config implements PolicyConfig {
         private int maxConcurrentReq = DEFAULT_MAX_CONCURRENT_REQUESTS;
         private int replicaCount = DEFAULT_REPLICA_COUNT;
 
@@ -75,7 +75,7 @@ public class LoadBalancedFrontendPolicy extends DefaultPolicy {
     private static Config getConfig(MicroServiceSpec spec) {
         Config config = null;
         if (spec != null) {
-            Map<String, SapphirePolicyConfig> configMap =
+            Map<String, PolicyConfig> configMap =
                     Utils.fromDMSpecListToFlatConfigMap(spec.getDmList());
             if (configMap != null) {
                 config = (Config) configMap.get(LoadBalancedFrontendPolicy.Config.class.getName());

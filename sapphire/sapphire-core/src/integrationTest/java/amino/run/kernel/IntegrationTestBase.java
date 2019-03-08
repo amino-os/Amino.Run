@@ -143,7 +143,8 @@ public class IntegrationTestBase {
                 };
 
         System.out.printf(
-                "Starting kernel server at %s:%d with command line \'%s\'\n", ip, port, args);
+                "Starting kernel server at %s:%d with command line \'%s\'\n",
+                ip, port, String.join(",", args));
         ProcessBuilder builder = new ProcessBuilder(args);
         Process process = builder.inheritIO().start();
 

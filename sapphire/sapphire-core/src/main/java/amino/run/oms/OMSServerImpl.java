@@ -49,7 +49,7 @@ public class OMSServerImpl implements OMSServer, Registry {
 
     /** CONSTRUCTOR * */
     // TODO Should receive a List of servers
-    public OMSServerImpl() throws IOException, NotBoundException, JSONException {
+    public OMSServerImpl() throws JSONException {
         kernelObjectManager = new GlobalKernelObjectManager();
         serverManager = new KernelServerManager();
         objectManager = new MicroServiceManager();
@@ -83,7 +83,7 @@ public class OMSServerImpl implements OMSServer, Registry {
      * @throws KernelObjectNotFoundException
      */
     public void unRegisterKernelObject(KernelOID oid, InetSocketAddress host)
-            throws RemoteException, KernelObjectNotFoundException {
+            throws KernelObjectNotFoundException {
         logger.info("UnRegistering " + oid.toString() + " on host " + host.toString());
         kernelObjectManager.unRegister(oid, host);
     }
@@ -94,7 +94,7 @@ public class OMSServerImpl implements OMSServer, Registry {
      * @return the host IP address
      */
     public InetSocketAddress lookupKernelObject(KernelOID oid)
-            throws RemoteException, KernelObjectNotFoundException {
+            throws KernelObjectNotFoundException {
         logger.info(
                 "Found host for " + oid.toString() + " host: " + kernelObjectManager.lookup(oid));
         return kernelObjectManager.lookup(oid);
@@ -135,7 +135,7 @@ public class OMSServerImpl implements OMSServer, Registry {
 
     @Override
     public MicroServiceID create(String microServiceSpec, Object... args)
-            throws RemoteException, MicroServiceCreationException {
+            throws MicroServiceCreationException {
 
         MicroServiceSpec spec = MicroServiceSpec.fromYaml(microServiceSpec);
         /* Get a best server from the given spec */
@@ -182,14 +182,14 @@ public class OMSServerImpl implements OMSServer, Registry {
 
     @Override
     public void setName(MicroServiceID id, String name)
-            throws RemoteException, MicroServiceNotFoundException,
+            throws MicroServiceNotFoundException,
                     MicroServiceNameModificationException {
         objectManager.setInstanceName(id, name);
     }
 
     @Override
     public AppObjectStub attachTo(String name)
-            throws RemoteException, MicroServiceNotFoundException {
+            throws MicroServiceNotFoundException {
         MicroServiceID microServiceId = objectManager.getMicroServiceByName(name);
         AppObjectStub appObjStub = acquireStub(microServiceId);
         objectManager.incrRefCountAndGet(microServiceId);
@@ -237,7 +237,7 @@ public class OMSServerImpl implements OMSServer, Registry {
      */
     @Override
     public Policy.GroupPolicy createGroupPolicy(Class<?> policyClass, MicroServiceID microServiceId)
-            throws RemoteException, ClassNotFoundException, KernelObjectNotCreatedException,
+            throws ClassNotFoundException, KernelObjectNotCreatedException,
                     MicroServiceNotFoundException {
         Policy.GroupPolicy group = MicroService.createGroupPolicy(policyClass, microServiceId);
 
@@ -260,7 +260,7 @@ public class OMSServerImpl implements OMSServer, Registry {
             return;
         }
 
-        int port = 1099;
+        int port;
         int servicePort = 0;
         try {
             port = Integer.parseInt(args[1]);
@@ -287,14 +287,14 @@ public class OMSServerImpl implements OMSServer, Registry {
                     (KernelServer) UnicastRemoteObject.exportObject(localKernelServer, servicePort);
             registry.rebind("io.amino.run.kernelserver", localKernelServerStub);
 
-            logger.info("OMS ready!");
+            logger.info(String.format("OMS ready at port (%s)!", port));
             // to get all the kernel server's addresses passing null in oms.getServers
             for (Iterator<InetSocketAddress> it = oms.getServers(null).iterator(); it.hasNext(); ) {
                 InetSocketAddress address = it.next();
-                logger.fine("   " + address.getHostName().toString() + ":" + address.getPort());
+                logger.fine("   " + address.getHostName() + ":" + address.getPort());
             }
         } catch (Exception e) {
-            logger.severe("Server exception: " + e.toString());
+            logger.severe("OMS server exception: " + e.toString());
             e.printStackTrace();
         }
     }
@@ -320,7 +320,7 @@ public class OMSServerImpl implements OMSServer, Registry {
      */
     @Override
     public ReplicaID registerReplica(MicroServiceID microServiceId)
-            throws RemoteException, MicroServiceNotFoundException {
+            throws MicroServiceNotFoundException {
         return objectManager.addReplica(microServiceId, null);
     }
 
@@ -360,7 +360,7 @@ public class OMSServerImpl implements OMSServer, Registry {
      * @throws MicroServiceNotFoundException
      */
     public void unRegisterReplica(ReplicaID replicaId)
-            throws RemoteException, MicroServiceNotFoundException {
+            throws MicroServiceNotFoundException {
         objectManager.removeReplica(replicaId);
     }
 

@@ -438,6 +438,8 @@ public class KernelServerImpl implements KernelServer {
 
             // Start a thread that print memory stats
             server.getMemoryStatThread().start();
+
+            // Log being used in examples gradle task "run", hence modify accordingly.
             logger.info(String.format("Kernel server ready at port(%s)!", servicePort));
         } catch (Exception e) {
             System.err.println("Failed to start kernel server: " + e.getMessage());

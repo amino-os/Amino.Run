@@ -284,8 +284,10 @@ public class OMSServerImpl implements OMSServer, Registry {
                     (KernelServer) UnicastRemoteObject.exportObject(localKernelServer, servicePort);
             registry.rebind("io.amino.run.kernelserver", localKernelServerStub);
 
-            logger.info(String.format("OMS ready at port (%s)!", port));
-            // to get all the kernel server's addresses passing null in oms.getServers
+            // Log being used in examples gradle task "run", hence modify accordingly.
+            logger.info(String.format("OMS ready at port(%s)!", port));
+
+            // To get all the kernel server's addresses passing null in oms.getServers
             for (Iterator<InetSocketAddress> it = oms.getServers(null).iterator(); it.hasNext(); ) {
                 InetSocketAddress address = it.next();
                 logger.fine("   " + address.getHostName() + ":" + address.getPort());

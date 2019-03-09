@@ -115,6 +115,8 @@ public class GraalStubGenerator {
         new File(outputDir).mkdirs();
     }
 
+    // TODO Stub generator to consider throwing exceptions for stub constructor if microService
+    // constructor throws them
     // string format following these inputs:
     // packageName
     // className

@@ -52,7 +52,7 @@ public class LoadBalancedFrontendDMIntegrationTest {
     @Test
     public void testLoadBalancedFrontendDMs() throws Exception {
         File file = getResourceFile("specs/complex-dm/LoadBalancedFrontEnd.yaml");
-        MicroServiceSpec spec = readSapphireSpec(file);
+        MicroServiceSpec spec = readMicroServiceSpec(file);
         runTest(spec);
     }
 

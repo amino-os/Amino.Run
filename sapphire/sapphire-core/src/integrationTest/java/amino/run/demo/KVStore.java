@@ -22,8 +22,8 @@ import java.util.UUID;
  *
  * Note: Make <code>KVStore</code> implementing
  * <code>MicroService</> interface in order to
- * backward compatible with annotation based sapphire
- * object specification.
+ * backward compatible with annotation based microservice
+ * specification.
  *
  * We can remove <code>MicroService</code> interface
  * after we completely deprecate annotation based

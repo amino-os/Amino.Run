@@ -179,7 +179,7 @@ public class IntegrationTestBase {
         return file;
     }
 
-    public static MicroServiceSpec readSapphireSpec(File file) throws Exception {
+    public static MicroServiceSpec readMicroServiceSpec(File file) throws Exception {
         List<String> lines = Files.readAllLines(file.toPath());
         String yamlStr = String.join("\n", lines);
         MicroServiceSpec spec = MicroServiceSpec.fromYaml(yamlStr);

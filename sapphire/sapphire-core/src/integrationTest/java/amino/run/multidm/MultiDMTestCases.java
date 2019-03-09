@@ -66,7 +66,7 @@ public class MultiDMTestCases {
     @Test
     public void testDHTNConsensusMultiDM() throws Exception {
         File file = getResourceFile("specs/multi-dm/DHTNConsensus.yaml");
-        MicroServiceSpec spec = readSapphireSpec(file);
+        MicroServiceSpec spec = readMicroServiceSpec(file);
         runTest(spec, true);
     }
 
@@ -79,7 +79,7 @@ public class MultiDMTestCases {
     @Test
     public void testDHTNMasterSlaveMultiDM() throws Exception {
         File file = getResourceFile("specs/multi-dm/DHTNMasterSlave.yaml");
-        MicroServiceSpec spec = readSapphireSpec(file);
+        MicroServiceSpec spec = readMicroServiceSpec(file);
         runTest(spec, false);
     }
 
@@ -93,7 +93,7 @@ public class MultiDMTestCases {
     @Ignore("Test is ignored will be removed once the multi DM issues are resolved")
     public void testAtleastOnceRPCDHTNMasterSlaveMultiDM() throws Exception {
         File file = getResourceFile("specs/multi-dm/AtleastRPCDHTNMasterSlave.yaml");
-        MicroServiceSpec spec = readSapphireSpec(file);
+        MicroServiceSpec spec = readMicroServiceSpec(file);
         runTest(spec, false);
     }
 
@@ -107,7 +107,7 @@ public class MultiDMTestCases {
     @Ignore("Test is ignored will be removed once the multi DM issues are resolved")
     public void testAtleastOnceRPCDHTNConsensusMultiDM() throws Exception {
         File file = getResourceFile("specs/multi-dm/AtleastRPCDHTNConsensus.yaml");
-        MicroServiceSpec spec = readSapphireSpec(file);
+        MicroServiceSpec spec = readMicroServiceSpec(file);
         runTest(spec, true);
     }
 

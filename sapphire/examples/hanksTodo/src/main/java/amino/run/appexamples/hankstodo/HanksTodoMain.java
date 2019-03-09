@@ -95,7 +95,7 @@ public class HanksTodoMain {
 
             tlm.doSomething("Testing completed.");
 
-            // Delete the created SapphireObjects
+            // Delete the created microservices
             tlm.deleteTodoList(ListName);
             server.delete(microServiceId);
 

@@ -3,8 +3,8 @@ package amino.run.policy.scalability.masterslave;
 import static amino.run.policy.scalability.masterslave.MethodInvocationResponse.ReturnCode.FAILURE;
 
 import amino.run.policy.scalability.LoadBalancedMasterSlaveBase;
+import amino.run.runtime.exception.AminoRunException;
 import amino.run.runtime.exception.AppExecutionException;
-import amino.run.runtime.exception.SapphireException;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.Serializable;
@@ -81,7 +81,7 @@ public class Processor implements Closeable {
         } catch (Exception e) {
             logger.log(
                     Level.SEVERE, String.format("failed to process request %s: %s", request, e), e);
-            SapphireException ex = new SapphireException(e);
+            AminoRunException ex = new AminoRunException(e);
             return new MethodInvocationResponse(FAILURE, ex);
         }
     }

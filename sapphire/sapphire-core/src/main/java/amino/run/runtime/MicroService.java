@@ -275,7 +275,7 @@ public class MicroService {
             /* Initialize the server policy and return a local pointer to the object itself */
             Policy.ServerPolicy serverPolicy = initializeServerPolicy(serverPolicyStub);
 
-            registerSapphireReplica(microServiceID, serverPolicy, serverPolicyStub);
+            registerReplica(microServiceID, serverPolicy, serverPolicyStub);
 
             /* Link everything together */
             // TODO: client is unncessary for outer policies of a replica.
@@ -373,8 +373,8 @@ public class MicroService {
         Policy.GroupPolicy groupPolicyStub = (GroupPolicy) getPolicyStub(policyClass);
         try {
             GroupPolicy groupPolicy = initializeGroupPolicy(groupPolicyStub);
-            groupPolicyStub.setSapphireObjId(microServiceId);
-            groupPolicy.setSapphireObjId(microServiceId);
+            groupPolicyStub.setMicroServiceId(microServiceId);
+            groupPolicy.setMicroServiceId(microServiceId);
         } catch (KernelObjectNotFoundException e) {
             logger.severe(
                     "Failed to find the group kernel object created just before it. Exception info: "
@@ -470,7 +470,7 @@ public class MicroService {
      * @throws MicroServiceReplicaNotFoundException
      * @throws RemoteException
      */
-    private static void registerSapphireReplica(
+    private static void registerReplica(
             MicroServiceID microServiceId,
             ServerPolicy serverPolicy,
             final ServerPolicy serverPolicyStub)

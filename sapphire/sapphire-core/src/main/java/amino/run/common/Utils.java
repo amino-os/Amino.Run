@@ -214,25 +214,25 @@ public class Utils {
 
     /**
      * Converts annotations to policy configurations. This method is created to support existing
-     * Java demo apps which uses Java annotations to configure sapphire policies. It can be deleted
-     * after we completed deprecate java annotation based policy configuration.
+     * Java demo apps which use Java annotations to configure microservice policies. It can be
+     * deleted after we completed deprecate java annotation based policy configuration.
      *
      * @param annotations java annotations
      * @return a map which contains the policy config
      * @throws Exception
      * @deprecated
      */
-    public static Map<String, PolicyConfig> toSapphirePolicyConfig(Annotation[] annotations)
+    public static Map<String, PolicyConfig> toPolicyConfig(Annotation[] annotations)
             throws InvocationTargetException, IllegalAccessException {
         Map<String, PolicyConfig> configMap = new TreeMap<String, PolicyConfig>();
         for (Annotation a : annotations) {
-            configMap.putAll(toSapphirePolicyConfig(a));
+            configMap.putAll(toPolicyConfig(a));
         }
 
         return configMap;
     }
 
-    private static Map<String, PolicyConfig> toSapphirePolicyConfig(Annotation annotation)
+    private static Map<String, PolicyConfig> toPolicyConfig(Annotation annotation)
             throws InvocationTargetException, IllegalAccessException {
         Map<String, PolicyConfig> map = new HashMap<String, PolicyConfig>();
         Class<? extends Annotation> type = annotation.annotationType();
@@ -245,7 +245,7 @@ public class Utils {
             Object value = method.invoke(annotation, (Object[]) null);
             config.addConfig(method.getName(), value.toString());
             if (value instanceof Annotation) {
-                Map<String, PolicyConfig> innerMap = toSapphirePolicyConfig((Annotation) value);
+                Map<String, PolicyConfig> innerMap = toPolicyConfig((Annotation) value);
                 map.putAll(innerMap);
             }
         }
@@ -288,8 +288,8 @@ public class Utils {
      * same configuration type, then the configuration of the last DM in the list will override
      * configurations of other DMs. This method is created as
      *
-     * <p>This method is created as a temporary workaround to pass DM configurations to sapphire
-     * policies without significantly modify the existing APIs. It should be replaced with {@link
+     * <p>This method is created as a temporary workaround to pass DM configurations to policies
+     * without significantly modifying the existing APIs. It should be replaced with {@link
      * #fromDMSpecListToConfigMap(List)} eventually.
      *
      * @param dmSpecList a {@code DMSpec} list

@@ -20,7 +20,6 @@ import amino.run.kernel.server.KernelServerImpl;
 import amino.run.policy.Policy;
 import amino.run.runtime.EventHandler;
 import amino.run.runtime.MicroService;
-import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -182,14 +181,12 @@ public class OMSServerImpl implements OMSServer, Registry {
 
     @Override
     public void setName(MicroServiceID id, String name)
-            throws MicroServiceNotFoundException,
-                    MicroServiceNameModificationException {
+            throws MicroServiceNotFoundException, MicroServiceNameModificationException {
         objectManager.setInstanceName(id, name);
     }
 
     @Override
-    public AppObjectStub attachTo(String name)
-            throws MicroServiceNotFoundException {
+    public AppObjectStub attachTo(String name) throws MicroServiceNotFoundException {
         MicroServiceID microServiceId = objectManager.getMicroServiceByName(name);
         AppObjectStub appObjStub = acquireStub(microServiceId);
         objectManager.incrRefCountAndGet(microServiceId);
@@ -359,8 +356,7 @@ public class OMSServerImpl implements OMSServer, Registry {
      * @throws RemoteException
      * @throws MicroServiceNotFoundException
      */
-    public void unRegisterReplica(ReplicaID replicaId)
-            throws MicroServiceNotFoundException {
+    public void unRegisterReplica(ReplicaID replicaId) throws MicroServiceNotFoundException {
         objectManager.removeReplica(replicaId);
     }
 

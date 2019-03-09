@@ -135,7 +135,7 @@ public class ScaleUpFrontendDMIntegTest {
     @Test
     public void testScaleUpFrontendDMs() throws Exception {
         File file = IntegrationTestBase.getResourceFile("specs/complex-dm/ScaleUpFrontend.yaml");
-        MicroServiceSpec spec = IntegrationTestBase.readSapphireSpec(file);
+        MicroServiceSpec spec = IntegrationTestBase.readMicroServiceSpec(file);
         runTest(spec);
     }
 

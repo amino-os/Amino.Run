@@ -163,13 +163,13 @@ public class TestUtils {
         servers.put(((KernelServerImpl) ks).getLocalHost(), ks);
     }
 
-    public static InstanceManager getOmsSapphireInstance(
-            OMSServer oms, MicroServiceID microServiceId) throws Exception {
-        MicroServiceManager objMgr =
+    public static InstanceManager getOmsMicroService(OMSServer oms, MicroServiceID microServiceId)
+            throws Exception {
+        MicroServiceManager mgr =
                 (MicroServiceManager) extractFieldValueOnInstance(oms, "objectManager");
         ConcurrentHashMap<MicroServiceID, InstanceManager> microServices =
                 (ConcurrentHashMap<MicroServiceID, InstanceManager>)
-                        extractFieldValueOnInstance(objMgr, "microServices");
+                        extractFieldValueOnInstance(mgr, "microServices");
         return microServices.get(microServiceId);
     }
 }

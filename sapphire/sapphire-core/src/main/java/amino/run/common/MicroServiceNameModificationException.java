@@ -16,7 +16,7 @@ public class MicroServiceNameModificationException extends Exception {
         return name;
     }
 
-    public MicroServiceID getSapphireObjId() {
+    public MicroServiceID getMicroServiceId() {
         return microServiceId;
     }
 }

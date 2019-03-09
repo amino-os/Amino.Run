@@ -6,7 +6,7 @@ import static amino.run.kernel.IntegrationTestBase.hostPort;
 import static amino.run.kernel.IntegrationTestBase.killOmsAndKernelServers;
 import static amino.run.kernel.IntegrationTestBase.omsIp;
 import static amino.run.kernel.IntegrationTestBase.omsPort;
-import static amino.run.kernel.IntegrationTestBase.readSapphireSpec;
+import static amino.run.kernel.IntegrationTestBase.readMicroServiceSpec;
 import static amino.run.kernel.IntegrationTestBase.startOmsAndKernelServers;
 
 import amino.run.app.MicroServiceSpec;
@@ -58,7 +58,7 @@ public class LoadBalancedMasterSlaveDMIntegTest {
     @Test
     public void testMasterSlaveDM() throws Exception {
         File file = getResourceFile("specs/complex-dm/LoadBalanceMasterSlave.yaml");
-        MicroServiceSpec spec = readSapphireSpec(file);
+        MicroServiceSpec spec = readMicroServiceSpec(file);
         runTest(spec);
     }
 

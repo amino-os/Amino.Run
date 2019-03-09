@@ -24,19 +24,19 @@ public class PolicyCreationHelper {
      * should be called as a part of creating policy chain from kernel or library.
      *
      * @param policyName
-     * @param sapphireObjId
+     * @param microServiceId
      * @return
      * @throws amino.run.common.MicroServiceCreationException
      */
     public static Policy.GroupPolicy createGroupPolicy(
-            String policyName, MicroServiceID sapphireObjId) throws MicroServiceCreationException {
+            String policyName, MicroServiceID microServiceId) throws MicroServiceCreationException {
         try {
             /* Create the Kernel Object for the Group Policy and get the Group Policy Stub from OMS */
-            Class<?> sapphireGroupPolicyClass = getPolicyMap(policyName).get(GroupPolicyClass);
+            Class<?> groupPolicyClass = getPolicyMap(policyName).get(GroupPolicyClass);
 
             Policy.GroupPolicy groupPolicyStub =
                     GlobalKernelReferences.nodeServer.oms.createGroupPolicy(
-                            sapphireGroupPolicyClass, sapphireObjId);
+                            groupPolicyClass, microServiceId);
 
             return groupPolicyStub;
         } catch (ClassNotFoundException e) {

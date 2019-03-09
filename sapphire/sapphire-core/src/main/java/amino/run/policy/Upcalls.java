@@ -87,8 +87,8 @@ public interface Upcalls {
         void onCreate(Policy.GroupPolicy group, MicroServiceSpec spec);
 
         /**
-         * Event handler for microservice destruction. Called immediately before a sapphire object
-         * (or replica) is deleted from a kernel server. Usually used to tear down a server policy's
+         * Event handler for microservice destruction. Called immediately before a microservice (or
+         * replica) is deleted from a kernel server. Usually used to tear down a server policy's
          * local resources, for example, timers, network connections, etc. Currently called in
          * {@link KernelServerImpl.deleteKernelObject} and {@link
          * KernelServerImpl.moveKernelObjectToServer} (on the old server, after moving the object to

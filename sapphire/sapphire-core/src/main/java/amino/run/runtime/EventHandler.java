@@ -12,7 +12,7 @@ import java.util.Iterator;
 
 /**
  * Event handler holds the group policy stub or server policy stub object of the microservice or
- * sapphire replica respectively created on the particular kernel server.
+ * replica respectively created on the particular kernel server.
  */
 public class EventHandler implements Serializable {
 

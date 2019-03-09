@@ -58,7 +58,7 @@ public class ConsensusDMIntegrationTest {
     @Test
     public void testConsensusDM() throws Exception {
         File file = getResourceFile("specs/complex-dm/Consensus.yaml");
-        MicroServiceSpec spec = readSapphireSpec(file);
+        MicroServiceSpec spec = readMicroServiceSpec(file);
         runTest(spec);
     }
 

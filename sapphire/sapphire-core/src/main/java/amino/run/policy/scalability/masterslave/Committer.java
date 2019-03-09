@@ -5,8 +5,8 @@ import static amino.run.policy.scalability.masterslave.MethodInvocationResponse.
 
 import amino.run.common.AppObject;
 import amino.run.policy.scalability.LoadBalancedMasterSlaveBase;
+import amino.run.runtime.exception.AminoRunException;
 import amino.run.runtime.exception.AppExecutionException;
-import amino.run.runtime.exception.SapphireException;
 import java.io.Closeable;
 import java.io.Serializable;
 import java.util.concurrent.Callable;
@@ -279,8 +279,8 @@ public class Committer implements Closeable {
                 // now.
                 // The problem is: the other replica may not run into this exception. This exception
                 // may cause two replicas out of sync.
-                SapphireException ex =
-                        new SapphireException("Method invocation on app object was interrupted", e);
+                AminoRunException ex =
+                        new AminoRunException("Method invocation on app object was interrupted", e);
                 logger.log(
                         Level.SEVERE,
                         String.format(

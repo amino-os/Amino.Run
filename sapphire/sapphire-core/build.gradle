@@ -35,7 +35,7 @@ dependencies {
     compile 'org.json:json:20171018'
     // WARNING:
     // PR https://github.com/Huawei-PaaS/DCAP-Sapphire/pull/220 added some Graal
-    // classes into sapphire-core. Now our sapphire-core can only be compiled by
+    // classes into Amino.Run kernel. Now it can only be compiled by
     // GraalVM JDK. Please follow the instructions in the quick start guide at
     // https://github.com/Huawei-PaaS/DCAP-Sapphire/blob/master/docs/GettingStarted.md#quick-start
     // to set up GraalVM properly.
@@ -53,7 +53,7 @@ dependencies {
     // But if removed, 4 integration tests fail with the following types of exception.
     // Try to figure out why, and fix the problem so that these lines can be removed.
     //    amino.run.policy.ConsensusDMIntegrationTest > testConsensusDM FAILED
-    //        amino.run.common.SapphireObjectCreationException at ConsensusDMIntegrationTest.java:42
+    //        amino.run.common.MicroServiceCreationException at ConsensusDMIntegrationTest.java:42
     //            Caused by: java.lang.NullPointerException
     testCompile project(':examples:helloworld')
     integrationTestCompile project(':examples:helloworld')
@@ -151,8 +151,8 @@ task genGraalTestStubs(type: JavaExec) {
     def microServicePath = "$projectDir/src/test/resources/student.js"
     def outPath = "$projectDir/src/test/java"
     def packageName = "amino.run.stubs"
-    def sapphireClasses = "Student"
-    args microServicePath, outPath, packageName, sapphireClasses
+    def microServiceClasses = "Student"
+    args microServicePath, outPath, packageName, microServiceClasses
     inputs.dir microServicePath   // Declare inputs, so gradle will run if they have been changed
     outputs.dir outPath + "/amino/run/stubs" // Declare outputs, so gradle will run if they have been changed
 }

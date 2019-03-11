@@ -4,12 +4,18 @@ import amino.run.app.MicroServiceSpec;
 import amino.run.common.MicroServiceCreationException;
 import amino.run.common.MicroServiceID;
 import amino.run.common.MicroServiceNotFoundException;
+import amino.run.common.MicroServiceReplicaNotFoundException;
 import amino.run.kernel.common.GlobalKernelReferences;
 import amino.run.kernel.common.KernelObjectNotCreatedException;
+import amino.run.kernel.common.KernelObjectStub;
+import amino.run.kernel.server.KernelServerImpl;
 import amino.run.policy.DefaultPolicy;
 import amino.run.policy.Policy;
+import amino.run.policy.PolicyContainer;
+import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.logging.Logger;
 
 /** Collection of helper methods that are necessary for creating policy instances. */
@@ -99,5 +105,48 @@ public class PolicyCreationHelper {
             policyMap.put(GroupPolicyClass, DefaultPolicy.DefaultGroupPolicy.class);
 
         return policyMap;
+    }
+
+    /**
+     * Last DM should always try to pin the original Microservice based on the host address assigned
+     * on the stub if it was not pinned by any DMs.
+     *
+     * @param processedPolicies policy objects created previously.
+     * @throws MicroServiceCreationException
+     */
+    public static void pinOriginalMicroservice(List<PolicyContainer> processedPolicies)
+            throws MicroServiceCreationException {
+        InetSocketAddress address = null;
+        KernelObjectStub lastPolicyStub = null;
+
+        try {
+            Policy.ServerPolicy lastServerPolicy =
+                    processedPolicies.get(processedPolicies.size() - 1).serverPolicy;
+            if (!lastServerPolicy.pinned()) {
+                lastPolicyStub =
+                        processedPolicies.get(processedPolicies.size() - 1).serverPolicyStub;
+                address = lastPolicyStub.$__getHostname();
+
+                KernelServerImpl ks = GlobalKernelReferences.nodeServer;
+                if (address != null && !address.equals(ks.getLocalHost())) {
+                    lastServerPolicy.pin_to_server(address);
+                }
+            }
+        } catch (RemoteException e) {
+            logger.severe(
+                    String.format(
+                            "Failed to pin original Microservice to %s due to Remote Exception to %s",
+                            address, lastPolicyStub));
+            throw new MicroServiceCreationException(e);
+        } catch (MicroServiceNotFoundException e) {
+            logger.severe("Failed to pin original Microservice to " + address);
+            throw new MicroServiceCreationException(e);
+        } catch (MicroServiceReplicaNotFoundException e) {
+            logger.severe(
+                    String.format(
+                            "Failed to pin original Microservice to %s because replica was not found.",
+                            address));
+            throw new MicroServiceCreationException(e);
+        }
     }
 }

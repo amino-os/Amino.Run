@@ -28,7 +28,7 @@ public class HanksTodoMain {
         String ListName = "New List 1";
 
         OptionsParser parser = OptionsParser.newOptionsParser(AppArgumentParser.class);
-        if (args.length<8){
+        if (args.length < 8) {
             System.out.println("Incorrect arguments to the program");
             printUsage(parser);
             return;
@@ -45,9 +45,8 @@ public class HanksTodoMain {
         java.rmi.registry.Registry registry;
         AppArgumentParser appArgs = parser.getOptions(AppArgumentParser.class);
         try {
-            registry = LocateRegistry.getRegistry(appArgs.omsIP,appArgs.omsPort);
+            registry = LocateRegistry.getRegistry(appArgs.omsIP, appArgs.omsPort);
             Registry server = (Registry) registry.lookup("io.amino.run.oms");
-            System.out.println(server);
 
             KernelServer nodeServer =
                     new KernelServerImpl(

@@ -18,7 +18,7 @@ import java.util.List;
 public class KeyValueStoreClient {
     public static void main(String[] args) throws Exception {
         OptionsParser parser = OptionsParser.newOptionsParser(AppArgumentParser.class);
-        if ( args.length < 4){
+        if ( args.length < 4) {
             System.out.println("Incorrect arguments to the program");
             printUsage(parser);
             return;

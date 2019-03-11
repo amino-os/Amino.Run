@@ -250,11 +250,11 @@ public class MinnieTwitterMain {
 
   public static void main(String[] args) {
     OptionsParser parser = OptionsParser.newOptionsParser(AppArgumentParser.class);
-    if (args.length<8){
+    if (args.length < 8) {
         System.out.println("Incorrect arguments to the program");
         printUsage(parser);
         return;
-      }
+    }
     try {
       parser.parse(args);
     } catch (Exception e) {
@@ -265,7 +265,7 @@ public class MinnieTwitterMain {
     AppArgumentParser appArgs = parser.getOptions(AppArgumentParser.class);
 
     InetSocketAddress hostAddr = new InetSocketAddress(appArgs.kernelServerIP, appArgs.kernelServerPort),
-        omsAddr = new InetSocketAddress(appArgs.omsIP, appArgs.omsPort);
+    omsAddr = new InetSocketAddress(appArgs.omsIP, appArgs.omsPort);
     ExecuteSingleUserDemo(hostAddr, omsAddr);
   }
   private static void printUsage(OptionsParser parser) {

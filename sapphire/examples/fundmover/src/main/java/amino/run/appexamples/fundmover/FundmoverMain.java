@@ -20,7 +20,7 @@ import com.google.devtools.common.options.OptionsParser;
 public class FundmoverMain {
     public static void main(String[] args) throws RemoteException {
         OptionsParser parser = OptionsParser.newOptionsParser(AppArgumentParser.class);
-        if (args.length<8){
+        if (args.length < 8) {
             System.out.println("Incorrect arguments to the program");
             printUsage(parser);
             return;
@@ -37,7 +37,7 @@ public class FundmoverMain {
 
         java.rmi.registry.Registry registry;
         try{
-            registry = LocateRegistry.getRegistry(appArgs.omsIP,appArgs.omsPort);
+            registry = LocateRegistry.getRegistry(appArgs.omsIP, appArgs.omsPort);
             Registry server = (Registry) registry.lookup("io.amino.run.oms");
             System.out.println(server);
 

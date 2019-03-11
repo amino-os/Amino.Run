@@ -21,7 +21,7 @@ public class HelloWorldMain {
 
         OptionsParser parser = OptionsParser.newOptionsParser(AppArgumentParser.class);
 
-        if (args.length<8){
+        if (args.length < 8) {
             System.out.println("Incorrect arguments to the program");
             printUsage(parser);
             return;
@@ -38,9 +38,9 @@ public class HelloWorldMain {
             return;
         }
         AppArgumentParser appArgs = parser.getOptions(AppArgumentParser.class);
-             if (appArgs.appArgs!=""){
-                 world=appArgs.appArgs;
-             }
+        if (appArgs.appArgs != "") {
+            world=appArgs.appArgs;
+        }
 
         try {
             java.rmi.registry.Registry registry = LocateRegistry.getRegistry(appArgs.omsIP, appArgs.omsPort);

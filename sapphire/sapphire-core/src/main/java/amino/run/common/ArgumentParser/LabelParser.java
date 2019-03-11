@@ -7,6 +7,8 @@ import java.util.Map;
 
 /** Custom parsing type to handle the map data */
 public class LabelParser implements Converter {
+    private static String OPT_SEPARATOR = "=";
+    private static String LABEL_SEPARATOR = ",";
     /**
      * Converts passed string data to map
      *
@@ -20,18 +22,17 @@ public class LabelParser implements Converter {
         if (input.equals("")) {
             return labelMap;
         }
-        String[] labelArr = input.split(",", -1);
+        String[] labelArr = input.split(LABEL_SEPARATOR, -1);
         String mapKey;
         String mapValue;
         int idx;
         // TODO : After the label parameters are finalized the exception need to be handled
         for (String arg : labelArr) {
             // Splitting off the key from the value
-            idx = arg.indexOf('=');
+            idx = arg.indexOf(OPT_SEPARATOR);
             if (idx > 0) {
                 mapKey = arg.substring(0, idx);
                 mapValue = arg.substring(idx + 1);
-                if (mapValue.length() == 0) mapValue = "";
                 labelMap.put(mapKey, mapValue);
             } else {
                 throw new OptionsParsingException(

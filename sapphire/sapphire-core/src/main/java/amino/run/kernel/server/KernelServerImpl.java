@@ -46,7 +46,7 @@ public class KernelServerImpl implements KernelServer {
     public static OMSServer oms;
     /** local kernel client for making RPCs */
     private KernelClient client;
-    // hetbeat period is 1/3of the heartbeat timeout period
+    // heartbeat period is 1/3of the heartbeat timeout period
     static final long KS_HEARTBEAT_PERIOD = OMSServer.KS_HEARTBEAT_TIMEOUT / 3;
 
     // heartbeat timer
@@ -438,7 +438,7 @@ public class KernelServerImpl implements KernelServer {
             server.getMemoryStatThread().start();
 
             // Log being used in examples gradle task "run", hence modify accordingly.
-            logger.info(String.format("Kernel server ready at port(%s)!", ksArgs.servicePort));
+            logger.info(String.format("Kernel server ready at port(%s)!", ksArgs.kernelServerPort));
         } catch (Exception e) {
             System.err.println(
                     "Failed to start kernel server: " + e.getMessage() + System.lineSeparator());

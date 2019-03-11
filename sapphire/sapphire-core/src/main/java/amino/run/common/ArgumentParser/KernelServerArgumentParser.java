@@ -18,8 +18,9 @@ public class KernelServerArgumentParser extends OMSArgumentParser {
             name = "kernel-server-port",
             help = "kernel server port",
             defaultValue = "22345",
-            category = "startup")
-    public int kernelServerPort;
+            category = "startup",
+            converter = PortParser.class)
+    public Integer kernelServerPort;
 
     @Option(
             name = "labels",

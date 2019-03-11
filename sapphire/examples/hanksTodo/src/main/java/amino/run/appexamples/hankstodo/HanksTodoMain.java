@@ -2,13 +2,16 @@ package amino.run.appexamples.hankstodo;
 
 import java.net.InetSocketAddress;
 import java.rmi.registry.LocateRegistry;
+import java.util.Collections;
 
 import amino.run.app.Language;
 import amino.run.app.MicroServiceSpec;
 import amino.run.app.Registry;
+import amino.run.common.ArgumentParser.AppArgumentParser;
 import amino.run.common.MicroServiceID;
 import amino.run.kernel.server.KernelServer;
 import amino.run.kernel.server.KernelServerImpl;
+import com.google.devtools.common.options.OptionsParser;
 
 import static java.lang.Thread.sleep;
 
@@ -24,26 +27,31 @@ public class HanksTodoMain {
     public static void main(String[] args) {
         String ListName = "New List 1";
 
-        if (args.length < 4) {
+        OptionsParser parser = OptionsParser.newOptionsParser(AppArgumentParser.class);
+        if (args.length < 8) {
             System.out.println("Incorrect arguments to the program");
-            System.out.println(
-                    "usage: "
-                            + HanksTodoMain.class.getSimpleName()
-                            + " <host-ip> <host-port> <oms ip> <oms-port>");
-            System.exit(1);
+            printUsage(parser);
+            return;
+        }
+
+        try {
+            parser.parse(args);
+        } catch (Exception e) {
+
+            System.out.println("Incorrect arguments to the program");
+            return;
         }
 
         java.rmi.registry.Registry registry;
-
+        AppArgumentParser appArgs = parser.getOptions(AppArgumentParser.class);
         try {
-            registry = LocateRegistry.getRegistry(args[0], Integer.parseInt(args[1]));
+            registry = LocateRegistry.getRegistry(appArgs.omsIP, appArgs.omsPort);
             Registry server = (Registry) registry.lookup("io.amino.run.oms");
-            System.out.println(server);
 
             KernelServer nodeServer =
                     new KernelServerImpl(
-                            new InetSocketAddress(args[2], Integer.parseInt(args[3])),
-                            new InetSocketAddress(args[0], Integer.parseInt(args[1])));
+                            new InetSocketAddress(appArgs.kernelServerIP, appArgs.kernelServerPort),
+                            new InetSocketAddress(appArgs.omsIP, appArgs.omsPort));
 
             MicroServiceSpec spec =
                     MicroServiceSpec.newBuilder()
@@ -103,5 +111,15 @@ public class HanksTodoMain {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
+    }
+
+    private static void printUsage(OptionsParser parser) {
+        System.out.println(
+                "Usage: java -cp <classpath> "
+                        + HanksTodoMain.class.getSimpleName()
+                        + System.lineSeparator()
+                        + parser.describeOptions(
+                        Collections.<String, String>emptyMap(),
+                        OptionsParser.HelpVerbosity.LONG));
     }
 }

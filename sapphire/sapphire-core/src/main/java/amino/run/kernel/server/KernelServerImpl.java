@@ -1,10 +1,8 @@
 package amino.run.kernel.server;
 
 import amino.run.app.MicroServiceSpec;
-import amino.run.common.AppObjectStub;
-import amino.run.common.MicroServiceCreationException;
-import amino.run.common.MicroServiceNotFoundException;
-import amino.run.common.MicroServiceReplicaNotFoundException;
+import amino.run.common.*;
+import amino.run.common.ArgumentParser.KernelServerArgumentParser;
 import amino.run.kernel.client.KernelClient;
 import amino.run.kernel.common.*;
 import amino.run.oms.OMSServer;
@@ -14,6 +12,7 @@ import amino.run.policy.PolicyContainer;
 import amino.run.policy.util.ResettableTimer;
 import amino.run.runtime.EventHandler;
 import amino.run.runtime.MicroService;
+import com.google.devtools.common.options.OptionsParser;
 import java.io.Serializable;
 import java.net.InetSocketAddress;
 import java.rmi.NotBoundException;
@@ -34,9 +33,8 @@ import java.util.logging.Logger;
 public class KernelServerImpl implements KernelServer {
     private static Logger logger = Logger.getLogger(KernelServerImpl.class.getName());
     public static String LABEL_OPT = "--labels";
-    public static String OPT_SEPARATOR = "=";
-    public static String LABEL_SEPARATOR = ",";
-    public static String SERVICE_PORT = "--servicePort";
+    public static String KERNEL_SERVER_IP_OPT = "--kernel-server-ip";
+    public static String KERNEL_SERVER_PORT_OPT = "--kernel-server-port";
     public static String DEFAULT_REGION = "default-region";
     public static String REGION_KEY = "region";
 
@@ -399,37 +397,37 @@ public class KernelServerImpl implements KernelServer {
      * @param args
      */
     public static void main(String args[]) {
+        OptionsParser parser = OptionsParser.newOptionsParser(KernelServerArgumentParser.class);
+        if (args.length < 8) {
+            System.out.println("Incorrect arguments to the program");
+            printUsage(parser);
+            return;
+        }
+
         try {
-            if (args.length < 4) {
-                printUsage();
-                System.exit(1);
-            }
+            parser.parse(args);
 
-            InetSocketAddress host, omsHost;
-            host = new InetSocketAddress(args[0], Integer.parseInt(args[1]));
-            omsHost = new InetSocketAddress(args[2], Integer.parseInt(args[3]));
-            System.setProperty("java.rmi.server.hostname", host.getAddress().getHostAddress());
+        } catch (Exception e) {
+            System.out.println(e.getMessage() + System.lineSeparator());
+            printUsage(parser);
+            return;
+        }
+        KernelServerArgumentParser ksArgs = parser.getOptions(KernelServerArgumentParser.class);
+        InetSocketAddress host, omsHost;
+        host = new InetSocketAddress(ksArgs.kernelServerIP, ksArgs.kernelServerPort);
+        omsHost = new InetSocketAddress(ksArgs.omsIP, ksArgs.omsPort);
+        System.setProperty("java.rmi.server.hostname", host.getAddress().getHostAddress());
 
-            int servicePort = 0;
-            String labelStr = "";
-            if (args.length > 4) {
-                for (int i = 4; i < args.length; i++) {
-                    if (args[i].startsWith(LABEL_OPT)) {
-                        labelStr = args[i];
-                    } else if (args[i].startsWith(SERVICE_PORT)) {
-                        servicePort = Integer.parseInt(parseServicePort(args[i]));
-                    }
-                }
-            }
+        try {
             // Bind server in registry
             KernelServerImpl server = new KernelServerImpl(host, omsHost);
             KernelServer stub =
-                    (KernelServer) UnicastRemoteObject.exportObject(server, servicePort);
-            Registry registry = LocateRegistry.createRegistry(Integer.parseInt(args[1]));
+                    (KernelServer) UnicastRemoteObject.exportObject(server, ksArgs.servicePort);
+            Registry registry = LocateRegistry.createRegistry(ksArgs.kernelServerPort);
             registry.rebind("io.amino.run.kernelserver", stub);
 
             // Register against OMS
-            ServerInfo srvInfo = createServerInfo(host, labelStr);
+            ServerInfo srvInfo = createServerInfo(host, ksArgs.labels);
             oms.registerKernelServer(srvInfo);
             server.setRegion(srvInfo.getRegion());
 
@@ -440,10 +438,11 @@ public class KernelServerImpl implements KernelServer {
             server.getMemoryStatThread().start();
 
             // Log being used in examples gradle task "run", hence modify accordingly.
-            logger.info(String.format("Kernel server ready at port(%s)!", servicePort));
+            logger.info(String.format("Kernel server ready at port(%s)!", ksArgs.kernelServerPort));
         } catch (Exception e) {
-            System.err.println("Failed to start kernel server: " + e.getMessage());
-            printUsage();
+            System.err.println(
+                    "Failed to start kernel server: " + e.getMessage() + System.lineSeparator());
+            printUsage(parser);
         }
     }
 
@@ -461,8 +460,7 @@ public class KernelServerImpl implements KernelServer {
         ksHeartbeatSendTimer.start();
     }
 
-    public static ServerInfo createServerInfo(InetSocketAddress host, String labelStr) {
-        Map<String, String> labels = parseLabel(labelStr);
+    public static ServerInfo createServerInfo(InetSocketAddress host, Map<String, String> labels) {
         if (!labels.containsKey(KernelServerImpl.REGION_KEY)) {
             labels.put(KernelServerImpl.REGION_KEY, KernelServerImpl.DEFAULT_REGION);
         }
@@ -471,39 +469,13 @@ public class KernelServerImpl implements KernelServer {
         return srvInfo;
     }
 
-    private static void printUsage() {
-        System.out.println("Usage:");
+    private static void printUsage(OptionsParser parser) {
         System.out.println(
-                String.format(
-                        "java -cp <classpath> %s hostIp hostPort omsIp omsPort [--labels comma separated key value as key1=val1,key2=val2] [--servicePort=portnumber]",
-                        KernelServerImpl.class.getName()));
-    }
-
-    private static Map<String, String> parseLabel(String data) {
-        Map<String, String> labels = new HashMap<String, String>();
-        if ((data != null) && data.startsWith(KernelServerImpl.LABEL_OPT)) {
-            String actualdata = data.substring(KernelServerImpl.LABEL_OPT.length());
-            String[] maps = actualdata.split(KernelServerImpl.LABEL_SEPARATOR);
-            // not allowed empty values
-            for (int i = 0; i < maps.length; i++) {
-                String[] kv = maps[i].split(KernelServerImpl.OPT_SEPARATOR);
-                if (kv.length % 2 != 0) {
-                    logger.warning("something wrong in the labels");
-                    continue;
-                }
-                for (int j = 0; j < kv.length; j += 2) {
-                    labels.put(kv[j].trim(), kv[j + 1].trim());
-                }
-            }
-        }
-        return labels;
-    }
-
-    private static String parseServicePort(String servicePort) {
-        String port = null;
-        if (servicePort != null) {
-            port = servicePort.substring(SERVICE_PORT.length() + 1);
-        }
-        return port;
+                "Usage: java -cp <classpath> "
+                        + KernelServerImpl.class.getName()
+                        + System.lineSeparator()
+                        + parser.describeOptions(
+                                Collections.<String, String>emptyMap(),
+                                OptionsParser.HelpVerbosity.LONG));
     }
 }

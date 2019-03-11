@@ -16,36 +16,39 @@ subprojects {
     // Run OMS
     task runoms(type: JavaExec) {
         main = 'amino.run.oms.OMSServerImpl'
-        args project.property('omsIp'), project.property('omsPort')
+        args project.property('omsIpFlag'), project.property('omsIp'), project.property('omsPortFlag'), project.property('omsPort')
     }
 
     // Run a kernel server
     task runks(type: JavaExec) {
         main = 'amino.run.kernel.server.KernelServerImpl'
-        args project.property('kernelServerIp'), project.property('kernelServerPort'), project.property('omsIp'), project.property('omsPort'), project.property("kernelServerRegion")
+        args project.property('kernelServerIpFlag'), project.property('kernelServerIp'), project.property('kernelServerPortFlag'), project.property('kernelServerPort'), project.property('omsIpFlag'),
+                project.property('omsIp'), project.property('omsPortFlag'), project.property('omsPort'), project.property('kernelServerLabelFlag'), project.property('kernelServerLabel')
     }
 
     // Run a second kernel server
     task runks2(type: JavaExec) {
         main = 'amino.run.kernel.server.KernelServerImpl'
-        args project.property('kernelServerIp'), project.property('kernelServerPort2'), project.property('omsIp'), project.property('omsPort'), project.property("kernelServerRegion2")
+        args project.property('kernelServerIpFlag'), project.property('kernelServerIp'), project.property('kernelServerPortFlag'), project.property('kernelServerPort2'), project.property('omsIpFlag'),
+                project.property('omsIp'), project.property('omsPortFlag'), project.property('omsPort'), project.property('kernelServerLabelFlag'), project.property('kernelServerLabel2')
     }
-
     // Run a third kernel server
     task runks3(type: JavaExec) {
         main = 'amino.run.kernel.server.KernelServerImpl'
-        args project.property('kernelServerIp'), project.property('kernelServerPort3'), project.property('omsIp'), project.property('omsPort'), project.property("kernelServerRegion3")
+        args project.property('kernelServerIpFlag'), project.property('kernelServerIp'), project.property('kernelServerPortFlag'), project.property('kernelServerPort3'), project.property('omsIpFlag'),
+                project.property('omsIp'), project.property('omsPortFlag'), project.property('omsPort'), project.property('kernelServerLabelFlag'), project.property('kernelServerLabel3')
     }
 
     // Run a fourth kernel server
     task runks4(type: JavaExec) {
         main = 'amino.run.kernel.server.KernelServerImpl'
-        args project.property('kernelServerIp'), project.property('kernelServerPort4'), project.property('omsIp'), project.property('omsPort'), project.property("kernelServerRegion4")
+        args project.property('kernelServerIpFlag'), project.property('kernelServerIp'), project.property('kernelServerPortFlag'), project.property('kernelServerPort4'), project.property('omsIpFlag'),
+                project.property('omsIp'), project.property('omsPortFlag'), project.property('omsPort'), project.property('kernelServerLabelFlag'), project.property('kernelServerLabel4')
     }
 
     // Run application
     task runapp(type: JavaExec) {
-        args project.property('omsIp'), project.property('omsPort'), project.property('embeddedKernelServerIp'), project.property('kernelServerPort')
+        args project.property('omsIpFlag'), project.property('omsIp'), project.property('omsPortFlag'), project.property('omsPort'), project.property('kernelServerIpFlag'), project.property('embeddedKernelServerIp'), project.property('kernelServerPortFlag'), project.property('kernelServerPort')
     }
 }
 

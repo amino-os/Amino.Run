@@ -113,7 +113,15 @@ public class OMSTest extends BaseTest {
     @Test
     public void mainTest() throws Exception {
         // this gives NumberFormatException
-        OMSServerImpl.main(new String[] {LOOP_BACK_IP_ADDR, "port", "--servicePort=10010"});
+        OMSServerImpl.main(
+                new String[] {
+                    OMSServerImpl.OMS_IP_OPT,
+                    LOOP_BACK_IP_ADDR,
+                    OMSServerImpl.OMS_PORT_OPT,
+                    "port",
+                    OMSServerImpl.SERVICE_PORT,
+                    "10010"
+                });
     }
 
     @Test

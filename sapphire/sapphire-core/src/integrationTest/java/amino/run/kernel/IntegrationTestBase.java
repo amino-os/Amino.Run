@@ -100,7 +100,16 @@ public class IntegrationTestBase {
         String className = OMSServerImpl.class.getName();
 
         String[] args =
-                new String[] {javaBin, "-cp", classpath, className, ip, Integer.toString(port)};
+                new String[] {
+                    javaBin,
+                    "-cp",
+                    classpath,
+                    className,
+                    OMSServerImpl.OMS_IP_OPT,
+                    ip,
+                    OMSServerImpl.OMS_PORT_OPT,
+                    Integer.toString(port)
+                };
 
         ProcessBuilder builder = new ProcessBuilder(args);
         Process process = builder.inheritIO().start();
@@ -124,9 +133,8 @@ public class IntegrationTestBase {
             String ip, int port, String omsIp, int omsPort, String labels)
             throws java.io.IOException {
         String className = KernelServerImpl.class.getName();
-        String labelStr = "";
-        if (null != labels && labels.length() > 0) {
-            labelStr += KernelServerImpl.LABEL_OPT + labels;
+        if (labels == null) {
+            labels = "";
         }
 
         String[] args =
@@ -135,11 +143,16 @@ public class IntegrationTestBase {
                     "-cp",
                     classpath,
                     className,
+                    KernelServerImpl.KERNEL_SERVER_IP_OPT,
                     ip,
+                    KernelServerImpl.KERNEL_SERVER_PORT_OPT,
                     Integer.toString(port),
+                    OMSServerImpl.OMS_IP_OPT,
                     omsIp,
+                    OMSServerImpl.OMS_PORT_OPT,
                     Integer.toString(omsPort),
-                    labelStr
+                    KernelServerImpl.LABEL_OPT,
+                    labels
                 };
 
         System.out.printf(

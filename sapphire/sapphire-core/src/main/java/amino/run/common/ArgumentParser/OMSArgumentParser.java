@@ -3,7 +3,7 @@ package amino.run.common.ArgumentParser;
 import com.google.devtools.common.options.Option;
 import com.google.devtools.common.options.OptionsBase;
 
-/** To Parse the Arguments required for OMS process */
+/* To Parse the Arguments required for OMS process */
 public class OMSArgumentParser extends OptionsBase {
     @Option(
             name = "oms-ip",
@@ -17,9 +17,15 @@ public class OMSArgumentParser extends OptionsBase {
             name = "oms-port",
             help = "oms server port",
             defaultValue = "22222",
-            category = "startup")
-    public int omsPort;
+            category = "startup",
+            converter = PortParser.class)
+    public Integer omsPort;
 
-    @Option(name = "service-port", help = "service port ", defaultValue = "0", category = "startup")
-    public int servicePort;
+    @Option(
+            name = "service-port",
+            help = "service port ",
+            defaultValue = "0",
+            category = "startup",
+            converter = PortParser.class)
+    public Integer servicePort;
 }

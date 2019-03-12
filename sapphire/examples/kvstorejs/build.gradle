@@ -15,7 +15,7 @@ genStubs {
 task runjsapp(type: Exec) {
     environment  OMS_IP: "${project.property('omsIp')}"
     environment  OMS_PORT: "${project.property('omsPort')}"
-    environment  HOST_IP: "${project.property('embeddedKernelServerIp')}"
+    environment  HOST_IP: "${project.property('kernelServerIp')}"
     environment  HOST_PORT: "${project.property('kernelServerPort')}"
     def classpath = sourceSets.main.runtimeClasspath.asPath
 
@@ -29,7 +29,7 @@ task runjsapp(type: Exec) {
 runapp {
     environment  OMS_IP: "${project.property('omsIp')}"
     environment  OMS_PORT: "${project.property('omsPort')}"
-    environment  HOST_IP: "${project.property('embeddedKernelServerIp')}"
+    environment  HOST_IP: "${project.property('kernelServerIp')}"
     environment  HOST_PORT: "${project.property('kernelServerPort')}"
     environment  YAML_FILE:  "KeyValueStore.yaml"
     main = 'amino.run.appdemo.KeyValueStoreClient'

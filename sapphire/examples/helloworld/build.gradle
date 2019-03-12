@@ -11,7 +11,6 @@ genStubs {
 // Customise task to run app
 runapp {
     main = "amino.run.appexamples.helloworld.HelloWorldMain"
-    // We pass extra parameters
-    args  project.property('omsIpFlag'), project.property('omsIp'), project.property('omsPortFlag'), project.property('omsPort'), project.property('kernelServerIpFlag'), project.property('embeddedKernelServerIp'), project.property('kernelServerPortFlag'), project.property('kernelServerPort'), 
-            project.property('appArgsFlag'), project.hasProperty('W') ? project.property('W') : "DCAP World"
+    // Helloworld app takes additional arguments.
+    args project.property('appArgsFlag'), project.hasProperty('W') ? project.property('W') : "DCAP World"
 }

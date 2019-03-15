@@ -9,7 +9,7 @@ public class OMSArgumentParser extends OptionsBase {
             name = "oms-ip",
             help = "oms server ip",
             defaultValue = "127.0.0.1",
-            converter = IPParser.class,
+            converter = Converters.IPConverter.class,
             category = "startup")
     public String omsIP;
     // TODO: Implementing the  Range converter type for all ports fields
@@ -18,7 +18,7 @@ public class OMSArgumentParser extends OptionsBase {
             help = "oms server port",
             defaultValue = "22222",
             category = "startup",
-            converter = PortParser.class)
+            converter = Converters.PortConverter.class)
     public Integer omsPort;
 
     @Option(
@@ -26,6 +26,6 @@ public class OMSArgumentParser extends OptionsBase {
             help = "service port ",
             defaultValue = "0",
             category = "startup",
-            converter = PortParser.class)
+            converter = Converters.PortConverter.class)
     public Integer servicePort;
 }

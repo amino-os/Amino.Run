@@ -64,28 +64,25 @@ class ExecWait extends DefaultTask {
 
     @TaskAction
     def spawnProcess() {
-        // Need to spawn the gradle task, only if the command is not empty.
-        if (!command.isEmpty()) {
-            def rootDir = project.rootDir
-            def taskName = command.split(':').last()
-            def readyExpr = "ready at port"
-            def line
+        def rootDir = project.rootDir
+        def taskName = command.split(':').last()
+        def readyExpr = "ready at port"
+        def line
 
-            Process process = new ProcessBuilder(command.split(' '))
-                    .directory(rootDir)
-                    .redirectErrorStream(true)
-                    .start()
-            InputStream stdout = process.getInputStream()
-            BufferedReader reader = new BufferedReader(new InputStreamReader(stdout))
+        Process process = new ProcessBuilder(command.split(' '))
+                .directory(rootDir)
+                .redirectErrorStream(true)
+                .start()
+        InputStream stdout = process.getInputStream()
+        BufferedReader reader = new BufferedReader(new InputStreamReader(stdout))
 
-            while ((line = reader.readLine()) != null) {
-                if (line.contains(readyExpr)) {
-                    break;
-                }
-                // In the case of application, the stream contents are printed for user validation.
-                if (taskName.equals("runapp")) {
-                    println line
-                }
+        while ((line = reader.readLine()) != null) {
+            if (line.contains(readyExpr)) {
+                break;
+            }
+            // In the case of application, the stream contents are printed for user validation.
+            if (taskName.equals("runapp")) {
+                println line
             }
         }
     }
@@ -96,8 +93,9 @@ subprojects {
     // Kernel Servers needed. Default no of Kernel Servers is 2.
     def kernelServers = this.hasProperty("KS") ? this.property("KS").asType(byte) : 2
     if ((kernelServers < 1) || (kernelServers > 4)) {
-        kernelServers = 2
+        throw new InputMismatchException("Wrong value given for \"KS\" parameter. Provide valid value (1 to 4).")
     }
+    String ksTask = 'runenvks' + kernelServers
 
     task runenvoms(type: ExecWait) {
         command './gradlew ' + project + ':runoms'
@@ -106,47 +104,35 @@ subprojects {
             println "Launched OMS Server. !!!"
         }
     }
-    task runenvks(type: ExecWait, dependsOn: runenvoms) {
+    task runenvks1(type: ExecWait, dependsOn: runenvoms) {
         command './gradlew ' + project + ':runks'
 
         doLast {
             println "Launched Kernel Server 1. !!!"
         }
     }
-    task runenvks2(type: ExecWait, dependsOn: runenvks) {
-        if (kernelServers >= 2) {
-            command './gradlew ' + project + ':runks2'
+    task runenvks2(type: ExecWait, dependsOn: runenvks1) {
+        command './gradlew ' + project + ':runks2'
 
-            doLast {
-                println "Launched Kernel Server 2. !!!"
-            }
-        } else {
-            command ''
+        doLast {
+            println "Launched Kernel Server 2. !!!"
         }
     }
     task runenvks3(type: ExecWait, dependsOn: runenvks2) {
-        if (kernelServers >= 3) {
-            command './gradlew ' + project + ':runks3'
+        command './gradlew ' + project + ':runks3'
 
-            doLast {
-                println "Launched Kernel Server 3. !!!"
-            }
-        } else {
-            command ''
+        doLast {
+            println "Launched Kernel Server 3. !!!"
         }
     }
     task runenvks4(type: ExecWait, dependsOn: runenvks3) {
-        if (kernelServers == 4) {
-            command './gradlew ' + project + ':runks4'
+        command './gradlew ' + project + ':runks4'
 
-            doLast {
-                println "Launched Kernel Server 4. !!!"
-            }
-        } else {
-            command ''
+        doLast {
+            println "Launched Kernel Server 4. !!!"
         }
     }
-    task runenvapp(type: ExecWait, dependsOn: runenvks4) {
+    task runenvapp(type: ExecWait, dependsOn: ksTask) {
         command './gradlew ' + project + ':runapp'
     }
 

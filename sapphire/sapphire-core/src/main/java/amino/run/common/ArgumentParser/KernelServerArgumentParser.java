@@ -10,7 +10,7 @@ public class KernelServerArgumentParser extends OMSArgumentParser {
             name = "kernel-server-ip",
             help = "kernel server ip",
             defaultValue = "127.0.0.1",
-            converter = IPParser.class,
+            converter = Converters.IPConverter.class,
             category = "startup")
     public String kernelServerIP;
 
@@ -18,15 +18,16 @@ public class KernelServerArgumentParser extends OMSArgumentParser {
             name = "kernel-server-port",
             help = "kernel server port",
             defaultValue = "22345",
-            category = "startup")
-    public int kernelServerPort;
+            category = "startup",
+            converter = Converters.PortConverter.class)
+    public Integer kernelServerPort;
 
     @Option(
             name = "labels",
             abbrev = 'l',
             help = "Label for kernel server ",
             defaultValue = "region=default-region",
-            converter = LabelParser.class,
+            converter = Converters.LabelConverter.class,
             category = "startup")
     public Map<String, String> labels = new HashMap<String, String>();
 }

@@ -1,9 +1,7 @@
 package amino.run.policy.scalability;
 
-import amino.run.app.MicroServiceSpec;
 import amino.run.common.MicroServiceNotFoundException;
 import amino.run.common.MicroServiceReplicaNotFoundException;
-import amino.run.common.Utils;
 import amino.run.kernel.common.KernelObjectStub;
 import amino.run.policy.Policy;
 import amino.run.policy.util.ResettableTimer;
@@ -11,7 +9,6 @@ import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.TimerTask;
 import java.util.concurrent.Semaphore;
@@ -51,18 +48,6 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
         }
     }
 
-    private static Config getConfig(MicroServiceSpec spec) {
-        Config config = null;
-        if (spec != null) {
-            Map<String, PolicyConfig> configMap =
-                    Utils.fromDMSpecListToFlatConfigMap(spec.getDmList());
-            if (configMap != null) {
-                config = (Config) configMap.get(ScaleUpFrontendPolicy.Config.class.getName());
-            }
-        }
-        return config;
-    }
-
     public static class ClientPolicy extends LoadBalancedFrontendPolicy.ClientPolicy {
         private final AtomicInteger replicaListSyncCtr = new AtomicInteger();
 
@@ -87,10 +72,10 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
         private transient volatile ResettableTimer timer; // Timer for limiting
 
         @Override
-        public void onCreate(Policy.GroupPolicy group, MicroServiceSpec spec) {
-            super.onCreate(group, spec);
+        public void onCreate(Policy.GroupPolicy group) {
+            super.onCreate(group);
 
-            Config config = getConfig(spec);
+            Config config = (Config) getPolicyConfig(Config.class.getName());
             if (config != null) {
                 replicationRateInMs = config.getReplicationRateInMs();
             }
@@ -174,11 +159,10 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
         private transient ResettableTimer timer; // Timer for limiting
 
         @Override
-        public void onCreate(String region, Policy.ServerPolicy server, MicroServiceSpec spec)
-                throws RemoteException {
-            super.onCreate(region, server, spec);
+        public void onCreate(String region, Policy.ServerPolicy server) throws RemoteException {
+            super.onCreate(region, server);
 
-            Config config = getConfig(spec);
+            Config config = (Config) getPolicyConfig(Config.class.getName());
             if (config != null) {
                 replicationRateInMs = config.getReplicationRateInMs();
             }
@@ -212,8 +196,7 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
             }
 
             /* Get the list of available servers in region */
-            List<InetSocketAddress> addressList =
-                    getAddressList(spec.getNodeSelectorSpec(), region);
+            List<InetSocketAddress> addressList = getAddressList(region);
 
             if (null == addressList) {
                 throw new ScaleUpException("Scaleup failed. Couldn't fetch kernel server list.");

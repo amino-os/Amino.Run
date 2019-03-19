@@ -1,5 +1,6 @@
 package amino.run.oms;
 
+import amino.run.app.MicroServiceSpec;
 import amino.run.app.NodeSelectorSpec;
 import amino.run.common.MicroServiceID;
 import amino.run.common.MicroServiceNotFoundException;
@@ -42,7 +43,8 @@ public interface OMSServer extends Remote {
     void heartbeatKernelServer(ServerInfo srvinfo)
             throws RemoteException, NotBoundException, KernelServerNotFoundException;
 
-    Policy.GroupPolicy createGroupPolicy(Class<?> policyClass, MicroServiceID microServiceId)
+    Policy.GroupPolicy createGroupPolicy(
+            Class<?> policyClass, MicroServiceID microServiceId, MicroServiceSpec spec)
             throws RemoteException, ClassNotFoundException, KernelObjectNotCreatedException,
                     MicroServiceNotFoundException;
 

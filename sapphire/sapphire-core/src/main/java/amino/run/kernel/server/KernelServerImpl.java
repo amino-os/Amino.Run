@@ -170,7 +170,7 @@ public class KernelServerImpl implements KernelServer {
             serverPolicies.add(serverPolicy.toString());
 
             try {
-                serverPolicy.onCreate(serverPolicy.getGroup(), serverPolicy.getMicroServiceSpec());
+                serverPolicy.onCreate(serverPolicy.getGroup());
             } catch (Exception e) {
                 String exceptionMsg =
                         "Initialization failed at copyKernelObject for KernelObject("

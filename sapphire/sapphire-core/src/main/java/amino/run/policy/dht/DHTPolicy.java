@@ -1,17 +1,14 @@
 package amino.run.policy.dht;
 
-import amino.run.app.MicroServiceSpec;
 import amino.run.common.MicroServiceNotFoundException;
 import amino.run.common.MicroServiceReplicaNotFoundException;
 import amino.run.common.NoKernelServerFoundException;
-import amino.run.common.Utils;
 import amino.run.policy.DefaultPolicy;
 import amino.run.policy.Policy;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -70,21 +67,14 @@ public class DHTPolicy extends DefaultPolicy {
         private DHTChord dhtChord;
 
         @Override
-        public void onCreate(String region, Policy.ServerPolicy server, MicroServiceSpec spec)
-                throws RemoteException {
+        public void onCreate(String region, Policy.ServerPolicy server) throws RemoteException {
             InetSocketAddress newServerAddress = null;
             dhtChord = new DHTChord();
-            super.onCreate(region, server, spec);
+            super.onCreate(region, server);
 
-            if (spec != null) {
-                Map<String, PolicyConfig> configMap =
-                        Utils.fromDMSpecListToFlatConfigMap(spec.getDmList());
-                if (configMap != null) {
-                    PolicyConfig config = configMap.get(DHTPolicy.Config.class.getName());
-                    if (config != null) {
-                        this.numOfShards = ((Config) config).getNumOfShards();
-                    }
-                }
+            Config config = (Config) getPolicyConfig(Config.class.getName());
+            if (config != null) {
+                this.numOfShards = config.getNumOfShards();
             }
 
             try {
@@ -171,13 +161,9 @@ public class DHTPolicy extends DefaultPolicy {
         // the DM can switch to another label.
         private InetSocketAddress getAddress(String region)
                 throws NoKernelServerFoundException, RemoteException {
-            List<InetSocketAddress> addressList =
-                    getAddressList(spec.getNodeSelectorSpec(), region);
+            List<InetSocketAddress> addressList = getAddressList(region);
             if (addressList == null || addressList.isEmpty()) {
-                String msg =
-                        String.format(
-                                "No kernel servers were found for %s & %s",
-                                spec.getNodeSelectorSpec(), region);
+                String msg = String.format("No kernel servers were found for %s", region);
                 logger.log(Level.SEVERE, msg);
                 throw new NoKernelServerFoundException();
             }

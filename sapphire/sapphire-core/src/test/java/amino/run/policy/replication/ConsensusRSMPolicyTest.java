@@ -167,7 +167,7 @@ public class ConsensusRSMPolicyTest extends BaseTest {
                         new ReplicaID(new MicroServiceID(UUID.randomUUID()), UUID.randomUUID()));
         when(group.getServers()).thenThrow(new RemoteException());
         thrown.expect(Error.class);
-        group.onCreate("", server, new MicroServiceSpec());
+        group.onCreate("", server);
     }
 
     /**
@@ -241,7 +241,7 @@ public class ConsensusRSMPolicyTest extends BaseTest {
         list.add(server3);
         doReturn(list).when(group).getServers();
         client.setServer(server1);
-        client.onCreate(group, null);
+        client.onCreate(group);
 
         /* Make server1 and server2 to throw remote exceptions and server3 to return successfully */
         doThrow(RemoteException.class).when(server1).onRPC(method, params);
@@ -285,7 +285,7 @@ public class ConsensusRSMPolicyTest extends BaseTest {
 
         /* Inject stubbed server to be an rpc sever to client object */
         localClient.setServer(server1);
-        localClient.onCreate(group, null);
+        localClient.onCreate(group);
 
         /* Make server1 to throw remote exception, server2 to throw leader exception with actual leader's reference in exception */
         doThrow(RemoteException.class).when(server1).onRPC(method, params);
@@ -322,7 +322,7 @@ public class ConsensusRSMPolicyTest extends BaseTest {
 
         /* Inject stubbed server to be an rpc sever to client object */
         localClient.setServer(server1);
-        localClient.onCreate(group, null);
+        localClient.onCreate(group);
 
         /* Make server1 to throw remote exception, server2 to throw leader exception with actual leader's reference in exception */
         doThrow(RemoteException.class).when(server1).onRPC(method, params);
@@ -355,7 +355,7 @@ public class ConsensusRSMPolicyTest extends BaseTest {
         list.add(server2);
         doReturn(list).when(group).getServers();
         client.setServer(server1);
-        client.onCreate(group, null);
+        client.onCreate(group);
 
         /* Make both server1 and server2 to throw remote exceptions(i.e., none of them are reachable) */
         doThrow(RemoteException.class).when(server1).onRPC(method, params);

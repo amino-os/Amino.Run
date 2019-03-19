@@ -1,9 +1,7 @@
 package amino.run.policy.scalability;
 
-import amino.run.app.MicroServiceSpec;
 import amino.run.common.MicroServiceNotFoundException;
 import amino.run.common.MicroServiceReplicaNotFoundException;
-import amino.run.common.Utils;
 import amino.run.kernel.common.KernelObjectStub;
 import amino.run.policy.DefaultPolicy;
 import amino.run.policy.Policy;
@@ -15,7 +13,6 @@ import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Logger;
@@ -72,18 +69,6 @@ public class LoadBalancedFrontendPolicy extends DefaultPolicy {
         int replicaCount() default DEFAULT_REPLICA_COUNT;
     }
 
-    private static Config getConfig(MicroServiceSpec spec) {
-        Config config = null;
-        if (spec != null) {
-            Map<String, PolicyConfig> configMap =
-                    Utils.fromDMSpecListToFlatConfigMap(spec.getDmList());
-            if (configMap != null) {
-                config = (Config) configMap.get(LoadBalancedFrontendPolicy.Config.class.getName());
-            }
-        }
-        return config;
-    }
-
     /**
      * LoadBalancedFrontend client policy. The client will LoadBalance among the MicroService Server
      * replica objects. client side DM instance should randomise the order in which it performs
@@ -130,10 +115,10 @@ public class LoadBalancedFrontendPolicy extends DefaultPolicy {
         protected Semaphore limiter;
 
         @Override
-        public void onCreate(Policy.GroupPolicy group, MicroServiceSpec spec) {
-            super.onCreate(group, spec);
+        public void onCreate(Policy.GroupPolicy group) {
+            super.onCreate(group);
 
-            Config config = getConfig(spec);
+            Config config = (Config) getPolicyConfig(Config.class.getName());
             if (config != null) {
                 this.maxConcurrentReq = config.getMaxConcurrentReq();
             }
@@ -174,11 +159,10 @@ public class LoadBalancedFrontendPolicy extends DefaultPolicy {
         private int replicaCount = DEFAULT_REPLICA_COUNT; // we can read from config or annotations
 
         @Override
-        public void onCreate(String region, Policy.ServerPolicy server, MicroServiceSpec spec)
-                throws RemoteException {
-            super.onCreate(region, server, spec);
+        public void onCreate(String region, Policy.ServerPolicy server) throws RemoteException {
+            super.onCreate(region, server);
 
-            Config config = getConfig(spec);
+            Config config = (Config) getPolicyConfig(Config.class.getName());
             if (config != null) {
                 this.replicaCount = config.getReplicaCount();
             }
@@ -196,8 +180,7 @@ public class LoadBalancedFrontendPolicy extends DefaultPolicy {
                 microservice is being created. And try to replicate the
                 microservices in the same region(excluding this kernel server) */
                 InetSocketAddress addr = ((KernelObjectStub) server).$__getHostname();
-                List<InetSocketAddress> addressList =
-                        getAddressList(spec.getNodeSelectorSpec(), region);
+                List<InetSocketAddress> addressList = getAddressList(region);
 
                 /* Create the replicas on different kernelServers belongs to same region*/
                 if (addressList != null) {

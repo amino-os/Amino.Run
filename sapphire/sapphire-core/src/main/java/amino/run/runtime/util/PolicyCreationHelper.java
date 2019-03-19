@@ -1,5 +1,6 @@
 package amino.run.runtime.util;
 
+import amino.run.app.MicroServiceSpec;
 import amino.run.common.MicroServiceCreationException;
 import amino.run.common.MicroServiceID;
 import amino.run.common.MicroServiceNotFoundException;
@@ -25,18 +26,20 @@ public class PolicyCreationHelper {
      *
      * @param policyName
      * @param microServiceId
+     * @param spec
      * @return
      * @throws amino.run.common.MicroServiceCreationException
      */
     public static Policy.GroupPolicy createGroupPolicy(
-            String policyName, MicroServiceID microServiceId) throws MicroServiceCreationException {
+            String policyName, MicroServiceID microServiceId, MicroServiceSpec spec)
+            throws MicroServiceCreationException {
         try {
             /* Create the Kernel Object for the Group Policy and get the Group Policy Stub from OMS */
             Class<?> groupPolicyClass = getPolicyMap(policyName).get(GroupPolicyClass);
 
             Policy.GroupPolicy groupPolicyStub =
                     GlobalKernelReferences.nodeServer.oms.createGroupPolicy(
-                            groupPolicyClass, microServiceId);
+                            groupPolicyClass, microServiceId, spec);
 
             return groupPolicyStub;
         } catch (ClassNotFoundException e) {

@@ -1,6 +1,5 @@
 package amino.run.policy.replication;
 
-import amino.run.app.MicroServiceSpec;
 import amino.run.common.MicroServiceNotFoundException;
 import amino.run.common.MicroServiceReplicaNotFoundException;
 import amino.run.policy.DefaultPolicy;
@@ -149,8 +148,8 @@ public class ConsensusRSMPolicy extends DefaultPolicy {
         }
 
         @Override
-        public void onCreate(Policy.GroupPolicy group, MicroServiceSpec spec) {
-            super.onCreate(group, spec);
+        public void onCreate(Policy.GroupPolicy group) {
+            super.onCreate(group);
             raftServer = new Server(this);
         }
 
@@ -211,9 +210,8 @@ public class ConsensusRSMPolicy extends DefaultPolicy {
         private static Logger logger = Logger.getLogger(GroupPolicy.class.getName());
 
         @Override
-        public void onCreate(String region, Policy.ServerPolicy server, MicroServiceSpec spec)
-                throws RemoteException {
-            super.onCreate(region, server, spec);
+        public void onCreate(String region, Policy.ServerPolicy server) throws RemoteException {
+            super.onCreate(region, server);
             List<InetSocketAddress> addressList = new ArrayList<InetSocketAddress>();
 
             try {
@@ -222,7 +220,7 @@ public class ConsensusRSMPolicy extends DefaultPolicy {
                 if (server.isLastPolicy()) {
                     // TODO: Make deployment kernel pin primary replica once node selection
                     // constraint is implemented.
-                    addressList = getAddressList(spec.getNodeSelectorSpec(), region);
+                    addressList = getAddressList(region);
                     // The first in the addressList is for primary policy chain.
                     // TODO: Improve node allocation so that other servers can be used instead of
                     // the first one in the region.

@@ -1,6 +1,5 @@
 package amino.run.policy.scalability;
 
-import amino.run.app.MicroServiceSpec;
 import amino.run.policy.Policy;
 import amino.run.policy.scalability.masterslave.Committer;
 import amino.run.policy.scalability.masterslave.Configuration;
@@ -42,8 +41,8 @@ public class LoadBalancedMasterSlaveSyncPolicy extends LoadBalancedMasterSlaveBa
         private transient Processor processor;
 
         @Override
-        public void onCreate(Policy.GroupPolicy group, MicroServiceSpec spec) {
-            super.onCreate(group, spec);
+        public void onCreate(Policy.GroupPolicy group) {
+            super.onCreate(group);
         }
 
         @Override

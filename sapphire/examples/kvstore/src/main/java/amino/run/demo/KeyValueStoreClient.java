@@ -38,21 +38,25 @@ public class KeyValueStoreClient {
         AppArgumentParser appArgs = parser.getOptions(AppArgumentParser.class);
 
         Registry registry = getRegistry(appArgs.omsIP, appArgs.omsPort);
+        MicroServiceID oid = null;
+        try {
+            oid = registry.create(getSpec());
+            KeyValueStore store = (KeyValueStore) registry.acquireStub(oid);
 
-        MicroServiceID oid = registry.create(getSpec());
-        KeyValueStore store = (KeyValueStore)registry.acquireStub(oid);
+            for (int i = 0; i < 30; ++i) {
+                String key = "key_" + i;
+                String val = "val_" + i;
 
-        for (int i=0; i<30; ++i) {
-            String key = "key_" + i;
-            String val = "val_" + i;
-
-            System.out.println(String.format("<Client> setting %s = %s", key, val));
-            store.set(key, val);
-            val = String.valueOf(store.get(key));
-            System.out.println(String.format("<Client> got value %s with key %s", val, key));
+                System.out.println(String.format("<Client> setting %s = %s", key, val));
+                store.set(key, val);
+                val = String.valueOf(store.get(key));
+                System.out.println(String.format("<Client> got value %s with key %s", val, key));
+            }
+        } finally {
+            if (oid != null) {
+                registry.delete(oid);
+            }
         }
-
-        registry.delete(oid);
     }
 
     private static Registry getRegistry(String omsIp, int omsPort) throws Exception {

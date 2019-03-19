@@ -276,6 +276,9 @@ public class KernelServerImpl implements KernelServer {
         do {
             serverPolicy = (Policy.ServerPolicy) objectStub;
             appObject = serverPolicy.getAppObject();
+
+            /* onDestroy() is invoked on serverStub objects. i.e., Call happens via makeKernelRPC(). If the
+            kernel object is not uncoalesced before method invocation, it throws KernelObjectMigratingException. */
             objectManager.lookupObject(serverPolicy.$__getKernelOID()).uncoalesce();
             serverPolicy.onDestroy();
             objectManager.removeObject(serverPolicy.$__getKernelOID());

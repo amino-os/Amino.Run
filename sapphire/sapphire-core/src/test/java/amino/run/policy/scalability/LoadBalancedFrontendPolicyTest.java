@@ -123,7 +123,8 @@ public class LoadBalancedFrontendPolicyTest extends BaseTest {
         // Expecting error message- Configured replicas count: 5, created replica count : 2
         thrown.expectMessage("Configured replicas count: 5, created replica count : 2");
         setFieldValueOnInstance(group1, "replicaCount", 5);
-        group1.onCreate("", client.getServer(), new MicroServiceSpec());
+        group1.setSpec(new MicroServiceSpec());
+        group1.onCreate("", client.getServer());
     }
 
     @After

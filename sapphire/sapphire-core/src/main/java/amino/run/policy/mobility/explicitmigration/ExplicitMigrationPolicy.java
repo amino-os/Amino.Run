@@ -64,7 +64,7 @@ public class ExplicitMigrationPolicy extends DefaultPolicy {
             }
 
             /* Get available kernel servers address list and check if the destination address is one among them */
-            if (!(getAddressList(null, null).contains(destinationAddress))) {
+            if (!(getAddressList(null).contains(destinationAddress))) {
                 throw new MigrationException(
                         String.format(
                                 "Kernel Server is not available at %s address",

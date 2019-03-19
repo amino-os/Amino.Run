@@ -156,7 +156,7 @@ public class MicroService {
             GroupPolicy groupPolicyStub = processedPolicies.get(j).groupPolicy;
             ServerPolicy serverPolicyStub =
                     (ServerPolicy) processedPolicies.get(j).serverPolicyStub;
-            groupPolicyStub.onCreate(region, serverPolicyStub, spec);
+            groupPolicyStub.onCreate(region, serverPolicyStub);
         }
 
         /* Remove the next DM client link for all server policy stubs on server side */
@@ -200,7 +200,8 @@ public class MicroService {
             throws MicroServiceCreationException {
         if (groupPolicy == null) {
             groupPolicy =
-                    PolicyCreationHelper.createGroupPolicy(policyNames.get(0), microServiceID);
+                    PolicyCreationHelper.createGroupPolicy(
+                            policyNames.get(0), microServiceID, spec);
         }
 
         processedPolicies =
@@ -288,7 +289,7 @@ public class MicroService {
 
             /* Link everything together */
             // TODO: client is unncessary for outer policies of a replica.
-            client.onCreate(groupPolicyStub, spec);
+            client.onCreate(groupPolicyStub);
 
             // TODO: Separate out the following code block.
             // Note that subList is non serializable; hence, the new list creation.
@@ -318,9 +319,10 @@ public class MicroService {
             }
 
             serverPolicy.setParentGroupId(parentGroupOid);
+            serverPolicy.setSpec(spec);
 
             /* Execute onCreate for ServerPolicy */
-            serverPolicy.onCreate(groupPolicyStub, spec);
+            serverPolicy.onCreate(groupPolicyStub);
         } catch (KernelObjectNotCreatedException e) {
             logger.severe("Failed while creating stub for " + policyName);
             throw new MicroServiceCreationException(e);
@@ -384,13 +386,14 @@ public class MicroService {
      */
     // TODO: Duplicate name as in the one in PolicyCreationHelper but this is called by OMS.
     public static Policy.GroupPolicy createGroupPolicy(
-            Class<?> policyClass, MicroServiceID microServiceId)
+            Class<?> policyClass, MicroServiceID microServiceId, MicroServiceSpec spec)
             throws ClassNotFoundException, KernelObjectNotCreatedException {
         Policy.GroupPolicy groupPolicyStub = (GroupPolicy) getPolicyStub(policyClass);
         try {
             GroupPolicy groupPolicy = initializeGroupPolicy(groupPolicyStub);
             groupPolicyStub.setMicroServiceId(microServiceId);
             groupPolicy.setMicroServiceId(microServiceId);
+            groupPolicy.setSpec(spec);
         } catch (KernelObjectNotFoundException e) {
             logger.severe(
                     "Failed to find the group kernel object created just before it. Exception info: "

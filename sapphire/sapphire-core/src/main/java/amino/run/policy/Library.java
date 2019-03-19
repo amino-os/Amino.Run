@@ -32,9 +32,7 @@ public abstract class Library implements Upcalls {
         protected AppObject appObject;
         protected KernelOID oid;
         protected ReplicaID replicaId;
-        protected Policy.GroupPolicy group;
-        protected MicroServiceSpec spec;
-        protected Map<String, PolicyConfig> configMap;
+        private MicroServiceSpec spec;
 
         static Logger logger = Logger.getLogger(ServerPolicyLibrary.class.getName());
 
@@ -111,12 +109,12 @@ public abstract class Library implements Upcalls {
             this.processedPolicies = processedPolicies;
         }
 
-        public void setMicroServiceSpec(MicroServiceSpec spec) {
+        public void setSpec(MicroServiceSpec spec) {
             this.spec = spec;
         }
 
-        public MicroServiceSpec getMicroServiceSpec() {
-            return this.spec;
+        public MicroServiceSpec getSpec() {
+            return spec;
         }
 
         public KernelOID getParentGroupId() {
@@ -133,15 +131,6 @@ public abstract class Library implements Upcalls {
 
         public void setChildGroupId(KernelOID childGroupOid) {
             childGroupId = childGroupOid;
-        }
-
-        @Override
-        public void onCreate(Policy.GroupPolicy group, MicroServiceSpec spec) {
-            this.group = group;
-            this.spec = spec;
-            if (spec != null && spec.getDmList() != null) {
-                this.configMap = Utils.fromDMSpecListToFlatConfigMap(spec.getDmList());
-            }
         }
 
         /**
@@ -178,7 +167,7 @@ public abstract class Library implements Upcalls {
                             policyNames,
                             processedPoliciesReplica,
                             soid,
-                            spec);
+                            getSpec());
                     policyNames.remove(0);
                 }
 
@@ -196,7 +185,7 @@ public abstract class Library implements Upcalls {
                 int innerPolicySize = this.nextPolicyNames.size();
                 for (int j = outerPolicySize; j < innerPolicySize + outerPolicySize; j++) {
                     MicroService.createConnectedPolicy(
-                            null, null, policyNames, processedPoliciesReplica, soid, spec);
+                            null, null, policyNames, processedPoliciesReplica, soid, getSpec());
                     policyNames.remove(0);
                 }
 
@@ -209,7 +198,7 @@ public abstract class Library implements Upcalls {
                             processedPoliciesReplica.get(k).groupPolicy;
                     ServerPolicy stub =
                             (ServerPolicy) processedPoliciesReplica.get(k).serverPolicyStub;
-                    groupPolicyStub.onCreate(region, stub, spec);
+                    groupPolicyStub.onCreate(region, stub);
                 }
 
                 /* Clone the server policy to be returned */
@@ -395,6 +384,18 @@ public abstract class Library implements Upcalls {
             return actualAppObject;
         }
 
+        /**
+         * Gets the DM policy configuration
+         *
+         * @param configName
+         * @return Policy configuration
+         */
+        public PolicyConfig getPolicyConfig(String configName) {
+            Map<String, PolicyConfig> configMap =
+                    Utils.fromDMSpecListToFlatConfigMap(getSpec().getDmList());
+            return configMap.get(configName);
+        }
+
         public String getRegion() {
             return kernel().getRegion();
         }
@@ -425,6 +426,7 @@ public abstract class Library implements Upcalls {
         protected ArrayList<Object> params;
         protected KernelOID oid;
         protected MicroServiceID microServiceId;
+        private MicroServiceSpec spec;
 
         static Logger logger = Logger.getLogger(GroupPolicyLibrary.class.getName());
 
@@ -441,18 +443,28 @@ public abstract class Library implements Upcalls {
         }
 
         /**
+         * Gets the DM policy configuration
+         *
+         * @param configName
+         * @return Policy configuration
+         */
+        public PolicyConfig getPolicyConfig(String configName) {
+            Map<String, PolicyConfig> configMap =
+                    Utils.fromDMSpecListToFlatConfigMap(getSpec().getDmList());
+            return configMap.get(configName);
+        }
+
+        /**
          * Gets the list of servers in from nodeSelector or region.
          *
-         * @param nodeSelector
          * @param region
          * @return list of server addresses
          * @throws RemoteException
          */
         // TODO: Remove region parameter after spec is applied to all DMs and scripts.
-        public List<InetSocketAddress> getAddressList(NodeSelectorSpec nodeSelector, String region)
-                throws RemoteException {
+        public List<InetSocketAddress> getAddressList(String region) throws RemoteException {
             List<InetSocketAddress> serversInRegion;
-
+            NodeSelectorSpec nodeSelector = getSpec().getNodeSelectorSpec();
             if (null != nodeSelector) { // spec takes priority over region
                 serversInRegion = oms().getServers(nodeSelector);
             } else {
@@ -481,6 +493,14 @@ public abstract class Library implements Upcalls {
 
         public MicroServiceID getMicroServiceId() {
             return microServiceId;
+        }
+
+        public void setSpec(MicroServiceSpec spec) {
+            this.spec = spec;
+        }
+
+        public MicroServiceSpec getSpec() {
+            return spec;
         }
     }
 }

@@ -16,7 +16,7 @@ task runrubyapp(type: Exec) {
     environment  RUBY_HOME: "${project.projectDir}/src/main/ruby/amino/run/appexamples/hankstodo"
     environment  OMS_IP: "${project.property('omsIp')}"
     environment  OMS_PORT: "${project.property('omsPort')}"
-    environment  KERNEL_SERVER_IP: "${project.property('kernelServerIp')}"
+    environment  KERNEL_SERVER_IP: "${project.property('embeddedKernelServerIp')}"
     environment  KERNEL_SERVER_PORT: "${project.property('kernelServerPort')}"
     def classpath = sourceSets.main.runtimeClasspath.asPath
     executable "$System.env.JAVA_HOME/bin/ruby"
@@ -29,7 +29,7 @@ task runjsapp(type: Exec) {
     environment  JS_HOME: "${project.projectDir}/src/main/js/amino/run/appexamples/hankstodo"
     environment  OMS_IP: "${project.property('omsIp')}"
     environment  OMS_PORT: "${project.property('omsPort')}"
-    environment  HOST_IP: "${project.property('kernelServerIp')}"
+    environment  HOST_IP: "${project.property('embeddedKernelServerIp')}"
     environment  HOST_PORT: "${project.property('kernelServerPort')}"
     def classpath = sourceSets.main.runtimeClasspath.asPath
     executable "$System.env.JAVA_HOME/bin/js"
@@ -43,7 +43,7 @@ runapp {
     systemProperty "JS_HOME",  "${project.projectDir}/src/main/js/amino/run/appexamples/hankstodo/"
     main = 'amino.run.appexamples.hankstodo.Client'
     // Default runapp arguments are overridden to follow the format accepted by hanksTodoRuby client.
-    args = [project.property('kernelServerIp'), project.property('kernelServerPort'), project.property('omsIp'), project.property('omsPort')]
+    args = [project.property('embeddedKernelServerIp'), project.property('kernelServerPort'), project.property('omsIp'), project.property('omsPort')]
 }
 
 compileJava.dependsOn genStubs

@@ -19,8 +19,8 @@ public class IntegrationTestBase {
     public static int[] ksPort = {22345, 22344, 22343};
     public static String hostIp = "127.0.0.2";
     public static int hostPort = 22333;
-    private static Process omsProcess = null;
-    private static Process[] kernelServerProcess = {null, null, null};
+    protected static Process omsProcess = null;
+    protected static Process[] kernelServerProcess = {null, null, null};
     private static String javaHome = System.getProperty("java.home");
     private static String javaBin = javaHome + File.separator + "bin" + File.separator + "java";
     private static String classpath = System.getProperty("java.class.path");

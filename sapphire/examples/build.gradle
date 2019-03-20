@@ -48,7 +48,7 @@ subprojects {
 
     // Run application
     task runapp(type: JavaExec) {
-        args project.property('kernelServerIpFlag'), project.property('kernelServerIp'), project.property('kernelServerPortFlag'), project.property('kernelServerPort')
+        args project.property('kernelServerIpFlag'), project.property('embeddedKernelServerIp'), project.property('kernelServerPortFlag'), project.property('kernelServerPort')
     }
 }
 

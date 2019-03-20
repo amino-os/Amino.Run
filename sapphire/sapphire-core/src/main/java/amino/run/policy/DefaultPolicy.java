@@ -26,9 +26,8 @@ public class DefaultPolicy extends Policy {
             super.onCreate(group, spec);
         }
 
-        public void onDestroy() {
-            super.onDestroy();
-        }
+        @Override
+        public void onDestroy() {}
     }
 
     public static class DefaultClientPolicy extends ClientPolicy {
@@ -88,9 +87,11 @@ public class DefaultPolicy extends Policy {
         }
 
         @Override
-        public synchronized void onDestroy() throws RemoteException {
-            super.onDestroy();
-            servers.clear();
+        public void onDestroy() throws RemoteException {
+            /* Delete all the servers */
+            for (ServerPolicy server : getServers()) {
+                terminate(server);
+            }
         }
 
         /** Below methods can be used by all the DMs extending this default DM. */

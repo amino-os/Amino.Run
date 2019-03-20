@@ -1,8 +1,12 @@
 package amino.run.kernel.server;
 
 import amino.run.app.MicroServiceSpec;
-import amino.run.common.*;
+import amino.run.common.AppObject;
+import amino.run.common.AppObjectStub;
 import amino.run.common.ArgumentParser.KernelServerArgumentParser;
+import amino.run.common.MicroServiceCreationException;
+import amino.run.common.MicroServiceNotFoundException;
+import amino.run.common.MicroServiceReplicaNotFoundException;
 import amino.run.kernel.client.KernelClient;
 import amino.run.kernel.common.*;
 import amino.run.oms.OMSServer;
@@ -150,6 +154,8 @@ public class KernelServerImpl implements KernelServer {
             // Added for setting the ReplicaId and registering handler for this replica to OMS.
             Policy.ServerPolicy serverPolicyStub =
                     (Policy.ServerPolicy) spContainer.serverPolicyStub;
+            ((KernelObjectStub) serverPolicyStub).$__updateHostname(getLocalHost());
+            ((KernelObjectStub) serverPolicyStub).$__setNextClientPolicy(null);
             ArrayList<Object> policyObjList = new ArrayList<Object>();
             EventHandler policyHandler = new EventHandler(host, policyObjList);
             policyObjList.add(serverPolicyStub);
@@ -235,26 +241,13 @@ public class KernelServerImpl implements KernelServer {
         KernelObject object = objectManager.lookupObject(oid);
 
         /* Coalesce all the server policies in chain before moving them */
-        object.coalesce();
         Policy.ServerPolicy nextPolicy = serverPolicy;
-
-        /* Below objectStub variable temporarily holds
-        Either AppObjectStub(in case of the last mile server policy to SO).
-        Or KernelObjectStub(in case of multiDM, all intermediate DMs except the last mile server policy to SO).
-        If the AppObject is pointing to KernelObjectStub, i.e. having intermediate DMs, need to get those kernel objects
-        and coalesce them. */
-        Object objectStub;
-        while ((nextPolicy.getAppObject() != null)
-                && ((objectStub = nextPolicy.getAppObject().getObject()) != null)
-                && (objectStub instanceof KernelObjectStub)) {
-            nextPolicy = (Policy.ServerPolicy) objectStub;
-            try {
-                objectManager.lookupObject(nextPolicy.$__getKernelOID()).coalesce();
-            } catch (KernelObjectNotFoundException e) {
-                logger.warning(
-                        "Could not find object in this server. Oid:"
-                                + nextPolicy.$__getKernelOID().getID());
-            }
+        AppObject appObject = nextPolicy.getAppObject();
+        object.coalesce();
+        while ((appObject != null) && (appObject.getObject() instanceof KernelObjectStub)) {
+            nextPolicy = (Policy.ServerPolicy) appObject.getObject();
+            appObject = nextPolicy.getAppObject();
+            objectManager.lookupObject(nextPolicy.$__getKernelOID()).coalesce();
         }
 
         logger.fine("Moving object " + oid.toString() + " to " + host.toString());
@@ -279,20 +272,18 @@ public class KernelServerImpl implements KernelServer {
         }
 
         // Remove the associated KernelObjects from the local KernelServer.
-        objectStub = serverPolicy;
+        Object objectStub = serverPolicy;
         do {
             serverPolicy = (Policy.ServerPolicy) objectStub;
-            try {
-                objectManager.removeObject(serverPolicy.$__getKernelOID());
-                serverPolicy.onDestroy();
-            } catch (KernelObjectNotFoundException e) {
-                String msg =
-                        "Could not find object to remove in this server. Oid:"
-                                + serverPolicy.$__getKernelOID().getID();
-                logger.warning(msg);
-            }
-        } while ((serverPolicy.getAppObject() != null)
-                && ((objectStub = serverPolicy.getAppObject().getObject()) != null)
+            appObject = serverPolicy.getAppObject();
+
+            /* onDestroy() is invoked on serverStub objects. i.e., Call happens via makeKernelRPC(). If the
+            kernel object is not uncoalesced before method invocation, it throws KernelObjectMigratingException. */
+            objectManager.lookupObject(serverPolicy.$__getKernelOID()).uncoalesce();
+            serverPolicy.onDestroy();
+            objectManager.removeObject(serverPolicy.$__getKernelOID());
+        } while ((appObject != null)
+                && ((objectStub = appObject.getObject()) != null)
                 && (objectStub instanceof KernelObjectStub));
     }
 
@@ -310,6 +301,9 @@ public class KernelServerImpl implements KernelServer {
         if (object.getObject() instanceof Policy.ServerPolicy) {
             /* De-initialize dynamic data of server policy object(i.e., timers, executors, sockets etc) */
             ((Policy.ServerPolicy) object.getObject()).onDestroy();
+        } else if (object.getObject() instanceof Policy.GroupPolicy) {
+            /* Destroys group policy object. It will in turn terminates all its associated server policy objects  */
+            ((Policy.GroupPolicy) object.getObject()).onDestroy();
         }
 
         oms.unRegisterKernelObject(oid, host);

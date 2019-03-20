@@ -11,6 +11,7 @@ import amino.run.common.MicroServiceNameModificationException;
 import amino.run.common.MicroServiceNotFoundException;
 import amino.run.common.MicroServiceReplicaNotFoundException;
 import amino.run.common.ReplicaID;
+import amino.run.kernel.common.GlobalKernelReferences;
 import amino.run.kernel.common.KernelOID;
 import amino.run.kernel.common.KernelObjectNotCreatedException;
 import amino.run.kernel.common.KernelObjectNotFoundException;
@@ -199,26 +200,31 @@ public class OMSServerImpl implements OMSServer, Registry {
     }
 
     @Override
-    public boolean detachFrom(String name) throws RemoteException, MicroServiceNotFoundException {
+    public boolean detachFrom(String name) throws MicroServiceNotFoundException {
         return delete(objectManager.getMicroServiceByName(name));
     }
 
     @Override
-    public boolean delete(MicroServiceID id) throws MicroServiceNotFoundException {
+    public boolean delete(MicroServiceID microServiceId) throws MicroServiceNotFoundException {
 
-        if (objectManager.decrRefCountAndGet(id) != 0) {
+        if (objectManager.decrRefCountAndGet(microServiceId) != 0) {
             return true;
         }
 
         boolean successfullyRemoved = true;
         try {
-            objectManager.removeInstance(id);
+            /* Get the kernel object Id of root group policy and delete the group policy object. This leads to
+            successive deletion of complete multiDM tree. Deletion includes all the server policy objects of all group
+            policy objects in the DM chain and finally those group policy objects too. */
+            KernelOID groupOid = objectManager.getRootGroupId(microServiceId);
+            deleteGroupPolicy(microServiceId, groupOid);
+            objectManager.removeInstance(microServiceId);
             logger.log(
-                    Level.FINE, String.format("Successfully removed microservice with oid %s", id));
+                    Level.FINE, String.format("Removed microservice with oid %s", microServiceId));
         } catch (Exception e) {
             logger.log(
                     Level.SEVERE,
-                    String.format("Failed to remove microservice with oid %s", id),
+                    String.format("Failed to remove microservice with oid %s", microServiceId),
                     e);
             successfullyRemoved = false;
         }
@@ -226,13 +232,11 @@ public class OMSServerImpl implements OMSServer, Registry {
     }
 
     /**
-     * Creates the group policy instance on the kernel server running within OMS and returns group
-     * policy object Stub
+     * Creates the group policy instance for microservice on the kernel server running within OMS
      *
      * @param policyClass
      * @param microServiceId
      * @return Returns group policy object stub
-     * @throws RemoteException
      * @throws ClassNotFoundException
      * @throws KernelObjectNotCreatedException
      * @throws MicroServiceNotFoundException
@@ -241,18 +245,32 @@ public class OMSServerImpl implements OMSServer, Registry {
     public Policy.GroupPolicy createGroupPolicy(Class<?> policyClass, MicroServiceID microServiceId)
             throws ClassNotFoundException, KernelObjectNotCreatedException,
                     MicroServiceNotFoundException {
-        Policy.GroupPolicy group = MicroService.createGroupPolicy(policyClass, microServiceId);
-
-        /* TODO: This rootGroupPolicy is used in microservice deletion. Need to handle for multiDM case. In case of
-        multiDM, multiple group policy objects are created in DM chain establishment. Currently, just ensuring not to
-        overwrite the outermost DM's group policy reference(i.e., first created group policy in chain).So that deletion
-        works for single DM case.
-         */
-        if (objectManager.getRootGroupPolicy(microServiceId) == null) {
-            objectManager.setRootGroupPolicy(microServiceId, group);
-        }
-
+        final Policy.GroupPolicy group =
+                MicroService.createGroupPolicy(policyClass, microServiceId);
+        EventHandler groupHandler =
+                new EventHandler(
+                        GlobalKernelReferences.nodeServer.getLocalHost(),
+                        new ArrayList() {
+                            {
+                                add(group);
+                            }
+                        });
+        objectManager.addGroupDispatcher(microServiceId, group.$__getKernelOID(), groupHandler);
         return group;
+    }
+
+    /**
+     * Deletes the group policy instance for microservice
+     *
+     * @param microServiceId
+     * @param groupOid
+     * @throws MicroServiceNotFoundException
+     */
+    public void deleteGroupPolicy(MicroServiceID microServiceId, KernelOID groupOid)
+            throws MicroServiceNotFoundException {
+        objectManager.removeGroupDispatcher(microServiceId, groupOid);
+        MicroService.deleteGroupPolicy(groupOid);
+        return;
     }
 
     public static void main(String args[]) {

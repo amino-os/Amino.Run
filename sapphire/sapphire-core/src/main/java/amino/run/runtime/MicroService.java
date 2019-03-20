@@ -136,7 +136,7 @@ public class MicroService {
         List<String> policyNames = MultiDMConstructionHelper.getPolicyNameChain(spec);
 
         for (int i = 0; i < spec.getDmList().size(); i++) {
-            createConnectedPolicy(null, policyNames, processedPolicies, microServiceID, spec);
+            createConnectedPolicy(null, null, policyNames, processedPolicies, microServiceID, spec);
             policyNames.remove(0);
         }
 
@@ -159,6 +159,11 @@ public class MicroService {
             groupPolicyStub.onCreate(region, serverPolicyStub, spec);
         }
 
+        /* Remove the next DM client link for all server policy stubs on server side */
+        for (PolicyContainer container : processedPolicies) {
+            container.serverPolicyStub.$__setNextClientPolicy(null);
+        }
+
         return appStub;
     }
 
@@ -172,6 +177,7 @@ public class MicroService {
      *
      * @param groupPolicy group policy is null when kernel creates AminoMicroservice; existing group
      *     policy is passed for outer policies when crearting a replica from Library.
+     * @param parentGroupPolicy Group policy creating the policy object
      * @param policyNames a list of policy names that are not created yet. Only the first one in the
      *     list is created in this method. The rest is set as next policy names in the server
      *     policy.
@@ -186,6 +192,7 @@ public class MicroService {
     // combine them?
     public static List<PolicyContainer> createConnectedPolicy(
             GroupPolicy groupPolicy,
+            GroupPolicy parentGroupPolicy,
             List<String> policyNames,
             List<PolicyContainer> processedPolicies,
             MicroServiceID microServiceID,
@@ -198,39 +205,39 @@ public class MicroService {
 
         processedPolicies =
                 createPolicyInstance(
-                        microServiceID, groupPolicy, policyNames, processedPolicies, spec);
+                        microServiceID,
+                        groupPolicy,
+                        parentGroupPolicy,
+                        policyNames,
+                        processedPolicies,
+                        spec);
 
         // index of currently processing policy. i.e.,) if there were 2 outer DMs created already,
         // idx will be 3.
         int idx = processedPolicies.size() - 1;
 
-        try {
-            if (idx > 0) {
-                /* Check and get the previous DM's container if available. So that, server side and client side chain links can
-                be updated between the current DM and previous DM. If the previous DM's container is not available (idx > 0),
-                then DM/Policy being created is either for single DM based SO or It is the first DM/Policy in Multi DM based SO
-                (i.e., last mile server policy to SO */
-                PolicyContainer currentSPC = processedPolicies.get(idx);
-                ServerPolicy serverPolicy = currentSPC.serverPolicy;
+        if (idx > 0) {
+            /* Check and get the previous DM's container if available. So that, server side and client side chain links can
+            be updated between the current DM and previous DM. If the previous DM's container is not available (idx > 0),
+            then DM/Policy being created is either for single DM based SO or It is the first DM/Policy in Multi DM based SO
+            (i.e., last mile server policy to SO */
+            PolicyContainer currentSPC = processedPolicies.get(idx);
+            ServerPolicy serverPolicy = currentSPC.serverPolicy;
+            // Previous server policy stub object acts as MicroService Object(SO) to the current
+            // server policy. Outermost policy is linked to an actual app object;hence, it is
+            // not needed here.
+            PolicyContainer outerSPC = processedPolicies.get(idx - 1);
+            KernelObjectStub outerStub = outerSPC.serverPolicyStub;
+            ServerPolicy outerSP = outerSPC.serverPolicy;
 
-                // Previous server policy stub object acts as MicroService Object(SO) to the current
-                // server policy. Outermost policy is linked to an actual app object;hence, it is
-                // not needed here.
-                PolicyContainer outerSPC = processedPolicies.get(idx - 1);
-                KernelObjectStub outerStub = outerSPC.serverPolicyStub;
-                ServerPolicy outerSP = outerSPC.serverPolicy;
-
-                // Links this serverPolicy to stub for outer policy.
-                serverPolicy.$__initialize(new AppObject(Utils.ObjectCloner.deepCopy(outerStub)));
-                outerSP.setPreviousServerPolicy(serverPolicy);
-                outerStub.$__setNextClientPolicy(currentSPC.clientPolicy);
+            if (parentGroupPolicy == null) {
+                outerSP.setChildGroupId(serverPolicy.getGroup().$__getKernelOID());
             }
-        } catch (ClassNotFoundException e) {
-            logger.severe("Creation of AppObject has failed: " + policyNames.get(0));
-            throw new MicroServiceCreationException(e);
-        } catch (IOException e) {
-            logger.severe("Creation of AppObject has failed: " + policyNames.get(0));
-            throw new MicroServiceCreationException(e);
+
+            // Links this serverPolicy to stub for outer policy.
+            serverPolicy.$__initialize(new AppObject(outerStub));
+            outerSP.setPreviousServerPolicy(serverPolicy);
+            outerStub.$__setNextClientPolicy(currentSPC.clientPolicy);
         }
 
         return processedPolicies;
@@ -245,6 +252,7 @@ public class MicroService {
      *
      * @param microServiceID MicroService ID
      * @param groupPolicyStub Group Policy stub
+     * @param parentGroupPolicyStub Group policy creating the policy object
      * @param policyNamesToCreate name of polices that need to be created (this and inner policies)
      * @param processedPolicies Policies processed so far (created and linked)
      * @param spec Amino object spec
@@ -254,6 +262,7 @@ public class MicroService {
     public static List<PolicyContainer> createPolicyInstance(
             MicroServiceID microServiceID,
             GroupPolicy groupPolicyStub,
+            GroupPolicy parentGroupPolicyStub,
             List<String> policyNamesToCreate,
             List<PolicyContainer> processedPolicies,
             MicroServiceSpec spec)
@@ -302,6 +311,13 @@ public class MicroService {
             List<PolicyContainer> processedPoliciesSoFar = new ArrayList(processedPolicies);
             serverPolicy.setProcessedPolicies(processedPoliciesSoFar);
             serverPolicyStub.setProcessedPolicies(processedPoliciesSoFar);
+
+            KernelOID parentGroupOid = groupPolicyStub.$__getKernelOID();
+            if (parentGroupPolicyStub != null) {
+                parentGroupOid = parentGroupPolicyStub.$__getKernelOID();
+            }
+
+            serverPolicy.setParentGroupId(parentGroupOid);
 
             /* Execute onCreate for ServerPolicy */
             serverPolicy.onCreate(groupPolicyStub, spec);
@@ -383,6 +399,15 @@ public class MicroService {
         }
 
         return groupPolicyStub;
+    }
+
+    /**
+     * Deletes the group policy instance
+     *
+     * @param kernelOid
+     */
+    public static void deleteGroupPolicy(KernelOID kernelOid) {
+        KernelObjectFactory.delete(kernelOid);
     }
 
     /* Returns a pointer to the given MicroService Object */

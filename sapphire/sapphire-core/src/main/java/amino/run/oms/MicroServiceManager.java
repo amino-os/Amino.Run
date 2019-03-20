@@ -6,7 +6,7 @@ import amino.run.common.MicroServiceNameModificationException;
 import amino.run.common.MicroServiceNotFoundException;
 import amino.run.common.MicroServiceReplicaNotFoundException;
 import amino.run.common.ReplicaID;
-import amino.run.policy.Policy;
+import amino.run.kernel.common.KernelOID;
 import amino.run.runtime.EventHandler;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -31,6 +31,17 @@ public class MicroServiceManager {
         microServicesByName = new ConcurrentHashMap<String, InstanceManager>();
     }
 
+    private InstanceManager getInstance(MicroServiceID microServiceId)
+            throws MicroServiceNotFoundException {
+        InstanceManager instance = microServices.get(microServiceId);
+        if (instance == null) {
+            throw new MicroServiceNotFoundException(
+                    String.format("Not a valid MicroService id : %s", microServiceId));
+        }
+
+        return instance;
+    }
+
     /**
      * Generates a microservice id and adds it
      *
@@ -45,44 +56,41 @@ public class MicroServiceManager {
     }
 
     /**
-     * Set event handler of a microservice
+     * Adds the group policy dispatcher to microservice
      *
      * @param microServiceId
+     * @param groupOid
      * @param dispatcher
      * @throws MicroServiceNotFoundException
      */
-    public void setInstanceDispatcher(MicroServiceID microServiceId, EventHandler dispatcher)
+    public void addGroupDispatcher(
+            MicroServiceID microServiceId, KernelOID groupOid, EventHandler dispatcher)
             throws MicroServiceNotFoundException {
-        InstanceManager instance = microServices.get(microServiceId);
-        if (instance == null) {
-            throw new MicroServiceNotFoundException("Not a valid MicroService id.");
-        }
-        instance.setInstanceDispatcher(dispatcher);
+        getInstance(microServiceId).addGroupDispatcher(groupOid, dispatcher);
     }
 
     /**
-     * Gets the root group policy of a microservice
+     * Removes the group policy dispatcher from microservice
      *
-     * @param oid
-     * @return MicroService Group Policy Object
+     * @param microServiceId
+     * @param groupOid
      * @throws MicroServiceNotFoundException
      */
-    public Policy.GroupPolicy getRootGroupPolicy(MicroServiceID oid)
+    public void removeGroupDispatcher(MicroServiceID microServiceId, KernelOID groupOid)
             throws MicroServiceNotFoundException {
-        InstanceManager instanceManager = microServices.get(oid);
-        if (instanceManager == null) {
-            throw new MicroServiceNotFoundException("Not a valid MicroService object id.");
-        }
-        return instanceManager.getRootGroupPolicy();
+        getInstance(microServiceId).removeGroupDispatcher(groupOid);
     }
 
-    public void setRootGroupPolicy(MicroServiceID oid, Policy.GroupPolicy rootGroupPolicy)
+    /**
+     * Gets the root group policy kernel OID of microservice
+     *
+     * @param microServiceId
+     * @return Kernel OID of root group policy
+     * @throws MicroServiceNotFoundException
+     */
+    public KernelOID getRootGroupId(MicroServiceID microServiceId)
             throws MicroServiceNotFoundException {
-        InstanceManager instanceManager = microServices.get(oid);
-        if (instanceManager == null) {
-            throw new MicroServiceNotFoundException("Not a valid MicroService object id.");
-        }
-        instanceManager.setRootGroupPolicy(rootGroupPolicy);
+        return getInstance(microServiceId).getRootGroupId();
     }
 
     /**
@@ -94,11 +102,7 @@ public class MicroServiceManager {
      */
     public void setInstanceObjectStub(MicroServiceID microServiceId, AppObjectStub objectStub)
             throws MicroServiceNotFoundException {
-        InstanceManager instance = microServices.get(microServiceId);
-        if (instance == null) {
-            throw new MicroServiceNotFoundException("Not a valid MicroService object id.");
-        }
-        instance.setInstanceObjectStub(objectStub);
+        getInstance(microServiceId).setInstanceObjectStub(objectStub);
     }
 
     /**
@@ -111,11 +115,7 @@ public class MicroServiceManager {
      */
     public ReplicaID addReplica(MicroServiceID microServiceId, EventHandler dispatcher)
             throws MicroServiceNotFoundException {
-        InstanceManager instance = microServices.get(microServiceId);
-        if (instance == null) {
-            throw new MicroServiceNotFoundException("Not a valid MicroService object id.");
-        }
-
+        InstanceManager instance = getInstance(microServiceId);
         synchronized (instance) {
             if (instance.getReferenceCount() == 0) {
                 /* MicroService object could have been deleted in another thread */
@@ -133,12 +133,7 @@ public class MicroServiceManager {
      */
     public void removeInstance(MicroServiceID microServiceId)
             throws MicroServiceNotFoundException, RemoteException {
-        InstanceManager instanceManager = microServices.get(microServiceId);
-        if (instanceManager == null) {
-            throw new MicroServiceNotFoundException(
-                    "Cannot find microservice with ID " + microServiceId);
-        }
-
+        InstanceManager instanceManager = getInstance(microServiceId);
         instanceManager.clear();
 
         if (instanceManager.getName() != null) {
@@ -166,10 +161,7 @@ public class MicroServiceManager {
      */
     public void setInstanceName(MicroServiceID microServiceId, String name)
             throws MicroServiceNotFoundException, MicroServiceNameModificationException {
-        InstanceManager instance = microServices.get(microServiceId);
-        if (instance == null) {
-            throw new MicroServiceNotFoundException("Not a valid MicroService object id.");
-        }
+        InstanceManager instance = getInstance(microServiceId);
 
         /* Object name is not allowed to change once set. Because reference count are updated based
         on attachByName and detachByName. And name change would affect it */
@@ -198,11 +190,7 @@ public class MicroServiceManager {
      * @throws MicroServiceNotFoundException
      */
     public void removeReplica(ReplicaID replicaId) throws MicroServiceNotFoundException {
-        InstanceManager instance = microServices.get(replicaId.getOID());
-        if (instance == null) {
-            throw new MicroServiceNotFoundException("Not a valid MicroService id.");
-        }
-
+        InstanceManager instance = getInstance(replicaId.getOID());
         synchronized (instance) {
             instance.removeReplica(replicaId);
         }
@@ -217,11 +205,7 @@ public class MicroServiceManager {
      */
     public void setReplicaDispatcher(ReplicaID replicaId, EventHandler dispatcher)
             throws MicroServiceNotFoundException, MicroServiceReplicaNotFoundException {
-        InstanceManager instance = microServices.get(replicaId.getOID());
-        if (instance == null) {
-            throw new MicroServiceNotFoundException("Not a valid MicroService object id.");
-        }
-
+        InstanceManager instance = getInstance(replicaId.getOID());
         synchronized (instance) {
             if (instance.getReferenceCount() == 0) {
                 /* MicroService object could have been deleted in another thread */
@@ -232,21 +216,16 @@ public class MicroServiceManager {
     }
 
     /**
-     * Get the event handler of microservice
+     * Gets the group dispatcher of microservice
      *
      * @param microServiceId
+     * @param groupOid
      * @return
      * @throws MicroServiceNotFoundException
-     * @deprecated
      */
-    public EventHandler getInstanceDispatcher(MicroServiceID microServiceId)
+    public EventHandler getGroupDispatcher(MicroServiceID microServiceId, KernelOID groupOid)
             throws MicroServiceNotFoundException {
-        InstanceManager instance = microServices.get(microServiceId);
-        if (instance == null) {
-            throw new MicroServiceNotFoundException("Not a valid MicroService object id.");
-        }
-
-        return instance.getInstanceDispatcher();
+        return getInstance(microServiceId).getGroupDispatcher(groupOid);
     }
 
     /**
@@ -258,12 +237,7 @@ public class MicroServiceManager {
      */
     public AppObjectStub getInstanceObjectStub(MicroServiceID microServiceId)
             throws MicroServiceNotFoundException {
-        InstanceManager instance = microServices.get(microServiceId);
-        if (instance == null) {
-            throw new MicroServiceNotFoundException("Not a valid MicroService object id.");
-        }
-
-        return instance.getInstanceObjectStub();
+        return getInstance(microServiceId).getInstanceObjectStub();
     }
 
     /**
@@ -275,12 +249,7 @@ public class MicroServiceManager {
      */
     public EventHandler getReplicaDispatcher(ReplicaID replicaId)
             throws MicroServiceNotFoundException, MicroServiceReplicaNotFoundException {
-        InstanceManager instance = microServices.get(replicaId.getOID());
-        if (instance == null) {
-            throw new MicroServiceNotFoundException("Not a valid MicroService object id.");
-        }
-
-        return instance.getReplicaDispatcher(replicaId);
+        return getInstance(replicaId.getOID()).getReplicaDispatcher(replicaId);
     }
 
     /**
@@ -302,25 +271,18 @@ public class MicroServiceManager {
     /**
      * Get replicas by id
      *
-     * @param oid
+     * @param microServiceId
      * @return
      * @throws MicroServiceNotFoundException
      */
-    public EventHandler[] getReplicasById(MicroServiceID oid) throws MicroServiceNotFoundException {
-        InstanceManager instance = microServices.get(oid);
-        if (instance == null) {
-            throw new MicroServiceNotFoundException("Not a valid MicroService object id.");
-        }
-
-        return instance.getReplicas();
+    public EventHandler[] getReplicasById(MicroServiceID microServiceId)
+            throws MicroServiceNotFoundException {
+        return getInstance(microServiceId).getReplicas();
     }
 
     public int incrRefCountAndGet(MicroServiceID microServiceId)
             throws MicroServiceNotFoundException {
-        InstanceManager instance = microServices.get(microServiceId);
-        if (instance == null) {
-            throw new MicroServiceNotFoundException("Not a valid MicroService object id.");
-        }
+        InstanceManager instance = getInstance(microServiceId);
         synchronized (instance) {
             if (instance.getReferenceCount() == 0) {
                 throw new MicroServiceNotFoundException("MicroService object is deleted.");
@@ -331,10 +293,6 @@ public class MicroServiceManager {
 
     public int decrRefCountAndGet(MicroServiceID microServiceId)
             throws MicroServiceNotFoundException {
-        InstanceManager instance = microServices.get(microServiceId);
-        if (instance == null) {
-            throw new MicroServiceNotFoundException("Not a valid MicroService object id.");
-        }
-        return instance.decrRefCountAndGet();
+        return getInstance(microServiceId).decrRefCountAndGet();
     }
 }

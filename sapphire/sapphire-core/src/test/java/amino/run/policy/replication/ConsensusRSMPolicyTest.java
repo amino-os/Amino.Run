@@ -42,6 +42,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.powermock.modules.junit4.PowerMockRunner;
+import org.powermock.reflect.Whitebox;
 
 /** Created by terryz on 4/9/18. */
 @RunWith(PowerMockRunner.class)
@@ -376,7 +377,7 @@ public class ConsensusRSMPolicyTest extends BaseTest {
         Server newRaftServer[] = new Server[SERVER_COUNT - 1];
 
         /* Bring down the raft leader */
-        this.server3.terminate();
+        Whitebox.invokeMethod(group, "terminate", server3);
 
         // Creating a new array with the running raftServers
         newRaftServer[0] = raftServer[0];

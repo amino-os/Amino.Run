@@ -9,7 +9,6 @@ import amino.run.kernel.common.GlobalKernelReferences;
 import amino.run.kernel.common.KernelOID;
 import amino.run.kernel.common.KernelObjectFactory;
 import amino.run.kernel.common.KernelObjectNotFoundException;
-import amino.run.kernel.common.KernelObjectStub;
 import amino.run.kernel.server.KernelServerImpl;
 import amino.run.oms.OMSServer;
 import amino.run.policy.Policy.ServerPolicy;
@@ -60,6 +59,12 @@ public abstract class Library implements Upcalls {
 
         // Indicates whether this policy is the inner most policy of the chain.
         protected boolean isLastPolicy = false;
+
+        /* Group policy of immediate next DM beneath this server policy */
+        private KernelOID childGroupId;
+
+        /* Group policy which has created this server policy */
+        private KernelOID parentGroupId;
 
         private OMSServer oms() {
             return GlobalKernelReferences.nodeServer.oms;
@@ -114,6 +119,22 @@ public abstract class Library implements Upcalls {
             return this.spec;
         }
 
+        public KernelOID getParentGroupId() {
+            return parentGroupId;
+        }
+
+        public void setParentGroupId(KernelOID parentGroupOid) {
+            parentGroupId = parentGroupOid;
+        }
+
+        public KernelOID getChildGroupId() {
+            return childGroupId;
+        }
+
+        public void setChildGroupId(KernelOID childGroupOid) {
+            childGroupId = childGroupOid;
+        }
+
         @Override
         public void onCreate(Policy.GroupPolicy group, MicroServiceSpec spec) {
             this.group = group;
@@ -138,7 +159,7 @@ public abstract class Library implements Upcalls {
         public ServerPolicy replicate(String region) throws RemoteException {
             List<PolicyContainer> processedPoliciesReplica = new ArrayList<PolicyContainer>();
             int outerPolicySize = processedPolicies.size();
-
+            ServerPolicy serverStub;
             try {
                 MicroServiceID soid = getReplicaId().getOID();
 
@@ -153,6 +174,7 @@ public abstract class Library implements Upcalls {
                 for (int i = 0; i < outerPolicySize; i++) {
                     MicroService.createConnectedPolicy(
                             processedPolicies.get(i).groupPolicy,
+                            getGroup(),
                             policyNames,
                             processedPoliciesReplica,
                             soid,
@@ -174,7 +196,7 @@ public abstract class Library implements Upcalls {
                 int innerPolicySize = this.nextPolicyNames.size();
                 for (int j = outerPolicySize; j < innerPolicySize + outerPolicySize; j++) {
                     MicroService.createConnectedPolicy(
-                            null, policyNames, processedPoliciesReplica, soid, spec);
+                            null, null, policyNames, processedPoliciesReplica, soid, spec);
                     policyNames.remove(0);
                 }
 
@@ -189,17 +211,29 @@ public abstract class Library implements Upcalls {
                             (ServerPolicy) processedPoliciesReplica.get(k).serverPolicyStub;
                     groupPolicyStub.onCreate(region, stub, spec);
                 }
+
+                /* Clone the server policy to be returned */
+                serverStub =
+                        (ServerPolicy)
+                                processedPoliciesReplica.get(outerPolicySize - 1).serverPolicyStub;
+                serverStub = (ServerPolicy) Utils.ObjectCloner.deepCopy(serverStub);
+
+                /* Remove the next DM client link for all server policy stubs on server side */
+                for (PolicyContainer container : processedPoliciesReplica) {
+                    container.serverPolicyStub.$__setNextClientPolicy(null);
+                }
             } catch (RemoteException e) {
-                terminate(processedPolicies);
                 logger.severe(e.getMessage());
+                if (!processedPoliciesReplica.isEmpty()) {
+                    terminate(processedPoliciesReplica.get(0).serverPolicy);
+                }
                 throw new Error("Could not create a replica of " + appObject.getObject(), e);
             } catch (Exception e) {
                 logger.severe(e.getMessage());
                 throw new Error("Unknown exception occurred!", e);
             }
 
-            return (ServerPolicy)
-                    processedPoliciesReplica.get(outerPolicySize - 1).serverPolicyStub;
+            return serverStub;
         }
 
         public AppObject getAppObject() {
@@ -230,23 +264,6 @@ public abstract class Library implements Upcalls {
                 serverPolicy = serverPolicy.getPreviousServerPolicy();
             }
 
-            // Before pinning the MicroService Object replica to the provided KernelServer, need to
-            // update the Hostname.
-            List<PolicyContainer> processedPolicyList = serverPolicy.getProcessedPolicies();
-            Iterator<PolicyContainer> itr = processedPolicyList.iterator();
-            while (itr.hasNext()) {
-                PolicyContainer container = itr.next();
-                ServerPolicy tempServerPolicy = container.serverPolicy;
-                container.serverPolicyStub.$__updateHostname(server);
-
-                /* AppObject holds the previous DM's server policy stub(instead of So stub) in case of DM chain on the
-                server side. Update host name in the server stub within AppObject */
-                if (tempServerPolicy.getAppObject().getObject() instanceof KernelObjectStub) {
-                    ((KernelObjectStub) tempServerPolicy.getAppObject().getObject())
-                            .$__updateHostname(server);
-                }
-            }
-
             logger.info(
                     "Started pinning kernel object "
                             + serverPolicy.$__getKernelOID()
@@ -268,6 +285,11 @@ public abstract class Library implements Upcalls {
                 throw new Error(msg, e);
             }
 
+            /* Update the host name in the stub objects */
+            for (PolicyContainer container : serverPolicy.getProcessedPolicies()) {
+                container.serverPolicyStub.$__updateHostname(server);
+            }
+
             logger.info(
                     "Finished pinning kernel object "
                             + serverPolicy.$__getKernelOID()
@@ -275,29 +297,43 @@ public abstract class Library implements Upcalls {
                             + server);
         }
 
-        // TODO (2018-9-26, Sungwook) Remove after verification.
+        /**
+         * Terminates this server policy
+         *
+         * @throws RemoteException
+         */
         public void terminate() throws RemoteException {
+            terminate((ServerPolicy) this);
+        }
+
+        /**
+         * Terminates the server policy
+         *
+         * @param server
+         * @throws RemoteException
+         */
+        public void terminate(ServerPolicy server) throws RemoteException {
             try {
-                GlobalKernelReferences.nodeServer.oms.unRegisterReplica(getReplicaId());
+                if (server.getChildGroupId() != null) {
+                    oms().deleteGroupPolicy(
+                                    server.getReplicaId().getOID(), server.getChildGroupId());
+                }
+
+                for (PolicyContainer policyContainer : server.processedPolicies) {
+                    ServerPolicy temp = policyContainer.serverPolicy;
+
+                    if (!temp.getParentGroupId().equals(server.getGroup().$__getKernelOID())) {
+                        continue;
+                    }
+
+                    KernelObjectFactory.delete(temp.$__getKernelOID());
+                    oms().unRegisterReplica(temp.getReplicaId());
+                }
             } catch (MicroServiceNotFoundException e) {
                 /* MicroService object not found */
                 logger.severe(e.getMessage());
                 // TODO (Sungwook, 2018-10-2): Investigate whether exception should be thrown.
             }
-            KernelObjectFactory.delete($__getKernelOID());
-        }
-
-        public void terminate(List<PolicyContainer> processedPolicies) throws RemoteException {
-            try {
-                for (PolicyContainer policyContainer : processedPolicies) {
-                    ServerPolicy sp = policyContainer.serverPolicy;
-                    oms().unRegisterReplica(sp.getReplicaId());
-                }
-            } catch (MicroServiceNotFoundException e) {
-                /* MicroService object not found */
-                logger.severe(e.getMessage());
-            }
-            KernelObjectFactory.delete($__getKernelOID());
         }
 
         /**
@@ -445,35 +481,6 @@ public abstract class Library implements Upcalls {
 
         public MicroServiceID getMicroServiceId() {
             return microServiceId;
-        }
-
-        /**
-         * Notifies server policies to exit. Each server policy should do three tasks: 1) remove
-         * itself from {@code KernelObjectManager} on local kernel server, 2) remove itself of OMS's
-         * {@code KernelObjectManager}, and 3) remove replica ID from OMS.
-         *
-         * <p><strong>Warning:</strong> Do not try to call OMS to unregister the microservice.
-         * {@link OMSServer#delete(MicroServiceID)} is the public entry point to delete a
-         * microservice. OMS will take care of deleting microservice at {@link
-         * amino.run.oms.OMSServerImpl#delete(MicroServiceID)}.
-         *
-         * @throws RemoteException
-         */
-        public void onDestroy() throws RemoteException {
-            /* Delete all the servers */
-            ArrayList<ServerPolicy> servers = getServers();
-
-            for (Iterator<ServerPolicy> itr = servers.iterator(); itr.hasNext(); ) {
-                Policy.ServerPolicy server = itr.next();
-                try {
-                    server.terminate();
-                    itr.remove();
-                } catch (Exception e) {
-
-                }
-            }
-
-            KernelObjectFactory.delete($__getKernelOID());
         }
     }
 }

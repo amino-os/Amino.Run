@@ -80,7 +80,7 @@ public class MicroServiceMultiPolicyChainTest extends BaseTest {
         policyNameChain.add("amino.run.policy.dht.DHTPolicy");
         for (int i = 0; i < 2; i++) {
             MicroService.createConnectedPolicy(
-                    null, policyNameChain, processedPolicies, soid, spec);
+                    null, null, policyNameChain, processedPolicies, soid, spec);
             policyNameChain.remove(0);
         }
         assertEquals(2, processedPolicies.size());

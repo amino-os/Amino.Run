@@ -5,12 +5,14 @@ import amino.run.common.MicroServiceID;
 import amino.run.common.MicroServiceNotFoundException;
 import amino.run.common.MicroServiceReplicaNotFoundException;
 import amino.run.common.ReplicaID;
-import amino.run.policy.Policy;
+import amino.run.kernel.common.KernelOID;
 import amino.run.runtime.EventHandler;
-import java.rmi.RemoteException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -22,25 +24,10 @@ public class InstanceManager {
     private MicroServiceID oid;
     private String name;
     private AtomicInteger referenceCount;
-    private EventHandler instanceDispatcher;
+    private Map<KernelOID, EventHandler> groupDispatchers;
     private AppObjectStub objectStub;
     private HashMap<ReplicaID, EventHandler> replicaDispatchers;
     private Random oidGenerator;
-    /**
-     * Root group policy is the <strong>outmost</strong> group policy of this microservice.
-     *
-     * <p>For example, given a microservice with DM list [DHT, MasterSlave], its outmost DM is DHT.
-     * In this case, {@code rootGroupPolicy} is the DHT group policy.
-     *
-     * <p>TODO(multi-dm): We actually need to maintain group policies of inner DMs too. We need to
-     * organize group policies, their relationships, and their healthiness into a table as described
-     * in the multi-DM design doc.
-     *
-     * @see <a
-     *     href="https://docs.google.com/document/d/1g5SnzsnyGXzdZVDF_uj9MQJomQpHS-PMpfwnYn4RNDU/edit#heading=h.j9vsjm8kyruk">Multi-DM
-     *     Design Doc</a>
-     */
-    private Policy.GroupPolicy rootGroupPolicy;
 
     /**
      * Randomly generate a new replica id
@@ -53,46 +40,49 @@ public class InstanceManager {
 
     public InstanceManager(MicroServiceID oid, EventHandler dispatcher) {
         this.oid = oid;
-        instanceDispatcher = dispatcher;
+        groupDispatchers =
+                Collections.synchronizedMap(new LinkedHashMap<KernelOID, EventHandler>());
         replicaDispatchers = new HashMap<ReplicaID, EventHandler>();
         oidGenerator = new Random(new Date().getTime());
         referenceCount = new AtomicInteger(1);
     }
 
     /**
-     * Sets the root group policy of this microservice.
+     * Adds the group policy dispatcher to this microservice instance
      *
-     * @param rootGroupPolicy root group policy
-     */
-    public void setRootGroupPolicy(Policy.GroupPolicy rootGroupPolicy) {
-        this.rootGroupPolicy = rootGroupPolicy;
-    }
-
-    /**
-     * Gets the root group policy object of this microservice instance
-     *
-     * @return MicroService Group Policy Object
-     */
-    public Policy.GroupPolicy getRootGroupPolicy() {
-        return rootGroupPolicy;
-    }
-
-    /**
-     * Gets the event handler of this microservice instance
-     *
-     * @return Returns event handler
-     */
-    public EventHandler getInstanceDispatcher() {
-        return instanceDispatcher;
-    }
-
-    /**
-     * Sets the event handler of this microservice instance
-     *
+     * @param groupOid
      * @param dispatcher
      */
-    public void setInstanceDispatcher(EventHandler dispatcher) {
-        instanceDispatcher = dispatcher;
+    public void addGroupDispatcher(KernelOID groupOid, EventHandler dispatcher) {
+        groupDispatchers.put(groupOid, dispatcher);
+    }
+
+    /**
+     * Removes the group policy dispatcher from this microservice instance
+     *
+     * @param groupOid
+     */
+    public void removeGroupDispatcher(KernelOID groupOid) {
+        groupDispatchers.remove(groupOid);
+    }
+
+    /**
+     * Gets the root group policy kernel OID of this microservice instance
+     *
+     * @return Kernel OID of root group policy
+     */
+    public KernelOID getRootGroupId() {
+        return groupDispatchers.keySet().iterator().next();
+    }
+
+    /**
+     * Gets the group policy dispatcher of this microservice instance
+     *
+     * @param oid
+     * @return Returns event handler
+     */
+    public EventHandler getGroupDispatcher(KernelOID oid) {
+        return groupDispatchers.get(oid);
     }
 
     /**
@@ -176,10 +166,9 @@ public class InstanceManager {
         return values.toArray(new EventHandler[values.size()]);
     }
 
-    public void clear() throws RemoteException {
-        if (rootGroupPolicy != null) {
-            rootGroupPolicy.onDestroy();
-        }
+    /** Clears resource associated with this microService instance */
+    public void clear() {
+        groupDispatchers.clear();
         replicaDispatchers.clear();
     }
 

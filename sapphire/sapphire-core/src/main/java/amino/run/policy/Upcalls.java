@@ -87,18 +87,12 @@ public interface Upcalls {
         void onCreate(Policy.GroupPolicy group, MicroServiceSpec spec);
 
         /**
-         * Event handler for microservice destruction. Called immediately before a microservice (or
-         * replica) is deleted from a kernel server. Usually used to tear down a server policy's
+         * Event handler for replica destruction. Called immediately before a its kernel object (or
+         * replica) is removed from a kernel server. Usually used to tear down a server policy's
          * local resources, for example, timers, network connections, etc. Currently called in
-         * {@link KernelServerImpl.deleteKernelObject} and {@link
-         * KernelServerImpl.moveKernelObjectToServer} (on the old server, after moving the object to
-         * the new server). TODO: Quinton: It's not clear to my why the latter call is needed.
-         * Surely moveKernelObjectToServer should just call deleteKernelObject on the old server?
-         * Venu: Yes. Apart from that, deleteKernelObject unregisters kernel object from OMS too.
-         * Upon move kernel object, we need to avoid unregister kernel object from OMS. We may have
-         * a common method deleteLocalKernelObject() which just does same as deleteKernelObject
-         * without unregister part. And call the same deleteLocalKernelObject() from both
-         * moveKernelObjectToServer() and deleteKernelObject()
+         * {@link amino.run.kernel.server.KernelServerImpl#deleteKernelObject} and {@link
+         * amino.run.kernel.server.KernelServerImpl#moveKernelObjectToServer} (on the old server,
+         * after moving the object to the new server).
          */
         void onDestroy();
 
@@ -149,9 +143,9 @@ public interface Upcalls {
 
     interface GroupUpcalls extends Serializable {
         /**
-         * Event handler for microservice creation. Called by the Amino.Run kernel on creation of
-         * this group and it's first/primary replica. DM's may implement this method to initialize
-         * the group policy, create additional replicas, etc.
+         * Event handler for group creation. Called by the Amino.Run kernel on creation of this
+         * group and it's first/primary replica. DM's may implement this method to initialize the
+         * group policy, create additional replicas, etc.
          *
          * @param region TODO: Quinton: This parameter is deprecated and must be deleted.
          * @param server reference to the server policy of the first/primary replica that is managed
@@ -163,10 +157,11 @@ public interface Upcalls {
                 throws RemoteException;
 
         /**
-         * Event handler for microservice destruction. Called immediately before the group policy is
-         * deleted, as part of object deletion. Usually used to tear down a group policy's local
-         * resources, for example, timers, network connections, etc. Currently called by
-         * InstanceManager.clear, which is called by MicroServiceManager.removeInstance.
+         * Event handler for group destruction. Called by the Amino.Run kernel to destroy this group
+         * policy, immediately before its kernel object is removed from a kernel server. Usually
+         * used to terminate all its replicas and to tear down its local resources, for example,
+         * timers, network connections, etc. Currently called in {@link
+         * amino.run.kernel.server.KernelServerImpl#deleteKernelObject}
          *
          * @throws RemoteException
          */

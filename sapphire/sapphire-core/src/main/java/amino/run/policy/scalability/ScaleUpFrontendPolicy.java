@@ -213,7 +213,7 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
 
             /* Get the list of available servers in region */
             List<InetSocketAddress> addressList =
-                    getAddressList(spec.getNodeSelectorSpec(), region);
+                    getAddressList(getNodeSelectionSpecs(spec), region);
 
             if (null == addressList) {
                 throw new ScaleUpException("Scaleup failed. Couldn't fetch kernel server list.");

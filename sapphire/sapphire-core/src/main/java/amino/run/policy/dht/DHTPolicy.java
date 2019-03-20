@@ -172,7 +172,7 @@ public class DHTPolicy extends DefaultPolicy {
         private InetSocketAddress getAddress(String region)
                 throws NoKernelServerFoundException, RemoteException {
             List<InetSocketAddress> addressList =
-                    getAddressList(spec.getNodeSelectorSpec(), region);
+                    getAddressList(getNodeSelectionSpecs(spec), region);
             if (addressList == null || addressList.isEmpty()) {
                 String msg =
                         String.format(

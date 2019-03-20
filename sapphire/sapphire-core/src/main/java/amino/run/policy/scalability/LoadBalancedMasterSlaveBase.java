@@ -180,7 +180,7 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultPolicy {
 
             try {
                 List<InetSocketAddress> addressList =
-                        getAddressList(spec.getNodeSelectorSpec(), region);
+                        getAddressList(getNodeSelectionSpecs(spec), region);
                 if (addressList.size() < NUM_OF_REPLICAS) {
                     logger.warning(
                             String.format(

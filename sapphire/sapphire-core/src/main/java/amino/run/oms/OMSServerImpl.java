@@ -129,12 +129,12 @@ public class OMSServerImpl implements OMSServer, Registry {
     /**
      * Gets all servers matching the specified node selector
      *
-     * @param spec
+     * @param specs
      * @return
      * @throws RemoteException
      */
-    public List<InetSocketAddress> getServers(NodeSelectorSpec spec) throws RemoteException {
-        return serverManager.getServers(spec);
+    public List<InetSocketAddress> getServers(List<NodeSelectorSpec> specs) throws RemoteException {
+        return serverManager.getServers(specs);
     }
 
     @Override

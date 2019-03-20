@@ -38,7 +38,7 @@ public class KernelServerManagerTest {
                                                         Operator.Equal,
                                                         Collections.singletonList(
                                                                 LABEL1_PREFIX + "1"))));
-        List<InetSocketAddress> result = manager.getServers(spec);
+        List<InetSocketAddress> result = manager.getServers(Collections.singletonList(spec));
         Assert.assertEquals(1, result.size());
         Assert.assertEquals(1, result.get(0).getPort());
     }
@@ -61,7 +61,7 @@ public class KernelServerManagerTest {
                                                         Operator.Equal,
                                                         Collections.singletonList(
                                                                 LABEL1_PREFIX + "1"))));
-        List<InetSocketAddress> result = manager.getServers(spec);
+        List<InetSocketAddress> result = manager.getServers(Collections.singletonList(spec));
         Assert.assertEquals(1, result.size());
         Assert.assertEquals(1, result.get(0).getPort());
     }
@@ -78,7 +78,7 @@ public class KernelServerManagerTest {
                                                         Operator.Equal,
                                                         Collections.singletonList(
                                                                 NON_EXISTENT_LABEL))));
-        List<InetSocketAddress> result = manager.getServers(spec);
+        List<InetSocketAddress> result = manager.getServers(Collections.singletonList(spec));
         Assert.assertEquals(0, result.size());
     }
 
@@ -104,7 +104,7 @@ public class KernelServerManagerTest {
                                                         Collections.singletonList(
                                                                 NON_EXISTENT_LABEL))));
 
-        List<InetSocketAddress> result = manager.getServers(spec);
+        List<InetSocketAddress> result = manager.getServers(Collections.singletonList(spec));
         Assert.assertEquals(1, result.size());
         Assert.assertEquals(1, result.get(0).getPort());
     }
@@ -112,7 +112,7 @@ public class KernelServerManagerTest {
     @Test
     public void testEmptyLabelSet() throws Exception {
         NodeSelectorSpec spec = new NodeSelectorSpec();
-        List<InetSocketAddress> result = manager.getServers(spec);
+        List<InetSocketAddress> result = manager.getServers(Collections.singletonList(spec));
         Assert.assertEquals(10, result.size());
     }
 
@@ -135,7 +135,7 @@ public class KernelServerManagerTest {
                                                         Collections.singletonList(
                                                                 NON_EXISTENT_LABEL))));
 
-        List<InetSocketAddress> result = manager.getServers(spec);
+        List<InetSocketAddress> result = manager.getServers(Collections.singletonList(spec));
         Assert.assertEquals(0, result.size());
     }
 
@@ -159,7 +159,7 @@ public class KernelServerManagerTest {
                                                         Operator.Equal,
                                                         Collections.singletonList(
                                                                 NON_EXISTENT_LABEL))));
-        List<InetSocketAddress> result = manager.getServers(spec);
+        List<InetSocketAddress> result = manager.getServers(Collections.singletonList(spec));
         Assert.assertEquals(0, result.size());
     }
 
@@ -196,7 +196,7 @@ public class KernelServerManagerTest {
                                                         Collections.singletonList(
                                                                 NON_EXISTENT_LABEL))));
 
-        List<InetSocketAddress> result = manager.getServers(spec);
+        List<InetSocketAddress> result = manager.getServers(Collections.singletonList(spec));
         Assert.assertEquals(1, result.size());
         Assert.assertEquals(1, result.get(0).getPort());
     }
@@ -226,7 +226,7 @@ public class KernelServerManagerTest {
                                                         Operator.Equal,
                                                         Collections.singletonList(
                                                                 LABEL1_PREFIX + "1"))));
-        List<InetSocketAddress> result = manager.getServers(spec);
+        List<InetSocketAddress> result = manager.getServers(Collections.singletonList(spec));
         Assert.assertEquals(1, result.size());
         Assert.assertEquals(1, result.get(0).getPort());
     }

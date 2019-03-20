@@ -1,5 +1,6 @@
 package amino.run.oms;
 
+import amino.run.app.DMSpec;
 import amino.run.app.MicroServiceSpec;
 import amino.run.app.NodeSelectorSpec;
 import amino.run.kernel.common.GlobalKernelReferences;
@@ -140,13 +141,25 @@ public class KernelServerManager {
     /**
      * Returns a list of addresses of servers whose labels match the given {@code NodeSelectorSpec}
      *
-     * @param spec {@code NodeSelectorSpec} instance
+     * @param specs {@code NodeSelectorSpec} instance
      * @return a list of {@code InetSocketAddress}
      */
-    public List<InetSocketAddress> getServers(NodeSelectorSpec spec) {
+    public List<InetSocketAddress> getServers(List<NodeSelectorSpec> specs) {
         List<InetSocketAddress> nodes = new ArrayList<InetSocketAddress>();
+        if (specs == null) {
+            specs = new ArrayList<NodeSelectorSpec>();
+        }
+
+        boolean allNodeSpecMatched;
         for (ServerInfo s : serverInfos) {
-            if (s.matchNodeSelectorSpec(spec)) {
+            allNodeSpecMatched = true;
+            for (NodeSelectorSpec spec : specs) {
+                if (!s.matchNodeSelectorSpec(spec)) {
+                    allNodeSpecMatched = false;
+                    break;
+                }
+            }
+            if (allNodeSpecMatched) {
                 nodes.add(s.getHost());
             }
         }
@@ -185,12 +198,24 @@ public class KernelServerManager {
      * @return
      */
     public InetSocketAddress getBestSuitableServer(MicroServiceSpec spec) {
-        NodeSelectorSpec nodeSelector = null;
+        ArrayList<NodeSelectorSpec> nodeSelectorSpecs = new ArrayList<NodeSelectorSpec>();
         if (spec != null) {
-            nodeSelector = spec.getNodeSelectorSpec();
+            nodeSelectorSpecs.add(spec.getNodeSelectorSpec());
+            List<DMSpec> dmList = spec.getDmList();
+            // Check for DM list existence
+            if (dmList != null) {
+                NodeSelectorSpec dmNodeSelectionSpec;
+                // Add DM node selection specifications
+                for (DMSpec dmSpec : dmList) {
+                    dmNodeSelectionSpec = dmSpec.getNodeSelectorSpec();
+                    if (dmNodeSelectionSpec != null) {
+                        nodeSelectorSpecs.add(dmNodeSelectionSpec);
+                    }
+                }
+            }
         }
         // if nodeSelector is null then returns all the kernelserver's addresses
-        List<InetSocketAddress> hosts = getServers(nodeSelector);
+        List<InetSocketAddress> hosts = getServers(nodeSelectorSpecs);
 
         if (hosts.size() <= 0) {
             logger.log(Level.SEVERE, "Could not find kernel server forthe given requirements");

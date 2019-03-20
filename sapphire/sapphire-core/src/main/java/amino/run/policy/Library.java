@@ -407,35 +407,59 @@ public abstract class Library implements Upcalls {
         /**
          * Gets the list of servers in from nodeSelector or region.
          *
-         * @param nodeSelector
+         * @param nodeSelectorSpecs
          * @param region
          * @return list of server addresses
          * @throws RemoteException
          */
         // TODO: Remove region parameter after spec is applied to all DMs and scripts.
-        public List<InetSocketAddress> getAddressList(NodeSelectorSpec nodeSelector, String region)
-                throws RemoteException {
+        public List<InetSocketAddress> getAddressList(
+                List<NodeSelectorSpec> nodeSelectorSpecs, String region) throws RemoteException {
             List<InetSocketAddress> serversInRegion;
 
-            if (null != nodeSelector) { // spec takes priority over region
-                serversInRegion = oms().getServers(nodeSelector);
+            if (null != nodeSelectorSpecs
+                    && !nodeSelectorSpecs.isEmpty()) { // spec takes priority over region
+                serversInRegion = oms().getServers(nodeSelectorSpecs);
             } else {
                 if (region != null && !region.isEmpty()) {
-                    nodeSelector = new NodeSelectorSpec();
-                    NodeSelectorTerm term = new NodeSelectorTerm();
-                    term.setMatchExpressions(
-                            Collections.singletonList(
-                                    new Requirement(
-                                            REGION_KEY,
-                                            Operator.Equal,
-                                            Collections.singletonList(region))));
-                    nodeSelector.setRequireExpressions(Collections.singletonList(term));
-                    serversInRegion = oms().getServers(nodeSelector);
+                    NodeSelectorSpec nodeSelectorSpec =
+                            new NodeSelectorSpec()
+                                    .addRequireExpressions(
+                                            new NodeSelectorTerm()
+                                                    .add(
+                                                            new Requirement(
+                                                                    REGION_KEY,
+                                                                    Operator.Equal,
+                                                                    Collections.singletonList(
+                                                                            region))));
+                    serversInRegion = oms().getServers(Collections.singletonList(nodeSelectorSpec));
                 } else {
                     serversInRegion = oms().getServers(null);
                 }
             }
             return serversInRegion;
+        }
+
+        protected List<NodeSelectorSpec> getNodeSelectionSpecs(MicroServiceSpec spec) {
+            ArrayList<NodeSelectorSpec> nodeSelectorSpecs = new ArrayList<NodeSelectorSpec>();
+            if (spec != null) {
+                if (spec.getNodeSelectorSpec() != null) {
+                    nodeSelectorSpecs.add(spec.getNodeSelectorSpec());
+                }
+                List<DMSpec> dmList = spec.getDmList();
+                // Check for DM list existence
+                if (dmList != null) {
+                    NodeSelectorSpec dmNodeSelectionSpec;
+                    // Add DM node selection specifications
+                    for (DMSpec dmSpec : dmList) {
+                        dmNodeSelectionSpec = dmSpec.getNodeSelectorSpec();
+                        if (dmNodeSelectionSpec != null) {
+                            nodeSelectorSpecs.add(dmNodeSelectionSpec);
+                        }
+                    }
+                }
+            }
+            return nodeSelectorSpecs;
         }
 
         public void $__setKernelOID(KernelOID oid) {

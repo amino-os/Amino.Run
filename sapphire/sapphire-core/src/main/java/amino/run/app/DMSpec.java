@@ -15,6 +15,7 @@ import org.yaml.snakeyaml.Yaml;
 public final class DMSpec implements Serializable {
     private String name;
     private List<PolicyConfig> configs = new ArrayList<PolicyConfig>();
+    private NodeSelectorSpec nodeSelectorSpec;
 
     /**
      * Returns a builder class for DMSpec.
@@ -49,6 +50,10 @@ public final class DMSpec implements Serializable {
         return configs;
     }
 
+    public NodeSelectorSpec getNodeSelectorSpec() {
+        return nodeSelectorSpec;
+    }
+
     /**
      * Returns a policy configuration map where the key is the name of the configuration and the
      * value is a {@link PolicyConfig} instance.
@@ -69,6 +74,10 @@ public final class DMSpec implements Serializable {
 
     public void setConfigs(List<PolicyConfig> configs) {
         this.configs = configs;
+    }
+
+    public void setNodeSelectorSpec(NodeSelectorSpec nodeSelectorSpec) {
+        this.nodeSelectorSpec = nodeSelectorSpec;
     }
 
     public static DMSpec fromYaml(String yamlStr) {
@@ -97,6 +106,7 @@ public final class DMSpec implements Serializable {
     public static class Builder {
         private String name;
         private List<PolicyConfig> configs = new ArrayList<PolicyConfig>();
+        private NodeSelectorSpec nodeSelectorSpec;
 
         public Builder setName(String name) {
             this.name = name;
@@ -108,10 +118,16 @@ public final class DMSpec implements Serializable {
             return this;
         }
 
+        public Builder addNodeSelectionSpec(NodeSelectorSpec spec) {
+            this.nodeSelectorSpec = spec;
+            return this;
+        }
+
         public DMSpec create() {
             DMSpec spec = new DMSpec();
             spec.setName(name);
             spec.setConfigs(configs);
+            spec.setNodeSelectorSpec(nodeSelectorSpec);
             return spec;
         }
     }

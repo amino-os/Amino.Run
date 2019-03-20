@@ -197,7 +197,7 @@ public class LoadBalancedFrontendPolicy extends DefaultPolicy {
                 microservices in the same region(excluding this kernel server) */
                 InetSocketAddress addr = ((KernelObjectStub) server).$__getHostname();
                 List<InetSocketAddress> addressList =
-                        getAddressList(spec.getNodeSelectorSpec(), region);
+                        getAddressList(getNodeSelectionSpecs(spec), region);
 
                 /* Create the replicas on different kernelServers belongs to same region*/
                 if (addressList != null) {

@@ -222,7 +222,7 @@ public class ConsensusRSMPolicy extends DefaultPolicy {
                 if (server.isLastPolicy()) {
                     // TODO: Make deployment kernel pin primary replica once node selection
                     // constraint is implemented.
-                    addressList = getAddressList(spec.getNodeSelectorSpec(), region);
+                    addressList = getAddressList(getNodeSelectionSpecs(spec), region);
                     // The first in the addressList is for primary policy chain.
                     // TODO: Improve node allocation so that other servers can be used instead of
                     // the first one in the region.

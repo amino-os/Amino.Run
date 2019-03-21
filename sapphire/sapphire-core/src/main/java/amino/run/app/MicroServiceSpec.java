@@ -129,6 +129,18 @@ public class MicroServiceSpec implements Serializable {
         return yaml.loadAs(yamlString, MicroServiceSpec.class);
     }
 
+    /**
+     * Validate Micro service spec
+     *
+     * @throws IllegalArgumentException
+     */
+    public void validate() throws IllegalArgumentException {
+        // validate node selection spec
+        if (nodeSelectorSpec != null) {
+            nodeSelectorSpec.validate();
+        }
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

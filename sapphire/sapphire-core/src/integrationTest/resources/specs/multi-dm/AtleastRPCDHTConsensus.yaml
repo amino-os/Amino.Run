@@ -1,7 +1,6 @@
 # Configuration for running KeyValueStore as a
 # microservice with DHT&Consensus policy.
 !!amino.run.app.MicroServiceSpec
-constructorName: null
 dmList:
 - configs: []  
   name: amino.run.policy.atleastoncerpc.AtLeastOnceRPCPolicy
@@ -10,8 +9,5 @@ dmList:
   name: amino.run.policy.dht.DHTPolicy
 - configs: []
   name: amino.run.policy.replication.ConsensusRSMPolicy
-nodeSelectorSpec: null
 javaClassName: amino.run.demo.KVStore
 lang: java
-name: null
-sourceFileLocation: null

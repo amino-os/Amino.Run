@@ -143,6 +143,9 @@ public class OMSServerImpl implements OMSServer, Registry {
             throws MicroServiceCreationException {
 
         MicroServiceSpec spec = MicroServiceSpec.fromYaml(microServiceSpec);
+        // validate Micro service spec
+        spec.validate();
+
         /* Get a best server from the given spec */
         InetSocketAddress host = serverManager.getBestSuitableServer(spec);
         if (host == null) {

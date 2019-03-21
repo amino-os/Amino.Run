@@ -1,12 +1,9 @@
 # Configuration for running KeyValueStore as a
 # microservice with ScaleUpFrontend policy.
 !!amino.run.app.MicroServiceSpec
-constructorName: null
 dmList:
 - configs:
   - !!amino.run.policy.scalability.LoadBalancedFrontendPolicy$Config {maxConcurrentReq: 10}
   name: amino.run.policy.scalability.ScaleUpFrontendPolicy
 javaClassName: amino.run.demo.KVStore
 lang: java
-name: null
-sourceFileLocation: null

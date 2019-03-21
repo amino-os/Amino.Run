@@ -38,88 +38,42 @@ public class ServerInfo implements Serializable {
     }
 
     /**
-     * Checks if this server contains <strong>any</strong> label specified in the given label set.
-     * If the specified label set is {@code null} or empty, we consider no selector is specified,
-     * and therefore we return {@code true}.
+     * Check {@link ServerInfo} instance matches with node selection specifications
      *
-     * @param labels a set of labels
-     * @return {@code true} if the server contains any label in the label set; {@code false}
-     *     otherwise. Returns {@code true} if the given label set is {@code null} or empty.
-     */
-    public boolean containsAny(Map<String, String> labels) {
-        if (labels == null || labels.isEmpty()) {
-            return true;
-        }
-
-        for (Map.Entry<String, String> entry : labels.entrySet()) {
-            if (this.labels.containsKey(entry.getKey())
-                    && this.labels.get(entry.getKey()).equals(entry.getValue())) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Checks if the server contains <strong>all</strong> labels specified in the given label set.
-     * If the specified label set is {@code null} or empty, we consider no selector is specified,
-     * and therefore we return {@code true}.
+     * <p>If node selection is null or node selection terms are empty, All kernel server get
+     * selected If any node selection terms meet the kernel server labels, kernel server get
+     * selected
      *
-     * @param labels a set of labels
-     * @return {@code true} if the server contains all labels in the label set; {@code false}
-     *     otherwise. Returns {@code true} if the given label map is {@code null} or empty.
+     * @param spec node selection specifications
+     * @return {@code true} if server matches node selection specifications
      */
-    public boolean containsAll(Map<String, String> labels) {
-        if (labels == null || labels.isEmpty()) {
-            return true;
-        }
-
-        for (Map.Entry<String, String> entry : labels.entrySet()) {
-            if (!this.labels.containsKey(entry.getKey())
-                    || !this.labels.get(entry.getKey()).equals(entry.getValue())) {
-                return false;
-            }
-        }
-        return true;
-    }
-
     public boolean matchNodeSelectorSpec(NodeSelectorSpec spec) {
+        // if spec is empty , it mean accept all kernel server
         if (spec == null) {
             return true;
         }
 
-        List<NodeSelectorTerm> terms = spec.getRequireExpressions();
-        if ((terms == null) || (terms.size() == 0)) {
-            return true;
-        }
-
+        List<NodeSelectorTerm> terms = spec.getNodeSelectorTerms();
+        // if terms is not empty then at least one term should meet server labels
         for (NodeSelectorTerm term : terms) {
-            List<Requirement> matchExpressions = term.getMatchExpressions();
+            List<Requirement> requirements = term.getMatchRequirements();
 
-            // nil or empty term selects no objects
-            if (matchExpressions == null || matchExpressions.size() == 0) {
-                continue;
-            }
-
-            if (!matchExpressions(matchExpressions)) {
+            if (!matchRequirements(requirements)) {
                 continue;
             }
             return true;
         }
-        return false;
+        // if terms is empty , All kernel server get selected
+        return terms.isEmpty();
     }
 
-    private boolean matchExpressions(List<Requirement> matchExprs) {
-        if (matchExprs == null) {
-            return true;
-        }
-
-        for (Requirement requirement : matchExprs) {
+    private boolean matchRequirements(List<Requirement> requirements) {
+        // all requirements should match
+        for (Requirement requirement : requirements) {
             if (!requirement.matches(labels)) {
-                logger.severe("matcheLabelSelector  failed for matchExpItem:" + matchExprs);
                 return false;
             }
         }
-        return !matchExprs.isEmpty();
+        return !requirements.isEmpty();
     }
 }

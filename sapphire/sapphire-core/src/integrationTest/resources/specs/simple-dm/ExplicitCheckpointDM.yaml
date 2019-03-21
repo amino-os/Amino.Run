@@ -1,12 +1,8 @@
 #Configuration for running KVStore as a
 # microservice with ExplicitCheckpoint policy.
 !!amino.run.app.MicroServiceSpec
-constructorName: null
 dmList:
 - configs: []
   name: amino.run.policy.checkpoint.explicitcheckpoint.ExplicitCheckpointPolicy
-nodeSelectorSpec: null
 javaClassName: amino.run.demo.KVStore
 lang: java
-name: null
-sourceFileLocation: null

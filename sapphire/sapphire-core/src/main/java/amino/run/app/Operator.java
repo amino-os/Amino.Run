@@ -1,5 +1,6 @@
 package amino.run.app;
 
+/** Class maintains list of Operation supported for {@link Requirement} creation */
 public enum Operator {
     Equal("="),
     In("in"),

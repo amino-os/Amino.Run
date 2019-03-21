@@ -1,8 +1,4 @@
 # Configuration for running KVStore without DM
 !!amino.run.app.MicroServiceSpec
-constructorName: null
 javaClassName: amino.run.demo.KVStore
-nodeSelectorSpec: null
 lang: java
-name: null
-sourceFileLocation: null

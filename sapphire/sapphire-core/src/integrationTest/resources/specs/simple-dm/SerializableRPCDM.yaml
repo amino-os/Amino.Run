@@ -1,12 +1,8 @@
 # Configuration for running KVStore as a
 # microservice with SerializableRPC policy.
 !!amino.run.app.MicroServiceSpec
-constructorName: null
 dmList:
 - configs: []
   name: amino.run.policy.serializability.SerializableRPCPolicy
-nodeSelectorSpec: null
 javaClassName: amino.run.demo.KVStore
 lang: java
-name: null
-sourceFileLocation: null

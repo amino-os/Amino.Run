@@ -1,11 +1,8 @@
 # Configuration for running KeyValueStore as a
 # microservice with LoadBalancedFrontend policy.
 !!amino.run.app.MicroServiceSpec
-constructorName: null
 dmList:
 - configs: []
   name: amino.run.policy.scalability.LoadBalancedFrontendPolicy
 javaClassName: amino.run.demo.KVStore
 lang: java
-name: null
-sourceFileLocation: null

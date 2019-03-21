@@ -2,6 +2,7 @@ package amino.run.app;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -11,18 +12,50 @@ import java.util.List;
 public class NodeSelectorTerm implements Serializable {
 
     // A list of node selector requirements by node's labels.
-    public List<Requirement> matchExpressions = new ArrayList<Requirement>();
+    private List<Requirement> matchRequirements = new ArrayList<Requirement>();
 
-    public void setMatchExpressions(List<Requirement> MatchExpressions) {
-        this.matchExpressions = MatchExpressions;
+    /**
+     * Set requirements required to match
+     *
+     * @param requirements set of requirements
+     */
+    public void setMatchRequirements(List<Requirement> requirements) {
+        if (requirements == null || requirements.isEmpty()) {
+            throw new IllegalArgumentException("empty requirement for node selection terms");
+        }
+
+        this.matchRequirements = requirements;
+        validate();
     }
 
-    public List<Requirement> getMatchExpressions() {
-        return matchExpressions;
+    /**
+     * Get list of requirements
+     *
+     * @return list of requirements
+     */
+    public List<Requirement> getMatchRequirements() {
+        return matchRequirements;
     }
 
-    public NodeSelectorTerm add(Requirement requirement) {
-        matchExpressions.add(requirement);
-        return this;
+    /**
+     * Update {@code matchRequirements} with new list of requirements
+     *
+     * @param requirements list of requirements
+     * @return
+     */
+    public void addMatchRequirements(Requirement... requirements) {
+        matchRequirements.addAll(Arrays.asList(requirements));
+        validate();
+    }
+
+    /**
+     * Validate requirements for node selection terms
+     *
+     * @throws IllegalArgumentException
+     */
+    public void validate() throws IllegalArgumentException {
+        for (Requirement requirement : matchRequirements) {
+            requirement.validateRequirement();
+        }
     }
 }

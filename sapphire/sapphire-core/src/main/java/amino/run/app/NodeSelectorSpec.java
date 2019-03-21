@@ -1,7 +1,9 @@
 package amino.run.app;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 import org.yaml.snakeyaml.Yaml;
 
 /**
@@ -12,22 +14,58 @@ import org.yaml.snakeyaml.Yaml;
  * consider support specifying {@code NodeSelectorSpec} at DM level in the future if necessary.
  */
 public class NodeSelectorSpec implements Serializable {
-    // If the affinity requirements specified by this field are not met at
-    // scheduling time, the SO will not be scheduled onto the node.
+    // If the requirements specified by this field are not met at
+    // scheduling time, the MicroService will not be scheduled onto the node.
     // +optional
-    private List<NodeSelectorTerm> requireExpressions = new ArrayList<NodeSelectorTerm>();
+    private List<NodeSelectorTerm> nodeSelectorTerms = new ArrayList<NodeSelectorTerm>();
 
-    public void setRequireExpressions(List<NodeSelectorTerm> requireExpressions) {
-        this.requireExpressions = requireExpressions;
+    /**
+     * Set node selection terms
+     *
+     * <p>Method is also used by snakeyaml as JavaBean for MicroServiceSpec yaml parsing
+     *
+     * @param terms
+     */
+    public void setNodeSelectorTerms(List<NodeSelectorTerm> terms) {
+        if (terms == null) {
+            throw new IllegalArgumentException("node selection terms can not be null");
+        }
+
+        this.nodeSelectorTerms = terms;
+        validate();
     }
 
-    public List<NodeSelectorTerm> getRequireExpressions() {
-        return requireExpressions;
+    /**
+     * Get node selection terms
+     *
+     * <p>Method is also used by snakeyaml as JavaBean for MicroServiceSpec yaml parsing
+     *
+     * @return List of node selection terms
+     */
+    public List<NodeSelectorTerm> getNodeSelectorTerms() {
+        return nodeSelectorTerms;
     }
 
-    public NodeSelectorSpec addRequireExpressions(NodeSelectorTerm term) {
-        requireExpressions.add(term);
-        return this;
+    /**
+     * Update node selection terms with new term
+     *
+     * @param term
+     * @return
+     */
+    public void addNodeSelectorTerms(NodeSelectorTerm term) {
+        term.validate();
+        nodeSelectorTerms.add(term);
+    }
+
+    /**
+     * Validate node selection terms
+     *
+     * @throws IllegalArgumentException
+     */
+    public void validate() throws IllegalArgumentException {
+        for (NodeSelectorTerm term : nodeSelectorTerms) {
+            term.validate();
+        }
     }
 
     @Override
@@ -41,11 +79,11 @@ public class NodeSelectorSpec implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         NodeSelectorSpec that = (NodeSelectorSpec) o;
-        return Objects.equals(requireExpressions, that.requireExpressions);
+        return Objects.equals(nodeSelectorTerms, that.nodeSelectorTerms);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(requireExpressions);
+        return Objects.hash(nodeSelectorTerms);
     }
 }

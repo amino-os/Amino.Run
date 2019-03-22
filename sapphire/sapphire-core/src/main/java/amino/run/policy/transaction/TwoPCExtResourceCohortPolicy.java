@@ -7,16 +7,13 @@ public class TwoPCExtResourceCohortPolicy extends TwoPCCohortPolicy {
 
     /** DCAP distributed transaction default server policy */
     public static class TwoPCExtResourceCohortServerPolicy extends TwoPCCohortServerPolicy {
-        public TwoPCExtResourceCohortServerPolicy() {
-            super(null);
 
-            TLSTransactionManager internalTransactionManager = new TLSTransactionManager();
-            internalTransactionManager.setValidator(
-                    new NonconcurrentTransactionValidator(
-                            this.getAppObject(), this.sandboxProvider));
-            this.setTransactionManager(
+        @Override
+        public void onCreate(GroupPolicy group) {
+            super.onCreate(group);
+            this.transactionManager =
                     new ExtResourceTransactionManager(
-                            this.sandboxProvider, internalTransactionManager));
+                            this.sandboxProvider, this.transactionManager);
         }
     }
 

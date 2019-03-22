@@ -12,7 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class DefaultPolicy extends Policy {
 
     public static class DefaultServerPolicy extends ServerPolicy {
-        private DefaultGroupPolicy group;
+        private GroupPolicy group;
 
         @Override
         public GroupPolicy getGroup() {
@@ -24,7 +24,7 @@ public class DefaultPolicy extends Policy {
 
         @Override
         public void onCreate(GroupPolicy group) {
-            this.group = (DefaultGroupPolicy) group;
+            this.group = group;
         }
 
         @Override
@@ -32,18 +32,18 @@ public class DefaultPolicy extends Policy {
     }
 
     public static class DefaultClientPolicy extends ClientPolicy {
-        private DefaultServerPolicy server;
-        private DefaultGroupPolicy group;
+        private ServerPolicy server;
+        private GroupPolicy group;
 
         @Override
         public void setServer(ServerPolicy server) {
-            this.server = (DefaultServerPolicy) server;
+            this.server = server;
         }
 
         @Override
         public ServerPolicy getServer() throws RemoteException {
             if (server == null) {
-                server = (DefaultServerPolicy) getGroup().onRefRequest();
+                server = getGroup().onRefRequest();
             }
 
             return server;
@@ -56,7 +56,7 @@ public class DefaultPolicy extends Policy {
 
         @Override
         public void onCreate(GroupPolicy group) {
-            this.group = (DefaultGroupPolicy) group;
+            this.group = group;
         }
     }
 

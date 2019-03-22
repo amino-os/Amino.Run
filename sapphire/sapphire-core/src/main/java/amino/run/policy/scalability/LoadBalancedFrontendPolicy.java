@@ -1,5 +1,6 @@
 package amino.run.policy.scalability;
 
+import amino.run.common.MicroServiceCreationException;
 import amino.run.common.MicroServiceNotFoundException;
 import amino.run.common.MicroServiceReplicaNotFoundException;
 import amino.run.kernel.common.KernelObjectStub;
@@ -159,7 +160,9 @@ public class LoadBalancedFrontendPolicy extends DefaultPolicy {
         private int replicaCount = DEFAULT_REPLICA_COUNT; // we can read from config or annotations
 
         @Override
-        public void onCreate(String region, Policy.ServerPolicy server) throws RemoteException {
+        public void onCreate(String region, Policy.ServerPolicy server)
+                throws RemoteException, MicroServiceCreationException {
+            server.skipPinning();
             super.onCreate(region, server);
 
             Config config = (Config) getPolicyConfig(Config.class.getName());

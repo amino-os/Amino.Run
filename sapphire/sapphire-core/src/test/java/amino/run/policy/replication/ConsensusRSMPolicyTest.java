@@ -12,9 +12,7 @@ import static amino.run.policy.util.consensus.raft.ServerTest.verifyLeaderElecte
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.*;
 import static org.powermock.api.mockito.PowerMockito.when;
 
 import amino.run.app.DMSpec;
@@ -26,11 +24,13 @@ import amino.run.common.MicroServiceID;
 import amino.run.common.ReplicaID;
 import amino.run.common.Utils;
 import amino.run.kernel.common.KernelOID;
+import amino.run.kernel.common.KernelObjectStub;
 import amino.run.policy.Policy;
 import amino.run.policy.util.consensus.raft.LeaderException;
 import amino.run.policy.util.consensus.raft.LogEntry;
 import amino.run.policy.util.consensus.raft.Server;
 import amino.run.sampleSO.SO;
+import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
@@ -52,6 +52,30 @@ public class ConsensusRSMPolicyTest extends BaseTest {
     SO so1, so2, so3;
 
     @Rule public ExpectedException thrown = ExpectedException.none();
+
+    /**
+     * This class is used by groupPolicyOnCreateFailure() only. It is used to prevent class type
+     * cast exception when using spy on Consensus class. The cast exception happens when converting
+     * the server instance to KernelObjectStub since spy wraps the instance with mockito class.
+     */
+    private static class ServerMock extends ConsensusRSMPolicy.ServerPolicy
+            implements KernelObjectStub {
+        @Override
+        public InetSocketAddress $__getHostname() {
+            return null;
+        }
+
+        @Override
+        public ReplicaID getReplicaId() {
+            return new ReplicaID(new MicroServiceID(UUID.randomUUID()), UUID.randomUUID());
+        }
+
+        @Override
+        public void $__updateHostname(InetSocketAddress hostname) {}
+
+        @Override
+        public void $__setNextClientPolicy(Policy.ClientPolicy clientPolicy) {}
+    }
 
     @Before
     public void setUp() throws Exception {
@@ -160,11 +184,8 @@ public class ConsensusRSMPolicyTest extends BaseTest {
      */
     @Test
     public void groupPolicyOnCreateFailure() throws Exception {
-        Policy.ServerPolicy server = spy(ConsensusRSMPolicy.ServerPolicy.class);
+        ServerMock server = new ServerMock();
         Policy.GroupPolicy group = spy(ConsensusRSMPolicy.GroupPolicy.class);
-        when(server.getReplicaId())
-                .thenReturn(
-                        new ReplicaID(new MicroServiceID(UUID.randomUUID()), UUID.randomUUID()));
         when(group.getServers()).thenThrow(new RemoteException());
         thrown.expect(Error.class);
         group.onCreate("", server);

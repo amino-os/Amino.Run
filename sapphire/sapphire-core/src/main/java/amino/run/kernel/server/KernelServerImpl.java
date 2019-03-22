@@ -184,7 +184,7 @@ public class KernelServerImpl implements KernelServer {
         logger.log(
                 Level.INFO,
                 String.format(
-                        "Finished adding chain for %s with %s",
+                        "Finished adding microservice for %s with %s",
                         oid, String.join(", ", serverPolicies)));
     }
 

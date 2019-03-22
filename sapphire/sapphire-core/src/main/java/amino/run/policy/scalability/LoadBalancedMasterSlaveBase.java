@@ -170,7 +170,8 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultPolicy {
         private Map<String, String> nodeLabels;
 
         @Override
-        public void onCreate(String region, Policy.ServerPolicy server) throws RemoteException {
+        public void onCreate(String region, Policy.ServerPolicy server)
+                throws RemoteException {
             logger = Logger.getLogger(GroupPolicy.class.getName());
             super.onCreate(region, server);
             boolean isLastPolicy = server.isLastPolicy();
@@ -196,13 +197,11 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultPolicy {
                 ServerPolicy s = (ServerPolicy) server;
                 InetSocketAddress dest = null;
 
-                if (isLastPolicy) {
-                    // TODO: Make deployment kernel pin primary replica once node selection
-                    // constraint is implemented.
-                    dest = getAvailable(0, addressList, unavailable);
-                    pin(s, dest);
-                    logger.info("Created master on " + dest);
-                }
+                // TODO: Make deployment kernel pin primary replica once node selection
+                // constraint is implemented.
+                dest = getAvailable(0, addressList, unavailable);
+                pin(s, dest);
+                logger.info("Created master on " + dest);
                 s.start();
 
                 for (int i = 0; i < NUM_OF_REPLICAS - 1; i++) {

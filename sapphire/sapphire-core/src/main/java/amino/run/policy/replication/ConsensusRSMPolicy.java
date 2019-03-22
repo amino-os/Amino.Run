@@ -1,5 +1,6 @@
 package amino.run.policy.replication;
 
+import amino.run.common.MicroServiceCreationException;
 import amino.run.common.MicroServiceNotFoundException;
 import amino.run.common.MicroServiceReplicaNotFoundException;
 import amino.run.policy.DefaultPolicy;
@@ -210,22 +211,19 @@ public class ConsensusRSMPolicy extends DefaultPolicy {
         private static Logger logger = Logger.getLogger(GroupPolicy.class.getName());
 
         @Override
-        public void onCreate(String region, Policy.ServerPolicy server) throws RemoteException {
-            super.onCreate(region, server);
-            List<InetSocketAddress> addressList = new ArrayList<InetSocketAddress>();
+        public void onCreate(String region, Policy.ServerPolicy server)
+                throws RemoteException, MicroServiceCreationException {
+            super.onCreate(region, server, spec);
 
             try {
                 ServerPolicy consensusServer = (ServerPolicy) server;
+                List<InetSocketAddress> addressList =
+                        getAddressList(region);
 
-                if (server.isLastPolicy()) {
-                    // TODO: Make deployment kernel pin primary replica once node selection
-                    // constraint is implemented.
-                    addressList = getAddressList(region);
-                    // The first in the addressList is for primary policy chain.
-                    // TODO: Improve node allocation so that other servers can be used instead of
-                    // the first one in the region.
-                    pin(consensusServer, addressList.get(0));
-                }
+                // The first in the addressList is for primary policy chain.
+                // TODO: Improve node allocation so that other servers can be used instead of
+                // the first one in the region.
+                pin(consensusServer, addressList.get(0));
 
                 // Create additional replicas, one per region. TODO:  Create N-1 replicas on
                 // different servers in the same zone.

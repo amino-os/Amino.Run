@@ -4,6 +4,7 @@ import amino.run.common.MicroServiceNotFoundException;
 import amino.run.common.MicroServiceReplicaNotFoundException;
 import amino.run.common.ReplicaID;
 import amino.run.kernel.common.KernelObjectStub;
+import amino.run.runtime.util.PolicyCreationHelper;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -80,6 +81,11 @@ public class DefaultPolicy extends Policy {
         @Override
         public void onCreate(String region, ServerPolicy server) throws RemoteException {
             addServer(server);
+
+            // Pin this Microservice to given address if it is the last DM.
+            if (!server.shouldSkipPinning()) {
+                PolicyCreationHelper.pinOriginalMicroservice(server);
+            }
         }
 
         @Override
@@ -143,8 +149,13 @@ public class DefaultPolicy extends Policy {
         protected void pin(ServerPolicy server, InetSocketAddress host)
                 throws MicroServiceReplicaNotFoundException, RemoteException,
                         MicroServiceNotFoundException {
-            server.pin_to_server(host);
-            ((KernelObjectStub) server).$__updateHostname(host);
+            if (server.isLastPolicy()) {
+                server.pin_to_server(host);
+            }
+
+            do {
+                ((KernelObjectStub) server).$__updateHostname(host);
+            } while (server.getOuterServerPolicy() != null);
         }
 
         /**

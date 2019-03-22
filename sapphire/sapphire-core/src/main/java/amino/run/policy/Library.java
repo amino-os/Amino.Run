@@ -5,10 +5,7 @@ import amino.run.app.MicroServiceSpec;
 import amino.run.app.NodeSelectorSpec;
 import amino.run.common.*;
 import amino.run.compiler.GlobalStubConstants;
-import amino.run.kernel.common.GlobalKernelReferences;
-import amino.run.kernel.common.KernelOID;
-import amino.run.kernel.common.KernelObjectFactory;
-import amino.run.kernel.common.KernelObjectNotFoundException;
+import amino.run.kernel.common.*;
 import amino.run.kernel.server.KernelServerImpl;
 import amino.run.oms.OMSServer;
 import amino.run.policy.Policy.ServerPolicy;
@@ -34,13 +31,16 @@ public abstract class Library implements Upcalls {
         protected ReplicaID replicaId;
         private MicroServiceSpec spec;
         protected Policy.GroupPolicy group;
-        protected boolean pinned;
+
+        // Whether to skip pinning this microservice (usually primary replica).
+        // Group policy that sets this property should pin this microservice itself.
+        protected boolean skipPinning;
 
         static Logger logger = Logger.getLogger(ServerPolicyLibrary.class.getName());
 
         // ServerPolicy that precedes the current policy in the server side chain - this order is
         // reverse in the client side.
-        protected Policy.ServerPolicy previousServerPolicy;
+        protected Policy.ServerPolicy outerServerPolicy;
 
         // List of ServerPolicies that should be created in the chain after the current one when
         // creating replicas.
@@ -81,12 +81,12 @@ public abstract class Library implements Upcalls {
             return this.processedPolicies;
         }
 
-        public ServerPolicy getPreviousServerPolicy() {
-            return this.previousServerPolicy;
+        public ServerPolicy getOuterServerPolicy() {
+            return this.outerServerPolicy;
         }
 
-        public void setPreviousServerPolicy(Policy.ServerPolicy serverPolicy) {
-            this.previousServerPolicy = serverPolicy;
+        public void setOuterServerPolicy(Policy.ServerPolicy serverPolicy) {
+            this.outerServerPolicy = serverPolicy;
         }
 
         public void setNextPolicyNames(List<String> nextPolicyNames) {
@@ -107,12 +107,20 @@ public abstract class Library implements Upcalls {
             this.isLastPolicy = isLastPolicy;
         }
 
-        public boolean pinned() {
-            return this.pinned;
+        /*
+         * Set to skip pinning this from default policy. DM that sets this should pin this policy itself.
+         * Currently, used by LoadBalancedFrontendPolicy.
+         */
+        public void skipPinning() {
+            this.skipPinning = true;
         }
 
-        public void setPinned() {
-            this.pinned = true;
+        /*
+         * Return whether pinning this microservice by default policy should be skipped since the group
+         * policy of the DM itself will pin this microservice.
+         */
+        public boolean shouldSkipPinning() {
+            return this.skipPinning;
         }
 
         public void setProcessedPolicies(List<PolicyContainer> processedPolicies) {
@@ -256,11 +264,21 @@ public abstract class Library implements Upcalls {
                         MicroServiceReplicaNotFoundException {
             ServerPolicy serverPolicy = (ServerPolicy) this;
 
-            // Ensure that we start from the first Server Policy.
-            // TODO: Consider using a reference to the innermost policy directly instead of going
-            // through the chain.
-            while (serverPolicy.getPreviousServerPolicy() != null) {
-                serverPolicy = serverPolicy.getPreviousServerPolicy();
+            // Before pinning the MicroService Object replica to the provided KernelServer, need to
+            // update the Hostname.
+            List<PolicyContainer> processedPolicyList = serverPolicy.getProcessedPolicies();
+            Iterator<PolicyContainer> itr = processedPolicyList.iterator();
+            while (itr.hasNext()) {
+                PolicyContainer container = itr.next();
+                ServerPolicy tempServerPolicy = container.serverPolicy;
+                container.serverPolicyStub.$__updateHostname(server);
+
+                /* AppObject holds the previous DM's server policy stub(instead of So stub) in case of DM chain on the
+                server side. Update host name in the server stub within AppObject */
+                if (tempServerPolicy.getAppObject().getObject() instanceof KernelObjectStub) {
+                    ((KernelObjectStub) tempServerPolicy.getAppObject().getObject())
+                            .$__updateHostname(server);
+                }
             }
 
             logger.info(
@@ -289,7 +307,6 @@ public abstract class Library implements Upcalls {
                 container.serverPolicyStub.$__updateHostname(server);
             }
 
-            this.setPinned();
             logger.info(
                     "Finished pinning kernel object "
                             + serverPolicy.$__getKernelOID()

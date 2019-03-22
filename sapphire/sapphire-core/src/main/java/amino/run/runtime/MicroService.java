@@ -29,7 +29,6 @@ import amino.run.policy.PolicyContainer;
 import amino.run.runtime.util.PolicyCreationHelper;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -165,9 +164,7 @@ public class MicroService {
         /* Remove the next DM client link for all server policy stubs on server side */
         for (PolicyContainer container : processedPolicies) {
             container.serverPolicyStub.$__setNextClientPolicy(null);
-
-        InetSocketAddress address = null;
-        PolicyCreationHelper.pinOriginalMicroservice(processedPolicies);
+        }
 
         return appStub;
     }
@@ -242,7 +239,7 @@ public class MicroService {
 
             // Links this serverPolicy to stub for outer policy.
             serverPolicy.$__initialize(new AppObject(outerStub));
-            outerSP.setPreviousServerPolicy(serverPolicy);
+            outerSP.setOuterServerPolicy(serverPolicy);
             outerStub.$__setNextClientPolicy(currentSPC.clientPolicy);
         }
 

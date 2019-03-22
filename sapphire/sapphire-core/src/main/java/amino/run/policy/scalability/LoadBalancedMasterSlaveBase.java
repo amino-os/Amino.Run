@@ -196,13 +196,11 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultPolicy {
                 ServerPolicy s = (ServerPolicy) server;
                 InetSocketAddress dest = null;
 
-                if (isLastPolicy) {
-                    // TODO: Make deployment kernel pin primary replica once node selection
-                    // constraint is implemented.
-                    dest = getAvailable(0, addressList, unavailable);
-                    pin(s, dest);
-                    logger.info("Created master on " + dest);
-                }
+                // TODO: Make deployment kernel pin primary replica once node selection
+                // constraint is implemented.
+                dest = getAvailable(0, addressList, unavailable);
+                pin(s, dest);
+                logger.info("Created master on " + dest);
                 s.start();
 
                 for (int i = 0; i < NUM_OF_REPLICAS - 1; i++) {

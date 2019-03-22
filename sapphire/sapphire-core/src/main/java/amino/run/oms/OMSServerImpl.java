@@ -68,14 +68,14 @@ public class OMSServerImpl implements OMSServer, Registry {
      */
     public KernelOID registerKernelObject(InetSocketAddress host) throws RemoteException {
         KernelOID oid = kernelObjectManager.register(host);
-        logger.info("Registering " + oid.toString() + " on host " + host.toString());
+        logger.info("[OMS] Registering " + oid.toString() + " on host " + host.toString());
         return oid;
     }
 
     /** Register a new host for this kernel object. Used to move a kernel object */
     public void registerKernelObject(KernelOID oid, InetSocketAddress host)
             throws KernelObjectNotFoundException {
-        logger.info("Registering new host for " + oid.toString() + " on " + host.toString());
+        logger.info("[OMS] Registering new host for " + oid.toString() + " on " + host.toString());
         kernelObjectManager.register(oid, host);
     }
 
@@ -89,7 +89,7 @@ public class OMSServerImpl implements OMSServer, Registry {
      */
     public void unRegisterKernelObject(KernelOID oid, InetSocketAddress host)
             throws KernelObjectNotFoundException {
-        logger.info("UnRegistering " + oid.toString() + " on host " + host.toString());
+        logger.info("[OMS] UnRegistering " + oid.toString() + " on host " + host.toString());
         kernelObjectManager.unRegister(oid, host);
     }
 
@@ -100,9 +100,9 @@ public class OMSServerImpl implements OMSServer, Registry {
      */
     public InetSocketAddress lookupKernelObject(KernelOID oid)
             throws KernelObjectNotFoundException {
-        logger.info(
-                "Found host for " + oid.toString() + " host: " + kernelObjectManager.lookup(oid));
-        return kernelObjectManager.lookup(oid);
+        InetSocketAddress ko = kernelObjectManager.lookup(oid);
+        logger.info("[OMS] Found host for " + oid.toString() + " host: " + ko);
+        return ko;
     }
 
     @Override
@@ -147,14 +147,14 @@ public class OMSServerImpl implements OMSServer, Registry {
         InetSocketAddress host = serverManager.getBestSuitableServer(spec);
         if (host == null) {
             throw new MicroServiceCreationException(
-                    "Failed to create microservice. Kernel server with the given requirements is not available");
+                    "[OMS] Failed to create microservice. Kernel server with the given requirements is not available");
         }
 
         /* Get the kernel server stub */
         KernelServer server = serverManager.getServer(host);
         if (server == null) {
             throw new MicroServiceCreationException(
-                    "Failed to create microservice. Kernel server not found.");
+                    "[OMS] Failed to create microservice. Kernel server not found.");
         }
 
         // TODO(multi-lang): Store spec together with object ID in objectManager
@@ -168,7 +168,7 @@ public class OMSServerImpl implements OMSServer, Registry {
             return appObjStub.$__getMicroServiceId();
         } catch (Exception e) {
             throw new MicroServiceCreationException(
-                    "Failed to create microservice. Exception occurred at kernel server.", e);
+                    "[OMS] Failed to create microservice. Exception occurred at kernel server.", e);
         }
     }
 
@@ -181,7 +181,7 @@ public class OMSServerImpl implements OMSServer, Registry {
             return appObjStub;
         } catch (Exception e) {
             throw new MicroServiceNotFoundException(
-                    "Failed to acquire stub for microservice " + id, e);
+                    "[OMS] Failed to acquire stub for microservice " + id, e);
         }
     }
 

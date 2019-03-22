@@ -78,14 +78,8 @@ public class DHTPolicy extends DefaultPolicy {
             }
 
             try {
+                pin(server, getAddress(region));
                 ArrayList<String> regions = getRegions();
-
-                if (server.isLastPolicy()) {
-                    // TODO: Make deployment kernel pin primary replica once node selection
-                    // constraint is implemented.
-                    InetSocketAddress address = getAddress(region);
-                    pin(server, address);
-                }
 
                 // TODO: Current implementation assumes shards are spread out across regions.
                 // This assumption may not be true if the policy wants to locate all shards per

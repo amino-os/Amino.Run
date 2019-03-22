@@ -212,20 +212,15 @@ public class ConsensusRSMPolicy extends DefaultPolicy {
         @Override
         public void onCreate(String region, Policy.ServerPolicy server) throws RemoteException {
             super.onCreate(region, server);
-            List<InetSocketAddress> addressList = new ArrayList<InetSocketAddress>();
 
             try {
                 ServerPolicy consensusServer = (ServerPolicy) server;
+                List<InetSocketAddress> addressList = getAddressList(region);
 
-                if (server.isLastPolicy()) {
-                    // TODO: Make deployment kernel pin primary replica once node selection
-                    // constraint is implemented.
-                    addressList = getAddressList(region);
-                    // The first in the addressList is for primary policy chain.
-                    // TODO: Improve node allocation so that other servers can be used instead of
-                    // the first one in the region.
-                    pin(consensusServer, addressList.get(0));
-                }
+                // The first in the addressList is for primary policy chain.
+                // TODO: Improve node allocation so that other servers can be used instead of
+                // the first one in the region.
+                pin(consensusServer, addressList.get(0));
 
                 // Create additional replicas, one per region. TODO:  Create N-1 replicas on
                 // different servers in the same zone.

@@ -11,10 +11,12 @@ public class TwoPCCoordinatorPolicy extends DefaultPolicy {
 
     /** DCAP distributed transaction coordinator server policy */
     public static class TwoPCCoordinatorServerPolicy extends DefaultServerPolicy {
-        private final transient TwoPCCoordinator coordinator;
+        private transient TwoPCCoordinator coordinator;
         private final transient SandboxProvider sandboxProvider = new AppObjectSandboxProvider();
 
-        public TwoPCCoordinatorServerPolicy() {
+        @Override
+        public void onCreate(GroupPolicy group) {
+            super.onCreate(group);
             NonconcurrentTransactionValidator validator =
                     new NonconcurrentTransactionValidator(
                             this.getAppObject(), this.sandboxProvider);

@@ -35,19 +35,13 @@ public class TwoPCCohortPolicy extends DefaultPolicy {
     /** DCAP distributed transaction default server policy */
     public static class TwoPCCohortServerPolicy extends DefaultServerPolicy {
         protected final SandboxProvider sandboxProvider = new AppObjectSandboxProvider();
-        private TransactionManager transactionManager;
+        protected TransactionManager transactionManager;
 
         private static Logger logger = Logger.getLogger(TwoPCCohortServerPolicy.class.getName());
 
-        protected TwoPCCohortServerPolicy(TransactionManager transactionManager) {
-            this.transactionManager = transactionManager;
-        }
-
-        protected void setTransactionManager(TransactionManager transactionManager) {
-            this.transactionManager = transactionManager;
-        }
-
-        public TwoPCCohortServerPolicy() {
+        @Override
+        public void onCreate(GroupPolicy group) {
+            super.onCreate(group);
             TransactionValidator validator =
                     new NonconcurrentTransactionValidator(
                             this.getAppObject(), this.sandboxProvider);

@@ -88,7 +88,7 @@ def getGraalVmVersion = { ->
         standardOutput = grepOut
     }
     exec {
-        commandLine 'awk', '{print $2}'
+        commandLine 'awk', '{print $4}'
         standardInput = awkIn
         standardOutput = awkOut
     }

@@ -744,6 +744,10 @@ public class Server
         vState.otherServers.put(id, server);
     }
 
+    public void removeServers(List<? extends RemoteRaftServer> serversToremove) {
+        vState.otherServers.values().removeAll(serversToremove);
+    }
+
     RemoteRaftServer getCurrentLeader() {
         return getServer(vState.getCurrentLeader());
     }

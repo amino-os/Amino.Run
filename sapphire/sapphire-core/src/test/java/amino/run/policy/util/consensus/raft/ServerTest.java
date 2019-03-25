@@ -13,10 +13,11 @@ import static org.mockito.Mockito.spy;
 import amino.run.common.AppObject;
 import amino.run.policy.Policy;
 import amino.run.policy.replication.ConsensusRSMPolicy;
+import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -104,13 +105,13 @@ public class ServerTest {
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() throws Exception, RemoteException {
         appObject = mock(AppObject.class);
 
         for (int i = 0; i < SERVER_COUNT; i++) {
             serverPolicy[i] = spy(ConsensusRSMPolicy.ServerPolicy.class);
             serverPolicy[i].$__initialize(appObject);
-            ((ConsensusRSMPolicy.ServerPolicy) serverPolicy[i]).onCreate(groupPolicy);
+            serverPolicy[i].onCreate(groupPolicy);
             try {
                 raftServer[i] =
                         (Server) (extractFieldValueOnInstance(this.serverPolicy[i], "raftServer"));
@@ -120,17 +121,9 @@ public class ServerTest {
             }
         }
         // Tell all the servers about one another
-        ConcurrentHashMap<UUID, ConsensusRSMPolicy.ServerPolicy> allServers =
-                new ConcurrentHashMap<UUID, ConsensusRSMPolicy.ServerPolicy>();
-        int k = 0;
-
         for (Policy.ServerPolicy i : serverPolicy) {
             ConsensusRSMPolicy.ServerPolicy s = (ConsensusRSMPolicy.ServerPolicy) i;
-            allServers.put(raftServer[k++].getMyServerID(), s);
-        }
-
-        for (int i = 0; i < SERVER_COUNT; i++) {
-            ((ConsensusRSMPolicy.ServerPolicy) serverPolicy[i]).initializeRaft(allServers);
+            s.onMembershipChange(new ArrayList<Policy.ServerPolicy>(Arrays.asList(serverPolicy)));
         }
     }
 

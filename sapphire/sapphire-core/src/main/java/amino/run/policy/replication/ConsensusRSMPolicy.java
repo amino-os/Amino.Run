@@ -21,8 +21,6 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Logger;
 
 /**
@@ -153,26 +151,34 @@ public class ConsensusRSMPolicy extends DefaultPolicy {
             raftServer = new Server(this);
         }
 
-        /**
-         * TODO: Handle added and failed servers - i.e. quorum membership changes @Override public
-         * void onMembershipChange() { super.onMembershipChange(); for(ServerPolicy server:
-         * this.getGroup().getServers()) { ServerPolicy consensusServer = (ServerPolicy)server;
-         * this.raftServer.addServer(consensusServer.getRaftServer().getMyServerID(),
-         * consensusServer.getRaftServer()); } }
-         */
+        @Override
+        public void onMembershipChange(ArrayList<Policy.ServerPolicy> servers)
+                throws RemoteException {
+            List<? extends Policy.ServerPolicy> oldList = getServers();
+            super.onMembershipChange(servers);
 
-        /**
-         * Initialize the RAFT protocol with the specified set of servers.
-         *
-         * @param servers
-         */
-        public void initializeRaft(ConcurrentMap<UUID, ServerPolicy> servers) {
-            for (UUID id : servers.keySet()) {
-                if (!id.equals(raftServer.getMyServerID())) {
-                    this.raftServer.addServer(id, servers.get(id));
+            raftServer.stop();
+
+            /* Initialize the RAFT protocol with the specified set of servers */
+            /* Remove servers from existing set */
+            oldList.removeAll(servers);
+            if (!oldList.isEmpty()) {
+                raftServer.removeServers((List<? extends RemoteRaftServer>) oldList);
+            }
+
+            /* Update servers to existing set. */
+            /* Note: Few server could have migrated. i.e., host name alone in the server stubs would have changed to
+            point to new host. raftServer.addServer() updates the map of <uuid, RemoteRaftServer>. Since it is not
+            harmful to update the map again for same RemoteRaftServer, we don't differentiate whether the
+            RemoteRaftServer is already present in map or not */
+            for (Policy.ServerPolicy server : servers) {
+                ServerPolicy consensusServer = (ServerPolicy) server;
+                if (!consensusServer.getRaftServerId().equals(raftServer.getMyServerID())) {
+                    raftServer.addServer(consensusServer.getRaftServerId(), consensusServer);
                 }
             }
-            this.raftServer.start();
+
+            raftServer.start();
         }
 
         // TODO: This method should be thread safe
@@ -227,21 +233,6 @@ public class ConsensusRSMPolicy extends DefaultPolicy {
                 for (int i = 1; i < addressList.size(); i++) {
                     replicate(consensusServer, addressList.get(i), region);
                 }
-
-                // Tell all the servers about one another
-                ConcurrentHashMap<UUID, ServerPolicy> allServers =
-                        new ConcurrentHashMap<UUID, ServerPolicy>();
-                // First get the self-assigned ID from each server
-                List<Policy.ServerPolicy> servers = getServers();
-                for (Policy.ServerPolicy i : servers) {
-                    ServerPolicy s = (ServerPolicy) i;
-                    allServers.put(s.getRaftServerId(), s);
-                }
-                // Now tell each server about the location and ID of all the servers, and start the
-                // RAFT protocol on each server.
-                for (ServerPolicy s : allServers.values()) {
-                    s.initializeRaft(allServers);
-                }
             } catch (RemoteException e) {
                 // TODO: MicroService Group Policy Interface does not allow throwing exceptions, so
                 // in
@@ -252,6 +243,24 @@ public class ConsensusRSMPolicy extends DefaultPolicy {
                 throw new Error("Failed to find microservice.", e);
             } catch (MicroServiceReplicaNotFoundException e) {
                 throw new Error("Failed to find microservice replica.", e);
+            }
+        }
+
+        @Override
+        public void addServer(Policy.ServerPolicy server) throws RemoteException {
+            super.addServer(server);
+            /* Tell all the servers about existing servers */
+            for (Policy.ServerPolicy srv : getServers()) {
+                srv.onMembershipChange(getServers());
+            }
+        }
+
+        @Override
+        public void removeServer(Policy.ServerPolicy server) throws RemoteException {
+            super.removeServer(server);
+            /* Tell all the servers about existing servers */
+            for (Policy.ServerPolicy srv : getServers()) {
+                srv.onMembershipChange(getServers());
             }
         }
     }

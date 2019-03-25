@@ -120,13 +120,13 @@ public class DHTPolicy extends DefaultPolicy {
         }
 
         @Override
-        protected void addServer(Policy.ServerPolicy server) {
+        protected void addServer(Policy.ServerPolicy server) throws RemoteException {
             super.addServer(server);
             dhtChord.add((ServerPolicy) server);
         }
 
         @Override
-        protected void removeServer(Policy.ServerPolicy server) {
+        protected void removeServer(Policy.ServerPolicy server) throws RemoteException {
             super.removeServer(server);
             // TODO: Need to remove from chord too
         }

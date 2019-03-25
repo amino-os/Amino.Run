@@ -108,23 +108,6 @@ public interface Upcalls {
          *     explicit set of kernel or DM exceptions.
          */
         Object onRPC(String method, ArrayList<Object> params) throws Exception;
-
-        /**
-         * Event handler to notify replicas of an SO that the set of replicas of this SO have
-         * changed. Usually used to refresh the locally cached set of replicas (if the DM keeps
-         * one), by remotely calling the group policy on OMS to determine the new set of replicas.
-         * TODO: Quinton: Curiously, as far as I can tell, this is never invoked anywhere by the
-         * Amino.Run kernel, or from anywhere else. It's also not implemented anywhere either, other
-         * than no-op implementations to satisfy this interface. We need to fix this to invoke htis
-         * method correctly from the Amino.Run kernnel every time a replica is created, destroyed or
-         * moved. TODO: Another todo. Why do we not just pass the new list of members in here as a
-         * parameter, to avoid the DM having to make another round trip to the OMS to fetch the new
-         * list? Perhaps that will be too expensive and we can leave that until later, if at all. In
-         * which case onMembershipChange() can be used to cimply invalidate the cache. TODO: Also,
-         * this is probably not actually invoked by the DK, but rather by the GroupPolicy. So it
-         * should be moved to a different interface than this one.
-         */
-        void onMembershipChange();
     }
 
     interface GroupUpcalls extends Serializable {

@@ -12,7 +12,10 @@ import static amino.run.policy.util.consensus.raft.ServerTest.verifyLeaderElecte
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.*;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.spy;
 
 import amino.run.app.DMSpec;
 import amino.run.app.Language;
@@ -184,7 +187,11 @@ public class ConsensusRSMPolicyTest extends BaseTest {
         // If spy(CosensusRSMPolicy.ServerPolicy.class) is used, cast fails due to mock wrapper.
         ServerMock server = new ServerMock();
         Policy.GroupPolicy group = spy(ConsensusRSMPolicy.GroupPolicy.class);
-        doThrow(RemoteException.class).when(group).getAddressList(anyString());
+        server.setReplicaId(
+                new ReplicaID(new MicroServiceID(UUID.randomUUID()), UUID.randomUUID()));
+        server.setToSkipPinning();
+        server.onCreate(group);
+        doThrow(new RemoteException()).when(group).getAddressList(anyString());
         thrown.expect(Error.class);
         group.onCreate("", server);
     }

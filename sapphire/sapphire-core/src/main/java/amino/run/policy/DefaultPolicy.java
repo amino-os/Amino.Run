@@ -14,6 +14,7 @@ public class DefaultPolicy extends Policy {
 
     public static class DefaultServerPolicy extends ServerPolicy {
         private GroupPolicy group;
+        private ArrayList<ServerPolicy> servers = new ArrayList<ServerPolicy>();
 
         @Override
         public GroupPolicy getGroup() {
@@ -21,7 +22,10 @@ public class DefaultPolicy extends Policy {
         }
 
         @Override
-        public void onMembershipChange() {}
+        public void onMembershipChange(ArrayList<ServerPolicy> remoteServers)
+                throws RemoteException {
+            servers = new ArrayList<ServerPolicy>(remoteServers);
+        }
 
         @Override
         public void onCreate(GroupPolicy group) {
@@ -30,6 +34,11 @@ public class DefaultPolicy extends Policy {
 
         @Override
         public void onDestroy() {}
+
+        @Override
+        protected ArrayList<ServerPolicy> getServers() throws RemoteException {
+            return new ArrayList<ServerPolicy>(servers);
+        }
     }
 
     public static class DefaultClientPolicy extends ClientPolicy {
@@ -65,11 +74,11 @@ public class DefaultPolicy extends Policy {
         private ConcurrentHashMap<ReplicaID, ServerPolicy> servers =
                 new ConcurrentHashMap<ReplicaID, ServerPolicy>();
 
-        protected void addServer(ServerPolicy server) {
+        protected void addServer(ServerPolicy server) throws RemoteException {
             servers.put(server.getReplicaId(), server);
         }
 
-        protected void removeServer(ServerPolicy server) {
+        protected void removeServer(ServerPolicy server) throws RemoteException {
             servers.remove(server.getReplicaId());
         }
 

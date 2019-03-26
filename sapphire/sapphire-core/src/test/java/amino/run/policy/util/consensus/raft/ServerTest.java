@@ -110,7 +110,7 @@ public class ServerTest {
         for (int i = 0; i < SERVER_COUNT; i++) {
             serverPolicy[i] = spy(ConsensusRSMPolicy.ServerPolicy.class);
             serverPolicy[i].$__initialize(appObject);
-            ((ConsensusRSMPolicy.ServerPolicy) serverPolicy[i]).onCreate(groupPolicy, null);
+            ((ConsensusRSMPolicy.ServerPolicy) serverPolicy[i]).onCreate(groupPolicy);
             try {
                 raftServer[i] =
                         (Server) (extractFieldValueOnInstance(this.serverPolicy[i], "raftServer"));

@@ -81,7 +81,7 @@ public class LoadBalancedMasterSlaveSyncPolicyTest {
             AppObject appObj = new AppObject(new Date());
             server.$__setKernelOID(new KernelOID(i));
             server.$__initialize(appObj);
-            server.onCreate(group, null);
+            server.onCreate(group);
             servers.add(server);
         }
         return servers;

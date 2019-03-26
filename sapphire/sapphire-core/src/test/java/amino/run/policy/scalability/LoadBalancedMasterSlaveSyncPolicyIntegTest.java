@@ -54,9 +54,9 @@ public class LoadBalancedMasterSlaveSyncPolicyIntegTest {
         doReturn(list).when(group).getServers();
 
         client.setServer(server1);
-        client.onCreate(group, null);
-        server1.onCreate(group, null);
-        server2.onCreate(group, null);
+        client.onCreate(group);
+        server1.onCreate(group);
+        server2.onCreate(group);
         server1.start();
         server2.start();
     }

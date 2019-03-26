@@ -1,7 +1,5 @@
 package amino.run.policy;
 
-import amino.run.app.MicroServiceSpec;
-import amino.run.runtime.MicroService;
 import java.io.Serializable;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -33,20 +31,13 @@ public interface Upcalls {
      */
     interface ClientUpcalls extends Serializable {
         /**
-         * Event handler for microservice creation. Called after a primary microservice is first
-         * created (i.e. before any replicas are created). This is called after {@link setServer}
-         * (currently in {@link MicroService.createPolicy} and before {@link
-         * ServerUpcalls.onCreate}. It is usually used to store a reference to the group policy for
-         * this SO, and to initialize the client. Configuration parameters for the client are
-         * contained in spec.
+         * Event handler for client creation. Called after replicas and group policy are created. It
+         * is usually used to store a reference to the group policy for this microservice, and to
+         * initialize the client.
          *
-         * @param group the group policy for the newly created microservice.
-         * @param spec microservice spec, which contains configuration parameters for the client
-         *     TODO: Check that there really are configuration parameters for the client buried in
-         *     there, and also change this parameter to more specifically be client configuration
-         *     parameters.
+         * @param group the group policy for the microservice.
          */
-        void onCreate(Policy.GroupPolicy group, MicroServiceSpec spec);
+        void onCreate(Policy.GroupPolicy group);
 
         /**
          * Event handler for remote procedure calls/method invocations against the microservice.
@@ -71,20 +62,15 @@ public interface Upcalls {
     interface ServerUpcalls extends Serializable {
 
         /**
-         * Event handler for replica creation. Called after a replica (including the first one) is
-         * first created. This is called after {@link ClientUpcalls.onCreate} (currently in {@link
-         * MicroService.createPolicy} and before {@link GroupUpcalls.onCreate} and before {@link
-         * GroupUpcalls.addServer}. It is usually used to store a reference to the group policy for
-         * this SO, and to otherwise initialize the server. Configuration parameters for the server
-         * are contained in spec.
+         * Event handler for replica creation. Called by the Amino.Run kernel on creation of a
+         * replica (including the first one). This is called before {@link GroupUpcalls#onCreate}
+         * for the first/primary replica and after {@link GroupUpcalls#onCreate} for rest of the
+         * replicas. It is usually used to store a reference to the group policy for this
+         * microservice, and to otherwise initialize the server.
          *
          * @param group the group policy for the newly created microservice.
-         * @param spec microservice spec, which contains configuration parameters for the server
-         *     TODO: Check that there really are configuration parameters for the server buried in
-         *     there, and also change this parameter to more specifically be server configuration
-         *     parameters.
          */
-        void onCreate(Policy.GroupPolicy group, MicroServiceSpec spec);
+        void onCreate(Policy.GroupPolicy group);
 
         /**
          * Event handler for replica destruction. Called immediately before a its kernel object (or
@@ -144,17 +130,14 @@ public interface Upcalls {
     interface GroupUpcalls extends Serializable {
         /**
          * Event handler for group creation. Called by the Amino.Run kernel on creation of this
-         * group and it's first/primary replica. DM's may implement this method to initialize the
-         * group policy, create additional replicas, etc.
+         * group and it's first/primary replica. It is usually used to initialize the group policy,
+         * create additional replicas, etc.
          *
          * @param region TODO: Quinton: This parameter is deprecated and must be deleted.
          * @param server reference to the server policy of the first/primary replica that is managed
          *     by the group policy
-         * @param spec microservice spec. This contains configuration parameters that may be used to
-         *     configure this group policy.
          */
-        void onCreate(String region, Policy.ServerPolicy server, MicroServiceSpec spec)
-                throws RemoteException;
+        void onCreate(String region, Policy.ServerPolicy server) throws RemoteException;
 
         /**
          * Event handler for group destruction. Called by the Amino.Run kernel to destroy this group

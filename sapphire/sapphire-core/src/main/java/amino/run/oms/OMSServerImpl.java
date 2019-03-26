@@ -236,17 +236,19 @@ public class OMSServerImpl implements OMSServer, Registry {
      *
      * @param policyClass
      * @param microServiceId
+     * @param spec
      * @return Returns group policy object stub
      * @throws ClassNotFoundException
      * @throws KernelObjectNotCreatedException
      * @throws MicroServiceNotFoundException
      */
     @Override
-    public Policy.GroupPolicy createGroupPolicy(Class<?> policyClass, MicroServiceID microServiceId)
+    public Policy.GroupPolicy createGroupPolicy(
+            Class<?> policyClass, MicroServiceID microServiceId, MicroServiceSpec spec)
             throws ClassNotFoundException, KernelObjectNotCreatedException,
                     MicroServiceNotFoundException {
         final Policy.GroupPolicy group =
-                MicroService.createGroupPolicy(policyClass, microServiceId);
+                MicroService.createGroupPolicy(policyClass, microServiceId, spec);
         EventHandler groupHandler =
                 new EventHandler(
                         GlobalKernelReferences.nodeServer.getLocalHost(),

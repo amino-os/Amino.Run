@@ -18,8 +18,8 @@ public class TwoPCExtResourceCohortServerPolicyTest {
         SandboxProvider sandboxProvider = mock(SandboxProvider.class);
         ReflectionTestUtil.setField(serverPolicy, "sandboxProvider", sandboxProvider);
         TransactionManager transactionManager = mock(TransactionManager.class);
-        serverPolicy.setTransactionManager(
-                new ExtResourceTransactionManager(sandboxProvider, transactionManager));
+        serverPolicy.transactionManager =
+                new ExtResourceTransactionManager(sandboxProvider, transactionManager);
 
         TransactionManager businessObj =
                 mock(TransactionManager.class, withSettings().extraInterfaces(Serializable.class));

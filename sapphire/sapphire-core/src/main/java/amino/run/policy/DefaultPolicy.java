@@ -1,6 +1,5 @@
 package amino.run.policy;
 
-import amino.run.app.MicroServiceSpec;
 import amino.run.common.MicroServiceNotFoundException;
 import amino.run.common.MicroServiceReplicaNotFoundException;
 import amino.run.common.ReplicaID;
@@ -13,6 +12,8 @@ import java.util.concurrent.ConcurrentHashMap;
 public class DefaultPolicy extends Policy {
 
     public static class DefaultServerPolicy extends ServerPolicy {
+        private GroupPolicy group;
+
         @Override
         public GroupPolicy getGroup() {
             return group;
@@ -22,8 +23,8 @@ public class DefaultPolicy extends Policy {
         public void onMembershipChange() {}
 
         @Override
-        public void onCreate(GroupPolicy group, MicroServiceSpec spec) {
-            super.onCreate(group, spec);
+        public void onCreate(GroupPolicy group) {
+            this.group = group;
         }
 
         @Override
@@ -31,18 +32,18 @@ public class DefaultPolicy extends Policy {
     }
 
     public static class DefaultClientPolicy extends ClientPolicy {
-        private DefaultServerPolicy server;
-        private DefaultGroupPolicy group;
+        private ServerPolicy server;
+        private GroupPolicy group;
 
         @Override
         public void setServer(ServerPolicy server) {
-            this.server = (DefaultServerPolicy) server;
+            this.server = server;
         }
 
         @Override
         public ServerPolicy getServer() throws RemoteException {
             if (server == null) {
-                server = (DefaultServerPolicy) getGroup().onRefRequest();
+                server = getGroup().onRefRequest();
             }
 
             return server;
@@ -54,16 +55,14 @@ public class DefaultPolicy extends Policy {
         }
 
         @Override
-        public void onCreate(GroupPolicy group, MicroServiceSpec spec) {
-            this.group = (DefaultGroupPolicy) group;
+        public void onCreate(GroupPolicy group) {
+            this.group = group;
         }
     }
 
     public static class DefaultGroupPolicy extends GroupPolicy {
         private ConcurrentHashMap<ReplicaID, ServerPolicy> servers =
                 new ConcurrentHashMap<ReplicaID, ServerPolicy>();
-        protected String region = "";
-        protected MicroServiceSpec spec = null;
 
         protected void addServer(ServerPolicy server) {
             servers.put(server.getReplicaId(), server);
@@ -79,10 +78,7 @@ public class DefaultPolicy extends Policy {
         }
 
         @Override
-        public void onCreate(String region, ServerPolicy server, MicroServiceSpec spec)
-                throws RemoteException {
-            this.region = region;
-            this.spec = spec;
+        public void onCreate(String region, ServerPolicy server) throws RemoteException {
             addServer(server);
         }
 

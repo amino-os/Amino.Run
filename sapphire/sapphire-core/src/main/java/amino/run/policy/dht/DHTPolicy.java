@@ -1,5 +1,6 @@
 package amino.run.policy.dht;
 
+import amino.run.common.MicroServiceCreationException;
 import amino.run.common.MicroServiceNotFoundException;
 import amino.run.common.MicroServiceReplicaNotFoundException;
 import amino.run.common.NoKernelServerFoundException;
@@ -67,7 +68,8 @@ public class DHTPolicy extends DefaultPolicy {
         private DHTChord dhtChord;
 
         @Override
-        public void onCreate(String region, Policy.ServerPolicy server) throws RemoteException {
+        public void onCreate(String region, Policy.ServerPolicy server)
+                throws MicroServiceCreationException {
             InetSocketAddress newServerAddress = null;
             dhtChord = new DHTChord();
             super.onCreate(region, server);
@@ -78,14 +80,8 @@ public class DHTPolicy extends DefaultPolicy {
             }
 
             try {
+                pin(server, getAddress(region));
                 ArrayList<String> regions = getRegions();
-
-                if (server.isLastPolicy()) {
-                    // TODO: Make deployment kernel pin primary replica once node selection
-                    // constraint is implemented.
-                    InetSocketAddress address = getAddress(region);
-                    pin(server, address);
-                }
 
                 // TODO: Current implementation assumes shards are spread out across regions.
                 // This assumption may not be true if the policy wants to locate all shards per

@@ -1,10 +1,6 @@
 package amino.run.policy.scalability;
 
-<<<<<<< HEAD
-=======
-import amino.run.app.MicroServiceSpec;
 import amino.run.common.MicroServiceCreationException;
->>>>>>> Update to use parent group policy for pinning at the last DM
 import amino.run.common.MicroServiceNotFoundException;
 import amino.run.common.MicroServiceReplicaNotFoundException;
 import amino.run.kernel.common.KernelObjectStub;
@@ -165,7 +161,7 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
 
         @Override
         public void onCreate(String region, Policy.ServerPolicy server)
-                throws RemoteException, MicroServiceCreationException {
+                throws MicroServiceCreationException {
             super.onCreate(region, server);
 
             Config config = (Config) getPolicyConfig(Config.class.getName());

@@ -184,8 +184,13 @@ public class ConsensusRSMPolicyTest extends BaseTest {
      */
     @Test
     public void groupPolicyOnCreateFailure() throws Exception {
+        // ServerMock is needed because of type casting to KernelServerObject.
+        // If spy(CosensusRSMPolicy.ServerPolicy.class) is used, cast fails due to mock wrapper.
         ServerMock server = new ServerMock();
         Policy.GroupPolicy group = spy(ConsensusRSMPolicy.GroupPolicy.class);
+        when(server.getReplicaId())
+                .thenReturn(
+                        new ReplicaID(new MicroServiceID(UUID.randomUUID()), UUID.randomUUID()));
         when(group.getServers()).thenThrow(new RemoteException());
         thrown.expect(Error.class);
         group.onCreate("", server);

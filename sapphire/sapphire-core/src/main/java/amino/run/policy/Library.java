@@ -31,7 +31,6 @@ public abstract class Library implements Upcalls {
         protected ReplicaID replicaId;
         private MicroServiceSpec spec;
         protected Policy.GroupPolicy group;
-
         // Whether to skip pinning this microservice (usually primary replica).
         // Group policy that sets this property should pin this microservice itself.
         protected boolean skipPinning;
@@ -81,16 +80,24 @@ public abstract class Library implements Upcalls {
             return this.processedPolicies;
         }
 
-        public ServerPolicy getOuterServerPolicy() {
-            return this.outerServerPolicy;
-        }
-
-        public void setOuterServerPolicy(Policy.ServerPolicy serverPolicy) {
-            this.outerServerPolicy = serverPolicy;
-        }
-
         public void setNextPolicyNames(List<String> nextPolicyNames) {
             this.nextPolicyNames = nextPolicyNames;
+        }
+
+        /*
+         * Set to skip pinning this from default policy. DM that sets this should pin this policy itself.
+         * Currently, used by LoadBalancedFrontendPolicy.
+         */
+        public void setToSkipPinning() {
+            this.skipPinning = true;
+        }
+
+        /*
+         * Return whether pinning this microservice by default policy should be skipped since the group
+         * policy of the DM itself will pin this microservice.
+         */
+        public boolean shouldSkipPinning() {
+            return this.skipPinning;
         }
 
         /**
@@ -105,22 +112,6 @@ public abstract class Library implements Upcalls {
 
         public void setIsLastPolicy(boolean isLastPolicy) {
             this.isLastPolicy = isLastPolicy;
-        }
-
-        /*
-         * Set to skip pinning this from default policy. DM that sets this should pin this policy itself.
-         * Currently, used by LoadBalancedFrontendPolicy.
-         */
-        public void skipPinning() {
-            this.skipPinning = true;
-        }
-
-        /*
-         * Return whether pinning this microservice by default policy should be skipped since the group
-         * policy of the DM itself will pin this microservice.
-         */
-        public boolean shouldSkipPinning() {
-            return this.skipPinning;
         }
 
         public void setProcessedPolicies(List<PolicyContainer> processedPolicies) {
@@ -263,24 +254,7 @@ public abstract class Library implements Upcalls {
                 throws RemoteException, MicroServiceNotFoundException,
                         MicroServiceReplicaNotFoundException {
             ServerPolicy serverPolicy = (ServerPolicy) this;
-
-            // Before pinning the MicroService Object replica to the provided KernelServer, need to
-            // update the Hostname.
-            List<PolicyContainer> processedPolicyList = serverPolicy.getProcessedPolicies();
-            Iterator<PolicyContainer> itr = processedPolicyList.iterator();
-            while (itr.hasNext()) {
-                PolicyContainer container = itr.next();
-                ServerPolicy tempServerPolicy = container.serverPolicy;
-                container.serverPolicyStub.$__updateHostname(server);
-
-                /* AppObject holds the previous DM's server policy stub(instead of So stub) in case of DM chain on the
-                server side. Update host name in the server stub within AppObject */
-                if (tempServerPolicy.getAppObject().getObject() instanceof KernelObjectStub) {
-                    ((KernelObjectStub) tempServerPolicy.getAppObject().getObject())
-                            .$__updateHostname(server);
-                }
-            }
-
+            
             logger.info(
                     "Started pinning kernel object "
                             + serverPolicy.$__getKernelOID()

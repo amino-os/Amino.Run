@@ -4,14 +4,10 @@ import amino.run.app.MicroServiceSpec;
 import amino.run.common.MicroServiceCreationException;
 import amino.run.common.MicroServiceID;
 import amino.run.common.MicroServiceNotFoundException;
-import amino.run.common.MicroServiceReplicaNotFoundException;
 import amino.run.kernel.common.GlobalKernelReferences;
 import amino.run.kernel.common.KernelObjectNotCreatedException;
-import amino.run.kernel.common.KernelObjectStub;
-import amino.run.kernel.server.KernelServerImpl;
 import amino.run.policy.DefaultPolicy;
 import amino.run.policy.Policy;
-import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.HashMap;
 import java.util.logging.Logger;
@@ -103,41 +99,5 @@ public class PolicyCreationHelper {
             policyMap.put(GroupPolicyClass, DefaultPolicy.DefaultGroupPolicy.class);
 
         return policyMap;
-    }
-
-    /**
-     * Last DM should always try to pin the original Microservice based on the host address assigned
-     * on the stub if it was not pinned by any DMs.
-     *
-     * @param serverPolicy server policy which should be the innermost.
-     * @throws MicroServiceCreationException
-     */
-    public static void pinOriginalMicroservice(Policy.ServerPolicy serverPolicy)
-            throws MicroServiceCreationException {
-        InetSocketAddress address = null;
-
-        try {
-            address = ((KernelObjectStub) serverPolicy).$__getHostname();
-
-            KernelServerImpl ks = GlobalKernelReferences.nodeServer;
-            if (address != null && !address.equals(ks.getLocalHost())) {
-                serverPolicy.pin_to_server(address);
-            }
-        } catch (RemoteException e) {
-            logger.severe(
-                    String.format(
-                            "Failed to pin original Microservice to %s due to Remote Exception to %s",
-                            address, serverPolicy));
-            throw new MicroServiceCreationException(e);
-        } catch (MicroServiceNotFoundException e) {
-            logger.severe("Failed to pin original Microservice to " + address);
-            throw new MicroServiceCreationException(e);
-        } catch (MicroServiceReplicaNotFoundException e) {
-            logger.severe(
-                    String.format(
-                            "Failed to pin original Microservice to %s because replica was not found.",
-                            address));
-            throw new MicroServiceCreationException(e);
-        }
     }
 }

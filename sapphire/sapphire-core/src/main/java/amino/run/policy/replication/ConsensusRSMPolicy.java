@@ -212,8 +212,8 @@ public class ConsensusRSMPolicy extends DefaultPolicy {
 
         @Override
         public void onCreate(String region, Policy.ServerPolicy server)
-                throws RemoteException, MicroServiceCreationException {
-            super.onCreate(region, server, spec);
+                throws MicroServiceCreationException {
+            super.onCreate(region, server);
 
             try {
                 ServerPolicy consensusServer = (ServerPolicy) server;

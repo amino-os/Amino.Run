@@ -239,7 +239,6 @@ public class MicroService {
 
             // Links this serverPolicy to stub for outer policy.
             serverPolicy.$__initialize(new AppObject(outerStub));
-            outerSP.setOuterServerPolicy(serverPolicy);
             outerStub.$__setNextClientPolicy(currentSPC.clientPolicy);
         }
 

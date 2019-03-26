@@ -1,10 +1,12 @@
 package amino.run.policy;
 
+import amino.run.common.MicroServiceCreationException;
 import amino.run.common.MicroServiceNotFoundException;
 import amino.run.common.MicroServiceReplicaNotFoundException;
 import amino.run.common.ReplicaID;
+import amino.run.kernel.common.GlobalKernelReferences;
 import amino.run.kernel.common.KernelObjectStub;
-import amino.run.runtime.util.PolicyCreationHelper;
+import amino.run.kernel.server.KernelServerImpl;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -79,12 +81,29 @@ public class DefaultPolicy extends Policy {
         }
 
         @Override
-        public void onCreate(String region, ServerPolicy server) throws RemoteException {
+        public void onCreate(String region, ServerPolicy server) throws MicroServiceCreationException {
+            InetSocketAddress host = null;
             addServer(server);
 
-            // Pin this Microservice to given address if it is the last DM.
-            if (!server.shouldSkipPinning()) {
-                PolicyCreationHelper.pinOriginalMicroservice(server);
+            try {
+                if (!server.shouldSkipPinning()) {
+                    this.pin(server, ((KernelObjectStub) server).$__getHostname());
+                }
+            } catch (RemoteException e) {
+                logger.severe(
+                        String.format(
+                                "Failed to pin original Microservice to %s due to Remote Exception to %s",
+                                host, server));
+                throw new MicroServiceCreationException(e);
+            } catch (MicroServiceNotFoundException e) {
+                logger.severe("Failed to pin original Microservice to " + host);
+                throw new MicroServiceCreationException(e);
+            } catch (MicroServiceReplicaNotFoundException e) {
+                logger.severe(
+                        String.format(
+                                "Failed to pin original Microservice to %s because replica was not found.",
+                                host));
+                throw new MicroServiceCreationException(e);
             }
         }
 
@@ -129,6 +148,7 @@ public class DefaultPolicy extends Policy {
                 throws RemoteException, MicroServiceNotFoundException,
                         MicroServiceReplicaNotFoundException {
             ServerPolicy replica = replicaSource.replicate(region);
+
             if (replicaSource.isLastPolicy()) {
                 pin(replica, dest);
             }
@@ -150,12 +170,12 @@ public class DefaultPolicy extends Policy {
                 throws MicroServiceReplicaNotFoundException, RemoteException,
                         MicroServiceNotFoundException {
             if (server.isLastPolicy()) {
-                server.pin_to_server(host);
-            }
-
-            do {
+                KernelServerImpl ks = GlobalKernelReferences.nodeServer;
+                if (host != null && !host.equals(ks.getLocalHost())) {
+                    server.pin_to_server(host);
+                }
                 ((KernelObjectStub) server).$__updateHostname(host);
-            } while (server.getOuterServerPolicy() != null);
+            }
         }
 
         /**

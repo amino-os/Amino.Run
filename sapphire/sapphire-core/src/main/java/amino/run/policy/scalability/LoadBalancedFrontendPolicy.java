@@ -161,8 +161,8 @@ public class LoadBalancedFrontendPolicy extends DefaultPolicy {
 
         @Override
         public void onCreate(String region, Policy.ServerPolicy server)
-                throws RemoteException, MicroServiceCreationException {
-            server.skipPinning();
+                throws MicroServiceCreationException {
+            server.setToSkipPinning();
             super.onCreate(region, server);
 
             Config config = (Config) getPolicyConfig(Config.class.getName());

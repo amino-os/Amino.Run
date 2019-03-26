@@ -161,12 +161,25 @@ public class TestUtils {
         return spiedKs;
     }
 
-    public static void addHost(KernelServer ks) throws Exception {
+    /* Populate the server map on kernel clients such that registry.lookup never happens for communication between
+    this pair of kernel server */
+    public static void addHostToKernelClient(KernelServer server1, KernelServer server2)
+            throws Exception {
+        /* Update servers map on server1's kernel client such that server1 can invoke method on server2
+        [server1 -> server2] */
         Hashtable<InetSocketAddress, KernelServer> servers =
                 (Hashtable<InetSocketAddress, KernelServer>)
                         extractFieldValueOnInstance(
-                                GlobalKernelReferences.nodeServer.getKernelClient(), "servers");
-        servers.put(((KernelServerImpl) ks).getLocalHost(), ks);
+                                ((KernelServerImpl) server1).getKernelClient(), "servers");
+        servers.put(((KernelServerImpl) server2).getLocalHost(), server2);
+
+        /* Update servers map on server2's kernel client such that server2 can invoke method on server1
+        [server2 -> server1] */
+        servers =
+                (Hashtable<InetSocketAddress, KernelServer>)
+                        extractFieldValueOnInstance(
+                                ((KernelServerImpl) server2).getKernelClient(), "servers");
+        servers.put(((KernelServerImpl) server1).getLocalHost(), server1);
     }
 
     public static void addHostOnOmsKernelServerManager(OMSServer oms, KernelServer ks)

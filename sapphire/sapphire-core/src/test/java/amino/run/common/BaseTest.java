@@ -1,6 +1,6 @@
 package amino.run.common;
 
-import static amino.run.common.TestUtils.addHost;
+import static amino.run.common.TestUtils.addHostToKernelClient;
 import static amino.run.common.TestUtils.startSpiedKernelServer;
 import static amino.run.common.TestUtils.startSpiedOms;
 import static amino.run.common.UtilsTest.extractFieldValueOnInstance;
@@ -93,28 +93,25 @@ public class BaseTest {
         spiedKs1 =
                 startSpiedKernelServer(
                         LOOP_BACK_IP_ADDR, kernelPort1, LOOP_BACK_IP_ADDR, omsPort, regions[0]);
-        addHost(spiedksOnOms);
+        addHostToKernelClient(spiedKs1, spiedksOnOms);
+
         if (serverCount > 1) {
             spiedKs2 =
                     startSpiedKernelServer(
                             LOOP_BACK_IP_ADDR, kernelPort2, LOOP_BACK_IP_ADDR, omsPort, regions[1]);
-            addHost(spiedksOnOms);
-            addHost(spiedKs1);
-            GlobalKernelReferences.nodeServer = (KernelServerImpl) spiedKs1;
-            addHost(spiedKs2);
+            addHostToKernelClient(spiedKs2, spiedksOnOms);
+            addHostToKernelClient(spiedKs2, spiedKs1);
         }
         if (serverCount > 2) {
             spiedKs3 =
                     startSpiedKernelServer(
                             LOOP_BACK_IP_ADDR, kernelPort3, LOOP_BACK_IP_ADDR, omsPort, regions[2]);
-            addHost(spiedksOnOms);
-            addHost(spiedKs1);
-            addHost(spiedKs2);
-            GlobalKernelReferences.nodeServer = (KernelServerImpl) spiedKs2;
-            addHost(spiedKs3);
-            GlobalKernelReferences.nodeServer = (KernelServerImpl) spiedKs1;
-            addHost(spiedKs3);
+            addHostToKernelClient(spiedKs3, spiedksOnOms);
+            addHostToKernelClient(spiedKs3, spiedKs1);
+            addHostToKernelClient(spiedKs3, spiedKs2);
         }
+
+        GlobalKernelReferences.nodeServer = (KernelServerImpl) spiedKs1;
 
         // Stub static kernel object factory methods
         mockStatic(

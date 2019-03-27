@@ -11,20 +11,29 @@ genStubs {
     inputs.dir microServicePath   // Declare inputs, so gradle will run if they have been changed
 }
 
-// task for run javascript kvstore client
+// Task to run javascript kvstore client
 task runjsapp(type: Exec) {
     environment  OMS_IP: "${project.property('omsIp')}"
     environment  OMS_PORT: "${project.property('omsPort')}"
     environment  HOST_IP: "${project.property('embeddedKernelServerIp')}"
     environment  HOST_PORT: "${project.property('kernelServerPort')}"
     def classpath = sourceSets.main.runtimeClasspath.asPath
-
-    //executable "/home/paas/graalvm-ce-1.0.0-rc6/bin/js"
     executable "$System.env.JAVA_HOME/bin/js"
     args "--jvm", "--polyglot", "--jvm.classpath=${classpath}",
             "${project.projectDir}/src/main/js/amino/run/appdemo/KeyValueStoreClient.js"
 }
 
+// TODO: Re-enable runapp as soon as https://github.com/oracle/graal/issues/678 has been fixed.
+//       The above bug in graal means that our graalStubGenerator does not correctly generate java
+//       stubs for javascript microservices (the methods in the javascript object are missing).
+//       So for the time being we disable this test example.
+runenvapp {
+    onlyIf() { false } // Disable
+}
+
+compileJava {
+    onlyIf() { false } // Disable this too, to avoid compilation errors.  See TODO above.
+}
 // Customise task to run Java app
 runapp {
     environment  OMS_IP: "${project.property('omsIp')}"

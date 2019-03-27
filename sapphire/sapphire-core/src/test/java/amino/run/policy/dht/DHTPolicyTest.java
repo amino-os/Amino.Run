@@ -6,6 +6,7 @@ import amino.run.app.MicroServiceSpec;
 import amino.run.common.BaseTest;
 import amino.run.sampleSO.SO;
 import java.util.*;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -52,5 +53,10 @@ public class DHTPolicyTest extends BaseTest {
         cnt += ((SO) server3.getAppObject().getObject()).getI();
 
         Assert.assertEquals((loopCount * (loopCount + 1)) / 2, cnt);
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        super.tearDown();
     }
 }

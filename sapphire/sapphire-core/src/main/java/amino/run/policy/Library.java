@@ -254,7 +254,7 @@ public abstract class Library implements Upcalls {
                 throws RemoteException, MicroServiceNotFoundException,
                         MicroServiceReplicaNotFoundException {
             ServerPolicy serverPolicy = (ServerPolicy) this;
-            
+
             logger.info(
                     "Started pinning kernel object "
                             + serverPolicy.$__getKernelOID()

@@ -1,6 +1,5 @@
 package amino.run.policy;
 
-import amino.run.app.MicroServiceSpec;
 import amino.run.common.MicroServiceCreationException;
 import java.io.Serializable;
 import java.rmi.RemoteException;
@@ -139,8 +138,7 @@ public interface Upcalls {
          * @param server reference to the server policy of the first/primary replica that is managed
          *     by the group policy
          */
-        void onCreate(String region, Policy.ServerPolicy server)
-                throws MicroServiceCreationException;
+        void onCreate(String region, Policy.ServerPolicy server) throws MicroServiceCreationException;
 
         /**
          * Event handler for group destruction. Called by the Amino.Run kernel to destroy this group

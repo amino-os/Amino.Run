@@ -1,6 +1,5 @@
 package amino.run.policy.replication;
 
-import amino.run.common.MicroServiceCreationException;
 import amino.run.common.MicroServiceNotFoundException;
 import amino.run.common.MicroServiceReplicaNotFoundException;
 import amino.run.policy.DefaultPolicy;
@@ -211,14 +210,12 @@ public class ConsensusRSMPolicy extends DefaultPolicy {
         private static Logger logger = Logger.getLogger(GroupPolicy.class.getName());
 
         @Override
-        public void onCreate(String region, Policy.ServerPolicy server)
-                throws MicroServiceCreationException {
+        public void onCreate(String region, Policy.ServerPolicy server) throws RemoteException {
             super.onCreate(region, server);
 
             try {
                 ServerPolicy consensusServer = (ServerPolicy) server;
-                List<InetSocketAddress> addressList =
-                        getAddressList(region);
+                List<InetSocketAddress> addressList = getAddressList(region);
 
                 // The first in the addressList is for primary policy chain.
                 // TODO: Improve node allocation so that other servers can be used instead of

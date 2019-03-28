@@ -1,6 +1,5 @@
 package amino.run.policy.scalability;
 
-import amino.run.common.MicroServiceCreationException;
 import amino.run.common.MicroServiceNotFoundException;
 import amino.run.common.MicroServiceReplicaNotFoundException;
 import amino.run.kernel.common.KernelObjectStub;
@@ -160,8 +159,7 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
         private transient ResettableTimer timer; // Timer for limiting
 
         @Override
-        public void onCreate(String region, Policy.ServerPolicy server)
-                throws MicroServiceCreationException {
+        public void onCreate(String region, Policy.ServerPolicy server) throws RemoteException {
             super.onCreate(region, server);
 
             Config config = (Config) getPolicyConfig(Config.class.getName());

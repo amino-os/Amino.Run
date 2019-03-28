@@ -13,16 +13,12 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
-import static org.powermock.api.mockito.PowerMockito.when;
 
 import amino.run.app.DMSpec;
 import amino.run.app.Language;
 import amino.run.app.MicroServiceSpec;
 import amino.run.app.NodeSelectorSpec;
-import amino.run.common.BaseTest;
-import amino.run.common.MicroServiceID;
-import amino.run.common.ReplicaID;
-import amino.run.common.Utils;
+import amino.run.common.*;
 import amino.run.kernel.common.KernelOID;
 import amino.run.kernel.common.KernelObjectStub;
 import amino.run.policy.Policy;
@@ -188,10 +184,7 @@ public class ConsensusRSMPolicyTest extends BaseTest {
         // If spy(CosensusRSMPolicy.ServerPolicy.class) is used, cast fails due to mock wrapper.
         ServerMock server = new ServerMock();
         Policy.GroupPolicy group = spy(ConsensusRSMPolicy.GroupPolicy.class);
-        when(server.getReplicaId())
-                .thenReturn(
-                        new ReplicaID(new MicroServiceID(UUID.randomUUID()), UUID.randomUUID()));
-        when(group.getServers()).thenThrow(new RemoteException());
+        doThrow(RemoteException.class).when(group).getAddressList(anyString());
         thrown.expect(Error.class);
         group.onCreate("", server);
     }

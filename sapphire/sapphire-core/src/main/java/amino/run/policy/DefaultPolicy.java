@@ -1,16 +1,14 @@
 package amino.run.policy;
 
-import amino.run.common.MicroServiceCreationException;
 import amino.run.common.MicroServiceNotFoundException;
 import amino.run.common.MicroServiceReplicaNotFoundException;
 import amino.run.common.ReplicaID;
-import amino.run.kernel.common.GlobalKernelReferences;
 import amino.run.kernel.common.KernelObjectStub;
-import amino.run.kernel.server.KernelServerImpl;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
 
 public class DefaultPolicy extends Policy {
 
@@ -81,7 +79,7 @@ public class DefaultPolicy extends Policy {
         }
 
         @Override
-        public void onCreate(String region, ServerPolicy server) throws MicroServiceCreationException {
+        public void onCreate(String region, ServerPolicy server) throws RemoteException {
             InetSocketAddress host = null;
             addServer(server);
 
@@ -90,20 +88,24 @@ public class DefaultPolicy extends Policy {
                     this.pin(server, ((KernelObjectStub) server).$__getHostname());
                 }
             } catch (RemoteException e) {
-                logger.severe(
+                logger.log(
+                        Level.SEVERE,
                         String.format(
-                                "Failed to pin original Microservice to %s due to Remote Exception to %s",
-                                host, server));
-                throw new MicroServiceCreationException(e);
+                                "Failed to pin original Microservice to %s due to Remote Exception to %s. Exception: %s",
+                                host, server),
+                        e);
+                throw new Error(e);
             } catch (MicroServiceNotFoundException e) {
-                logger.severe("Failed to pin original Microservice to " + host);
-                throw new MicroServiceCreationException(e);
+                logger.log(Level.SEVERE, "Failed to pin original Microservice to " + host, e);
+                throw new Error(e);
             } catch (MicroServiceReplicaNotFoundException e) {
-                logger.severe(
+                logger.log(
+                        Level.SEVERE,
                         String.format(
                                 "Failed to pin original Microservice to %s because replica was not found.",
-                                host));
-                throw new MicroServiceCreationException(e);
+                                host),
+                        e);
+                throw new Error(e);
             }
         }
 
@@ -170,10 +172,7 @@ public class DefaultPolicy extends Policy {
                 throws MicroServiceReplicaNotFoundException, RemoteException,
                         MicroServiceNotFoundException {
             if (server.isLastPolicy()) {
-                KernelServerImpl ks = GlobalKernelReferences.nodeServer;
-                if (host != null && !host.equals(ks.getLocalHost())) {
-                    server.pin_to_server(host);
-                }
+                server.pin_to_server(host);
                 ((KernelObjectStub) server).$__updateHostname(host);
             }
         }

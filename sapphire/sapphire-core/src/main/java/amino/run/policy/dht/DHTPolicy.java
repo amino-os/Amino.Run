@@ -1,6 +1,5 @@
 package amino.run.policy.dht;
 
-import amino.run.common.MicroServiceCreationException;
 import amino.run.common.MicroServiceNotFoundException;
 import amino.run.common.MicroServiceReplicaNotFoundException;
 import amino.run.common.NoKernelServerFoundException;
@@ -68,8 +67,7 @@ public class DHTPolicy extends DefaultPolicy {
         private DHTChord dhtChord;
 
         @Override
-        public void onCreate(String region, Policy.ServerPolicy server)
-                throws MicroServiceCreationException {
+        public void onCreate(String region, Policy.ServerPolicy server) throws RemoteException {
             InetSocketAddress newServerAddress = null;
             dhtChord = new DHTChord();
             super.onCreate(region, server);

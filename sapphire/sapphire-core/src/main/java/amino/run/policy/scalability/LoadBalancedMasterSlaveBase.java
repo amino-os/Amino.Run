@@ -1,6 +1,5 @@
 package amino.run.policy.scalability;
 
-import amino.run.common.MicroServiceCreationException;
 import amino.run.common.MicroServiceNotFoundException;
 import amino.run.common.MicroServiceReplicaNotFoundException;
 import amino.run.common.Utils;
@@ -171,8 +170,7 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultPolicy {
         private Map<String, String> nodeLabels;
 
         @Override
-        public void onCreate(String region, Policy.ServerPolicy server)
-                throws MicroServiceCreationException {
+        public void onCreate(String region, Policy.ServerPolicy server) throws RemoteException {
             logger = Logger.getLogger(GroupPolicy.class.getName());
             super.onCreate(region, server);
             boolean isLastPolicy = server.isLastPolicy();

@@ -81,7 +81,6 @@ public class DefaultPolicy extends Policy {
         @Override
         public void onCreate(String region, ServerPolicy server) throws RemoteException {
             InetSocketAddress host = null;
-            addServer(server);
 
             try {
                 if (!server.shouldSkipPinning()) {
@@ -107,6 +106,8 @@ public class DefaultPolicy extends Policy {
                         e);
                 throw new Error(e);
             }
+
+            addServer(server);
         }
 
         @Override

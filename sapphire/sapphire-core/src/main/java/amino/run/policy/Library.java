@@ -30,16 +30,11 @@ public abstract class Library implements Upcalls {
         protected KernelOID oid;
         protected ReplicaID replicaId;
         private MicroServiceSpec spec;
-        protected Policy.GroupPolicy group;
         // Whether to skip pinning this microservice (usually primary replica).
         // Group policy that sets this property should pin this microservice itself.
         protected boolean skipPinning;
 
         static Logger logger = Logger.getLogger(ServerPolicyLibrary.class.getName());
-
-        // ServerPolicy that precedes the current policy in the server side chain - this order is
-        // reverse in the client side.
-        protected Policy.ServerPolicy outerServerPolicy;
 
         // List of ServerPolicies that should be created in the chain after the current one when
         // creating replicas.

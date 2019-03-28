@@ -40,7 +40,7 @@ dependencies {
     // https://github.com/Huawei-PaaS/DCAP-Sapphire/blob/master/docs/GettingStarted.md#quick-start
     // to set up GraalVM properly.
 
-    compile 'org.graalvm:graal-sdk:1.0.0-rc5'
+    compile 'org.graalvm.sdk:graal-sdk:' + project.property('graalVmVersion')
     compile 'org.yaml:snakeyaml:1.23'
     compile 'com.github.pcj:google-options:1.0.0'
     testCompile 'org.mockito:mockito-core:1.+'
@@ -68,7 +68,7 @@ version =  project.property('mavenVersion')
 
 /*
    Return a string containing the GraalVM version, e.g. "1.0.0-rc5" returned by 'java -version'
-   NOTE: This is a very clunky way of executing 'java -version | grep GraalVM | awk {print $2}'
+   NOTE: This is a very clunky way of executing 'java -version | grep GraalVM | awk {print $4}'
          I could not find an easier way to do it in gradle - see below
          Note that java outputs version info to stderr, not stdout
 */

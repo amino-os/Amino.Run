@@ -173,6 +173,7 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultPolicy {
         public void onCreate(String region, Policy.ServerPolicy server) throws RemoteException {
             logger = Logger.getLogger(GroupPolicy.class.getName());
             super.onCreate(region, server);
+            boolean isLastPolicy = server.isLastPolicy();
             logger.info(String.format("Creating master and slave instance in region %s", region));
 
             try {
@@ -203,7 +204,9 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultPolicy {
                 s.start();
 
                 for (int i = 0; i < NUM_OF_REPLICAS - 1; i++) {
-                    dest = getAvailable(i + 1, addressList, unavailable);
+                    if (isLastPolicy) {
+                        dest = getAvailable(i + 1, addressList, unavailable);
+                    }
                     ServerPolicy replica = (ServerPolicy) replicate(s, dest, region);
                     replica.start();
                     logger.info("created slave on " + dest);

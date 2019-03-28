@@ -8,6 +8,7 @@ import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
 
 public class DefaultPolicy extends Policy {
 
@@ -79,6 +80,33 @@ public class DefaultPolicy extends Policy {
 
         @Override
         public void onCreate(String region, ServerPolicy server) throws RemoteException {
+            InetSocketAddress host = null;
+
+            try {
+                if (!server.shouldSkipPinning()) {
+                    this.pin(server, ((KernelObjectStub) server).$__getHostname());
+                }
+            } catch (RemoteException e) {
+                logger.log(
+                        Level.SEVERE,
+                        String.format(
+                                "Failed to pin original Microservice to %s due to Remote Exception to %s. Exception: %s",
+                                host, server),
+                        e);
+                throw new Error(e);
+            } catch (MicroServiceNotFoundException e) {
+                logger.log(Level.SEVERE, "Failed to pin original Microservice to " + host, e);
+                throw new Error(e);
+            } catch (MicroServiceReplicaNotFoundException e) {
+                logger.log(
+                        Level.SEVERE,
+                        String.format(
+                                "Failed to pin original Microservice to %s because replica was not found.",
+                                host),
+                        e);
+                throw new Error(e);
+            }
+
             addServer(server);
         }
 
@@ -123,6 +151,7 @@ public class DefaultPolicy extends Policy {
                 throws RemoteException, MicroServiceNotFoundException,
                         MicroServiceReplicaNotFoundException {
             ServerPolicy replica = replicaSource.replicate(region);
+
             if (replicaSource.isLastPolicy()) {
                 pin(replica, dest);
             }
@@ -143,8 +172,10 @@ public class DefaultPolicy extends Policy {
         protected void pin(ServerPolicy server, InetSocketAddress host)
                 throws MicroServiceReplicaNotFoundException, RemoteException,
                         MicroServiceNotFoundException {
-            server.pin_to_server(host);
-            ((KernelObjectStub) server).$__updateHostname(host);
+            if (server.isLastPolicy()) {
+                server.pin_to_server(host);
+                ((KernelObjectStub) server).$__updateHostname(host);
+            }
         }
 
         /**

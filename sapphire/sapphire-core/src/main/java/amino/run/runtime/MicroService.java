@@ -51,7 +51,7 @@ public class MicroService {
     /**
      * Creates a microservice.
      *
-     * @param spec MicroService object specification
+     * @param spec MicroService specification
      * @param args parameters to microservice constructor
      * @return microservice stub
      */
@@ -59,7 +59,7 @@ public class MicroService {
             throws MicroServiceCreationException {
         AppObjectStub appStub = null;
         try {
-            logger.info("Creating object for spec:" + spec);
+            logger.info("Creating microservice for spec:" + spec);
             if (spec.getLang() == Language.java && spec.getDmList().isEmpty()) {
                 Class<?> appObjectClass = Class.forName(spec.getJavaClassName());
                 return new_(appObjectClass, args);
@@ -95,6 +95,7 @@ public class MicroService {
 
             /* Get the region of current server */
             String region = GlobalKernelReferences.nodeServer.getRegion();
+
             AppObjectStub appStub = createPolicyChain(spec, region, args);
             logger.info("MicroService Object created: " + appObjectClass.getName());
             return appStub;
@@ -108,9 +109,10 @@ public class MicroService {
      * Creates a complete policy chain using the spec. 1. Creates an app object stub. 2. Creates
      * client, stub, group and server policy instance for each DM in the chain. 3. Links them
      * (stub->nextClient, server -> outerServer). 4. Executes onCreate for group policy from
-     * innermost to outermost. Returns appStub which points to the first client policy in the chain.
+     * innermost to outermost. 5. Pins the original Microservice. 6. Returns appStub which points to
+     * the first client policy in the chain.
      *
-     * @param spec MicroService object spec
+     * @param spec MicroService spec
      * @param region Region
      * @param appArgs Arguments for application object
      * @return client side appObjectStub
@@ -184,7 +186,7 @@ public class MicroService {
      * @param processedPolicies Policies processed so far (created and linked)
      * @param microServiceID Object ID registred to OMS which is one per AminoMicroservice chain
      *     (all replicas of the chain will have the same object ID.
-     * @param spec Amino object spec
+     * @param spec Microservice spec
      * @return list of processed policies so far
      * @throws MicroServiceCreationException thrown when policy object creation fails
      */
@@ -237,7 +239,6 @@ public class MicroService {
 
             // Links this serverPolicy to stub for outer policy.
             serverPolicy.$__initialize(new AppObject(outerStub));
-            outerSP.setPreviousServerPolicy(serverPolicy);
             outerStub.$__setNextClientPolicy(currentSPC.clientPolicy);
         }
 
@@ -256,7 +257,7 @@ public class MicroService {
      * @param parentGroupPolicyStub Group policy creating the policy object
      * @param policyNamesToCreate name of polices that need to be created (this and inner policies)
      * @param processedPolicies Policies processed so far (created and linked)
-     * @param spec Amino object spec
+     * @param spec Microservice spec
      * @return list of policies that had been created so far including the one just created here
      * @throws MicroServiceCreationException thrown when policy object creation fails
      */
@@ -291,7 +292,6 @@ public class MicroService {
             // TODO: client is unncessary for outer policies of a replica.
             client.onCreate(groupPolicyStub);
 
-            // TODO: Separate out the following code block.
             // Note that subList is non serializable; hence, the new list creation.
             List<String> nextPolicyNames = new ArrayList<String>(policyNamesToCreate);
 
@@ -491,7 +491,7 @@ public class MicroService {
      * Processes MicroService replica by registering for a replica ID and handler for the replica to
      * OMS.
      *
-     * @param microServiceId MicroService object ID
+     * @param microServiceId MicroService ID
      * @param serverPolicy ServerPolicy
      * @param serverPolicyStub ServerPolicy stub
      * @throws MicroServiceNotFoundException

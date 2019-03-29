@@ -18,21 +18,25 @@
 * You will need to download and install the corrrect version (usually the latest stable version) 
   based on the dependency configured in 
   [sapphire/sapphire-core/build.gradle](https://github.com/Huawei-PaaS/DCAP-Sapphire/blob/master/sapphire/sapphire-core/build.gradle). 
-  As of October 2018, that's 
-  [GraalVM Community Edition 1.0 RC7](https://github.com/oracle/graal/releases/tag/vm-1.0.0-rc7).
+  As of March 2019, that's 
+  [GraalVM Community Edition 1.0 RC14](https://github.com/oracle/graal/releases/tag/vm-1.0.0-rc14).
   Note that the open source Community Edition works fine, so don't bother with the Enterprise Edition unless 
   you have a specific need for it.
   Follow instructions at  https://www.graalvm.org/docs/getting-started/ for downloading and installing.
   In particular, set your JAVA_HOME and PATH variables appropriately.  For example, something along the lines of the following at the end of your ~/.bash_profile in your home directory works well on Linux and Mac OS X:
 ```  
-export GRAALVM_HOME=~/Downloads/graalvm-ce-1.0.0-rc7/Contents/Home
+export GRAALVM_HOME=~/Downloads/graalvm-ce-1.0.0-rc14/Contents/Home
 export JAVA_HOME=$GRAALVM_HOME
 export PATH=$GRAALVM_HOME/bin:$PATH
 ```
+  After then, you need to install ruby support for GraalVM:
+```
+gu install ruby
+```
 
-## Install Android SDK and Android Studio
+## Install Android SDK and Android Studio (or IntelliJ)
 * Follow [instructions](https://developer.android.com/studio/) to install Android SDK and Anroid Studio. More details can be found at [here](https://wiki.appcelerator.org/display/guides2/Installing+the+Android+SDK#InstallingtheAndroidSDK-InstallingAndroidSDKToolsonmacOS).
-* Android SDK and Android Studio are *not* required by Sapphire. But many Sapphire demo applications are android applications. We recommend installing Android SDK and Android Studio.
+* Android SDK and Android Studio are *not* required by Amino. But many Amino demo applications are android applications. We recommend installing Android SDK and Android Studio.
 ```shell
 // on Mac
 $ brew cask install android-sdk

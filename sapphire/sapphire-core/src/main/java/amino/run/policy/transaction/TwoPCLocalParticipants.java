@@ -63,7 +63,7 @@ public class TwoPCLocalParticipants implements Serializable {
                     p.onRPC(TransactionWrapper.txWrapperTag, paramsTX);
                 } catch (Exception e) {
                     throw new TransactionExecutionException(
-                            "DCAP 2PC transaction exception: " + primitiveMethod, e);
+                            "2PC transaction exception: " + primitiveMethod, e);
                 }
             }
         } finally {
@@ -104,7 +104,7 @@ public class TwoPCLocalParticipants implements Serializable {
                     }
                 } catch (Exception e) {
                     throw new TransactionExecutionException(
-                            "DCAP 2PC transaction exception: vote_req", e);
+                            "2PC transaction exception: vote_req", e);
                 }
             }
 

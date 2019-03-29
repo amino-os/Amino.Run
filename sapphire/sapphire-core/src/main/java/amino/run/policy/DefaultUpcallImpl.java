@@ -15,7 +15,7 @@ public abstract class DefaultUpcallImpl extends Library {
 
     public abstract static class ClientPolicy extends ClientPolicyLibrary {
         public Object onRPC(String method, ArrayList<Object> params) throws Exception {
-            // only transaction-capable SO is allowed in DCAP transaction -- change of the original
+            // only transaction-capable SO is allowed in TwoPC transaction -- change of the original
             // behavior
             if (!(this instanceof TwoPCClient) && this.hasTransaction()) {
                 throw new IllegalComponentException(method);

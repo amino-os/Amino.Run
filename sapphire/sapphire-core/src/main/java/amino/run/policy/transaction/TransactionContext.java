@@ -5,7 +5,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
-/** DCAP transaction context based on thread local storage */
+/** transaction context based on thread local storage */
 public class TransactionContext {
     private static final ThreadLocal<UUID> transactionID = new ThreadLocal<UUID>();
     private static final ThreadLocal<TwoPCParticipants> participants =

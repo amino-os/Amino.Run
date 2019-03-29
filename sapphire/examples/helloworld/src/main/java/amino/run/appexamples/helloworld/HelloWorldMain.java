@@ -17,7 +17,7 @@ import com.google.devtools.common.options.OptionsParser;
 
 public class HelloWorldMain {
     public static void main(String[] args) {
-        String world = "DCAP World";
+        String world = "World";
 
         OptionsParser parser = OptionsParser.newOptionsParser(AppArgumentParser.class);
 

@@ -4,12 +4,12 @@ import amino.run.policy.DefaultPolicy;
 import java.util.ArrayList;
 import java.util.UUID;
 
-/** DCAP distributed transaction coordinator default DM set */
+/** distributed transaction coordinator default DM set */
 public class TwoPCCoordinatorPolicy extends DefaultPolicy {
-    /** DCAP distributed transaction coordinator client policy */
+    /** distributed transaction coordinator client policy */
     public static class TwoPCCoordinatorClientPolicy extends DefaultClientPolicy {}
 
-    /** DCAP distributed transaction coordinator server policy */
+    /** distributed transaction coordinator server policy */
     public static class TwoPCCoordinatorServerPolicy extends DefaultServerPolicy {
         private transient TwoPCCoordinator coordinator;
         private final transient SandboxProvider sandboxProvider = new AppObjectSandboxProvider();
@@ -60,6 +60,6 @@ public class TwoPCCoordinatorPolicy extends DefaultPolicy {
         }
     }
 
-    /** DCAP distributed transaction coordinator group policy */
+    /** distributed transaction coordinator group policy */
     public static class TwoPCCoordinatorGroupPolicy extends DefaultGroupPolicy {}
 }

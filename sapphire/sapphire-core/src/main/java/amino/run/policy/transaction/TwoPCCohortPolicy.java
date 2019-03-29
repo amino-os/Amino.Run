@@ -7,9 +7,9 @@ import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/** DCAP distributed transaction default DM set */
+/** distributed transaction default DM set */
 public class TwoPCCohortPolicy extends DefaultPolicy {
-    /** DCAP distributed transaction default client policy */
+    /** distributed transaction default client policy */
     public static class TwoPCCohortClientPolicy extends DefaultClientPolicy
             implements TwoPCClient, Serializable {
         public interface ParticipantManagerProvider {
@@ -32,7 +32,7 @@ public class TwoPCCohortPolicy extends DefaultPolicy {
         }
     }
 
-    /** DCAP distributed transaction default server policy */
+    /** distributed transaction default server policy */
     public static class TwoPCCohortServerPolicy extends DefaultServerPolicy {
         protected final SandboxProvider sandboxProvider = new AppObjectSandboxProvider();
         protected TransactionManager transactionManager;
@@ -107,6 +107,6 @@ public class TwoPCCohortPolicy extends DefaultPolicy {
         }
     }
 
-    /** DCAP distributed transaction default group policy */
+    /** distributed transaction default group policy */
     public static class TwoPCCohortGroupPolicy extends DefaultGroupPolicy {}
 }

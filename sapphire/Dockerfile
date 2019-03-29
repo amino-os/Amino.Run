@@ -16,9 +16,9 @@ RUN  wget $GRAAL_URL && \
      tar -xzf $GRAAL_VERSION-linux-amd64.tar.gz && \
      rm $GRAAL_VERSION-linux-amd64.tar.gz
 
-COPY  ./ /DCAP-Sapphire/sapphire
+COPY  ./ /AminoRun/run
 
-WORKDIR /DCAP-Sapphire/sapphire
+WORKDIR /AminoRun/run
 
 # Setting Graalvm home 
 
@@ -32,8 +32,8 @@ RUN gu install ruby
 # Downloading project related dependencies 
 RUN bash gradlew build 
 
-# Removing the sapphire code  and java 
-RUN rm -r  /DCAP-Sapphire  && \
+# Removing the Amino code  and java
+RUN rm -r  /AminoRun  && \
     apt-get --yes remove oracle-java8-installer && \
     apt-get --yes autoremove 
 

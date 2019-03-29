@@ -12,5 +12,5 @@ genStubs {
 runapp {
     main = "amino.run.appexamples.helloworld.HelloWorldMain"
     // Helloworld app takes additional arguments.
-    args project.property('appArgsFlag'), project.hasProperty('W') ? project.property('W') : "DCAP World"
+    args project.property('appArgsFlag'), project.hasProperty('W') ? project.property('W') : "World"
 }

@@ -4,7 +4,7 @@ subprojects {
     apply plugin: 'java-library'
 
     dependencies {
-        compile project(':sapphire-core')
+        compile project(':core')
     }
 
     // Common rules for all JavaExec tasks, are added before execution.

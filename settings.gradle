@@ -1,14 +1,14 @@
-// Sapphire
-rootProject.name = 'sapphire'
-include ':sapphire-core'
+// Amino.Run
+rootProject.name = 'Amino.Run'
+include ':core'
 
-// Sapphire's Dependencies
+// Dependencies
 include ':dependencies:java.rmi'
 include ':dependencies:javax.rmi'
 include ':dependencies:javax.activity'
 include ':dependencies:apache.harmony'
 
-// Sapphire example applications
+// Example applications
 include ':examples' // Note: I can't seem to get gradle to include from subprojects, hence the lines below.
 include ':examples:example-minnietwitter'
 include ':examples:hanksTodo'

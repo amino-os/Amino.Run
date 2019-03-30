@@ -10,6 +10,7 @@ import amino.run.kernel.server.KernelServerImpl;
 import java.io.File;
 import java.net.InetSocketAddress;
 import java.rmi.registry.LocateRegistry;
+import java.util.logging.Logger;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
@@ -26,8 +27,10 @@ import org.junit.Test;
  * src/integrationTest/resources/specs/multi-dm</code> directory.
  */
 public class MultiDMTestCases {
+    final String MULTI_DM_PATH = "specs/multi-dm/";
     Registry registry;
     private static String regionName = "";
+    static Logger logger = java.util.logging.Logger.getLogger(MultiDMTestCases.class.getName());
 
     @BeforeClass
     public static void bootstrap() throws Exception {
@@ -43,11 +46,13 @@ public class MultiDMTestCases {
                 new InetSocketAddress(hostIp, hostPort), new InetSocketAddress(omsIp, omsPort));
     }
 
-    private void runTest(MicroServiceSpec spec, boolean consensus) throws Exception {
+    private void runTest(String testName) throws Exception {
+        File file = getResourceFile(MULTI_DM_PATH + testName + ".yaml");
+        MicroServiceSpec spec = readMicroServiceSpec(file);
         MicroServiceID microServiceId = registry.create(spec.toString());
         KVStore store = (KVStore) registry.acquireStub(microServiceId);
         // consensus DM needs some time to elect the leader other wise function call will fail
-        if (consensus) {
+        if (testName.contains("Consensus")) {
             Thread.sleep(5000);
         }
         for (int i = 0; i < 10; i++) {
@@ -61,144 +66,104 @@ public class MultiDMTestCases {
 
     @Test
     public void testDHTConsensus() throws Exception {
-        File file = getResourceFile("specs/multi-dm/DHTConsensus.yaml");
-        MicroServiceSpec spec = readMicroServiceSpec(file);
-        runTest(spec, true);
+        runTest("DHTConsensus");
     }
 
     @Test
     public void testDHTConsensusAtleastRPC() throws Exception {
-        File file = getResourceFile("specs/multi-dm/DHTConsensusAtleastRPC.yaml");
-        MicroServiceSpec spec = readMicroServiceSpec(file);
-        runTest(spec, true);
+        runTest("DHTConsensusAtleastRPC");
     }
 
     @Test
     public void testDHTConsensusAtleastRPCCacheLease() throws Exception {
-        File file = getResourceFile("specs/multi-dm/DHTConsensusAtleastRPCCacheLease.yaml");
-        MicroServiceSpec spec = readMicroServiceSpec(file);
-        runTest(spec, true);
+        runTest("DHTConsensusAtleastRPCCacheLease");
     }
 
     @Test
     public void testDHTConsensusCacheLease() throws Exception {
-        File file = getResourceFile("specs/multi-dm/DHTConsensusCacheLease.yaml");
-        MicroServiceSpec spec = readMicroServiceSpec(file);
-        runTest(spec, true);
+        runTest("DHTConsensusCacheLease");
     }
 
     @Test
     public void testDHTConsensusCacheLeaseAtleastRPC() throws Exception {
-        File file = getResourceFile("specs/multi-dm/DHTConsensusCacheLeaseAtleastRPC.yaml");
-        MicroServiceSpec spec = readMicroServiceSpec(file);
-        runTest(spec, true);
+        runTest("DHTConsensusCacheLeaseAtleastRPC");
     }
 
     @Test
     public void testDHTMasterSlave() throws Exception {
-        File file = getResourceFile("specs/multi-dm/DHTMasterSlave.yaml");
-        MicroServiceSpec spec = readMicroServiceSpec(file);
-        runTest(spec, false);
+        runTest("DHTMasterSlave");
     }
 
     @Test
     public void testDHTMasterSlaveAtleastRPC() throws Exception {
-        File file = getResourceFile("specs/multi-dm/DHTMasterSlaveAtleastRPC.yaml");
-        MicroServiceSpec spec = readMicroServiceSpec(file);
-        runTest(spec, false);
+        runTest("DHTMasterSlaveAtleastRPC");
     }
 
     @Test
     public void testDHTMasterSlaveAtleastRPCCacheLease() throws Exception {
-        File file = getResourceFile("specs/multi-dm/DHTMasterSlaveAtleastRPCCacheLease.yaml");
-        MicroServiceSpec spec = readMicroServiceSpec(file);
-        runTest(spec, false);
+        runTest("DHTMasterSlaveAtleastRPCCacheLease");
     }
 
     @Test
     public void testDHTMasterSlaveCacheLease() throws Exception {
-        File file = getResourceFile("specs/multi-dm/DHTMasterSlaveCacheLease.yaml");
-        MicroServiceSpec spec = readMicroServiceSpec(file);
-        runTest(spec, false);
+        runTest("DHTMasterSlaveCacheLease");
     }
 
     @Test
     @Ignore("Test is ignored will be removed once the multi DM issues are resolved")
     public void testAtleastRPCDHTMasterSlave() throws Exception {
-        File file = getResourceFile("specs/multi-dm/AtleastRPCDHTMasterSlave.yaml");
-        MicroServiceSpec spec = readMicroServiceSpec(file);
-        runTest(spec, false);
+        runTest("AtleastRPCDHTMasterSlave");
     }
 
     @Test
     @Ignore("Test is ignored will be removed once the multi DM issues are resolved")
     public void testAtleastRPCDHTConsensus() throws Exception {
-        File file = getResourceFile("specs/multi-dm/AtleastRPCDHTConsensus.yaml");
-        MicroServiceSpec spec = readMicroServiceSpec(file);
-        runTest(spec, true);
+        runTest("AtleastRPCDHTConsensus");
     }
 
     @Test
     public void testAtleastRPCCacheLease() throws Exception {
-        File file = getResourceFile("specs/multi-dm/AtleastRPCCacheLease.yaml");
-        MicroServiceSpec spec = readMicroServiceSpec(file);
-        runTest(spec, false);
+        runTest("AtleastRPCCacheLease");
     }
 
     @Test
     public void testAtleastRPCCacheLeaseConsensus() throws Exception {
-        File file = getResourceFile("specs/multi-dm/AtleastRPCCacheLeaseConsensus.yaml");
-        MicroServiceSpec spec = readMicroServiceSpec(file);
-        runTest(spec, true);
+        runTest("AtleastRPCCacheLeaseConsensus");
     }
 
     @Test
     public void testAtleastRPCCacheLeaseDHTConsensus() throws Exception {
-        File file = getResourceFile("specs/multi-dm/AtleastRPCCacheLeaseDHTConsensus.yaml");
-        MicroServiceSpec spec = readMicroServiceSpec(file);
-        runTest(spec, true);
+        runTest("AtleastRPCCacheLeaseDHTConsensus");
     }
 
     @Test
     public void testAtleastRPCCacheLeaseMasterSlave() throws Exception {
-        File file = getResourceFile("specs/multi-dm/AtleastRPCCacheLeaseMasterSlave.yaml");
-        MicroServiceSpec spec = readMicroServiceSpec(file);
-        runTest(spec, false);
+        runTest("AtleastRPCCacheLeaseMasterSlave");
     }
 
     @Test
     public void testCacheLeaseAtleastRPC() throws Exception {
-        File file = getResourceFile("specs/multi-dm/CacheLeaseAtleastRPC.yaml");
-        MicroServiceSpec spec = readMicroServiceSpec(file);
-        runTest(spec, false);
+        runTest("CacheLeaseAtleastRPC");
     }
 
     @Test
     public void testCacheLeaseAtleastRPCDHTConsensus() throws Exception {
-        File file = getResourceFile("specs/multi-dm/CacheLeaseAtleastRPCDHTConsensus.yaml");
-        MicroServiceSpec spec = readMicroServiceSpec(file);
-        runTest(spec, true);
+        runTest("CacheLeaseAtleastRPCDHTConsensus");
     }
 
     @Test
     public void testCacheLeaseDHT() throws Exception {
-        File file = getResourceFile("specs/multi-dm/CacheLeaseDHT.yaml");
-        MicroServiceSpec spec = readMicroServiceSpec(file);
-        runTest(spec, false);
+        runTest("CacheLeaseDHT");
     }
 
     @Test
     public void testCacheLeaseDHTMasterSlave() throws Exception {
-        File file = getResourceFile("specs/multi-dm/CacheLeaseDHTMasterSlave.yaml");
-        MicroServiceSpec spec = readMicroServiceSpec(file);
-        runTest(spec, false);
+        runTest("CacheLeaseDHTMasterSlave");
     }
 
     @Test
     public void testCacheLeaseDHTConsensus() throws Exception {
-        File file = getResourceFile("specs/multi-dm/CacheLeaseDHTConsensus.yaml");
-        MicroServiceSpec spec = readMicroServiceSpec(file);
-        runTest(spec, true);
+        runTest("CacheLeaseDHTConsensus");
     }
 
     @AfterClass

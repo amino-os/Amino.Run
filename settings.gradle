@@ -1,5 +1,5 @@
 // Amino.Run
-rootProject.name = 'Amino.Run'
+rootProject.name = 'AminoRun'
 include ':core'
 
 // Dependencies

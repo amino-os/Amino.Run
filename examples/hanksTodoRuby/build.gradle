@@ -1,7 +1,8 @@
 // Customize app stub generation for this example.
 genStubs {
     main = "amino.run.compiler.GraalStubGenerator"
-    classpath = files("$projectDir/../../sapphire-core/build/classes/java/main/")
+    // Note: classpath below is to resolve circular dependency problem.
+    classpath = files("$projectDir/../../core/build/classes/java/main/")
     def microServicePath = "$projectDir/src/main/ruby/amino/run/appexamples/hankstodo/todo_list_manager.rb"
     def outPath = "$projectDir/src/main/java"
     def packageName = "amino.run.appexamples.hankstodo.stubs"

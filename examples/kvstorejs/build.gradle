@@ -1,7 +1,7 @@
 // Task for app stub generation
 genStubs {
     main = "amino.run.compiler.GraalStubGenerator"
-    classpath = files("$projectDir/../../sapphire-core/build/classes/java/main/")
+    classpath = files("$projectDir/../../core/build/classes/java/main/")
     def microServicePath = "$projectDir/src/main/js/amino/run/appdemo/KeyValueStore.js"
     def outPath = "$projectDir/src/main/java"
     def packageName = "amino.run.appdemo.stubs"

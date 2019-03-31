@@ -8,47 +8,11 @@ subprojects {
     }
 
     // Common rules for all JavaExec tasks, are added before execution.
-    tasks.withType(JavaExec).whenTaskAdded {
-        classpath += sourceSets.stubs.runtimeClasspath
-        jvmArgs '-Djava.util.logging.config.file=' + project.projectDir + '/../../logging.properties'
-        args project.property('omsIpFlag'), project.property('omsIp'), project.property('omsPortFlag'), project.property('omsPort')
-    }
-    
-    // Run OMS
-    task runoms(type: JavaExec) {
-        main = 'amino.run.oms.OMSServerImpl'
-    }
-
-    // Run a kernel server
-    task runks(type: JavaExec) {
-        main = 'amino.run.kernel.server.KernelServerImpl'
-        args project.property('kernelServerIpFlag'), project.property('kernelServerIp'), project.property('kernelServerPortFlag'), project.property('kernelServerPort'), 
-             project.property('kernelServerLabelFlag'), project.property('kernelServerLabel')
-    }
-
-    // Run a second kernel server
-    task runks2(type: JavaExec) {
-        main = 'amino.run.kernel.server.KernelServerImpl'
-        args project.property('kernelServerIpFlag'), project.property('kernelServerIp'), project.property('kernelServerPortFlag'), project.property('kernelServerPort2'),
-             project.property('kernelServerLabelFlag'), project.property('kernelServerLabel2')
-    }
-    // Run a third kernel server
-    task runks3(type: JavaExec) {
-        main = 'amino.run.kernel.server.KernelServerImpl'
-        args project.property('kernelServerIpFlag'), project.property('kernelServerIp'), project.property('kernelServerPortFlag'), project.property('kernelServerPort3'),
-             project.property('kernelServerLabelFlag'), project.property('kernelServerLabel3')
-    }
-
-    // Run a fourth kernel server
-    task runks4(type: JavaExec) {
-        main = 'amino.run.kernel.server.KernelServerImpl'
-        args project.property('kernelServerIpFlag'), project.property('kernelServerIp'), project.property('kernelServerPortFlag'), project.property('kernelServerPort4'),
-             project.property('kernelServerLabelFlag'), project.property('kernelServerLabel4')
-    }
 
     // Run application
     task runapp(type: JavaExec) {
-        args project.property('kernelServerIpFlag'), project.property('embeddedKernelServerIp'), project.property('kernelServerPortFlag'), project.property('kernelServerPort')
+        args project.property('omsIpFlag'), project.property('omsIp'), project.property('omsPortFlag'), project.property('omsPort'),
+                project.property('kernelServerIpFlag'), project.property('embeddedKernelServerIp'), project.property('kernelServerPortFlag'), project.property('kernelServerPort')
     }
 }
 
@@ -96,59 +60,13 @@ subprojects {
         throw new InputMismatchException("Wrong value given for \"KS\" parameter. Provide valid value (1 to 4).")
     }
     String ksTask = 'runenvks' + kernelServers
-
-    task runenvoms(type: ExecWait) {
-        command './gradlew ' + project + ':runoms'
-
-        doLast {
-            println "Launched OMS Server. !!!"
-        }
-    }
-    task runenvks1(type: ExecWait, dependsOn: runenvoms) {
-        command './gradlew ' + project + ':runks'
-
-        doLast {
-            println "Launched Kernel Server 1. !!!"
-        }
-    }
-    task runenvks2(type: ExecWait, dependsOn: runenvks1) {
-        command './gradlew ' + project + ':runks2'
-
-        doLast {
-            println "Launched Kernel Server 2. !!!"
-        }
-    }
-    task runenvks3(type: ExecWait, dependsOn: runenvks2) {
-        command './gradlew ' + project + ':runks3'
-
-        doLast {
-            println "Launched Kernel Server 3. !!!"
-        }
-    }
-    task runenvks4(type: ExecWait, dependsOn: runenvks3) {
-        command './gradlew ' + project + ':runks4'
-
-        doLast {
-            println "Launched Kernel Server 4. !!!"
-        }
-    }
-    task runenvapp(type: ExecWait, dependsOn: ksTask) {
+    task runenvapp(type: ExecWait) {
         command './gradlew ' + project + ':runapp'
     }
 
     task run (dependsOn: runenvapp) {
         // Need to cleanup all the background processes which were launched, before exiting.
-        doLast {
-            def ports = ["$omsPort", "$kernelServerPort", "$kernelServerPort2", "$kernelServerPort3", "$kernelServerPort4"]
-            ports.each { port ->
-                def cmd = "lsof -Fp -i :$port"
-                def process = cmd.execute()
-                process.in.eachLine { line ->
-                    def killProcess = "kill -9 ${line.substring(1)}".execute()
-                    killProcess.waitFor()
-                }
-            }
-        }
+
     }
 }
 
@@ -158,6 +76,17 @@ subprojects {
 task run {
     subprojects.each { subproject ->
             dependsOn subproject.path + ':run'
+    }
+    doLast {
+        def ports = ["$omsPort", "$kernelServerPort", "$kernelServerPort2", "$kernelServerPort3", "$kernelServerPort4"]
+        ports.each { port ->
+            def cmd = "lsof -Fp -i :$port"
+            def process = cmd.execute()
+            process.in.eachLine { line ->
+                def killProcess = "kill -9 ${line.substring(1)}".execute()
+                killProcess.waitFor()
+            }
+        }
     }
 }
 

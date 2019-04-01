@@ -1,4 +1,4 @@
-package amino.run.appexamples.hankstodo;
+package amino.run.appexamples.hankstodoruby;
 
 import amino.run.app.Language;
 
@@ -21,9 +21,9 @@ public class Client {
 
     private static void Test(String hostIp, String hostPort, String omsIp, String omsPort, Language lang, String fileName) throws Exception{
         java.lang.System.out.println(String.format("**************Test %s*************", lang));
-        amino.run.appexamples.hankstodo.stubs.TodoListManager_Stub tls;
+        amino.run.appexamples.hankstodoruby.stubs.TodoListManager_Stub tls;
         try {
-            tls = amino.run.appexamples.hankstodo.stubs.TodoListManager_Stub.getStub(fileName,
+            tls = amino.run.appexamples.hankstodoruby.stubs.TodoListManager_Stub.getStub(fileName,
                     omsIp, omsPort, hostIp, hostPort);
         }
         catch (Exception e){

@@ -1,13 +1,64 @@
+import static java.lang.Thread.sleep
+
 // All default build scripts common to all examples go here.
 // These defaults can be overridden in build.gradle files of individual examples where necessary.
+apply plugin: 'java-library'
+dependencies {
+    compile project(':sapphire-core')
+}
+
+//run oms and run ks task added in all projects so that it can be executed in  both examples and app level hirerachy
+allprojects {
+    tasks.withType(JavaExec).whenTaskAdded {
+        classpath += sourceSets.stubs.runtimeClasspath
+        jvmArgs '-Djava.util.logging.config.file=' + project.rootDir + '/logging.properties'
+        args project.property('omsIpFlag'), project.property('omsIp'), project.property('omsPortFlag'), project.property('omsPort')
+    }
+
+    // Run OMS
+    task runoms(type: JavaExec) {
+        main = 'amino.run.oms.OMSServerImpl'
+     }
+
+    // Run a kernel server
+    task runks(type: JavaExec) {
+        main = 'amino.run.kernel.server.KernelServerImpl'
+        args project.property('kernelServerIpFlag'), project.property('kernelServerIp'), project.property('kernelServerPortFlag'), project.property('kernelServerPort'),
+                project.property('kernelServerLabelFlag'), project.property('kernelServerLabel')
+    }
+
+    // Run a second kernel server
+    task runks2(type: JavaExec) {
+        main = 'amino.run.kernel.server.KernelServerImpl'
+        args project.property('kernelServerIpFlag'), project.property('kernelServerIp'), project.property('kernelServerPortFlag'), project.property('kernelServerPort2'),
+                project.property('kernelServerLabelFlag'), project.property('kernelServerLabel2')
+    }
+    // Run a third kernel server
+    task runks3(type: JavaExec) {
+        main = 'amino.run.kernel.server.KernelServerImpl'
+        args project.property('kernelServerIpFlag'), project.property('kernelServerIp'), project.property('kernelServerPortFlag'), project.property('kernelServerPort3'),
+                project.property('kernelServerLabelFlag'), project.property('kernelServerLabel3')
+    }
+
+    // Run a fourth kernel server
+    task runks4(type: JavaExec) {
+        main = 'amino.run.kernel.server.KernelServerImpl'
+        args project.property('kernelServerIpFlag'), project.property('kernelServerIp'), project.property('kernelServerPortFlag'), project.property('kernelServerPort4'),
+                project.property('kernelServerLabelFlag'), project.property('kernelServerLabel4')
+    }
+}
+
+// Changing the build directory of all indivitual example app to build directory of examples
+subprojects.each {
+    subproject-> subproject.buildDir=project.buildDir
+}
+
 subprojects {
     apply plugin: 'java-library'
 
     dependencies {
         compile project(':sapphire-core')
     }
-
-    // Common rules for all JavaExec tasks, are added before execution.
 
     // Run application
     task runapp(type: JavaExec) {
@@ -16,15 +67,17 @@ subprojects {
     }
 }
 
-// Added for running the Test environment consisting of OMS, 1 to 4 Kernel Servers and the test application together.
-// The environment can be launched by running below command from amino rootDir: 
-// "./gradlew :examples:hanksTodo:run" for executing the hanksTodo example.
-// The default no of Kernel Servers launched is 2 and for different number of Kernel Servers, execute with command line
-// parameter "KS". eg: For hanksTodo with 3 Kernel Servers: "./gradlew :examples:hanksTodo:run -PKS=3"
-// The handling has been inspired based on the below description by Tomas Lins
-// https://fbflex.wordpress.com/2013/03/14/gradle-madness-execwait-a-task-that-waits-for-commandline-calls-to-be-ready/
+// Changes releated to single run (Spawning all amino process in single gradle task)
+
+/*
+ Custom class for spawning the process via command line
+ The handling has been inspired based on the below description by Tomas Lins
+ https://fbflex.wordpress.com/2013/03/14/gradle-madness-execwait-a-task-that-waits-for-commandline-calls-to-be-ready
+ */
 class ExecWait extends DefaultTask {
     String command
+
+    static ArrayList<Process> processes = new ArrayList<Process>()
 
     @TaskAction
     def spawnProcess() {
@@ -49,8 +102,84 @@ class ExecWait extends DefaultTask {
                 println line
             }
         }
+
+        ExecWait.processes.add(process)
+    }
+    // To kill background running oms and kernel server process
+    def static stopProcesses(){
+        for(Process process: processes) {
+            process.destroy()
+        }
     }
 }
+
+// Added for running the Test environment consisting of OMS, 1 to 4 Kernel Servers
+allprojects {
+    task runenvoms(type: ExecWait) {
+        command './gradlew ' + ':examples:runoms'
+
+        doLast {
+            waitForSockListen(project.property('omsIp').toString(), project.property('omsPort').toString())
+            println "Launched OMS Server. !!!"
+        }
+    }
+
+    task runenvks1(type: ExecWait, dependsOn: runenvoms) {
+        command './gradlew ' + ':examples:runks'
+
+        doLast {
+            waitForSockListen(project.property('kernelServerIp').toString(), project.property('kernelServerPort').toString())
+            println "Launched Kernel Server 1. !!!"
+        }
+    }
+    task runenvks2(type: ExecWait, dependsOn: runenvks1) {
+        command './gradlew ' + ':examples:runks2'
+
+        doLast {
+            waitForSockListen(project.property('kernelServerIp').toString(), project.property('kernelServerPort2').toString())
+            println "Launched Kernel Server 2. !!!"
+        }
+    }
+    task runenvks3(type: ExecWait, dependsOn: runenvks2) {
+        command './gradlew ' + ':examples:runks3'
+
+        doLast {
+            waitForSockListen(project.property('kernelServerIp').toString(), project.property('kernelServerPort3').toString())
+            println "Launched Kernel Server 3. !!!"
+        }
+    }
+    task runenvks4(type: ExecWait, dependsOn: runenvks3) {
+        command './gradlew ' + ':examples:runks4'
+
+        doLast {
+            waitForSockListen(project.property('kernelServerIp').toString(), project.property('kernelServerPort4').toString())
+            println "Launched Kernel Server 4. !!!"
+        }
+    }
+}
+def waitForSockListen(String ip, String port) {
+    Socket socket = null;
+    while (socket == null) {
+        System.out.printf("Waiting for socket %s\n!", port)
+        try {
+            socket = new Socket(ip, Integer.valueOf(port).intValue())
+        } catch (IOException e) {
+            try {
+                sleep(1000);
+            } catch (InterruptedException e1) {
+                System.out.println(e1.toString());
+            }
+        }
+    }
+}
+
+/*
+ Added for testing the  indivitual application consisting of OMS, 1 to 4 Kernel Servers .
+ The environment can be launched by running below command from amino rootDir:
+ "./gradlew :examples:project:run" for executing the indivitual example.
+ The default no of Kernel Servers launched is 2 and for different number of Kernel Servers, execute with command line
+ parameter "KS". eg: For hanksTodo with 3 Kernel Servers: "./gradlew :examples:hanksTodo:run -PKS=3"
+*/
 subprojects {
     def project = "$it.path"
     // Retrieve the value of command line parameter "KS" which specifies the no of
@@ -60,33 +189,41 @@ subprojects {
         throw new InputMismatchException("Wrong value given for \"KS\" parameter. Provide valid value (1 to 4).")
     }
     String ksTask = 'runenvks' + kernelServers
-    task runenvapp(type: ExecWait) {
+
+    task run (type:ExecWait, dependsOn: ksTask) {
         command './gradlew ' + project + ':runapp'
-    }
-
-    task run (dependsOn: runenvapp) {
-        // Need to cleanup all the background processes which were launched, before exiting.
-
+        doLast {
+            println "Stop all processes"
+            ExecWait.stopProcesses()
+        }
     }
 }
 
-// Added for running all the amino examples together sequentially, with one gradle task.
-// The environment can be launched by running below command from amino rootDir:
-// "./gradlew :examples:run"
+/*
+ Added for running all the amino examples together sequentially, with one gradle task  consisting of OMS, 1 to 4 Kernel Servers.
+ The environment can be launched by running below command from amino rootDir:
+ "./gradlew :examples:run -PKS=4"
+*/
 task run {
-    subprojects.each { subproject ->
-            dependsOn subproject.path + ':run'
+    // Adding all exempted sub projects
+    def ArrayList<String> exemptedSubProject = [":examples:fundmover", ":examples:hanksTodoRuby", ":examples:kvstorejs"]
+    def kernelServers = this.hasProperty("KS") ? this.property("KS").asType(byte) : 2
+    if ((kernelServers < 1) || (kernelServers > 4)) {
+        throw new InputMismatchException("Wrong value given for \"KS\" parameter. Provide valid value (1 to 4).")
     }
-    doLast {
-        def ports = ["$omsPort", "$kernelServerPort", "$kernelServerPort2", "$kernelServerPort3", "$kernelServerPort4"]
-        ports.each { port ->
-            def cmd = "lsof -Fp -i :$port"
-            def process = cmd.execute()
-            process.in.eachLine { line ->
-                def killProcess = "kill -9 ${line.substring(1)}".execute()
-                killProcess.waitFor()
+    String ksTask = 'runenvks' + kernelServers
+    // Spawning single oms and set of kernel servers
+    dependsOn(ksTask)
+
+    subprojects.each { subproject ->
+            if (!exemptedSubProject.contains(subproject.path)) {
+                dependsOn subproject.path + ':runapp'
             }
-        }
+    }
+    
+    doLast {
+        println "Stop all processes"
+        ExecWait.stopProcesses()
     }
 }
 

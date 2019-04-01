@@ -2,18 +2,18 @@
 genStubs {
     main = "amino.run.compiler.GraalStubGenerator"
     classpath = files("$projectDir/../../sapphire-core/build/classes/java/main/")
-    def microServicePath = "$projectDir/src/main/ruby/amino/run/appexamples/hankstodo/todo_list_manager.rb"
+    def microServicePath = "$projectDir/src/main/ruby/amino/run/appexamples/hankstodoruby/todo_list_manager.rb"
     def outPath = "$projectDir/src/main/java"
-    def packageName = "amino.run.appexamples.hankstodo.stubs"
+    def packageName = "amino.run.appexamples.hankstodoruby.stubs"
     def microServiceClasses = "TodoListManager"
     args microServicePath, outPath, packageName, microServiceClasses
-    outputs.dir "$projectDir/src/main/java/amino/run/appexamples/hankstodo/stubs" // Declare outputs, so gradle will run if they have been changed
+    outputs.dir "$projectDir/src/main/java/amino/run/appexamples/hankstodoruby/stubs" // Declare outputs, so gradle will run if they have been changed
     inputs.dir microServicePath   // Declare inputs, so gradle will run if they have been changed
 }
 
 // Task to run Ruby app
 task runrubyapp(type: Exec) {
-    environment  RUBY_HOME: "${project.projectDir}/src/main/ruby/amino/run/appexamples/hankstodo"
+    environment  RUBY_HOME: "${project.projectDir}/src/main/ruby/amino/run/appexamples/hankstodoruby"
     environment  OMS_IP: "${project.property('omsIp')}"
     environment  OMS_PORT: "${project.property('omsPort')}"
     environment  KERNEL_SERVER_IP: "${project.property('embeddedKernelServerIp')}"
@@ -21,12 +21,12 @@ task runrubyapp(type: Exec) {
     def classpath = sourceSets.main.runtimeClasspath.asPath
     executable "$System.env.JAVA_HOME/bin/ruby"
     args "--jvm", "--polyglot", "--jvm.classpath=${classpath}",
-            "${project.projectDir}/src/main/ruby/amino/run/appexamples/hankstodo/hanks_todo_main.rb"
+            "${project.projectDir}/src/main/ruby/amino/run/appexamples/hankstodoruby/hanks_todo_main.rb"
 }
 
-// Task for run javascript hanksTodoApp demo app
+// Task for run javascript hankstodorubyApp demo app
 task runjsapp(type: Exec) {
-    environment  JS_HOME: "${project.projectDir}/src/main/js/amino/run/appexamples/hankstodo"
+    environment  JS_HOME: "${project.projectDir}/src/main/js/amino/run/appexamples/hankstodoruby"
     environment  OMS_IP: "${project.property('omsIp')}"
     environment  OMS_PORT: "${project.property('omsPort')}"
     environment  HOST_IP: "${project.property('embeddedKernelServerIp')}"
@@ -34,15 +34,15 @@ task runjsapp(type: Exec) {
     def classpath = sourceSets.main.runtimeClasspath.asPath
     executable "$System.env.JAVA_HOME/bin/js"
     args "--jvm", "--polyglot", "--jvm.classpath=${classpath}",
-            "${project.projectDir}/src/main/js/amino/run/appexamples/hankstodo/hanks_todo_main.js"
+            "${project.projectDir}/src/main/js/amino/run/appexamples/hankstodoruby/hanks_todo_main.js"
 }
 
 // Customise task to run Java app
 runapp {
-    systemProperty "RUBY_HOME",  "${project.projectDir}/src/main/ruby/amino/run/appexamples/hankstodo/"
-    systemProperty "JS_HOME",  "${project.projectDir}/src/main/js/amino/run/appexamples/hankstodo/"
-    main = 'amino.run.appexamples.hankstodo.Client'
-    // Default runapp arguments are overridden to follow the format accepted by hanksTodoRuby client.
+    systemProperty "RUBY_HOME",  "${project.projectDir}/src/main/ruby/amino/run/appexamples/hankstodoruby/"
+    systemProperty "JS_HOME",  "${project.projectDir}/src/main/js/amino/run/appexamples/hankstodoruby/"
+    main = 'amino.run.appexamples.hankstodoruby.Client'
+    // Default runapp arguments are overridden to follow the format accepted by hankstodoRuby client.
     args = [project.property('embeddedKernelServerIp'), project.property('kernelServerPort'), project.property('omsIp'), project.property('omsPort')]
 }
 

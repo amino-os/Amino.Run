@@ -27,7 +27,7 @@ task runjsapp(type: Exec) {
 //       The above bug in graal means that our graalStubGenerator does not correctly generate java
 //       stubs for javascript microservices (the methods in the javascript object are missing).
 //       So for the time being we disable this test example.
-runenvapp {
+run {
     onlyIf() { false } // Disable
 }
 

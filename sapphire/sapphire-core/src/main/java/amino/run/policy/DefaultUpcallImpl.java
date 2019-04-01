@@ -66,29 +66,6 @@ public abstract class DefaultUpcallImpl extends Library {
     }
 
     public abstract static class ServerPolicy extends ServerPolicyLibrary {
-        /**
-         * Get the local cached list of all replicas for the microservice.
-         *
-         * <p>Note: This list gets populated iff the respective DM's group policy support
-         * onMembershipChange notifications.
-         *
-         * @return List of server policies
-         * @throws RemoteException
-         */
-        protected abstract ArrayList<Policy.ServerPolicy> getServers() throws RemoteException;
-
-        /**
-         * Membership change notification handler invoked from respective DM's group policy upon
-         * addition/removal of replica. It is used to refresh the locally cached list of replicas(if
-         * replica maintains any). And replica can initialize its data structures maintained w.r.t
-         * to other replicas of the microservice
-         *
-         * @param servers
-         * @throws RemoteException
-         */
-        public abstract void onMembershipChange(ArrayList<Policy.ServerPolicy> servers)
-                throws RemoteException;
-
         public Object onRPC(String method, ArrayList<Object> params) throws Exception {
             return appObject.invoke(method, params);
         }

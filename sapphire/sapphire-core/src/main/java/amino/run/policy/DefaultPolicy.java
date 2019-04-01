@@ -14,7 +14,6 @@ public class DefaultPolicy extends Policy {
 
     public static class DefaultServerPolicy extends ServerPolicy {
         private GroupPolicy group;
-        private ArrayList<ServerPolicy> servers = new ArrayList<ServerPolicy>();
 
         @Override
         public GroupPolicy getGroup() {
@@ -22,10 +21,7 @@ public class DefaultPolicy extends Policy {
         }
 
         @Override
-        public void onMembershipChange(ArrayList<ServerPolicy> remoteServers)
-                throws RemoteException {
-            servers = new ArrayList<ServerPolicy>(remoteServers);
-        }
+        public void onNotification(Notification notification) throws RemoteException {}
 
         @Override
         public void onCreate(GroupPolicy group) {
@@ -34,11 +30,6 @@ public class DefaultPolicy extends Policy {
 
         @Override
         public void onDestroy() {}
-
-        @Override
-        protected ArrayList<ServerPolicy> getServers() throws RemoteException {
-            return new ArrayList<ServerPolicy>(servers);
-        }
     }
 
     public static class DefaultClientPolicy extends ClientPolicy {
@@ -86,6 +77,9 @@ public class DefaultPolicy extends Policy {
         public ArrayList<ServerPolicy> getServers() throws RemoteException {
             return new ArrayList<ServerPolicy>(servers.values());
         }
+
+        @Override
+        public void onNotification(Notification notification) throws RemoteException {}
 
         @Override
         public void onCreate(String region, ServerPolicy server) throws RemoteException {

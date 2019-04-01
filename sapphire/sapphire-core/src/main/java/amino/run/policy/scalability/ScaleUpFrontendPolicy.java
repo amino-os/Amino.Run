@@ -3,6 +3,7 @@ package amino.run.policy.scalability;
 import amino.run.common.MicroServiceNotFoundException;
 import amino.run.common.MicroServiceReplicaNotFoundException;
 import amino.run.kernel.common.KernelObjectStub;
+import amino.run.policy.Notification;
 import amino.run.policy.Policy;
 import amino.run.policy.util.ResettableTimer;
 import java.net.InetSocketAddress;
@@ -64,11 +65,17 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
         }
     }
 
+    /* Membership notification */
+    private static class Membership implements Notification {
+        private ArrayList<Policy.ServerPolicy> servers = new ArrayList<Policy.ServerPolicy>();
+    }
+
     public static class ServerPolicy extends LoadBalancedFrontendPolicy.ServerPolicy {
         private static Logger logger = Logger.getLogger(ServerPolicy.class.getName());
         private int replicationRateInMs = REPLICA_CREATE_MIN_TIME_IN_MSEC; // for n milliseconds
         private int replicaCount = 1; // 1 replica in n milliseconds
         private Semaphore replicaCreateLimiter;
+        private ArrayList<Policy.ServerPolicy> servers = null;
         private transient volatile ResettableTimer timer; // Timer for limiting
 
         @Override
@@ -117,6 +124,15 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
             }
         }
 
+        @Override
+        public void onNotification(Notification notification) throws RemoteException {
+            super.onNotification(notification);
+
+            if (notification instanceof Membership) {
+                servers = ((Membership) notification).servers;
+            }
+        }
+
         private void scaleDown() {
 
             /* When the load at a given replica drops to approximately p * (m-2)/m
@@ -126,10 +142,8 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
             than required, so one can be removed. The number of replicas should not be
             reduced below 2 (in case one fails).
              */
-            ArrayList<Policy.ServerPolicy> replicaServers;
-            try {
-                replicaServers = getGroup().getServers();
-            } catch (RemoteException e) {
+            ArrayList<Policy.ServerPolicy> replicaServers = servers;
+            if (replicaServers == null) {
                 return;
             }
 
@@ -251,6 +265,31 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
                     throw new ScaleDownException("Scale down failed. Replica deletion failed.", e);
                 }
             }
+        }
+
+        /**
+         * Notify all the servers about present servers
+         *
+         * @throws RemoteException
+         */
+        private void notifyMembership() throws RemoteException {
+            Membership notification = new Membership();
+            notification.servers = getServers();
+            for (Policy.ServerPolicy tempServer : notification.servers) {
+                tempServer.onNotification(notification);
+            }
+        }
+
+        @Override
+        public void addServer(Policy.ServerPolicy serverPolicy) throws RemoteException {
+            super.addServer(serverPolicy);
+            notifyMembership();
+        }
+
+        @Override
+        public void removeServer(Policy.ServerPolicy serverPolicy) throws RemoteException {
+            super.removeServer(serverPolicy);
+            notifyMembership();
         }
     }
 }

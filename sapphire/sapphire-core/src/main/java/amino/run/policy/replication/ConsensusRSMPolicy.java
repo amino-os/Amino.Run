@@ -2,7 +2,9 @@ package amino.run.policy.replication;
 
 import amino.run.common.MicroServiceNotFoundException;
 import amino.run.common.MicroServiceReplicaNotFoundException;
+import amino.run.common.ReplicaID;
 import amino.run.policy.DefaultPolicy;
+import amino.run.policy.Notification;
 import amino.run.policy.Policy;
 import amino.run.policy.util.consensus.raft.AlreadyVotedException;
 import amino.run.policy.util.consensus.raft.CandidateBehindException;
@@ -21,6 +23,7 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 /**
@@ -110,6 +113,22 @@ public class ConsensusRSMPolicy extends DefaultPolicy {
         }
     }
 
+    /* Consensus server information used in the notifications */
+    private static class ConsensusServer implements Serializable {
+        private final UUID raftId;
+        private final ServerPolicy server;
+
+        public ConsensusServer(UUID raftId, ServerPolicy server) {
+            this.raftId = raftId;
+            this.server = server;
+        }
+    }
+
+    /* Consensus membership notification */
+    private static class ConsensusMembership implements Notification {
+        private ArrayList<ConsensusServer> consensusServers = new ArrayList<ConsensusServer>();
+    }
+
     public static class ServerPolicy extends DefaultPolicy.DefaultServerPolicy
             implements StateMachineApplier, RemoteRaftServer {
         static Logger logger = Logger.getLogger(ServerPolicy.class.getCanonicalName());
@@ -152,29 +171,28 @@ public class ConsensusRSMPolicy extends DefaultPolicy {
         }
 
         @Override
-        public void onMembershipChange(ArrayList<Policy.ServerPolicy> servers)
-                throws RemoteException {
-            List<? extends Policy.ServerPolicy> oldList = getServers();
-            super.onMembershipChange(servers);
+        public void onNotification(Notification notification) throws RemoteException {
+            super.onNotification(notification);
+
+            if (notification instanceof ConsensusMembership) {
+                onMembershipChange((ConsensusMembership) notification);
+                return;
+            }
+        }
+
+        private void onMembershipChange(ConsensusMembership notification) {
+            List<ConsensusServer> newList = notification.consensusServers;
 
             raftServer.stop();
 
             /* Initialize the RAFT protocol with the specified set of servers */
-            /* Remove servers from existing set */
-            oldList.removeAll(servers);
-            if (!oldList.isEmpty()) {
-                raftServer.removeServers((List<? extends RemoteRaftServer>) oldList);
-            }
+            /* Clear current other servers list */
+            raftServer.clearServers();
 
-            /* Update servers to existing set. */
-            /* Note: Few server could have migrated. i.e., host name alone in the server stubs would have changed to
-            point to new host. raftServer.addServer() updates the map of <uuid, RemoteRaftServer>. Since it is not
-            harmful to update the map again for same RemoteRaftServer, we don't differentiate whether the
-            RemoteRaftServer is already present in map or not */
-            for (Policy.ServerPolicy server : servers) {
-                ServerPolicy consensusServer = (ServerPolicy) server;
-                if (!consensusServer.getRaftServerId().equals(raftServer.getMyServerID())) {
-                    raftServer.addServer(consensusServer.getRaftServerId(), consensusServer);
+            /* Populate the other raft servers list */
+            for (ConsensusServer consensusServer : newList) {
+                if (!consensusServer.raftId.equals(raftServer.getMyServerID())) {
+                    raftServer.addServer(consensusServer.raftId, consensusServer.server);
                 }
             }
 
@@ -214,6 +232,8 @@ public class ConsensusRSMPolicy extends DefaultPolicy {
 
     public static class GroupPolicy extends DefaultPolicy.DefaultGroupPolicy {
         private static Logger logger = Logger.getLogger(GroupPolicy.class.getName());
+        private ConcurrentHashMap<ReplicaID, ConsensusServer> servers =
+                new ConcurrentHashMap<ReplicaID, ConsensusServer>();
 
         @Override
         public void onCreate(String region, Policy.ServerPolicy server) throws RemoteException {
@@ -246,22 +266,36 @@ public class ConsensusRSMPolicy extends DefaultPolicy {
             }
         }
 
+        /**
+         * Notify all the servers about present servers
+         *
+         * @throws RemoteException
+         */
+        private void notifyMembership() throws RemoteException {
+            ConsensusMembership notification = new ConsensusMembership();
+            ArrayList<ConsensusServer> consensusServers =
+                    new ArrayList<ConsensusServer>(servers.values());
+            notification.consensusServers = consensusServers;
+            for (ConsensusServer tempServer : consensusServers) {
+                tempServer.server.onNotification(notification);
+            }
+        }
+
         @Override
         public void addServer(Policy.ServerPolicy server) throws RemoteException {
             super.addServer(server);
-            /* Tell all the servers about existing servers */
-            for (Policy.ServerPolicy srv : getServers()) {
-                srv.onMembershipChange(getServers());
-            }
+            ServerPolicy serverPolicy = (ServerPolicy) server;
+            ConsensusServer consensusServer =
+                    new ConsensusServer(serverPolicy.getRaftServerId(), serverPolicy);
+            servers.put(serverPolicy.getReplicaId(), consensusServer);
+            notifyMembership();
         }
 
         @Override
         public void removeServer(Policy.ServerPolicy server) throws RemoteException {
             super.removeServer(server);
-            /* Tell all the servers about existing servers */
-            for (Policy.ServerPolicy srv : getServers()) {
-                srv.onMembershipChange(getServers());
-            }
+            servers.remove(server.getReplicaId());
+            notifyMembership();
         }
     }
 }

@@ -108,6 +108,20 @@ public interface Upcalls {
          *     explicit set of kernel or DM exceptions.
          */
         Object onRPC(String method, ArrayList<Object> params) throws Exception;
+
+        /**
+         * Notification handler
+         *
+         * <p><b>Invoked from respective DM's group policy upon addition/removal of replica. It is
+         * used to refresh the locally cached list of replicas(if a replica maintains any). And
+         * replica can initialize its data structures maintained w.r.t to other replicas of the
+         * microservice. </b> <br>
+         * <b>Invoked from kernel server to notify server policy object about events</b>
+         *
+         * @param notification
+         * @throws RemoteException
+         */
+        void onNotification(Notification notification) throws RemoteException;
     }
 
     interface GroupUpcalls extends Serializable {
@@ -153,5 +167,16 @@ public interface Upcalls {
         // void onFailure(ServerPolicy server) throws RemoteException;
 
         Policy.ServerPolicy onRefRequest() throws RemoteException;
+
+        /**
+         * Notification handler
+         *
+         * <p>Invoked from kernel server to notify group policy about events such as the health of
+         * server policy object
+         *
+         * @param notification
+         * @throws RemoteException
+         */
+        void onNotification(Notification notification) throws RemoteException;
     }
 }

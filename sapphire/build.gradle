@@ -8,7 +8,7 @@ buildscript {
          * Dependencies to support bintray upload
          */
         classpath 'com.github.dcendents:android-maven-gradle-plugin:2.0'
-        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.0'
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4'
 
         /**
          * Be careful at upgrading to higher version of gradle (e.g., > 3.0):

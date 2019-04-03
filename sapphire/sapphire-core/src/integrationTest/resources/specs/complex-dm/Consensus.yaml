@@ -1,11 +1,8 @@
 # Configuration for running KeyValueStore as a
 # microservice with Consensus policy.
 !!amino.run.app.MicroServiceSpec
-constructorName: null
 dmList:
 - configs: []
   name: amino.run.policy.replication.ConsensusRSMPolicy
 javaClassName: amino.run.demo.KVStore
 lang: java
-name: null
-sourceFileLocation: null

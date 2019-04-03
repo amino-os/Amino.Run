@@ -1,18 +1,37 @@
 package amino.run.policy;
 
+import static amino.run.kernel.server.KernelServerImpl.REGION_KEY;
+
 import amino.run.app.Language;
 import amino.run.app.MicroServiceSpec;
 import amino.run.app.NodeSelectorSpec;
-import amino.run.common.*;
+import amino.run.app.NodeSelectorTerm;
+import amino.run.app.Operator;
+import amino.run.app.Requirement;
+import amino.run.common.AppObject;
+import amino.run.common.AppObjectStub;
+import amino.run.common.GraalObject;
+import amino.run.common.MicroServiceID;
+import amino.run.common.MicroServiceNotFoundException;
+import amino.run.common.MicroServiceReplicaNotFoundException;
+import amino.run.common.MultiDMConstructionHelper;
+import amino.run.common.ReplicaID;
+import amino.run.common.Utils;
 import amino.run.compiler.GlobalStubConstants;
-import amino.run.kernel.common.*;
+import amino.run.kernel.common.GlobalKernelReferences;
+import amino.run.kernel.common.KernelOID;
+import amino.run.kernel.common.KernelObjectFactory;
+import amino.run.kernel.common.KernelObjectNotFoundException;
 import amino.run.kernel.server.KernelServerImpl;
 import amino.run.oms.OMSServer;
 import amino.run.policy.Policy.ServerPolicy;
 import amino.run.runtime.MicroService;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.harmony.rmi.common.RMIUtil;
@@ -466,8 +485,12 @@ public abstract class Library implements Upcalls {
                 serversInRegion = oms().getServers(nodeSelector);
             } else {
                 if (region != null && !region.isEmpty()) {
+                    NodeSelectorTerm regionTerm = new NodeSelectorTerm();
+                    regionTerm.addMatchRequirements(
+                            new Requirement(
+                                    REGION_KEY, Operator.Equal, Collections.singletonList(region)));
                     nodeSelector = new NodeSelectorSpec();
-                    nodeSelector.addAndLabel(region);
+                    nodeSelector.addNodeSelectorTerms(regionTerm);
                     serversInRegion = oms().getServers(nodeSelector);
                 } else {
                     serversInRegion = oms().getServers(null);

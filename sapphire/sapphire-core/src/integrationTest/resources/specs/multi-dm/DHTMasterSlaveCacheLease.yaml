@@ -1,7 +1,6 @@
 # Configuration for running KeyValueStore as a
 # microservice with DHT&Consensus policy.
 !!amino.run.app.MicroServiceSpec
-constructorName: null
 dmList:
 - configs:
   - !!amino.run.policy.dht.DHTPolicy$Config {numOfShards: 2}
@@ -10,11 +9,5 @@ dmList:
   name: amino.run.policy.scalability.LoadBalancedMasterSlaveSyncPolicy
 - configs: []
   name: amino.run.policy.cache.CacheLeasePolicy
-  
-nodeSelectorSpec:
-  andLabels: !!set {}
-  orLabels: !!set {}
 javaClassName: amino.run.demo.KVStore
 lang: java
-name: null
-sourceFileLocation: null

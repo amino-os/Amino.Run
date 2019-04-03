@@ -7,7 +7,8 @@ import java.util.ArrayList;
  *
  * <p>All RPC metric handler need to implement this class.
  */
-public interface RPCMetricHandler extends MetricHandler {
+public abstract class RPCMetricHandler implements MetricHandler {
+    private RPCMetricHandler nextHandler = null;
     /**
      * Collect metric processing and call next metric handler for further metric collection in chain
      *
@@ -16,5 +17,13 @@ public interface RPCMetricHandler extends MetricHandler {
      * @return rpc response
      * @throws Exception
      */
-    void handle(String method, ArrayList<Object> params) throws Exception;
+    public abstract Object handle(String method, ArrayList<Object> params) throws Exception;
+
+    public void setNextHandler(RPCMetricHandler nextHandler) {
+        this.nextHandler = nextHandler;
+    }
+
+    public RPCMetricHandler getNextHandler() {
+        return nextHandler;
+    }
 }

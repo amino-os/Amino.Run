@@ -2,7 +2,8 @@ package amino.run.kernel.common.metric.schema;
 
 /** List of different supported metric schema type */
 public enum SchemaType {
-    CounterMetric("CounterMetric");
+    CounterMetric("CounterMetric"),
+    SummaryMetric("SummaryMetric");
 
     private String type;
 

@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 /** Counter is a cumulative metric that represents a single monotonically increasing counter. */
-public class RPCCountHandler implements RPCMetricHandler {
+public class RPCCountHandler extends RPCMetricHandler {
     public static transient String metricName = "rpc_count";
     private long count = 0;
     private transient HashMap<String, String> labels;
@@ -27,11 +27,12 @@ public class RPCCountHandler implements RPCMetricHandler {
     }
 
     @Override
-    public void handle(String method, ArrayList<Object> params) {
+    public Object handle(String method, ArrayList<Object> params) throws Exception {
         synchronized (this) {
             refreshed = true;
             count++;
         }
+        return getNextHandler().handle(method, params);
     }
 
     @Override

@@ -58,7 +58,7 @@ public class DefaultPolicy extends Policy {
 
             List<DMSpec> dmList = spec.getDmList();
             // handle metric collection for default policy
-            if (dmList == null || dmList.isEmpty()) {
+            if (dmList.isEmpty()) {
                 return true;
             }
 

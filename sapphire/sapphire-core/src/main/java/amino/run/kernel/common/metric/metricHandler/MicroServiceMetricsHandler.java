@@ -4,7 +4,9 @@ import amino.run.app.MicroServiceSpec;
 import amino.run.common.ReplicaID;
 import amino.run.kernel.common.GlobalKernelReferences;
 import amino.run.kernel.common.metric.*;
+import amino.run.kernel.common.metric.metricHandler.RPCMetric.ExecutionTimeHandler;
 import amino.run.kernel.common.metric.metricHandler.RPCMetric.RPCCountHandler;
+import amino.run.kernel.common.metric.metricHandler.RPCMetric.RPCDataMetricHandler;
 import amino.run.policy.DefaultPolicy;
 import amino.run.policy.util.ResettableTimer;
 import java.io.Serializable;
@@ -18,7 +20,7 @@ public class MicroServiceMetricsHandler implements Serializable {
     private static Logger logger = Logger.getLogger(MicroServiceMetricsHandler.class.getName());
     private transient DefaultPolicy.DefaultServerPolicy policy;
     private transient HashMap<String, Object> metricMetadata;
-    private transient ArrayList<RPCMetricHandler> rpcHandlers = new ArrayList<RPCMetricHandler>();
+    private transient RPCMetricHandler rpcHandlerChain;
     private transient ResettableTimer metricSendTimer;
     private transient HashMap<String, String> labels;
     private transient int metricUpdateFrequency = 10000;
@@ -59,12 +61,7 @@ public class MicroServiceMetricsHandler implements Serializable {
      * @throws Exception
      */
     public Object onRPC(String method, ArrayList<Object> params) throws Exception {
-        for (RPCMetricHandler handler : rpcHandlers) {
-            handler.handle(method, params);
-        }
-        // TODO: Add special handling for Execution time handler. ExecutionTimeHandler handles
-        // execution time of RPC calls and should be last RPC handler
-        return policy.getAppObject().invoke(method, params);
+        return rpcHandlerChain.handle(method, params);
     }
 
     public static MicroServiceMetricsHandler create(
@@ -111,11 +108,13 @@ public class MicroServiceMetricsHandler implements Serializable {
                                 Metric metric;
                                 try {
                                     // collect metric for all RPC specific Metric
-                                    for (RPCMetricHandler handler : rpcHandlers) {
+                                    RPCMetricHandler handler = rpcHandlerChain;
+                                    while (handler != null) {
                                         metric = handler.getMetric();
                                         if (!metric.isEmpty()) {
                                             metrics.add(metric);
                                         }
+                                        handler = handler.getNextHandler();
                                     }
 
                                     GlobalKernelReferences.metricClient.send(metrics);
@@ -134,19 +133,39 @@ public class MicroServiceMetricsHandler implements Serializable {
     }
 
     // construct RPC handler chain
-    private void constructRPCMetricHandlerChain() {
+    public void constructRPCMetricHandlerChain() {
         RPCMetricHandler handler;
+        RPCMetricHandler prevHandler;
         Object object = metricMetadata.get(MetricConstants.METRIC_LIST);
         ArrayList<String> enabledMetric = new ArrayList<String>();
         if (object instanceof ArrayList) {
             enabledMetric.addAll((ArrayList<String>) object);
         }
 
+        // execution time handler should be last in chain
+        if (enabledMetric.contains(ExecutionTimeHandler.metricName)) {
+            handler = new ExecutionTimeHandler(labels, policy, true);
+        } else {
+            handler = new ExecutionTimeHandler(labels, policy, false);
+        }
+        GlobalKernelReferences.metricClient.registerSchema(handler.getSchema());
+        prevHandler = handler;
+
+        // rpc data handler creation
+        if (enabledMetric.contains(RPCDataMetricHandler.metricName)) {
+            handler = new RPCDataMetricHandler(labels);
+            GlobalKernelReferences.metricClient.registerSchema(handler.getSchema());
+            handler.setNextHandler(prevHandler);
+            prevHandler = handler;
+        }
+
         // rpc counter creation
         if (enabledMetric.contains(RPCCountHandler.metricName)) {
             handler = new RPCCountHandler(labels);
             GlobalKernelReferences.metricClient.registerSchema(handler.getSchema());
-            rpcHandlers.add(handler);
+            handler.setNextHandler(prevHandler);
         }
+
+        rpcHandlerChain = handler;
     }
 }

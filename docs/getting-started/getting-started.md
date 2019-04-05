@@ -145,4 +145,4 @@ export BINTRAY_API_KEY="<bintray_api_key>"
 * If you decide to use IntelliJ instead of Android Studio, use *Open* to open the Sapphire project, 
   as *Import* may not work properly.
 
-![import_sapphire](images/ImportSapphireInIntelliJ.png)
+![import_sapphire](../images/ImportSapphireInIntelliJ.png)

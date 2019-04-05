@@ -165,7 +165,7 @@ public class OMSServerImpl implements OMSServer, Registry {
 
         /* Invoke create microservice on the kernel server */
         try {
-            AppObjectStub appObjStub = server.createMicroService(microServiceSpec, args);
+            AppObjectStub appObjStub = server.createMicroService(spec, args);
             assert appObjStub != null;
             objectManager.setInstanceObjectStub(appObjStub.$__getMicroServiceId(), appObjStub);
             return appObjStub.$__getMicroServiceId();

@@ -139,6 +139,13 @@ public class MicroServiceSpec implements Serializable {
         if (nodeSelectorSpec != null) {
             nodeSelectorSpec.validate();
         }
+
+        // validated if dmList is passed null in spec
+        // Scenario: If Developer passes null value for dmList in MicroServiceSpec.yaml, snakeyaml
+        // maintains dmList value as null
+        if (dmList == null) {
+            dmList = new ArrayList<DMSpec>();
+        }
     }
 
     @Override
@@ -208,11 +215,11 @@ public class MicroServiceSpec implements Serializable {
         }
 
         public Builder addDMSpec(DMSpec dmSpec) {
-            if (dmList == null) {
+            if (dmSpec == null) {
                 dmList = new ArrayList<DMSpec>();
+                return this;
             }
             dmList.add(dmSpec);
-
             return this;
         }
 

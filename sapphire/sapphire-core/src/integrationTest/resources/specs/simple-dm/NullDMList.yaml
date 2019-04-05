@@ -1,0 +1,5 @@
+# Configuration for running KVStore without DM
+!!amino.run.app.MicroServiceSpec
+javaClassName: amino.run.demo.KVStore
+lang: java
+dmList: null

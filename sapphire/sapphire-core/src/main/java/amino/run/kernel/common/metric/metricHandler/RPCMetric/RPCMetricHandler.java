@@ -4,18 +4,41 @@ import amino.run.kernel.common.metric.metricHandler.MetricHandler;
 import java.util.ArrayList;
 
 /**
- * Interface for RPC metric handling.
+ * Abstract class used for RPC handler chain creation. All RPC metric handler need to implement this
+ * class.
  *
- * <p>All RPC metric handler need to implement this class.
+ * @author AmitRoushan
  */
-public interface RPCMetricHandler extends MetricHandler {
+public abstract class RPCMetricHandler implements MetricHandler {
+    /** Hold next RPC handler in RPC handles's chain */
+    private RPCMetricHandler nextHandler = null;
     /**
-     * Collect metric processing and call next metric handler for further metric collection in chain
+     * Method get called in onRPC call for each metric handler . Each RPC handler should implement
+     * metric collection logic in this method and call next RPC metric handler for further metric
+     * collection in chain
      *
      * @param method rpc method
      * @param params rpc parameters
      * @return rpc response
      * @throws Exception
      */
-    void handle(String method, ArrayList<Object> params) throws Exception;
+    public abstract Object handle(String method, ArrayList<Object> params) throws Exception;
+
+    /**
+     * Set nest handler object in RCP handler chain
+     *
+     * @param nextHandler
+     */
+    public void setNextHandler(RPCMetricHandler nextHandler) {
+        this.nextHandler = nextHandler;
+    }
+
+    /**
+     * Return RPC next RPC handler
+     *
+     * @return
+     */
+    public RPCMetricHandler getNextHandler() {
+        return nextHandler;
+    }
 }

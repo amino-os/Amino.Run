@@ -6,6 +6,11 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.logging.Logger;
 
+/**
+ * Metric client for logging server. Currently it just push metrics on standard output.
+ *
+ * @author AmitRoushan
+ */
 public class LoggingClient implements MetricClient {
     private HashSet<Schema> schemas = new HashSet<Schema>();
     private static Logger logger = Logger.getLogger(LoggingClient.class.getName());

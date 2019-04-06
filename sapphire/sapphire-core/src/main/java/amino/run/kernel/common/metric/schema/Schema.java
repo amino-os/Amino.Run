@@ -2,11 +2,15 @@ package amino.run.kernel.common.metric.schema;
 
 import java.util.HashMap;
 
-/** Class used for reporting metric meta data information with metric server */
+/**
+ * Class used for reporting metric MetaData information.
+ *
+ * @author AmitRoushan
+ */
 public class Schema {
     private String metricName;
     private HashMap<String, String> labels;
-    SchemaType type;
+    private SchemaType type;
 
     public Schema(String metricName, HashMap<String, String> labels, SchemaType type) {
         this.labels = labels;

@@ -2,16 +2,19 @@ package amino.run.kernel.common.metric.type;
 
 import amino.run.kernel.common.metric.Metric;
 import amino.run.kernel.common.metric.schema.Schema;
-
 import java.util.HashMap;
 
-/** Counter metric reporting class */
-public class CounterMetric implements Metric {
+/**
+ * Class used for Counter metric type reporting.
+ *
+ * @author AmitROushan
+ */
+public class Counter implements Metric {
     private Schema schema;
     private long count;
     private long time;
 
-    public CounterMetric(Schema schema, long count) {
+    public Counter(Schema schema, long count) {
         this.count = count;
         this.schema = schema;
         time = System.currentTimeMillis();

@@ -4,7 +4,11 @@ import amino.run.kernel.common.metric.Metric;
 import amino.run.kernel.common.metric.schema.Schema;
 import java.io.Serializable;
 
-/** Interface to collect metric info from metric handler */
+/**
+ * Interface to collect metric info from metric handler
+ *
+ * @author AmitRoushan
+ */
 public interface MetricHandler extends Serializable {
     /**
      * Return latest collected metric data

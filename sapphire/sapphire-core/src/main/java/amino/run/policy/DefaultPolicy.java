@@ -53,7 +53,7 @@ public class DefaultPolicy extends Policy {
         @Override
         public void onDestroy() {}
 
-        // method to identify first DM in RPC call flow
+        /** Method to identify first DM in RPC call flow */
         private boolean isEntryPolicy(MicroServiceSpec spec) {
             // condition added to handle annotation based MicroService deployment
             if (spec == null) {

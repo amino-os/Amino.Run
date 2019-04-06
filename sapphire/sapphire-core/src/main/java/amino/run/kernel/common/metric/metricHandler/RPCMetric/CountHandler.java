@@ -3,14 +3,17 @@ package amino.run.kernel.common.metric.metricHandler.RPCMetric;
 import amino.run.kernel.common.metric.Metric;
 import amino.run.kernel.common.metric.schema.Schema;
 import amino.run.kernel.common.metric.schema.SchemaType;
-import amino.run.kernel.common.metric.type.CounterMetric;
-import amino.run.kernel.common.metric.type.EmptyMetric;
+import amino.run.kernel.common.metric.type.Counter;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-/** Counter is a cumulative metric that represents a single monotonically increasing counter. */
-public class RPCCountHandler implements RPCMetricHandler {
-    public static String METRIC_NAME = "rpc_count";
+/**
+ * Counter is a cumulative metric that represents a single monotonically increasing counter.
+ *
+ * @author AmitRoushan
+ */
+public class CountHandler extends RPCMetricHandler {
+    public static final String METRIC_NAME = "rpc_count";
     private long count = 0;
     private transient Schema schema;
 
@@ -19,21 +22,22 @@ public class RPCCountHandler implements RPCMetricHandler {
         return METRIC_NAME + "<" + schema.getLabels().toString() + ":" + count + ">";
     }
 
-    public RPCCountHandler(HashMap<String, String> labels) {
-        schema = new Schema(METRIC_NAME, labels, SchemaType.CounterMetric);
+    public CountHandler(HashMap<String, String> labels) {
+        schema = new Schema(METRIC_NAME, labels, SchemaType.Counter);
     }
 
     @Override
-    public void handle(String method, ArrayList<Object> params) {
+    public Object handle(String method, ArrayList<Object> params) throws Exception {
         synchronized (this) {
             count++;
         }
+        return getNextHandler().handle(method, params);
     }
 
     @Override
     public Metric getMetric() {
         synchronized (this) {
-            return new CounterMetric(schema, count);
+            return new Counter(schema, count);
         }
     }
 

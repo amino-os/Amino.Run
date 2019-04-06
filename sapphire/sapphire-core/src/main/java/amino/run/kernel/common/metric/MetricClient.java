@@ -3,7 +3,11 @@ package amino.run.kernel.common.metric;
 import amino.run.kernel.common.metric.schema.Schema;
 import java.util.ArrayList;
 
-/** Interface of client used for metric server interactions */
+/**
+ * Interface of client used for metric server interactions
+ *
+ * @author AmitRoushan
+ */
 public interface MetricClient {
     /**
      * Post metrics to metric server

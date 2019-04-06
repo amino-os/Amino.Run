@@ -4,8 +4,7 @@ import amino.run.app.MicroServiceSpec;
 import amino.run.common.ReplicaID;
 import amino.run.kernel.common.GlobalKernelReferences;
 import amino.run.kernel.common.metric.*;
-import amino.run.kernel.common.metric.metricHandler.RPCMetric.RPCCountHandler;
-import amino.run.kernel.common.metric.metricHandler.RPCMetric.RPCMetricHandler;
+import amino.run.kernel.common.metric.metricHandler.RPCMetric.*;
 import amino.run.policy.DefaultPolicy;
 import amino.run.policy.util.ResettableTimer;
 import java.io.Serializable;
@@ -14,17 +13,31 @@ import java.util.HashMap;
 import java.util.TimerTask;
 import java.util.logging.Logger;
 
-/** Handle Metric collection for RPC and MicroService Stats. */
+/**
+ * Handle Metric collection for RPC and MicroService statistics.
+ *
+ * <p></> It maintains RPC metric chain for handling metric collection on onRPC call. It also
+ * initialize a timer for collecting metrics from all metric handler it manages and push the metric
+ * to kernel server metric client.
+ *
+ * @author AmitRoushan
+ */
 public class MicroServiceMetricManager implements Serializable {
     private static Logger logger = Logger.getLogger(MicroServiceMetricManager.class.getName());
+    /** Default policy instance for handing over normal RPC call after metric collection */
     private transient DefaultPolicy.DefaultServerPolicy policy;
-    private transient ArrayList<RPCMetricHandler> rpcHandlers = new ArrayList<RPCMetricHandler>();
+    /** maintains RPC handler chain which gets called for each onRPC call */
+    private transient RPCMetricHandler rpcHandlerChain;
+    /** Timer thread for collecting metric periodically */
     private transient ResettableTimer metricSendTimer;
+    /** Labels are used as metric identifier */
     private transient HashMap<String, String> labels;
+
     private transient int metricUpdateFrequency = 10000;
-    public static transient String REPLICA_ID_LABEL = "ReplicaID";
-    public static transient String MICRO_SERVICE_ID_LABEL = "MicroServiceID";
-    public static transient String MICRO_SERVICE_NAME = "MicroServiceName";
+    private transient KernelServerMetricClient metricClient;
+    public static final String REPLICA_ID_LABEL = "ReplicaID";
+    public static final String MICRO_SERVICE_ID_LABEL = "MicroServiceID";
+    public static final String MICRO_SERVICE_NAME = "MicroServiceName";
 
     private MicroServiceMetricManager() {}
 
@@ -38,15 +51,16 @@ public class MicroServiceMetricManager implements Serializable {
      * @throws Exception
      */
     public Object onRPC(String method, ArrayList<Object> params) throws Exception {
-        for (RPCMetricHandler handler : rpcHandlers) {
-            handler.handle(method, params);
-        }
-        // TODO: Add special handling for Execution time handler. ExecutionTimeHandler handles
-        // execution time of RPC calls and should be last RPC handler
-
-        return policy.upRPCCall(method, params);
+        return rpcHandlerChain.handle(method, params);
     }
 
+    /**
+     * Factory method for MicroServiceMetricManager instance
+     *
+     * @param policy default server policy
+     * @param spec MicroServiceSpec instance
+     * @return
+     */
     public static MicroServiceMetricManager create(
             DefaultPolicy.DefaultServerPolicy policy, MicroServiceSpec spec) {
         HashMap<String, Object> annotations = spec.getAnnotations();
@@ -72,9 +86,10 @@ public class MicroServiceMetricManager implements Serializable {
 
         MicroServiceMetricManager metricManager = new MicroServiceMetricManager();
         metricManager.policy = policy;
+        metricManager.metricClient = GlobalKernelReferences.nodeServer.getMetricClient();
 
         // construct labels for metric each Metric of replica.
-        // Currently labels maintains tags with ReplicaID , MicroServiceID and labels provided by
+        // Currently labels maintains tags with ReplicaID, MicroServiceID and labels provided by
         // MicroService developer.
         ReplicaID replicaID = policy.getReplicaId();
         HashMap<String, String> labels = new HashMap<String, String>();
@@ -95,7 +110,9 @@ public class MicroServiceMetricManager implements Serializable {
         return metricManager;
     }
 
-    // construct RPC metric handler chain and Timer for collecting Metrics from RPC metric handler.
+    /**
+     * Construct RPC metric handler chain and Timer for collecting Metrics from RPC metric handler
+     */
     // TODO: Add Metric handler for DM specific metric collections
     private void initialize(HashMap<String, Object> metricMetadata) {
         // RPC metric handler chain construction
@@ -110,16 +127,16 @@ public class MicroServiceMetricManager implements Serializable {
                                 Metric metric;
                                 try {
                                     // collect metric for all RPC specific Metric
-                                    for (RPCMetricHandler handler : rpcHandlers) {
+                                    RPCMetricHandler handler = rpcHandlerChain;
+                                    while (handler != null) {
                                         metric = handler.getMetric();
                                         if (!metric.isEmpty()) {
                                             metrics.add(metric);
                                         }
+                                        handler = handler.getNextHandler();
                                     }
 
-                                    GlobalKernelReferences.nodeServer
-                                            .getMetricClient()
-                                            .send(metrics);
+                                    metricClient.send(metrics);
                                 } catch (Exception e) {
                                     logger.warning(
                                             String.format(
@@ -134,20 +151,32 @@ public class MicroServiceMetricManager implements Serializable {
         metricSendTimer.start();
     }
 
-    // construct RPC handler chain
+    /** Construct RPC handler chain */
     private void constructRPCMetricHandlerChain(HashMap<String, Object> metricMetadata) {
         RPCMetricHandler handler;
+        RPCMetricHandler prevHandler;
         Object object = metricMetadata.get(MetricConstants.RPC_METRIC_HANDLERS);
         ArrayList<String> enabledMetric = new ArrayList<String>();
         if (object instanceof ArrayList) {
             enabledMetric.addAll((ArrayList<String>) object);
         }
 
-        // rpc counter creation
-        if (enabledMetric.contains(RPCCountHandler.METRIC_NAME)) {
-            handler = new RPCCountHandler(labels);
-            GlobalKernelReferences.nodeServer.getMetricClient().registerSchema(handler.getSchema());
-            rpcHandlers.add(handler);
+        // execution time handler should be last in chain
+        if (enabledMetric.contains(ExecutionTimeHandler.METRIC_NAME)) {
+            handler = new ExecutionTimeHandler(labels, policy, true);
+        } else {
+            handler = new ExecutionTimeHandler(labels, policy, false);
         }
+        metricClient.registerSchema(handler.getSchema());
+        prevHandler = handler;
+
+        // RPC counter creation
+        if (enabledMetric.contains(CountHandler.METRIC_NAME)) {
+            handler = new CountHandler(labels);
+            metricClient.registerSchema(handler.getSchema());
+            handler.setNextHandler(prevHandler);
+        }
+
+        rpcHandlerChain = handler;
     }
 }

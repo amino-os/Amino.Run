@@ -3,7 +3,11 @@ package amino.run.kernel.common.metric;
 import java.io.Serializable;
 import java.util.HashMap;
 
-/** Interface used in metric reporting */
+/**
+ * Interface used in metric reporting
+ *
+ * @author AmitRoushan
+ */
 public interface Metric extends Serializable {
     /**
      * Return metric name

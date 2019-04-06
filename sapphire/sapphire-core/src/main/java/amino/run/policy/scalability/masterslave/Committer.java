@@ -3,8 +3,8 @@ package amino.run.policy.scalability.masterslave;
 import static amino.run.policy.scalability.masterslave.MethodInvocationResponse.ReturnCode.FAILURE;
 import static amino.run.policy.scalability.masterslave.MethodInvocationResponse.ReturnCode.SUCCESS;
 
-import amino.run.policy.DefaultPolicy;
 import amino.run.policy.scalability.LoadBalancedMasterSlaveBase;
+import amino.run.policy.scalability.LoadBalancedMasterSlaveSyncPolicy;
 import amino.run.runtime.exception.AminoRunException;
 import amino.run.runtime.exception.AppExecutionException;
 import java.io.Closeable;
@@ -33,14 +33,13 @@ public class Committer implements Closeable {
      */
     private volatile long indexOfLargestCommittedEntry;
 
-    // private final AppObject appObject;
     private final Configuration config;
     private ExecutorService executor;
-    private DefaultPolicy.DefaultServerPolicy policy;
+    private LoadBalancedMasterSlaveSyncPolicy.ServerPolicy policy;
 
     // TODO (Terry): remove indexOfLargestCommittedEntry from constructor
     public Committer(
-            DefaultPolicy.DefaultServerPolicy policy,
+            LoadBalancedMasterSlaveSyncPolicy.ServerPolicy policy,
             long indexOfLargestCommittedEntry,
             Configuration config) {
         this.policy = policy;
@@ -92,7 +91,7 @@ public class Committer implements Closeable {
                         new Callable<Object>() {
                             @Override
                             public Object call() throws Exception {
-                                synchronized (policy) {
+                                synchronized (policy.getAppObject()) {
                                     try {
                                         Object result =
                                                 policy.onRPC(
@@ -162,7 +161,7 @@ public class Committer implements Closeable {
                             logger.log(Level.SEVERE, msg);
                             throw new IllegalStateException(msg);
                         } else {
-                            synchronized (policy) {
+                            synchronized (policy.getAppObject()) {
                                 try {
                                     Object result =
                                             policy.onRPC(
@@ -197,7 +196,7 @@ public class Committer implements Closeable {
      * @param largestCommittedIndex
      */
     public void updateObject(Serializable object, long largestCommittedIndex) {
-        synchronized (policy) {
+        synchronized (policy.getAppObject()) {
             policy.getAppObject().setObject(object);
             markCommitted(largestCommittedIndex);
         }
@@ -209,7 +208,7 @@ public class Committer implements Closeable {
      * @param server destination server
      */
     public void syncObject(LoadBalancedMasterSlaveBase.ServerPolicy server) {
-        synchronized (policy) {
+        synchronized (policy.getAppObject()) {
             server.syncObject(policy.getAppObject().getObject(), getIndexOfLargestCommittedEntry());
         }
     }

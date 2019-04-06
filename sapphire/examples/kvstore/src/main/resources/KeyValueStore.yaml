@@ -8,4 +8,4 @@ dmList:
 javaClassName: amino.run.demo.KeyValueStore
 lang: java
 name: KVStore
-annotations: {amino.metric : {rpcMetricHandlers: ["rpc_count"]}}
+annotations: {amino.metric : {rpcMetrics: ["rpc_count"]}}

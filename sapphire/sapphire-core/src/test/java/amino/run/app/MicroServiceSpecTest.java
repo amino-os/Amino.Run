@@ -3,6 +3,9 @@ package amino.run.app;
 import amino.run.common.Utils;
 import amino.run.policy.scalability.LoadBalancedFrontendPolicy;
 import amino.run.policy.scalability.ScaleUpFrontendPolicy;
+import java.io.File;
+import java.nio.file.Files;
+import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -36,8 +39,15 @@ public class MicroServiceSpecTest {
                         .setName("com.org.College")
                         .addDMSpec(null)
                         .create();
-        spec.validate();
         Assert.assertTrue(spec.getDmList().isEmpty());
+    }
+
+    @Test(expected = Exception.class)
+    public void testNullDMListException() throws Exception {
+        ClassLoader classLoader = new MicroServiceSpecTest().getClass().getClassLoader();
+        File file = new File(classLoader.getResource("NullDMList.yaml").getFile());
+        List<String> lines = Files.readAllLines(file.toPath());
+        MicroServiceSpec.fromYaml(String.join("\n", lines));
     }
 
     private MicroServiceSpec createSpec() {

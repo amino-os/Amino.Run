@@ -108,12 +108,18 @@ public class MicroServiceSpec implements Serializable {
         return dmList;
     }
 
-    public void setDmList(List<DMSpec> dmList) {
+    public void setDmList(List<DMSpec> dmList) throws IllegalArgumentException {
+        if (dmList == null) {
+            throw new IllegalArgumentException(
+                    "invalid argument: deployment manager list can not be empty");
+        }
         this.dmList = dmList;
     }
 
     public void addDMSpec(DMSpec dmSpec) {
-        dmList.add(dmSpec);
+        if (dmSpec != null) {
+            dmList.add(dmSpec);
+        }
     }
 
     public NodeSelectorSpec getNodeSelectorSpec() {
@@ -138,13 +144,6 @@ public class MicroServiceSpec implements Serializable {
         // validate node selection spec
         if (nodeSelectorSpec != null) {
             nodeSelectorSpec.validate();
-        }
-
-        // validated if dmList is passed null in spec
-        // Scenario: If Developer passes null value for dmList in MicroServiceSpec.yaml, snakeyaml
-        // maintains dmList value as null
-        if (dmList == null) {
-            dmList = new ArrayList<DMSpec>();
         }
     }
 
@@ -215,11 +214,9 @@ public class MicroServiceSpec implements Serializable {
         }
 
         public Builder addDMSpec(DMSpec dmSpec) {
-            if (dmSpec == null) {
-                dmList = new ArrayList<DMSpec>();
-                return this;
+            if (dmSpec != null) {
+                dmList.add(dmSpec);
             }
-            dmList.add(dmSpec);
             return this;
         }
 

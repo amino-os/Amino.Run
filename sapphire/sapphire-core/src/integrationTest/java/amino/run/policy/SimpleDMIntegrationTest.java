@@ -169,16 +169,6 @@ public class SimpleDMIntegrationTest {
     }
 
     /**
-     * Test case with null DMList
-     *
-     * @throws Exception
-     */
-    @Test
-    public void runNullDMListTest() throws Exception {
-        runTest("NullDMList.yaml");
-    }
-
-    /**
      * Test case with atleast once RPC DM
      *
      * @throws Exception

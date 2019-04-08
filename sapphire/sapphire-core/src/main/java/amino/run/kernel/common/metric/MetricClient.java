@@ -18,14 +18,6 @@ public interface MetricClient {
     void send(ArrayList<Metric> metrics) throws Exception;
 
     /**
-     * Check metric schema registration with metric server
-     *
-     * @param schema which need to check for registration status
-     * @return registration status
-     */
-    boolean isRegistered(Schema schema);
-
-    /**
      * Post metric schema information to metric server
      *
      * <p>metric server create data structure to maintain incoming metric based on Schema input.</>

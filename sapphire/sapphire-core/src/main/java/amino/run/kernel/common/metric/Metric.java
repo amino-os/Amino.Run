@@ -4,22 +4,30 @@ import amino.run.kernel.common.metric.schema.Schema;
 import java.io.Serializable;
 
 /**
- * Class used for metric reporting
+ * Base metric class
  *
  * @author AmitRoushan
  */
 public class Metric implements Serializable {
-    protected Schema schema;
+    private Schema schema;
+    private long time;
 
     protected Metric(Schema schema) {
         this.schema = schema;
+        time = System.currentTimeMillis();
     }
+
     /**
-     * Return metric name
+     * Return Metric collection time in milli seconds
      *
-     * @return name
+     * @return time
      */
-    public Schema getSchema() {
-        return schema;
+    public long getTime() {
+        return time;
+    }
+
+    @Override
+    public String toString() {
+        return schema.toString();
     }
 }

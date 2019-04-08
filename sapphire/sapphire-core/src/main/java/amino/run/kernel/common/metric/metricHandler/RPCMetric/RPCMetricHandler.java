@@ -1,6 +1,7 @@
 package amino.run.kernel.common.metric.metricHandler.RPCMetric;
 
 import amino.run.kernel.common.metric.metricHandler.MetricHandler;
+import amino.run.kernel.common.metric.metricHandler.MicroServiceMetricManager;
 import java.util.ArrayList;
 
 /**
@@ -10,8 +11,13 @@ import java.util.ArrayList;
  * @author AmitRoushan
  */
 public abstract class RPCMetricHandler implements MetricHandler {
+    protected MicroServiceMetricManager manager;
     /** Hold next RPC handler in RPC handles's chain */
     private RPCMetricHandler nextHandler = null;
+
+    RPCMetricHandler(MicroServiceMetricManager manager) {
+        this.manager = manager;
+    }
     /**
      * Method get called in onRPC call for each metric handler . Each RPC handler should implement
      * metric collection logic in this method and call next RPC metric handler for further metric
@@ -40,5 +46,9 @@ public abstract class RPCMetricHandler implements MetricHandler {
      */
     public RPCMetricHandler getNextHandler() {
         return nextHandler;
+    }
+
+    public MicroServiceMetricManager getManager() {
+        return manager;
     }
 }

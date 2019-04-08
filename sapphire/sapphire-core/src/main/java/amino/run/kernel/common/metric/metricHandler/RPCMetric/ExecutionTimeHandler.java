@@ -1,12 +1,11 @@
 package amino.run.kernel.common.metric.metricHandler.RPCMetric;
 
 import amino.run.kernel.common.metric.Metric;
+import amino.run.kernel.common.metric.metricHandler.MicroServiceMetricManager;
 import amino.run.kernel.common.metric.schema.Schema;
 import amino.run.kernel.common.metric.schema.SchemaType;
 import amino.run.kernel.common.metric.type.Summary;
-import amino.run.policy.DefaultPolicy;
 import java.util.ArrayList;
-import java.util.HashMap;
 
 /**
  * RPC metric collector which collects execution time metric.
@@ -19,28 +18,24 @@ import java.util.HashMap;
  */
 public class ExecutionTimeHandler extends RPCMetricHandler {
     public static final String METRIC_NAME = "avg_execution_time";
-    private transient DefaultPolicy.DefaultServerPolicy policy;
     private long totalExecutionTime = 0;
     private int rpcCount = 0;
     private transient boolean enabled;
     private transient Schema schema;
 
-    public ExecutionTimeHandler(
-            HashMap<String, String> labels,
-            DefaultPolicy.DefaultServerPolicy policy,
-            boolean enabled) {
-        this.policy = policy;
+    public ExecutionTimeHandler(MicroServiceMetricManager manager, boolean enabled) {
+        super(manager);
         this.enabled = enabled;
-        this.schema = new Schema(METRIC_NAME, labels, SchemaType.Summary);
+        this.schema = new Schema(METRIC_NAME, SchemaType.Summary);
     }
 
     @Override
     public Object handle(String method, ArrayList<Object> params) throws Exception {
         if (!enabled) {
-            return policy.upRPCCall(method, params);
+            return manager.getPolicy().upRPCCall(method, params);
         }
         long startTime = System.nanoTime();
-        Object object = policy.upRPCCall(method, params);
+        Object object = manager.getPolicy().upRPCCall(method, params);
         synchronized (this) {
             totalExecutionTime += System.nanoTime() - startTime;
             rpcCount++;

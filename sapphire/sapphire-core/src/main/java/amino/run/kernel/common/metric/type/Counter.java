@@ -10,25 +10,14 @@ import amino.run.kernel.common.metric.schema.Schema;
  */
 public class Counter extends Metric {
     private long count;
-    private long time;
 
     public Counter(Schema schema, long count) {
         super(schema);
         this.count = count;
-        time = System.currentTimeMillis();
     }
 
     @Override
     public String toString() {
-        return "<" + schema.getName() + ":" + schema.getLabels() + ":" + count + ">";
-    }
-
-    /**
-     * Return Metric collection time in milli seconds
-     *
-     * @return time
-     */
-    public long getTime() {
-        return time;
+        return super.toString() + ":" + "count=" + count;
     }
 }

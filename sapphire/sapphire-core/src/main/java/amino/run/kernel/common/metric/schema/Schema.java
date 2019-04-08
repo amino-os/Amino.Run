@@ -1,7 +1,5 @@
 package amino.run.kernel.common.metric.schema;
 
-import java.util.HashMap;
-
 /**
  * Class used for reporting metric MetaData information.
  *
@@ -9,11 +7,9 @@ import java.util.HashMap;
  */
 public class Schema {
     private String metricName;
-    private HashMap<String, String> labels;
     private SchemaType type;
 
-    public Schema(String metricName, HashMap<String, String> labels, SchemaType type) {
-        this.labels = labels;
+    public Schema(String metricName, SchemaType type) {
         this.metricName = metricName;
         this.type = type;
     }
@@ -27,18 +23,9 @@ public class Schema {
         return metricName;
     }
 
-    /**
-     * Return Metric labels
-     *
-     * @return labels
-     */
-    public HashMap<String, String> getLabels() {
-        return labels;
-    }
-
     @Override
     public String toString() {
-        return "<" + metricName + ":" + labels + ">";
+        return "metricName=" + metricName + ":" + "type= " + type;
     }
 
     /**

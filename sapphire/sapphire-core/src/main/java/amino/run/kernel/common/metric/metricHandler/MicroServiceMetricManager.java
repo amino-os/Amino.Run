@@ -30,8 +30,6 @@ public class MicroServiceMetricManager implements Serializable {
     private transient RPCMetricHandler rpcHandlerChain;
     /** Timer thread for collecting metric periodically */
     private transient ResettableTimer metricSendTimer;
-    /** Labels are used as metric identifier */
-    private transient HashMap<String, String> labels;
 
     private transient int metricUpdateFrequency = 10000;
     private transient KernelMetricClient metricClient;
@@ -98,7 +96,6 @@ public class MicroServiceMetricManager implements Serializable {
         if (!spec.getName().isEmpty()) {
             labels.put(MICRO_SERVICE_NAME, spec.getName());
         }
-        metricManager.labels = labels;
 
         // update metric update frequency with configured metric collection frequency
         Object object = metricMetadata.get(MetricConstants.METRIC_FREQUENCY);
@@ -124,16 +121,17 @@ public class MicroServiceMetricManager implements Serializable {
                         new TimerTask() {
                             public void run() {
                                 ArrayList<Metric> metrics = new ArrayList<Metric>();
-                                Metric metric;
                                 try {
                                     // collect metric for all RPC specific Metric
                                     RPCMetricHandler handler = rpcHandlerChain;
+                                    MicroServiceMetricManager manager = handler.getManager();
+
                                     while (handler != null) {
                                         metrics.add(handler.getMetric());
                                         handler = handler.getNextHandler();
                                     }
 
-                                    metricClient.send(metrics);
+                                    metricClient.send(manager, metrics);
                                 } catch (Exception e) {
                                     logger.warning(
                                             String.format(
@@ -160,20 +158,24 @@ public class MicroServiceMetricManager implements Serializable {
 
         // execution time handler should be last in chain
         if (enabledMetric.contains(ExecutionTimeHandler.METRIC_NAME)) {
-            handler = new ExecutionTimeHandler(labels, policy, true);
+            handler = new ExecutionTimeHandler(this, true);
         } else {
-            handler = new ExecutionTimeHandler(labels, policy, false);
+            handler = new ExecutionTimeHandler(this, false);
         }
-        metricClient.registerSchema(handler.getSchema());
+        metricClient.registerSchema(this, handler.getSchema());
         prevHandler = handler;
 
         // RPC counter creation
         if (enabledMetric.contains(CountHandler.METRIC_NAME)) {
-            handler = new CountHandler(labels);
-            metricClient.registerSchema(handler.getSchema());
+            handler = new CountHandler(this);
+            metricClient.registerSchema(this, handler.getSchema());
             handler.setNextHandler(prevHandler);
         }
 
         rpcHandlerChain = handler;
+    }
+
+    public DefaultPolicy.DefaultServerPolicy getPolicy() {
+        return policy;
     }
 }

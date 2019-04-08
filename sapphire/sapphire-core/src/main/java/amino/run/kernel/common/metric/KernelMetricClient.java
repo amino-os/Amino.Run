@@ -1,8 +1,10 @@
 package amino.run.kernel.common.metric;
 
 import amino.run.kernel.common.metric.clients.LoggingClient;
+import amino.run.kernel.common.metric.metricHandler.MicroServiceMetricManager;
 import amino.run.kernel.common.metric.schema.Schema;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.logging.Logger;
 
 /**
@@ -16,6 +18,7 @@ import java.util.logging.Logger;
  */
 public class KernelMetricClient {
     private static Logger logger = Logger.getLogger(KernelMetricClient.class.getName());
+    private HashSet<Schema> schemas = new HashSet<Schema>();
     private MetricClient client;
     private boolean initialized = false;
 
@@ -42,22 +45,41 @@ public class KernelMetricClient {
     /**
      * Post metrics to configured metric server
      *
+     * @param manager
      * @param metrics
      * @throws Exception
      */
-    public void send(ArrayList<Metric> metrics) throws Exception {
+    public void send(MicroServiceMetricManager manager, ArrayList<Metric> metrics)
+            throws Exception {
         client.send(metrics);
     }
 
     /**
      * Register metric schema with configured metric server
      *
+     * @param manager
      * @param schema
      */
-    public void registerSchema(Schema schema) {
+    public void registerSchema(MicroServiceMetricManager manager, Schema schema) {
         try {
-            if (!client.isRegistered(schema)) {
+            if (!schemas.contains(schema)) {
+                schemas.add(schema);
                 client.register(schema);
+            }
+        } catch (Exception e) {
+            logger.warning(e.getMessage());
+        }
+    }
+
+    /**
+     * UnRegister metric schema with configured metric server
+     *
+     * @param schema
+     */
+    public void unRegisterSchema(MicroServiceMetricManager manager, Schema schema) {
+        try {
+            if (schemas.remove(schema)) {
+                client.unregister(schema);
             }
         } catch (Exception e) {
             logger.warning(e.getMessage());

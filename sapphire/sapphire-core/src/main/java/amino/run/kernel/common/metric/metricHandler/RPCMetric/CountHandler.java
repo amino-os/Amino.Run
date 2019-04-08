@@ -1,11 +1,11 @@
 package amino.run.kernel.common.metric.metricHandler.RPCMetric;
 
 import amino.run.kernel.common.metric.Metric;
+import amino.run.kernel.common.metric.metricHandler.MicroServiceMetricManager;
 import amino.run.kernel.common.metric.schema.Schema;
 import amino.run.kernel.common.metric.schema.SchemaType;
 import amino.run.kernel.common.metric.type.Counter;
 import java.util.ArrayList;
-import java.util.HashMap;
 
 /**
  * Counter is a cumulative metric that represents a single monotonically increasing counter.
@@ -17,13 +17,9 @@ public class CountHandler extends RPCMetricHandler {
     private long count = 0;
     private transient Schema schema;
 
-    @Override
-    public String toString() {
-        return METRIC_NAME + "<" + schema.getLabels().toString() + ":" + count + ">";
-    }
-
-    public CountHandler(HashMap<String, String> labels) {
-        schema = new Schema(METRIC_NAME, labels, SchemaType.Counter);
+    public CountHandler(MicroServiceMetricManager manager) {
+        super(manager);
+        schema = new Schema(METRIC_NAME, SchemaType.Counter);
     }
 
     @Override

@@ -9,22 +9,16 @@ import amino.run.kernel.common.metric.schema.Schema;
  *
  * @author AmitROushan
  */
-public class Summary implements Metric {
-    private Schema schema;
+public class Summary extends Metric {
     private int observationCount;
     private long observationSum;
     private long time;
 
     public Summary(Schema schema, long observationSum, int observationCount) {
+        super(schema);
         this.observationSum = observationSum;
-        this.schema = schema;
         this.observationCount = observationCount;
         time = System.currentTimeMillis();
-    }
-
-    @Override
-    public Schema getSchema() {
-        return schema;
     }
 
     public int getObservationCount() {

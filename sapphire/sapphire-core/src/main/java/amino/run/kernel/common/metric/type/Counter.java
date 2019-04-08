@@ -8,20 +8,14 @@ import amino.run.kernel.common.metric.schema.Schema;
  *
  * @author AmitROushan
  */
-public class Counter implements Metric {
-    private Schema schema;
+public class Counter extends Metric {
     private long count;
     private long time;
 
     public Counter(Schema schema, long count) {
+        super(schema);
         this.count = count;
-        this.schema = schema;
         time = System.currentTimeMillis();
-    }
-
-    @Override
-    public Schema getSchema() {
-        return schema;
     }
 
     @Override

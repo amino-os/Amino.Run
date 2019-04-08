@@ -4,15 +4,22 @@ import amino.run.kernel.common.metric.schema.Schema;
 import java.io.Serializable;
 
 /**
- * Interface used in metric reporting
+ * Class used for metric reporting
  *
  * @author AmitRoushan
  */
-public interface Metric extends Serializable {
+public class Metric implements Serializable {
+    protected Schema schema;
+
+    protected Metric(Schema schema) {
+        this.schema = schema;
+    }
     /**
      * Return metric name
      *
      * @return name
      */
-    Schema getSchema();
+    public Schema getSchema() {
+        return schema;
+    }
 }

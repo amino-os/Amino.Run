@@ -1,5 +1,6 @@
 package amino.run.policy;
 
+import amino.run.app.MicroServiceSpec;
 import amino.run.common.MicroServiceNotFoundException;
 import amino.run.common.MicroServiceReplicaNotFoundException;
 import amino.run.policy.transaction.IllegalComponentException;
@@ -104,6 +105,11 @@ public abstract class DefaultUpcallImpl extends Library {
         public Policy.ServerPolicy onRefRequest() throws RemoteException {
             ArrayList<Policy.ServerPolicy> servers = getServers();
             return servers.get(new Random().nextInt(servers.size()));
+        }
+
+        @Override
+        public MicroServiceSpec getSpec() {
+            return super.getSpec();
         }
     }
 }

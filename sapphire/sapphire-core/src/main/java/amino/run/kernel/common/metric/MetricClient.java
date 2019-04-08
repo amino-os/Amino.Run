@@ -26,10 +26,24 @@ public interface MetricClient {
     boolean isRegistered(Schema schema);
 
     /**
-     * Register metric schema with metric server
+     * Post metric schema information to metric server
+     *
+     * <p>metric server create data structure to maintain incoming metric based on Schema input.</>
      *
      * @param schema which need to register
      * @return registration status
      */
     boolean register(Schema schema) throws Exception;
+
+    /**
+     * Delete metric schema metadata information from metric server
+     *
+     * <p>This method should be used to inform about non existence of metric source entity. Metric
+     * server can maintain metric data but should stop accepting any metric information for
+     * specified schema until again registered</>
+     *
+     * @param schema which need to register
+     * @return registration status
+     */
+    boolean unregister(Schema schema) throws Exception;
 }

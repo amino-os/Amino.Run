@@ -1,7 +1,7 @@
 package amino.run.kernel.common.metric;
 
+import amino.run.kernel.common.metric.schema.Schema;
 import java.io.Serializable;
-import java.util.HashMap;
 
 /**
  * Interface used in metric reporting
@@ -14,12 +14,5 @@ public interface Metric extends Serializable {
      *
      * @return name
      */
-    String getName();
-
-    /**
-     * Return metric labels
-     *
-     * @return labels
-     */
-    HashMap<String, String> getLabels();
+    Schema getSchema();
 }

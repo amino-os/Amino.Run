@@ -2,7 +2,6 @@ package amino.run.kernel.common.metric.type;
 
 import amino.run.kernel.common.metric.Metric;
 import amino.run.kernel.common.metric.schema.Schema;
-import java.util.HashMap;
 
 /**
  * Class used for Summary metric type reporting. It maintains sum of all metric observations with
@@ -24,13 +23,8 @@ public class Summary implements Metric {
     }
 
     @Override
-    public String getName() {
-        return schema.getName();
-    }
-
-    @Override
-    public HashMap<String, String> getLabels() {
-        return schema.getLabels();
+    public Schema getSchema() {
+        return schema;
     }
 
     public int getObservationCount() {
@@ -38,7 +32,13 @@ public class Summary implements Metric {
     }
 
     public String toString() {
-        return "<" + getName() + ":" + getLabels() + ": observation sum " + observationSum + ">";
+        return "<"
+                + schema.getName()
+                + ":"
+                + schema.getLabels()
+                + ": observation sum "
+                + observationSum
+                + ">";
     }
 
     public long getTime() {

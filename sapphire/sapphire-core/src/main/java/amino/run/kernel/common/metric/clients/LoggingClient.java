@@ -18,6 +18,9 @@ public class LoggingClient implements MetricClient {
     @Override
     public void send(ArrayList<Metric> metrics) throws Exception {
         for (Metric metric : metrics) {
+            if (!schemas.contains(metric.getSchema())) {
+                logger.warning(String.format("Unregistered schema : ", metric.getSchema()));
+            }
             logger.info(String.format("Metric collected : %s", metric));
         }
     }
@@ -34,6 +37,13 @@ public class LoggingClient implements MetricClient {
         }
         schemas.add(schema);
         logger.info(String.format("Metric schema %s registered", schema));
+        return true;
+    }
+
+    @Override
+    public boolean unregister(Schema schema) throws Exception {
+        schemas.remove(schema);
+        logger.info(String.format("Metric schema %s unregistered", schema));
         return true;
     }
 }

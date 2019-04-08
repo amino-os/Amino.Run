@@ -46,11 +46,11 @@ public class Schema {
      *
      * <p>Type of metric determine format of Metric getting send and stored. Counter, Gauge,
      * Histogram or Summary are some example of types. Metric server creates Object to store the
-     * incoming Metric information depending on Metric type.
+     * incoming Metric information depending on Type.
      *
      * @return
      */
-    public String getMetricType() {
+    public String getType() {
         return type.toString();
     }
 }

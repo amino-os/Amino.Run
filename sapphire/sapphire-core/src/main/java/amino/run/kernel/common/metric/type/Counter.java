@@ -2,7 +2,6 @@ package amino.run.kernel.common.metric.type;
 
 import amino.run.kernel.common.metric.Metric;
 import amino.run.kernel.common.metric.schema.Schema;
-import java.util.HashMap;
 
 /**
  * Class used for Counter metric type reporting.
@@ -21,13 +20,8 @@ public class Counter implements Metric {
     }
 
     @Override
-    public String getName() {
-        return schema.getName();
-    }
-
-    @Override
-    public HashMap<String, String> getLabels() {
-        return schema.getLabels();
+    public Schema getSchema() {
+        return schema;
     }
 
     @Override

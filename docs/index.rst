@@ -46,6 +46,12 @@ Amino, is an open source, multilanguage development platform and distributed run
 
 .. toctree::
    :maxdepth: 2
+   :caption: NAT Issue
+
+   design-docs/NAT_issue_proposed_solution.md
+
+.. toctree::
+   :maxdepth: 2
    :caption: Setup
    
    getting-started/getting-started.md

@@ -52,6 +52,10 @@ public class KeyValueStoreClient {
                 val = String.valueOf(store.get(key));
                 System.out.println(String.format("<Client> got value %s with key %s", val, key));
             }
+
+            // TODO: Currently for collecting metric on logging server sleep is introduced.
+            //  When metric server will be available new application will get added to demonstrate metric collection
+            Thread.sleep(20000);
         } finally {
             if (oid != null) {
                 registry.delete(oid);

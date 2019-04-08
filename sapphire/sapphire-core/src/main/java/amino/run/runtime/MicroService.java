@@ -298,6 +298,7 @@ public class MicroService {
             // Remove itself from the next policy names.
             nextPolicyNames.remove(0);
             serverPolicy.setNextPolicyNames(nextPolicyNames);
+            serverPolicy.setIsLastPolicy(nextPolicyNames.size() == 0);
             serverPolicyStub.setIsLastPolicy(nextPolicyNames.size() == 0);
 
             /* Updates the list of processed policies. */

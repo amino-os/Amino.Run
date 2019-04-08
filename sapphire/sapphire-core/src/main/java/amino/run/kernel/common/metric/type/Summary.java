@@ -37,11 +37,6 @@ public class Summary implements Metric {
         return observationCount;
     }
 
-    @Override
-    public boolean isEmpty() {
-        return observationCount == 0;
-    }
-
     public String toString() {
         return "<" + getName() + ":" + getLabels() + ": observation sum " + observationSum + ">";
     }

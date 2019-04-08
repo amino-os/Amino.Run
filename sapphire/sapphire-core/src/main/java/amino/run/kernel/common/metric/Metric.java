@@ -22,11 +22,4 @@ public interface Metric extends Serializable {
      * @return labels
      */
     HashMap<String, String> getLabels();
-
-    /**
-     * Return true if metric is empty
-     *
-     * @return status
-     */
-    boolean isEmpty();
 }

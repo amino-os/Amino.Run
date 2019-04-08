@@ -129,10 +129,7 @@ public class MicroServiceMetricManager implements Serializable {
                                     // collect metric for all RPC specific Metric
                                     RPCMetricHandler handler = rpcHandlerChain;
                                     while (handler != null) {
-                                        metric = handler.getMetric();
-                                        if (!metric.isEmpty()) {
-                                            metrics.add(metric);
-                                        }
+                                        metrics.add(handler.getMetric());
                                         handler = handler.getNextHandler();
                                     }
 

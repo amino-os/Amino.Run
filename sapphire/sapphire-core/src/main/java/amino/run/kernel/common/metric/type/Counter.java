@@ -35,11 +35,6 @@ public class Counter implements Metric {
         return "<" + schema.getName() + ":" + schema.getLabels() + ":" + count + ">";
     }
 
-    @Override
-    public boolean isEmpty() {
-        return count == 0;
-    }
-
     /**
      * Return Metric collection time in milli seconds
      *

@@ -44,7 +44,7 @@ public class DefaultPolicy extends Policy {
         public void onCreate(GroupPolicy group) {
             this.group = group;
             // get micro service specification information from group policy
-            MicroServiceSpec spec = group.getSpec();
+            MicroServiceSpec spec = getSpec();
             if (isEntryPolicy(spec)) {
                 metricHandler = MicroServiceMetricManager.create(this, spec);
             }

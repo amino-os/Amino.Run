@@ -99,7 +99,7 @@ public class MultiDMTestCases {
             String completeDMName =
                     getPackageName(shortDMName) + "." + shortDMName + POLICY_POSTFIX;
             DMSpec dmSpec = DMSpec.newBuilder().setName(completeDMName).create();
-            
+
             if (shortDMName.equals("DHT")) {
                 config = new DHTPolicy.Config();
                 ((DHTPolicy.Config) config).setNumOfShards(DHT_SHARDS);

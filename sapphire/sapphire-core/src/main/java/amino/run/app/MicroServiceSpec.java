@@ -24,7 +24,6 @@ import org.yaml.snakeyaml.Yaml;
  *                                      .setName("soname")
  *                                      .setLang(Language.Java)
  *                                      .addDMSpec(dm)
- *                                      .setLabels(labels)
  *                                      .create();
  * </code> Yaml of one MicroService Object Specification Example: <code>
  * !!amino.run.app.MicroServiceSpec

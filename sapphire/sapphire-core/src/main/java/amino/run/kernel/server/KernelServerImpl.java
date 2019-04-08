@@ -9,7 +9,7 @@ import amino.run.common.MicroServiceNotFoundException;
 import amino.run.common.MicroServiceReplicaNotFoundException;
 import amino.run.kernel.client.KernelClient;
 import amino.run.kernel.common.*;
-import amino.run.kernel.common.metric.KernelServerMetricClient;
+import amino.run.kernel.common.metric.KernelMetricClient;
 import amino.run.oms.OMSServer;
 import amino.run.policy.Library;
 import amino.run.policy.Policy;
@@ -52,7 +52,7 @@ public class KernelServerImpl implements KernelServer {
     /** local kernel client for making RPCs */
     private KernelClient client;
     /** local kernel metric client */
-    private KernelServerMetricClient metricClient;
+    private KernelMetricClient metricClient;
     // heartbeat period is 1/3of the heartbeat timeout period
     static final long KS_HEARTBEAT_PERIOD = OMSServer.KS_HEARTBEAT_TIMEOUT / 3;
 
@@ -81,7 +81,7 @@ public class KernelServerImpl implements KernelServer {
         objectManager = new KernelObjectManager();
         client = new KernelClient(oms);
         GlobalKernelReferences.nodeServer = this;
-        metricClient = new KernelServerMetricClient();
+        metricClient = new KernelMetricClient();
         metricClient.initialize();
     }
 
@@ -348,7 +348,7 @@ public class KernelServerImpl implements KernelServer {
      *
      * @return kernel server metric client
      */
-    public KernelServerMetricClient getMetricClient() {
+    public KernelMetricClient getMetricClient() {
         return metricClient;
     }
 

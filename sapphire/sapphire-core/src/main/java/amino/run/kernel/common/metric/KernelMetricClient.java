@@ -14,8 +14,8 @@ import java.util.logging.Logger;
  *
  * @author AmitRoushan
  */
-public class KernelServerMetricClient {
-    private static Logger logger = Logger.getLogger(KernelServerMetricClient.class.getName());
+public class KernelMetricClient {
+    private static Logger logger = Logger.getLogger(KernelMetricClient.class.getName());
     private MetricClient client;
     private boolean initialized = false;
 

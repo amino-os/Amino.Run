@@ -34,7 +34,7 @@ public class MicroServiceMetricManager implements Serializable {
     private transient HashMap<String, String> labels;
 
     private transient int metricUpdateFrequency = 10000;
-    private transient KernelServerMetricClient metricClient;
+    private transient KernelMetricClient metricClient;
     public static final String REPLICA_ID_LABEL = "ReplicaID";
     public static final String MICRO_SERVICE_ID_LABEL = "MicroServiceID";
     public static final String MICRO_SERVICE_NAME = "MicroServiceName";

@@ -22,9 +22,10 @@ public class Summary extends Metric {
     @Override
     public String toString() {
         return super.toString()
-                + ":"
+                + ": "
                 + "observationCount="
                 + observationCount
+                + " "
                 + "observationSum="
                 + observationSum;
     }

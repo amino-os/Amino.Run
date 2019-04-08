@@ -1,7 +1,5 @@
 package amino.run.policy;
 
-import amino.run.app.DMSpec;
-import amino.run.app.MicroServiceSpec;
 import amino.run.common.MicroServiceNotFoundException;
 import amino.run.common.MicroServiceReplicaNotFoundException;
 import amino.run.common.ReplicaID;
@@ -10,7 +8,6 @@ import amino.run.kernel.common.metric.metricHandler.MicroServiceMetricManager;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 
@@ -18,12 +15,12 @@ public class DefaultPolicy extends Policy {
 
     public static class DefaultServerPolicy extends ServerPolicy {
         private GroupPolicy group;
-        protected MicroServiceMetricManager metricHandler;
+        private MicroServiceMetricManager metricManager;
 
         @Override
         public Object onRPC(String method, ArrayList<Object> params) throws Exception {
-            if (metricHandler != null) {
-                return metricHandler.onRPC(method, params);
+            if (metricManager != null) {
+                return metricManager.onRPC(method, params);
             }
             return upRPCCall(method, params);
         }
@@ -44,32 +41,16 @@ public class DefaultPolicy extends Policy {
         public void onCreate(GroupPolicy group) {
             this.group = group;
             // get micro service specification information from group policy
-            MicroServiceSpec spec = getSpec();
-            if (isEntryPolicy(spec)) {
-                metricHandler = MicroServiceMetricManager.create(this, spec);
+            if (isLastPolicy()) {
+                metricManager = MicroServiceMetricManager.create(this, getSpec());
             }
         }
 
         @Override
-        public void onDestroy() {}
-
-        /** Method to identify first DM in RPC call flow */
-        private boolean isEntryPolicy(MicroServiceSpec spec) {
-            // condition added to handle annotation based MicroService deployment
-            if (spec == null) {
-                return false;
+        public void onDestroy() {
+            if (metricManager != null) {
+                metricManager.destroy();
             }
-
-            List<DMSpec> dmList = spec.getDmList();
-            // handle metric collection for default policy
-            if (dmList.isEmpty()) {
-                return true;
-            }
-
-            // check for last DM
-            DMSpec lastDM = dmList.get(dmList.size() - 1);
-            String dmName = lastDM.getName();
-            return this.getClass().getName().contains(dmName);
         }
     }
 

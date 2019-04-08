@@ -18,6 +18,6 @@ public class Counter extends Metric {
 
     @Override
     public String toString() {
-        return super.toString() + ":" + "count=" + count;
+        return super.toString() + ": " + "count=" + count;
     }
 }

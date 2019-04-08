@@ -1,10 +1,12 @@
 package amino.run.kernel.common.metric;
 
+import amino.run.common.ReplicaID;
 import amino.run.kernel.common.metric.clients.LoggingClient;
 import amino.run.kernel.common.metric.metricHandler.MicroServiceMetricManager;
 import amino.run.kernel.common.metric.schema.Schema;
-import java.util.ArrayList;
-import java.util.HashSet;
+import amino.run.policy.util.ResettableTimer;
+import java.util.TimerTask;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 /**
@@ -18,13 +20,9 @@ import java.util.logging.Logger;
  */
 public class KernelMetricClient {
     private static Logger logger = Logger.getLogger(KernelMetricClient.class.getName());
-    private HashSet<Schema> schemas = new HashSet<Schema>();
+    private ConcurrentHashMap<ReplicaID, ResettableTimer> metricManagerTimers =
+            new ConcurrentHashMap<ReplicaID, ResettableTimer>();
     private MetricClient client;
-    private boolean initialized = false;
-
-    public boolean isInitialized() {
-        return initialized;
-    }
 
     public void initialize() {
         /*  Metric client creation needs metric server deployed and configured on OMS.
@@ -39,50 +37,64 @@ public class KernelMetricClient {
             3. Add support for Third party Metric server.
         */
         client = new LoggingClient();
-        initialized = true;
     }
 
     /**
-     * Post metrics to configured metric server
+     * Add metric manager instance managed by Kernel metric client.
+     *
+     * <p>It pull metric schemas from manager and push it to metric server for registration.
+     * Initializes and register timer for metric retrieval from metric manager and push it to metric
+     * server </>
      *
      * @param manager
-     * @param metrics
-     * @throws Exception
      */
-    public void send(MicroServiceMetricManager manager, ArrayList<Metric> metrics)
-            throws Exception {
-        client.send(metrics);
+    public void registerMetricManager(final MicroServiceMetricManager manager) {
+        registerSchema(manager);
+
+        ResettableTimer metricTimer =
+                new ResettableTimer(
+                        new TimerTask() {
+                            public void run() {
+                                try {
+                                    // collect metric
+                                    client.send(manager.getLabels(), manager.getMetrics());
+                                } catch (Exception e) {
+                                    logger.warning(
+                                            String.format(
+                                                    "%s: Sending metric failed", e.toString()));
+                                    return;
+                                }
+                                // reset the count value and timer after push is done
+                                metricManagerTimers.get(manager.getPolicy().getReplicaId()).reset();
+                            }
+                        },
+                        manager.getMetricUpdateFrequency());
+        metricTimer.start();
+        metricManagerTimers.put(manager.getPolicy().getReplicaId(), metricTimer);
+    }
+
+    /**
+     * Unregister and remove metric manager schema and timer
+     *
+     * @param manager
+     */
+    public void unregisterMetricManager(MicroServiceMetricManager manager) {
+        metricManagerTimers.get(manager.getPolicy().getReplicaId()).cancel();
+        metricManagerTimers.remove(manager.getPolicy().getReplicaId());
     }
 
     /**
      * Register metric schema with configured metric server
      *
      * @param manager
-     * @param schema
      */
-    public void registerSchema(MicroServiceMetricManager manager, Schema schema) {
-        try {
-            if (!schemas.contains(schema)) {
-                schemas.add(schema);
+    public void registerSchema(MicroServiceMetricManager manager) {
+        for (Schema schema : manager.getSchemas()) {
+            try {
                 client.register(schema);
+            } catch (Exception e) {
+                logger.warning(e.getMessage());
             }
-        } catch (Exception e) {
-            logger.warning(e.getMessage());
-        }
-    }
-
-    /**
-     * UnRegister metric schema with configured metric server
-     *
-     * @param schema
-     */
-    public void unRegisterSchema(MicroServiceMetricManager manager, Schema schema) {
-        try {
-            if (schemas.remove(schema)) {
-                client.unregister(schema);
-            }
-        } catch (Exception e) {
-            logger.warning(e.getMessage());
         }
     }
 }

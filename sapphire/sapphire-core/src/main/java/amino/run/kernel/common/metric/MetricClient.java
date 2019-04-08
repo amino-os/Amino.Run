@@ -2,6 +2,7 @@ package amino.run.kernel.common.metric;
 
 import amino.run.kernel.common.metric.schema.Schema;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Interface of client used for metric server interactions
@@ -15,7 +16,7 @@ public interface MetricClient {
      * @param metrics object maintaining metric information
      * @throws Exception
      */
-    void send(ArrayList<Metric> metrics) throws Exception;
+    void send(HashMap<String, String> labels, ArrayList<Metric> metrics) throws Exception;
 
     /**
      * Post metric schema information to metric server

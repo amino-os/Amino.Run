@@ -25,7 +25,7 @@ public class Schema {
 
     @Override
     public String toString() {
-        return "metricName=" + metricName + ":" + "type= " + type;
+        return "metricName=" + metricName + ": " + "type=" + type;
     }
 
     /**

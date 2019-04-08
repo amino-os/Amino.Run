@@ -12,7 +12,7 @@ import java.util.ArrayList;
  *
  * <p>This should be last RPC metric handler in chain as this performs actual onRPC call. Execution
  * time metric collection can be enabled with {@link
- * amino.run.kernel.common.metric.MetricConstants}.METRIC_LIST.
+ * amino.run.kernel.common.metric.metricHandler.MicroServiceMetricManager}.METRIC_LIST.
  *
  * @author AmitRoushan
  */
@@ -46,6 +46,9 @@ public class ExecutionTimeHandler extends RPCMetricHandler {
     @Override
     public Metric getMetric() {
         synchronized (this) {
+            if (!enabled) {
+                return null;
+            }
             Summary metric = new Summary(schema, totalExecutionTime, rpcCount);
             totalExecutionTime = 0;
             rpcCount = 0;
@@ -55,6 +58,9 @@ public class ExecutionTimeHandler extends RPCMetricHandler {
 
     @Override
     public Schema getSchema() {
+        if (!enabled) {
+            return null;
+        }
         return schema;
     }
 }

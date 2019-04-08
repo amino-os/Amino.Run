@@ -339,14 +339,13 @@ public class KernelServerImpl implements KernelServer {
     }
 
     @Override
-    public AppObjectStub createMicroService(String soSpecYaml, Object... args)
+    public AppObjectStub createMicroService(MicroServiceSpec spec, Object... args)
             throws MicroServiceCreationException {
         logger.log(
                 Level.INFO,
                 String.format(
                         "Got request to create microservice with spec '%s' and %d parameters.",
-                        soSpecYaml, args.length));
-        MicroServiceSpec spec = MicroServiceSpec.fromYaml(soSpecYaml);
+                        spec, args.length));
         return (AppObjectStub) MicroService.new_(spec, args);
     }
 

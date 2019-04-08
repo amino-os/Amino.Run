@@ -1,5 +1,6 @@
 package amino.run.kernel.server;
 
+import amino.run.app.MicroServiceSpec;
 import amino.run.common.AppObjectStub;
 import amino.run.common.MicroServiceCreationException;
 import amino.run.common.MicroServiceNotFoundException;
@@ -31,13 +32,13 @@ public interface KernelServer extends Remote {
     /**
      * Create microservice in kernel server
      *
-     * @param microServiceSpec microservice specification in YAML.
+     * @param spec {@link MicroServiceSpec} instance.
      * @param args parameters to microservice constructor
      * @return microservice stub
      * @throws RemoteException
      * @throws MicroServiceCreationException
      * @throws ClassNotFoundException
      */
-    AppObjectStub createMicroService(String microServiceSpec, Object... args)
+    AppObjectStub createMicroService(MicroServiceSpec spec, Object... args)
             throws RemoteException, MicroServiceCreationException, ClassNotFoundException;
 }

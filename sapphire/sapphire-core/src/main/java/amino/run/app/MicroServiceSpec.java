@@ -108,12 +108,18 @@ public class MicroServiceSpec implements Serializable {
         return dmList;
     }
 
-    public void setDmList(List<DMSpec> dmList) {
+    public void setDmList(List<DMSpec> dmList) throws IllegalArgumentException {
+        if (dmList == null) {
+            throw new IllegalArgumentException(
+                    "invalid argument: deployment manager list can not be empty");
+        }
         this.dmList = dmList;
     }
 
     public void addDMSpec(DMSpec dmSpec) {
-        dmList.add(dmSpec);
+        if (dmSpec != null) {
+            dmList.add(dmSpec);
+        }
     }
 
     public NodeSelectorSpec getNodeSelectorSpec() {
@@ -208,11 +214,9 @@ public class MicroServiceSpec implements Serializable {
         }
 
         public Builder addDMSpec(DMSpec dmSpec) {
-            if (dmList == null) {
-                dmList = new ArrayList<DMSpec>();
+            if (dmSpec != null) {
+                dmList.add(dmSpec);
             }
-            dmList.add(dmSpec);
-
             return this;
         }
 

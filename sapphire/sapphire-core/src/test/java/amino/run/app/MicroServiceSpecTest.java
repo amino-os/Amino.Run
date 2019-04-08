@@ -28,6 +28,17 @@ public class MicroServiceSpecTest {
         Assert.assertEquals(spec, clone);
     }
 
+    @Test
+    public void testDmListEmptyValidation() throws Exception {
+        MicroServiceSpec spec =
+                MicroServiceSpec.newBuilder()
+                        .setLang(Language.js)
+                        .setName("com.org.College")
+                        .addDMSpec(null)
+                        .create();
+        Assert.assertTrue(spec.getDmList().isEmpty());
+    }
+
     private MicroServiceSpec createSpec() {
         ScaleUpFrontendPolicy.Config scaleUpConfig = new ScaleUpFrontendPolicy.Config();
         scaleUpConfig.setReplicationRateInMs(100);

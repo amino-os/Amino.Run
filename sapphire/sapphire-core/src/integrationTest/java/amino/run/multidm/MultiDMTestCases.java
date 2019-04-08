@@ -30,7 +30,13 @@ import org.junit.Test;
  *
  * <p>Every test in this class tests microservice specifications in <code>
  * src/integrationTest/resources/specs/multi-dm</code> directory.
+ *
+ * <p>How to add an integration test for new combination: Specify the name of DM without 'policy'
+ * suffix. i.e., runTest("DHT", "ConsensusRSM", "AtLeastOnceRPC"); If it has a new DM name, update
+ * getPackageName() method to include the package name for it.
  */
+// TODO: Current integration tests only check the result back to client. Ideally, it should check
+// each kernel server to verify whether RPC was made to intended kernel servers.
 public class MultiDMTestCases {
     final String JAVA_CLASS_NAME = "amino.run.demo.KVStore";
     final Language DEFAULT_LANG = Language.java;
@@ -130,8 +136,14 @@ public class MultiDMTestCases {
         if (name.equals("CacheLease")) {
             return "amino.run.policy.cache";
         }
-        if (name.equals("LoadBalancedMasterSlaveSync")) {
+        if (name.equals("LoadBalancedMasterSlaveSync") || name.equals("LoadBalancedFrontend")) {
             return "amino.run.policy.scalability";
+        }
+        if (name.equals("OptConcurrentTransact") || name.equals("LockingTransaction")) {
+            return "amino.run.policy.serializability";
+        }
+        if (name.equals("TwoPCCoordinator")) {
+            return "amino.run.policy.transaction";
         }
 
         throw new Exception("There is no package name found for " + name);
@@ -200,6 +212,37 @@ public class MultiDMTestCases {
     }
 
     @Test
+    public void testAtLeastOnceRPCConsensusRSM() throws Exception {
+        runTest("AtLeastOnceRPC", "ConsensusRSM");
+    }
+
+    @Test
+    public void testAtLeastOnceRPCConsensusRSMDHT() throws Exception {
+        runTest("AtLeastOnceRPC", "ConsensusRSM", "DHT");
+    }
+
+    @Test
+    public void testAtLeastOnceRPCOptConcurrentTransact() throws Exception {
+        runTest("AtLeastOnceRPC", "OptConcurrentTransact");
+    }
+
+    @Test
+    public void testAtLeastOnceRPCTwoPCCoordinator() throws Exception {
+        runTest("AtLeastOnceRPC", "TwoPCCoordinator");
+    }
+
+    @Test
+    public void testAtLeastOnceRPCLockingTransaction() throws Exception {
+        runTest("AtLeastOnceRPC", "LockingTransaction");
+    }
+
+    @Test
+    @Ignore("Test is ignored will be removed once the multi DM issues are resolved")
+    public void testAtLeastOnceRPCLoadBalancedFrontend() throws Exception {
+        runTest("AtLeastOnceRPC", "LoadBalancedFrontend");
+    }
+
+    @Test
     public void testAtLeastOnceRPCCacheLeaseConsensusRSM() throws Exception {
         runTest("AtLeastOnceRPC", "CacheLease", "ConsensusRSM");
     }
@@ -237,6 +280,16 @@ public class MultiDMTestCases {
     @Test
     public void testCacheLeaseDHTConsensusRSM() throws Exception {
         runTest("CacheLease", "DHT", "ConsensusRSM");
+    }
+
+    @Test
+    public void testConsensusRSMDHT() throws Exception {
+        runTest("ConsensusRSM", "DHT");
+    }
+
+    @Test
+    public void testConsensusRSMDHTAtLeastOnceRPC() throws Exception {
+        runTest("ConsensusRSM", "DHT", "AtLeastOnceRPC");
     }
 
     @AfterClass

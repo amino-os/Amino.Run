@@ -70,8 +70,9 @@ public class MultiDMTestCases {
             String key = "k1_" + i;
             String value = "v1_" + i;
             store.set(key, value);
-            waitForValue(store, key, value, -1);
-            Assert.assertEquals(value, store.get(key));
+            String returnValue = (String) store.get(key);
+            Assert.assertEquals(
+                    "Expected: " + value + "Actual: " + returnValue, value, returnValue);
         }
     }
 
@@ -99,7 +100,7 @@ public class MultiDMTestCases {
             String completeDMName =
                     getPackageName(shortDMName) + "." + shortDMName + POLICY_POSTFIX;
             DMSpec dmSpec = DMSpec.newBuilder().setName(completeDMName).create();
-            
+
             if (shortDMName.equals("DHT")) {
                 config = new DHTPolicy.Config();
                 ((DHTPolicy.Config) config).setNumOfShards(DHT_SHARDS);

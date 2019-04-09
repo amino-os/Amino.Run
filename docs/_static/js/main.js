@@ -4,8 +4,9 @@ $(document).on('click', 'a', function(event){
 		If it is an external link then open it into a new tab
 	*/
 	var aminoHost = window.location.host;
-	var targetHost = document.createElement("a");
-	targetHost.href = event.target;
+	var target = document.createElement("a");
+	target.href = event.target;
+	var targetHost = target.href.split('/')[2];
 	if(aminoHost != targetHost){
 		event.preventDefault();
 		window.open(event.target, '_blank')

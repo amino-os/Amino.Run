@@ -172,7 +172,9 @@ public class Server
         /* After checking the leader's term and deciding whether to become the follower(if current
         term is less than leader's term) or to reject rpc(throw exception and continue in same
         state(i.e., candidate or follower state), need to reset the leader heartbeat receive timer*/
-        leaderHeartbeatReceiveTimer.reset(); // This is a heartbeat from the leader.
+        synchronized (leaderHeartbeatReceiveTimer) {
+            leaderHeartbeatReceiveTimer.reset(); // This is a heartbeat from the leader.
+        }
 
         /**
          * 2. Reply false if log doesn’t contain an entry at prevLogIndex whose term matches
@@ -346,10 +348,7 @@ public class Server
         int currentTerm = pState.getCurrentTerm();
         if (currentTerm < remoteTerm) {
             pState.setCurrentTerm(remoteTerm, currentTerm);
-            State currentState = vState.getState();
-            if (currentState != State.FOLLOWER) {
-                become(State.FOLLOWER, currentState);
-            }
+            become(State.FOLLOWER, vState.getState());
         }
     }
 
@@ -789,14 +788,19 @@ public class Server
                                 },
                                 (long) LEADER_HEARTBEAT_TIMEOUT);
             }
-
-            leaderHeartbeatReceiveTimer.start(); // Expect to receive heartbeats from the leader.
+            synchronized (leaderHeartbeatReceiveTimer) {
+                // Expect to receive heartbeats from the leader.
+                leaderHeartbeatReceiveTimer.start();
+            }
         }
 
         /** Stop being a follower. */
         void stop() {
             logger.info(pState.myServerID + ": Stop being a follower.");
-            leaderHeartbeatReceiveTimer.cancel(); // Don't expect to receive heartbeats from leader.
+            synchronized (leaderHeartbeatReceiveTimer) {
+                // Don't expect to receive heartbeats from leader.
+                leaderHeartbeatReceiveTimer.cancel();
+            }
         }
     }
 

@@ -76,8 +76,9 @@ public class MultiDMTestCases {
             String key = "k1_" + i;
             String value = "v1_" + i;
             store.set(key, value);
-            waitForValue(store, key, value, -1);
-            Assert.assertEquals(value, store.get(key));
+            String returnValue = (String) store.get(key);
+            Assert.assertEquals(
+                    "Expected: " + value + "Actual: " + returnValue, value, returnValue);
         }
     }
 

@@ -16,9 +16,9 @@ Amino, is an open source, multilanguage development platform and distributed run
 
 .. toctree::
    :maxdepth: 2
-   :caption: Sapphire Object
+   :caption: Amino Run
    
-   design-docs/sapphire-object.md
+   design-docs/amino-run.md
 
 .. toctree::
    :maxdepth: 2

@@ -98,9 +98,15 @@ subprojects {
     }
 
     // Added for enforcing Java 1.6 version compatibility.
-    def javaVersion = JavaVersion.VERSION_1_6
-    sourceCompatibility = javaVersion
-    targetCompatibility = javaVersion
+    // Note that this will not result in compilation failure unless JDK 1.6 or less is used.
+    // GraalVM supports from JDK 1.8; therefore, it doesn't have an effect except IDE inspector
+    // may show incompatible APIs for higher version than JDK 1.6.
+    tasks.withType(JavaCompile) {
+        def javaVersion = JavaVersion.VERSION_1_6
+        sourceCompatibility = javaVersion
+        targetCompatibility = javaVersion
+        options.bootstrapClasspath = files("$System.env.JAVA_HOME/jre/lib/rt.jar")
+    }
     
     // SourceSet for generated stubs
     sourceSets {

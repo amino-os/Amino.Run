@@ -16,12 +16,8 @@ import java.rmi.registry.LocateRegistry;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.logging.Logger;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+
+import org.junit.*;
 
 /**
  * Test <strong>multi-dm</strong> deployment managers, DHT & ConsensusRSM , DHT &
@@ -48,14 +44,10 @@ public class MultiDMTestCases {
     private static String regionName = "";
     static Logger logger = java.util.logging.Logger.getLogger(MultiDMTestCases.class.getName());
 
-    @BeforeClass
-    public static void bootstrap() throws Exception {
-        String labels = KernelServerImpl.REGION_KEY + "=" + regionName;
-        startOmsAndKernelServers(labels);
-    }
-
     @Before
     public void setUp() throws Exception {
+        String labels = KernelServerImpl.REGION_KEY + "=" + regionName;
+        startOmsAndKernelServers(labels);
         java.rmi.registry.Registry registry = LocateRegistry.getRegistry(omsIp, omsPort);
         this.registry = (Registry) registry.lookup("io.amino.run.oms");
         new KernelServerImpl(
@@ -289,12 +281,17 @@ public class MultiDMTestCases {
     }
 
     @Test
+    public void testConsensusRSMOptConcurrentTransact() throws Exception {
+        runTest("ConsensusRSM", "OptConcurrentTransact");
+    }
+
+    @Test
     public void testConsensusRSMDHTAtLeastOnceRPC() throws Exception {
         runTest("ConsensusRSM", "DHT", "AtLeastOnceRPC");
     }
 
-    @AfterClass
-    public static void cleanUp() {
+    @After
+    public void cleanUp() {
         killOmsAndKernelServers();
     }
 }

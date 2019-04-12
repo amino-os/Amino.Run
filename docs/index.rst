@@ -12,7 +12,7 @@ Amino, is an open source, multilanguage development platform and distributed run
    :maxdepth: 2
    :caption: Amino
 
-   amino.md
+   README.md
 
 .. toctree::
    :maxdepth: 2

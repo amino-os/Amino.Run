@@ -2,7 +2,8 @@ package amino.run.kernel.server;
 
 import amino.run.kernel.common.GlobalKernelReferences;
 import amino.run.kernel.common.ServerInfo;
-import amino.run.kernel.common.metric.*;
+import amino.run.kernel.common.metric.Metric;
+import amino.run.kernel.common.metric.MetricManager;
 import amino.run.kernel.common.metric.metricHandler.MetricHandler;
 import amino.run.kernel.common.metric.schema.Schema;
 import amino.run.kernel.common.metric.schema.SchemaType;
@@ -19,6 +20,7 @@ public class KernelMetricManager implements MetricManager {
     private static final String KERNEL_SERVER_MEMORY_STAT = "kernel_server_memory_stat";
     private static final String KERNEL_SERVER_HOST = "host";
     private static final String KERNEL_SERVER_PORT = "port";
+    private static String hostName = "";
     private static long KERNEL_SERVER_MEMORY_STAT_FREQUENCY = 100000;
     private HashMap<String, String> labels = new HashMap<String, String>();
     private ArrayList<MetricHandler> handlers = new ArrayList<MetricHandler>();
@@ -26,18 +28,19 @@ public class KernelMetricManager implements MetricManager {
     KernelMetricManager(ServerInfo srvInfo) {
         labels.put(KERNEL_SERVER_HOST, srvInfo.getHost().getHostName());
         labels.put(KERNEL_SERVER_PORT, String.valueOf(srvInfo.getHost().getPort()));
+        hostName = srvInfo.getHost().getHostName();
     }
 
     /** Initialize and start kernel server metric collection. */
     public void start() {
         // Memory stat collection
-        MemoryStat memStat = new MemoryStat();
+        MemoryStatHandler memStat = new MemoryStatHandler();
         handlers.add(memStat);
 
         GlobalKernelReferences.nodeServer.getMetricClient().registerMetricManager(this);
     }
 
-    private class MemoryStat implements MetricHandler {
+    private class MemoryStatHandler implements MetricHandler {
         Schema schema = new Schema(KERNEL_SERVER_MEMORY_STAT, SchemaType.Gauge);
 
         @Override
@@ -73,6 +76,11 @@ public class KernelMetricManager implements MetricManager {
     @Override
     public HashMap<String, String> getLabels() {
         return labels;
+    }
+
+    @Override
+    public String getID() {
+        return hostName;
     }
 
     @Override

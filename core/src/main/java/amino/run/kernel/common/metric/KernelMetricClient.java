@@ -3,7 +3,6 @@ package amino.run.kernel.common.metric;
 import amino.run.kernel.common.metric.clients.LoggingClient;
 import amino.run.kernel.common.metric.schema.Schema;
 import amino.run.policy.util.ResettableTimer;
-import java.util.HashMap;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
@@ -19,8 +18,8 @@ import java.util.logging.Logger;
  */
 public class KernelMetricClient {
     private static Logger logger = Logger.getLogger(KernelMetricClient.class.getName());
-    private ConcurrentHashMap<HashMap<String, String>, ResettableTimer> metricManagerTimers =
-            new ConcurrentHashMap<HashMap<String, String>, ResettableTimer>();
+    private ConcurrentHashMap<String, ResettableTimer> metricManagerTimers =
+            new ConcurrentHashMap<String, ResettableTimer>();
     private MetricClient client;
 
     public void initialize() {
@@ -64,12 +63,12 @@ public class KernelMetricClient {
                                     return;
                                 }
                                 // reset the count value and timer after push is done
-                                metricManagerTimers.get(manager.getLabels()).reset();
+                                metricManagerTimers.get(manager.getID()).reset();
                             }
                         },
                         manager.getMetricUpdateFrequency());
         metricTimer.start();
-        metricManagerTimers.put(manager.getLabels(), metricTimer);
+        metricManagerTimers.put(manager.getID(), metricTimer);
     }
 
     /**
@@ -78,8 +77,8 @@ public class KernelMetricClient {
      * @param manager
      */
     public void unregisterMetricManager(MetricManager manager) {
-        metricManagerTimers.get(manager.getLabels()).cancel();
-        metricManagerTimers.remove(manager.getLabels());
+        metricManagerTimers.get(manager.getID()).cancel();
+        metricManagerTimers.remove(manager.getID());
     }
 
     /**

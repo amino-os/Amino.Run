@@ -173,11 +173,7 @@ public class MicroServiceMetricManager implements Serializable, MetricManager {
         return policy;
     }
 
-    /**
-     * Return metric schema of all handlers managed by metric manager
-     *
-     * @return
-     */
+    @Override
     public ArrayList<Schema> getSchemas() {
         ArrayList<Schema> schemas = new ArrayList<Schema>();
 
@@ -194,11 +190,7 @@ public class MicroServiceMetricManager implements Serializable, MetricManager {
         return schemas;
     }
 
-    /**
-     * Retrieve and return metric managed in metric handlers
-     *
-     * @return list of metrics
-     */
+    @Override
     public ArrayList<Metric> getMetrics() {
         ArrayList<Metric> metrics = new ArrayList<Metric>();
 
@@ -216,21 +208,18 @@ public class MicroServiceMetricManager implements Serializable, MetricManager {
         return metrics;
     }
 
-    /**
-     * Return metric retrieval frequency
-     *
-     * @return
-     */
+    @Override
     public long getMetricUpdateFrequency() {
         return metricUpdateFrequency;
     }
 
-    /**
-     * Return tags which should be supplied on each metric
-     *
-     * @return
-     */
+    @Override
     public HashMap<String, String> getLabels() {
         return labels;
+    }
+
+    @Override
+    public String getID() {
+        return policy.getReplicaId().getID().toString();
     }
 }

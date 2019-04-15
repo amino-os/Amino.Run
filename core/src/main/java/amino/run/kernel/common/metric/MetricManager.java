@@ -27,6 +27,14 @@ public interface MetricManager {
     HashMap<String, String> getLabels();
 
     /**
+     * Return ID which is maintained internally by kernel metric client for identifying metric
+     * managers uniquely.
+     *
+     * @return
+     */
+    String getID();
+
+    /**
      * Return metric schema of all handlers managed by metric manager
      *
      * @return

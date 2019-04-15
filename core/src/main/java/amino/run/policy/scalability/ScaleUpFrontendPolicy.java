@@ -1,7 +1,6 @@
 package amino.run.policy.scalability;
 
 import amino.run.common.MicroServiceNotFoundException;
-import amino.run.common.MicroServiceReplicaNotFoundException;
 import amino.run.kernel.common.KernelObjectStub;
 import amino.run.policy.Policy;
 import amino.run.policy.util.ResettableTimer;
@@ -223,9 +222,6 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
                     replicate(servers.get(0), addressList.get(0), region);
                 } catch (MicroServiceNotFoundException e) {
                     throw new ScaleUpException("Failed to find microservice. Probably deleted.", e);
-                } catch (MicroServiceReplicaNotFoundException e) {
-                    throw new ScaleUpException(
-                            "Failed to find replicate microservice. Probably deleted.", e);
                 }
             } else {
                 throw new ScaleUpException(

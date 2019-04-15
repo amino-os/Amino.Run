@@ -1,6 +1,7 @@
 package amino.run.appexamples.hankstodo;
 
 import java.net.InetSocketAddress;
+import java.rmi.ConnectException;
 import java.rmi.registry.LocateRegistry;
 import java.util.Collections;
 
@@ -78,7 +79,16 @@ public class HanksTodoMain {
                     System.out.println(
                             String.format(
                                     "Adding %s. Content: %s at iteration %d", subject, content, i));
-                    td1.addToDo(subject, content);
+                    try {
+                        td1.addToDo(subject, content);
+                    } catch (Exception e) {
+                        /* Retry adding if connection exception had occurred */
+                        if (e instanceof RuntimeException) {
+                            if (e.getCause() instanceof ConnectException) {
+                                j--;
+                            }
+                        }
+                    }
                 }
             }
 

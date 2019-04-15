@@ -1,7 +1,8 @@
 package amino.run.policy.replication;
 
 import amino.run.common.MicroServiceNotFoundException;
-import amino.run.common.MicroServiceReplicaNotFoundException;
+import amino.run.kernel.common.KernelObjectStub;
+import amino.run.kernel.common.KernelServerNotFoundException;
 import amino.run.policy.DefaultPolicy;
 import amino.run.policy.Policy;
 import amino.run.policy.util.consensus.raft.AlreadyVotedException;
@@ -207,6 +208,7 @@ public class ConsensusRSMPolicy extends DefaultPolicy {
     }
 
     public static class GroupPolicy extends DefaultPolicy.DefaultGroupPolicy {
+        private String region = null; // TODO: Region need to be removed when onCreate removes it
         private static Logger logger = Logger.getLogger(GroupPolicy.class.getName());
 
         @Override
@@ -214,6 +216,7 @@ public class ConsensusRSMPolicy extends DefaultPolicy {
             super.onCreate(region, server);
 
             try {
+                this.region = region;
                 ServerPolicy consensusServer = (ServerPolicy) server;
                 List<InetSocketAddress> addressList = getAddressList(region);
 
@@ -250,8 +253,37 @@ public class ConsensusRSMPolicy extends DefaultPolicy {
                         "Could not create new group policy because the oms is not available.", e);
             } catch (MicroServiceNotFoundException e) {
                 throw new Error("Failed to find microservice.", e);
-            } catch (MicroServiceReplicaNotFoundException e) {
-                throw new Error("Failed to find microservice replica.", e);
+            }
+        }
+
+        /**
+         * Replicates a new server policy and pin it to a kernel server
+         *
+         * @throws RemoteException
+         * @throws MicroServiceNotFoundException
+         * @throws KernelServerNotFoundException
+         */
+        @Override
+        protected void replicate()
+                throws RemoteException, MicroServiceNotFoundException,
+                        KernelServerNotFoundException {
+            List<InetSocketAddress> addressList = getAddressList(region);
+            ArrayList<Policy.ServerPolicy> servers = getServers();
+            if (addressList.size() == servers.size()) {
+                /* Replicas are present on all the servers in region */
+                return;
+            }
+
+            for (Policy.ServerPolicy serverPolicy : servers) {
+                addressList.remove(((KernelObjectStub) serverPolicy).$__getHostname());
+            }
+
+            int i = 0, replicateCount = addressList.size();
+            while (i < replicateCount) {
+                // TODO: This server is not added to existing consensus group. Will do it in
+                // followup PR.
+                replicate(servers.get(0), addressList.get(i), region);
+                i++;
             }
         }
     }

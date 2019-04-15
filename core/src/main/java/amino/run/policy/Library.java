@@ -18,10 +18,7 @@ import amino.run.common.MultiDMConstructionHelper;
 import amino.run.common.ReplicaID;
 import amino.run.common.Utils;
 import amino.run.compiler.GlobalStubConstants;
-import amino.run.kernel.common.GlobalKernelReferences;
-import amino.run.kernel.common.KernelOID;
-import amino.run.kernel.common.KernelObjectFactory;
-import amino.run.kernel.common.KernelObjectNotFoundException;
+import amino.run.kernel.common.*;
 import amino.run.kernel.server.KernelServerImpl;
 import amino.run.oms.OMSServer;
 import amino.run.policy.Policy.ServerPolicy;
@@ -320,11 +317,9 @@ public abstract class Library implements Upcalls {
          * @param server
          * @throws RemoteException
          * @throws MicroServiceNotFoundException
-         * @throws MicroServiceReplicaNotFoundException
          */
         public void pin_to_server(InetSocketAddress server)
-                throws RemoteException, MicroServiceNotFoundException,
-                        MicroServiceReplicaNotFoundException {
+                throws RemoteException, MicroServiceNotFoundException {
             ServerPolicy serverPolicy = (ServerPolicy) this;
 
             logger.info(
@@ -555,6 +550,15 @@ public abstract class Library implements Upcalls {
                 }
             }
             return serversInRegion;
+        }
+
+        public void terminateLocal(ServerPolicy server)
+                throws RemoteException, MicroServiceNotFoundException,
+                        KernelObjectNotFoundException {
+            oms().unRegisterKernelObject(
+                            ((KernelObjectStub) server).$__getKernelOID(),
+                            ((KernelObjectStub) server).$__getHostname());
+            oms().unRegisterReplica(server.getReplicaId());
         }
 
         public void $__setKernelOID(KernelOID oid) {

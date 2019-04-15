@@ -72,7 +72,8 @@ public class KernelServerManager {
         }
     }
 
-    public void registerKernelServer(ServerInfo info) throws RemoteException, NotBoundException {
+    public void registerKernelServer(ServerInfo info, final Runnable onRemove)
+            throws RemoteException, NotBoundException {
         logger.info(
                 "New kernel server: "
                         + info.getHost().toString()
@@ -96,6 +97,7 @@ public class KernelServerManager {
                                 // If we don't receive a heartbeat from this kernel server, remove
                                 // that from the list
                                 stopHeartBeat(srvInfo);
+                                onRemove.run();
                             }
                         },
                         OMSServer.KS_HEARTBEAT_TIMEOUT);

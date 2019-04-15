@@ -1,7 +1,6 @@
 package amino.run.policy.mobility.explicitmigration;
 
 import amino.run.common.MicroServiceNotFoundException;
-import amino.run.common.MicroServiceReplicaNotFoundException;
 import amino.run.kernel.common.KernelObjectStub;
 import amino.run.policy.DefaultPolicy;
 import amino.run.policy.Policy;
@@ -78,8 +77,6 @@ public class ExplicitMigrationPolicy extends DefaultPolicy {
             try {
                 /* Pin the source server policy object to given destination address */
                 pin(sourceServer, destinationAddress);
-            } catch (MicroServiceReplicaNotFoundException e) {
-                throw new MigrationException("Not found the server policy object to migrate", e);
             } catch (MicroServiceNotFoundException e) {
                 throw new MigrationException("MicroService not found", e);
             }

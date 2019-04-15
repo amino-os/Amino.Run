@@ -5,6 +5,8 @@ import amino.run.common.MicroServiceReplicaNotFoundException;
 import amino.run.common.Notification;
 import amino.run.common.ReplicaID;
 import amino.run.kernel.common.KernelObjectStub;
+import amino.run.kernel.common.KernelServerNotFoundException;
+import amino.run.kernel.common.ServerUnreachable;
 import amino.run.kernel.common.metric.metricHandler.MicroServiceMetricManager;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
@@ -91,12 +93,24 @@ public class DefaultPolicy extends Policy {
         private ConcurrentHashMap<ReplicaID, ServerPolicy> servers =
                 new ConcurrentHashMap<ReplicaID, ServerPolicy>();
 
+        @Override
         protected void addServer(ServerPolicy server) {
             servers.put(server.getReplicaId(), server);
         }
 
+        @Override
         protected void removeServer(ServerPolicy server) {
             servers.remove(server.getReplicaId());
+        }
+
+        @Override
+        protected void replicate()
+                throws RemoteException, MicroServiceNotFoundException,
+                        KernelServerNotFoundException {
+            /* TODO: In case of single instance DM, should replicate here. But there is no reference copy to replicate.
+            And the microservice state is not presisted. Need to consider it further. Restore from a snapshot that was
+            stored somewhere other than on the original (now dead) server. e.g. on remote persistent storage, like
+            Tapir, EBS or similar. Create a new, uninitialized instance (suitable for stateless microservices). */
         }
 
         @Override
@@ -123,27 +137,34 @@ public class DefaultPolicy extends Policy {
             } catch (MicroServiceNotFoundException e) {
                 logger.log(Level.SEVERE, "Failed to pin original Microservice to " + host, e);
                 throw new Error(e);
-            } catch (MicroServiceReplicaNotFoundException e) {
-                logger.log(
-                        Level.SEVERE,
-                        String.format(
-                                "Failed to pin original Microservice to %s because replica was not found.",
-                                host),
-                        e);
-                throw new Error(e);
             }
 
             addServer(server);
         }
 
         @Override
-        public void onNotification(Notification notification) throws RemoteException {}
+        public void onNotification(Notification notification) throws RemoteException {
+            if (notification instanceof ServerUnreachable) {
+                onServerUnReachable((ServerUnreachable) notification);
+            }
+
+            return;
+        }
 
         @Override
         public void onDestroy() throws RemoteException {
             /* Delete all the servers */
             for (ServerPolicy server : getServers()) {
-                terminate(server);
+                try {
+                    terminate(server);
+                } catch (Exception e) {
+                    logger.warning(String.format("Exception occurred : %s", e.getMessage()));
+                    try {
+                        terminateLocal(server);
+                    } catch (Exception e1) {
+                        logger.warning(String.format("Exception occurred : %s", e1.getMessage()));
+                    }
+                }
             }
         }
 
@@ -173,12 +194,10 @@ public class DefaultPolicy extends Policy {
          * @return New replica of server policy
          * @throws RemoteException
          * @throws MicroServiceNotFoundException
-         * @throws MicroServiceReplicaNotFoundException
          */
         protected ServerPolicy replicate(
                 ServerPolicy replicaSource, InetSocketAddress dest, String region)
-                throws RemoteException, MicroServiceNotFoundException,
-                        MicroServiceReplicaNotFoundException {
+                throws RemoteException, MicroServiceNotFoundException {
             ServerPolicy replica = replicaSource.replicate(region);
 
             if (replicaSource.isLastPolicy()) {
@@ -199,8 +218,7 @@ public class DefaultPolicy extends Policy {
          * @throws MicroServiceNotFoundException
          */
         protected void pin(ServerPolicy server, InetSocketAddress host)
-                throws MicroServiceReplicaNotFoundException, RemoteException,
-                        MicroServiceNotFoundException {
+                throws RemoteException, MicroServiceNotFoundException {
             if (server.isLastPolicy()) {
                 server.pin_to_server(host);
                 ((KernelObjectStub) server).$__updateHostname(host);
@@ -217,6 +235,25 @@ public class DefaultPolicy extends Policy {
         protected void terminate(ServerPolicy server) throws RemoteException {
             server.terminate();
             removeServer(server);
+        }
+
+        private void onServerUnReachable(ServerUnreachable unreachable) throws RemoteException {
+            /* Check if there is a replica on the unreachable server. If yes, remove the replica resources and create a new replica and pin it on an other server. */
+            InetSocketAddress host = unreachable.serverInfo.getHost();
+            for (ServerPolicy server : getServers()) {
+                if (((KernelObjectStub) server).$__getHostname().equals(host)) {
+                    /* Kernel server is not reachable anymore. Remove the server policy from local servers list and
+                    Replicate a new server policy object */
+                    removeServer(server);
+                    try {
+                        /* Remove the resource allocated(such as replica id kernel oid etc.) for server policy on OMS */
+                        terminateLocal(server);
+                        replicate();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
         }
     }
 }

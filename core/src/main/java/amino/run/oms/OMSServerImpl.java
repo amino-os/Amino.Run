@@ -10,6 +10,7 @@ import amino.run.common.MicroServiceID;
 import amino.run.common.MicroServiceNameModificationException;
 import amino.run.common.MicroServiceNotFoundException;
 import amino.run.common.MicroServiceReplicaNotFoundException;
+import amino.run.common.Notification;
 import amino.run.common.ReplicaID;
 import amino.run.kernel.common.GlobalKernelReferences;
 import amino.run.kernel.common.KernelOID;
@@ -17,6 +18,7 @@ import amino.run.kernel.common.KernelObjectNotCreatedException;
 import amino.run.kernel.common.KernelObjectNotFoundException;
 import amino.run.kernel.common.KernelServerNotFoundException;
 import amino.run.kernel.common.ServerInfo;
+import amino.run.kernel.common.ServerUnreachable;
 import amino.run.kernel.server.KernelServer;
 import amino.run.kernel.server.KernelServerImpl;
 import amino.run.policy.Policy;
@@ -32,6 +34,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.JSONException;
@@ -48,6 +52,7 @@ public class OMSServerImpl implements OMSServer, Registry {
     private KernelServerManager serverManager;
     private MicroServiceManager objectManager;
 
+    private static final int MAX_THREADS = 10;
     public static String OMS_IP_OPT = "--oms-ip";
     public static String OMS_PORT_OPT = "--oms-port";
     public static String SERVICE_PORT = "--service-port";
@@ -106,8 +111,41 @@ public class OMSServerImpl implements OMSServer, Registry {
     }
 
     @Override
-    public void registerKernelServer(ServerInfo info) throws RemoteException, NotBoundException {
-        serverManager.registerKernelServer(info);
+    public void registerKernelServer(final ServerInfo info)
+            throws RemoteException, NotBoundException {
+        Runnable onServerRemove =
+                new Runnable() {
+                    Notification serverUnReachable = new ServerUnreachable(info);
+
+                    @Override
+                    public void run() {
+                        ExecutorService executorService =
+                                Executors.newScheduledThreadPool(MAX_THREADS);
+                        ArrayList<MicroServiceID> microServiceIds =
+                                objectManager.getAllMicroServices();
+                        for (final MicroServiceID id : microServiceIds) {
+                            executorService.execute(
+                                    new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            try {
+                                                MicroService.notifyGroupPolicy(
+                                                        objectManager.getRootGroupId(id),
+                                                        serverUnReachable);
+                                            } catch (Exception e) {
+                                                /* Micro service could have been deleted. Continue with other microservice */
+                                                logger.warning(
+                                                        String.format(
+                                                                "Exception occurred : %s",
+                                                                e.getMessage()));
+                                            }
+                                        }
+                                    });
+                        }
+                        executorService.shutdown();
+                    }
+                };
+        serverManager.registerKernelServer(info, onServerRemove);
     }
 
     @Override

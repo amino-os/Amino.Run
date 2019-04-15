@@ -1,7 +1,6 @@
 package amino.run.policy.scalability;
 
 import amino.run.common.MicroServiceNotFoundException;
-import amino.run.common.MicroServiceReplicaNotFoundException;
 import amino.run.common.Utils;
 import amino.run.kernel.common.KernelObjectStub;
 import amino.run.kernel.common.KernelServerNotFoundException;
@@ -168,6 +167,7 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultPolicy {
         private Random random = new Random(System.currentTimeMillis());
         private Lock masterLock;
         private Map<String, String> nodeLabels;
+        private String region = null; // TODO: Region need to be removed when onCreate removes it
 
         @Override
         public void onCreate(String region, Policy.ServerPolicy server) throws RemoteException {
@@ -177,6 +177,7 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultPolicy {
             logger.info(String.format("Creating master and slave instance in region %s", region));
 
             try {
+                this.region = region;
                 List<InetSocketAddress> addressList = getAddressList(region);
                 if (addressList.size() < NUM_OF_REPLICAS) {
                     logger.warning(
@@ -215,10 +216,34 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultPolicy {
                 throw new RuntimeException("failed to create group: " + e, e);
             } catch (MicroServiceNotFoundException e) {
                 throw new RuntimeException("Failed to find microservice: " + e, e);
-            } catch (MicroServiceReplicaNotFoundException e) {
-                throw new RuntimeException("Failed to find microservice replica: " + e, e);
             } catch (KernelServerNotFoundException e) {
                 throw new RuntimeException("No matching servers found", e);
+            }
+        }
+
+        /**
+         * Replicates a new server policy and pin it to a kernel server
+         *
+         * @throws RemoteException
+         * @throws MicroServiceNotFoundException
+         * @throws KernelServerNotFoundException
+         */
+        @Override
+        protected void replicate()
+                throws RemoteException, MicroServiceNotFoundException,
+                        KernelServerNotFoundException {
+            List<InetSocketAddress> addressList = getAddressList(region);
+            ArrayList<Policy.ServerPolicy> servers = getServers();
+
+            List<InetSocketAddress> unavailable = new ArrayList<InetSocketAddress>();
+            for (Policy.ServerPolicy serverPolicy : servers) {
+                unavailable.add(((KernelObjectStub) serverPolicy).$__getHostname());
+            }
+
+            for (int i = unavailable.size(); i < NUM_OF_REPLICAS - 1; i++) {
+                InetSocketAddress dest = getAvailable(i + 1, addressList, unavailable);
+                ServerPolicy replica = (ServerPolicy) replicate(servers.get(0), dest, region);
+                replica.start();
             }
         }
 

@@ -1,8 +1,8 @@
 package amino.run.policy.scalability;
 
 import amino.run.common.MicroServiceNotFoundException;
-import amino.run.common.MicroServiceReplicaNotFoundException;
 import amino.run.kernel.common.KernelObjectStub;
+import amino.run.kernel.common.KernelServerNotFoundException;
 import amino.run.policy.DefaultPolicy;
 import amino.run.policy.Policy;
 import java.lang.annotation.ElementType;
@@ -157,6 +157,7 @@ public class LoadBalancedFrontendPolicy extends DefaultPolicy {
     public static class GroupPolicy extends DefaultPolicy.DefaultGroupPolicy {
         private static Logger logger = Logger.getLogger(GroupPolicy.class.getName());
         private int replicaCount = DEFAULT_REPLICA_COUNT; // we can read from config or annotations
+        private String region = null; // TODO: Region need to be removed when onCreate removes it
 
         @Override
         public void onCreate(String region, Policy.ServerPolicy server) throws RemoteException {
@@ -176,7 +177,7 @@ public class LoadBalancedFrontendPolicy extends DefaultPolicy {
             being created. Loop through all the kernel servers and replicate the
             microservices on them based on the static replica count */
             try {
-
+                this.region = region;
                 /* Find the current region and the kernel server on which this first instance of
                 microservice is being created. And try to replicate the
                 microservices in the same region(excluding this kernel server) */
@@ -216,8 +217,30 @@ public class LoadBalancedFrontendPolicy extends DefaultPolicy {
                         "Could not create new group policy because the oms is not available.", e);
             } catch (MicroServiceNotFoundException e) {
                 throw new Error("Failed to find microservice.", e);
-            } catch (MicroServiceReplicaNotFoundException e) {
-                throw new Error("Failed to find microservice replica.", e);
+            }
+        }
+
+        /**
+         * Replicates a new server policy and pin it to a kernel server
+         *
+         * @throws RemoteException
+         * @throws MicroServiceNotFoundException
+         * @throws KernelServerNotFoundException
+         */
+        @Override
+        protected void replicate()
+                throws RemoteException, MicroServiceNotFoundException,
+                        KernelServerNotFoundException {
+            List<InetSocketAddress> addressList = getAddressList(region);
+            ArrayList<Policy.ServerPolicy> servers = getServers();
+            for (Policy.ServerPolicy serverPolicy : servers) {
+                addressList.remove(((KernelObjectStub) serverPolicy).$__getHostname());
+            }
+
+            int numnodes = addressList.size();
+            int replicaNeed = replicaCount - servers.size();
+            for (int count = 0; count < numnodes && count < replicaNeed; count++) {
+                replicate(servers.get(0), addressList.get(count), region);
             }
         }
     }

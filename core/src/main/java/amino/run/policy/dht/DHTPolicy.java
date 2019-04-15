@@ -3,9 +3,11 @@ package amino.run.policy.dht;
 import amino.run.common.MicroServiceNotFoundException;
 import amino.run.common.MicroServiceReplicaNotFoundException;
 import amino.run.common.NoKernelServerFoundException;
+import amino.run.kernel.common.KernelServerNotFoundException;
 import amino.run.policy.DefaultPolicy;
 import amino.run.policy.Policy;
 import java.net.InetSocketAddress;
+import java.rmi.ConnectException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
@@ -58,7 +60,13 @@ public class DHTPolicy extends DefaultPolicy {
 
             DHTNode node = dhtChord.getResponsibleNode(key);
             logger.fine("Responsible node for: " + key + " is: " + node.id);
-            return node.server.onRPC(method, params);
+            try {
+                return node.server.onRPC(method, params);
+            } catch (ConnectException e) {
+                /* Chord has changed, fetch it again from group in the next request */
+                dhtChord = null;
+                throw e;
+            }
         }
     }
 
@@ -115,8 +123,6 @@ public class DHTPolicy extends DefaultPolicy {
                         "Could not create new group policy because the oms is not available.");
             } catch (MicroServiceNotFoundException e) {
                 throw new Error("Could not find MicroService Object to pin to " + newServerAddress);
-            } catch (MicroServiceReplicaNotFoundException e) {
-                throw new Error("Could not find replica to pin to " + newServerAddress);
             } catch (NoKernelServerFoundException e) {
                 throw new Error("No kernel servers were found");
             }
@@ -167,6 +173,39 @@ public class DHTPolicy extends DefaultPolicy {
 
             // TODO: this behavior may need to be changed since it always returns the first address.
             return addressList.get(0);
+        }
+
+        /**
+         * Replicates a new server policy and pin it to a kernel server
+         *
+         * @throws RemoteException
+         * @throws MicroServiceNotFoundException
+         * @throws KernelServerNotFoundException
+         */
+        @Override
+        protected void replicate()
+                throws RemoteException, MicroServiceNotFoundException,
+                        KernelServerNotFoundException {
+            ArrayList<String> regions = getRegions();
+            if (regions.isEmpty()) {
+                logger.warning(String.format("Kernel servers are not available"));
+                return;
+            }
+
+            // TODO: Already used region may be selected. Need to ensure unique region is selected
+            // along with region removal PR
+            ArrayList<Policy.ServerPolicy> servers = getServers();
+            for (int i = servers.size(); i < numOfShards; i++) {
+                String region = regions.get(i % regions.size());
+                try {
+                    replicate(servers.get(0), getAddress(region), region);
+                } catch (NoKernelServerFoundException e) {
+                    logger.warning(
+                            String.format(
+                                    "Kernel servers are not available in region:%s, Exception: %s",
+                                    region, e.getMessage()));
+                }
+            }
         }
     }
 }

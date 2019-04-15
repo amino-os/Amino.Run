@@ -145,9 +145,9 @@ public class MicroServiceManager {
     /**
      * Get all the microservices
      *
-     * @throws java.rmi.RemoteException
+     * @return List of Microservice Ids
      */
-    public ArrayList<MicroServiceID> getAllMicroServices() throws RemoteException {
+    public ArrayList<MicroServiceID> getAllMicroServices() {
         ArrayList<MicroServiceID> arr = new ArrayList<MicroServiceID>(microServices.keySet());
         return arr;
     }

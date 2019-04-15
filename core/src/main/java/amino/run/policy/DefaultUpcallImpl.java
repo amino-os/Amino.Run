@@ -1,7 +1,7 @@
 package amino.run.policy;
 
 import amino.run.common.MicroServiceNotFoundException;
-import amino.run.common.MicroServiceReplicaNotFoundException;
+import amino.run.kernel.common.KernelServerNotFoundException;
 import amino.run.policy.transaction.IllegalComponentException;
 import amino.run.policy.transaction.TransactionContext;
 import amino.run.policy.transaction.TwoPCClient;
@@ -79,8 +79,7 @@ public abstract class DefaultUpcallImpl extends Library {
         /* This function is here just to generate the stub for this function in all server policies */
         @Override
         public void pin_to_server(InetSocketAddress server)
-                throws RemoteException, MicroServiceNotFoundException,
-                        MicroServiceReplicaNotFoundException {
+                throws RemoteException, MicroServiceNotFoundException {
             super.pin_to_server(server);
         }
 
@@ -91,6 +90,19 @@ public abstract class DefaultUpcallImpl extends Library {
     }
 
     public abstract static class GroupPolicy extends GroupPolicyLibrary {
+
+        /**
+         * Following abstract methods need to be implemented in the DM group policy to override the
+         * default behavior. Stub methods are not generated for them. These methods are called
+         * within group policy(not exposed outside)
+         */
+        abstract void addServer(Policy.ServerPolicy server);
+
+        abstract void removeServer(Policy.ServerPolicy server);
+
+        abstract void replicate()
+                throws RemoteException, MicroServiceNotFoundException,
+                        KernelServerNotFoundException;
 
         /*
          * INTERNAL FUNCTIONS (Used by MicroService runtime)

@@ -472,6 +472,7 @@ public class SimpleDMIntegrationTest {
     public void tearDown() throws Exception {
         if (microServiceId != null) {
             registry.delete(microServiceId);
+            microServiceId = null;
         }
     }
 

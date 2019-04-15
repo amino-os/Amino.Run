@@ -23,6 +23,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -33,6 +34,7 @@ public class ScaleUpFrontendDMIntegTest {
     private static final int PARALLEL_THREAD_COUNT = 5;
     private static final String regionName = "IND";
     Registry registry;
+    MicroServiceID microServiceId = null;
 
     @BeforeClass
     public static void bootstrap() throws Exception {
@@ -51,7 +53,7 @@ public class ScaleUpFrontendDMIntegTest {
     }
 
     private void runTest(MicroServiceSpec spec) throws Exception {
-        MicroServiceID microServiceId = registry.create(spec.toString());
+        microServiceId = registry.create(spec.toString());
         final KVStore store = (KVStore) registry.acquireStub(microServiceId);
         final String key = "k";
         final String value = "v";
@@ -137,6 +139,14 @@ public class ScaleUpFrontendDMIntegTest {
         File file = IntegrationTestBase.getResourceFile("specs/complex-dm/ScaleUpFrontend.yaml");
         MicroServiceSpec spec = IntegrationTestBase.readMicroServiceSpec(file);
         runTest(spec);
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        if (microServiceId != null) {
+            registry.delete(microServiceId);
+            microServiceId = null;
+        }
     }
 
     @AfterClass

@@ -17,6 +17,7 @@ import amino.run.kernel.server.KernelServerImpl;
 import java.io.File;
 import java.net.InetSocketAddress;
 import java.rmi.registry.LocateRegistry;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
@@ -25,6 +26,7 @@ import org.junit.Test;
 
 public class LoadBalancedMasterSlaveDMIntegTest {
     Registry registry;
+    MicroServiceID microServiceId = null;
 
     @BeforeClass
     public static void bootstrap() throws Exception {
@@ -40,7 +42,7 @@ public class LoadBalancedMasterSlaveDMIntegTest {
     }
 
     private void runTest(MicroServiceSpec spec) throws Exception {
-        MicroServiceID microServiceId = registry.create(spec.toString());
+        microServiceId = registry.create(spec.toString());
         KVStore store = (KVStore) registry.acquireStub(microServiceId);
         for (int i = 0; i < 10; i++) {
             String key = "k1_" + i;
@@ -60,6 +62,14 @@ public class LoadBalancedMasterSlaveDMIntegTest {
         File file = getResourceFile("specs/complex-dm/LoadBalanceMasterSlave.yaml");
         MicroServiceSpec spec = readMicroServiceSpec(file);
         runTest(spec);
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        if (microServiceId != null) {
+            registry.delete(microServiceId);
+            microServiceId = null;
+        }
     }
 
     @AfterClass

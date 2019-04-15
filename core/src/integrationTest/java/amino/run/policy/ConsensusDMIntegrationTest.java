@@ -11,6 +11,7 @@ import amino.run.kernel.server.KernelServerImpl;
 import java.io.File;
 import java.net.InetSocketAddress;
 import java.rmi.registry.LocateRegistry;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
@@ -23,6 +24,7 @@ import org.junit.Test;
  */
 public class ConsensusDMIntegrationTest {
     Registry registry;
+    MicroServiceID microServiceId = null;
 
     @BeforeClass
     public static void bootstrap() throws Exception {
@@ -38,7 +40,7 @@ public class ConsensusDMIntegrationTest {
     }
 
     private void runTest(MicroServiceSpec spec) throws Exception {
-        MicroServiceID microServiceId = registry.create(spec.toString());
+        microServiceId = registry.create(spec.toString());
         sleep(5000);
         KVStore store = (KVStore) registry.acquireStub(microServiceId);
         for (int i = 0; i < 10; i++) {
@@ -61,6 +63,14 @@ public class ConsensusDMIntegrationTest {
         File file = getResourceFile("specs/complex-dm/Consensus.yaml");
         MicroServiceSpec spec = readMicroServiceSpec(file);
         runTest(spec);
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        if (microServiceId != null) {
+            registry.delete(microServiceId);
+            microServiceId = null;
+        }
     }
 
     @AfterClass

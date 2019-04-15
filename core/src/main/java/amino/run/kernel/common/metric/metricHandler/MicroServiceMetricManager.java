@@ -4,6 +4,7 @@ import amino.run.app.MicroServiceSpec;
 import amino.run.common.ReplicaID;
 import amino.run.kernel.common.GlobalKernelReferences;
 import amino.run.kernel.common.metric.Metric;
+import amino.run.kernel.common.metric.MetricManager;
 import amino.run.kernel.common.metric.metricHandler.RPCMetric.ByteInHandler;
 import amino.run.kernel.common.metric.metricHandler.RPCMetric.ByteOutHandler;
 import amino.run.kernel.common.metric.metricHandler.RPCMetric.CountHandler;
@@ -25,7 +26,7 @@ import java.util.logging.Logger;
  *
  * @author AmitRoushan
  */
-public class MicroServiceMetricManager implements Serializable {
+public class MicroServiceMetricManager implements Serializable, MetricManager {
     private static Logger logger = Logger.getLogger(MicroServiceMetricManager.class.getName());
     /** Default policy instance for handing over normal RPC call after metric collection */
     private transient DefaultPolicy.DefaultServerPolicy policy;
@@ -172,11 +173,7 @@ public class MicroServiceMetricManager implements Serializable {
         return policy;
     }
 
-    /**
-     * Return metric schema of all handlers managed by metric manager
-     *
-     * @return
-     */
+    @Override
     public ArrayList<Schema> getSchemas() {
         ArrayList<Schema> schemas = new ArrayList<Schema>();
 
@@ -193,11 +190,7 @@ public class MicroServiceMetricManager implements Serializable {
         return schemas;
     }
 
-    /**
-     * Retrieve and return metric managed in metric handlers
-     *
-     * @return list of metrics
-     */
+    @Override
     public ArrayList<Metric> getMetrics() {
         ArrayList<Metric> metrics = new ArrayList<Metric>();
 
@@ -215,21 +208,18 @@ public class MicroServiceMetricManager implements Serializable {
         return metrics;
     }
 
-    /**
-     * Return metric retrieval frequency
-     *
-     * @return
-     */
-    public int getMetricUpdateFrequency() {
+    @Override
+    public long getMetricUpdateFrequency() {
         return metricUpdateFrequency;
     }
 
-    /**
-     * Return tags which should be supplied on each metric
-     *
-     * @return
-     */
+    @Override
     public HashMap<String, String> getLabels() {
         return labels;
+    }
+
+    @Override
+    public String getID() {
+        return policy.getReplicaId().getID().toString();
     }
 }

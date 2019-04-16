@@ -16,6 +16,12 @@ Amino, is an open source, multilanguage development platform and distributed run
 
 .. toctree::
    :maxdepth: 2
+   :caption: Documentation
+   
+   documentation.md
+
+.. toctree::
+   :maxdepth: 2
    :caption: Amino Run
    
    design-docs/amino-run.md

@@ -8,7 +8,7 @@ import org.apache.harmony.rmi.compiler.RmicUtil;
 
 public class PolicyStub extends Stub {
 
-    public PolicyStub(Class<?> cls) throws ClassNotFoundException {
+    public PolicyStub(Class<?> cls) {
         super(cls);
     }
 
@@ -23,7 +23,7 @@ public class PolicyStub extends Stub {
             for (Method m : ancestorClass.getDeclaredMethods()) {
                 // Add public methods to methods vector
                 if (Modifier.isPublic(m.getModifiers())) {
-                    ms.add(new MethodStub((Method) m));
+                    ms.add(new MethodStub(m));
                 }
             }
 
@@ -46,7 +46,7 @@ public class PolicyStub extends Stub {
         Class<?> dmClass = stubClass;
         for (Method m : dmClass.getDeclaredMethods()) {
             if (Modifier.isPublic(m.getModifiers()) && m.getName().equals("onRPC")) {
-                ms.add(new MethodStub((Method) m));
+                ms.add(new MethodStub(m));
             }
         }
         return ms;
@@ -116,6 +116,8 @@ public class PolicyStub extends Stub {
 
     @Override
     public String getStubAdditionalMethods() {
+        Class<?> ancestorClass = stubClass;
+        boolean isGroupPolicy = ancestorClass.getSimpleName().equals("GroupPolicy");
         StringBuilder buffer = new StringBuilder();
 
         /* Implementation for getKernelOID */
@@ -158,7 +160,10 @@ public class PolicyStub extends Stub {
                         + EOLN
                         + EOLN);
 
-        /* Implementation for setNextClientPolicy */
+        /* Implementation for setNextClientPolicy
+         * This is not needed for group policy but it is retained as group policy implements
+         * the same KernelObjectStub that requires setNextClientPolicy */
+        // TODO: Remove setNextClientPolicy for group policy if above restriction is eliminated.
         buffer.append(
                 indenter.indent()
                         + "public void $__setNextClientPolicy(Policy.ClientPolicy clientPolicy) {"
@@ -172,32 +177,10 @@ public class PolicyStub extends Stub {
                         + EOLN
                         + EOLN);
 
-        /* Implementation for makeRPC */
-        buffer.append(
-                indenter.indent()
-                        + "public Object $__makeKernelRPC(java.lang.String method, java.util.ArrayList<Object> params) throws java.rmi.RemoteException, java.lang.Exception {"
-                        + EOLN);
-
-        buffer.append(indenter.tIncrease() + "if ($__nextClientPolicy != null) {" + EOLN);
-        buffer.append(
-                indenter.tIncrease(2) + "return $__nextClientPolicy.onRPC(method, params);" + EOLN);
-        buffer.append(indenter.tIncrease() + "}" + EOLN + EOLN);
-        buffer.append(
-                indenter.tIncrease()
-                        + "amino.run.kernel.common.KernelRPC rpc = new amino.run.kernel.common.KernelRPC($__oid, method, params);"
-                        + EOLN);
-        buffer.append(indenter.tIncrease() + "try {" + EOLN);
-        buffer.append(
-                indenter.tIncrease(2)
-                        + "return amino.run.kernel.common.GlobalKernelReferences.nodeServer.getKernelClient().makeKernelRPC(this, rpc);"
-                        + EOLN);
-        buffer.append(
-                indenter.tIncrease()
-                        + "} catch (amino.run.kernel.common.KernelObjectNotFoundException e) {"
-                        + EOLN);
-        buffer.append(indenter.tIncrease(2) + "throw new java.rmi.RemoteException();" + EOLN);
-        buffer.append(indenter.tIncrease() + "}" + EOLN);
-        buffer.append(indenter.indent() + "}" + EOLN + EOLN);
+        if (!isGroupPolicy) {
+            /* Implementation for makeRPC */
+            addServerPolicyContent(buffer);
+        }
 
         /* Implementation for makeKernelDMRPC */
         buffer.append(
@@ -221,34 +204,6 @@ public class PolicyStub extends Stub {
         buffer.append(indenter.tIncrease(2) + "throw new java.rmi.RemoteException();" + EOLN);
         buffer.append(indenter.tIncrease() + "}" + EOLN);
         buffer.append(indenter.indent() + "}" + EOLN + EOLN);
-
-        /* Override $__initialize */
-        /*
-        buffer.append(indenter.indent() + "public void $__initialize(java.lang.String $param_String_1, java.util.ArrayList $param_ArrayList_2) { " + EOLN);
-        buffer.append(indenter.tIncrease() + "java.util.ArrayList<Object> $__params = new java.util.ArrayList<Object>();" + EOLN);
-        buffer.append(indenter.tIncrease() + "String $__method = \"$__initialize\";" + EOLN);
-        buffer.append(indenter.tIncrease() + "$__params.add($param_String_1);" + EOLN);
-        buffer.append(indenter.tIncrease() + "$__params.add($param_ArrayList_2);" + EOLN);
-        buffer.append(indenter.tIncrease() + "try {" + EOLN);
-        buffer.append(indenter.tIncrease(2) + "$__makeKernelRPC($__method, $__params);" + EOLN);
-        buffer.append(indenter.tIncrease() + "} catch (Exception e) {" +EOLN);
-        buffer.append(indenter.tIncrease(2) + "e.printStackTrace();" + EOLN);
-        buffer.append(indenter.tIncrease() + "}" +EOLN);
-        buffer.append(indenter.indent() + "}" + EOLN + EOLN);
-        */
-        /* Override the other $__initialize */
-        /*
-        buffer.append(indenter.indent() + "public void $__initialize(amino.run.common.AppObject $param_AppObject_1) { " + EOLN);
-        buffer.append(indenter.tIncrease() + "java.util.ArrayList<Object> $__params = new java.util.ArrayList<Object>();" + EOLN);
-        buffer.append(indenter.tIncrease() + "String $__method = \"$__initialize\";" + EOLN);
-        buffer.append(indenter.tIncrease() + "$__params.add($param_AppObject_1);" + EOLN);
-        buffer.append(indenter.tIncrease() + "try {" + EOLN);
-        buffer.append(indenter.tIncrease(2) + "$__makeKernelRPC($__method, $__params);" + EOLN);
-        buffer.append(indenter.tIncrease() + "} catch (Exception e) {" +EOLN);
-        buffer.append(indenter.tIncrease(2) + "e.printStackTrace();" + EOLN);
-        buffer.append(indenter.tIncrease() + "}" +EOLN);
-        buffer.append(indenter.indent() + "}" + EOLN + EOLN);
-        */
 
         /* Override equals  */
         buffer.append(indenter.indent() + "@Override" + EOLN);
@@ -369,5 +324,34 @@ public class PolicyStub extends Stub {
         } else {
             return "$__result = $__makeKernelRPC($__method, $__params);";
         }
+    }
+
+    private void addServerPolicyContent(StringBuilder buffer) {
+        /* Implementation for makeRPC */
+        buffer.append(
+                indenter.indent()
+                        + "public Object $__makeKernelRPC(java.lang.String method, java.util.ArrayList<Object> params) throws java.rmi.RemoteException, java.lang.Exception {"
+                        + EOLN);
+
+        buffer.append(indenter.tIncrease() + "if ($__nextClientPolicy != null) {" + EOLN);
+        buffer.append(
+                indenter.tIncrease(2) + "return $__nextClientPolicy.onRPC(method, params);" + EOLN);
+        buffer.append(indenter.tIncrease() + "}" + EOLN + EOLN);
+        buffer.append(
+                indenter.tIncrease()
+                        + "amino.run.kernel.common.KernelRPC rpc = new amino.run.kernel.common.KernelRPC($__oid, method, params);"
+                        + EOLN);
+        buffer.append(indenter.tIncrease() + "try {" + EOLN);
+        buffer.append(
+                indenter.tIncrease(2)
+                        + "return amino.run.kernel.common.GlobalKernelReferences.nodeServer.getKernelClient().makeKernelRPC(this, rpc);"
+                        + EOLN);
+        buffer.append(
+                indenter.tIncrease()
+                        + "} catch (amino.run.kernel.common.KernelObjectNotFoundException e) {"
+                        + EOLN);
+        buffer.append(indenter.tIncrease(2) + "throw new java.rmi.RemoteException();" + EOLN);
+        buffer.append(indenter.tIncrease() + "}" + EOLN);
+        buffer.append(indenter.indent() + "}" + EOLN + EOLN);
     }
 }

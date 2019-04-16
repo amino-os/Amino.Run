@@ -14,6 +14,7 @@ import amino.run.common.MicroServiceID;
 import amino.run.common.MicroServiceNotFoundException;
 import amino.run.common.MicroServiceReplicaNotFoundException;
 import amino.run.common.MultiDMConstructionHelper;
+import amino.run.common.Notification;
 import amino.run.common.ReplicaID;
 import amino.run.common.Utils;
 import amino.run.compiler.GlobalStubConstants;
@@ -412,6 +413,19 @@ public class MicroService {
      */
     public static void deleteGroupPolicy(KernelOID kernelOid) {
         KernelObjectFactory.delete(kernelOid);
+    }
+
+    /**
+     * Notify group policy about the event
+     *
+     * @param kernelOid
+     * @param notification
+     * @throws KernelObjectNotFoundException
+     * @throws RemoteException
+     */
+    public static void notifyGroupPolicy(KernelOID kernelOid, Notification notification)
+            throws KernelObjectNotFoundException, RemoteException {
+        GlobalKernelReferences.nodeServer.notifyKernelObject(kernelOid, notification);
     }
 
     /* Returns a pointer to the given MicroService Object */

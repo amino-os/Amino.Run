@@ -2,6 +2,7 @@ package amino.run.policy;
 
 import amino.run.common.MicroServiceNotFoundException;
 import amino.run.common.MicroServiceReplicaNotFoundException;
+import amino.run.common.Notification;
 import amino.run.common.ReplicaID;
 import amino.run.kernel.common.KernelObjectStub;
 import amino.run.kernel.common.metric.metricHandler.MicroServiceMetricManager;
@@ -36,6 +37,9 @@ public class DefaultPolicy extends Policy {
 
         @Override
         public void onMembershipChange() {}
+
+        @Override
+        public void onNotification(Notification notification) throws RemoteException {}
 
         @Override
         public void onCreate(GroupPolicy group) {
@@ -131,6 +135,9 @@ public class DefaultPolicy extends Policy {
 
             addServer(server);
         }
+
+        @Override
+        public void onNotification(Notification notification) throws RemoteException {}
 
         @Override
         public void onDestroy() throws RemoteException {

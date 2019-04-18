@@ -1,19 +1,19 @@
-# Sapphire Overview
+# Amino Run Overview
 
-![](../images/SapphireOverview.png)
+![](../images/AminoRunOverview.png)
 
-### Sapphire Object
-Sapphire object is the base management unit in Sapphire. In above diagram, each circle represents one Sapphire object. The dots inside the circle (i.e. the Sapphire object) represents normal Java objects. One Sapphire object may contain a set of Java objects. The solid arrow lines between dots are *local* method invocations between Java objects. The dashed arrow lines between circles are *remote* method invocations between Sapphire objects. Methods on normal Java objects can only be invoked *locally* by objects reside on the same host. Sapphire objects however may have *remote methods* which can be invoked by objects reside on different hosts. 
+### Amino Run
+Amino Run is the base management unit in Amino. In above diagram, each circle represents one Amino Run. The dots inside the circle (i.e. the Amino Run) represents normal Java objects. One Amino Run may contain a set of Java objects. The solid arrow lines between dots are *local* method invocations between Java objects. The dashed arrow lines between circles are *remote* method invocations between Amino Run. Methods on normal Java objects can only be invoked *locally* by objects reside on the same host. Amino Run however may have *remote methods* which can be invoked by objects reside on different hosts. 
 
 Deployment Kernel has the capability to move a Sapphire object from one host to another. Behind the scene, Deployment Kernel will serialize the whole Sapphire object, including all Java objects belong to the Sapphire object, on one end, ships the bytes to the destination host, and then do the deserialization there.
 
-Sapphire objects are created by applications with static helper method `Sapphire.new_()`. To invoke a method on a Sapphire object, applications have to first get a reference to the Sapphire object from OMS Server. 
+Amino Run are created by applications with static helper method `Sapphire.new_()`. To invoke a method on a Sapphire object, applications have to first get a reference to the Sapphire object from OMS Server. 
 
 ### OMS
-OMS, Object Management Service, keeps track of the location of all Sapphire objects. Unlike normal Java objects which can be created by Java `new` keyword, Sapphire object must be created with a special Sapphire helper method `Sapphire.new_`. Upon Sapphire object creation, method `Sapphire.new_` will generate a globally unique ID for the Sapphire object, and register the object in OMS. OMS provides API to search Sapphire objects. Given a Sapphire object ID, OMS can tell the IP of the host on which the Sapphire object runs. Whenever a Sapphire object is moved or deleted, OMS will be updated accordingly.
+OMS, Object Management Service, keeps track of the location of all Amino Run. Unlike normal Java objects which can be created by Java `new` keyword, Sapphire object must be created with a special Sapphire helper method `Sapphire.new_`. Upon Sapphire object creation, method `Sapphire.new_` will generate a globally unique ID for the Sapphire object, and register the object in OMS. OMS provides API to search Amino Run. Given a Sapphire object ID, OMS can tell the IP of the host on which the Sapphire object runs. Whenever a Sapphire object is moved or deleted, OMS will be updated accordingly.
 
 ### Kernel Server
-Kernel Server provides runtime environment for Sapphire objects. Each host runs a Kernel Server instance. Kernel Server exposes a set of *remote* API which can be invoked remotely. Sapphire assumes that any Kernel Server can invoke the *remote* API on any other Kernel Server regardless where the Kernel Server lives.
+Kernel Server provides runtime environment for Amino Run. Each host runs a Kernel Server instance. Kernel Server exposes a set of *remote* API which can be invoked remotely. Sapphire assumes that any Kernel Server can invoke the *remote* API on any other Kernel Server regardless where the Kernel Server lives.
 
 ### DM
 Every DM, Deployment Manager, has three components: a proxy, a instance manager, and a coordinator. When users create Sapphire object, he/she can optionally associate a DM to the Sapphire object. Not all Sapphire object has DMs. But if a DM is specified for a Sapphire object, then during the creation of the Sapphire object, helper method `Sapphire.new_` will inject codes into the `stub` of the Sapphire object, in which case any method invocation on the Sapphire object will first be processed by the `proxy`, `instance manager` and the `coordinator` of the DM before reach the actual Sapphire object. Each DM provides one specific functionality. The Sapphire paper listed 26 DMs. 
@@ -82,7 +82,7 @@ Registry registry = LocateRegistry.createRegistry(port);
 registry.rebind("SapphireOMS", omsStub);
 ```
 
-Client side lookups remote object `OMSServer` by its name, i.e. *SapphireOMS*, and RMI registry returns a *stub* of `OMSServer`. Client then uses OMS server to look up Sapphire objects. 
+Client side lookups remote object `OMSServer` by its name, i.e. *SapphireOMS*, and RMI registry returns a *stub* of `OMSServer`. Client then uses OMS server to look up Amino Run. 
 
 ```java
 // Look up SapphireOMS

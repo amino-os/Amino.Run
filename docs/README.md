@@ -1,6 +1,6 @@
-# What is DCAP?
+# What is Amino?
 
-DCAP, the Distributed Cloud Application Platform, is an open source,
+Amino, the Distributed Cloud Application Platform, is an open source,
 multilanguage development platform and distributed runtime environment
 designed to make distributed applications much easier to design,
 develop and operate.  It supports most commonly used programming
@@ -18,19 +18,19 @@ concurrency, remote invocation, synchronization, fault tolerance,
 scalability, sharding, code and data migration, leader election, load
 balancing, observability, fault diagnosis and many more.
 
-DCAP is based on, and extends, several years of research work done at
+Amino is based on, and extends, several years of research work done at
 the [University Of Washington Computer Systems
 Lab](https://syslab.cs.washington.edu/research/) in
 Seattle.<sup>1,2,3,4,5</sup> 
 
-DCAP is alpha software, and not yet
+Amino is alpha software, and not yet
 suitable for production use.  We have a well-funded development team
 actively working on getting it to production readiness, and actively
 support contributions from the open source community.
 
-# Why we created DCAP
+# Why we created Amino?
 
-In a nutshell, we created DCAP to make design, development and operation of
+In a nutshell, we created Amino to make design, development and operation of
 reliable, fast, distributed applications quicker, easier and more fun.
 
 In summary, our approach is to:
@@ -62,10 +62,10 @@ In summary, our approach is to:
    2. On (public or private) cloud servers
    3. On mobile devices (Android, iOS)
    4. On edge devices
-   5. Even have DCAP move parts of your application around automatically at runtime
+   5. Even have Amino move parts of your application around automatically at runtime
       to optimize performance, reliability or battery power consumption.
 
-Over time DCAP will include a runtime process manager (Sapphire), a
+Over time Amino will include a runtime process manager (Sapphire), a
 reactive distributed memory manager (Diamond), a consistent
 transactional storage system (TAPIR) and a privacy and security framework
 (Agate). Initial focus is on making the runtime process manager
@@ -82,7 +82,7 @@ production-ready.
 
 ## Other Important Links
 * [Getting started](docs/GettingStarted.md)
-* [DCAP Planning](https://github.com/Huawei-PaaS/DCAP-Sapphire/wiki/DCAP-Planning)
+* [Amino Planning](https://github.com/Huawei-PaaS/DCAP-Sapphire/wiki/DCAP-Planning)
 * [Meetings](https://github.com/Huawei-PaaS/DCAP-Sapphire/wiki/Meetings)
 * Huawei Repository: http://rnd-github-usa-g.huawei.com/SeattleCloudBU/DCAP-Sapphire
 

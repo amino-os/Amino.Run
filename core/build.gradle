@@ -199,6 +199,10 @@ clean {
     }
 }
 
+jar {
+    baseName project.property('mavenArtifactId')
+}
+
 compileJava.dependsOn checkGraalVmVersion
 compileTestJava {
     dependsOn compileStubsJava

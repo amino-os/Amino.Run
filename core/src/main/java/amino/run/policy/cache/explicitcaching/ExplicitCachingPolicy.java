@@ -46,11 +46,14 @@ public class ExplicitCachingPolicy extends DefaultPolicy {
 
         @Override
         public Object onRPC(String method, ArrayList<Object> params) throws Exception {
+            // Extract app method name and params from input parameters
+            AppContext context = extractAppContext(method, params);
+
             // All the operations between pull/push calls goes against local cache
-            if (this.isPull(method)) {
+            if (this.isPull(context.getAppMethod())) {
                 this.pull();
                 return null;
-            } else if (this.isPush(method)) {
+            } else if (this.isPush(context.getAppMethod())) {
                 this.push();
                 return null;
             } else if (this.cachedCopy != null) {

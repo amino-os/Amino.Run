@@ -57,13 +57,16 @@ public class OptConcurrentTransactPolicy extends DefaultPolicy {
 
         @Override
         public Object onRPC(String method, ArrayList<Object> params) throws Exception {
-            if (isStartTransaction(method)) {
-                this.startTransaction(params);
+            // Get app method name and params
+            AppContext context = extractAppContext(method, params);
+
+            if (isStartTransaction(context.getAppMethod())) {
+                this.startTransaction(context.getAppParams());
                 return null;
-            } else if (isCommitTransaction(method)) {
+            } else if (isCommitTransaction(context.getAppMethod())) {
                 this.commitTransaction();
                 return null;
-            } else if (isRollbackTransaction(method)) {
+            } else if (isRollbackTransaction(context.getAppMethod())) {
                 this.rollbackTransaction();
                 return null;
             } else { // Normal method invocation

@@ -25,7 +25,10 @@ public class WriteThroughCachePolicy extends DefaultPolicy {
         public Object onRPC(String method, ArrayList<Object> params) throws Exception {
             Object ret = null;
 
-            if (isMethodMutable(method, params)) {
+            // Extract app method name and params from input parameters
+            AppContext context = extractAppContext(method, params);
+
+            if (isMethodMutable(context.getAppMethod(), context.getAppParams())) {
                 ret = getServer().onRPC(method, params);
                 cachedObject = ((ServerPolicy) getServer()).getObject();
             } else {

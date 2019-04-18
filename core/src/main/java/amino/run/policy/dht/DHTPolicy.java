@@ -48,7 +48,10 @@ public class DHTPolicy extends DefaultPolicy {
 
         @Override
         public Object onRPC(String method, ArrayList<Object> params) throws Exception {
-            DHTKey key = new DHTKey(params.get(0).toString());
+            // Get app method name and params
+            AppContext context = extractAppContext(method, params);
+
+            DHTKey key = new DHTKey(context.getAppParams().get(0).toString());
             if (dhtChord == null) {
                 dhtChord = ((GroupPolicy) getGroup()).getChord();
             }

@@ -292,6 +292,7 @@ public class MicroService {
             /* Link everything together */
             // TODO: client is unncessary for outer policies of a replica.
             client.onCreate(groupPolicyStub);
+            client.setClientDepth(processedPolicies.size());
 
             // Note that subList is non serializable; hence, the new list creation.
             List<String> nextPolicyNames = new ArrayList<String>(policyNamesToCreate);

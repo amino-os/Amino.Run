@@ -37,11 +37,69 @@ import java.util.logging.Logger;
 import org.apache.harmony.rmi.common.RMIUtil;
 
 public abstract class Library implements Upcalls {
+    /**
+     * AppContext is a placeholder class to hold app method name and params. Instance of this class
+     * is returned from {@link amino.run.policy.Library.ClientPolicyLibrary#extractAppContext}
+     */
+    public static class AppContext {
+        private String appMethod;
+        private ArrayList<Object> appParams;
+
+        public AppContext(String appMethod, ArrayList<Object> appParams) {
+            this.appMethod = appMethod;
+            this.appParams = appParams;
+        }
+
+        public String getAppMethod() {
+            return appMethod;
+        }
+
+        public ArrayList<Object> getAppParams() {
+            return appParams;
+        }
+    }
+
     public abstract static class ClientPolicyLibrary implements ClientUpcalls {
+        /* Depth is set to 0 for the first DM client, 1 for second DM client and so on for the rest
+        of the DM clients along the complete chain */
+        private int clientDepth = 0;
+
+        /*
+         * API FOR CLIENT POLICIES
+         */
+
+        /**
+         * Extract App method name and the parameters from the received param stack
+         *
+         * @param method
+         * @param params
+         * @return AppContext
+         */
+        public AppContext extractAppContext(String method, ArrayList<Object> params) {
+            String appMethod = method;
+            ArrayList<Object> appParams = params;
+
+            /* Received params stack will be in nested form as shown below :
+             * [methodName, ArrayList<object> = [methodName, ArrayList<Object> = [methodName, ArrayList<Object> ... ]]]
+             * Inner most method name and params are that of app ones. Parse and fetch them */
+            int depth = clientDepth;
+            while (depth != 0) {
+                assert (params.size() == 2);
+                appMethod = (String) params.get(0);
+                appParams = (ArrayList<Object>) params.get(1);
+                params = appParams;
+                depth--;
+            }
+
+            return new AppContext(appMethod, appParams);
+        }
 
         /*
          * INTERNAL FUNCTIONS (Used by runtime system)
          */
+        public void setClientDepth(int clientDepth) {
+            this.clientDepth = clientDepth;
+        }
     }
 
     public abstract static class ServerPolicyLibrary implements ServerUpcalls {

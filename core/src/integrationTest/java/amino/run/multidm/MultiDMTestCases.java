@@ -16,7 +16,6 @@ import java.rmi.registry.LocateRegistry;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.logging.Logger;
-import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
@@ -46,7 +45,6 @@ public class MultiDMTestCases {
     final String CONSENSUS = "ConsensusRSM";
     final int DHT_SHARDS = 2;
     Registry registry;
-    MicroServiceID microServiceId = null;
     private static String regionName = "";
     static Logger logger = java.util.logging.Logger.getLogger(MultiDMTestCases.class.getName());
 
@@ -65,22 +63,28 @@ public class MultiDMTestCases {
     }
 
     private void runTest(String... dmNames) throws Exception {
-        MicroServiceSpec spec = createMultiDMTestSpec(dmNames);
-        microServiceId = registry.create(spec.toString());
-        KVStore store = (KVStore) registry.acquireStub(microServiceId);
+        MicroServiceID microServiceId = null;
+        try {
+            MicroServiceSpec spec = createMultiDMTestSpec(dmNames);
+            microServiceId = registry.create(spec.toString());
+            KVStore store = (KVStore) registry.acquireStub(microServiceId);
 
-        // consensus DM needs some time to elect the leader other wise function call will fail
-        if (spec.getName().contains(CONSENSUS)) {
-            Thread.sleep(5000);
-        }
+            // consensus DM needs some time to elect the leader other wise function call will fail
+            if (spec.getName().contains(CONSENSUS)) {
+                Thread.sleep(5000);
+            }
 
-        for (int i = 0; i < 10; i++) {
-            String key = "k1_" + i;
-            String value = "v1_" + i;
-            store.set(key, value);
-            String returnValue = (String) store.get(key);
-            Assert.assertEquals(
-                    "Expected: " + value + "Actual: " + returnValue, value, returnValue);
+            for (int i = 0; i < 10; i++) {
+                String key = "k1_" + i;
+                String value = "v1_" + i;
+                store.set(key, value);
+                String returnValue = (String) store.get(key);
+                Assert.assertEquals(value, returnValue);
+            }
+        } finally {
+            if (microServiceId != null) {
+                registry.delete(microServiceId);
+            }
         }
     }
 
@@ -293,14 +297,6 @@ public class MultiDMTestCases {
     @Test
     public void testConsensusRSMDHTAtLeastOnceRPC() throws Exception {
         runTest("ConsensusRSM", "DHT", "AtLeastOnceRPC");
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        if (microServiceId != null) {
-            registry.delete(microServiceId);
-            microServiceId = null;
-        }
     }
 
     @AfterClass

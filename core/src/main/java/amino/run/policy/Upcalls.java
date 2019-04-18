@@ -1,5 +1,6 @@
 package amino.run.policy;
 
+import amino.run.common.Notification;
 import java.io.Serializable;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -124,7 +125,23 @@ public interface Upcalls {
          * this is probably not actually invoked by the DK, but rather by the GroupPolicy. So it
          * should be moved to a different interface than this one.
          */
+        @Deprecated
         void onMembershipChange();
+
+        /**
+         * Event handler to receive notifications. Notifications include,
+         *
+         * <p><b>Membership Change Notification from respective DM's group policy upon
+         * addition/removal of a replica. Locally cached list of replicas(if maintained any) can be
+         * refreshed upon reception of this notification. Also can initialize its data structures
+         * maintained w.r.t to other replicas of the microservice. </b> <br>
+         * <b>Notification from Amino.Run kernel about the events which require handling at replica.
+         * </b>
+         *
+         * @param notification
+         * @throws RemoteException
+         */
+        void onNotification(Notification notification) throws RemoteException;
     }
 
     interface GroupUpcalls extends Serializable {
@@ -170,5 +187,14 @@ public interface Upcalls {
         // void onFailure(ServerPolicy server) throws RemoteException;
 
         Policy.ServerPolicy onRefRequest() throws RemoteException;
+
+        /**
+         * Event handler to receive notifications. Notification from Amino.Run kernel about the
+         * events which require handling at group policy.
+         *
+         * @param notification
+         * @throws RemoteException
+         */
+        void onNotification(Notification notification) throws RemoteException;
     }
 }

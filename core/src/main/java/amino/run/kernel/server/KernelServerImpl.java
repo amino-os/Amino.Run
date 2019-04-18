@@ -7,6 +7,7 @@ import amino.run.common.ArgumentParser.KernelServerArgumentParser;
 import amino.run.common.MicroServiceCreationException;
 import amino.run.common.MicroServiceNotFoundException;
 import amino.run.common.MicroServiceReplicaNotFoundException;
+import amino.run.common.Notification;
 import amino.run.kernel.client.KernelClient;
 import amino.run.kernel.common.*;
 import amino.run.kernel.common.metric.KernelMetricClient;
@@ -313,6 +314,25 @@ public class KernelServerImpl implements KernelServer {
 
         oms.unRegisterKernelObject(oid, host);
         objectManager.removeObject(oid);
+    }
+
+    /**
+     * Notify kernel object about the event occurred
+     *
+     * @param oid
+     * @param notification
+     * @throws KernelObjectNotFoundException
+     * @throws RemoteException
+     */
+    public void notifyKernelObject(KernelOID oid, Notification notification)
+            throws KernelObjectNotFoundException, RemoteException {
+        KernelObject object = objectManager.lookupObject(oid);
+
+        if (object.getObject() instanceof Policy.ServerPolicy) {
+            ((Policy.ServerPolicy) object.getObject()).onNotification(notification);
+        } else if (object.getObject() instanceof Policy.GroupPolicy) {
+            ((Policy.GroupPolicy) object.getObject()).onNotification(notification);
+        }
     }
 
     public Serializable getObject(KernelOID oid) throws KernelObjectNotFoundException {

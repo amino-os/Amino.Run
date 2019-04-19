@@ -1,11 +1,19 @@
-# What is Amino?
+# What is Amino.Run?
 
-Amino, the Distributed Cloud Application Platform, is an open source,
-multilanguage development platform and distributed runtime environment
-designed to make distributed applications much easier to design,
-develop and operate.  It supports most commonly used programming
-languages and is, by default, deployed and managed in container environments using
-[Kubernetes](https://www.k8s.io).  Common examples of distributed applications include:
+Amino.Run is an open source, multilanguage development platform and
+distributed runtime environment designed to make distributed
+applications much easier to design, develop and operate.  It is the
+distributed process runtime component of the broader Amino distributed
+operating system effort, which also includes subsystems for:
+
+1. distributed, reactive memory (Amino.Sync)
+2. distributed, transactional persistent store (Amino.Store)
+3. distributed privacy and security (Amino.Safe)
+
+Amin.Run supports most commonly used programming languages
+and is, by default, deployed and managed in container environments
+using [Kubernetes](https://www.k8s.io).  Common examples of
+distributed applications include:
 
 1. [mobile-cloud applications](https://www.techopedia.com/definition/26679/mobile-cloud-computing-mcc), 
 2. [mobile backend style applications](https://en.wikipedia.org/wiki/Mobile_backend_as_a_service),
@@ -18,26 +26,26 @@ concurrency, remote invocation, synchronization, fault tolerance,
 scalability, sharding, code and data migration, leader election, load
 balancing, observability, fault diagnosis and many more.
 
-Amino is based on, and extends, several years of research work done at
+Amino.Run is based on, and extends, several years of research work done at
 the [University Of Washington Computer Systems
 Lab](https://syslab.cs.washington.edu/research/) in
 Seattle.<sup>1,2,3,4,5</sup> 
 
-Amino is alpha software, and not yet
+Amino.Run is alpha software, and not yet
 suitable for production use.  We have a well-funded development team
-actively working on getting it to production readiness, and actively
+actively working on getting it production ready, and actively
 support contributions from the open source community.
 
-# Why we created Amino?
+# Why we created Amino.Run?
 
-In a nutshell, we created Amino to make design, development and operation of
+In a nutshell, we created Amino.Run to make design, development and operation of
 reliable, fast, distributed applications quicker, easier and more fun.
 
 In summary, our approach is to:
 
 1. provide a wide and expandable range of standard, re-usable,
    pluggable and production-ready Deployment Managers
-   (DMs)](https://github.com/Huawei-PaaS/DCAP-Sapphire/blob/master/docs/code_study/DMList.md)
+   (DMs)](DMList.md)
    to solve many common distributed computing problems (including all
    of those mentioned above) so that you can focus on application
    logic, not solving hard distributed systems challenges.
@@ -62,29 +70,16 @@ In summary, our approach is to:
    2. On (public or private) cloud servers
    3. On mobile devices (Android, iOS)
    4. On edge devices
-   5. Even have Amino move parts of your application around automatically at runtime
+   5. Even have Amino.Run move parts of your application around automatically at runtime
       to optimize performance, reliability or battery power consumption.
 
-Over time Amino will include a runtime process manager (Sapphire), a
-reactive distributed memory manager (Diamond), a consistent
-transactional storage system (TAPIR) and a privacy and security framework
-(Agate). Initial focus is on making the runtime process manager
-production-ready.
+Over time Amino will include a runtime process manager (Amino.Run), a
+reactive distributed memory manager (Amino.Sync), a consistent
+transactional storage system (Amino.Sync) and a privacy and security framework
+(Amino.Safe). Initial focus is on making Amino.Run production-ready.
 
-## Design Docs
-<!--- TODO: Remove Huawei internal documents, edit for external visibility, and convert to MD  --->
-* [User Experience Design](https://docs.google.com/document/d/1fJ8C-uQYdzOIDPSFRlD5QQ_QTJ_H3mO-RSl95hDuotQ/edit)
-* [Sapphire Core Enhancement](https://docs.google.com/document/d/1aqJxQ9LqnWxo7vWU2cbCiCkrkn55g9I6Piogs6VTo_U/edit#heading=h.x7ziw49lzhk5)
-* [Multi-Lang Design](https://docs.google.com/document/d/1WwmX7fuVr4AoRz0lgbAwv4nt4Jwc9I9WHP5dO07jBj8/edit)
-* [Multi-DM Design](https://docs.google.com/document/d/1g5SnzsnyGXzdZVDF_uj9MQJomQpHS-PMpfwnYn4RNDU/edit#)
-* [Code Offloading Design](https://docs.google.com/document/d/17umH9X61h8A6ckQ0LakGTiMD81P3Z7hZEm_UAAGW4B0/edit#heading=h.ftifncwym4cn)
-* [Diamond Tapir Integration](https://docs.google.com/document/d/1JvIofXhEMqulPfb2BxfTtNgmvhmLTna2lJo0FmZIZeM/edit#heading=h.yprn9eci8t8e)
-
-## Other Important Links
-* [Getting started](docs/GettingStarted.md)
-* [Amino Planning](https://github.com/Huawei-PaaS/DCAP-Sapphire/wiki/DCAP-Planning)
-* [Meetings](https://github.com/Huawei-PaaS/DCAP-Sapphire/wiki/Meetings)
-* Huawei Repository: http://rnd-github-usa-g.huawei.com/SeattleCloudBU/DCAP-Sapphire
+## Important Links
+* [Getting started](GettingStarted.md)
 
 ## References
 <sup>1</sup> [Customizable and Extensible Deployment for Mobile/Cloud Applications

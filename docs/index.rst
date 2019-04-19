@@ -3,22 +3,16 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Everything you need to know about Amino is here!
+Amino.Run Documentation
 ================================================
 
-Amino, is an open source, multilanguage development platform and distributed runtime environment designed to make distributed applications much easier to design, develop and operate. 
+Amino.Run is an open source, multilanguage development platform and distributed runtime environment designed to make distributed applications much easier to design, develop and operate. 
 
 .. toctree::
    :maxdepth: 2
-   :caption: Amino
+   :caption: Amino Overview
 
    README.md
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Documentation
-   
-   documentation.md
 
 .. toctree::
    :maxdepth: 2
@@ -45,10 +39,10 @@ Amino, is an open source, multilanguage development platform and distributed run
    design-docs/DM-list.md
 
 .. toctree::
-	:maxdepth: 2
-	:caption: Code Offloading
+   :maxdepth: 2
+   :caption: Code Offloading
 
-	design-docs/code-offloading.md
+   design-docs/code-offloading.md
 
 .. toctree::
    :maxdepth: 2
@@ -58,6 +52,13 @@ Amino, is an open source, multilanguage development platform and distributed run
 
 .. toctree::
    :maxdepth: 2
-   :caption: Setup
+   :caption: Getting Started	     
    
    getting-started/getting-started.md
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Adding Documentation
+   
+   documentation.md
+

@@ -1,5 +1,6 @@
 package amino.run.compiler;
 
+import amino.run.policy.Upcalls;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Iterator;
@@ -116,8 +117,7 @@ public class PolicyStub extends Stub {
 
     @Override
     public String getStubAdditionalMethods() {
-        Class<?> ancestorClass = stubClass;
-        boolean isGroupPolicy = ancestorClass.getSimpleName().equals("GroupPolicy");
+        boolean isGroupPolicy = Upcalls.GroupUpcalls.class.isAssignableFrom(stubClass);
         StringBuilder buffer = new StringBuilder();
 
         /* Implementation for getKernelOID */

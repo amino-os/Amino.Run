@@ -1,7 +1,11 @@
 package amino.run.policy.dht;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.Random;
 import java.util.TreeSet;
 
@@ -57,10 +61,42 @@ public class DHTChord implements Serializable {
             throw new NullPointerException("server must not be null");
         }
 
-        for (int i = 0; i < virtualNodeFactor; i++) {
-            DHTKey id = new DHTKey(Integer.toString(generator.nextInt(Integer.MAX_VALUE)));
-            DHTNode node = new DHTNode(id, server);
-            nodes.add(node);
+        synchronized (nodes) {
+            for (int i = 0; i < virtualNodeFactor; i++) {
+                DHTKey id = new DHTKey(Integer.toString(generator.nextInt(Integer.MAX_VALUE)));
+                DHTNode node = new DHTNode(id, server);
+                nodes.add(node);
+            }
+        }
+    }
+
+    /**
+     * Removes the specified server from chord.
+     *
+     * @param server
+     */
+    public void remove(DHTPolicy.ServerPolicy server) {
+        synchronized (nodes) {
+            Iterator iterator = nodes.iterator();
+            while (iterator.hasNext()) {
+                DHTNode node = (DHTNode) iterator.next();
+                if (node.server == server) {
+                    iterator.remove();
+                }
+            }
+        }
+    }
+
+    private void readObject(ObjectInputStream inputStream)
+            throws ClassNotFoundException, IOException {
+        virtualNodeFactor = inputStream.readInt();
+        nodes = (TreeSet<DHTNode>) inputStream.readObject();
+    }
+
+    private void writeObject(ObjectOutputStream outputStream) throws IOException {
+        outputStream.writeInt(virtualNodeFactor);
+        synchronized (nodes) {
+            outputStream.writeObject(nodes);
         }
     }
 

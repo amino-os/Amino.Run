@@ -131,7 +131,7 @@ public class DHTPolicy extends DefaultPolicy {
         @Override
         protected void removeServer(Policy.ServerPolicy server) {
             super.removeServer(server);
-            // TODO: Need to remove from chord too
+            dhtChord.remove((ServerPolicy) server);
         }
 
         public DHTChord getChord() {

@@ -43,6 +43,7 @@ dependencies {
     compile 'org.graalvm.sdk:graal-sdk:' + project.property('graalVmVersion')
     compile 'org.yaml:snakeyaml:1.23'
     compile 'com.github.pcj:google-options:1.0.0'
+    compile 'io.prometheus:simpleclient_pushgateway:0.6.0'
     testCompile 'org.mockito:mockito-core:1.+'
     testCompile 'org.powermock:powermock:1.6.5'
     testCompile 'org.powermock:powermock-module-junit4:1.6.5'
@@ -58,7 +59,6 @@ dependencies {
     //            Caused by: java.lang.NullPointerException
     testCompile project(':examples:helloworld')
     integrationTestCompile project(':examples:helloworld')
-    compile group: 'io.prometheus', name: 'simpleclient_pushgateway', version: '0.6.0'
 }
 
 // Maven Plugin Properties

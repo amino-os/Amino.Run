@@ -81,8 +81,6 @@ public class KernelServerImpl implements KernelServer {
         objectManager = new KernelObjectManager();
         client = new KernelClient(oms);
         GlobalKernelReferences.nodeServer = this;
-        metricClient = new KernelMetricClient();
-        metricClient.initialize();
     }
 
     public void setRegion(String region) {
@@ -91,6 +89,17 @@ public class KernelServerImpl implements KernelServer {
 
     public String getRegion() {
         return this.region;
+    }
+
+    /**
+     * Metric client and server initialization.
+     *
+     * @param metricServer
+     * @param metricServerIpAndPort
+     */
+    public void metricsInit(String metricServer, String metricServerIpAndPort) {
+        metricClient = new KernelMetricClient(metricServer);
+        metricClient.initialize(metricServerIpAndPort);
     }
 
     /** RPC INTERFACES * */
@@ -428,6 +437,8 @@ public class KernelServerImpl implements KernelServer {
         try {
             // Bind server in registry
             KernelServerImpl server = new KernelServerImpl(host, omsHost);
+            // metrics initialization
+            server.metricsInit(ksArgs.metricServer, ksArgs.metricServerIpAndPort);
             KernelServer stub =
                     (KernelServer) UnicastRemoteObject.exportObject(server, ksArgs.servicePort);
             Registry registry = LocateRegistry.createRegistry(ksArgs.kernelServerPort);

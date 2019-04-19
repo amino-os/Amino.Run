@@ -30,4 +30,13 @@ public class Metric implements Serializable {
     public String toString() {
         return schema.toString();
     }
+
+    /**
+     * Return schema which contains metric name and schema type
+     *
+     * @return schema
+     */
+    public Schema getSchema() {
+        return schema;
+    }
 }

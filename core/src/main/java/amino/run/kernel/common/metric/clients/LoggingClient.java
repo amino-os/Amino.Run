@@ -16,9 +16,9 @@ public class LoggingClient implements MetricClient {
     private static Logger logger = Logger.getLogger(LoggingClient.class.getName());
 
     @Override
-    public void send(HashMap<String, String> labels, ArrayList<Metric> metrics) throws Exception {
+    public void send(HashMap<String, String> values, ArrayList<Metric> metrics) throws Exception {
         for (Metric metric : metrics) {
-            logger.info(String.format("Metric collected %s: %s", labels, metric));
+            logger.info(String.format("Metric collected %s: %s", values, metric));
         }
     }
 

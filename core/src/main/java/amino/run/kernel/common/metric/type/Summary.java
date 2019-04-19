@@ -19,6 +19,24 @@ public class Summary extends Metric {
         this.observationCount = observationCount;
     }
 
+    /**
+     * Get the observation count value
+     *
+     * @return observationCount
+     */
+    public int getObservationCount() {
+        return observationCount;
+    }
+
+    /**
+     * Get the observation summary value
+     *
+     * @return observationSum
+     */
+    public long getObservationSum() {
+        return observationSum;
+    }
+
     @Override
     public String toString() {
         return super.toString()

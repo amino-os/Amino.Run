@@ -1,6 +1,7 @@
 package amino.run.kernel.common.metric;
 
 import amino.run.kernel.common.metric.clients.LoggingClient;
+import amino.run.kernel.common.metric.clients.PrometheusPushGateWayClient;
 import amino.run.kernel.common.metric.schema.Schema;
 import amino.run.policy.util.ResettableTimer;
 import java.util.TimerTask;
@@ -21,8 +22,13 @@ public class KernelMetricClient {
     private ConcurrentHashMap<String, ResettableTimer> metricManagerTimers =
             new ConcurrentHashMap<String, ResettableTimer>();
     private MetricClient client;
+    private String metricServer;
 
-    public void initialize() {
+    public KernelMetricClient(String metricServer) {
+        this.metricServer = metricServer;
+    }
+
+    public void initialize(String metricServerIpAndPort) {
         /*  Metric client creation needs metric server deployed and configured on OMS.
             OMS will expose RPC API to get metric server information which will
             be used by each kernel server to create Metric Client.
@@ -34,7 +40,13 @@ public class KernelMetricClient {
             2. Use configuration to connect with Metric Server.
             3. Add support for Third party Metric server.
         */
-        client = new LoggingClient();
+
+        // Create the client based on metric server configuration. default is logger client.
+        if (metricServer.equals("prometheus")) {
+            client = new PrometheusPushGateWayClient(metricServerIpAndPort);
+        } else {
+            client = new LoggingClient();
+        }
     }
 
     /**

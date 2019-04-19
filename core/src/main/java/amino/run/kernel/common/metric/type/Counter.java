@@ -16,6 +16,15 @@ public class Counter extends Metric {
         this.count = count;
     }
 
+    /**
+     * Get the count value
+     *
+     * @return count
+     */
+    public long getCount() {
+        return count;
+    }
+
     @Override
     public String toString() {
         return super.toString() + ": " + "count=" + count;

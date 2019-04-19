@@ -58,6 +58,7 @@ dependencies {
     //            Caused by: java.lang.NullPointerException
     testCompile project(':examples:helloworld')
     integrationTestCompile project(':examples:helloworld')
+    compile group: 'io.prometheus', name: 'simpleclient_pushgateway', version: '0.6.0'
 }
 
 // Maven Plugin Properties

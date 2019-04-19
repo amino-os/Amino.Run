@@ -30,4 +30,18 @@ public class KernelServerArgumentParser extends OMSArgumentParser {
             converter = Converters.LabelConverter.class,
             category = "startup")
     public Map<String, String> labels = new HashMap<String, String>();
+
+    @Option(
+            name = "metric-server",
+            help = "metric server",
+            defaultValue = "logger",
+            category = "startup")
+    public String metricServer;
+
+    @Option(
+            name = "metric-server-ip-port",
+            help = "metric server ip port",
+            defaultValue = "127.0.0.1:9091",
+            category = "startup")
+    public String metricServerIpAndPort;
 }

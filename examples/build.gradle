@@ -46,6 +46,15 @@ subprojects {
              project.property('kernelServerLabelFlag'), project.property('kernelServerLabel4')
     }
 
+    // Run a kernel server with metric server info
+    task runksmetric(type: JavaExec) {
+        main = 'amino.run.kernel.server.KernelServerImpl'
+        args project.property('kernelServerIpFlag'), project.property('kernelServerIp'), project.property('kernelServerPortFlag'), project.property('kernelServerPort'),
+                project.property('kernelServerLabelFlag'), project.property('kernelServerLabel'),
+                project.property('metricServerFlag'), project.property('metricServer'),
+                project.property('metricServerIpAndPortFlag'), project.property('metricServerIpAndPort')
+    }
+
     // Run application
     task runapp(type: JavaExec) {
         args project.property('kernelServerIpFlag'), project.property('embeddedKernelServerIp'), project.property('kernelServerPortFlag'), project.property('kernelServerPort')

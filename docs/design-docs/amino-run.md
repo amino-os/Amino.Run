@@ -1,31 +1,33 @@
-# Amino Run Overview
+# Amino.Run Overview
 
 ![](../images/AminoRunOverview.png)
 
-### Amino Run
-Amino Run is the base management unit in Amino. In above diagram, each circle represents one Amino Run. The dots inside the circle (i.e. the Amino Run) represents normal Java objects. One Amino Run may contain a set of Java objects. The solid arrow lines between dots are *local* method invocations between Java objects. The dashed arrow lines between circles are *remote* method invocations between Amino Run. Methods on normal Java objects can only be invoked *locally* by objects reside on the same host. Amino Run however may have *remote methods* which can be invoked by objects reside on different hosts. 
+### Microservices
+Microservices are the base management unit in Amino. In the above diagram, each circle represents one Microservice. The dots inside the circle (i.e. the Microservice) represent normal programming language (e.g. Java) objects. One Microservice may contain a set of such objects. The solid arrow lines between dots are *local* method invocations between objects. The dashed arrow lines between circles are *remote* method invocations between Microservices. Methods on normal Java objects can only be invoked *locally* by objects residing on the same host. Microservices may however have *remote methods* which can be invoked by objects residing on different hosts. 
 
-Deployment Kernel has the capability to move a Sapphire object from one host to another. Behind the scene, Deployment Kernel will serialize the whole Sapphire object, including all Java objects belong to the Sapphire object, on one end, ships the bytes to the destination host, and then do the deserialization there.
+Deployment Kernel has the capability to move a Microservice from one host to another. Behind the scenes, Deployment Kernel will serialize the whole Microservice, including all programming language objects belonging to the Microservice, on one end, ship the data to the destination host, and then do the deserialization there.
 
-Amino Run are created by applications with static helper method `Sapphire.new_()`. To invoke a method on a Sapphire object, applications have to first get a reference to the Sapphire object from OMS Server. 
+Microservices are created by applications using a static helper method `Microservice.new_()`. To invoke a method on a Microservice, applications have to first get a reference to the Microservice from OMS Server. 
 
 ### OMS
-OMS, Object Management Service, keeps track of the location of all Amino Run. Unlike normal Java objects which can be created by Java `new` keyword, Sapphire object must be created with a special Sapphire helper method `Sapphire.new_`. Upon Sapphire object creation, method `Sapphire.new_` will generate a globally unique ID for the Sapphire object, and register the object in OMS. OMS provides API to search Amino Run. Given a Sapphire object ID, OMS can tell the IP of the host on which the Sapphire object runs. Whenever a Sapphire object is moved or deleted, OMS will be updated accordingly.
+OMS, Object Management Service, keeps track of the location of all Microservices. Unlike normal (e.g. Java) objects which can be created using the Java `new` keyword, microsservices must be created with a special Amino.Run helper method 'Microservice.new_()'. Upon Microservice creation, the method `MicroService.new_()` will generate a globally unique ID for the Microservice, and register the object in OMS. OMS provides API to search Amino Run. Given a Microservice ID, OMS can tell the IP of the host on which the Microservice runs. Whenever a Microservice is moved or deleted, OMS will be updated accordingly.
 
 ### Kernel Server
-Kernel Server provides runtime environment for Amino Run. Each host runs a Kernel Server instance. Kernel Server exposes a set of *remote* API which can be invoked remotely. Sapphire assumes that any Kernel Server can invoke the *remote* API on any other Kernel Server regardless where the Kernel Server lives.
+Kernel Server provides runtime environment for Amino Run. Each host runs a Kernel Server instance. Kernel Server exposes a set of *remote* API which can be invoked remotely. Amino.Run assumes that any Kernel Server can invoke the *remote* API on any other Kernel Server regardless where the Kernel Server lives.
 
 ### DM
-Every DM, Deployment Manager, has three components: a proxy, a instance manager, and a coordinator. When users create Sapphire object, he/she can optionally associate a DM to the Sapphire object. Not all Sapphire object has DMs. But if a DM is specified for a Sapphire object, then during the creation of the Sapphire object, helper method `Sapphire.new_` will inject codes into the `stub` of the Sapphire object, in which case any method invocation on the Sapphire object will first be processed by the `proxy`, `instance manager` and the `coordinator` of the DM before reach the actual Sapphire object. Each DM provides one specific functionality. The Sapphire paper listed 26 DMs. 
+Every DM, Deployment Manager, has three components: a proxy, a instance manager, and a coordinator. When users create Microservice, he/she can optionally associate a DM to the Microservice. Not all Microservice has DMs. But if a DM is specified for a Microservice, then during the creation of the Microservice, helper method `MicroService.new_()` will inject code into the `stub` of the Microservice, in which case any method invocation on the Microservice will first be processed by the `proxy`, `instance manager` and the `coordinator` of the DM before reach the actual Microservice. Each DM provides one specific functionality. The Sapphire paper listed 26 DMs. 
 
 ### Kernel Object
-*Kernel object* is a wrapper of the *actual* Java object - it contains a reference to the actual Java object and exposes a `invoke` method which allows any public methods defined on the actual Java object to be invoked with reflection.
+*Kernel object* is a wrapper of the *actual* (e.g. Java) object - it contains a reference to the actual object and exposes a `invoke` method which allows any public methods defined on the actual object to be invoked with reflection.
 
 Kernel objects are created with [`KernelServerImpl.newKernelObject`](https://github.com/Huawei-PaaS/DCAP-Sapphire/blob/master/sapphire/sapphire-core/src/main/java/sapphire/kernel/server/KernelServerImpl.java#L101) method. Every kernel object has a unique `oid` and is registered in OMS server. `KernelServer` interface also exposes a few APIs to copy and move kernel objects.
 
 # Remote Interfaces
 
-Sapphire declares two `Remote` interfaces: `KernelServer` and `OMSServer`. Most methods in these two interfaces can be easily replaced with `gRPC`, except for `KernelServer.copyKernelObject`.
+Amino.Run declares two `Remote` interfaces: `KernelServer` and `OMSServer`. Most methods in these two interfaces can be easily replaced with `gRPC`, except for `KernelServer.copyKernelObject`.
+
+A note about code snippets: The code below is out-of-date.  Many of the class and package names no longer apply, but the general principles do.
 
 ### `KernelServer`
 
@@ -72,7 +74,7 @@ In the first phase, to keep things simple, we can assume that there is one singl
 
 # RMI Registry 
 
-Sapphire uses RMI registry to discover remote objects. The following snippet shows how to register remote object *SapphireOMS*. 
+Amino.Run uses RMI registry to discover remote objects. The following snippet shows how to register remote object *SapphireOMS*. 
 
 ```java
 // Register SapphireOMS
@@ -89,7 +91,7 @@ Client side lookups remote object `OMSServer` by its name, i.e. *SapphireOMS*, a
 registry = LocateRegistry.getRegistry(args[0],Integer.parseInt(args[1]));
 OMSServer server = (OMSServer) registry.lookup("SapphireOMS");
 
-// Look up Sapphire object from OMS Server
+// Look up Microservice from OMS Server
 TwitterManager tm = (TwitterManager) server.getAppEntryPoint();
 System.out.println("Received Twitter Manager Stub: " + tm);
 ```
@@ -98,7 +100,7 @@ If we switch to `gRPC`, we can no longer use RMI registry. We need to come up wi
 
 # `gRPC` vs `RMI`
 
-Sapphire uses `RMI` in its internal implementation. Applications running on top of Sapphire do not have to use `RMI`. Replacing `RMI` with `gRPC`, if done properly, should have little impact on Sapphire applications. But application developers must make one change: Sapphire applications can no longer use RMI registry to find OMS server location; they have to switch to `gRPC` service discovery mechanism.
+Amino.Run uses `RMI` in its internal implementation. Applications running on top of Amino.Run do not have to use `RMI`. Replacing `RMI` with `gRPC`, if done properly, should have little impact on Amino.Run applications. But application developers must make one change: Amino.Run applications can no longer use RMI registry to find OMS server location; they have to switch to `gRPC` service discovery mechanism.
 
 |      | Pros | Cons |
 |------|------|------|
@@ -108,7 +110,7 @@ Sapphire uses `RMI` in its internal implementation. Applications running on top 
 
 # Kernel Server & OMS
 
-`KernelServer` and `OMSServer` are two important objects in Sapphire. Both exposes remote interfaces. `OMSServer` contains a `KernelObjectManager` which keeps track of the mapping between kernel object ID to the IP address of the kernel server in which the object runs. Given an kernel object ID, a client can call `OMSServer` to get the IP of the host where the object runs.
+`KernelServer` and `OMSServer` are two important objects in Amino.Run. Both expose remote interfaces. `OMSServer` contains a `KernelObjectManager` which keeps track of the mapping between kernel object ID to the IP address of the kernel server in which the object runs. Given an kernel object ID, a client can call `OMSServer` to get the IP of the host where the object runs.
 
 `KernelServer` contains a `ObjectManager` which keeps track of the mapping between kernel object ID to the reference of the object.
 
@@ -120,12 +122,12 @@ The following sequence chart demonstrate the high level interactions between cli
 
 # Stubs
 
-Sapphire generates many `stub` classes. The following chart shows the relationship between these `stub` classes. We then uses the source code to explain how these `stubs` work together to process a remote method invocation. 
+Amino.Run generates many `stub` classes. The following chart shows the relationship between these `stub` classes. We then uses the source code to explain how these `stubs` work together to process a remote method invocation. 
 ![](../images/DCAP_StubStructure.png)
 
 ### `App_Stub`
 
-`App_Stub` contains `$__client` which is a reference to `SapphireClientPolicy`. Every method call on App object will be translated to an `onRPC` call on embedded `$__client`.
+`App_Stub` contains `$__client` which is a reference to `ClientPolicy`. Every method call on App object will be translated to an `onRPC` call on embedded `$__client`.
 
 ```java
 public final class UserManager_Stub extends sapphire.appexamples.minnietwitter.app.UserManager implements sapphire.common.AppObjectStub {
@@ -156,7 +158,7 @@ public final class UserManager_Stub extends sapphire.appexamples.minnietwitter.a
 
 ### `ClientPolicy`
 
-The `onRPC` call on `SapphireClientPolicy` will be translated to an `onRPC` call on `SapphireServerPolicy_Stub`.
+The `onRPC` call on `ClientPolicy` will be translated to an `onRPC` call on `ServerPolicy_Stub`.
  
 ```java
 public abstract class DefaultSapphirePolicyUpcallImpl extends sapphire.dms.SapphirePolicyLibrary {
@@ -280,11 +282,11 @@ The remote `KernelServer` receives the `makeKernelRPC` call. It locates the obje
 
 # AppEntry Creation
 
-Every application written in Sapphire has one `AppEntryPoint` which is the starting point of the application. The following sequence chart shows how a client (e.g. `TwitterWorldGenerator`) gets the `AppEntryPoint` (e.g. `MinnieTwitterStart`) from OMS, and how OMS creates `AppEntryPoint` on Kernel Server behind the scene.
+Every application written using Amino.Run has one `AppEntryPoint` which is the starting point of the application. The following sequence chart shows how a client (e.g. `TwitterWorldGenerator`) gets the `AppEntryPoint` (e.g. `MinnieTwitterStart`) from OMS, and how OMS creates `AppEntryPoint` on Kernel Server behind the scene.
 
 ![](../images/DCAP_AppEntryCreationSequence.png)
 
-# Sapphire Advantages
+# Amino.Run Advantages
 
 > While cloud storage systems simplify the task of meeting mobile/cloud requirements for range of applications (marked as general purpose in Figure 1.2), they leave significant work for application programmers. Because both client and server components are typically stateless, the application must still re-start servers (for availability), <span style="color:blue">cache locally on mobile clients (for responsiveness)</span>, spin up more servers (for scalability), <span style="color:blue">coordinate between clients and servers (for consistency)</span>, <span style="color:blue">checkpoint both clients and servers (for fault-tolerance)</span>, and <span style="color:blue">poll servers (for reactivity)</span>. Simply stated, building a mobile/cloud application using a cloud storage system is the modern-day equivalent of building a desktop application with only a file system.
 
@@ -297,24 +299,24 @@ Systems like Kubernetes provides functionalities to restart servers, spin up mor
 
 >For example, lock services (Figure 1.2) help applications provide consistency by avoiding conflicts, but programmers must still call the lock service at appropriate times to achieve consistency. Likewise, notification services help applications efficiently achieve reactivity by eliminating the need for polling; however, programmers must still send and subscribe to notifications correctly to propagate updates to other users. 
 
-DM does have values. It is much easier to write leader election logics with `etcd`'s lease API. However, even with the support from etcd, writing a correct leader election logics is still tricky and can take about 500 lines of codes. This is where DM shines. But DM logics can be added into micro-service framework as well.
+DM does have value. It is much easier to write leader election logic with `etcd`'s lease API. However, even with the support from etcd, writing a correct leader election logic is still tricky and can take about 500 lines of codes. This is where DM shines. But DM logics can be added into micro-service framework as well.
 
 >BaaS systems meet some mobile/cloud requirements and help programmers meet the rest. They are highly available, responsive and scalable. They offer weak or no consistency, and some provide notifications for more efficient reactivity. However, the <span style="color:blue">application must still be stateless</span>, so programmers must checkpoint to the back-end (or log to a local disk) after every operation for fault-tolerance. Finally, <span style="color:blue">programmers typically cannot run application code on the more powerful and secure cloud servers.</span>
 
-Is Sapphire able to provide fault-tolerance to stateful applications? How does it do that? Why programmers cannot run application code on more powerful cloud servers? Are we talking about code offloading? 
+Is Amino.Run able to provide fault-tolerance to stateful applications? How does it do that? Why programmers cannot run application code on more powerful cloud servers? Are we talking about code offloading? 
 
-> Sapphire is designed to deploy applications across mobile devices and cloud servers. 
+> Aminno.Run is designed to deploy applications across mobile devices and cloud servers. 
 # Questions
 
-* What unique competitive advantage will DCAP deliver? Why should developers chose DCAP, rather than other options like BaaS, Istio, etc?
+* What unique competitive advantage will Amino.Run deliver? Why should developers chose Amino.Run, rather than other options like BaaS, Istio, etc?
 
-* How do DCAP customers use DCAP? 
+* How do Amino.Run customers use it? 
 
-* What is the relationship between DCAP and server-less? How do we use DCAP idea to achieve server-less at anywhere and server-less at any scale?
+* What is the relationship between Amino.Run and 'Serverless'? How do we use the Amino.Run idea to achieve Serverless anywhere and Serverless at any scale?
 
-* What is DCAP? A platform, a SDK, or a combination of both?
+* What is Amino.Run? A platform, a SDK, or a combination of both?
 
-* What are the key technologies behind DCAP?
+* What are the key technologies behind Amino.Run?
 
 * How about we create a clone for every device on the cloud?
 

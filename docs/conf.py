@@ -19,14 +19,15 @@
 
 # -- Project information -----------------------------------------------------
 
-project = u'Amino Documentation'
-copyright = u'2019, Amino'
-author = u'Amino'
+project = u'Amino.Run Documentation'
+copyright = u'2019, The Amino Developers'
+author = u'The Amino Developers'
 
+# TODO: quinton: Reference the code versions, so that docs versions stay in sync.
 # The short X.Y version
-version = u''
+version = u'1.0'
 # The full version, including alpha/beta/rc tags
-release = u'0.0.1'
+release = u'RC7'
 
 
 # -- General configuration ---------------------------------------------------
@@ -136,8 +137,8 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'Amino.tex', u'Amino Documentation',
-     u'Amino', 'manual'),
+    (master_doc, 'Amino.Run.tex', u'Amino.Run Documentation',
+     u'The Amino.Run Developers', 'manual'),
 ]
 
 
@@ -146,7 +147,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'Amino', u'Amino Documentation',
+    (master_doc, 'Amino.Run', u'Amino.Run Documentation',
      [author], 1)
 ]
 
@@ -157,8 +158,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'Amino', u'Amino Documentation',
-     author, 'Amino', 'One line description of project.',
+    (master_doc, 'Amino.Run', u'Amino.Run Documentation',
+     author, 'Amino.Run', 'Distributed OS Microservice Manager',
      'Miscellaneous'),
 ]
 

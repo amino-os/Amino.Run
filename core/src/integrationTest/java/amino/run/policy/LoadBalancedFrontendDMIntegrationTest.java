@@ -38,14 +38,21 @@ public class LoadBalancedFrontendDMIntegrationTest {
     }
 
     private void runTest(MicroServiceSpec spec) throws Exception {
-        MicroServiceID microServiceId = registry.create(spec.toString());
-        KVStore store = (KVStore) registry.acquireStub(microServiceId);
-        for (int i = 0; i < 10; i++) {
-            String key = "k1_" + i;
-            String value = "v1_" + i;
-            store.set(key, value);
-            store.set(key, value);
-            Assert.assertEquals(value, store.get(key));
+        MicroServiceID microServiceId = null;
+        try {
+            microServiceId = registry.create(spec.toString());
+            KVStore store = (KVStore) registry.acquireStub(microServiceId);
+            for (int i = 0; i < 10; i++) {
+                String key = "k1_" + i;
+                String value = "v1_" + i;
+                store.set(key, value);
+                store.set(key, value);
+                Assert.assertEquals(value, store.get(key));
+            }
+        } finally {
+            if (microServiceId != null) {
+                registry.delete(microServiceId);
+            }
         }
     }
 

@@ -38,16 +38,22 @@ public class ConsensusDMIntegrationTest {
     }
 
     private void runTest(MicroServiceSpec spec) throws Exception {
-        MicroServiceID microServiceId = registry.create(spec.toString());
-        sleep(5000);
-        KVStore store = (KVStore) registry.acquireStub(microServiceId);
-        for (int i = 0; i < 10; i++) {
-            String key = "k1_" + i;
-            String value = "v1_" + i;
-            store.set(key, value);
-            String returnValue = (String) store.get(key);
-            Assert.assertEquals(
-                    "Expected: " + value + "Actual: " + returnValue, value, returnValue);
+        MicroServiceID microServiceId = null;
+        try {
+            microServiceId = registry.create(spec.toString());
+            sleep(5000);
+            KVStore store = (KVStore) registry.acquireStub(microServiceId);
+            for (int i = 0; i < 10; i++) {
+                String key = "k1_" + i;
+                String value = "v1_" + i;
+                store.set(key, value);
+                String returnValue = (String) store.get(key);
+                Assert.assertEquals(value, returnValue);
+            }
+        } finally {
+            if (microServiceId != null) {
+                registry.delete(microServiceId);
+            }
         }
     }
 

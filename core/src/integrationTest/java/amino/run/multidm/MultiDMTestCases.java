@@ -63,22 +63,28 @@ public class MultiDMTestCases {
     }
 
     private void runTest(String... dmNames) throws Exception {
-        MicroServiceSpec spec = createMultiDMTestSpec(dmNames);
-        MicroServiceID microServiceId = registry.create(spec.toString());
-        KVStore store = (KVStore) registry.acquireStub(microServiceId);
+        MicroServiceID microServiceId = null;
+        try {
+            MicroServiceSpec spec = createMultiDMTestSpec(dmNames);
+            microServiceId = registry.create(spec.toString());
+            KVStore store = (KVStore) registry.acquireStub(microServiceId);
 
-        // consensus DM needs some time to elect the leader other wise function call will fail
-        if (spec.getName().contains(CONSENSUS)) {
-            Thread.sleep(5000);
-        }
+            // consensus DM needs some time to elect the leader other wise function call will fail
+            if (spec.getName().contains(CONSENSUS)) {
+                Thread.sleep(5000);
+            }
 
-        for (int i = 0; i < 10; i++) {
-            String key = "k1_" + i;
-            String value = "v1_" + i;
-            store.set(key, value);
-            String returnValue = (String) store.get(key);
-            Assert.assertEquals(
-                    "Expected: " + value + "Actual: " + returnValue, value, returnValue);
+            for (int i = 0; i < 10; i++) {
+                String key = "k1_" + i;
+                String value = "v1_" + i;
+                store.set(key, value);
+                String returnValue = (String) store.get(key);
+                Assert.assertEquals(value, returnValue);
+            }
+        } finally {
+            if (microServiceId != null) {
+                registry.delete(microServiceId);
+            }
         }
     }
 

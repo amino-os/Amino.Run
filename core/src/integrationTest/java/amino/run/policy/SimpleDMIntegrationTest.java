@@ -28,7 +28,6 @@ public class SimpleDMIntegrationTest {
     private static String RESOURCE_REAL_PATH;
     private static String kstIp = "127.0.0.1";
     private Registry registry;
-    private MicroServiceID microServiceId = null;
 
     @BeforeClass
     public static void bootstrap() throws Exception {
@@ -66,14 +65,21 @@ public class SimpleDMIntegrationTest {
      * @throws Exception
      */
     private void runTest(String dmFileName) throws Exception {
-        MicroServiceSpec spec = getMicroServiceSpecForDM(dmFileName);
-        microServiceId = registry.create(spec.toString());
-        KVStore store = (KVStore) registry.acquireStub(microServiceId);
-        for (int i = 0; i < 10; i++) {
-            String key = "k1_" + i;
-            String value = "v1_" + i;
-            store.set(key, value);
-            Assert.assertEquals(value, store.get(key));
+        MicroServiceID microServiceId = null;
+        try {
+            MicroServiceSpec spec = getMicroServiceSpecForDM(dmFileName);
+            microServiceId = registry.create(spec.toString());
+            KVStore store = (KVStore) registry.acquireStub(microServiceId);
+            for (int i = 0; i < 10; i++) {
+                String key = "k1_" + i;
+                String value = "v1_" + i;
+                store.set(key, value);
+                Assert.assertEquals(value, store.get(key));
+            }
+        } finally {
+            if (microServiceId != null) {
+                registry.delete(microServiceId);
+            }
         }
     }
 
@@ -245,21 +251,28 @@ public class SimpleDMIntegrationTest {
      */
     @Test
     public void runLockingTransactionDMTest() throws Exception {
-        MicroServiceSpec spec = getMicroServiceSpecForDM("LockingTransaction.yaml");
-        microServiceId = registry.create(spec.toString());
-        KVStore client1 = (KVStore) registry.acquireStub(microServiceId);
+        MicroServiceID microServiceId = null;
+        try {
+            MicroServiceSpec spec = getMicroServiceSpecForDM("LockingTransaction.yaml");
+            microServiceId = registry.create(spec.toString());
+            KVStore client1 = (KVStore) registry.acquireStub(microServiceId);
 
-        /* Test 1: Single app client with 2 threads doing concurrent transactions. One thread is expected to start the
-        transaction. Other fails with transaction already started exception. Verify the value set in successful
-        transaction thread. And verify the transaction already started exception for the failed one */
-        concurrentTransaction(client1, client1, TransactionAlreadyStartedException.class);
+            /* Test 1: Single app client with 2 threads doing concurrent transactions. One thread is expected to start the
+            transaction. Other fails with transaction already started exception. Verify the value set in successful
+            transaction thread. And verify the transaction already started exception for the failed one */
+            concurrentTransaction(client1, client1, TransactionAlreadyStartedException.class);
 
-        /* Get the second client stub */
-        KVStore client2 = (KVStore) registry.acquireStub(microServiceId);
+            /* Get the second client stub */
+            KVStore client2 = (KVStore) registry.acquireStub(microServiceId);
 
-        /* Test 2: Two app clients with a thread each doing concurrent transactions.One thread or both the threads can
-        succeed the transaction. Verify whether set operation is successful or transaction exception has occurred */
-        concurrentTransaction(client1, client2, TransactionException.class);
+            /* Test 2: Two app clients with a thread each doing concurrent transactions.One thread or both the threads can
+            succeed the transaction. Verify whether set operation is successful or transaction exception has occurred */
+            concurrentTransaction(client1, client2, TransactionException.class);
+        } finally {
+            if (microServiceId != null) {
+                registry.delete(microServiceId);
+            }
+        }
     }
 
     /**
@@ -269,20 +282,27 @@ public class SimpleDMIntegrationTest {
      */
     @Test
     public void runOptimisticConcurrentTransactionDMTest() throws Exception {
-        MicroServiceSpec spec = getMicroServiceSpecForDM("OptConcurrentTransactionDM.yaml");
-        microServiceId = registry.create(spec.toString());
-        KVStore client1 = (KVStore) registry.acquireStub(microServiceId);
+        MicroServiceID microServiceId = null;
+        try {
+            MicroServiceSpec spec = getMicroServiceSpecForDM("OptConcurrentTransactionDM.yaml");
+            microServiceId = registry.create(spec.toString());
+            KVStore client1 = (KVStore) registry.acquireStub(microServiceId);
 
-        /* Test 1: Single app client with 2 threads doing concurrent transactions. One thread is expected to start the
-        transaction. Other fails with transaction already started exception.Verify the value set in successful
-        transaction thread. And verify the transaction already started exception for the failed one */
-        concurrentTransaction(client1, client1, TransactionAlreadyStartedException.class);
+            /* Test 1: Single app client with 2 threads doing concurrent transactions. One thread is expected to start the
+            transaction. Other fails with transaction already started exception.Verify the value set in successful
+            transaction thread. And verify the transaction already started exception for the failed one */
+            concurrentTransaction(client1, client1, TransactionAlreadyStartedException.class);
 
-        KVStore client2 = (KVStore) registry.acquireStub(microServiceId);
+            KVStore client2 = (KVStore) registry.acquireStub(microServiceId);
 
-        /* Test 2: Two app clients with a thread each doing concurrent transactions.One thread or both the threads can
-        succeed the transaction. Verify whether set operation is successful or transaction exception has occurred */
-        concurrentTransaction(client1, client2, TransactionException.class);
+            /* Test 2: Two app clients with a thread each doing concurrent transactions.One thread or both the threads can
+            succeed the transaction. Verify whether set operation is successful or transaction exception has occurred */
+            concurrentTransaction(client1, client2, TransactionException.class);
+        } finally {
+            if (microServiceId != null) {
+                registry.delete(microServiceId);
+            }
+        }
     }
 
     /**
@@ -292,32 +312,39 @@ public class SimpleDMIntegrationTest {
      */
     @Test
     public void runExplicitMigration() throws Exception {
-        MicroServiceSpec spec = getMicroServiceSpecForDM("ExplicitMigrationDM.yaml");
-        microServiceId = registry.create(spec.toString());
-        KVStore store = (KVStore) registry.acquireStub(microServiceId);
-        String key0 = "k1";
-        String value0 = "v1_0";
-        store.set(key0, value0);
-        Assert.assertEquals(value0, store.get(key0));
+        MicroServiceID microServiceId = null;
+        try {
+            MicroServiceSpec spec = getMicroServiceSpecForDM("ExplicitMigrationDM.yaml");
+            microServiceId = registry.create(spec.toString());
+            KVStore store = (KVStore) registry.acquireStub(microServiceId);
+            String key0 = "k1";
+            String value0 = "v1_0";
+            store.set(key0, value0);
+            Assert.assertEquals(value0, store.get(key0));
 
-        /* MicroService object is created on a random server. It is not known on which server SO is created.
-           Migrate SO twice to ensure migration to other server happens atleast once.
-        */
+            /* MicroService object is created on a random server. It is not known on which server SO is created.
+               Migrate SO twice to ensure migration to other server happens atleast once.
+            */
 
-        /* Migrate SO to first server and verify the value */
-        store.migrateTo(new InetSocketAddress(ksIp, ksPort[0]));
-        Assert.assertEquals(value0, store.get(key0));
+            /* Migrate SO to first server and verify the value */
+            store.migrateTo(new InetSocketAddress(ksIp, ksPort[0]));
+            Assert.assertEquals(value0, store.get(key0));
 
-        /* Add another key-value entry and verify */
-        String key1 = "k2";
-        String value1 = "v1_1";
-        store.set(key1, value1);
-        Assert.assertEquals(value1, store.get(key1));
+            /* Add another key-value entry and verify */
+            String key1 = "k2";
+            String value1 = "v1_1";
+            store.set(key1, value1);
+            Assert.assertEquals(value1, store.get(key1));
 
-        /* Migrate SO to second server and verify the values */
-        store.migrateTo(new InetSocketAddress(ksIp, ksPort[1]));
-        Assert.assertEquals(value0, store.get(key0));
-        Assert.assertEquals(value1, store.get(key1));
+            /* Migrate SO to second server and verify the values */
+            store.migrateTo(new InetSocketAddress(ksIp, ksPort[1]));
+            Assert.assertEquals(value0, store.get(key0));
+            Assert.assertEquals(value1, store.get(key1));
+        } finally {
+            if (microServiceId != null) {
+                registry.delete(microServiceId);
+            }
+        }
     }
 
     /**
@@ -327,30 +354,37 @@ public class SimpleDMIntegrationTest {
      */
     @Test
     public void runExplicitCachingTest() throws Exception {
-        MicroServiceSpec spec = getMicroServiceSpecForDM("ExplicitCachingDM.yaml");
-        microServiceId = registry.create(spec.toString());
-        KVStore store = (KVStore) registry.acquireStub(microServiceId);
+        MicroServiceID microServiceId = null;
+        try {
+            MicroServiceSpec spec = getMicroServiceSpecForDM("ExplicitCachingDM.yaml");
+            microServiceId = registry.create(spec.toString());
+            KVStore store = (KVStore) registry.acquireStub(microServiceId);
 
-        /* Cache the object */
-        store.pull();
+            /* Cache the object */
+            store.pull();
 
-        for (int i = 0; i < 10; i++) {
-            String key = "k1_" + i;
-            String value = "v1_" + i;
+            for (int i = 0; i < 10; i++) {
+                String key = "k1_" + i;
+                String value = "v1_" + i;
 
-            /* update on local cached object */
-            store.set(key, value);
-            Assert.assertEquals(value, store.get(key));
-        }
+                /* update on local cached object */
+                store.set(key, value);
+                Assert.assertEquals(value, store.get(key));
+            }
 
-        /* Push the modified cached object to server */
-        store.push();
+            /* Push the modified cached object to server */
+            store.push();
 
-        /* Verify the map values on the server */
-        for (int i = 0; i < 10; i++) {
-            String key = "k1_" + i;
-            String value = "v1_" + i;
-            Assert.assertEquals(value, store.get(key));
+            /* Verify the map values on the server */
+            for (int i = 0; i < 10; i++) {
+                String key = "k1_" + i;
+                String value = "v1_" + i;
+                Assert.assertEquals(value, store.get(key));
+            }
+        } finally {
+            if (microServiceId != null) {
+                registry.delete(microServiceId);
+            }
         }
     }
 
@@ -361,28 +395,35 @@ public class SimpleDMIntegrationTest {
      */
     @Test
     public void runExplicitCheckPointTest() throws Exception {
-        MicroServiceSpec spec = getMicroServiceSpecForDM("ExplicitCheckpointDM.yaml");
-        microServiceId = registry.create(spec.toString());
-        KVStore store = (KVStore) registry.acquireStub(microServiceId);
+        MicroServiceID microServiceId = null;
+        try {
+            MicroServiceSpec spec = getMicroServiceSpecForDM("ExplicitCheckpointDM.yaml");
+            microServiceId = registry.create(spec.toString());
+            KVStore store = (KVStore) registry.acquireStub(microServiceId);
 
-        String key = "k1";
-        String value0 = "v1_0";
-        store.set(key, value0);
+            String key = "k1";
+            String value0 = "v1_0";
+            store.set(key, value0);
 
-        /* checkpoint this state */
-        store.saveCheckpoint();
-        Assert.assertEquals(value0, store.get(key));
+            /* checkpoint this state */
+            store.saveCheckpoint();
+            Assert.assertEquals(value0, store.get(key));
 
-        /* Set another value and verify it */
-        String value1 = "v1_1";
-        store.set(key, value1);
-        Assert.assertEquals(value1, store.get(key));
+            /* Set another value and verify it */
+            String value1 = "v1_1";
+            store.set(key, value1);
+            Assert.assertEquals(value1, store.get(key));
 
-        /* Restore to previous state */
-        store.restoreCheckpoint();
+            /* Restore to previous state */
+            store.restoreCheckpoint();
 
-        /* verify the restore value */
-        Assert.assertEquals(value0, store.get(key));
+            /* verify the restore value */
+            Assert.assertEquals(value0, store.get(key));
+        } finally {
+            if (microServiceId != null) {
+                registry.delete(microServiceId);
+            }
+        }
     }
 
     /**
@@ -392,86 +433,101 @@ public class SimpleDMIntegrationTest {
      */
     @Test
     public void runPeriodicCheckpointTest() throws Exception {
-        MicroServiceSpec spec = getMicroServiceSpecForDM("PeriodicCheckpointDM.yaml");
-        microServiceId = registry.create(spec.toString());
-        KVStore store = (KVStore) registry.acquireStub(microServiceId);
+        MicroServiceID microServiceId = null;
+        try {
+            MicroServiceSpec spec = getMicroServiceSpecForDM("PeriodicCheckpointDM.yaml");
+            microServiceId = registry.create(spec.toString());
+            KVStore store = (KVStore) registry.acquireStub(microServiceId);
 
-        String key = "k1";
-        String preValue = null;
-        int checkpointPeriod =
-                amino.run.policy.checkpoint.periodiccheckpoint.PeriodicCheckpointPolicy.ServerPolicy
-                        .MAX_RPCS_BEFORE_CHECKPOINT;
-        for (int i = 1; i <= checkpointPeriod + 1; i++) {
-            String value = "v1_" + i;
-            store.set(key, value);
-            Assert.assertEquals(value, store.get(key));
+            String key = "k1";
+            String preValue = null;
+            int checkpointPeriod =
+                    amino.run.policy.checkpoint.periodiccheckpoint.PeriodicCheckpointPolicy
+                            .ServerPolicy.MAX_RPCS_BEFORE_CHECKPOINT;
+            for (int i = 1; i <= checkpointPeriod + 1; i++) {
+                String value = "v1_" + i;
+                store.set(key, value);
+                Assert.assertEquals(value, store.get(key));
 
-            if (i % checkpointPeriod == 0) {
-                /* record the checkpointed value */
-                preValue = value;
+                if (i % checkpointPeriod == 0) {
+                    /* record the checkpointed value */
+                    preValue = value;
+                }
+            }
+
+            /* Restore to previous state */
+            store.restoreCheckpoint();
+
+            /* verify the restore value */
+            Assert.assertEquals(preValue, store.get(key));
+        } finally {
+            if (microServiceId != null) {
+                registry.delete(microServiceId);
             }
         }
-
-        /* Restore to previous state */
-        store.restoreCheckpoint();
-
-        /* verify the restore value */
-        Assert.assertEquals(preValue, store.get(key));
     }
 
     @Test
     public void runTwoPCCohortTest() throws Exception {
-        MicroServiceSpec kvStoreSpec = getMicroServiceSpecForDM("TwoPCCohortDM.yaml");
-        MicroServiceID store1MicroServiceID = registry.create(kvStoreSpec.toString());
-        KVStore store1 = (KVStore) registry.acquireStub(store1MicroServiceID);
-        MicroServiceID store2MicroServiceID = registry.create(kvStoreSpec.toString());
-        KVStore store2 = (KVStore) registry.acquireStub(store2MicroServiceID);
-        String key1 = "k1";
-        String value1 = "v1";
-        String key2 = "k2";
-        String value2 = "v2";
-        String value3 = "v3";
-        store1.set(key2, value2);
-        store1.set(key1, value1);
-        store2.set(key2, value3);
-        MicroServiceSpec coordinatoreSpec = getMicroServiceSpecForDM("TwoPCCoordinatorDM.yaml");
-        MicroServiceID coordinatorMicroServiceID =
-                registry.create(coordinatoreSpec.toString(), store1, store2);
-        Coordinator coordinator = (Coordinator) registry.acquireStub(coordinatorMicroServiceID);
-
-        /* During the invocation of migrate method for every participant method invocation ,
-        Two PC Coordinator DM's server policy initiates  invocation in following sequence
-        1.join before method invocation
-        2.actual method invocation
-        3.leave after method invocation
-        4.vote after all participant method invocation is completed
-        5.commit or abort invoked  depending on state of vote */
-
-        /* Test1: Verifying the positive flow
-        key1 migrated from store1 to store2*/
-
-        coordinator.migrate(key1);
-        /* Verifying the value of store1 and store2 */
-        Assert.assertEquals(store1.get(key1), null);
-        Assert.assertEquals(store2.get(key1), value1);
-
+        MicroServiceID store1MicroServiceID = null;
+        MicroServiceID store2MicroServiceID = null;
+        MicroServiceID coordinatorMicroServiceID = null;
         try {
-            /* Test2: Verifying the rollback use case ,
-            Try to migrate key2 from store1 to store2 ,key2 already present in store2 migrate fails ,
-            exception thrown and rollback triggered*/
+            MicroServiceSpec kvStoreSpec = getMicroServiceSpecForDM("TwoPCCohortDM.yaml");
+            store1MicroServiceID = registry.create(kvStoreSpec.toString());
+            KVStore store1 = (KVStore) registry.acquireStub(store1MicroServiceID);
+            store2MicroServiceID = registry.create(kvStoreSpec.toString());
+            KVStore store2 = (KVStore) registry.acquireStub(store2MicroServiceID);
+            String key1 = "k1";
+            String value1 = "v1";
+            String key2 = "k2";
+            String value2 = "v2";
+            String value3 = "v3";
+            store1.set(key2, value2);
+            store1.set(key1, value1);
+            store2.set(key2, value3);
+            MicroServiceSpec coordinatoreSpec = getMicroServiceSpecForDM("TwoPCCoordinatorDM.yaml");
+            coordinatorMicroServiceID =
+                    registry.create(coordinatoreSpec.toString(), store1, store2);
+            Coordinator coordinator = (Coordinator) registry.acquireStub(coordinatorMicroServiceID);
 
-            coordinator.migrate(key2);
-        } catch (Exception e) {
-            /* Verifying the value of store1 and store2  to check the rollback */
-            Assert.assertEquals(store1.get(key2), value2);
-            Assert.assertEquals(store2.get(key2), value3);
-        }
-    }
+            /* During the invocation of migrate method for every participant method invocation ,
+            Two PC Coordinator DM's server policy initiates  invocation in following sequence
+            1.join before method invocation
+            2.actual method invocation
+            3.leave after method invocation
+            4.vote after all participant method invocation is completed
+            5.commit or abort invoked  depending on state of vote */
 
-    @After
-    public void tearDown() throws Exception {
-        if (microServiceId != null) {
-            registry.delete(microServiceId);
+            /* Test1: Verifying the positive flow
+            key1 migrated from store1 to store2*/
+
+            coordinator.migrate(key1);
+            /* Verifying the value of store1 and store2 */
+            Assert.assertEquals(store1.get(key1), null);
+            Assert.assertEquals(store2.get(key1), value1);
+
+            try {
+                /* Test2: Verifying the rollback use case ,
+                Try to migrate key2 from store1 to store2 ,key2 already present in store2 migrate fails ,
+                exception thrown and rollback triggered*/
+
+                coordinator.migrate(key2);
+            } catch (Exception e) {
+                /* Verifying the value of store1 and store2  to check the rollback */
+                Assert.assertEquals(store1.get(key2), value2);
+                Assert.assertEquals(store2.get(key2), value3);
+            }
+        } finally {
+            if (store1MicroServiceID != null) {
+                registry.delete(store1MicroServiceID);
+            }
+            if (store2MicroServiceID != null) {
+                registry.delete(store2MicroServiceID);
+            }
+            if (coordinatorMicroServiceID != null) {
+                registry.delete(coordinatorMicroServiceID);
+            }
         }
     }
 

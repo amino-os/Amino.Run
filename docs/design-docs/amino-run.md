@@ -21,7 +21,7 @@ Every DM, Deployment Manager, has three components: a proxy, a instance manager,
 ### Kernel Object
 *Kernel object* is a wrapper of the *actual* (e.g. Java) object - it contains a reference to the actual object and exposes a `invoke` method which allows any public methods defined on the actual object to be invoked with reflection.
 
-Kernel objects are created with [`KernelServerImpl.newKernelObject`](https://github.com/Huawei-PaaS/DCAP-Sapphire/blob/master/sapphire/sapphire-core/src/main/java/sapphire/kernel/server/KernelServerImpl.java#L101) method. Every kernel object has a unique `oid` and is registered in OMS server. `KernelServer` interface also exposes a few APIs to copy and move kernel objects.
+Kernel objects are created with [`KernelServerImpl.newKernelObject`](../../core/src/main/java/sapphire/kernel/server/KernelServerImpl.java#L101) method. Every kernel object has a unique `oid` and is registered in OMS server. `KernelServer` interface also exposes a few APIs to copy and move kernel objects.
 
 # Remote Interfaces
 

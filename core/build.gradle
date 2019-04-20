@@ -33,12 +33,8 @@ configurations {
 dependencies {
     compile project(':dependencies:java.rmi')
     compile 'org.json:json:20171018'
-    // WARNING:
-    // PR https://github.com/Huawei-PaaS/DCAP-Sapphire/pull/220 added some Graal
-    // classes into Amino.Run kernel. Now it can only be compiled by
-    // GraalVM JDK. Please follow the instructions in the quick start guide at
-    // https://github.com/Huawei-PaaS/DCAP-Sapphire/blob/master/docs/GettingStarted.md#quick-start
-    // to set up GraalVM properly.
+    // We compile using the GraalVM JDK. Please follow the instructions in the quick start guide at
+    // ../docs/GettingStarted.md to set up GraalVM properly.
 
     compile 'org.graalvm.sdk:graal-sdk:' + project.property('graalVmVersion')
     compile 'org.yaml:snakeyaml:1.23'

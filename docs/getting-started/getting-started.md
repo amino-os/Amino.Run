@@ -1,23 +1,8 @@
-# Onboarding Process
-
-* Send public GitHub account, Slack account and Huawei email address to Sungwook (sungwook.moon@huawei.com)
-* Join [slack workspace](https://huawei.slack.com/)
-* Get access to GitHub Repo by contacting Sungwook
-* Read [papers](https://sapphire.cs.washington.edu/research/)
-* Read [Sapphire source code](https://sapphire.cs.washington.edu/code.html)
-* Read [code study notes](./code_study/)
-* Read [github workflow guide](https://github.com/kubernetes/community/blob/master/contributors/guide/github-workflow.md). Please follow this workflow to submit pull requests.
-* [Set up Android Studio](https://github.com/Huawei-PaaS/DCAP-Sapphire/blob/master/docs/Development.md)
-* Review the Principles of Distributed Systems. If you have not done a university course on distributed systems you will need to read the following to get a basic understanding of the principles and common terminology. Feel free to add more resource links below.
-  * [UMass Course 677](http://lass.cs.umass.edu/~shenoy/courses/677/)
-  * [Distributed System Principles by Andrew Tanenbaum](https://www.amazon.com/Distributed-Systems-Principles-Andrew-Tanenbaum/dp/153028175X)
-
-
 # Quick Start
 ## Download and install GraalVM Community Edition
 * You will need to download and install the corrrect version (usually the latest stable version) 
   based on the dependency configured in 
-  [sapphire/sapphire-core/build.gradle](https://github.com/Huawei-PaaS/DCAP-Sapphire/blob/master/sapphire/sapphire-core/build.gradle). 
+  [core/build.gradle](../../core/build.gradle). 
   As of March 2019, that's 
   [GraalVM Community Edition 1.0 RC14](https://github.com/oracle/graal/releases/tag/vm-1.0.0-rc14).
   Note that the open source Community Edition works fine, so don't bother with the Enterprise Edition unless 
@@ -34,9 +19,9 @@ export PATH=$GRAALVM_HOME/bin:$PATH
 gu install ruby
 ```
 
-## Install Android SDK and Android Studio (or IntelliJ)
-* Follow [instructions](https://developer.android.com/studio/) to install Android SDK and Anroid Studio. More details can be found at [here](https://wiki.appcelerator.org/display/guides2/Installing+the+Android+SDK#InstallingtheAndroidSDK-InstallingAndroidSDKToolsonmacOS).
+## Install Android SDK and Android Studio (optional)
 * Android SDK and Android Studio are *not* required by Amino. But many Amino demo applications are android applications. We recommend installing Android SDK and Android Studio.
+* Follow [instructions](https://developer.android.com/studio/) to install Android SDK and Android Studio. More details can be found at [here](https://wiki.appcelerator.org/display/guides2/Installing+the+Android+SDK#InstallingtheAndroidSDK-InstallingAndroidSDKToolsonmacOS).
 ```shell
 // on Mac
 $ brew cask install android-sdk
@@ -51,49 +36,50 @@ $ /usr/local/share/android-sdk/tools/bin/sdkmanager --licenses
 
 ### Add Android Properties
 ```shell
-> cd DCAP_Sapphire/sapphire
+> cd Amino.Run/
 > cat >> local.properties  << EOF
 ndk.dir=<your ndk dir>
 sdk.dir=<your sdk dir>
 EOF
 ```
 
-## Getting and Building the Source Code
+## Get and Build the Source Code
 
-### Check out Sapphire from Github
+### Check out from Github
 ```shell
-# checkout sapphire
-$ git clone https://github.com/Huawei-PaaS/DCAP-Sapphire
+# checkout Amino.Run
+$ git clone https://github.com/Amino-Distributed-OS/Amino.Run
+> cd Amino.run/core
 ```
 
-### Build and Test Sapphire Core
+### Build and Test the Core
 ```shell
-# build sapphire-core
-> cd DCAP_Sapphire/sapphire/sapphire-core
 > ../gradlew build
+```
 
-### Other gradle tasks and tips
-
-#### List Sapphire Projects
+### Build and Run Basic Example Applications
 ```shell
-> cd DCAP_Sapphire/sapphire
+> ./gradlew :examples:run
+```
+
+### Other Gradle Tasks and Tips
+
+#### List Projects
+```shell
 > ./gradlew projects
 ```
-
-#### Clean Sapphire
+#### List All Gradle Tasks
 ```shell
-# clean sapphire-core and dependencies
-> cd DCAP_Sapphire/sapphire
-> ./gradlew clean
-
-# clean only sapphire-core
-> ./gradlew :sapphire-core:clean
+> ./gradlew tasks --all
 ```
 
+#### Clean All Build Artifacts
+```shell
+> ./gradlew clean
+
+```
 #### Format Source Code
 ```shell
-# format source code
-> cd DCAP_Sapphire/sapphire
 > ./gradlew goJF
 
 # verify source code style
@@ -108,41 +94,37 @@ $ git clone https://github.com/Huawei-PaaS/DCAP-Sapphire
 
 ### Other Gradle Tips
 ```shell
-> ./gradlew projects
-> ./gradlew tasks --all
 > ./gradlew properties
 > ./gradlew jar
 ```
 
-## Release
+# Communicate
 
-### Publish Sapphire Core to Bintray 
+<!--
+TODO: Create public slack channels, and allow self-signup.  In the mean time, Sungwook signs people up.
+-->
+* To join our [Slack](http://slack.com) channels, send your public GitHub account, Slack account name and email address to Sungwook Moon (sungwook.moon@huawei.com)
+
+# Some additional Background Reading for the Curious
+
+* Read [Papers](https://sapphire.cs.washington.edu/research/)
+* Read [Sapphire source code](https://sapphire.cs.washington.edu/code.html)
+* Read [Code Study Notes](./code_study/)
+* Review the Principles of Distributed Systems. If you have not done a university course on distributed systems you will need to read the following to get a basic understanding of the principles and common terminology. Feel free to add more resource links below.
+  * [UMass Course 677](http://lass.cs.umass.edu/~shenoy/courses/677/)
+  * [Distributed System Principles by Andrew Tanenbaum](https://www.amazon.com/Distributed-Systems-Principles-Andrew-Tanenbaum/dp/153028175X)
+
+## Releasing
+
+### Publish Core to Bintray 
 ```shell
 export BINTRAY_USER="<bintray_user>"
 export BINTRAY_API_KEY="<bintray_api_key>"
 
-# publish sapphire-core to bintray
-> ./gradlew --info :sapphire-core:bintrayUpload
+> ./gradlew --info :core:bintrayUpload
 
 # publish apache harmony to bintray
-> ./gradlew --info :apache.harmony:bintrayUpload
+> ./gradlew --info :dependencies:apache.harmony:bintrayUpload
 ```
 
 
-### Build and Test Basic Example Applications
-#### Build and Run Hankstodo, a simple TODO list manager
-```shell
-> cd DCAP_Sapphire/sapphire
-> # Run the Object Management System
-> ./gradlew :examples:hanksTodo:runoms
-> # In a new terminal window: Run a Kernel Server
-> ./gradlew :examples:hanksTodo:runks
-> # In a new terminal window: Run the Application
-> ./gradlew :examples:hanksTodo:runapp
-```
-
-# IntelliJ Tips
-* If you decide to use IntelliJ instead of Android Studio, use *Open* to open the Sapphire project, 
-  as *Import* may not work properly.
-
-![import_sapphire](../images/ImportSapphireInIntelliJ.png)

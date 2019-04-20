@@ -2,7 +2,7 @@
 
 ## Introduction
 
-Mobile applications are commonly modeled as client server architecture where client components run on mobile devices and server logics are provided by web services in the cloud. DCAP, however, provides a mechanism to migrate *client components* between mobile devices and servers in cloud. With DCAP framework, mobile application developers can annotate some client components as `offload-enabled` and specify an offload objective function, e.g. to improve responsiveness, DCAP runtime will automatically migrate objects between mobile devices and servers in cloud to maximize the objective function.
+Mobile applications are commonly modeled as client server architecture where client components run on mobile devices and server logics are provided by web services in the cloud. Amino.Run, however, provides a mechanism to migrate *client components* between mobile devices and servers in cloud. With the Amino.Run framework, mobile application developers can annotate some client components as `offload-enabled` and specify an offload objective function, e.g. to improve responsiveness, Amino.Run will automatically migrate objects between mobile devices and servers in cloud to maximize the objective function.
 
 * **Client Component Offload**: This design only focuses on client component offload. Migration of server side objects are not considered. What are client components? Client components are objects that are intended to be run on devices. They serve for one specific user, rather than shared by multiple users. 
 

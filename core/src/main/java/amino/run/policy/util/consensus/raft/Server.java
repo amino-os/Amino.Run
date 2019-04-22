@@ -849,7 +849,7 @@ public class Server
                                          * If no leader is elected within the timeout, start another
                                          * election.
                                          */
-                                        become(State.CANDIDATE, vState.getState());
+                                        become(State.CANDIDATE, State.CANDIDATE);
                                     }
                                 },
                                 (long) LEADER_ELECTION_TIMEOUT);
@@ -988,7 +988,10 @@ public class Server
                             if (votedInAsLeader) {
                                 become(State.LEADER, State.CANDIDATE);
                             } else {
-                                become(State.CANDIDATE, State.CANDIDATE);
+                                // If not, then rely on the timer thread to trigger another
+                                // election, otherwise we potentially do it both here and there,
+                                // which we don't want.
+                                // become(State.CANDIDATE, State.CANDIDATE);
                             }
                         }
                     });

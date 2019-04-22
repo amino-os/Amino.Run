@@ -29,7 +29,7 @@ balancing, observability, fault diagnosis and many more.
 Amino.Run is based on, and extends, several years of research work done at
 the [University Of Washington Computer Systems
 Lab](https://syslab.cs.washington.edu/research/) in
-Seattle.<sup>1,2,3,4,5</sup> 
+Seattle.<sup>1,2,3</sup> 
 
 Amino.Run is alpha software, and not yet
 suitable for production use.  We have a well-funded development team
@@ -59,7 +59,7 @@ In summary, our approach is to:
    to your application.
 3. support a wide variety of programming languages - we recognise the
    need for different languages and embrace that need. Java,
-   Javascript, Python, C++, Swift, Ruby, Rust and others<sup>6</sup>-
+   Javascript, Python, C++, Swift, Ruby, Rust and others<sup>4</sup>-
    we've got you covered - and without the need for clunky and inefficient
    REST or RPC library code to get them to talk to each other.  We
    encourage using multiple different langauages to develop
@@ -78,14 +78,20 @@ reactive distributed memory manager (Amino.Sync), a consistent
 transactional storage system (Amino.Sync) and a privacy and security framework
 (Amino.Safe). Initial focus is on making Amino.Run production-ready.
 
-## Important Links
+# Documentation
 * [Getting started](getting-started/getting-started.md)
+* Contributing:
+  * [Setting up your developer environment](Developer.md)
+  * [Contributing to the documentation](documentation.md)
+* [External documentation web site](http://amino.readthedocs.com)
+<!--
+TODO: Change the above to http://docs.amino-os.io as soon as that site and 
+      redirection have been set up correctly.
+-->
 
-## References
+# References
 <sup>1</sup> [Customizable and Extensible Deployment for Mobile/Cloud Applications
 ](https://syslab.cs.washington.edu/papers/sapphire-osdi14.pdf)<br/>
 <sup>2</sup> [Diamond: Automating Data Management and Storage for Wide-area, Reactive Applications](https://syslab.cs.washington.edu/papers/diamond-osdi16.pdf)<br/>
 <sup>3</sup> [Building Consistent Transactions with Inconsistent Replication (Extended Version)](https://syslab.cs.washington.edu/papers/tapir-tr-v2.pdf)<br/>
-<sup>4</sup> Link to paper<br/>
-<sup>5</sup> Link to paper<br/>
-<sup>6</sup> Not all of these languages are currently officially supported, but they are all on our medium-term roadmap, support based on [GraalVM](http://www.graalvm.org/docs/)<br/>
+<sup>4</sup> Not all of these languages are currently officially supported, but they are all on our medium-term roadmap, support based on [GraalVM](http://www.graalvm.org/docs/)<br/>

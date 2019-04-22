@@ -92,7 +92,7 @@ public class KernelServerImpl implements KernelServer {
     }
 
     /**
-     * Metric client and server initialization.
+     * Metric client initialization.
      *
      * @param metricServer
      * @param metricServerIpAndPort

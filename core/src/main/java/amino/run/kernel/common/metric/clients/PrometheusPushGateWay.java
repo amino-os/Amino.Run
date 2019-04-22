@@ -5,10 +5,12 @@ import amino.run.kernel.common.metric.MetricClient;
 import amino.run.kernel.common.metric.schema.Schema;
 import amino.run.kernel.common.metric.schema.SchemaType;
 import amino.run.kernel.common.metric.type.Counter;
+import amino.run.kernel.common.metric.type.Gauge;
 import amino.run.kernel.common.metric.type.Summary;
 import io.prometheus.client.Collector;
 import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.CounterMetricFamily;
+import io.prometheus.client.GaugeMetricFamily;
 import io.prometheus.client.SummaryMetricFamily;
 import io.prometheus.client.exporter.PushGateway;
 import java.util.ArrayList;
@@ -16,11 +18,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class PrometheusPushGateWayClient implements MetricClient {
+public class PrometheusPushGateWay implements MetricClient {
 
     private String pushGatewayIpAndPort;
 
-    public PrometheusPushGateWayClient(String pushGatewayIpAndPort) {
+    public PrometheusPushGateWay(String pushGatewayIpAndPort) {
         this.pushGatewayIpAndPort = pushGatewayIpAndPort;
     }
 
@@ -32,7 +34,7 @@ public class PrometheusPushGateWayClient implements MetricClient {
                 new PushMetricCollector(labels, metrics).register(registry);
 
         PushGateway pushGateway = new PushGateway(pushGatewayIpAndPort);
-        pushGateway.push(registry, "Prometheus-Push-Job", labels);
+        pushGateway.push(registry, "amino-job", labels);
     }
 
     @Override
@@ -76,6 +78,15 @@ public class PrometheusPushGateWayClient implements MetricClient {
                         counter.addMetric(values, counterMetric.getCount());
                     }
                     mfs.add(counter);
+                }
+
+                if (schema.getType().equals(SchemaType.Gauge.toString())) {
+                    GaugeMetricFamily gauge = new GaugeMetricFamily(schema.getName(), "", keys);
+                    if (metric instanceof Gauge) {
+                        Gauge gaugeMetric = (Gauge) metric;
+                        gauge.addMetric(values, gaugeMetric.getValue());
+                    }
+                    mfs.add(gauge);
                 }
             }
             return mfs;

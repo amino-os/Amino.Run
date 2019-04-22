@@ -1,7 +1,7 @@
 package amino.run.kernel.common.metric;
 
 import amino.run.kernel.common.metric.clients.LoggingClient;
-import amino.run.kernel.common.metric.clients.PrometheusPushGateWayClient;
+import amino.run.kernel.common.metric.clients.PrometheusPushGateWay;
 import amino.run.kernel.common.metric.schema.Schema;
 import amino.run.policy.util.ResettableTimer;
 import java.util.TimerTask;
@@ -43,7 +43,7 @@ public class KernelMetricClient {
 
         // Create the client based on metric server configuration. default is logger client.
         if (metricServer.equals("prometheus")) {
-            client = new PrometheusPushGateWayClient(metricServerIpAndPort);
+            client = new PrometheusPushGateWay(metricServerIpAndPort);
         } else {
             client = new LoggingClient();
         }

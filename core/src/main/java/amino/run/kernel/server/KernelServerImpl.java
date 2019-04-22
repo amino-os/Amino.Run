@@ -438,7 +438,7 @@ public class KernelServerImpl implements KernelServer {
             // Bind server in registry
             KernelServerImpl server = new KernelServerImpl(host, omsHost);
             // metrics initialization
-            server.metricsInit(ksArgs.metricServer, ksArgs.metricServerIpAndPort);
+            server.metricsInit(ksArgs.metricServer, ksArgs.metricServerAddress);
             KernelServer stub =
                     (KernelServer) UnicastRemoteObject.exportObject(server, ksArgs.servicePort);
             Registry registry = LocateRegistry.createRegistry(ksArgs.kernelServerPort);

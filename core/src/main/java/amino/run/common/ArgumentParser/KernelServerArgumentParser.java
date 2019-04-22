@@ -39,9 +39,9 @@ public class KernelServerArgumentParser extends OMSArgumentParser {
     public String metricServer;
 
     @Option(
-            name = "metric-server-ip-port",
-            help = "metric server ip port",
+            name = "metric-server-address",
+            help = "metric server address",
             defaultValue = "127.0.0.1:9091",
             category = "startup")
-    public String metricServerIpAndPort;
+    public String metricServerAddress;
 }

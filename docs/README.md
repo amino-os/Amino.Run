@@ -79,7 +79,7 @@ transactional storage system (Amino.Sync) and a privacy and security framework
 (Amino.Safe). Initial focus is on making Amino.Run production-ready.
 
 ## Important Links
-* [Getting started](GettingStarted.md)
+* [Amino.Run Documentation](https://amino.readthedocs.io/en/latest/index.html)
 
 ## References
 <sup>1</sup> [Customizable and Extensible Deployment for Mobile/Cloud Applications

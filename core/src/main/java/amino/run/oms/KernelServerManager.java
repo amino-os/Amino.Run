@@ -106,8 +106,7 @@ public class KernelServerManager {
         ksHeartBeatTimer.start();
     }
 
-    public void heartbeatKernelServer(ServerInfo srvinfo)
-            throws RemoteException, NotBoundException, KernelServerNotFoundException {
+    public void heartbeatKernelServer(ServerInfo srvinfo) throws KernelServerNotFoundException {
         logger.fine(
                 "heartbeat from KernelServer: "
                         + srvinfo.getHost().toString()

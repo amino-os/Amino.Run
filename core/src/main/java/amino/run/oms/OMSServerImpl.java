@@ -111,8 +111,8 @@ public class OMSServerImpl implements OMSServer, Registry {
     }
 
     @Override
-    public void heartbeatKernelServer(ServerInfo srvinfo)
-            throws RemoteException, NotBoundException, KernelServerNotFoundException {
+    public void receiveHeartBeat(ServerInfo srvinfo)
+            throws RemoteException, KernelServerNotFoundException {
         serverManager.heartbeatKernelServer(srvinfo);
     }
 

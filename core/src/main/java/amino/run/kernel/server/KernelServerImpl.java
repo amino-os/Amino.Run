@@ -21,7 +21,6 @@ import amino.run.runtime.MicroService;
 import com.google.devtools.common.options.OptionsParser;
 import java.io.Serializable;
 import java.net.InetSocketAddress;
-import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -408,13 +407,11 @@ public class KernelServerImpl implements KernelServer {
     }
 
     /** Send heartbeats to OMS. */
-    private void startheartbeat(ServerInfo srvinfo) {
-        logger.fine("heartbeat KernelServer" + srvinfo);
+    private void sendheartbeat(ServerInfo srvinfo) {
         try {
-            oms.heartbeatKernelServer(srvinfo);
+            oms.receiveHeartBeat(srvinfo);
         } catch (Exception e) {
-            logger.severe("Cannot heartbeat KernelServer" + srvinfo);
-            e.printStackTrace();
+            logger.severe("Heartbeat failed with exception: " + e);
         }
         ksHeartbeatSendTimer.reset();
     }
@@ -459,7 +456,7 @@ public class KernelServerImpl implements KernelServer {
             server.setRegion(srvInfo.getRegion());
 
             // Start heartbeat timer
-            server.startHeartbeats(srvInfo);
+            server.startHeartbeat(srvInfo);
 
             // Start a thread that print memory stats
             server.getKernelServerMetricManager(srvInfo).start();
@@ -473,14 +470,12 @@ public class KernelServerImpl implements KernelServer {
         }
     }
 
-    private void startHeartbeats(final ServerInfo srvInfo)
-            throws RemoteException, NotBoundException, KernelServerNotFoundException {
-        oms.heartbeatKernelServer(srvInfo);
+    private void startHeartbeat(final ServerInfo srvInfo) {
         ksHeartbeatSendTimer =
                 new ResettableTimer(
                         new TimerTask() {
                             public void run() {
-                                startheartbeat(srvInfo);
+                                sendheartbeat(srvInfo);
                             }
                         },
                         KS_HEARTBEAT_PERIOD);

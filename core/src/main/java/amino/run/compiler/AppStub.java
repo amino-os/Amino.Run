@@ -32,18 +32,6 @@ public final class AppStub extends Stub {
         return ms;
     }
 
-    /**
-     * Method defined for overriding Base class abstract method. Is a dummy method in AppStub class,
-     * as no handling is needed in the AppStub, as this method handles DM class onRPC methods.
-     *
-     * @return List of DM onRPC methods
-     */
-    @Override
-    public TreeSet<MethodStub> getDMRPCMethods() {
-        TreeSet<MethodStub> ms = new TreeSet<MethodStub>();
-        return ms;
-    }
-
     @Override
     public String getPackageStatement() {
         return ((packageName == null)

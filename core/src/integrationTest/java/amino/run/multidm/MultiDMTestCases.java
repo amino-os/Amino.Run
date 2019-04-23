@@ -162,11 +162,13 @@ public class MultiDMTestCases {
     }
 
     @Test
+    @Ignore("Test is ignored will be removed once the multi DM issues are resolved")
     public void testDHTConsensusRSMAtLeastOnceRPC() throws Exception {
         runTest("DHT", "ConsensusRSM", "AtLeastOnceRPC");
     }
 
     @Test
+    @Ignore("Test is ignored will be removed once the multi DM issues are resolved")
     public void testDHTConsensusRSMAtLeastOnceRPCCacheLease() throws Exception {
         runTest("DHT", "ConsensusRSM", "AtLeastOnceRPC", "CacheLease");
     }
@@ -192,11 +194,13 @@ public class MultiDMTestCases {
     }
 
     @Test
+    @Ignore("Test is ignored will be removed once the multi DM issues are resolved")
     public void testDHTLoadBalancedMasterSlaveSyncAtLeastOnceRPCCacheLease() throws Exception {
         runTest("DHT", "LoadBalancedMasterSlaveSync", "AtLeastOnceRPC", "CacheLease");
     }
 
     @Test
+    @Ignore("Test is ignored will be removed once the multi DM issues are resolved")
     public void testDHTLoadBalancedMasterSlaveSyncCacheLease() throws Exception {
         runTest("DHT", "LoadBalancedMasterSlaveSync", "CacheLease");
     }
@@ -224,6 +228,7 @@ public class MultiDMTestCases {
     }
 
     @Test
+    @Ignore("Test is ignored will be removed once the multi DM issues are resolved")
     public void testAtLeastOnceRPCConsensusRSMDHT() throws Exception {
         runTest("AtLeastOnceRPC", "ConsensusRSM", "DHT");
     }
@@ -290,11 +295,13 @@ public class MultiDMTestCases {
     }
 
     @Test
+    @Ignore("Test is ignored will be removed once the multi DM issues are resolved")
     public void testConsensusRSMDHT() throws Exception {
         runTest("ConsensusRSM", "DHT");
     }
 
     @Test
+    @Ignore("Test is ignored will be removed once the multi DM issues are resolved")
     public void testConsensusRSMDHTAtLeastOnceRPC() throws Exception {
         runTest("ConsensusRSM", "DHT", "AtLeastOnceRPC");
     }

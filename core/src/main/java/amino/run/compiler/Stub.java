@@ -2,7 +2,9 @@ package amino.run.compiler;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
 import org.apache.harmony.rmi.common.ClassList;
@@ -29,11 +31,10 @@ public abstract class Stub implements RmicConstants {
     /** Stub class name */
     protected final String stubName;
 
+    protected Set<String> dmChainMethods = new HashSet<String>(Arrays.asList("onRPC", "upRPCCall"));
+
     /** List of remote methods for the class */
     private final TreeSet<MethodStub> methods;
-
-    /** List of DM onRPC methods for the class */
-    private final TreeSet<MethodStub> dmRPCMethods;
 
     /**
      * Creates <code>Stub</code> instance for specified type (app or kernel) and class.
@@ -47,18 +48,6 @@ public abstract class Stub implements RmicConstants {
         String shortClassName = RMIUtil.getShortName(cls);
         stubName = shortClassName + stubSuffix;
         methods = getMethods();
-        dmRPCMethods = getDMRPCMethods();
-
-        /**
-         * If the DM class contains overrided onRPC methods the same will get added in the methods
-         * list also, from the base Class. Hence the corresponding base methods needs to be removed
-         * from the methods list.
-         */
-        for (MethodStub m : dmRPCMethods) {
-            if (methods.contains(m)) {
-                methods.remove(m);
-            }
-        }
     }
 
     /**
@@ -83,8 +72,6 @@ public abstract class Stub implements RmicConstants {
                 + getStubAdditionalMethods()
                 + EOLN
                 + getMethodImplementations()
-                + EOLN
-                + getDMRPCMethodImplementations() //$NON-NLS-1$
                 + indenter.decrease()
                 + '}'
                 + EOLN
@@ -117,7 +104,7 @@ public abstract class Stub implements RmicConstants {
         StringBuilder buffer = new StringBuilder();
         for (Iterator<MethodStub> i = methods.iterator(); i.hasNext(); ) {
             MethodStub m = i.next();
-            if (m.name.equals("onRPC")) {
+            if (this.dmChainMethods.contains(m.name)) {
                 buffer.append(EOLN + m.getStubImpl(false));
             } else {
                 buffer.append(EOLN + m.getStubImpl(true));
@@ -126,22 +113,7 @@ public abstract class Stub implements RmicConstants {
         return buffer.toString();
     }
 
-    /**
-     * Returns remote DM onRPC method implementation
-     *
-     * @return Stub DM onRPC method implementation code.
-     */
-    private String getDMRPCMethodImplementations() {
-        StringBuilder buffer = new StringBuilder();
-        for (Iterator<MethodStub> i = dmRPCMethods.iterator(); i.hasNext(); ) {
-            buffer.append(EOLN + i.next().getStubImpl(true));
-        }
-        return buffer.toString();
-    }
-
     public abstract TreeSet<MethodStub> getMethods();
-
-    public abstract TreeSet<MethodStub> getDMRPCMethods();
 
     public abstract String getPackageStatement();
 

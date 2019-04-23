@@ -808,9 +808,12 @@ public class Server
         /**
          * How long we wait after starting election, before giving up and starting again if no
          * leader has been elected yet. Note that a random variation between servers is introduced
-         * to reduce split votes.
+         * to reduce split votes. And a minimum to prevent randomly chosen timeouts being too short.
+         * The end result is intended to be an election timeout slightly more or less than the
+         * heartbeat timeout.
          */
-        public final int LEADER_ELECTION_TIMEOUT = (int) (LEADER_HEARTBEAT_TIMEOUT * Math.random());
+        public final int LEADER_ELECTION_TIMEOUT =
+                (int) (LEADER_HEARTBEAT_TIMEOUT * Math.random()) + LEADER_HEARTBEAT_TIMEOUT / 2;
 
         /** If no leader is elected within the timeout, start another election. */
         ResettableTimer leaderElectionTimer;

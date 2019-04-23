@@ -805,6 +805,13 @@ public class Server
     }
 
     class Candidate {
+        /**
+         * How long we wait after starting election, before giving up and starting again if no
+         * leader has been elected yet. Note that a random variation between servers is introduced
+         * to reduce split votes.
+         */
+        public final int LEADER_ELECTION_TIMEOUT =
+                (int) (LEADER_HEARTBEAT_TIMEOUT * Math.random()) + (LEADER_HEARTBEAT_TIMEOUT / 3);
 
         /** If no leader is elected within the timeout, start another election. */
         ResettableTimer leaderElectionTimer;
@@ -831,26 +838,23 @@ public class Server
             avoids AlreadyVotedException while voting for self */
             pState.setVotedFor(NO_LEADER, pState.getVotedFor());
 
-            /**
-             * How long we wait after starting election, before giving up and starting again if no
-             * leader has been elected yet. Note that a random variation between servers is
-             * introduced to reduce split votes.
-             */
-            final long LEADER_ELECTION_TIMEOUT = (long) (LEADER_HEARTBEAT_TIMEOUT * Math.random());
-
-            /* Create a leader election timer instance with random delay */
-            leaderElectionTimer =
-                    new ResettableTimer(
-                            new TimerTask() {
-                                public void run() {
-                                    /**
-                                     * If no leader is elected within the timeout, start another
-                                     * election.
-                                     */
-                                    become(State.CANDIDATE, vState.getState());
-                                }
-                            },
-                            LEADER_ELECTION_TIMEOUT);
+            if (null == leaderElectionTimer) {
+                /* Create a leader election timer instance for the very first time candidate.start
+                method is called. Further call to candidate.start due to FSM, doesn't create another
+                instance. Just restart the existing leader election timer instance */
+                leaderElectionTimer =
+                        new ResettableTimer(
+                                new TimerTask() {
+                                    public void run() {
+                                        /**
+                                         * If no leader is elected within the timeout, start another
+                                         * election.
+                                         */
+                                        become(State.CANDIDATE, State.CANDIDATE);
+                                    }
+                                },
+                                (long) LEADER_ELECTION_TIMEOUT);
+            }
 
             pState.incrementCurrentTerm(pState.getCurrentTerm());
 
@@ -868,14 +872,13 @@ public class Server
                             Executors.newFixedThreadPool(vState.otherServers.size() + 1);
 
             this.leaderElectionTimer.start();
-            sendVoteRequests(LEADER_ELECTION_TIMEOUT);
+            sendVoteRequests();
         }
 
         /** Stop being a candidate. */
         void stop() {
             logger.info(pState.myServerID + ": Stop being a candidate.");
             this.leaderElectionTimer.cancel();
-            this.leaderElectionTimer = null;
             if (voteRequestThreadPool != null) {
                 voteRequestThreadPool.shutdownNow();
                 voteRequestThreadPool = null;
@@ -901,7 +904,7 @@ public class Server
                 state transition happens from candidate to leader and can safely consider
                 the pending awaited vote grants as not useful. It can happen due to blocking call */
                 if ((vState.getState() != State.CANDIDATE)
-                        || (currentTerm != pState.getCurrentTerm())) {
+                        || (!currentTerm.equals(pState.getCurrentTerm()))) {
                     // Not a valid/useful grant
                     voteGranted = false;
                     logger.info(
@@ -928,7 +931,7 @@ public class Server
          * for sending, and a thread has been created to gather all responses and convert to leader
          * or start another election, as appropriate.
          */
-        void sendVoteRequests(final long expiryInterval) {
+        void sendVoteRequests() {
             logger.fine(
                     "Sending vote requests to "
                             + vState.otherServers.keySet().size()
@@ -958,21 +961,20 @@ public class Server
                                 votedInAsLeader =
                                         voteCounter.tryAcquire(
                                                 majorityQuorumSize() - 1,
-                                                expiryInterval,
+                                                LEADER_ELECTION_TIMEOUT,
                                                 TimeUnit.MILLISECONDS);
 
                             } catch (InterruptedException e) {
                                 logger.info(
                                         pState.myServerID
                                                 + "Interrupted while waiting to receive a majority of votes in leader election.");
-                                return;
                             }
 
                             /* If the state is not candidate or term has changed during election process,
                             then this election is not valid anymore. Just return. It can happen due to
                             blocking call */
                             if ((vState.getState() != State.CANDIDATE)
-                                    || (currentTerm != pState.getCurrentTerm())) {
+                                    || (!currentTerm.equals(pState.getCurrentTerm()))) {
                                 logger.info(
                                         String.format(
                                                 "%s While waiting in blocking call, state transitioned from CANDIDATE to %s, old term : %d and current term : %d",

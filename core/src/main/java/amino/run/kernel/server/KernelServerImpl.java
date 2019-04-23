@@ -406,12 +406,12 @@ public class KernelServerImpl implements KernelServer {
         return new KernelMetricManager(srvInfo);
     }
 
-    /** Send heartbeats to OMS. */
-    private void sendheartbeat(ServerInfo srvinfo) {
+    /** Send HeartBeats to OMS. */
+    private void sendHeartBeat(ServerInfo srvinfo) {
         try {
             oms.receiveHeartBeat(srvinfo);
         } catch (Exception e) {
-            logger.severe("Heartbeat failed with exception: " + e);
+            logger.severe("HeartBeat failed with exception: " + e);
         }
         ksHeartbeatSendTimer.reset();
     }
@@ -455,8 +455,8 @@ public class KernelServerImpl implements KernelServer {
             oms.registerKernelServer(srvInfo);
             server.setRegion(srvInfo.getRegion());
 
-            // Start heartbeat timer
-            server.startHeartbeat(srvInfo);
+            // Start HeartBeat timer
+            server.startHeartBeat(srvInfo);
 
             // Start a thread that print memory stats
             server.getKernelServerMetricManager(srvInfo).start();
@@ -470,12 +470,12 @@ public class KernelServerImpl implements KernelServer {
         }
     }
 
-    private void startHeartbeat(final ServerInfo srvInfo) {
+    private void startHeartBeat(final ServerInfo srvInfo) {
         ksHeartbeatSendTimer =
                 new ResettableTimer(
                         new TimerTask() {
                             public void run() {
-                                sendheartbeat(srvInfo);
+                                sendHeartBeat(srvInfo);
                             }
                         },
                         KS_HEARTBEAT_PERIOD);

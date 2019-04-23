@@ -241,7 +241,7 @@ public class KernelServerManagerTest {
                             new TimerTask() {
                                 public void run() {
                                     try {
-                                        manager.heartbeatKernelServer(s);
+                                        manager.receiveHeartBeat(s);
                                     } catch (Exception e) {
                                         e.printStackTrace();
                                     }

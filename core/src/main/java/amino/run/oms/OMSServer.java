@@ -40,8 +40,7 @@ public interface OMSServer extends Remote {
 
     void registerKernelServer(ServerInfo info) throws RemoteException, NotBoundException;
 
-    void heartbeatKernelServer(ServerInfo srvinfo)
-            throws RemoteException, NotBoundException, KernelServerNotFoundException;
+    void receiveHeartBeat(ServerInfo srvinfo) throws RemoteException, KernelServerNotFoundException;
 
     Policy.GroupPolicy createGroupPolicy(
             Class<?> policyClass, MicroServiceID microServiceId, MicroServiceSpec spec)

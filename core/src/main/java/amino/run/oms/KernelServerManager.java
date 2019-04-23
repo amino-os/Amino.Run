@@ -41,10 +41,9 @@ public class KernelServerManager {
 
     void stopHeartBeat(ServerInfo srvInfo) {
         logger.info(
-                "Heartbeat not received from region:"
-                        + srvInfo.getRegion()
-                        + "host:"
-                        + srvInfo.getHost().toString());
+                String.format(
+                        "Heartbeat not received from server: %s in region: %s",
+                        srvInfo.getHost(), srvInfo.getRegion()));
 
         ResettableTimer ksHeartBeatTimer = ksHeartBeatTimers.get(srvInfo.getHost());
         ksHeartBeatTimer.cancel();
@@ -61,10 +60,9 @@ public class KernelServerManager {
         ArrayList<InetSocketAddress> serverList = regions.get(srvInfo.getRegion());
         if (serverList == null) {
             logger.severe(
-                    "region does not exist for removeKernelServer: "
-                            + srvInfo.getHost().toString()
-                            + " in region "
-                            + srvInfo.getRegion());
+                    String.format(
+                            "KernelServer: %s do not exist in region: %s",
+                            srvInfo.getHost(), srvInfo.getRegion()));
             return;
         }
         serverList.remove(srvInfo.getHost());
@@ -106,35 +104,27 @@ public class KernelServerManager {
         ksHeartBeatTimer.start();
     }
 
-    public void heartbeatKernelServer(ServerInfo srvinfo)
-            throws RemoteException, NotBoundException, KernelServerNotFoundException {
+    public void receiveHeartBeat(ServerInfo srvinfo) throws KernelServerNotFoundException {
         logger.fine(
-                "heartbeat from KernelServer: "
-                        + srvinfo.getHost().toString()
-                        + " in region "
-                        + srvinfo.getRegion());
+                String.format(
+                        "Received HeartBeat from KernelServer: %s in region: %s",
+                        srvinfo.getHost(), srvinfo.getRegion()));
 
         ArrayList<InetSocketAddress> serverList = regions.get(srvinfo.getRegion());
+        if (serverList != null) {
+            if (serverList.contains(srvinfo.getHost())) {
+                ResettableTimer ksHeartBeatTimer = ksHeartBeatTimers.get(srvinfo.getHost());
+                ksHeartBeatTimer.reset();
+                return;
+            }
+        }
 
-        if (null == serverList) {
-            logger.severe(
-                    "region does not exist for heartbeat KernelServer: "
-                            + srvinfo.getHost().toString()
-                            + " in region "
-                            + srvinfo.getRegion());
-            throw new KernelServerNotFoundException("region does not exist");
-        }
-        if (serverList.contains(srvinfo.getHost())) {
-            ResettableTimer ksHeartBeatTimer = ksHeartBeatTimers.get(srvinfo.getHost());
-            ksHeartBeatTimer.reset();
-            return;
-        }
-        logger.severe(
-                "Host does not exist for heartbeat KernelServer: "
-                        + srvinfo.getHost().toString()
-                        + " in region "
-                        + srvinfo.getRegion());
-        throw new KernelServerNotFoundException("region exist but host does not exist");
+        String message =
+                String.format(
+                        "KernelServer: %s do not exist in region: %s",
+                        srvinfo.getHost(), srvinfo.getRegion());
+        logger.severe(message);
+        throw new KernelServerNotFoundException(message);
     }
 
     /**

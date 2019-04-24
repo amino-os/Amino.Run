@@ -81,9 +81,9 @@ transactional storage system (Amino.Sync) and a privacy and security framework
 # Documentation
 * [Getting started](getting-started/getting-started.md)
 * Contributing:
-  * [Setting up your developer environment](Developer.md)
+  * [Setting up your developer environment](developer.md)
   * [Contributing to the documentation](documentation.md)
-* [External documentation web site](http://amino.readthedocs.com)
+* [External documentation web site](http://amino.readthedocs.io/en/latest)
 <!--
 TODO: Change the above to http://docs.amino-os.io as soon as that site and 
       redirection have been set up correctly.

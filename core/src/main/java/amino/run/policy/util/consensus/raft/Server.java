@@ -176,61 +176,64 @@ public class Server
             leaderHeartbeatReceiveTimer.reset(); // This is a heartbeat from the leader.
         }
 
-        /**
-         * 2. Reply false if log doesn’t contain an entry at prevLogIndex whose term matches
-         * prevLogTerm (§5.3)
-         */
-        LogEntry prevLogEntry;
-        if (prevLogIndex >= 0) {
-            try {
-                prevLogEntry = pState.log().get(prevLogIndex);
-            } catch (IndexOutOfBoundsException e) {
-                throw new InvalidLogIndex(
-                        "Attempt to append entry with invalid previous log index: " + prevLogIndex,
-                        prevLogIndex);
+        synchronized (pState) {
+            /**
+             * 2. Reply false if log doesn’t contain an entry at prevLogIndex whose term matches
+             * prevLogTerm (§5.3)
+             */
+            LogEntry prevLogEntry;
+            if (prevLogIndex >= 0) {
+                try {
+                    prevLogEntry = pState.log().get(prevLogIndex);
+                } catch (IndexOutOfBoundsException e) {
+                    throw new InvalidLogIndex(
+                            "Attempt to append entry with invalid previous log index: "
+                                    + prevLogIndex,
+                            prevLogIndex);
+                }
+
+                /* Need to check for the prev log term */
+                if (prevLogEntry.term != prevLogTerm) {
+                    throw new PrevLogTermMismatch(
+                            "Attempt to append entry with invalid previous log term.  Requested term "
+                                    + prevLogTerm
+                                    + ", actual term: "
+                                    + prevLogEntry.term,
+                            prevLogIndex,
+                            prevLogEntry.term,
+                            prevLogTerm);
+                }
             }
 
-            /* Need to check for the prev log term */
-            if (prevLogEntry.term != prevLogTerm) {
-                throw new PrevLogTermMismatch(
-                        "Attempt to append entry with invalid previous log term.  Requested term "
-                                + prevLogTerm
-                                + ", actual term: "
-                                + prevLogEntry.term,
-                        prevLogIndex,
-                        prevLogEntry.term,
-                        prevLogTerm);
+            /**
+             * 3. If an existing entry conflicts with a new one (same index but different terms),
+             * delete the existing entry and all that follow it (§5.3)
+             */
+            int logIndex = prevLogIndex;
+
+            /* Delete the existing conflicting entries and append the new entries */
+            if (pState.log().size() - 1 >= ++logIndex) {
+                logger.fine(
+                        String.format(
+                                "%s: Removing conflicting log entries. Current log size=%d, Current commit index=%d. Replacing logs starting from index=%d",
+                                pState.myServerID,
+                                pState.log().size(),
+                                this.vState.getCommitIndex(),
+                                logIndex));
+                pState.setLog(pState.log().subList(0, logIndex));
             }
-        }
 
-        /**
-         * 3. If an existing entry conflicts with a new one (same index but different terms), delete
-         * the existing entry and all that follow it (§5.3)
-         */
-        int logIndex = prevLogIndex;
+            // entries is non null. Could be empty or with some entries in it
+            pState.log().addAll(entries);
 
-        /* Delete the existing conflicting entries and append the new entries */
-        if (pState.log().size() - 1 >= ++logIndex) {
-            logger.fine(
-                    String.format(
-                            "%s: Removing conflicting log entries. Current log size=%d, Current commit index=%d. Replacing logs starting from index=%d",
-                            pState.myServerID,
-                            pState.log().size(),
-                            this.vState.getCommitIndex(),
-                            logIndex));
-            pState.setLog(pState.log().subList(0, logIndex));
-        }
-
-        // entries is non null. Could be empty or with some entries in it
-        pState.log().addAll(entries);
-
-        /**
-         * 4. If leaderCommit > commitIndex, set commitIndex = min(leaderCommit, index of last new
-         * entry)
-         */
-        if (leaderCommit > vState.getCommitIndex()) {
-            vState.setCommitIndex(
-                    Math.min(leaderCommit, pState.log().size() - 1), vState.getCommitIndex());
+            /**
+             * 4. If leaderCommit > commitIndex, set commitIndex = min(leaderCommit, index of last
+             * new entry)
+             */
+            if (leaderCommit > vState.getCommitIndex()) {
+                vState.setCommitIndex(
+                        Math.min(leaderCommit, pState.log().size() - 1), vState.getCommitIndex());
+            }
         }
 
         applyCommitted();
@@ -262,8 +265,23 @@ public class Server
             /** All servers convert to followers if their current term is behind (§5.1). */
             this.respondToRemoteTerm(term);
         }
+
+        int currentTerm;
+        UUID votedFor;
+        int localLogSize;
+        int myLastLogIndex;
+        int myLastLogTerm = -1;
+        synchronized (pState) {
+            currentTerm = pState.getCurrentTerm();
+            votedFor = pState.getVotedFor();
+            localLogSize = pState.log().size();
+            myLastLogIndex = this.lastLogIndex();
+            if (myLastLogIndex != -1) {
+                myLastLogTerm = pState.log().get(myLastLogIndex).term;
+            }
+        }
+
         /** 1. Reply false if term < currentTerm (§5.1) */
-        int currentTerm = pState.getCurrentTerm();
         if (term < currentTerm) {
             throw new InvalidTermException(
                     "Server: Received voting request for old leader term "
@@ -278,33 +296,30 @@ public class Server
          * 2. If votedFor is null or candidateId, and candidate’s log is at least as up-to-date as
          * receiver’s log, grant vote (§5.2, §5.4)
          */
-        UUID votedFor = pState.getVotedFor();
         if (votedFor.equals(NO_LEADER) || votedFor.equals(candidate)) {
-            int localLogSize = pState.log().size();
             logger.fine(
                     String.format(
                             "%s deciding whether to vote for %s: local log size = %d",
                             pState.myServerID, candidate, localLogSize));
-            if (lastLogIndex >= this.lastLogIndex()
-                    && (localLogSize == 0
-                            || lastLogTerm >= pState.log().get(this.lastLogIndex()).term)) {
+            if (lastLogIndex >= myLastLogIndex
+                    && (localLogSize == 0 || lastLogTerm >= myLastLogTerm)) {
                 logger.fine(
                         String.format("%s decided to vote for %s", pState.myServerID, candidate));
-                pState.setVotedFor(candidate, pState.getVotedFor());
+                pState.setVotedFor(candidate, votedFor);
                 return currentTerm; // Vote for her!
             } else {
                 throw new CandidateBehindException(
                         String.format(
                                 "Candidate is behind.  Candidate last log index, term  = (%d, %d), current last log index, term = (%d, %d)",
-                                lastLogIndex, lastLogTerm, this.lastLogIndex(), this.lastLogTerm()),
-                        pState.getCurrentTerm());
+                                lastLogIndex, lastLogTerm, myLastLogIndex, myLastLogTerm),
+                        currentTerm);
             }
         } else {
             throw new AlreadyVotedException(
                     String.format(
                             "Request to vote for %s but already voted for %s (current term = %d)",
-                            candidate, pState.getVotedFor(), pState.getCurrentTerm()),
-                    pState.getCurrentTerm());
+                            candidate, votedFor, currentTerm),
+                    currentTerm);
         }
     }
 
@@ -315,7 +330,10 @@ public class Server
     void applyCommitted() {
         int lastApplied;
         while (vState.getCommitIndex() > (lastApplied = vState.getLastApplied())) {
-            LogEntry entry = pState.log().get(vState.incrementLastApplied(lastApplied));
+            LogEntry entry;
+            synchronized (pState) {
+                entry = pState.log().get(vState.incrementLastApplied(lastApplied));
+            }
             logger.fine(pState.myServerID + ": Applying " + entry);
             try {
                 applier.apply(entry.operation);
@@ -364,7 +382,9 @@ public class Server
     }
 
     private int lastLogIndex() {
-        return pState.log().size() - 1;
+        synchronized (pState.log()) {
+            return pState.log().size() - 1;
+        }
     }
 
     private int prevLogIndex() {
@@ -466,35 +486,47 @@ public class Server
          */
         void sendAppendEntries(UUID otherServerID) {
             boolean success = false;
+            int logSize;
+            int lastLogIndex = 0;
+            int currentTerm;
+            List<LogEntry> entries;
             while (!success && vState.getState() == State.LEADER) {
                 final Integer otherServerNextIndex = leader.nextIndex.get(otherServerID);
                 try {
-                    logger.fine(
-                            String.format(
-                                    "%s sending appendEntries to %s: otherServerNextIndex=%d, log.size=%d",
-                                    pState.myServerID,
-                                    otherServerID,
-                                    otherServerNextIndex,
-                                    pState.log().size()));
                     int nextIndex = otherServerNextIndex == null ? 0 : otherServerNextIndex;
                     int prevLogTerm;
                     // TODO: If nextIndex == 0 and log.size() > 0, prevLogTerm should be set to
                     // log.get(0).term
                     // But it is currently set to INVALID_INDEX (-1)
-                    if (nextIndex > 0 && pState.log().size() > 0) {
-                        prevLogTerm = pState.log().get(otherServerNextIndex - 1).term;
-                    } else {
-                        prevLogTerm = INVALID_INDEX;
+                    synchronized (pState) {
+                        logSize = pState.log().size();
+                        lastLogIndex = lastLogIndex();
+                        currentTerm = pState.getCurrentTerm();
+                        if (nextIndex > 0 && logSize > 0) {
+                            prevLogTerm = pState.log().get(otherServerNextIndex - 1).term;
+                        } else {
+                            prevLogTerm = INVALID_INDEX;
+                        }
+                        entries =
+                                logSize > 0
+                                        ? new ArrayList(
+                                                pState.log().subList(nextIndex, lastLogIndex + 1))
+                                        : NO_LOG_ENTRIES;
                     }
-                    List<LogEntry> entries =
-                            pState.log().size() > 0
-                                    ? new ArrayList(
-                                            pState.log().subList(nextIndex, lastLogIndex() + 1))
-                                    : NO_LOG_ENTRIES;
+                    logger.fine(
+                            String.format(
+                                    "%s sending appendEntries to %s: otherServerNextIndex=%d, prevLogIndex=%d, lastLogIndex=%d, log.size=%d, entries.size=%d",
+                                    pState.myServerID,
+                                    otherServerID,
+                                    otherServerNextIndex,
+                                    nextIndex - 1,
+                                    lastLogIndex,
+                                    logSize,
+                                    entries.size()));
                     int remoteTerm =
                             getServer(otherServerID)
                                     .appendEntries(
-                                            pState.getCurrentTerm(),
+                                            currentTerm,
                                             pState.myServerID,
                                             nextIndex - 1,
                                             prevLogTerm,
@@ -518,8 +550,8 @@ public class Server
                 }
             }
             if (vState.getState() == State.LEADER) {
-                this.nextIndex.put(otherServerID, lastLogIndex() + 1);
-                this.matchIndex.put(otherServerID, lastLogIndex());
+                this.nextIndex.put(otherServerID, lastLogIndex + 1);
+                this.matchIndex.put(otherServerID, lastLogIndex);
             }
         }
 
@@ -534,7 +566,14 @@ public class Server
                             new Runnable() {
                                 @Override
                                 public void run() {
-                                    sendAppendEntries(server);
+                                    /* Ensure a single thread is used by each server at any point of time. So that we
+                                     * don't make another call to sendAppendEntries for the particular server when
+                                     * previous call is not returned yet. Otherwise, later invoked sendAppendEntries
+                                     * may return before its previous call and can result in log consistency check
+                                     * failures even when leader has not changed. */
+                                    synchronized (server) {
+                                        sendAppendEntries(server);
+                                    }
                                     updateCommitIndex();
                                     try {
                                         applyCommitted();
@@ -640,12 +679,17 @@ public class Server
                             @Override
                             public void run() {
                                 if (otherServerNextIndex == null
-                                        || logIndex
-                                                >= otherServerNextIndex) { // This is always true,
-                                    // but we put it here to
-                                    // be consistent with the
-                                    // formal algorithm.
-                                    sendAppendEntries(otherServerID);
+                                        || logIndex >= otherServerNextIndex) {
+                                    // This is always true, but we put it here to be consistent with
+                                    // the formal algorithm.
+                                    /* Ensure a single thread is used by each server at any point of time. So that we
+                                     * don't make another call to sendAppendEntries for the particular server when
+                                     * previous call is not returned yet. Otherwise, later invoked sendAppendEntries
+                                     * may return before its previous call and can result in log consistency check
+                                     * failures even when leader has not changed. */
+                                    synchronized (otherServerID) {
+                                        sendAppendEntries(otherServerID);
+                                    }
                                 } else {
                                     logger.warning(
                                             String.format(
@@ -695,24 +739,24 @@ public class Server
         Object applyCommitted() throws java.lang.Exception {
             Object lastReturnVal = null;
             java.lang.Exception lastException = null;
-            synchronized (vState) {
-                while (vState.getCommitIndex() > vState.getLastApplied()) {
-                    LogEntry entry =
-                            pState.log().get(vState.incrementLastApplied(vState.getLastApplied()));
-                    logger.fine(pState.myServerID + ": Applying " + entry);
-                    try {
-                        lastReturnVal = applier.apply(entry.operation);
-                        lastException = null;
-                    } catch (java.lang.Exception e) {
-                        logger.warning(
-                                String.format(
-                                        "Operation %s generated exception %s.  "
-                                                + "This should generally not be a problem, as the same exception should be "
-                                                + "generated on the master and all other replicas, and returned to the client "
-                                                + "for appropriate action (e.g. retry)",
-                                        entry, e));
-                        lastException = e;
-                    }
+            while (vState.getCommitIndex() > vState.getLastApplied()) {
+                LogEntry entry;
+                synchronized (pState) {
+                    entry = pState.log().get(vState.incrementLastApplied(vState.getLastApplied()));
+                }
+                logger.fine(pState.myServerID + ": Applying " + entry);
+                try {
+                    lastReturnVal = applier.apply(entry.operation);
+                    lastException = null;
+                } catch (java.lang.Exception e) {
+                    logger.warning(
+                            String.format(
+                                    "Operation %s generated exception %s.  "
+                                            + "This should generally not be a problem, as the same exception should be "
+                                            + "generated on the master and all other replicas, and returned to the client "
+                                            + "for appropriate action (e.g. retry)",
+                                    entry, e));
+                    lastException = e;
                 }
             }
             if (lastException != null) {
@@ -859,10 +903,19 @@ public class Server
             }
 
             pState.incrementCurrentTerm(pState.getCurrentTerm());
+            int lastLogIndex;
+            int lastLogTerm;
+            int currentTerm;
 
-            try { // Vote for self
-                requestVote(
-                        pState.getCurrentTerm(), pState.myServerID, lastLogIndex(), lastLogTerm());
+            try {
+                synchronized (pState) {
+                    lastLogIndex = lastLogIndex();
+                    lastLogTerm = lastLogTerm();
+                    currentTerm = pState.getCurrentTerm();
+                }
+
+                // Vote for self
+                requestVote(currentTerm, pState.myServerID, lastLogIndex, lastLogTerm);
             } catch (VotingException e) {
                 logger.warning("Unexpected error voting for self: " + e.toString());
                 become(State.FOLLOWER, State.CANDIDATE);
@@ -874,7 +927,7 @@ public class Server
                             Executors.newFixedThreadPool(vState.otherServers.size() + 1);
 
             this.leaderElectionTimer.start();
-            sendVoteRequests();
+            sendVoteRequests(currentTerm, lastLogIndex, lastLogTerm);
         }
 
         /** Stop being a candidate. */
@@ -891,14 +944,17 @@ public class Server
          * Invoke requestVote() on server, and process result, including incrementing the Semaphore
          * on success.
          */
-        void sendVoteRequest(UUID serverID, Semaphore voteCounter) {
-            final Integer currentTerm = pState.getCurrentTerm();
+        void sendVoteRequest(
+                UUID serverID,
+                int currentTerm,
+                int lastLogIndex,
+                int lastLogTerm,
+                Semaphore voteCounter) {
             RemoteRaftServer server = getServer(serverID);
             boolean voteGranted = true;
             try {
                 logger.info("Sending vote request to server " + serverID);
-                server.requestVote(
-                        pState.getCurrentTerm(), pState.myServerID, lastLogIndex(), lastLogTerm());
+                server.requestVote(currentTerm, pState.myServerID, lastLogIndex, lastLogTerm);
 
                 /* Condition to check if this grant is still valid/useful */
                 /* If the state is follower OR if it is candidate or leader with term changed,
@@ -906,7 +962,7 @@ public class Server
                 state transition happens from candidate to leader and can safely consider
                 the pending awaited vote grants as not useful. It can happen due to blocking call */
                 if ((vState.getState() != State.CANDIDATE)
-                        || (!currentTerm.equals(pState.getCurrentTerm()))) {
+                        || (currentTerm != pState.getCurrentTerm())) {
                     // Not a valid/useful grant
                     voteGranted = false;
                     logger.info(
@@ -933,7 +989,8 @@ public class Server
          * for sending, and a thread has been created to gather all responses and convert to leader
          * or start another election, as appropriate.
          */
-        void sendVoteRequests() {
+        void sendVoteRequests(
+                final int currentTerm, final int lastLogIndex, final int lastLogTerm) {
             logger.fine(
                     "Sending vote requests to "
                             + vState.otherServers.keySet().size()
@@ -941,14 +998,18 @@ public class Server
             final Semaphore voteCounter = new Semaphore(0); // Initially we have zero votes.
             // Send vote requests in parallel
             final Iterator<UUID> i = vState.otherServers.keySet().iterator();
-            final Integer currentTerm = pState.getCurrentTerm();
             while (i.hasNext()) {
                 final UUID server = i.next();
                 voteRequestThreadPool.execute(
                         new Runnable() {
                             @Override
                             public void run() {
-                                sendVoteRequest(server, voteCounter);
+                                sendVoteRequest(
+                                        server,
+                                        currentTerm,
+                                        lastLogIndex,
+                                        lastLogTerm,
+                                        voteCounter);
                                 logger.info("Sent vote request to server " + server);
                             }
                         });
@@ -976,7 +1037,7 @@ public class Server
                             then this election is not valid anymore. Just return. It can happen due to
                             blocking call */
                             if ((vState.getState() != State.CANDIDATE)
-                                    || (!currentTerm.equals(pState.getCurrentTerm()))) {
+                                    || (currentTerm != pState.getCurrentTerm())) {
                                 logger.info(
                                         String.format(
                                                 "%s While waiting in blocking call, state transitioned from CANDIDATE to %s, old term : %d and current term : %d",

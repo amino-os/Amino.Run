@@ -119,6 +119,8 @@ public abstract class Stub implements RmicConstants {
             MethodStub m = i.next();
             if (m.name.equals("onRPC")) {
                 buffer.append(EOLN + m.getStubImpl(false));
+            } else if (m.name.equals("upRPCCall")) {
+                continue;
             } else {
                 buffer.append(EOLN + m.getStubImpl(true));
             }

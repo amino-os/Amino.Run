@@ -26,14 +26,8 @@ task runjsapp(type: Exec) {
 // TODO: Re-enable runapp as soon as https://github.com/oracle/graal/issues/678 has been fixed.
 //       The above bug in graal means that our graalStubGenerator does not correctly generate java
 //       stubs for javascript microservices (the methods in the javascript object are missing).
-//       So for the time being we disable this test example.
-runenvapp {
-    onlyIf() { false } // Disable
-}
+// TODO: currently we implemented "GetMemberKeys" method in each JS file which will return all functions in that class.This will remove once the above issue closed.
 
-compileJava {
-    onlyIf() { false } // Disable this too, to avoid compilation errors.  See TODO above.
-}
 // Customise task to run Java app
 runapp {
     environment  OMS_IP: "${project.property('omsIp')}"

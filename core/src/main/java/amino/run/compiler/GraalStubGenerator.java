@@ -324,6 +324,28 @@ public class GraalStubGenerator {
                 else continue;
             }
 
+            if (lang.equals("js")) {
+                /*For js files, the function "GetMemberKeys" should implement and it should return all
+                functions inside the class. Otherwise it will not generate stub class with methods */
+                Value val = prototype.getMember("GetMemberKeys");
+                if (val != null) {
+                    Map<String, String> allMethods =
+                            prototype.getMember("GetMemberKeys").execute().as(Map.class);
+                    for (String functionName : allMethods.values()) {
+                        String convertFunctionName = convertFunctionName(functionName);
+                        String function =
+                                String.format(
+                                        functionStringFormat,
+                                        convertFunctionName,
+                                        functionName,
+                                        packageName,
+                                        className,
+                                        convertFunctionName);
+                        res.append(function);
+                    }
+                }
+            }
+
             if (prototype.getMember(m).canExecute() && !m.equals("constructor")) {
 
                 String convertFunctionName = convertFunctionName(m);

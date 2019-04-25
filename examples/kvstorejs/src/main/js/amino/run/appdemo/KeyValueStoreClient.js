@@ -22,11 +22,7 @@ function main() {
 
     for (i=0; i<6; ++i) {
         var key = "key_" + i;
-
-        // Try different data types.
         var val = "val_" + i;
-        if (i % 3 == 1) val = new TestData();
-        else if (i % 3 == 2) val = new Date();
 
         console.log(`client: setting ${key} = ${val}`);
         kvs.set(key, val);

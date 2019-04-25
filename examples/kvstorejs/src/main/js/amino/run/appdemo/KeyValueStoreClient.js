@@ -24,6 +24,10 @@ function main() {
         var key = "key_" + i;
         var val = "val_" + i;
 
+        //TODO: currently this case is going to fail. Need to check and fix for non-primitive data types.
+        if (i % 3 == 1) val = new TestData();
+        else if (i % 3 == 2) val = new Date();
+
         console.log(`client: setting ${key} = ${val}`);
         kvs.set(key, val);
         var v = kvs.get(key);

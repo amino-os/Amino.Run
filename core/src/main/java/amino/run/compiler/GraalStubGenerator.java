@@ -313,6 +313,31 @@ public class GraalStubGenerator {
     private String generateFunctions() {
         StringBuilder res = new StringBuilder();
         String className = getClassName();
+
+        // TODO: this is workaround for the issue:https://github.com/oracle/graal/issues/678.
+        // This will be deleted once the above issue is fixed.
+        // TODO: For js files, the function "GetMemberKeys" should implement and it should return
+        //  all functions inside the class. Otherwise it will not generate stub class with methods.
+        if (lang.equals("js")) {
+            Value val = prototype.getMember("GetMemberKeys");
+            if (val != null) {
+                Map<String, String> allMethods =
+                        prototype.getMember("GetMemberKeys").execute().as(Map.class);
+                for (String functionName : allMethods.values()) {
+                    String convertFunctionName = convertFunctionName(functionName);
+                    String function =
+                            String.format(
+                                    functionStringFormat,
+                                    convertFunctionName,
+                                    functionName,
+                                    packageName,
+                                    className,
+                                    convertFunctionName);
+                    res.append(function);
+                }
+            }
+        }
+
         for (String m : prototype.getMemberKeys()) {
             // Graal Value has lots of self defined function, let's skip them.
             // TODO: need to find a good way to skip graal self-defined functions.
@@ -322,28 +347,6 @@ public class GraalStubGenerator {
                 // Graal self-defined functions so we skip them all.
                 if (lang.equals("js")) break;
                 else continue;
-            }
-
-            if (lang.equals("js")) {
-                /*For js files, the function "GetMemberKeys" should implement and it should return all
-                functions inside the class. Otherwise it will not generate stub class with methods */
-                Value val = prototype.getMember("GetMemberKeys");
-                if (val != null) {
-                    Map<String, String> allMethods =
-                            prototype.getMember("GetMemberKeys").execute().as(Map.class);
-                    for (String functionName : allMethods.values()) {
-                        String convertFunctionName = convertFunctionName(functionName);
-                        String function =
-                                String.format(
-                                        functionStringFormat,
-                                        convertFunctionName,
-                                        functionName,
-                                        packageName,
-                                        className,
-                                        convertFunctionName);
-                        res.append(function);
-                    }
-                }
             }
 
             if (prototype.getMember(m).canExecute() && !m.equals("constructor")) {

@@ -10,7 +10,7 @@ operating system effort, which also includes subsystems for:
 2. distributed, transactional persistent store (Amino.Store)
 3. distributed privacy and security (Amino.Safe)
 
-Amin.Run supports most commonly used programming languages
+Amino.Run supports most commonly used programming languages
 and is, by default, deployed and managed in container environments
 using [Kubernetes](https://www.k8s.io).  Common examples of
 distributed applications include:
@@ -29,7 +29,12 @@ balancing, observability, fault diagnosis and many more.
 Amino.Run is based on, and extends, several years of research work done at
 the [University Of Washington Computer Systems
 Lab](https://syslab.cs.washington.edu/research/) in
-Seattle.<sup>1,2,3</sup> 
+Seattle.<sup>1,2,3</sup>.
+
+Parts of Amino.Run are based on the 
+[Sapphire](http://github.com/UWSysLab/Sapphire) open source project related to the 
+above research, and which is used in compliance with 
+[Sapphire's MIT License](http://github.com/UWSysLab/Sapphire/LICENSE). 
 
 Amino.Run is alpha software, and not yet
 suitable for production use.  We have a well-funded development team

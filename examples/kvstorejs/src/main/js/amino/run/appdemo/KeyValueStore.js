@@ -34,12 +34,15 @@ class KeyValueStore {
         return this.map.has(key);
     }
 
-    //TODO: this is workaround for the issue:https://github.com/oracle/graal/issues/678. This will be deleted once the above issue is fixed.
+    //TODO: This is workaround for the issue: https://github.com/oracle/graal/issues/678.
+    //This will be deleted once the above issue is fixed.
+    //It will return all functions in this class except constructor.
     GetMemberKeys() {
         let obj = new KeyValueStore();
         let methods = [];
         while (obj = Reflect.getPrototypeOf(obj)) {
-            if ((Object.getPrototypeOf(obj)) && obj != Object.prototype) {
+             //the below condition is used to avoid 'Object' functions like "toString,isPrototypeOf,propertyIsEnumerable,toLocaleString" etc
+            if (obj != Object.prototype) {
                  let keys = Reflect.ownKeys(obj)
                  keys.forEach((k) => {
                      if (k !== "constructor") {

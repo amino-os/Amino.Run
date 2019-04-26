@@ -317,7 +317,7 @@ public class GraalStubGenerator {
         // TODO: this is workaround for the issue:https://github.com/oracle/graal/issues/678.
         // This will be deleted once the above issue is fixed.
         // TODO: For js files, the function "GetMemberKeys" should implement and it should return
-        //  all functions inside the class. Otherwise it will not generate stub class with methods.
+        // all functions inside the class.
         if (lang.equals("js")) {
             Value val = prototype.getMember("GetMemberKeys");
             if (val != null) {
@@ -335,6 +335,10 @@ public class GraalStubGenerator {
                                     convertFunctionName);
                     res.append(function);
                 }
+            } else {
+                logger.log(
+                        Level.SEVERE,
+                        String.format(" %s.js should have GetMemberKeys function", className));
             }
         }
 

@@ -266,11 +266,8 @@ public class Server
             this.respondToRemoteTerm(term);
         }
 
-        int currentTerm;
+        int localLogSize, currentTerm, myLastLogTerm = -1, myLastLogIndex;
         UUID votedFor;
-        int localLogSize;
-        int myLastLogIndex;
-        int myLastLogTerm = -1;
         synchronized (pState) {
             currentTerm = pState.getCurrentTerm();
             votedFor = pState.getVotedFor();
@@ -486,9 +483,7 @@ public class Server
          */
         void sendAppendEntries(UUID otherServerID) {
             boolean success = false;
-            int logSize;
-            int lastLogIndex = 0;
-            int currentTerm;
+            int logSize, currentTerm, lastLogIndex = 0;
             List<LogEntry> entries;
             while (!success && vState.getState() == State.LEADER) {
                 final Integer otherServerNextIndex = leader.nextIndex.get(otherServerID);
@@ -903,9 +898,8 @@ public class Server
             }
 
             pState.incrementCurrentTerm(pState.getCurrentTerm());
-            int lastLogIndex;
-            int lastLogTerm;
-            int currentTerm;
+
+            int currentTerm, lastLogTerm, lastLogIndex;
 
             try {
                 synchronized (pState) {

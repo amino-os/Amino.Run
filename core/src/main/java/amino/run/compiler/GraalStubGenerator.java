@@ -255,7 +255,7 @@ public class GraalStubGenerator {
         return prototype.getMetaObject().toString();
     }
 
-    public void generateStub() throws FileNotFoundException {
+    public void generateStub() throws FileNotFoundException, NoSuchMethodException {
         String className = getClassName();
         String functions = generateFunctions();
         String code =
@@ -310,35 +310,36 @@ public class GraalStubGenerator {
         return functionName;
     }
 
-    private String generateFunctions() {
+    private String generateFunctions() throws NoSuchMethodException {
         StringBuilder res = new StringBuilder();
         String className = getClassName();
 
         // TODO: this is workaround for the issue:https://github.com/oracle/graal/issues/678.
         // This will be deleted once the above issue is fixed.
-        // TODO: For js files, the function "GetMemberKeys" should implement and it should return
-        // all functions inside the class.
+        // TODO: For js files, the function "getMemberKeys" should implement and it should return
+        // all functions and instance variables inside the class.
         if (lang.equals("js")) {
-            Value val = prototype.getMember("GetMemberKeys");
+            Value val = prototype.getMember("getMemberKeys");
             if (val != null) {
                 Map<String, String> allMethods =
-                        prototype.getMember("GetMemberKeys").execute().as(Map.class);
+                        prototype.getMember("getMemberKeys").execute().as(Map.class);
                 for (String functionName : allMethods.values()) {
-                    String convertFunctionName = convertFunctionName(functionName);
-                    String function =
-                            String.format(
-                                    functionStringFormat,
-                                    convertFunctionName,
-                                    functionName,
-                                    packageName,
-                                    className,
-                                    convertFunctionName);
-                    res.append(function);
+                    if (prototype.getMember(functionName).canExecute()) {
+                        String convertFunctionName = convertFunctionName(functionName);
+                        String function =
+                                String.format(
+                                        functionStringFormat,
+                                        convertFunctionName,
+                                        functionName,
+                                        packageName,
+                                        className,
+                                        convertFunctionName);
+                        res.append(function);
+                    }
                 }
             } else {
-                logger.log(
-                        Level.SEVERE,
-                        String.format(" %s.js should have GetMemberKeys function", className));
+                throw new NoSuchMethodException(
+                        className + ".js" + " must have getMemberKeys() function");
             }
         }
 

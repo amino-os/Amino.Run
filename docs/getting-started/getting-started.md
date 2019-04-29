@@ -3,14 +3,14 @@
 * You will need to download and install the corrrect version (usually the latest stable version) 
   based on the dependency configured in 
   [core/build.gradle](../../core/build.gradle). 
-  As of March 2019, that's 
-  [GraalVM Community Edition 1.0 RC14](https://github.com/oracle/graal/releases/tag/vm-1.0.0-rc14).
+  As of October 2018, that's
+  [GraalVM Community Edition 1.0 RC8](https://github.com/oracle/graal/releases/tag/vm-1.0.0-rc8).
   Note that the open source Community Edition works fine, so don't bother with the Enterprise Edition unless 
   you have a specific need for it.
   Follow instructions at  https://www.graalvm.org/docs/getting-started/ for downloading and installing.
   In particular, set your JAVA_HOME and PATH variables appropriately.  For example, something along the lines of the following at the end of your ~/.bash_profile in your home directory works well on Linux and Mac OS X:
 ```  
-export GRAALVM_HOME=~/Downloads/graalvm-ce-1.0.0-rc14/Contents/Home
+export GRAALVM_HOME=~/Downloads/graalvm-ce-1.0.0-rc8/Contents/Home
 export JAVA_HOME=$GRAALVM_HOME
 export PATH=$GRAALVM_HOME/bin:$PATH
 ```

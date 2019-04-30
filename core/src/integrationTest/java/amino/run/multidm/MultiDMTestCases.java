@@ -162,11 +162,13 @@ public class MultiDMTestCases {
     }
 
     @Test
+    @Ignore("See DM issue #618. Enable this test once resolved")
     public void testDHTConsensusRSMAtLeastOnceRPC() throws Exception {
         runTest("DHT", "ConsensusRSM", "AtLeastOnceRPC");
     }
 
     @Test
+    @Ignore("See DM issue #642. Enable this test once resolved.")
     public void testDHTConsensusRSMAtLeastOnceRPCCacheLease() throws Exception {
         runTest("DHT", "ConsensusRSM", "AtLeastOnceRPC", "CacheLease");
     }
@@ -192,23 +194,25 @@ public class MultiDMTestCases {
     }
 
     @Test
+    @Ignore("See DM issue #642. Enable this test once resolved.")
     public void testDHTLoadBalancedMasterSlaveSyncAtLeastOnceRPCCacheLease() throws Exception {
         runTest("DHT", "LoadBalancedMasterSlaveSync", "AtLeastOnceRPC", "CacheLease");
     }
 
     @Test
+    @Ignore("See DM issue #642. Enable this test once resolved.")
     public void testDHTLoadBalancedMasterSlaveSyncCacheLease() throws Exception {
         runTest("DHT", "LoadBalancedMasterSlaveSync", "CacheLease");
     }
 
     @Test
-    @Ignore("Test is ignored will be removed once the multi DM issues are resolved")
+    @Ignore("See DM issue #642. Enable this test once resolved.")
     public void testAtLeastOnceRPCDHTLoadBalancedMasterSlaveSync() throws Exception {
         runTest("AtLeastOnceRPC", "DHT", "LoadBalancedMasterSlaveSync");
     }
 
     @Test
-    @Ignore("Test is ignored will be removed once the multi DM issues are resolved")
+    @Ignore("See DM issue #642. Enable this test once resolved.")
     public void testAtLeastOnceRPCDHTConsensusRSM() throws Exception {
         runTest("AtLeastOnceRPC", "DHT", "ConsensusRSM");
     }
@@ -224,6 +228,7 @@ public class MultiDMTestCases {
     }
 
     @Test
+    @Ignore("See DM issue #618. Enable this test once resolved.")
     public void testAtLeastOnceRPCConsensusRSMDHT() throws Exception {
         runTest("AtLeastOnceRPC", "ConsensusRSM", "DHT");
     }
@@ -244,7 +249,7 @@ public class MultiDMTestCases {
     }
 
     @Test
-    @Ignore("Test is ignored will be removed once the multi DM issues are resolved")
+    @Ignore("See DM issue #642. Enable this test once resolved.")
     public void testAtLeastOnceRPCLoadBalancedFrontend() throws Exception {
         runTest("AtLeastOnceRPC", "LoadBalancedFrontend");
     }
@@ -290,11 +295,13 @@ public class MultiDMTestCases {
     }
 
     @Test
+    @Ignore("See DM issue #618. Enable this test once resolved.")
     public void testConsensusRSMDHT() throws Exception {
         runTest("ConsensusRSM", "DHT");
     }
 
     @Test
+    @Ignore("See DM issue #618. Enable this test once resolved.")
     public void testConsensusRSMDHTAtLeastOnceRPC() throws Exception {
         runTest("ConsensusRSM", "DHT", "AtLeastOnceRPC");
     }

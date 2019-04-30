@@ -23,18 +23,7 @@ task runjsapp(type: Exec) {
             "${project.projectDir}/src/main/js/amino/run/appdemo/KeyValueStoreClient.js"
 }
 
-// TODO: Re-enable runapp as soon as https://github.com/oracle/graal/issues/678 has been fixed.
-//       The above bug in graal means that our graalStubGenerator does not correctly generate java
-//       stubs for javascript microservices (the methods in the javascript object are missing).
-//       So for the time being we disable this test example.
-runenvapp {
-    onlyIf() { false } // Disable
-}
-
-compileJava {
-    onlyIf() { false } // Disable this too, to avoid compilation errors.  See TODO above.
-}
-// Customise task to run Java app
+// Customise task to un Java app
 runapp {
     environment  OMS_IP: "${project.property('omsIp')}"
     environment  OMS_PORT: "${project.property('omsPort')}"

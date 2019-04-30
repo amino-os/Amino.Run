@@ -22,9 +22,9 @@ function main() {
 
     for (i=0; i<6; ++i) {
         var key = "key_" + i;
-
-        // Try different data types.
         var val = "val_" + i;
+
+        //TODO: currently this case is going to fail. Need to check and fix for non-primitive data types.
         if (i % 3 == 1) val = new TestData();
         else if (i % 3 == 2) val = new Date();
 

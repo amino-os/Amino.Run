@@ -255,7 +255,7 @@ public class GraalStubGenerator {
         return prototype.getMetaObject().toString();
     }
 
-    public void generateStub() throws FileNotFoundException {
+    public void generateStub() throws FileNotFoundException, NoSuchMethodException {
         String className = getClassName();
         String functions = generateFunctions();
         String code =
@@ -310,10 +310,30 @@ public class GraalStubGenerator {
         return functionName;
     }
 
-    private String generateFunctions() {
+    private String generateFunctions() throws NoSuchMethodException {
         StringBuilder res = new StringBuilder();
         String className = getClassName();
-        for (String m : prototype.getMemberKeys()) {
+        Collection<String> attributes = null;
+
+        // TODO: this is workaround for the issue:https://github.com/oracle/graal/issues/678.
+        // This will be deleted once the above issue is fixed.
+        // TODO: For js files, the function "getMemberKeys" should implement and it should return
+        // all functions and instance variables inside the class.
+        if (lang.equals("js")) {
+            Value val = prototype.getMember("getMemberKeys");
+            if (val != null) {
+                Map<String, String> jsAttributes = val.execute().as(Map.class);
+                attributes = jsAttributes.values();
+            } else {
+                throw new NoSuchMethodException(
+                        className + ".js" + " must have getMemberKeys() function");
+            }
+
+        } else {
+            attributes = prototype.getMemberKeys();
+        }
+
+        for (String m : attributes) {
             // Graal Value has lots of self defined function, let's skip them.
             // TODO: need to find a good way to skip graal self-defined functions.
             if (m.startsWith("__")) {

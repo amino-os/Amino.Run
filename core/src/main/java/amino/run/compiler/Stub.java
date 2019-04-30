@@ -32,7 +32,7 @@ public abstract class Stub implements RmicConstants {
     protected final String stubName;
 
     /** DM methods that need to go through the DM chain instead of a direct call */
-    protected Set<String> dmChainMethods = new HashSet<String>(Arrays.asList("onRPC", "upRPCCall"));
+    protected Set<String> dmChainMethods = new HashSet<String>(Arrays.asList("onRPC"));
 
     /** List of remote methods for the class */
     private final TreeSet<MethodStub> methods;

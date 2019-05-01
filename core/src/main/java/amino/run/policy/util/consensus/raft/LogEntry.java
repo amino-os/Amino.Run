@@ -11,4 +11,9 @@ public class LogEntry implements Serializable {
         this.operation = operation;
         this.term = term;
     }
+
+    @Override
+    public String toString() {
+        return "LogEntry{" + "operation=" + operation + ", term=" + term + '}';
+    }
 }

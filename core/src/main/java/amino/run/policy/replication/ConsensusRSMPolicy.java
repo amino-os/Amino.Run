@@ -38,6 +38,11 @@ public class ConsensusRSMPolicy extends DefaultPolicy {
             this.method = method;
             this.params = params;
         }
+
+        @Override
+        public String toString() {
+            return "RPC{" + "method='" + method + '\'' + ", params=" + params + '}';
+        }
     }
 
     public static class ClientPolicy extends DefaultPolicy.DefaultClientPolicy {

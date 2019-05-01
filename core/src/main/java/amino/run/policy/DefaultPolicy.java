@@ -117,7 +117,13 @@ public class DefaultPolicy extends Policy {
         }
 
         @Override
-        public void onNotification(Notification notification) throws RemoteException {}
+        public void onNotification(Notification notification) throws RemoteException {
+            if (notification instanceof MetricsNotification) {
+                MetricsNotification object = (MetricsNotification) notification;
+                /* Store these metrics to make them available for statistics and decision making module */
+                updateMetric(object.replicaId, object.metrics);
+            }
+        }
 
         @Override
         public void onDestroy() throws RemoteException {
@@ -178,7 +184,7 @@ public class DefaultPolicy extends Policy {
          * @throws RemoteException
          * @throws MicroServiceNotFoundException
          */
-        protected void pin(ServerPolicy server, InetSocketAddress host)
+        public void pin(ServerPolicy server, InetSocketAddress host)
                 throws MicroServiceReplicaNotFoundException, RemoteException,
                         MicroServiceNotFoundException {
             if (server.isLastPolicy()) {

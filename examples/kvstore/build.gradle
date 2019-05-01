@@ -8,9 +8,43 @@ genStubs {
     inputs.dir src   // Declare inputs, so gradle will run if they have been changed
 }
 
+// Run a kernel server
+runks {
+    args project.property('kernelServerIpFlag'), project.property('kernelServerIp'), project.property('kernelServerPortFlag'), project.property('kernelServerPort'),
+            project.property('kernelServerLabelFlag'), project.property('kernelServerAppServerLabel')
+}
+
+// Run a second kernel server
+runks2 {
+    args project.property('kernelServerIpFlag'), project.property('kernelServerIp'), project.property('kernelServerPortFlag'), project.property('kernelServerPort2'),
+            project.property('kernelServerLabelFlag'), project.property('kernelServerAppServerLabel')
+}
+// Run a third kernel server
+runks3 {
+    args project.property('kernelServerIpFlag'), project.property('kernelServerIp'), project.property('kernelServerPortFlag'), project.property('kernelServerPort3'),
+            project.property('kernelServerLabelFlag'), project.property('kernelServerAppServerLabel')
+}
+
+// Run a fourth kernel server
+runks4 {
+    args project.property('kernelServerIpFlag'), project.property('kernelServerIp'), project.property('kernelServerPortFlag'), project.property('kernelServerPort4'),
+            project.property('kernelServerLabelFlag'), project.property('kernelServerAppServerLabel')
+}
+
 // Customize runapp for this example
 runapp {
     main = "amino.run.demo.KeyValueStoreClient"
     // kvstore app takes only OMS address parameters. Hence overriding default runapp arguments.
-    args = [project.property('omsIpFlag'), project.property('omsIp'), project.property('omsPortFlag'), project.property('omsPort')]
+    args = [project.property('omsIpFlag'), project.property('omsIp'), project.property('omsPortFlag'), project.property('omsPort'),
+            project.property('kernelServerIpFlag'), project.property('kernelServerAppIp1'), project.property('kernelServerPortFlag'),
+            project.property('kernelServerAppPort1'), project.property('kernelServerLabelFlag'), project.property('kernelServerAppClientLabel')]
+}
+
+// Customize runapp for this example
+task runappwithgetname(type: JavaExec) {
+    main = "amino.run.demo.KeyValueStoreClient"
+    // kvstore app takes only OMS address parameters. Hence overriding default runapp arguments.
+    args = ["withGetName" , project.property('omsIpFlag'), project.property('omsIp'), project.property('omsPortFlag'), project.property('omsPort'),
+            project.property('kernelServerIpFlag'), project.property('kernelServerAppIp2'), project.property('kernelServerPortFlag'),
+            project.property('kernelServerAppPort2'), project.property('kernelServerLabelFlag'), project.property('kernelServerAppClientLabel')]
 }

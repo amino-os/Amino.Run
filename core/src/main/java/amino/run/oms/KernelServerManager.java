@@ -190,4 +190,31 @@ public class KernelServerManager {
         // best one among the list
         return hosts.get(randgen.nextInt(hosts.size()));
     }
+
+    /**
+     * Gets the kernel server CPU information
+     *
+     * @param host
+     * @return
+     */
+    public int getKernelServerCPU(InetSocketAddress host) {
+        return servers.get(host).config.cpu;
+    }
+
+    /**
+     * Get the kernel server metrics
+     *
+     * @param host
+     * @return
+     */
+    public Map<InetSocketAddress, NodeMetric> getKernelServerMetric(InetSocketAddress host)
+            throws KernelServerNotFoundException {
+        KernelServerInfo kernelServerMetric = servers.get(host);
+        if (kernelServerMetric != null) {
+            return kernelServerMetric.metric.getMetric();
+        }
+        String message = String.format("KernelServer: %s do not exist", host);
+        logger.severe(message);
+        throw new KernelServerNotFoundException(message);
+    }
 }

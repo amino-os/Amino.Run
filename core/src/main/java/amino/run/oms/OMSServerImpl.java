@@ -19,6 +19,7 @@ import amino.run.kernel.common.KernelServerNotFoundException;
 import amino.run.kernel.common.ServerInfo;
 import amino.run.kernel.server.KernelServer;
 import amino.run.kernel.server.KernelServerImpl;
+import amino.run.oms.migrationDecision.MetricWatcher;
 import amino.run.policy.Policy;
 import amino.run.runtime.EventHandler;
 import amino.run.runtime.MicroService;
@@ -47,6 +48,7 @@ public class OMSServerImpl implements OMSServer, Registry {
     private GlobalKernelObjectManager kernelObjectManager;
     private KernelServerManager serverManager;
     private MicroServiceManager objectManager;
+    private MetricWatcher metricWatcher;
 
     public static String OMS_IP_OPT = "--oms-ip";
     public static String OMS_PORT_OPT = "--oms-port";
@@ -58,6 +60,7 @@ public class OMSServerImpl implements OMSServer, Registry {
         kernelObjectManager = new GlobalKernelObjectManager();
         serverManager = new KernelServerManager();
         objectManager = new MicroServiceManager();
+        metricWatcher = new MetricWatcher(serverManager, objectManager);
     }
 
     /** KERNEL METHODS * */
@@ -313,6 +316,9 @@ public class OMSServerImpl implements OMSServer, Registry {
                             UnicastRemoteObject.exportObject(
                                     localKernelServer, omsArgs.servicePort);
             registry.rebind("io.amino.run.kernelserver", localKernelServerStub);
+
+            // start metric watcher
+            oms.metricWatcher.start();
 
             // Log being used in examples gradle task "run", hence modify accordingly.
             logger.info(String.format("OMS ready at port (%s)!", omsArgs.omsPort));

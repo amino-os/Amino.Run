@@ -220,7 +220,7 @@ public class DefaultPolicy extends Policy {
          * @throws RemoteException
          * @throws MicroServiceNotFoundException
          */
-        protected void pin(ServerPolicy server, InetSocketAddress host)
+        public void pin(ServerPolicy server, InetSocketAddress host)
                 throws MicroServiceReplicaNotFoundException, RemoteException,
                         MicroServiceNotFoundException {
             if (server.isLastPolicy()) {

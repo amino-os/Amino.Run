@@ -1,9 +1,9 @@
 # Quick Start
 ## Download and install GraalVM Community Edition
-* You will need to download and install the corrrect version (usually the latest stable version) 
+* You will need to download and install the correct version (usually the latest stable version)
   based on the dependency configured in 
   [core/build.gradle](../../core/build.gradle). 
-  As of October 2018, that's
+  As of April 2019, that's
   [GraalVM Community Edition 1.0 RC8](https://github.com/oracle/graal/releases/tag/vm-1.0.0-rc8).
   Note that the open source Community Edition works fine, so don't bother with the Enterprise Edition unless 
   you have a specific need for it.

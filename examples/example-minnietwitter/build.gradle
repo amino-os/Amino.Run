@@ -1,0 +1,14 @@
+// Customize app stub generation for this example
+genStubs {
+    def src = file(project.buildDir.toString() + '/classes/java/main/amino/run/appexamples/minnietwitter/')
+    def dst = file(project.projectDir.toString() + '/src/stubs/java/amino/run/appexamples/minnietwitter/stubs/')
+    def pkg = 'amino.run.appexamples.minnietwitter'
+    args src.toString(), pkg, dst.toString()
+    inputs.dir src
+    outputs.dir dst
+}
+
+// Customize runapp for this example
+runapp {
+    main = "amino.run.appexamples.minnietwitter.MinnieTwitterMain"
+}

@@ -1,0 +1,6 @@
+// Disable stub generation for dependencies and all it's sub-projects
+allprojects {
+    genStubs {
+        onlyIf() { false } // Disable
+    }
+}

@@ -1,0 +1,8 @@
+# Configuration for running KVStore with DHT DM
+!!amino.run.app.MicroServiceSpec
+dmList:
+- configs:
+  - !!amino.run.policy.dht.DHTPolicy$Config {numOfShards: 3}
+  name: amino.run.policy.dht.DHTPolicy
+javaClassName: amino.run.demo.KVStore
+lang: java

@@ -1,0 +1,16 @@
+// Customize app stub generation for this example
+genStubs {
+    def pkg = 'amino.run.demo'
+    def src = "$buildDir/classes/java/main/amino/run/demo/"
+    def dst = "$projectDir/src/stubs/java/amino/run/demo/stubs/"
+    args src, pkg, dst
+    outputs.dir dst // Declare outputs, so gradle will run if they have been changed
+    inputs.dir src   // Declare inputs, so gradle will run if they have been changed
+}
+
+// Customize runapp for this example
+runapp {
+    main = "amino.run.demo.KeyValueStoreClient"
+    // kvstore app takes only OMS address parameters. Hence overriding default runapp arguments.
+    args = [project.property('omsIpFlag'), project.property('omsIp'), project.property('omsPortFlag'), project.property('omsPort')]
+}

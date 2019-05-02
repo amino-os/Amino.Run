@@ -1,5 +1,8 @@
 local.properties
 
+# Ignore generated build directories
+build
+
 # OSX leaves these everywhere on SMB shares
 ._*
 
@@ -81,3 +84,7 @@ cscope.*
 
 # ignore auto generated sapphire stub files
 **/stubs/** 
+
+
+# ignore the _build folder, this is used for readthedocs local testing only
+/docs/_build

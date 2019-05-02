@@ -1,0 +1,8 @@
+# Configuration for running KVStore as a
+# microservice with ExplicitCaching policy.
+!!amino.run.app.MicroServiceSpec
+dmList:
+- configs: []
+  name: amino.run.policy.cache.explicitcaching.ExplicitCachingPolicy
+javaClassName: amino.run.demo.KVStore
+lang: java

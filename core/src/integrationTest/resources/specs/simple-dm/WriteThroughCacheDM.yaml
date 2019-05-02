@@ -1,0 +1,8 @@
+# Configuration for running KVStore as a
+# microservice with WriteThroughCache policy.
+!!amino.run.app.MicroServiceSpec
+dmList:
+- configs: []
+  name: amino.run.policy.cache.WriteThroughCachePolicy
+javaClassName: amino.run.demo.KVStore
+lang: java

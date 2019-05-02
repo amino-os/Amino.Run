@@ -1,0 +1,8 @@
+# Configuration for running KVStore as a
+# microservice with DurableSerializableRPC policy.
+!!amino.run.app.MicroServiceSpec
+dmList:
+- configs: []
+  name: amino.run.policy.checkpoint.durableserializable.DurableSerializableRPCPolicy
+javaClassName: amino.run.demo.KVStore
+lang: java

@@ -1,0 +1,8 @@
+# Configuration for running KVStore as a
+# microservice with TwoPCCohort policy.
+!!amino.run.app.MicroServiceSpec
+dmList:
+- configs: []
+  name: amino.run.policy.transaction.TwoPCCoordinatorPolicy
+javaClassName: amino.run.demo.Coordinator
+lang: java

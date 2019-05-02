@@ -1,0 +1,147 @@
+buildscript {
+    repositories {
+        google()
+        jcenter()
+    }
+    dependencies {
+        /**
+         * Dependencies to support bintray upload
+         */
+        classpath 'com.github.dcendents:android-maven-gradle-plugin:2.0'
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4'
+
+        /**
+         * Be careful at upgrading to higher version of gradle (e.g., > 3.0):
+         * Compilation may work but application will have error when executed due to AAPT2 exception.
+         * Disabling AAPT2 will hide an issue with AAPT2 and may cause to stop unit tests to work.
+         * Please update only after either the issue is fixed on Android side or fix the bug in the project for AAPT2.
+         * https://issuetracker.google.com/issues/38454212
+         * https://github.com/requery/requery/issues/467
+         */
+        classpath 'com.android.tools.build:gradle:3.3.1'
+    }
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '4.10.1'
+}
+
+subprojects {
+    repositories {
+        mavenCentral()
+        jcenter()
+        google()
+    }
+    apply plugin: 'maven'
+    apply plugin: 'maven-publish'
+    apply plugin: 'com.jfrog.bintray'
+    apply plugin: 'java'
+
+    // Bintray Configurations:
+    // 1. Env variable BINTRAY_USER and BINTRAY_API_KEY must be set
+    // properly in order to enable bintray upload. Information can
+    // be found in pinned messages in #dcap slack channel.
+    // 2. Run "gradlew --info bintrayUpload" in project dir to upload
+    // jar file. For example, to upload amino-run-core.jar, you need to
+    // run "gradlew --info bintrayUpload" in core project.
+    // 3. If you modified amino-run-core.jar without bumping up the
+    // package version, then you need to remind developers to clean 
+    // old versions from gradle cache by running $(rm -rf ~/.gradle/caches).
+    bintray {
+        user = project.hasProperty('bintrayUser') ? project.property('bintrayUser') : System.getenv('BINTRAY_USER')
+        key = project.hasProperty('bintrayApiKey') ? project.property('bintrayApiKey') : System.getenv('BINTRAY_API_KEY')
+        configurations = ['archives']
+
+        publications = ['Production']
+        override = true
+        pkg {
+            dryRun = false
+            publish = true
+            repo = project.property('bintrayRepo')
+            name = project.property('bintrayPkgName')
+            licenses = [project.property('bintrayLicense')]
+            vcsUrl = project.property('bintrayVcsUrl')
+            version {
+                name = project.property('bintrayVersion')
+            }
+        }
+    }
+
+    // Maven Configurations
+    publishing {
+        publications {
+            Production(MavenPublication) {
+                groupId project.property('mavenGroupId')
+                artifactId project.property('mavenArtifactId')
+                version project.property('mavenVersion')
+
+                pom.withXml {
+                    def dependenciesNode = asNode().appendNode('dependencies')
+                    // Iterate over the implementation dependencies (we don't want the test ones), adding a <dependency> node for each
+                    configurations.implementation.allDependencies.each {
+                         //Ensure dependencies such as fileTree are not included in the pom.
+                        if (it.name != 'unspecified') {
+                            def dependencyNode = dependenciesNode.appendNode('dependency')
+                            dependencyNode.appendNode('groupId', it.group)
+                            dependencyNode.appendNode('artifactId', it.name)
+                            dependencyNode.appendNode('version', it.version)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Common rules for all JavaExec tasks, being added before execution.
+    tasks.withType(JavaExec).whenTaskAdded {
+        classpath += sourceSets.main.runtimeClasspath
+    }
+
+    // Added for enforcing Java 1.6 version compatibility.
+    // Note that this will not result in compilation failure unless JDK 1.6 or less is used.
+    // GraalVM supports from JDK 1.8; therefore, it doesn't have an effect except IDE inspector
+    // may show incompatible APIs for higher version than JDK 1.6.
+    tasks.withType(JavaCompile) {
+        def javaVersion = JavaVersion.VERSION_1_6
+        sourceCompatibility = javaVersion
+        targetCompatibility = javaVersion
+        options.bootstrapClasspath = files("$System.env.JAVA_HOME/jre/lib/rt.jar")
+    }
+    
+    // SourceSet for generated stubs
+    sourceSets {
+        stubs
+    }
+
+    // Task for Stub Generation:
+    // Run `gradlew genStubs` to generate stub files
+    task genStubs(type: JavaExec) {
+        main = "amino.run.compiler.StubGenerator"
+    }
+
+    // Configure "stubs" sourceSet compile task, with additional rules.
+    compileStubsJava {
+        classpath = sourceSets.main.runtimeClasspath
+        options.incremental = true
+        inputs.dir genStubs.outputs
+    }
+
+    clean {
+        delete genStubs.outputs.files // Add generated stubs to what the clean task must delete
+        doLast {
+            logger.info('Clean will delete ' + clean.targetFiles.asCollection())
+        }
+    }
+
+    // Include stubs sourceSet classes in the jar file.
+    jar {
+        from sourceSets.stubs.output.classesDir
+        // Java jar file depends on compile tasks of all sourceSets.
+        // Currently there are two sourceSets - "main" and "stubs".
+        // Java modules will have "main" and "stubs" sourceSets and
+        // non-Java examples will have only "main" sourceSet.
+        inputs.dir tasks.withType(AbstractCompile)   // jar needs to be rebuilt if any compileTask gets executed.
+    }
+
+    check.dependsOn tasks.withType(AbstractCompile)  // Ensure that all compileTasks are executed, as part of check.
+}

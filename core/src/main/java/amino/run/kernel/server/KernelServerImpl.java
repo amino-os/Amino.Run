@@ -56,6 +56,10 @@ public class KernelServerImpl implements KernelServer {
     // heartbeat timer
     private ResettableTimer ksHeartbeatSendTimer;
 
+    // Metrics measurement timer
+    private ResettableTimer metricsMeasurementTimer;
+    static final long METRICS_MEASUREMENT_TIME = 1000; /* Metrics measuring frequency */
+
     public KernelServerImpl(InetSocketAddress host, InetSocketAddress omsHost) {
         OMSServer oms = null;
         try {
@@ -288,6 +292,16 @@ public class KernelServerImpl implements KernelServer {
     }
 
     /**
+     * Update this kernel server with list of available kernel servers managed by OMS
+     *
+     * @param servers
+     */
+    @Override
+    public void updateAvailableKernelServers(List<InetSocketAddress> servers) {
+        client.updateAvailableKernelServers(servers);
+    }
+
+    /**
      * Delete kernel object on this server
      *
      * @param oid
@@ -392,6 +406,18 @@ public class KernelServerImpl implements KernelServer {
         return new MemoryStatThread();
     }
 
+    /**
+     * Receive HeartBeat with random bytes to measure data transfer time
+     *
+     * @param randomBytes
+     */
+    @Override
+    public void receiveHeartBeat(byte[] randomBytes) {}
+
+    /** Receive HeartBeat with empty data to measure latency between kernel servers */
+    @Override
+    public void receiveHeartBeat() {}
+
     /** Send HeartBeats to OMS. */
     private void sendHeartBeat(ServerInfo srvinfo) {
         try {
@@ -441,8 +467,13 @@ public class KernelServerImpl implements KernelServer {
             server.setRegion(srvInfo.getRegion());
             oms.registerKernelServer(srvInfo);
 
+            srvInfo.metrics = server.client.getServerMetrics();
+
             // Start HeartBeat timer
             server.startHeartBeat(srvInfo);
+
+            // Start measuring metrics
+            server.startMetricsMeasurement();
 
             // Start a thread that print memory stats
             server.getMemoryStatThread().start();
@@ -454,6 +485,19 @@ public class KernelServerImpl implements KernelServer {
                     "Failed to start kernel server: " + e.getMessage() + System.lineSeparator());
             printUsage(parser);
         }
+    }
+
+    private void startMetricsMeasurement() {
+        metricsMeasurementTimer =
+                new ResettableTimer(
+                        new TimerTask() {
+                            public void run() {
+                                client.measureServerMetrics();
+                                metricsMeasurementTimer.reset();
+                            }
+                        },
+                        METRICS_MEASUREMENT_TIME);
+        metricsMeasurementTimer.start();
     }
 
     private void startHeartBeat(final ServerInfo srvInfo) {

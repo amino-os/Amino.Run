@@ -10,6 +10,7 @@ import amino.run.kernel.common.KernelObjectStub;
 import amino.run.kernel.common.KernelObjectStubNotCreatedException;
 import amino.run.kernel.common.KernelRPC;
 import amino.run.kernel.common.KernelRPCException;
+import amino.run.kernel.common.metric.NodeMetric;
 import amino.run.kernel.server.KernelObject;
 import amino.run.kernel.server.KernelServer;
 import amino.run.oms.OMSServer;
@@ -18,7 +19,10 @@ import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
-import java.util.Hashtable;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -28,12 +32,21 @@ import java.util.logging.Logger;
  * @author iyzhang
  */
 public class KernelClient {
+    /* Random bytes to measure the data transfer time */
+    byte[] randomBytes = new byte[2048];
+
     /** Stub for the OMS */
     private OMSServer oms;
     /** List of hostnames matched to kernel server stubs */
-    private Hashtable<InetSocketAddress, KernelServer> servers;
+    private ConcurrentHashMap<InetSocketAddress, KernelServer> servers;
+
+    private ConcurrentHashMap<InetSocketAddress, NodeMetric> serverMetrics;
 
     private Logger logger = Logger.getLogger(KernelClient.class.getName());
+
+    public ConcurrentHashMap<InetSocketAddress, NodeMetric> getServerMetrics() {
+        return serverMetrics;
+    }
 
     /**
      * Add a host to the list of hosts that we've contacted
@@ -45,9 +58,12 @@ public class KernelClient {
             Registry registry = LocateRegistry.getRegistry(host.getHostName(), host.getPort());
             KernelServer server = (KernelServer) registry.lookup("io.amino.run.kernelserver");
             servers.put(host, server);
+            serverMetrics.put(host, new NodeMetric());
             return server;
         } catch (Exception e) {
-            logger.severe("Could not find MicroService server on host: " + e.toString());
+            logger.severe(
+                    String.format(
+                            "Could not find kernel server on host: %s. Exception: %s", host, e));
         }
         return null;
     }
@@ -60,9 +76,30 @@ public class KernelClient {
         return server;
     }
 
+    public void updateAvailableKernelServers(List<InetSocketAddress> kernelServers) {
+        for (InetSocketAddress host : servers.keySet()) {
+            if (!kernelServers.contains(host)) {
+                servers.remove(host);
+                serverMetrics.remove(host);
+            }
+        }
+
+        for (InetSocketAddress host : kernelServers) {
+            if (GlobalKernelReferences.nodeServer.getLocalHost().equals(host)) {
+                continue;
+            }
+            KernelServer server = servers.get(host);
+            if (server == null) {
+                addHost(host);
+            }
+        }
+    }
+
     public KernelClient(OMSServer oms) {
         this.oms = oms;
-        servers = new Hashtable<InetSocketAddress, KernelServer>();
+        servers = new ConcurrentHashMap<InetSocketAddress, KernelServer>();
+        serverMetrics = new ConcurrentHashMap<InetSocketAddress, NodeMetric>();
+        new Random().nextBytes(randomBytes);
     }
 
     private Object tryMakeKernelRPC(KernelServer server, KernelRPC rpc)
@@ -153,5 +190,44 @@ public class KernelClient {
                     KernelObjectStubNotCreatedException, MicroServiceNotFoundException,
                     MicroServiceReplicaNotFoundException {
         getServer(host).copyKernelObject(oid, object);
+    }
+
+    /** Measure the server metrics */
+    public void measureServerMetrics() {
+        for (Map.Entry<InetSocketAddress, NodeMetric> entry : serverMetrics.entrySet()) {
+            NodeMetric metric = entry.getValue();
+            try {
+                KernelServer server = getServer(entry.getKey());
+                if (server == null) {
+                    continue;
+                }
+
+                // TODO: Need to improve it further.
+                /* Forward time = Request Serialization + Network Delay + Deserialization + Object/call Dispatch time
+                + processing time + Optionally connection establishment time */
+                /* Return time = Response Serialization + Network Delay + Deserialization + Get current nano time at end */
+                /* Forward time would be comparatively higher than return time. But to avoid the clock sync issues
+                between client and server, took the round trip time and half of it considered as latency
+                 */
+                long t1 = System.nanoTime();
+                server.receiveHeartBeat();
+                long t2 = System.nanoTime();
+
+                // Measure data transfer rate by sending some arbitrary data
+                server.receiveHeartBeat(randomBytes);
+                long t3 = System.nanoTime();
+                metric.latency = (t2 - t1) / 2;
+                // TODO: This is data transfer time. Need to calculate the rate
+                metric.rate = (t3 - t2) - (t2 - t1);
+
+                logger.info(
+                        String.format(
+                                "To host: %s: T1 = %d, T2 = %d, T3 = %d, T2-T1=%d, T3-T2 = %d, metric.latency=%d",
+                                entry.getKey(), t1, t2, t3, t2 - t1, t3 - t2, metric.latency));
+            } catch (RemoteException e) {
+                logger.warning(
+                        String.format("Remote kernel server %s is not reachable", entry.getKey()));
+            }
+        }
     }
 }

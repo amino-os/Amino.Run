@@ -107,7 +107,27 @@ public class OMSServerImpl implements OMSServer, Registry {
 
     @Override
     public void registerKernelServer(ServerInfo info) throws RemoteException, NotBoundException {
-        serverManager.registerKernelServer(info);
+        /* Post remove hook is passed to register kernel server. It is called after removing the registered kernel
+        server upon heartbeat expiry */
+        Runnable onServerRemove =
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        notifyAvailableKernelServers();
+                    }
+                };
+        serverManager.registerKernelServer(info, onServerRemove);
+
+        /* After registering the new kernel server, notify all the kernel servers about all the available kernel servers
+        in a separate thread */
+        new Thread(
+                        new Runnable() {
+                            @Override
+                            public void run() {
+                                notifyAvailableKernelServers();
+                            }
+                        })
+                .start();
     }
 
     @Override
@@ -132,10 +152,28 @@ public class OMSServerImpl implements OMSServer, Registry {
      *
      * @param spec
      * @return
-     * @throws RemoteException
      */
-    public List<InetSocketAddress> getServers(NodeSelectorSpec spec) throws RemoteException {
+    public List<InetSocketAddress> getServers(NodeSelectorSpec spec) {
         return serverManager.getServers(spec);
+    }
+
+    /** Notify all the kernel servers about all the available kernel servers */
+    private void notifyAvailableKernelServers() {
+        List<InetSocketAddress> servers = getServers(null);
+        servers.add(GlobalKernelReferences.nodeServer.getLocalHost());
+        for (InetSocketAddress host : servers) {
+            try {
+                KernelServer server = serverManager.getServer(host);
+                if (server != null) {
+                    server.updateAvailableKernelServers(servers);
+                }
+            } catch (RemoteException e) {
+                /* Log warning and continue to update for other servers */
+                logger.severe(
+                        String.format(
+                                "Failed to update available kernel server list to host %s", host));
+            }
+        }
     }
 
     @Override

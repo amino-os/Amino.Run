@@ -92,6 +92,11 @@ public class TestUtils {
                 (ResettableTimer) extractFieldValueOnInstance(ks, "ksHeartbeatSendTimer");
         heartbeatTimer.cancel();
 
+        /* Stop metricsMeasurementTimer */
+        ResettableTimer metricsMeasurementTimer =
+                (ResettableTimer) extractFieldValueOnInstance(ks, "metricsMeasurementTimer");
+        metricsMeasurementTimer.cancel();
+
         KernelServerManager kernelServerManager =
                 (KernelServerManager)
                         extractFieldValueOnInstance(KernelServerImpl.oms, "serverManager");

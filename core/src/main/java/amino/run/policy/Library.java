@@ -413,8 +413,8 @@ public abstract class Library implements Upcalls {
             ConcurrentHashMap<UUID, RPCMetric> metrics =
                     kernel().getKernelObject($__getKernelOID()).getMetrics();
             ConcurrentHashMap<UUID, RPCMetric> cloneCopy;
-            // TODO: Better to avoid the clone copy. Need to check if we can return cumulative
-            // metrics instead of metrics from last expiry.
+            /* TODO: Better to avoid the clone copy. Need to check if we can return cumulative metrics instead of
+            metrics from last expiry. */
             synchronized (metrics) {
                 cloneCopy = new ConcurrentHashMap<UUID, RPCMetric>(metrics);
                 metrics.clear();

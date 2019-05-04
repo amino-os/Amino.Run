@@ -11,6 +11,7 @@ import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.UUID;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -151,7 +152,7 @@ public class UtilsTest {
         ArrayList<Object> params = new ArrayList<Object>();
         params.add("hello");
 
-        KernelRPC expected = new KernelRPC(oid, "method", params);
+        KernelRPC expected = new KernelRPC(UUID.randomUUID(), oid, "method", params);
 
         byte[] bytes = Utils.toBytes(expected);
         KernelRPC actual = (KernelRPC) Utils.toObject(bytes);

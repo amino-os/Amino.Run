@@ -5,9 +5,11 @@ import amino.run.common.MicroServiceReplicaNotFoundException;
 import amino.run.common.Notification;
 import amino.run.common.ReplicaID;
 import amino.run.kernel.common.KernelObjectStub;
+import amino.run.policy.util.ResettableTimer;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 
@@ -15,6 +17,8 @@ public class DefaultPolicy extends Policy {
 
     public static class DefaultServerPolicy extends ServerPolicy {
         private GroupPolicy group;
+        private transient ResettableTimer metricsNotificationTimer;
+        private int METRICS_NOTIFICATION_TIME = 1000; // This may be a configurable param
 
         @Override
         public GroupPolicy getGroup() {
@@ -30,10 +34,38 @@ public class DefaultPolicy extends Policy {
         @Override
         public void onCreate(GroupPolicy group) {
             this.group = group;
+            /* TODO: Need to start periodic notification of microservice metrics to group policy only iff microservice
+            is configured with objective functions to do dynamic migration */
+            final GroupPolicy groupPolicy = group;
+            metricsNotificationTimer =
+                    new ResettableTimer(
+                            new TimerTask() {
+                                MetricsNotification notification =
+                                        new MetricsNotification(getReplicaId());
+
+                                public void run() {
+                                    try {
+                                        notification.metrics = getRPCMetrics();
+                                        groupPolicy.onNotification(notification);
+                                        metricsNotificationTimer.reset();
+                                    } catch (Exception e) {
+                                        logger.warning(
+                                                String.format(
+                                                        "Failed to notify metrics to group. Exception : %s",
+                                                        e));
+                                    }
+                                }
+                            },
+                            METRICS_NOTIFICATION_TIME);
+            metricsNotificationTimer.start();
         }
 
         @Override
-        public void onDestroy() {}
+        public void onDestroy() {
+            if (metricsNotificationTimer != null) {
+                metricsNotificationTimer.cancel();
+            }
+        }
     }
 
     public static class DefaultClientPolicy extends ClientPolicy {
@@ -115,7 +147,14 @@ public class DefaultPolicy extends Policy {
         }
 
         @Override
-        public void onNotification(Notification notification) throws RemoteException {}
+        public void onNotification(Notification notification) throws RemoteException {
+            if (notification instanceof MetricsNotification) {
+                MetricsNotification object = (MetricsNotification) notification;
+                // TODO: Store these metrics to make them available for statistics and decision
+                // making module
+                return;
+            }
+        }
 
         @Override
         public void onDestroy() throws RemoteException {

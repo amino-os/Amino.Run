@@ -171,7 +171,11 @@ public class PolicyStub extends Stub {
 
         buffer.append(
                 indenter.tIncrease()
-                        + "amino.run.kernel.common.KernelRPC rpc = new amino.run.kernel.common.KernelRPC($__oid, method, params);"
+                        + "java.util.UUID clientId = amino.run.common.AppObjectStub.context.get();"
+                        + EOLN);
+        buffer.append(
+                indenter.tIncrease()
+                        + "amino.run.kernel.common.KernelRPC rpc = new amino.run.kernel.common.KernelRPC(clientId, $__oid, method, params);"
                         + EOLN);
         buffer.append(indenter.tIncrease() + "try {" + EOLN);
         buffer.append(
@@ -318,9 +322,14 @@ public class PolicyStub extends Stub {
         buffer.append(
                 indenter.tIncrease(2) + "return $__nextClientPolicy.onRPC(method, params);" + EOLN);
         buffer.append(indenter.tIncrease() + "}" + EOLN + EOLN);
+
         buffer.append(
                 indenter.tIncrease()
-                        + "amino.run.kernel.common.KernelRPC rpc = new amino.run.kernel.common.KernelRPC($__oid, method, params);"
+                        + "java.util.UUID clientId = amino.run.common.AppObjectStub.context.get();"
+                        + EOLN);
+        buffer.append(
+                indenter.tIncrease()
+                        + "amino.run.kernel.common.KernelRPC rpc = new amino.run.kernel.common.KernelRPC(clientId, $__oid, method, params);"
                         + EOLN);
         buffer.append(indenter.tIncrease() + "try {" + EOLN);
         buffer.append(

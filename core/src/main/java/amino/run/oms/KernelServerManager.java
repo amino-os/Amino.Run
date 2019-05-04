@@ -98,7 +98,8 @@ public class KernelServerManager {
                         },
                         OMSServer.KS_HEARTBEAT_TIMEOUT);
         heartBeatTimer.start();
-        KernelServerInfo oldServer = servers.put(host, new KernelServerInfo(info, server, heartBeatTimer));
+        KernelServerInfo oldServer =
+                servers.put(host, new KernelServerInfo(info, server, heartBeatTimer));
         if (oldServer != null) {
             oldServer.heartBeatTimer.cancel();
         }
@@ -109,7 +110,9 @@ public class KernelServerManager {
     public void receiveHeartBeat(ServerInfo srvinfo) throws KernelServerNotFoundException {
         InetSocketAddress host = srvinfo.getHost();
         String region = srvinfo.getRegion();
-        logger.fine(String.format("Received HeartBeat from kernel server: %s in region %s", host, region));
+        logger.fine(
+                String.format(
+                        "Received HeartBeat from kernel server: %s in region %s", host, region));
 
         KernelServerInfo kernelServerInfo = servers.get(host);
         if (kernelServerInfo != null) {

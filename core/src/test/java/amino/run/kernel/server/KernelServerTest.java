@@ -13,6 +13,7 @@ import amino.run.kernel.common.KernelRPCException;
 import amino.run.oms.OMSServerImpl;
 import amino.run.sampleSO.SO;
 import java.util.ArrayList;
+import java.util.UUID;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -48,7 +49,7 @@ public class KernelServerTest extends BaseTest {
         /* Make kernel rpc with a method name not present in server policy so that make rpc fails at invocation time(but
         succeeds at object lookup).
         Note: We have passed app method name instead of server's onRPC method to fail the rpc invocation. */
-        KernelRPC rpc = new KernelRPC(server1.$__getKernelOID(), method, params);
+        KernelRPC rpc = new KernelRPC(UUID.randomUUID(), server1.$__getKernelOID(), method, params);
         thrown.expect(KernelRPCException.class);
         spiedKs1.makeKernelRPC(rpc);
     }

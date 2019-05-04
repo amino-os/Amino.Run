@@ -11,14 +11,21 @@ import org.graalvm.polyglot.*;
  * @author iyzhang
  */
 public class KernelRPC implements Serializable {
+    private UUID callerId;
     private KernelOID oid;
     private String method;
     private ArrayList<Object> params;
 
-    public KernelRPC(KernelOID oid, String method, ArrayList<Object> params) throws Exception {
+    public KernelRPC(UUID callerId, KernelOID oid, String method, ArrayList<Object> params)
+            throws Exception {
+        this.callerId = callerId;
         this.oid = oid;
         this.method = method;
         this.params = params;
+    }
+
+    public UUID getCallerId() {
+        return callerId;
     }
 
     public KernelOID getOID() {

@@ -1,8 +1,12 @@
 package amino.run.kernel.server;
 
 import amino.run.common.ObjectHandler;
+import amino.run.common.Utils;
 import amino.run.kernel.common.KernelObjectMigratingException;
+import amino.run.kernel.common.metric.RPCMetric;
 import java.util.ArrayList;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
 
 /**
@@ -16,15 +20,21 @@ public class KernelObject extends ObjectHandler {
     private static final int MAX_CONCURRENT_RPCS = 100;
     private Boolean coalesced;
     private Semaphore rpcCounter;
+    private ConcurrentHashMap<UUID, RPCMetric> metrics;
 
     public KernelObject(Object obj) {
         super(obj);
         coalesced = false;
         rpcCounter = new Semaphore(MAX_CONCURRENT_RPCS, true);
+        metrics = new ConcurrentHashMap<UUID, RPCMetric>();
     }
 
-    public Object invoke(String method, ArrayList<Object> params) throws Exception {
-        Object ret;
+    public ConcurrentHashMap<UUID, RPCMetric> getMetrics() {
+        return metrics;
+    }
+
+    public Object invoke(UUID callerId, String method, ArrayList<Object> params) throws Exception {
+        Object ret = null;
 
         if (coalesced) {
             // Object has been migrated to the other kernel server.
@@ -34,11 +44,37 @@ public class KernelObject extends ObjectHandler {
 
         rpcCounter.acquire();
 
+        RPCMetric rpcMetric = null;
+        long startTime = 0;
+        long endTime = 0;
+        // Measure the data in, out and rpc processing time
+        if (callerId != null) {
+            rpcMetric = metrics.get(callerId);
+            if (rpcMetric == null) {
+                rpcMetric = new RPCMetric();
+                metrics.put(callerId, rpcMetric);
+                try {
+                    rpcMetric.dataSize += Utils.toBytes(params).length;
+                } catch (Exception e) {
+                }
+            }
+            startTime = System.nanoTime();
+        }
+
         // Added try finally so that, when the super.invoke(...) throws exceptions,
         // then we safely release the rpcCounter
         try {
             ret = super.invoke(method, params);
         } finally {
+            // TODO: Need to reconsider exception case
+            if (rpcMetric != null) {
+                endTime = System.nanoTime();
+                try {
+                    rpcMetric.dataSize += Utils.toBytes(ret).length;
+                } catch (Exception e) {
+                }
+                rpcMetric.processTime += (endTime - startTime);
+            }
             rpcCounter.release();
         }
 

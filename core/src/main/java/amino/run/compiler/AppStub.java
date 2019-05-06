@@ -62,7 +62,10 @@ public final class AppStub extends Stub {
     @Override
     public String getStubFields() {
         StringBuilder buffer = new StringBuilder();
-        buffer.append(indenter.indent() + "transient java.util.UUID $__callerId = null;" + EOLN);
+        buffer.append(
+                indenter.indent()
+                        + "transient amino.run.common.AppObjectStub.Context $__context = null;"
+                        + EOLN);
 
         buffer.append(
                 indenter.indent()
@@ -165,7 +168,7 @@ public final class AppStub extends Stub {
         buffer.append(indenter.tIncrease() + "inputStream.defaultReadObject();" + EOLN);
         buffer.append(
                 indenter.tIncrease()
-                        + "$__callerId = java.util.UUID.randomUUID();"
+                        + "$__context = new amino.run.common.AppObjectStub.Context(java.util.UUID.randomUUID(), amino.run.kernel.common.GlobalKernelReferences.nodeServer.getLocalHost());"
                         + EOLN
                         + indenter.indent()
                         + "}"
@@ -251,7 +254,7 @@ public final class AppStub extends Stub {
 
         buffer.append(
                 indenter.tIncrease(tabWidth)
-                        + "amino.run.common.AppObjectStub.context.set($__callerId);"
+                        + "amino.run.common.AppObjectStub.context.set($__context);"
                         + EOLN);
         buffer.append(
                 indenter.tIncrease(tabWidth)

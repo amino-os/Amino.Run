@@ -113,7 +113,7 @@ public class KernelServerImpl implements KernelServer {
 
         Object ret = null;
         try {
-            ret = object.invoke(rpc.getCallerId(), rpc.getMethod(), rpc.getParams());
+            ret = object.invoke(rpc.getContext(), rpc.getMethod(), rpc.getParams());
         } catch (Exception e) {
             throw new KernelRPCException(e);
         }

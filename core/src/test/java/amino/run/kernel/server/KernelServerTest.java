@@ -5,6 +5,7 @@ import static junit.framework.TestCase.assertEquals;
 
 import amino.run.app.Language;
 import amino.run.app.MicroServiceSpec;
+import amino.run.common.AppObjectStub;
 import amino.run.common.BaseTest;
 import amino.run.kernel.common.KernelOID;
 import amino.run.kernel.common.KernelObjectNotFoundException;
@@ -12,6 +13,7 @@ import amino.run.kernel.common.KernelRPC;
 import amino.run.kernel.common.KernelRPCException;
 import amino.run.oms.OMSServerImpl;
 import amino.run.sampleSO.SO;
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.UUID;
 import org.junit.After;
@@ -49,7 +51,10 @@ public class KernelServerTest extends BaseTest {
         /* Make kernel rpc with a method name not present in server policy so that make rpc fails at invocation time(but
         succeeds at object lookup).
         Note: We have passed app method name instead of server's onRPC method to fail the rpc invocation. */
-        KernelRPC rpc = new KernelRPC(UUID.randomUUID(), server1.$__getKernelOID(), method, params);
+        AppObjectStub.Context context =
+                new AppObjectStub.Context(
+                        UUID.randomUUID(), new InetSocketAddress(LOOP_BACK_IP_ADDR, kernelPort1));
+        KernelRPC rpc = new KernelRPC(context, server1.$__getKernelOID(), method, params);
         thrown.expect(KernelRPCException.class);
         spiedKs1.makeKernelRPC(rpc);
     }

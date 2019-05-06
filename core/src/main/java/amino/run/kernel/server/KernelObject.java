@@ -1,9 +1,10 @@
 package amino.run.kernel.server;
 
+import amino.run.common.AppObjectStub;
 import amino.run.common.ObjectHandler;
 import amino.run.common.Utils;
 import amino.run.kernel.common.KernelObjectMigratingException;
-import amino.run.kernel.common.metric.RPCMetric;
+import amino.run.kernel.metric.RPCMetric;
 import java.util.ArrayList;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -20,7 +21,7 @@ public class KernelObject extends ObjectHandler {
     private static final int MAX_CONCURRENT_RPCS = 100;
     private Boolean coalesced;
     private Semaphore rpcCounter;
-    private ConcurrentHashMap<UUID, RPCMetric> metrics;
+    private transient ConcurrentHashMap<UUID, RPCMetric> metrics;
 
     public KernelObject(Object obj) {
         super(obj);
@@ -33,7 +34,8 @@ public class KernelObject extends ObjectHandler {
         return metrics;
     }
 
-    public Object invoke(UUID callerId, String method, ArrayList<Object> params) throws Exception {
+    public Object invoke(AppObjectStub.Context context, String method, ArrayList<Object> params)
+            throws Exception {
         Object ret = null;
 
         if (coalesced) {
@@ -48,11 +50,11 @@ public class KernelObject extends ObjectHandler {
         long startTime = 0;
         long endTime = 0;
         // Measure the data in, out and rpc processing time
-        if (callerId != null) {
-            rpcMetric = metrics.get(callerId);
+        if (context != null) {
+            rpcMetric = metrics.get(context.callerId);
             if (rpcMetric == null) {
-                rpcMetric = new RPCMetric();
-                metrics.put(callerId, rpcMetric);
+                rpcMetric = new RPCMetric(context.host);
+                metrics.put(context.callerId, rpcMetric);
                 try {
                     rpcMetric.dataSize += Utils.toBytes(params).length;
                 } catch (Exception e) {

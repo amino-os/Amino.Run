@@ -22,7 +22,7 @@ import amino.run.kernel.common.GlobalKernelReferences;
 import amino.run.kernel.common.KernelOID;
 import amino.run.kernel.common.KernelObjectFactory;
 import amino.run.kernel.common.KernelObjectNotFoundException;
-import amino.run.kernel.common.metric.RPCMetric;
+import amino.run.kernel.metric.RPCMetric;
 import amino.run.kernel.server.KernelServerImpl;
 import amino.run.oms.OMSServer;
 import amino.run.policy.Policy.ServerPolicy;

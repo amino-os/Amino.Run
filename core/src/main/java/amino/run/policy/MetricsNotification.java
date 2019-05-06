@@ -2,7 +2,7 @@ package amino.run.policy;
 
 import amino.run.common.Notification;
 import amino.run.common.ReplicaID;
-import amino.run.kernel.common.metric.RPCMetric;
+import amino.run.kernel.metric.RPCMetric;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.UUID;

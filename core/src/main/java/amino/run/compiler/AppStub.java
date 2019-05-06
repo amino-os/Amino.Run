@@ -62,7 +62,10 @@ public final class AppStub extends Stub {
     @Override
     public String getStubFields() {
         StringBuilder buffer = new StringBuilder();
-        buffer.append(indenter.indent() + "transient java.util.UUID $__callerId = null;" + EOLN);
+        buffer.append(
+                indenter.indent()
+                        + "transient amino.run.common.AppObjectStub.Context $__context = null;"
+                        + EOLN);
 
         buffer.append(
                 indenter.indent()

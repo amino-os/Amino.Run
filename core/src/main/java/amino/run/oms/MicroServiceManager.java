@@ -7,9 +7,11 @@ import amino.run.common.MicroServiceNotFoundException;
 import amino.run.common.MicroServiceReplicaNotFoundException;
 import amino.run.common.ReplicaID;
 import amino.run.kernel.common.KernelOID;
+import amino.run.kernel.common.metric.RPCMetric;
 import amino.run.runtime.EventHandler;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -213,6 +215,18 @@ public class MicroServiceManager {
             }
             instance.setReplicaDispatcher(replicaId, dispatcher);
         }
+    }
+
+    /**
+     * Updates the microservice metrics for the given replica
+     *
+     * @param replicaId
+     * @param metrics
+     * @throws MicroServiceNotFoundException
+     */
+    public void updateMicroServiceMetric(ReplicaID replicaId, Map<UUID, RPCMetric> metrics)
+            throws MicroServiceNotFoundException {
+        getInstance(replicaId.getOID()).updateMetric(replicaId, metrics);
     }
 
     /**

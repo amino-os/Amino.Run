@@ -6,6 +6,7 @@ import amino.run.kernel.common.GlobalKernelReferences;
 import amino.run.kernel.common.KernelServerNotFoundException;
 import amino.run.kernel.common.ServerInfo;
 import amino.run.kernel.server.KernelServer;
+import amino.run.oms.metrics.KernelServerMetric;
 import amino.run.policy.util.ResettableTimer;
 import java.net.InetSocketAddress;
 import java.rmi.NotBoundException;
@@ -28,12 +29,14 @@ public class KernelServerManager {
         private ServerInfo config; // Registration information of kernel server
         private ResettableTimer heartBeatTimer; // HeartBeat timer
         private KernelServer remoteRef; // Remote reference to kernel server
+        private KernelServerMetric metric; // Metrics
 
         private KernelServerInfo(
-                ServerInfo config, KernelServer remoteRef, ResettableTimer heartBeatTimer) {
+                ServerInfo config, KernelServer remoteRef, ResettableTimer heartBeatTimer, KernelServerMetric metric) {
             this.config = config;
             this.heartBeatTimer = heartBeatTimer;
             this.remoteRef = remoteRef;
+            this.metric = metric;
         }
     }
 
@@ -117,6 +120,7 @@ public class KernelServerManager {
         KernelServerInfo kernelServerInfo = servers.get(host);
         if (kernelServerInfo != null) {
             kernelServerInfo.heartBeatTimer.reset();
+            kernelServerInfo.metric.updateMetric(srvinfo.metrics);
             return;
         }
 
@@ -180,5 +184,15 @@ public class KernelServerManager {
         // In future we can consider some other specific things to select the
         // best one among the list
         return hosts.get(randgen.nextInt(hosts.size()));
+    }
+
+    /**
+     * Gets the kernel server CPU information
+     *
+     * @param host
+     * @return
+     */
+    public int getKernelServerCPU(InetSocketAddress host) {
+        return servers.get(host).config.cpu;
     }
 }

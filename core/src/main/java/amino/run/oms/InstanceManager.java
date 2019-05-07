@@ -6,6 +6,8 @@ import amino.run.common.MicroServiceNotFoundException;
 import amino.run.common.MicroServiceReplicaNotFoundException;
 import amino.run.common.ReplicaID;
 import amino.run.kernel.common.KernelOID;
+import amino.run.kernel.common.metric.RPCMetric;
+import amino.run.oms.metrics.MicroServiceMetric;
 import amino.run.runtime.EventHandler;
 import java.util.Collection;
 import java.util.Collections;
@@ -24,6 +26,7 @@ public class InstanceManager {
     private Map<KernelOID, EventHandler> groupDispatchers;
     private AppObjectStub objectStub;
     private HashMap<ReplicaID, EventHandler> replicaDispatchers;
+    private HashMap<ReplicaID, MicroServiceMetric> replicaMetrics;
     private Random oidGenerator;
 
     /**
@@ -40,6 +43,7 @@ public class InstanceManager {
         groupDispatchers =
                 Collections.synchronizedMap(new LinkedHashMap<KernelOID, EventHandler>());
         replicaDispatchers = new HashMap<ReplicaID, EventHandler>();
+        replicaMetrics = new HashMap<ReplicaID, MicroServiceMetric>();
         oidGenerator = new Random(new Date().getTime());
         referenceCount = new AtomicInteger(1);
     }
@@ -141,6 +145,7 @@ public class InstanceManager {
     public ReplicaID addReplica(EventHandler dispatcher) {
         ReplicaID rid = generateReplicaID();
         replicaDispatchers.put(rid, dispatcher);
+        replicaMetrics.put(rid, new MicroServiceMetric(rid));
         return rid;
     }
 
@@ -151,6 +156,17 @@ public class InstanceManager {
      */
     public void removeReplica(ReplicaID replicaId) {
         replicaDispatchers.remove(replicaId);
+        replicaMetrics.remove(replicaId);
+    }
+
+    /**
+     * Updates the replica metrics of this microservice instance
+     *
+     * @param replicaId
+     * @param metrics
+     */
+    public void updateMetric(ReplicaID replicaId, Map<UUID, RPCMetric> metrics) {
+        replicaMetrics.get(replicaId).updateMetric(metrics);
     }
 
     /**
@@ -167,6 +183,7 @@ public class InstanceManager {
     public void clear() {
         groupDispatchers.clear();
         replicaDispatchers.clear();
+        replicaMetrics.clear();
     }
 
     public MicroServiceID getOid() {

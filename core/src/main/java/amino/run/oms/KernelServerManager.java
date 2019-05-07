@@ -8,8 +8,6 @@ import amino.run.kernel.common.ServerInfo;
 import amino.run.kernel.server.KernelServer;
 import amino.run.policy.util.ResettableTimer;
 import java.net.InetSocketAddress;
-import java.rmi.NotBoundException;
-import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.*;
@@ -110,9 +108,7 @@ public class KernelServerManager {
     public void receiveHeartBeat(ServerInfo srvinfo) throws KernelServerNotFoundException {
         InetSocketAddress host = srvinfo.getHost();
         String region = srvinfo.getRegion();
-        logger.fine(
-                String.format(
-                        "Received HeartBeat from kernel server: %s in region %s", host, region));
+        logger.fine(String.format("Received HeartBeat from kernel server: %s in region %s", host, region));
 
         KernelServerInfo kernelServerInfo = servers.get(host);
         if (kernelServerInfo != null) {

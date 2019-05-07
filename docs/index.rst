@@ -61,4 +61,3 @@ Amino.Run is an open source, multilanguage development platform and distributed 
    :caption: Adding Documentation
    
    documentation.md
-

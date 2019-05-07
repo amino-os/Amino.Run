@@ -69,11 +69,6 @@ public final class AppStub extends Stub {
 
         buffer.append(
                 indenter.indent()
-                        + "transient amino.run.common.AppObjectStub.Context $__context = null;"
-                        + EOLN);
-
-        buffer.append(
-                indenter.indent()
                         + "amino.run.common.MicroServiceID $__microServiceId = null;"
                         + EOLN);
         buffer.append(

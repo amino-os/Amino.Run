@@ -32,9 +32,9 @@ public class RPCMetric implements Serializable {
                 + callerId
                 + ", clientHost="
                 + clientHost
-                + ", dataSize="
+                + ", dataSize(bytes)="
                 + dataSize
-                + ", elapsedTime="
+                + ", elapsedTime(ns)="
                 + elapsedTime
                 + '}';
     }

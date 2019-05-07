@@ -33,7 +33,7 @@ public class ServerInfo implements Serializable {
 
     public Map<InetSocketAddress, NodeMetric> metrics;
 
-    public int cpu; // CPU cores
+    public int processorCount; // Available processor count
 
     public void addLabels(Map keyValues) {
         if (keyValues == null) {

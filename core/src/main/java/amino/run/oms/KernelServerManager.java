@@ -29,11 +29,11 @@ public class KernelServerManager {
     private ConcurrentHashMap<InetSocketAddress, KernelServer> servers;
     private ConcurrentHashMap<String, ArrayList<InetSocketAddress>> regions;
     private ConcurrentHashMap<InetSocketAddress, ResettableTimer> ksHeartBeatTimers;
-    private Set<ServerInfo> serverInfos;
+    private ConcurrentHashMap<InetSocketAddress, ServerInfo> serverInfos;
     private static final Random randgen = new Random();
 
     public KernelServerManager() {
-        serverInfos = Collections.newSetFromMap(new ConcurrentHashMap<ServerInfo, Boolean>());
+        serverInfos = new ConcurrentHashMap<InetSocketAddress, ServerInfo>();
         servers = new ConcurrentHashMap<InetSocketAddress, KernelServer>();
         regions = new ConcurrentHashMap<String, ArrayList<InetSocketAddress>>();
         ksHeartBeatTimers = new ConcurrentHashMap<InetSocketAddress, ResettableTimer>();
@@ -54,7 +54,7 @@ public class KernelServerManager {
     public void removeKernelServer(ServerInfo srvInfo) {
         // removing from the servers list
         servers.remove(srvInfo.getHost());
-        serverInfos.remove(srvInfo);
+        serverInfos.remove(srvInfo.getHost());
 
         // removing from the regions map
         ArrayList<InetSocketAddress> serverList = regions.get(srvInfo.getRegion());
@@ -79,7 +79,7 @@ public class KernelServerManager {
                         + " in region "
                         + info.getRegion());
 
-        serverInfos.add(info);
+        serverInfos.put(info.getHost(), info);
         ArrayList<InetSocketAddress> serverList = regions.get(info.getRegion());
 
         if (null == serverList) {
@@ -135,9 +135,9 @@ public class KernelServerManager {
      */
     public List<InetSocketAddress> getServers(NodeSelectorSpec spec) {
         List<InetSocketAddress> nodes = new ArrayList<InetSocketAddress>();
-        for (ServerInfo s : serverInfos) {
-            if (s.matchNodeSelectorSpec(spec)) {
-                nodes.add(s.getHost());
+        for (Map.Entry<InetSocketAddress, ServerInfo> entry : serverInfos.entrySet()) {
+            if (entry.getValue().matchNodeSelectorSpec(spec)) {
+                nodes.add(entry.getKey());
             }
         }
         return nodes;

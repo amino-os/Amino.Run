@@ -25,7 +25,6 @@ import amino.run.runtime.EventHandler;
 import amino.run.runtime.MicroService;
 import com.google.devtools.common.options.OptionsParser;
 import java.net.InetSocketAddress;
-import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;

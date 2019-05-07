@@ -580,6 +580,24 @@ public abstract class Library implements Upcalls {
             return serversInRegion;
         }
 
+        /**
+         * Updates the microservice metrics to OMS
+         *
+         * @param replicaId
+         * @param metrics
+         * @throws RemoteException
+         */
+        public void updateMetric(ReplicaID replicaId, Map<UUID, RPCMetric> metrics)
+                throws RemoteException {
+            try {
+                oms().updateMicroServiceMetric(replicaId, metrics);
+            } catch (MicroServiceNotFoundException e) {
+                logger.warning(
+                        String.format(
+                                "Microservice %s not found. Exception: %s", replicaId.getOID(), e));
+            }
+        }
+
         public void $__setKernelOID(KernelOID oid) {
             this.oid = oid;
         }

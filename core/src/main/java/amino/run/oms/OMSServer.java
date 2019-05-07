@@ -11,6 +11,7 @@ import amino.run.kernel.common.KernelObjectNotCreatedException;
 import amino.run.kernel.common.KernelObjectNotFoundException;
 import amino.run.kernel.common.KernelServerNotFoundException;
 import amino.run.kernel.common.ServerInfo;
+import amino.run.kernel.common.metric.RPCMetric;
 import amino.run.policy.Policy;
 import amino.run.runtime.EventHandler;
 import java.net.InetSocketAddress;
@@ -19,6 +20,8 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 public interface OMSServer extends Remote {
     public static final long KS_HEARTBEAT_TIMEOUT = 6000; // milliseconds
@@ -65,5 +68,8 @@ public interface OMSServer extends Remote {
             throws RemoteException, MicroServiceNotFoundException;
 
     void unRegisterReplica(ReplicaID replicaId)
+            throws RemoteException, MicroServiceNotFoundException;
+
+    void updateMicroServiceMetric(ReplicaID replicaID, Map<UUID, RPCMetric> metrics)
             throws RemoteException, MicroServiceNotFoundException;
 }

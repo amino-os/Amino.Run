@@ -33,6 +33,8 @@ public class ServerInfo implements Serializable {
 
     public Map<InetSocketAddress, NodeMetric> metrics;
 
+    public int cpu; // CPU cores
+
     public void addLabels(Map keyValues) {
         if (keyValues == null) {
             throw new NullPointerException("Labels must not be null");

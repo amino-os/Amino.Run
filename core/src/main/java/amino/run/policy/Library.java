@@ -519,6 +519,7 @@ public abstract class Library implements Upcalls {
     }
 
     public abstract static class GroupPolicyLibrary implements GroupUpcalls {
+        private static final Logger logger = Logger.getLogger(GroupPolicyLibrary.class.getName());
         protected String appObjectClassName;
         protected ArrayList<Object> params;
         protected KernelOID oid;
@@ -588,11 +589,15 @@ public abstract class Library implements Upcalls {
         public void updateMetric(ReplicaID replicaId, Map<UUID, RPCMetric> metrics)
                 throws RemoteException {
             try {
-                oms().updateMicroServiceMetric(replicaId, metrics);
+                oms().updateMetric(replicaId, metrics);
             } catch (MicroServiceNotFoundException e) {
                 logger.warning(
                         String.format(
                                 "Microservice %s not found. Exception: %s", replicaId.getOID(), e));
+            } catch (MicroServiceReplicaNotFoundException e) {
+                logger.warning(
+                        String.format(
+                                "Microservice replica %s not found. Exception: %s", replicaId, e));
             }
         }
 

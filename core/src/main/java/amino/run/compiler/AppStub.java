@@ -62,7 +62,6 @@ public final class AppStub extends Stub {
     @Override
     public String getStubFields() {
         StringBuilder buffer = new StringBuilder();
-
         buffer.append(
                 indenter.indent()
                         + "transient amino.run.common.AppObjectStub.Context $__context = null;"

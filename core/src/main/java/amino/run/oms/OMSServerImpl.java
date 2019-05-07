@@ -17,7 +17,7 @@ import amino.run.kernel.common.KernelObjectNotCreatedException;
 import amino.run.kernel.common.KernelObjectNotFoundException;
 import amino.run.kernel.common.KernelServerNotFoundException;
 import amino.run.kernel.common.ServerInfo;
-import amino.run.kernel.common.metric.RPCMetric;
+import amino.run.kernel.metric.RPCMetric;
 import amino.run.kernel.server.KernelServer;
 import amino.run.kernel.server.KernelServerImpl;
 import amino.run.policy.Policy;
@@ -25,6 +25,7 @@ import amino.run.runtime.EventHandler;
 import amino.run.runtime.MicroService;
 import com.google.devtools.common.options.OptionsParser;
 import java.net.InetSocketAddress;
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
@@ -269,11 +270,13 @@ public class OMSServerImpl implements OMSServer, Registry {
      *
      * @param replicaId
      * @param metrics
+     * @throws MicroServiceNotFoundException
+     * @throws MicroServiceReplicaNotFoundException
      */
     @Override
-    public void updateMicroServiceMetric(ReplicaID replicaId, Map<UUID, RPCMetric> metrics)
-            throws MicroServiceNotFoundException {
-        objectManager.updateMicroServiceMetric(replicaId, metrics);
+    public void updateMetric(ReplicaID replicaId, Map<UUID, RPCMetric> metrics)
+            throws MicroServiceNotFoundException, MicroServiceReplicaNotFoundException {
+        objectManager.updateMetric(replicaId, metrics);
     }
 
     /**

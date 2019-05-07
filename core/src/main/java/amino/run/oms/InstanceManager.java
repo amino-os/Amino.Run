@@ -6,9 +6,10 @@ import amino.run.common.MicroServiceNotFoundException;
 import amino.run.common.MicroServiceReplicaNotFoundException;
 import amino.run.common.ReplicaID;
 import amino.run.kernel.common.KernelOID;
-import amino.run.kernel.common.metric.RPCMetric;
-import amino.run.oms.metrics.MicroServiceMetric;
+import amino.run.kernel.metric.RPCMetric;
+import amino.run.oms.metric.MicroServiceMetric;
 import amino.run.runtime.EventHandler;
+import java.net.InetSocketAddress;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -164,9 +165,26 @@ public class InstanceManager {
      *
      * @param replicaId
      * @param metrics
+     * @throws MicroServiceReplicaNotFoundException
      */
-    public void updateMetric(ReplicaID replicaId, Map<UUID, RPCMetric> metrics) {
-        replicaMetrics.get(replicaId).updateMetric(metrics);
+    public void updateMetric(ReplicaID replicaId, Map<UUID, RPCMetric> metrics)
+            throws MicroServiceReplicaNotFoundException {
+        MicroServiceMetric metric = replicaMetrics.get(replicaId);
+        if (metric == null) {
+            throw new MicroServiceReplicaNotFoundException(
+                    String.format("Failed to find microservice replica %s", replicaId));
+        }
+        metric.updateMetric(metrics);
+    }
+
+    /**
+     * Get the replica metrics of this microservice instance
+     *
+     * @param replicaId
+     * @return
+     */
+    public Map<InetSocketAddress, RPCMetric> getMetric(ReplicaID replicaId) {
+        return replicaMetrics.get(replicaId).getMetric();
     }
 
     /**

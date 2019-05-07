@@ -88,6 +88,7 @@ transactional storage system (Amino.Sync) and a privacy and security framework
 * [Deployment Manager](design-docs/deployment-manager.md)
 * [Code Offloading](design-docs/code-offloading.md)
 * [Getting started](getting-started/getting-started.md)
+* [Amino.Run Examples](https://github.com/Huawei-PaaS/DCAP-Sapphire-Examples)
 * Contributing:
   * [Setting up your developer environment](dev-setup.md)
   * [Contributing to the documentation](documentation.md)

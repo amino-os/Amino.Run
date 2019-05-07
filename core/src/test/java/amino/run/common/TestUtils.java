@@ -1,6 +1,7 @@
 package amino.run.common;
 
 import static amino.run.common.UtilsTest.extractFieldValueOnInstance;
+import static amino.run.common.UtilsTest.setFieldValueOnInstance;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
@@ -142,11 +143,14 @@ public class TestUtils {
         KernelServerManager kernelServerManager =
                 (KernelServerManager)
                         extractFieldValueOnInstance(KernelServerImpl.oms, "serverManager");
-        Map<InetSocketAddress, ResettableTimer> heartbeatTimers =
-                (Map<InetSocketAddress, ResettableTimer>)
-                        extractFieldValueOnInstance(kernelServerManager, "ksHeartBeatTimers");
-        ResettableTimer ksHeartBeatTimer = heartbeatTimers.get(ks.getLocalHost());
-        ksHeartBeatTimer.cancel();
+        Map<InetSocketAddress, KernelServerManager.KernelServerInfo> servers =
+                (Map<InetSocketAddress, KernelServerManager.KernelServerInfo>)
+                        extractFieldValueOnInstance(kernelServerManager, "servers");
+        KernelServerManager.KernelServerInfo kernelServerInfo = servers.get(ks.getLocalHost());
+
+        ResettableTimer heartBeatTimer =
+                (ResettableTimer) extractFieldValueOnInstance(kernelServerInfo, "heartBeatTimer");
+        heartBeatTimer.cancel();
 
         /* If needed, all the fields inside KernelServer can be spied as shown below in commented code */
         /*KernelClient kernelClient = (KernelClient) extractFieldValueOnInstance(ks, "client");
@@ -186,10 +190,12 @@ public class TestUtils {
             throws Exception {
         KernelServerManager kernelServerManager =
                 (KernelServerManager) extractFieldValueOnInstance(oms, "serverManager");
-        ConcurrentHashMap<InetSocketAddress, KernelServer> servers =
-                (ConcurrentHashMap<InetSocketAddress, KernelServer>)
+        ConcurrentHashMap<InetSocketAddress, KernelServerManager.KernelServerInfo> servers =
+                (ConcurrentHashMap<InetSocketAddress, KernelServerManager.KernelServerInfo>)
                         extractFieldValueOnInstance(kernelServerManager, "servers");
-        servers.put(((KernelServerImpl) ks).getLocalHost(), ks);
+        KernelServerManager.KernelServerInfo kernelServerInfo =
+                servers.get(((KernelServerImpl) ks).getLocalHost());
+        setFieldValueOnInstance(kernelServerInfo, "remoteRef", ks);
     }
 
     public static InstanceManager getOmsMicroService(OMSServer oms, MicroServiceID microServiceId)

@@ -103,7 +103,7 @@ $ git clone https://github.com/Amino-Distributed-OS/Amino.Run
 <!--
 TODO: Create public slack channels, and allow self-signup.  In the mean time, Sungwook signs people up.
 -->
-* To join our [Slack](http://slack.com) channels, send your public GitHub account, Slack account name and email address to Sungwook Moon (sungwook.moon@huawei.com)
+* To join our [Slack](http://amino-os.slack.com) channels, send your public GitHub account, Slack account name and email address to Sungwook Moon (sungwook.moon@huawei.com)
 
 # Some additional Background Reading for the Curious
 

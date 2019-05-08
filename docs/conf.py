@@ -103,8 +103,8 @@ html_static_path = ['_static']
 # 'searchbox.html']``.
 #
 # html_sidebars = {}
-html_logo = 'images/Amino.gif'
-html_favicon = 'images/favicon.gif'
+html_logo = 'images/amino-os-logo.png'
+html_favicon = 'images/amino-os-logo.png'
 
 
 # -- Options for HTMLHelp output ---------------------------------------------

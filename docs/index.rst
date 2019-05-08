@@ -30,7 +30,7 @@ Amino.Run is an open source, multilanguage development platform and distributed 
    :maxdepth: 2
    :caption: Multiple DM
    
-   design-docs/multiple-DM.md
+   design-docs/multi-DM.md
 
 .. toctree::
    :maxdepth: 2

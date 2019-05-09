@@ -46,33 +46,33 @@ behaviors, namely:
 	1. ConsensusRSMPolicy.GroupPolicy.onCreate() creates 2f+1 replicas (by invoking
      sapphire_replicate, which in turn invokes addServer on all DM's).
 2. Client starts a invocation of the application method with input parameter(s).
-  1. The above is intercepted by AtLeastOnceRPCPolicy.ClientPolicy.onRPC(), that does nothing
+  	1. The above is intercepted by AtLeastOnceRPCPolicy.ClientPolicy.onRPC(), that does nothing
      other than server.onRPC() unless there is a failure.
-  1. The above is intercepted by DHTPolicy.ClientPolicy.onRPC()
+  	1. The above is intercepted by DHTPolicy.ClientPolicy.onRPC()
      that finds a responsible node based on the application parameter.
-  1. The above is intercepted by ConsensusRSM.ClientPolicy.onRPC(), that
+  	1. The above is intercepted by ConsensusRSM.ClientPolicy.onRPC(), that
      invokes the RAFT consensus algorithm across all replicas to
      ensure that the RPC call is committed against the quorum.
-  1. The last DM in the DM client chain (ConsensusRMM.ClientPolicy.onRPC()) calls the chosen server.
+  	1. The last DM in the DM client chain (ConsensusRMM.ClientPolicy.onRPC()) calls the chosen server.
 3. Server starts a invocation of the application method with stacked parameters.
-  1. The server unravels the parameters which resolves ConsensusRSM.ServerPolicy.onRPC()
-  1. ConsensusRSM.ServerPolicy.onRPC() calls the leader (itself) and followers (replcas).
-  1. When above DM invokes for the method in application object, it calls 
+  	1. The server unravels the parameters which resolves ConsensusRSM.ServerPolicy.onRPC()
+  	1. ConsensusRSM.ServerPolicy.onRPC() calls the leader (itself) and followers (replcas).
+  	1. When above DM invokes for the method in application object, it calls 
   the DHTPolicy.ServerPolicy.onRPC() as the application object references the DHTPolicy.ServerPolicy.
-  1. DHTPolicy.ServerPolicy.onRPC() invokes the application object which calls 
+  	1. DHTPolicy.ServerPolicy.onRPC() invokes the application object which calls 
   the AtLeastOnceRPCPolicy.ServerPolicy.onRPC() as the application object references 
   the AtLeastOnceRPCPolicy.ServerPolicy.
-  1. Finally, AtLeastOnceRPCPolicy.ServerPolicy.onRPC() invokes the actual appplication object.
+  	1. Finally, AtLeastOnceRPCPolicy.ServerPolicy.onRPC() invokes the actual appplication object.
 4. Result of the application method call is propagated back via the DM chain it has went through 
 (at the leader node and the follower nodes).
-  1. Result from the application object is returned to the AtLeastOnceRPCPolicy.ServerPolicy.onRPC().
-  1. Above result is returned to the DHTPolicy.ServerPolicy.onRPC().
-  1. Above result is returned to the ConsensusRSM.ServerPolicy.onRPC().
+  	1. Result from the application object is returned to the AtLeastOnceRPCPolicy.ServerPolicy.onRPC().
+  	1. Above result is returned to the DHTPolicy.ServerPolicy.onRPC().
+  	1. Above result is returned to the ConsensusRSM.ServerPolicy.onRPC().
 5. Result of the server side call is returned to the client.
-  1. Above result is returned to the ConsensusRSM.ClientPolicy.onRPC().
-  1. Above result is returned to the DHTPolicy.ClientPolicy.onRPC().
-  1. Above result is returned to the AtLeastOnceRPCPolicy.ClientPolicy.onRPC().
-  1. Above result is returned to the application.
+ 	1. Above result is returned to the ConsensusRSM.ClientPolicy.onRPC().
+  	1. Above result is returned to the DHTPolicy.ClientPolicy.onRPC().
+  	1. Above result is returned to the AtLeastOnceRPCPolicy.ClientPolicy.onRPC().
+  	1. Above result is returned to the application.
     
   
 	 

@@ -7,8 +7,7 @@ package amino.run.kernel.common.metric.schema;
  */
 public enum SchemaType {
     Counter("Counter"),
-    Summary("Summary"),
-    Gauge("Gauge");
+    Summary("Summary");
 
     private String type;
 

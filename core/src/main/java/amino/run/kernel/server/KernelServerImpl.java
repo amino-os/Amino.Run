@@ -402,8 +402,8 @@ public class KernelServerImpl implements KernelServer {
         }
     }
 
-    private KernelMetricManager getKernelServerMetricManager(ServerInfo srvInfo) {
-        return new KernelMetricManager(srvInfo);
+    public MemoryStatThread getMemoryStatThread() {
+        return new MemoryStatThread();
     }
 
     /** Send HeartBeats to OMS. */
@@ -459,7 +459,7 @@ public class KernelServerImpl implements KernelServer {
             server.startHeartBeat(srvInfo);
 
             // Start a thread that print memory stats
-            server.getKernelServerMetricManager(srvInfo).start();
+            server.getMemoryStatThread().start();
 
             // Log being used in examples gradle task "run", hence modify accordingly.
             logger.info(String.format("Kernel server ready at port(%s)!", ksArgs.kernelServerPort));

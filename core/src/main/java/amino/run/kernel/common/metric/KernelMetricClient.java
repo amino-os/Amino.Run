@@ -1,6 +1,8 @@
 package amino.run.kernel.common.metric;
 
+import amino.run.common.ReplicaID;
 import amino.run.kernel.common.metric.clients.LoggingClient;
+import amino.run.kernel.common.metric.metricHandler.MicroServiceMetricManager;
 import amino.run.kernel.common.metric.schema.Schema;
 import amino.run.policy.util.ResettableTimer;
 import java.util.TimerTask;
@@ -18,8 +20,8 @@ import java.util.logging.Logger;
  */
 public class KernelMetricClient {
     private static Logger logger = Logger.getLogger(KernelMetricClient.class.getName());
-    private ConcurrentHashMap<String, ResettableTimer> metricManagerTimers =
-            new ConcurrentHashMap<String, ResettableTimer>();
+    private ConcurrentHashMap<ReplicaID, ResettableTimer> metricManagerTimers =
+            new ConcurrentHashMap<ReplicaID, ResettableTimer>();
     private MetricClient client;
 
     public void initialize() {
@@ -46,7 +48,7 @@ public class KernelMetricClient {
      *
      * @param manager
      */
-    public void registerMetricManager(final MetricManager manager) {
+    public void registerMetricManager(final MicroServiceMetricManager manager) {
         registerSchema(manager);
 
         ResettableTimer metricTimer =
@@ -63,12 +65,12 @@ public class KernelMetricClient {
                                     return;
                                 }
                                 // reset the count value and timer after push is done
-                                metricManagerTimers.get(manager.getID()).reset();
+                                metricManagerTimers.get(manager.getPolicy().getReplicaId()).reset();
                             }
                         },
                         manager.getMetricUpdateFrequency());
         metricTimer.start();
-        metricManagerTimers.put(manager.getID(), metricTimer);
+        metricManagerTimers.put(manager.getPolicy().getReplicaId(), metricTimer);
     }
 
     /**
@@ -76,9 +78,9 @@ public class KernelMetricClient {
      *
      * @param manager
      */
-    public void unregisterMetricManager(MetricManager manager) {
-        metricManagerTimers.get(manager.getID()).cancel();
-        metricManagerTimers.remove(manager.getID());
+    public void unregisterMetricManager(MicroServiceMetricManager manager) {
+        metricManagerTimers.get(manager.getPolicy().getReplicaId()).cancel();
+        metricManagerTimers.remove(manager.getPolicy().getReplicaId());
     }
 
     /**
@@ -86,7 +88,7 @@ public class KernelMetricClient {
      *
      * @param manager
      */
-    public void registerSchema(MetricManager manager) {
+    public void registerSchema(MicroServiceMetricManager manager) {
         for (Schema schema : manager.getSchemas()) {
             try {
                 client.register(schema);

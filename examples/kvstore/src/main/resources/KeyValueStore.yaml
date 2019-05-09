@@ -1,4 +1,5 @@
 !!amino.run.app.MicroServiceSpec
+constructorName: null
 dmList:
 - configs:
   - !!amino.run.policy.dht.DHTPolicy$Config {numOfShards: 2}
@@ -7,5 +8,5 @@ dmList:
   name: amino.run.policy.scalability.LoadBalancedMasterSlaveSyncPolicy
 javaClassName: amino.run.demo.KeyValueStore
 lang: java
-name: KVStore
-annotations: {amino.metric : {rpcMetrics: ["rpc_count", "avg_byte_out_data", "avg_byte_in_data"]}}
+name: null
+sourceFileLocation: null

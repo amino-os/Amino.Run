@@ -28,7 +28,7 @@ public class SerializableRPCPolicy extends DefaultPolicy {
          */
         @Override
         public synchronized Object onRPC(String method, ArrayList<Object> params) throws Exception {
-            return super.onRPC(method, params);
+            return appObject.invoke(method, params);
         }
     }
 

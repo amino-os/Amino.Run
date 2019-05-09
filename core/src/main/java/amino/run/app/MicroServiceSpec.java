@@ -2,7 +2,6 @@ package amino.run.app;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import org.yaml.snakeyaml.Yaml;
@@ -38,7 +37,6 @@ import org.yaml.snakeyaml.Yaml;
  * lang: js
  * name: com.org.College
  * sourceFileLocation: src/main/js/college.js
- * annotations: {amino.metric : {amino.metric.frequency: 20000, amino.metrics: ["rpc_count"]}}
  * </code>
  */
 public class MicroServiceSpec implements Serializable {
@@ -59,9 +57,6 @@ public class MicroServiceSpec implements Serializable {
 
     /** List of Deployment Managers to be applied on microservice */
     private List<DMSpec> dmList = new ArrayList<DMSpec>();
-
-    /** Add specific metadata information with MicroService */
-    private HashMap<String, Object> annotations;
 
     private NodeSelectorSpec nodeSelectorSpec;
 
@@ -135,14 +130,6 @@ public class MicroServiceSpec implements Serializable {
         this.nodeSelectorSpec = nodeSelectorSpec;
     }
 
-    public HashMap<String, Object> getAnnotations() {
-        return annotations;
-    }
-
-    public void setAnnotations(HashMap<String, Object> annotations) {
-        this.annotations = annotations;
-    }
-
     public static MicroServiceSpec fromYaml(String yamlString) {
         Yaml yaml = new Yaml();
         return yaml.loadAs(yamlString, MicroServiceSpec.class);
@@ -171,8 +158,7 @@ public class MicroServiceSpec implements Serializable {
                 && Objects.equals(sourceFileLocation, that.sourceFileLocation)
                 && Objects.equals(constructorName, that.constructorName)
                 && Objects.equals(dmList, that.dmList)
-                && Objects.equals(nodeSelectorSpec, that.nodeSelectorSpec)
-                && Objects.equals(annotations, that.annotations);
+                && Objects.equals(nodeSelectorSpec, that.nodeSelectorSpec);
     }
 
     @Override
@@ -184,8 +170,7 @@ public class MicroServiceSpec implements Serializable {
                 sourceFileLocation,
                 constructorName,
                 dmList,
-                nodeSelectorSpec,
-                annotations);
+                nodeSelectorSpec);
     }
 
     @Override
@@ -202,7 +187,6 @@ public class MicroServiceSpec implements Serializable {
         private String constructorName;
         private List<DMSpec> dmList = new ArrayList<DMSpec>();
         private NodeSelectorSpec nodeSelectorSpec;
-        private HashMap<String, Object> annotations = new HashMap<String, Object>();
 
         public Builder setName(String name) {
             this.name = name;
@@ -241,11 +225,6 @@ public class MicroServiceSpec implements Serializable {
             return this;
         }
 
-        public Builder setAnnotations(HashMap<String, Object> annotations) {
-            this.annotations = annotations;
-            return this;
-        }
-
         public MicroServiceSpec create() {
             MicroServiceSpec spec = new MicroServiceSpec();
             spec.setName(name);
@@ -255,7 +234,6 @@ public class MicroServiceSpec implements Serializable {
             spec.setConstructorName(constructorName);
             spec.setDmList(dmList);
             spec.setNodeSelectorSpec(nodeSelectorSpec);
-            spec.setAnnotations(annotations);
             return spec;
         }
     }

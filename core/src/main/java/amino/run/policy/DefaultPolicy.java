@@ -5,7 +5,6 @@ import amino.run.common.MicroServiceReplicaNotFoundException;
 import amino.run.common.Notification;
 import amino.run.common.ReplicaID;
 import amino.run.kernel.common.KernelObjectStub;
-import amino.run.kernel.common.metric.metricHandler.MicroServiceMetricManager;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -16,19 +15,6 @@ public class DefaultPolicy extends Policy {
 
     public static class DefaultServerPolicy extends ServerPolicy {
         private GroupPolicy group;
-        private MicroServiceMetricManager metricManager;
-
-        @Override
-        public Object onRPC(String method, ArrayList<Object> params) throws Exception {
-            if (metricManager != null) {
-                return metricManager.onRPC(method, params);
-            }
-            return upRPCCall(method, params);
-        }
-
-        public Object upRPCCall(String method, ArrayList<Object> params) throws Exception {
-            return super.onRPC(method, params);
-        }
 
         @Override
         public GroupPolicy getGroup() {
@@ -44,18 +30,10 @@ public class DefaultPolicy extends Policy {
         @Override
         public void onCreate(GroupPolicy group) {
             this.group = group;
-            // get micro service specification information from group policy
-            if (isLastPolicy()) {
-                metricManager = MicroServiceMetricManager.create(this, getSpec());
-            }
         }
 
         @Override
-        public void onDestroy() {
-            if (metricManager != null) {
-                metricManager.destroy();
-            }
-        }
+        public void onDestroy() {}
     }
 
     public static class DefaultClientPolicy extends ClientPolicy {

@@ -39,11 +39,11 @@ behaviors, namely:
 ### How it works under the hood
 
 1. Client creates an instance of a MicroService (_new()).
-  1. Kernel invokes group.onCreate() on all DM's in the order of inner most DM to outer most DM.
-  1. AtLeastOnceRPCPolicy.GroupPolicy.onCreate() does nothing unusual.
-  1. DHTPolicy.GroupPolicy.onCreate() ensures that each Microservice is evenly distributed 
+	1. Kernel invokes group.onCreate() on all DM's in the order of inner most DM to outer most DM.
+	1. AtLeastOnceRPCPolicy.GroupPolicy.onCreate() does nothing unusual.	
+	1. DHTPolicy.GroupPolicy.onCreate() ensures that each Microservice is evenly distributed 
      to regions based on the input parameters of the application method.
-  1. ConsensusRSMPolicy.GroupPolicy.onCreate() creates 2f+1 replicas (by invoking
+	1. ConsensusRSMPolicy.GroupPolicy.onCreate() creates 2f+1 replicas (by invoking
      sapphire_replicate, which in turn invokes addServer on all DM's).
 2. Client starts a invocation of the application method with input parameter(s).
   1. The above is intercepted by AtLeastOnceRPCPolicy.ClientPolicy.onRPC(), that does nothing

@@ -1,10 +1,10 @@
 # Introduction
 
-Multiple DM's may be associated with each Sapphire Object.  This
+Multiple DM's may be associated with each MicroService.  This
 document describes some combinations of DM's, and 
 how these combinations behave and might be useful.
 
-The basic DM's are described in [DMList.md](DMList.md).
+The basic DM's are described in [DM List](DM-list.md).
 
 In general, DM's in the same category are mutually exclusive, and it
 does not usually make sense to combine them.  For example, KeepInCloud
@@ -27,21 +27,21 @@ behaviors, namely:
 
 ### Desired behavior
 
-1. Client creates a new instance or obtains a reference to an existing Sapphire Object.
+1. Client creates a new instance or obtains a reference to an existing MicroService.
 2. Client starts a locking transaction, by calling startTransaction()
 3. Client invokes multiple read and write operations against the
-   Sapphire Object.
+   MicroService.
 4. Client either commits or rolls back the transaction.
-5. Client expects the Sapphire Object to be highly available,
+5. Client expects the MicroService to be highly available,
    resilient to server machine failures (provided that concurrent
    failures are limited to a minority quorum).
-6. Client expects the Sapphire Object to be high performance (all
+6. Client expects the MicroService to be high performance (all
    quorum communication is on the local zone network).
-7. Client does not expect the SO to be resilient to zone failure.   
+7. Client does not expect the MicroService to be resilient to zone failure.   
    
 ### How it works under the hood
 
-1. Client creates an instance of a Sapphire Object (_new()).
+1. Client creates an instance of a MicroService (_new()).
   1. Kernel invokes group.onCreate() on all DM's (some handwaving
      here, but I think we can make it work).
 	 1. KeepInCloud.group.onCreate() ensures that all replicas are in
@@ -50,7 +50,7 @@ behaviors, namely:
      1. ConsensusRSM.group.onCreate() creates 2f+1 replicas (by invoking
      sapphire_replicate, which in turn invokes addServer on all DM's).
 2. Client starts a locking transaction, by calling startTransaction()
-   on the SO
+   on the MicroService
   1. The above is intercepted by KeepInCloud.client.onRPC(), that does nothing
      other than server.onRPC().
   1. The above is intercepted by LockingTransactions.client.onRPC()
@@ -68,4 +68,3 @@ behaviors, namely:
      LockingTransactions.client - to ensure that the lock identifier
      is consistent across all replicas.  This change should be
      straightforward.
-	 

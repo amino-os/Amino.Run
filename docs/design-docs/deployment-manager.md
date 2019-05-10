@@ -53,7 +53,7 @@ public class UserManager {
 ```
 # DM Injection
 
-![](../images/SapphireOverview.png)
+![](../images/AminoRunOverview.png)
 
 In the above diagram, the dashed arrow lines are remote method invocations between Sapphire objects, the solid arrow lines are local method invocations within a Sapphire object (i.e. within JVM). DMs sit below Sapphire objects. They are essentially proxies for Sapphire objects. When one object calls a remote method on another Sapphire object, the request will first be processed by the DM on client side, (i.e. `DM.Proxy`), the DM on server side (i.e. `DM.InstanceManager`) , and then finally be sent to the real Java object.
 

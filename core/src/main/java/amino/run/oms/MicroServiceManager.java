@@ -325,13 +325,15 @@ public class MicroServiceManager {
         return getInstance(microServiceId).decrRefCountAndGet();
     }
 
-    public List<ReplicaID> getAllReplicaIDs() {
-        ArrayList<ReplicaID> replicaIDs = new ArrayList<ReplicaID>();
-
-        for (InstanceManager instanceManager : microServices.values()) {
-            replicaIDs.addAll(instanceManager.getReplicaIDs());
-        }
-
-        return replicaIDs;
+    /**
+     * Get the replica ids of micro service
+     *
+     * @param microServiceId
+     * @return
+     * @throws MicroServiceNotFoundException
+     */
+    public List<ReplicaID> getReplicaIDs(MicroServiceID microServiceId)
+            throws MicroServiceNotFoundException {
+        return getInstance(microServiceId).getReplicaIDs();
     }
 }

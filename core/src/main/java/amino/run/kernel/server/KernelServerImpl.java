@@ -58,7 +58,7 @@ public class KernelServerImpl implements KernelServer {
 
     // Metrics measurement timer
     private ResettableTimer metricsMeasurementTimer;
-    static final long METRICS_MEASUREMENT_TIME = 1000; /* Metrics measuring frequency */
+    static final long METRIC_POLL_PERIOD_IN_MS = 1000; /* Metrics poll period in ms */
 
     public KernelServerImpl(InetSocketAddress host, InetSocketAddress omsHost) {
         OMSServer oms = null;
@@ -467,13 +467,13 @@ public class KernelServerImpl implements KernelServer {
             server.setRegion(srvInfo.getRegion());
             oms.registerKernelServer(srvInfo);
 
-            srvInfo.metrics = server.client.getServerMetrics();
-
-            // Start HeartBeat timer
-            server.startHeartBeat(srvInfo);
+            srvInfo.metrics = server.client.getMetrics();
 
             // Start measuring metrics
             server.startMetricsMeasurement();
+
+            // Start HeartBeat timer
+            server.startHeartBeat(srvInfo);
 
             // Start a thread that print memory stats
             server.getMemoryStatThread().start();
@@ -487,6 +487,7 @@ public class KernelServerImpl implements KernelServer {
         }
     }
 
+    /** Method to start periodic measurement of kernel server metrics */
     private void startMetricsMeasurement() {
         metricsMeasurementTimer =
                 new ResettableTimer(
@@ -496,7 +497,7 @@ public class KernelServerImpl implements KernelServer {
                                 metricsMeasurementTimer.reset();
                             }
                         },
-                        METRICS_MEASUREMENT_TIME);
+                        METRIC_POLL_PERIOD_IN_MS);
         metricsMeasurementTimer.start();
     }
 

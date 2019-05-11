@@ -19,7 +19,7 @@ import amino.run.kernel.common.KernelServerNotFoundException;
 import amino.run.kernel.common.ServerInfo;
 import amino.run.kernel.server.KernelServer;
 import amino.run.kernel.server.KernelServerImpl;
-import amino.run.oms.migrationDecision.MetricWatcher;
+import amino.run.oms.migrationdecision.MetricWatcher;
 import amino.run.policy.Policy;
 import amino.run.runtime.EventHandler;
 import amino.run.runtime.MicroService;

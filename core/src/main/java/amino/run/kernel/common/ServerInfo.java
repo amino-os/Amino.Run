@@ -3,7 +3,7 @@ package amino.run.kernel.common;
 import amino.run.app.NodeSelectorSpec;
 import amino.run.app.NodeSelectorTerm;
 import amino.run.app.Requirement;
-import amino.run.kernel.common.metric.NodeMetric;
+import amino.run.kernel.metric.NodeMetric;
 import amino.run.kernel.server.KernelServerImpl;
 import java.io.Serializable;
 import java.net.InetSocketAddress;

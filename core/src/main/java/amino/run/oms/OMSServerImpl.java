@@ -107,16 +107,7 @@ public class OMSServerImpl implements OMSServer, Registry {
 
     @Override
     public void registerKernelServer(ServerInfo info) throws RemoteException, NotBoundException {
-        /* Post remove hook is passed to register kernel server. It is called after removing the registered kernel
-        server upon heartbeat expiry */
-        Runnable onServerRemove =
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        notifyAvailableKernelServers();
-                    }
-                };
-        serverManager.registerKernelServer(info, onServerRemove);
+        serverManager.registerKernelServer(info);
 
         /* After registering the new kernel server, notify all the kernel servers about all the available kernel servers
         in a separate thread */
@@ -160,7 +151,6 @@ public class OMSServerImpl implements OMSServer, Registry {
     /** Notify all the kernel servers about all the available kernel servers */
     private void notifyAvailableKernelServers() {
         List<InetSocketAddress> servers = getServers(null);
-        servers.add(GlobalKernelReferences.nodeServer.getLocalHost());
         for (InetSocketAddress host : servers) {
             try {
                 KernelServer server = serverManager.getServer(host);

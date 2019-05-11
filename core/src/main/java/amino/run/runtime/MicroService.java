@@ -525,9 +525,6 @@ public class MicroService {
         serverPolicyStub.setReplicaId(replicaId);
         serverPolicy.setReplicaId(replicaId);
 
-        // TODO added this code for checking migration when only one DM is set
-        serverPolicyStub.setIsLastPolicy(true);
-
         EventHandler replicaHandler =
                 new EventHandler(
                         GlobalKernelReferences.nodeServer.getLocalHost(),
@@ -537,7 +534,7 @@ public class MicroService {
                             }
                         });
 
-        // Register the handler for this replica to OMS
+        /* Register the handler for this replica to OMS */
         GlobalKernelReferences.nodeServer.oms.setReplicaDispatcher(replicaId, replicaHandler);
     }
 

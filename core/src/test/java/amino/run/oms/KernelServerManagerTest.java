@@ -235,7 +235,7 @@ public class KernelServerManagerTest {
             labels.put(LABEL2_PREFIX + i, LABEL2_PREFIX + i);
             labels.put(REGION_KEY, "region_" + i);
             s.addLabels(labels);
-            manager.registerKernelServer(s);
+            manager.registerKernelServer(s, null);
             timer =
                     new ResettableTimer(
                             new TimerTask() {

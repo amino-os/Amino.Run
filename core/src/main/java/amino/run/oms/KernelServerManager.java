@@ -209,6 +209,7 @@ public class KernelServerManager {
      */
     public Map<InetSocketAddress, NodeMetric> getKernelServerMetric(InetSocketAddress host)
             throws KernelServerNotFoundException {
+        // return servers.get(host).metric.getMetric();
         KernelServerInfo kernelServerMetric = servers.get(host);
         if (kernelServerMetric != null) {
             return kernelServerMetric.metric.getMetric();

@@ -8,7 +8,6 @@ import amino.run.kernel.common.metric.NodeMetric;
 import amino.run.kernel.common.metric.RPCMetric;
 import amino.run.oms.KernelServerManager;
 import amino.run.oms.MicroServiceManager;
-import amino.run.runtime.EventHandler;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.*;
@@ -23,52 +22,70 @@ public class MigrationPredictor {
     private MicroServiceManager microServiceManager;
     private KernelServerManager serverManager;
     private Logger logger = Logger.getLogger(MigrationPredictor.class.getName());
+    private TreeSet<AbstractMap.SimpleEntry<InetSocketAddress, Long>> predictedTime;
+    private final int TIME_OPTIMIZATION_THRESHOLD = 10; // in percentage
 
     public MigrationPredictor(
             KernelServerManager serverManager, MicroServiceManager microServiceManager) {
         this.serverManager = serverManager;
         this.microServiceManager = microServiceManager;
-    }
-
-    public InetSocketAddress getBestKernelServer(ReplicaID replicaID, EventHandler replica) {
-        TreeSet<PredictedProcessingTime> predictedTime =
-                new TreeSet<PredictedProcessingTime>(
-                        new Comparator<PredictedProcessingTime>() {
+        predictedTime =
+                new TreeSet<AbstractMap.SimpleEntry<InetSocketAddress, Long>>(
+                        new Comparator<AbstractMap.SimpleEntry<InetSocketAddress, Long>>() {
                             @Override
                             public int compare(
-                                    PredictedProcessingTime o1, PredictedProcessingTime o2) {
-                                if (o1.processingTime < o2.processingTime) return 1;
-                                else if (o1.processingTime > o2.processingTime) return -1;
+                                    AbstractMap.SimpleEntry<InetSocketAddress, Long> o1,
+                                    AbstractMap.SimpleEntry<InetSocketAddress, Long> o2) {
+                                if (o1.getValue() < o2.getValue()) return 1;
+                                else if (o1.getValue() > o2.getValue()) return -1;
                                 return 0;
                             }
                         });
+    }
 
+    /**
+     * Predict best kernel server for replica by constructing heap based on time optimization on
+     * available kernel server
+     *
+     * @param replicaID
+     * @param currentKernelServer
+     * @return kernel server address
+     */
+    public InetSocketAddress getBestKernelServer(
+            ReplicaID replicaID, InetSocketAddress currentKernelServer) {
         // get all kernel server
         try {
             List<InetSocketAddress> kernelServers =
                     GlobalKernelReferences.nodeServer.oms.getServers(null);
 
-            // calculate time consumption for each kernel server and push it into sorted heap
+            // predict time optimization for replica on each kernel server and push it into sorted
+            // heap
             for (InetSocketAddress ks : kernelServers) {
                 predictedTime.add(
-                        new PredictedProcessingTime(ks, getPredictedTime(replicaID, replica, ks)));
+                        new AbstractMap.SimpleEntry<InetSocketAddress, Long>(
+                                ks, getOptimizedTime(replicaID, currentKernelServer, ks)));
             }
         } catch (RemoteException e) {
             e.printStackTrace();
-            return replica.getHost();
+            return currentKernelServer;
         }
 
-        PredictedProcessingTime bestTimeOptimization = predictedTime.first();
+        AbstractMap.SimpleEntry<InetSocketAddress, Long> bestTimeOptimization =
+                predictedTime.first();
         // if best time optimization is less or equal to zero then return current kernel server
-        if (bestTimeOptimization.processingTime <= 0) {
-            return replica.getHost();
+        if (bestTimeOptimization.getValue() <= 0) {
+            return currentKernelServer;
         }
+
+        predictedTime.clear();
         // return index 0 element
-        return bestTimeOptimization.kernelServer;
+        return bestTimeOptimization.getKey();
     }
 
-    private long getPredictedTime(
-            ReplicaID replicaID, EventHandler replica, InetSocketAddress futureKS) {
+    private long getOptimizedTime(
+            ReplicaID replicaID,
+            InetSocketAddress currentKernelServer,
+            InetSocketAddress futureKernelServer) {
         long totalTimeOptimization = 0;
 
         // get replica metric with respect to kernel clients
@@ -81,16 +98,16 @@ public class MigrationPredictor {
         }
 
         // get current kernelServer CPU
-        int currentKSCPU = serverManager.getKernelServerCPU(replica.getHost());
+        int currentKernelServerCPUCores = serverManager.getKernelServerCPU(currentKernelServer);
         // get future kernel server CPU
-        int futureKSCPU = serverManager.getKernelServerCPU((futureKS));
+        int futureKernelServerCPUCores = serverManager.getKernelServerCPU((futureKernelServer));
 
         // get node metrics
-        Map<InetSocketAddress, NodeMetric> currentNodeMetrics;
-        Map<InetSocketAddress, NodeMetric> futureNodeMetrics;
+        Map<InetSocketAddress, NodeMetric> currentKernelServerMetrics;
+        Map<InetSocketAddress, NodeMetric> futureKernelServerMetrics;
         try {
-            currentNodeMetrics = serverManager.getKernelServerMetric(replica.getHost());
-            futureNodeMetrics = serverManager.getKernelServerMetric(futureKS);
+            currentKernelServerMetrics = serverManager.getKernelServerMetric(currentKernelServer);
+            futureKernelServerMetrics = serverManager.getKernelServerMetric(futureKernelServer);
         } catch (KernelServerNotFoundException e) {
             e.printStackTrace();
             return 0;
@@ -99,87 +116,95 @@ public class MigrationPredictor {
         long currentProcessingTime;
         long currentByteExchanged;
         long futureProcessingTime;
-        long currentNetworkFactorInProcessing;
-        long futureNetworkFactorInProcessing;
-        long timeOptimized;
+        double currentIOTime;
+        double futureIOTime;
+        double timeOptimized;
         InetSocketAddress kernelClient;
-        NodeMetric nodeMetric;
         // evaluate processing time optimization for each kernel client
         for (Map.Entry<InetSocketAddress, RPCMetric> kernelClientMetrics :
                 replicaMetrics.entrySet()) {
             kernelClient = kernelClientMetrics.getKey();
             currentProcessingTime = kernelClientMetrics.getValue().processTime;
-            futureProcessingTime = (currentProcessingTime * currentKSCPU) / futureKSCPU;
-            // processingTimeMetric.getKey() = kernel client's kernelserver
+            futureProcessingTime =
+                    (currentProcessingTime * currentKernelServerCPUCores)
+                            / futureKernelServerCPUCores;
+            // processingTimeMetric.getKey() = kernel client's kernel server
             currentByteExchanged = kernelClientMetrics.getValue().dataSize;
 
-            nodeMetric = currentNodeMetrics.get(kernelClient);
-            if (replica.getHost().equals(kernelClient)) {
-                currentNetworkFactorInProcessing = 0;
-            } else if (nodeMetric == null) {
-                logger.warning(
-                        String.format(
-                                "node metric not available between ks1 [%s] and ks2 [%s]",
-                                replica.getHost(), kernelClientMetrics.getKey()));
+            try {
+                // get io time between kernel client and current kernel server
+                currentIOTime =
+                        getIOTime(
+                                currentKernelServerMetrics,
+                                kernelClient,
+                                currentKernelServer,
+                                currentByteExchanged);
+                // get io time between kernel client and future kernel server
+                futureIOTime =
+                        getIOTime(
+                                futureKernelServerMetrics,
+                                kernelClient,
+                                futureKernelServer,
+                                currentByteExchanged);
+            } catch (Exception e) {
+                // if kernel client runs in kernel server not registered with OMS. Ignore it.
                 continue;
-            } else {
-                currentNetworkFactorInProcessing =
-                        currentByteExchanged / nodeMetric.rate + nodeMetric.latency;
             }
-
-            nodeMetric = futureNodeMetrics.get(kernelClient);
-            if (futureKS.equals(kernelClient)) {
-                futureNetworkFactorInProcessing = 0;
-            } else if (nodeMetric == null) {
-                logger.warning(
-                        String.format(
-                                "node metric not available between ks1 [%s] and ks2 [%s]",
-                                futureKS, kernelClientMetrics.getKey()));
-                continue;
-            } else {
-                futureNetworkFactorInProcessing =
-                        currentByteExchanged / nodeMetric.rate + nodeMetric.latency;
-            }
-
-            logger.info(
+            logger.fine(
                     String.format(
                             "Current processing time [%s], current network factor in processing time [%s], "
                                     + "future processing time [%s], future network factor in processing time [%s] from kernel client [%s]",
                             currentProcessingTime,
-                            currentNetworkFactorInProcessing,
+                            currentIOTime,
                             futureProcessingTime,
-                            futureNetworkFactorInProcessing,
+                            futureIOTime,
                             kernelClient));
 
             timeOptimized =
-                    (currentProcessingTime + currentNetworkFactorInProcessing)
-                            - (futureProcessingTime + futureNetworkFactorInProcessing);
+                    ((double) currentProcessingTime + currentIOTime)
+                            - ((double) futureProcessingTime + futureIOTime);
 
             // TODO Define SLA for Kernel client
-            if (timeOptimized < 0) {
+            if (timeOptimized
+                    < ((TIME_OPTIMIZATION_THRESHOLD / 100)
+                            * (currentProcessingTime + currentIOTime))) {
                 logger.info(
                         String.format(
-                                "skipping kernel server [%s] as time optimization is negative",
-                                futureKS));
+                                "Skipping kernel server [%s] as time optimization is less than threshold",
+                                futureKernelServer));
                 return 0;
             }
 
             totalTimeOptimization += timeOptimized;
         }
-        logger.info(
+        logger.fine(
                 String.format(
                         "Time optimization for replica [%s] on KS [%s] : %s",
-                        replicaID, futureKS, totalTimeOptimization));
+                        replicaID, futureKernelServer, totalTimeOptimization));
         return totalTimeOptimization;
     }
 
-    public class PredictedProcessingTime {
-        public InetSocketAddress kernelServer;
-        public long processingTime;
-
-        public PredictedProcessingTime(InetSocketAddress kernelServer, long processingTime) {
-            this.kernelServer = kernelServer;
-            this.processingTime = processingTime;
+    private double getIOTime(
+            Map<InetSocketAddress, NodeMetric> nodeMetrics,
+            InetSocketAddress kernelClient,
+            InetSocketAddress KernelServer,
+            long currentByteExchanged)
+            throws Exception {
+        if (KernelServer.equals(kernelClient)) {
+            // if kernel client is with kernel server then IO remain negligible
+            return 0;
         }
+
+        NodeMetric nodeMetric = nodeMetrics.get(kernelClient);
+        if (nodeMetric == null) {
+            String msg =
+                    String.format(
+                            "Node metric not available between kernel client [%s] and kernel server [%s]",
+                            kernelClient, KernelServer);
+            logger.warning(msg);
+            throw new Exception(msg);
+        }
+
+        return currentByteExchanged / nodeMetric.rate + nodeMetric.latency;
     }
 }

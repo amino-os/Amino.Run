@@ -1,5 +1,6 @@
 package amino.run.oms.migrationDecision;
 
+import amino.run.common.MicroServiceID;
 import amino.run.common.MicroServiceNotFoundException;
 import amino.run.common.MicroServiceReplicaNotFoundException;
 import amino.run.common.ReplicaID;
@@ -10,6 +11,7 @@ import amino.run.kernel.common.metric.RPCMetric;
 import amino.run.oms.KernelServerManager;
 import amino.run.oms.MicroServiceManager;
 import amino.run.policy.DefaultPolicy;
+import amino.run.policy.MigrationNotification;
 import amino.run.policy.util.ResettableTimer;
 import amino.run.runtime.EventHandler;
 import java.net.InetSocketAddress;
@@ -31,8 +33,9 @@ public class MetricWatcher {
     private MigrationPredictor predictor;
     private transient volatile ResettableTimer timer;
     private TreeSet<AbstractMap.SimpleEntry<ReplicaID, Long>> replicaHeap;
+    private final int MAX_TOP_CANDIDATE = 3;
     /** Time interval of metric watch timer */
-    public static int METRIC_WATCH_INTERVAL = 30000; // in milli seconds
+    public final int METRIC_WATCH_INTERVAL = 30000; // in milli seconds
 
     public MetricWatcher(
             KernelServerManager serverManager, MicroServiceManager microServiceManager) {
@@ -54,85 +57,81 @@ public class MetricWatcher {
                         });
     }
 
-    /** Starts metric watcher. */
+    /** Starts metric watcher */
     public void start() {
-        if (timer != null) {
-            synchronized (this) {
-                timer =
-                        new ResettableTimer(
-                                new TimerTask() {
-                                    public void run() {
-                                        // TODO there might be duplicate ReplicaStat in
-                                        //  replicaStatsHeap.Check it
+        if (timer == null) {
+            timer =
+                    new ResettableTimer(
+                            new TimerTask() {
+                                public void run() {
+                                    // get replica list
+                                    List<ReplicaID> replicaIDs = getMigrationReplicas();
+                                    if (replicaIDs.isEmpty()) {
+                                        logger.info("Replica not available for migration");
+                                        timer.reset();
+                                        return;
+                                    }
 
-                                        // get replica list
-                                        // TODO Assuming all replica can migrate. In future user can
-                                        //  restrict replica migration to specific set of replica.
-                                        List<ReplicaID> replicas =
-                                                microServiceManager.getAllReplicaIDs();
-                                        if (replicas.isEmpty()) {
-                                            metricWatchReset();
-                                            return;
-                                        }
+                                    // get best candidates for migration
+                                    List<ReplicaID> bestCandidateReplicaIds =
+                                            getBestCandidates(replicaIDs);
+                                    logger.fine(
+                                            String.format(
+                                                    "Chosen Replicas [%s]",
+                                                    Arrays.toString(
+                                                            bestCandidateReplicaIds.toArray())));
 
-                                        // get best candidate for migration
-                                        // TODO check for 3 candidate for migration for testing
-                                        //  currently using one
-                                        ReplicaID bestCandidateReplicaId =
-                                                getBestCandidate(replicas);
-                                        logger.fine(
-                                                String.format(
-                                                        "chosen Replica status [%s]",
-                                                        bestCandidateReplicaId));
+                                    // try to migrate one of best replica candidate
+                                    for (ReplicaID bestCandidateReplicaId :
+                                            bestCandidateReplicaIds) {
                                         // TODO check if recently migrated (check for cool down
                                         //  time)
-
-                                        // get replica instance event handler
-                                        EventHandler replica;
-                                        try {
-                                            replica =
-                                                    microServiceManager.getReplicaDispatcher(
-                                                            bestCandidateReplicaId);
-                                        } catch (Exception e) {
-                                            logger.warning("Failed to get replica dispatcher");
-                                            e.printStackTrace();
-                                            metricWatchReset();
+                                        if (migrate(bestCandidateReplicaId)) {
+                                            timer.reset();
                                             return;
                                         }
-
-                                        // predict new kernel server
-                                        InetSocketAddress kernelServer =
-                                                predictor.getBestKernelServer(
-                                                        bestCandidateReplicaId, replica);
-                                        logger.fine(
-                                                String.format(
-                                                        "Replica [%s] should migrate from %s to %s",
-                                                        replica, replica.getHost(), kernelServer));
-                                        // skipping migration if same kernel server selected
-                                        if (kernelServer.equals(replica.getHost())) {
-                                            logger.info(
-                                                    "skipping migration as predicted kernel server is same as replica kernel server");
-                                            metricWatchReset();
-                                            return;
-                                        }
-
-                                        // trigger migration
-                                        triggerMigration(replica, kernelServer);
-                                        metricWatchReset();
                                     }
-                                },
-                                METRIC_WATCH_INTERVAL);
-            }
+                                }
+                            },
+                            METRIC_WATCH_INTERVAL);
             timer.start();
         }
     }
 
-    private void metricWatchReset() {
-        replicaHeap.clear();
-        timer.reset();
+    private boolean migrate(ReplicaID replicaID) {
+        InetSocketAddress currentKernelServer;
+        try {
+            // get replica instance event handler
+            EventHandler replica = microServiceManager.getReplicaDispatcher(replicaID);
+            currentKernelServer = replica.getHost();
+        } catch (Exception e) {
+            logger.warning("Failed to get replica dispatcher");
+            e.printStackTrace();
+            return false;
+        }
+
+        // predict new kernel server
+        InetSocketAddress kernelServer =
+                predictor.getBestKernelServer(replicaID, currentKernelServer);
+        logger.fine(
+                String.format(
+                        "Replica [%s] should migrate from %s to %s",
+                        replicaID, currentKernelServer, kernelServer));
+
+        // skipping migration if same kernel server selected
+        if (kernelServer.equals(currentKernelServer)) {
+            logger.info(
+                    "Skipping migration as predicted kernel server is same as replica kernel server");
+            return false;
+        }
+
+        // trigger migration
+        return triggerMigration(replicaID, kernelServer);
     }
 
-    private ReplicaID getBestCandidate(List<ReplicaID> replicas) {
+    private synchronized List<ReplicaID> getBestCandidates(List<ReplicaID> replicas) {
+        List<ReplicaID> bestCandidates = new ArrayList<ReplicaID>();
+
         // calculate processing time for each replica and add them in sorted
         // heap
         for (ReplicaID replicaID : replicas) {
@@ -143,56 +142,65 @@ public class MetricWatcher {
             } catch (MicroServiceNotFoundException e) {
                 logger.warning(
                         String.format(
-                                "skipping Replica [%s] evaluation as micro service not available",
+                                "Skipping Replica [%s] evaluation as micro service not available",
                                 replicaID));
                 e.printStackTrace();
             } catch (MicroServiceReplicaNotFoundException e) {
                 logger.warning(
                         String.format(
-                                "skipping Replica [%s] evaluation as micro service replica not available",
+                                "Skipping Replica [%s] evaluation as micro service replica not available",
                                 replicaID));
                 e.printStackTrace();
             } catch (KernelServerNotFoundException e) {
                 logger.warning(
                         String.format(
-                                "skipping Replica [%s] evaluation as micro service replica's kernel server not available",
+                                "Skipping Replica [%s] evaluation as micro service replica's kernel server not available",
                                 replicaID));
                 e.printStackTrace();
             }
         }
 
-        // print replica and their processing time in sorted order
+        // add and print best replica and their processing time in sorted order
         for (AbstractMap.SimpleEntry<ReplicaID, Long> replicaStat : replicaHeap) {
-            logger.info(String.format("Replica status -> [%s]", replicaStat));
+            logger.fine(String.format("Replica status : [%s]", replicaStat));
+            if (bestCandidates.size() <= MAX_TOP_CANDIDATE) {
+                bestCandidates.add(replicaStat.getKey());
+            }
         }
-        // get best candidate for migration
-        AbstractMap.SimpleEntry<ReplicaID, Long> bestCandidateReplicaStat = replicaHeap.first();
-        logger.info(String.format("chosen Replica status -> [%s]", bestCandidateReplicaStat));
 
-        return replicaHeap.first().getKey();
+        // clear replica heap
+        replicaHeap.clear();
+        return bestCandidates;
     }
 
-    private void triggerMigration(EventHandler replica, InetSocketAddress kernelServer) {
-        DefaultPolicy.ServerPolicy serverPolicy =
-                (DefaultPolicy.ServerPolicy) replica.getObjects().get(0);
+    private boolean triggerMigration(ReplicaID replicaID, InetSocketAddress kernelServer) {
+        MicroServiceID microServiceID = replicaID.getOID();
 
-        DefaultPolicy.DefaultGroupPolicy replicaGroupPolicy;
+        // start migration
         try {
-            KernelOID koid =
-                    microServiceManager.getRootGroupId(serverPolicy.getReplicaId().getOID());
+            KernelOID koid = microServiceManager.getRootGroupId(microServiceID);
             EventHandler groupPolicyEventHandler =
-                    microServiceManager.getGroupDispatcher(
-                            serverPolicy.getReplicaId().getOID(), koid);
-            replicaGroupPolicy =
+                    microServiceManager.getGroupDispatcher(microServiceID, koid);
+            DefaultPolicy.DefaultGroupPolicy replicaGroupPolicy =
                     (DefaultPolicy.DefaultGroupPolicy) groupPolicyEventHandler.getObjects().get(0);
-            replicaGroupPolicy.pin(serverPolicy, kernelServer);
+            replicaGroupPolicy.onNotification(new MigrationNotification(replicaID, kernelServer));
         } catch (MicroServiceNotFoundException e) {
+            logger.warning(
+                    String.format(
+                            "Failed to migrate replica [%s] as micro service not available",
+                            replicaID));
             e.printStackTrace();
+            return false;
         } catch (RemoteException e) {
+            logger.warning(
+                    String.format(
+                            "Failed to migrate replica [%s] with remote exception : %s",
+                            replicaID, e.getMessage()));
             e.printStackTrace();
-        } catch (MicroServiceReplicaNotFoundException e) {
-            e.printStackTrace();
+            return false;
         }
+
+        return true;
     }
 
     private long aggregatedProcessingTime(ReplicaID replicaID)
@@ -210,8 +218,8 @@ public class MetricWatcher {
         Map<InetSocketAddress, NodeMetric> replicaNodeMetric =
                 serverManager.getKernelServerMetric(replicaKernelServer);
 
-        // get metrics stat of RPC processing time from different kernel server
-        // TODO currently considering processing time from different kernel server for simplicity.
+        // get metrics stat of RPC processing time from different kernel client
+        // TODO currently considering processing time from different kernel client for simplicity.
         //  Need to get processing time within micro service replica
         Map<InetSocketAddress, RPCMetric> replicaMetrics =
                 microServiceManager.getMicroServiceMetric(replicaID);
@@ -244,6 +252,33 @@ public class MetricWatcher {
         return averageExecutionTime + summation;
     }
 
+    private List<ReplicaID> getMigrationReplicas() {
+        List<ReplicaID> replicaIDs = new ArrayList<ReplicaID>();
+
+        try {
+            List<MicroServiceID> microServiceIDS = microServiceManager.getAllMicroServices();
+            // TODO Assuming all replica can migrate. In future user can
+            //  restrict replica migration to specific set of replica.
+            for (MicroServiceID microServiceID : microServiceIDS) {
+                try {
+                    replicaIDs.addAll(microServiceManager.getReplicaIDs(microServiceID));
+                } catch (MicroServiceNotFoundException e) {
+                    logger.warning(
+                            String.format(
+                                    "MicroService [%s] not available. Skipping replicas in migration evaluation",
+                                    microServiceID));
+                    e.printStackTrace();
+                }
+            }
+        } catch (RemoteException e) {
+            logger.warning(
+                    "Failed to get micro service replicas. Skipping replicas in migration evaluation");
+            e.printStackTrace();
+        }
+        return replicaIDs;
+    }
+
+    /** Stop metric watcher timer */
     public void stop() {
         if (timer != null) {
             timer.cancel();

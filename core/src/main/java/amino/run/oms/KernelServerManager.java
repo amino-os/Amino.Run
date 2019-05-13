@@ -8,6 +8,8 @@ import amino.run.kernel.common.ServerInfo;
 import amino.run.kernel.server.KernelServer;
 import amino.run.policy.util.ResettableTimer;
 import java.net.InetSocketAddress;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.*;

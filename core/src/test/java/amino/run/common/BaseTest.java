@@ -1,14 +1,15 @@
 package amino.run.common;
 
-import static amino.run.common.TestUtils.addHostToKernelClient;
 import static amino.run.common.TestUtils.startSpiedKernelServer;
 import static amino.run.common.TestUtils.startSpiedOms;
 import static amino.run.common.UtilsTest.extractFieldValueOnInstance;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 
 import amino.run.app.MicroServiceSpec;
 import amino.run.app.Registry;
+import amino.run.kernel.client.KernelClient;
 import amino.run.kernel.common.GlobalKernelReferences;
 import amino.run.kernel.common.KernelOID;
 import amino.run.kernel.common.KernelObjectFactory;
@@ -17,6 +18,7 @@ import amino.run.kernel.server.KernelObject;
 import amino.run.kernel.server.KernelObjectManager;
 import amino.run.kernel.server.KernelServer;
 import amino.run.kernel.server.KernelServerImpl;
+import amino.run.oms.KernelServerManager;
 import amino.run.oms.OMSServer;
 import amino.run.oms.OMSServerImpl;
 import amino.run.policy.DefaultPolicy;
@@ -24,6 +26,11 @@ import amino.run.policy.Policy;
 import amino.run.runtime.MicroService;
 import amino.run.sampleSO.SO;
 import java.net.InetSocketAddress;
+import java.rmi.AccessException;
+import java.rmi.AlreadyBoundException;
+import java.rmi.NotBoundException;
+import java.rmi.Remote;
+import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.util.ArrayList;
 import org.mockito.invocation.InvocationOnMock;
@@ -39,8 +46,10 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 /** Created by Venugopal Reddy K on 12/9/18. */
 @PrepareForTest({
     KernelServerImpl.class,
+    KernelClient.class,
     MicroService.class,
     KernelObjectFactory.class,
+    KernelServerManager.class,
     LocateRegistry.class,
     TestUtils.class,
     OMSServerImpl.class,
@@ -60,6 +69,7 @@ public class BaseTest {
     protected KernelServer spiedKs2;
     protected KernelServer spiedKs3;
     protected int kernelServerCount = 0;
+    protected String LOCAL_HOST = "localhost";
     protected String LOOP_BACK_IP_ADDR = "127.0.0.1";
     protected int omsPort = 10000;
     protected int kernelPort1 = 10001;
@@ -68,7 +78,62 @@ public class BaseTest {
 
     protected boolean serversInSameRegion = true;
 
+    public java.rmi.registry.Registry getNewRegistry(final int port) {
+        return new java.rmi.registry.Registry() {
+            @Override
+            public Remote lookup(String s)
+                    throws RemoteException, NotBoundException, AccessException {
+                if (s.equals("io.amino.run.oms")) {
+                    return spiedOms;
+                } else if (s.equals("io.amino.run.kernelserver")) {
+                    KernelServer localServer = GlobalKernelReferences.nodeServer;
+                    if (port == omsPort) {
+                        return spiedksOnOms;
+                    } else if (port == kernelPort1) {
+                        return spiedKs1 != null ? spiedKs1 : (spiedKs1 = spy(localServer));
+                    } else if (port == kernelPort2) {
+                        return spiedKs2 != null ? spiedKs2 : (spiedKs2 = spy(localServer));
+                    } else if (port == kernelPort3) {
+                        return spiedKs3 != null ? spiedKs3 : (spiedKs3 = spy(localServer));
+                    }
+                }
+
+                return null;
+            }
+
+            @Override
+            public void bind(String s, Remote remote)
+                    throws RemoteException, AlreadyBoundException, AccessException {}
+
+            @Override
+            public void unbind(String s)
+                    throws RemoteException, NotBoundException, AccessException {}
+
+            @Override
+            public void rebind(String s, Remote remote) throws RemoteException, AccessException {}
+
+            @Override
+            public String[] list() throws RemoteException, AccessException {
+                return new String[0];
+            }
+        };
+    }
+
     public void setUp(int serverCount, MicroServiceSpec spec) throws Exception {
+        mockStatic(LocateRegistry.class);
+        java.rmi.registry.Registry omsRegistry = getNewRegistry(omsPort);
+        java.rmi.registry.Registry ks1Registry = getNewRegistry(kernelPort1);
+        java.rmi.registry.Registry ks2Registry = getNewRegistry(kernelPort2);
+        java.rmi.registry.Registry ks3Registry = getNewRegistry(kernelPort3);
+        when(LocateRegistry.createRegistry(omsPort)).thenReturn(omsRegistry);
+        when(LocateRegistry.createRegistry(kernelPort1)).thenReturn(ks1Registry);
+        when(LocateRegistry.createRegistry(kernelPort2)).thenReturn(ks2Registry);
+        when(LocateRegistry.createRegistry(kernelPort3)).thenReturn(ks3Registry);
+        when(LocateRegistry.getRegistry(LOCAL_HOST, omsPort)).thenReturn(omsRegistry);
+        when(LocateRegistry.getRegistry(LOCAL_HOST, kernelPort1)).thenReturn(ks1Registry);
+        when(LocateRegistry.getRegistry(LOCAL_HOST, kernelPort2)).thenReturn(ks2Registry);
+        when(LocateRegistry.getRegistry(LOCAL_HOST, kernelPort3)).thenReturn(ks3Registry);
+
         // create a spied oms instance
         final OMSServerImpl spiedOms = startSpiedOms(LOOP_BACK_IP_ADDR, omsPort);
         spiedksOnOms = spy(GlobalKernelReferences.nodeServer);
@@ -90,25 +155,15 @@ public class BaseTest {
         respective kernel servers so that each kernel server will be able to communicate with other servers without
         registry.lookup.
         */
-        spiedKs1 =
-                startSpiedKernelServer(
-                        LOOP_BACK_IP_ADDR, kernelPort1, LOOP_BACK_IP_ADDR, omsPort, regions[0]);
-        addHostToKernelClient(spiedKs1, spiedksOnOms);
-
+        startSpiedKernelServer(
+                LOOP_BACK_IP_ADDR, kernelPort1, LOOP_BACK_IP_ADDR, omsPort, regions[0]);
         if (serverCount > 1) {
-            spiedKs2 =
-                    startSpiedKernelServer(
-                            LOOP_BACK_IP_ADDR, kernelPort2, LOOP_BACK_IP_ADDR, omsPort, regions[1]);
-            addHostToKernelClient(spiedKs2, spiedksOnOms);
-            addHostToKernelClient(spiedKs2, spiedKs1);
+            startSpiedKernelServer(
+                    LOOP_BACK_IP_ADDR, kernelPort2, LOOP_BACK_IP_ADDR, omsPort, regions[1]);
         }
         if (serverCount > 2) {
-            spiedKs3 =
-                    startSpiedKernelServer(
-                            LOOP_BACK_IP_ADDR, kernelPort3, LOOP_BACK_IP_ADDR, omsPort, regions[2]);
-            addHostToKernelClient(spiedKs3, spiedksOnOms);
-            addHostToKernelClient(spiedKs3, spiedKs1);
-            addHostToKernelClient(spiedKs3, spiedKs2);
+            startSpiedKernelServer(
+                    LOOP_BACK_IP_ADDR, kernelPort3, LOOP_BACK_IP_ADDR, omsPort, regions[2]);
         }
 
         GlobalKernelReferences.nodeServer = (KernelServerImpl) spiedKs1;

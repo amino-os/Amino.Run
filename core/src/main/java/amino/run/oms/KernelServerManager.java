@@ -8,6 +8,8 @@ import amino.run.kernel.common.ServerInfo;
 import amino.run.kernel.server.KernelServer;
 import amino.run.policy.util.ResettableTimer;
 import java.net.InetSocketAddress;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.*;
@@ -22,14 +24,16 @@ import java.util.logging.Logger;
  */
 public class KernelServerManager {
     /* Kernel Server information */
-    public static class KernelServerInfo {
+    private final class KernelServerInfo {
         private ServerInfo config; // Registration information of kernel server
         private ResettableTimer heartBeatTimer; // HeartBeat timer
         private KernelServer remoteRef; // Remote reference to kernel server
 
-        public KernelServerInfo(ServerInfo config, ResettableTimer heartBeatTimer) {
+        private KernelServerInfo(
+                ServerInfo config, KernelServer remoteRef, ResettableTimer heartBeatTimer) {
             this.config = config;
             this.heartBeatTimer = heartBeatTimer;
+            this.remoteRef = remoteRef;
         }
     }
 
@@ -52,37 +56,37 @@ public class KernelServerManager {
     }
 
     public void removeKernelServer(ServerInfo srvInfo) {
-        KernelServerInfo kernelServerInfo = servers.remove(srvInfo.getHost());
+        InetSocketAddress host = srvInfo.getHost();
+        String region = srvInfo.getRegion();
+        KernelServerInfo kernelServerInfo = servers.remove(host);
         kernelServerInfo.heartBeatTimer.cancel();
 
         // Removing from the regions map
-        ArrayList<InetSocketAddress> serverList = regions.get(srvInfo.getRegion());
-        if (serverList == null) {
+        ArrayList<InetSocketAddress> serversInRegion = regions.get(region);
+        if (serversInRegion == null) {
             logger.severe(
-                    String.format(
-                            "Kernel server: %s do not exist in region: %s",
-                            srvInfo.getHost(), srvInfo.getRegion()));
+                    String.format("Kernel server: %s do not exist in region: %s", host, region));
             return;
         }
-        serverList.remove(srvInfo.getHost());
+        serversInRegion.remove(host);
         // If there are no servers in the region, remove region itself.
-        if (serverList.size() == 0) {
-            regions.remove(srvInfo.getRegion());
+        if (serversInRegion.isEmpty()) {
+            regions.remove(region);
         }
     }
 
-    public void registerKernelServer(ServerInfo info) {
-        logger.info(
-                String.format(
-                        "Registered new kernel server: %s in region %s",
-                        info.getHost(), info.getRegion()));
-        ArrayList<InetSocketAddress> serverList = regions.get(info.getRegion());
-        if (null == serverList) {
-            serverList = new ArrayList<InetSocketAddress>();
-        }
-        serverList.add(info.getHost());
-        regions.put(info.getRegion(), serverList);
+    public void registerKernelServer(ServerInfo info) throws RemoteException, NotBoundException {
+        InetSocketAddress host = info.getHost();
+        String region = info.getRegion();
+        Registry registry = LocateRegistry.getRegistry(host.getHostName(), host.getPort());
+        KernelServer server = (KernelServer) registry.lookup("io.amino.run.kernelserver");
 
+        ArrayList<InetSocketAddress> serversInRegion = regions.get(region);
+        if (null == serversInRegion) {
+            serversInRegion = new ArrayList<InetSocketAddress>();
+        }
+        serversInRegion.add(host);
+        regions.put(info.getRegion(), serversInRegion);
         final ServerInfo srvInfo = info;
         ResettableTimer heartBeatTimer =
                 new ResettableTimer(
@@ -94,25 +98,29 @@ public class KernelServerManager {
                         },
                         OMSServer.KS_HEARTBEAT_TIMEOUT);
         heartBeatTimer.start();
-        servers.put(info.getHost(), new KernelServerInfo(info, heartBeatTimer));
+        KernelServerInfo oldServer =
+                servers.put(host, new KernelServerInfo(info, server, heartBeatTimer));
+        if (oldServer != null) {
+            oldServer.heartBeatTimer.cancel();
+        }
+
+        logger.info(String.format("Registered new kernel server: %s in region %s", host, region));
     }
 
     public void receiveHeartBeat(ServerInfo srvinfo) throws KernelServerNotFoundException {
+        InetSocketAddress host = srvinfo.getHost();
+        String region = srvinfo.getRegion();
         logger.fine(
                 String.format(
-                        "Received HeartBeat from kernel server: %s in region %s",
-                        srvinfo.getHost(), srvinfo.getRegion()));
+                        "Received HeartBeat from kernel server: %s in region %s", host, region));
 
-        KernelServerInfo kernelServerInfo = servers.get(srvinfo.getHost());
+        KernelServerInfo kernelServerInfo = servers.get(host);
         if (kernelServerInfo != null) {
             kernelServerInfo.heartBeatTimer.reset();
             return;
         }
 
-        String message =
-                String.format(
-                        "Kernel server: %s do not exist in region %s",
-                        srvinfo.getHost(), srvinfo.getRegion());
+        String message = String.format("Kernel server: %s do not exist in region %s", host, region);
         logger.severe(message);
         throw new KernelServerNotFoundException(message);
     }
@@ -148,22 +156,7 @@ public class KernelServerManager {
             return null;
         }
 
-        if (kernelServerInfo.remoteRef != null) {
-            return kernelServerInfo.remoteRef;
-        } else {
-            KernelServer server = null;
-            try {
-                Registry registry =
-                        LocateRegistry.getRegistry(address.getHostName(), address.getPort());
-                server = (KernelServer) registry.lookup("io.amino.run.kernelserver");
-                kernelServerInfo.remoteRef = server;
-            } catch (Exception e) {
-                logger.severe(
-                        String.format(
-                                "Could not find kernel server: %s. Exception: %s", address, e));
-            }
-            return server;
-        }
+        return kernelServerInfo.remoteRef;
     }
 
     /**

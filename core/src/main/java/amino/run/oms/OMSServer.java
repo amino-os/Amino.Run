@@ -14,6 +14,7 @@ import amino.run.kernel.common.ServerInfo;
 import amino.run.policy.Policy;
 import amino.run.runtime.EventHandler;
 import java.net.InetSocketAddress;
+import java.rmi.NotBoundException;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -37,7 +38,7 @@ public interface OMSServer extends Remote {
 
     List<InetSocketAddress> getServers(NodeSelectorSpec spec) throws RemoteException;
 
-    void registerKernelServer(ServerInfo info) throws RemoteException;
+    void registerKernelServer(ServerInfo info) throws RemoteException, NotBoundException;
 
     void receiveHeartBeat(ServerInfo srvinfo) throws RemoteException, KernelServerNotFoundException;
 

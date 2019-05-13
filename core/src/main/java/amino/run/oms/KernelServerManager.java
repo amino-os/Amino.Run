@@ -98,8 +98,7 @@ public class KernelServerManager {
                         },
                         OMSServer.KS_HEARTBEAT_TIMEOUT);
         heartBeatTimer.start();
-        KernelServerInfo oldServer =
-                servers.put(host, new KernelServerInfo(info, server, heartBeatTimer));
+        KernelServerInfo oldServer = servers.put(host, new KernelServerInfo(info, server, heartBeatTimer));
         if (oldServer != null) {
             oldServer.heartBeatTimer.cancel();
         }

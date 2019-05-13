@@ -24,6 +24,7 @@ import amino.run.runtime.EventHandler;
 import amino.run.runtime.MicroService;
 import com.google.devtools.common.options.OptionsParser;
 import java.net.InetSocketAddress;
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
@@ -105,7 +106,7 @@ public class OMSServerImpl implements OMSServer, Registry {
     }
 
     @Override
-    public void registerKernelServer(ServerInfo info) throws RemoteException {
+    public void registerKernelServer(ServerInfo info) throws RemoteException, NotBoundException {
         serverManager.registerKernelServer(info);
 
         /* After registering the new kernel server, notify all the kernel servers about all the available kernel servers

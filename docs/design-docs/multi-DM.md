@@ -4,8 +4,6 @@ Multiple DM's may be associated with each MicroService.  This
 document describes some combinations of DM's, and 
 how these combinations behave and might be useful.
 
-The basic DM's are described in [DM List](DM-list.md).
-
 In general, DM's in the same category are mutually exclusive, and it
 does not usually make sense to combine them.  For example, KeepInCloud
 and KeepOnDevice do not make sense together - choose one or the other.

@@ -17,9 +17,10 @@ import java.util.logging.Logger;
 public class DefaultPolicy extends Policy {
 
     public static class DefaultServerPolicy extends ServerPolicy {
+        private static final Logger logger = Logger.getLogger(DefaultServerPolicy.class.getName());
         private GroupPolicy group;
         private transient ResettableTimer metricsNotificationTimer;
-        private int METRICS_NOTIFICATION_TIME = 1000; // This may be a configurable param
+        private int METRICS_NOTIFICATION_PERIOD_IN_MS = 1000; // This may be a configurable param
 
         @Override
         public GroupPolicy getGroup() {
@@ -36,7 +37,9 @@ public class DefaultPolicy extends Policy {
         public void onCreate(GroupPolicy group) {
             this.group = group;
             /* TODO: Need to start periodic notification of microservice metrics to group policy only iff microservice
-            is configured with objective functions to do dynamic migration */
+             * is configured with objective functions to do dynamic migration */
+            /* TODO: Should this metrics reporting happen from local kernel server instead of DM server policy ? Need to
+             * analyze further */
             final GroupPolicy groupPolicy = group;
             metricsNotificationTimer =
                     new ResettableTimer(
@@ -57,7 +60,7 @@ public class DefaultPolicy extends Policy {
                                     }
                                 }
                             },
-                            METRICS_NOTIFICATION_TIME);
+                            METRICS_NOTIFICATION_PERIOD_IN_MS);
             metricsNotificationTimer.start();
         }
 

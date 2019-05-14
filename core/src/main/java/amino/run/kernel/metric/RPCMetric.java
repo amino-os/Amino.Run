@@ -4,6 +4,7 @@ import amino.run.common.AppObjectStub;
 import java.io.Serializable;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.UUID;
 
 /**
  * RPC metrics are computed on kernel server at {@link
@@ -13,23 +14,28 @@ import java.util.ArrayList;
  * its group policy.
  */
 public class RPCMetric implements Serializable {
-    public InetSocketAddress clientHost; // Client for which below data is measured
-    public long dataSize; // Data IN and OUT sizes
-    public long processTime; // RPC processing time
+    public final UUID callerId; /* Client for which below data is measured */
+    public final InetSocketAddress clientHost; /* Kernel server address on client */
+    public long dataSize; /* Aggregation of RPC call data IN and OUT in bytes. */
+    /* Time taken to process the RPC in nanoseconds. Time difference from the moment RPC call has arrived until it is returned */
+    public long elapsedTime;
 
-    public RPCMetric(InetSocketAddress host) {
+    public RPCMetric(UUID callerId, InetSocketAddress host) {
+        this.callerId = callerId;
         this.clientHost = host;
     }
 
     @Override
     public String toString() {
         return "RPCMetric{"
-                + "clientHost="
+                + "callerId="
+                + callerId
+                + ", clientHost="
                 + clientHost
-                + ", dataSize="
+                + ", dataSize(bytes)="
                 + dataSize
-                + ", processTime="
-                + processTime
+                + ", elapsedTime(ns)="
+                + elapsedTime
                 + '}';
     }
 }

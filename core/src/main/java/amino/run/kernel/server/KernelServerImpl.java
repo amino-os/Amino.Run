@@ -438,8 +438,8 @@ public class KernelServerImpl implements KernelServer {
 
             // Register against OMS
             ServerInfo srvInfo = createServerInfo(host, ksArgs.labels);
-            oms.registerKernelServer(srvInfo);
             server.setRegion(srvInfo.getRegion());
+            oms.registerKernelServer(srvInfo);
 
             // Start HeartBeat timer
             server.startHeartBeat(srvInfo);

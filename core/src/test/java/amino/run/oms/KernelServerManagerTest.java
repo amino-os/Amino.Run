@@ -1,6 +1,8 @@
 package amino.run.oms;
 
 import static amino.run.kernel.server.KernelServerImpl.REGION_KEY;
+import static org.mockito.Mockito.when;
+import static org.powermock.api.mockito.PowerMockito.mockStatic;
 
 import amino.run.app.NodeSelectorSpec;
 import amino.run.app.NodeSelectorTerm;
@@ -9,6 +11,13 @@ import amino.run.app.Requirement;
 import amino.run.kernel.common.ServerInfo;
 import amino.run.policy.util.ResettableTimer;
 import java.net.InetSocketAddress;
+import java.rmi.AccessException;
+import java.rmi.AlreadyBoundException;
+import java.rmi.NotBoundException;
+import java.rmi.Remote;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -18,7 +27,12 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 
+@PrepareForTest(KernelServerManager.class)
+@RunWith(PowerMockRunner.class)
 public class KernelServerManagerTest {
     private static final String LABEL1_PREFIX = "label1_";
     private static final String LABEL2_PREFIX = "label2_";
@@ -228,6 +242,32 @@ public class KernelServerManagerTest {
     private void registerServers(final KernelServerManager manager, int numOfServers)
             throws Exception {
         ResettableTimer timer;
+        mockStatic(LocateRegistry.class);
+        Registry registry =
+                new Registry() {
+                    @Override
+                    public Remote lookup(String name)
+                            throws RemoteException, NotBoundException, AccessException {
+                        return null;
+                    }
+
+                    @Override
+                    public void bind(String name, Remote obj)
+                            throws RemoteException, AlreadyBoundException, AccessException {}
+
+                    @Override
+                    public void unbind(String name)
+                            throws RemoteException, NotBoundException, AccessException {}
+
+                    @Override
+                    public void rebind(String name, Remote obj)
+                            throws RemoteException, AccessException {}
+
+                    @Override
+                    public String[] list() throws RemoteException, AccessException {
+                        return new String[0];
+                    }
+                };
         for (int i = 0; i < numOfServers; i++) {
             final ServerInfo s = new ServerInfo(new InetSocketAddress(i));
             HashMap labels = new HashMap();
@@ -235,6 +275,7 @@ public class KernelServerManagerTest {
             labels.put(LABEL2_PREFIX + i, LABEL2_PREFIX + i);
             labels.put(REGION_KEY, "region_" + i);
             s.addLabels(labels);
+            when(LocateRegistry.getRegistry("0.0.0.0", i)).thenReturn(registry);
             manager.registerKernelServer(s);
             timer =
                     new ResettableTimer(

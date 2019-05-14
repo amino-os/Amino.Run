@@ -14,7 +14,6 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -24,105 +23,104 @@ import java.util.logging.Logger;
  * @author iyzhang
  */
 public class KernelServerManager {
-    Logger logger = Logger.getLogger(KernelServerManager.class.getName());
+    /* Kernel Server information */
+    private final class KernelServerInfo {
+        private ServerInfo config; // Registration information of kernel server
+        private ResettableTimer heartBeatTimer; // HeartBeat timer
+        private KernelServer remoteRef; // Remote reference to kernel server
 
-    private ConcurrentHashMap<InetSocketAddress, KernelServer> servers;
+        private KernelServerInfo(
+                ServerInfo config, KernelServer remoteRef, ResettableTimer heartBeatTimer) {
+            this.config = config;
+            this.heartBeatTimer = heartBeatTimer;
+            this.remoteRef = remoteRef;
+        }
+    }
+
+    private static final Logger logger = Logger.getLogger(KernelServerManager.class.getName());
+    private ConcurrentHashMap<InetSocketAddress, KernelServerInfo> servers;
     private ConcurrentHashMap<String, ArrayList<InetSocketAddress>> regions;
-    private ConcurrentHashMap<InetSocketAddress, ResettableTimer> ksHeartBeatTimers;
-    private Set<ServerInfo> serverInfos;
     private static final Random randgen = new Random();
 
     public KernelServerManager() {
-        serverInfos = Collections.newSetFromMap(new ConcurrentHashMap<ServerInfo, Boolean>());
-        servers = new ConcurrentHashMap<InetSocketAddress, KernelServer>();
+        servers = new ConcurrentHashMap<InetSocketAddress, KernelServerInfo>();
         regions = new ConcurrentHashMap<String, ArrayList<InetSocketAddress>>();
-        ksHeartBeatTimers = new ConcurrentHashMap<InetSocketAddress, ResettableTimer>();
     }
 
     void stopHeartBeat(ServerInfo srvInfo) {
         logger.info(
                 String.format(
-                        "Heartbeat not received from server: %s in region: %s",
+                        "Heartbeat not received from kernel server: %s in region: %s",
                         srvInfo.getHost(), srvInfo.getRegion()));
-
-        ResettableTimer ksHeartBeatTimer = ksHeartBeatTimers.get(srvInfo.getHost());
-        ksHeartBeatTimer.cancel();
-        ksHeartBeatTimers.remove(srvInfo.getHost());
         removeKernelServer(srvInfo);
     }
 
     public void removeKernelServer(ServerInfo srvInfo) {
-        // removing from the servers list
-        servers.remove(srvInfo.getHost());
-        serverInfos.remove(srvInfo);
+        InetSocketAddress host = srvInfo.getHost();
+        String region = srvInfo.getRegion();
+        KernelServerInfo kernelServerInfo = servers.remove(host);
+        kernelServerInfo.heartBeatTimer.cancel();
 
-        // removing from the regions map
-        ArrayList<InetSocketAddress> serverList = regions.get(srvInfo.getRegion());
-        if (serverList == null) {
+        // Removing from the regions map
+        ArrayList<InetSocketAddress> serversInRegion = regions.get(region);
+        if (serversInRegion == null) {
             logger.severe(
-                    String.format(
-                            "KernelServer: %s do not exist in region: %s",
-                            srvInfo.getHost(), srvInfo.getRegion()));
+                    String.format("Kernel server: %s do not exist in region: %s", host, region));
             return;
         }
-        serverList.remove(srvInfo.getHost());
-        // if no servers in the region remove full entry from the map
-        if (serverList.size() == 0) {
-            regions.remove(srvInfo.getRegion());
+        serversInRegion.remove(host);
+        // If there are no servers in the region, remove region itself.
+        if (serversInRegion.isEmpty()) {
+            regions.remove(region);
         }
     }
 
     public void registerKernelServer(ServerInfo info) throws RemoteException, NotBoundException {
-        logger.info(
-                "New kernel server: "
-                        + info.getHost().toString()
-                        + " in region "
-                        + info.getRegion());
+        InetSocketAddress host = info.getHost();
+        String region = info.getRegion();
+        Registry registry = LocateRegistry.getRegistry(host.getHostName(), host.getPort());
+        KernelServer server = (KernelServer) registry.lookup("io.amino.run.kernelserver");
 
-        serverInfos.add(info);
-        ArrayList<InetSocketAddress> serverList = regions.get(info.getRegion());
-
-        if (null == serverList) {
-            serverList = new ArrayList<InetSocketAddress>();
+        ArrayList<InetSocketAddress> serversInRegion = regions.get(region);
+        if (null == serversInRegion) {
+            serversInRegion = new ArrayList<InetSocketAddress>();
         }
-        serverList.add(info.getHost());
-        regions.put(info.getRegion(), serverList);
-
+        serversInRegion.add(host);
+        regions.put(info.getRegion(), serversInRegion);
         final ServerInfo srvInfo = info;
-        ResettableTimer ksHeartBeatTimer =
+        ResettableTimer heartBeatTimer =
                 new ResettableTimer(
                         new TimerTask() {
                             public void run() {
-                                // If we don't receive a heartbeat from this kernel server, remove
-                                // that from the list
+                                /* If we don't receive a heartbeat from this kernel server, remove it from the map */
                                 stopHeartBeat(srvInfo);
                             }
                         },
                         OMSServer.KS_HEARTBEAT_TIMEOUT);
+        heartBeatTimer.start();
+        KernelServerInfo oldServer =
+                servers.put(host, new KernelServerInfo(info, server, heartBeatTimer));
+        if (oldServer != null) {
+            oldServer.heartBeatTimer.cancel();
+        }
 
-        ksHeartBeatTimers.put(info.getHost(), ksHeartBeatTimer);
-        ksHeartBeatTimer.start();
+        logger.info(String.format("Registered new kernel server: %s in region %s", host, region));
     }
 
     public void receiveHeartBeat(ServerInfo srvinfo) throws KernelServerNotFoundException {
+        InetSocketAddress host = srvinfo.getHost();
+        String region = srvinfo.getRegion();
         logger.fine(
                 String.format(
-                        "Received HeartBeat from KernelServer: %s in region: %s",
-                        srvinfo.getHost(), srvinfo.getRegion()));
+                        "Received HeartBeat from kernel server: %s in region %s", host, region));
 
-        ArrayList<InetSocketAddress> serverList = regions.get(srvinfo.getRegion());
-        if (serverList != null) {
-            if (serverList.contains(srvinfo.getHost())) {
-                ResettableTimer ksHeartBeatTimer = ksHeartBeatTimers.get(srvinfo.getHost());
-                ksHeartBeatTimer.reset();
-                return;
-            }
+        KernelServerInfo kernelServerInfo = servers.get(host);
+        if (kernelServerInfo != null) {
+            kernelServerInfo.heartBeatTimer.reset();
+            return;
         }
 
-        String message =
-                String.format(
-                        "KernelServer: %s do not exist in region: %s",
-                        srvinfo.getHost(), srvinfo.getRegion());
+        String message = String.format("Kernel server: %s do not exist in region %s", host, region);
         logger.severe(message);
         throw new KernelServerNotFoundException(message);
     }
@@ -135,9 +133,9 @@ public class KernelServerManager {
      */
     public List<InetSocketAddress> getServers(NodeSelectorSpec spec) {
         List<InetSocketAddress> nodes = new ArrayList<InetSocketAddress>();
-        for (ServerInfo s : serverInfos) {
-            if (s.matchNodeSelectorSpec(spec)) {
-                nodes.add(s.getHost());
+        for (Map.Entry<InetSocketAddress, KernelServerInfo> entry : servers.entrySet()) {
+            if (entry.getValue().config.matchNodeSelectorSpec(spec)) {
+                nodes.add(entry.getKey());
             }
         }
         return nodes;
@@ -152,20 +150,13 @@ public class KernelServerManager {
             return GlobalKernelReferences.nodeServer;
         }
 
-        if (servers.containsKey(address)) {
-            return servers.get(address);
-        } else {
-            KernelServer server = null;
-            try {
-                Registry registry =
-                        LocateRegistry.getRegistry(address.getHostName(), address.getPort());
-                server = (KernelServer) registry.lookup("io.amino.run.kernelserver");
-                servers.put(address, server);
-            } catch (Exception e) {
-                logger.log(Level.SEVERE, "Could not find kernel server: " + e.toString());
-            }
-            return server;
+        KernelServerInfo kernelServerInfo = servers.get(address);
+        if (kernelServerInfo == null) {
+            logger.warning(String.format("Kernel server: %s is not registered", address));
+            return null;
         }
+
+        return kernelServerInfo.remoteRef;
     }
 
     /**
@@ -179,11 +170,11 @@ public class KernelServerManager {
         if (spec != null) {
             nodeSelector = spec.getNodeSelectorSpec();
         }
-        // if nodeSelector is null then returns all the kernelserver's addresses
+        // If nodeSelector is null then return the list of address of all kernel servers
         List<InetSocketAddress> hosts = getServers(nodeSelector);
 
         if (hosts.size() <= 0) {
-            logger.log(Level.SEVERE, "Could not find kernel server forthe given requirements");
+            logger.severe("Could not find kernel server for the given requirements");
             return null;
         }
         // In future we can consider some other specific things to select the

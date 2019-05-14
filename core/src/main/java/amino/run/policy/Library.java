@@ -402,6 +402,13 @@ public abstract class Library implements Upcalls {
             }
         }
 
+        /**
+         * Get and returns the collected RPC metrics from the kernel object. And clears the metrics
+         * collected so far.
+         *
+         * @return Map of RPC metrics for all clients collected after last notification until now
+         * @throws KernelObjectNotFoundException
+         */
         public Map<UUID, RPCMetric> getRPCMetrics() throws KernelObjectNotFoundException {
             ConcurrentHashMap<UUID, RPCMetric> metrics =
                     kernel().getKernelObject($__getKernelOID()).getMetrics();

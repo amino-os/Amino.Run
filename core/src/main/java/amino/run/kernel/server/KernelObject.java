@@ -5,6 +5,7 @@ import amino.run.common.ObjectHandler;
 import amino.run.common.Utils;
 import amino.run.kernel.common.KernelObjectMigratingException;
 import amino.run.kernel.metric.RPCMetric;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -22,6 +23,8 @@ public class KernelObject extends ObjectHandler {
     private static final int MAX_CONCURRENT_RPCS = 100;
     private Boolean coalesced;
     private Semaphore rpcCounter;
+
+    /* Map of RPC metric maintained for each Caller Id i.e., for each client */
     private transient ConcurrentHashMap<UUID, RPCMetric> metrics;
 
     private static Logger logger = Logger.getLogger(KernelObject.class.getName());
@@ -49,22 +52,7 @@ public class KernelObject extends ObjectHandler {
 
         rpcCounter.acquire();
 
-        RPCMetric rpcMetric = null;
-        long startTime = 0;
-        long endTime = 0;
-        // Measure the data in, out and rpc processing time
-        if (context != null) {
-            rpcMetric = metrics.get(context.callerId);
-            if (rpcMetric == null) {
-                rpcMetric = new RPCMetric(context.host);
-                metrics.put(context.callerId, rpcMetric);
-                try {
-                    rpcMetric.dataSize += Utils.toBytes(params).length;
-                } catch (Exception e) {
-                }
-            }
-            startTime = System.nanoTime();
-        }
+        long startTime = System.nanoTime();
 
         // Added try finally so that, when the super.invoke(...) throws exceptions,
         // then we safely release the rpcCounter
@@ -72,18 +60,56 @@ public class KernelObject extends ObjectHandler {
             ret = super.invoke(method, params);
         } finally {
             // TODO: Need to reconsider exception case
-            if (rpcMetric != null) {
-                endTime = System.nanoTime();
-                try {
-                    rpcMetric.dataSize += Utils.toBytes(ret).length;
-                } catch (Exception e) {
-                }
-                rpcMetric.processTime += (endTime - startTime);
-            }
+            long endTime = System.nanoTime();
+            recordRPCMetric(context, params, ret, startTime, endTime);
             rpcCounter.release();
         }
 
         return ret;
+    }
+
+    /**
+     * Compute and record RPC metrics for the given context
+     *
+     * @param context Client context received in {@link amino.run.kernel.common.KernelRPC#context}
+     * @param input Input to RPC invocation as received in {@link
+     *     amino.run.kernel.common.KernelRPC#params}
+     * @param output Output of RPC invocation
+     * @param startTime Time recorded before calling {@link
+     *     amino.run.kernel.server.KernelObject#invoke(String, ArrayList)}
+     * @param endTime Time recorded after returning {@link
+     *     amino.run.kernel.server.KernelObject#invoke(String, ArrayList)}
+     */
+    private void recordRPCMetric(
+            AppObjectStub.Context context,
+            ArrayList<Object> input,
+            Object output,
+            long startTime,
+            long endTime) {
+        if (context == null) {
+            /* Not an onRPC call. Just return */
+            return;
+        }
+
+        // Measure the data in, out and rpc elapsed time are record them in metrics map */
+        RPCMetric rpcMetric = metrics.get(context.callerId);
+        if (rpcMetric == null) {
+            rpcMetric = new RPCMetric(context.callerId, context.host);
+            metrics.put(context.callerId, rpcMetric);
+        }
+
+        /* Record elapsed time */
+        rpcMetric.elapsedTime += (endTime - startTime);
+
+        try {
+            /* Record data in and out size in bytes */
+            rpcMetric.dataSize += Utils.toBytes(input).length;
+            rpcMetric.dataSize += Utils.toBytes(output).length;
+        } catch (IOException e) {
+            logger.severe(
+                    String.format(
+                            "Failed to calculate the input/output data length. Exception : %s", e));
+        }
     }
 
     public void coalesce() {

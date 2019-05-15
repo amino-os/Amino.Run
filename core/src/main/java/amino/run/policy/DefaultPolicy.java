@@ -84,18 +84,18 @@ public class DefaultPolicy extends Policy {
 
         @Override
         public void onCreate(String region, ServerPolicy server) throws RemoteException {
-            InetSocketAddress host = null;
+            InetSocketAddress host = ((KernelObjectStub) server).$__getHostname();
 
             try {
                 if (!server.shouldSkipPinning()) {
-                    this.pin(server, ((KernelObjectStub) server).$__getHostname());
+                    this.pin(server, host);
                 }
             } catch (RemoteException e) {
                 logger.log(
                         Level.SEVERE,
                         String.format(
-                                "Failed to pin original Microservice to %s due to Remote Exception to %s. Exception: %s",
-                                host, server),
+                                "Failed to pin original Microservice to Remote %s with Remote Exception. Exception: %s",
+                                host, e),
                         e);
                 throw new Error(e);
             } catch (MicroServiceNotFoundException e) {

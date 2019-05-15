@@ -33,7 +33,7 @@ import java.util.logging.Logger;
 public abstract class LoadBalancedMasterSlaveBase extends DefaultPolicy {
     /** Base implementation of client side policy */
     public abstract static class ClientPolicy extends DefaultClientPolicy {
-        private static Logger logger = Logger.getLogger(ClientPolicy.class.getName());
+        private static final Logger logger = Logger.getLogger(ClientPolicy.class.getName());
         private final AtomicLong SeqGenerator = new AtomicLong();
         private transient UUID CLIENT_ID;
 
@@ -164,14 +164,13 @@ public abstract class LoadBalancedMasterSlaveBase extends DefaultPolicy {
      */
     public abstract static class GroupPolicy extends DefaultGroupPolicy {
         private static final int NUM_OF_REPLICAS = 2;
-        private Logger logger;
+        private static final Logger logger = Logger.getLogger(GroupPolicy.class.getName());
         private Random random = new Random(System.currentTimeMillis());
         private Lock masterLock;
         private Map<String, String> nodeLabels;
 
         @Override
         public void onCreate(String region, Policy.ServerPolicy server) throws RemoteException {
-            logger = Logger.getLogger(GroupPolicy.class.getName());
             super.onCreate(region, server);
             boolean isLastPolicy = server.isLastPolicy();
             logger.info(String.format("Creating master and slave instance in region %s", region));

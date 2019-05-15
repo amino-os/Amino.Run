@@ -16,7 +16,8 @@ import java.util.logging.Logger;
 public class ExtResourceTransactionManager implements TransactionManager, Serializable {
     private SandboxProvider sandboxProvider;
     private TransactionManager internalTransactionManager;
-    private static Logger logger = Logger.getLogger(ExtResourceTransactionManager.class.getName());
+    private static final Logger logger =
+            Logger.getLogger(ExtResourceTransactionManager.class.getName());
 
     public ExtResourceTransactionManager(
             SandboxProvider sandboxProvider, TransactionManager internalTransactionManager) {

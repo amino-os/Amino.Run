@@ -43,7 +43,7 @@ import org.json.JSONException;
  */
 public class OMSServerImpl implements OMSServer, Registry {
 
-    private static Logger logger = Logger.getLogger(OMSServerImpl.class.getName());
+    private static final Logger logger = Logger.getLogger(OMSServerImpl.class.getName());
     private GlobalKernelObjectManager kernelObjectManager;
     private KernelServerManager serverManager;
     private MicroServiceManager objectManager;

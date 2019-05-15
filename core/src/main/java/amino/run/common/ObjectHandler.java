@@ -23,7 +23,7 @@ public class ObjectHandler implements Serializable {
         java,
     }
 
-    private static Logger logger = Logger.getLogger(ObjectHandler.class.getName());
+    private static final Logger logger = Logger.getLogger(ObjectHandler.class.getName());
 
     /**
      * Table of strings of method names and function pointers to the actual methods For invoking

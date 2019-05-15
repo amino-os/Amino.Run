@@ -43,7 +43,7 @@ public class ExplicitMigrationPolicy extends DefaultPolicy {
     public static class ServerPolicy extends DefaultServerPolicy {}
 
     public static class GroupPolicy extends DefaultGroupPolicy {
-        private static Logger logger = Logger.getLogger(GroupPolicy.class.getName());
+        private static final Logger logger = Logger.getLogger(GroupPolicy.class.getName());
         /**
          * Method to migrate server policy(and associated microService instance) to the given
          * destination address

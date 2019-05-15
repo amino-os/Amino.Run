@@ -9,14 +9,12 @@ import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 
 /** {@code ServerInfo} contains meta data of a kernel server. */
 public class ServerInfo implements Serializable {
     private InetSocketAddress host;
 
     private Map<String, String> labels = new HashMap<String, String>();
-    private static Logger logger = Logger.getLogger(ServerInfo.class.getName());
 
     public ServerInfo(InetSocketAddress addr) {
         this.host = addr;

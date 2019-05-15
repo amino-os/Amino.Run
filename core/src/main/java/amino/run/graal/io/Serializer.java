@@ -23,7 +23,7 @@ enum GraalType {
 }
 
 public class Serializer implements AutoCloseable {
-    Logger logger = Logger.getLogger(Serializer.class.getName());
+    private static final Logger logger = Logger.getLogger(Serializer.class.getName());
 
     // TODO: should do identity better than toString
     private Map<String, Integer> seenCache;

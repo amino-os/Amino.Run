@@ -33,7 +33,7 @@ public class KernelClient {
     /** List of hostnames matched to kernel server stubs */
     private Hashtable<InetSocketAddress, KernelServer> servers;
 
-    private Logger logger = Logger.getLogger(KernelClient.class.getName());
+    private static final Logger logger = Logger.getLogger(KernelClient.class.getName());
 
     /**
      * Add a host to the list of hosts that we've contacted

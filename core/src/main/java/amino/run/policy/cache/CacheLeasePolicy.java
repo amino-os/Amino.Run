@@ -148,7 +148,7 @@ public class CacheLeasePolicy extends DefaultPolicy {
      * @author iyzhang
      */
     public static class ServerPolicy extends DefaultServerPolicy {
-        private static Logger logger = Logger.getLogger(ServerPolicy.class.getName());
+        private static final Logger logger = Logger.getLogger(ServerPolicy.class.getName());
         private UUID lease;
         private Date leaseTimeout;
 

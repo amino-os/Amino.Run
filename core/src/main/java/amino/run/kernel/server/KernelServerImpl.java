@@ -35,7 +35,7 @@ import java.util.logging.Logger;
  * @author iyzhang
  */
 public class KernelServerImpl implements KernelServer {
-    private static Logger logger = Logger.getLogger(KernelServerImpl.class.getName());
+    private static final Logger logger = Logger.getLogger(KernelServerImpl.class.getName());
     public static String LABEL_OPT = "--labels";
     public static String KERNEL_SERVER_IP_OPT = "--kernel-server-ip";
     public static String KERNEL_SERVER_PORT_OPT = "--kernel-server-port";

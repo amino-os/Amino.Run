@@ -10,6 +10,7 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class DefaultPolicy extends Policy {
 
@@ -66,6 +67,7 @@ public class DefaultPolicy extends Policy {
     }
 
     public static class DefaultGroupPolicy extends GroupPolicy {
+        private static final Logger logger = Logger.getLogger(DefaultGroupPolicy.class.getName());
         private ConcurrentHashMap<ReplicaID, ServerPolicy> servers =
                 new ConcurrentHashMap<ReplicaID, ServerPolicy>();
 

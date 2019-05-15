@@ -42,7 +42,7 @@ public class Server
         CANDIDATE
     };
 
-    static Logger logger = Logger.getLogger(Server.class.getCanonicalName());
+    private static final Logger logger = Logger.getLogger(Server.class.getCanonicalName());
 
     // Avoid creating a new empty log segment for each heartbeat, to reduce garbage collection.
     private final ArrayList<LogEntry> NO_LOG_ENTRIES = new ArrayList<LogEntry>();

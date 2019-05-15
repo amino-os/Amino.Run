@@ -16,11 +16,8 @@ import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.Logger;
 
 public class InstanceManager {
-    private static final Logger logger = Logger.getLogger(InstanceManager.class.getName());
-
     private MicroServiceID oid;
     private String name;
     private AtomicInteger referenceCount;

@@ -111,7 +111,7 @@ public abstract class Library implements Upcalls {
         // Group policy that sets this property should pin this microservice itself.
         protected boolean skipPinning;
 
-        static Logger logger = Logger.getLogger(ServerPolicyLibrary.class.getName());
+        private static final Logger logger = Logger.getLogger(ServerPolicyLibrary.class.getName());
 
         // List of ServerPolicies that should be created in the chain after the current one when
         // creating replicas.
@@ -501,8 +501,6 @@ public abstract class Library implements Upcalls {
         protected KernelOID oid;
         protected MicroServiceID microServiceId;
         private MicroServiceSpec spec;
-
-        static Logger logger = Logger.getLogger(GroupPolicyLibrary.class.getName());
 
         protected OMSServer oms() {
             return GlobalKernelReferences.nodeServer.oms;

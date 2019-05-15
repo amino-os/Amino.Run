@@ -40,12 +40,6 @@ Amino.Run is an open source, multilanguage development platform and distributed 
 
 .. toctree::
    :maxdepth: 2
-   :caption: Code Offloading
-
-   design-docs/code-offloading.md
-
-.. toctree::
-   :maxdepth: 2
    :caption: NAT Issue
 
    design-docs/NAT_issue_proposed_solution.md

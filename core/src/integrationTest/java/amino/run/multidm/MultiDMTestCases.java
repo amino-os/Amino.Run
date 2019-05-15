@@ -15,7 +15,6 @@ import java.net.InetSocketAddress;
 import java.rmi.registry.LocateRegistry;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.logging.Logger;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
@@ -46,7 +45,6 @@ public class MultiDMTestCases {
     final int DHT_SHARDS = 2;
     Registry registry;
     private static String regionName = "";
-    static Logger logger = java.util.logging.Logger.getLogger(MultiDMTestCases.class.getName());
 
     @BeforeClass
     public static void bootstrap() throws Exception {

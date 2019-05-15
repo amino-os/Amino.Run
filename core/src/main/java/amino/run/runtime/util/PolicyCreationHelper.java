@@ -18,7 +18,7 @@ public class PolicyCreationHelper {
     public static final String ServerPolicyClass = "ServerPolicyClass";
     public static final String ClientPolicyClass = "ClientPolicyClass";
 
-    static Logger logger = java.util.logging.Logger.getLogger(PolicyCreationHelper.class.getName());
+    private static final Logger logger = Logger.getLogger(PolicyCreationHelper.class.getName());
 
     /**
      * Creates group policy and returns it after catching the exceptions properly. This method

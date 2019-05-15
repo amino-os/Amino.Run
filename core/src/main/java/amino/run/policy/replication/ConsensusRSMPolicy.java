@@ -119,7 +119,8 @@ public class ConsensusRSMPolicy extends DefaultPolicy {
 
     public static class ServerPolicy extends DefaultPolicy.DefaultServerPolicy
             implements StateMachineApplier, RemoteRaftServer {
-        static Logger logger = Logger.getLogger(ServerPolicy.class.getCanonicalName());
+        private static final Logger logger =
+                Logger.getLogger(ServerPolicy.class.getCanonicalName());
         // There are so many servers and clients in this code,
         // include full package name to make it clear to the reader.
         private transient Server raftServer;
@@ -212,7 +213,6 @@ public class ConsensusRSMPolicy extends DefaultPolicy {
     }
 
     public static class GroupPolicy extends DefaultPolicy.DefaultGroupPolicy {
-        private static Logger logger = Logger.getLogger(GroupPolicy.class.getName());
 
         @Override
         public void onCreate(String region, Policy.ServerPolicy server) throws RemoteException {

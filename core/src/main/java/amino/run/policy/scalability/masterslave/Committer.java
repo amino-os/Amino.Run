@@ -25,7 +25,7 @@ import java.util.logging.Logger;
  * @author terryz
  */
 public class Committer implements Closeable {
-    private final Logger logger = Logger.getLogger(Committer.class.getName());
+    private static final Logger logger = Logger.getLogger(Committer.class.getName());
 
     /**
      * Index of the largest committed log entry. A log entry is committed iff its request has been

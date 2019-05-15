@@ -35,7 +35,7 @@ public class LoadBalancedMasterSlaveSyncPolicy extends LoadBalancedMasterSlaveBa
 
     /** Server side policy */
     public static class ServerPolicy extends LoadBalancedMasterSlaveBase.ServerPolicy {
-        private transient Logger logger;
+        private static final Logger logger = Logger.getLogger(ServerPolicy.class.getName());
         private transient Committer commitExecutor;
         private transient StateManager stateMgr;
         private transient Processor processor;
@@ -47,7 +47,6 @@ public class LoadBalancedMasterSlaveSyncPolicy extends LoadBalancedMasterSlaveBa
 
         @Override
         public void start() {
-            logger = Logger.getLogger(ServerPolicy.class.getName());
             GroupPolicy groupPolicy = (GroupPolicy) getGroup();
 
             Configuration config = new Configuration();

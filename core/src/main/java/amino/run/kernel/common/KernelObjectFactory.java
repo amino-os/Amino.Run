@@ -6,7 +6,7 @@ import java.rmi.RemoteException;
 import java.util.logging.Logger;
 
 public class KernelObjectFactory {
-    static Logger logger = Logger.getLogger(KernelObjectFactory.class.getName());
+    private static final Logger logger = Logger.getLogger(KernelObjectFactory.class.getName());
 
     /**
      * Create policy object and policy stub object for the given stub class name

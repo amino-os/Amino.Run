@@ -18,7 +18,7 @@ public class ShiftPolicy extends DefaultPolicy {
     public static class ShiftClientPolicy extends DefaultPolicy.DefaultClientPolicy {}
 
     public static class ShiftServerPolicy extends DefaultPolicy.DefaultServerPolicy {
-        private static Logger logger = Logger.getLogger(ShiftServerPolicy.class.getName());
+        private static final Logger logger = Logger.getLogger(ShiftServerPolicy.class.getName());
 
         private static int LOAD = 5;
         private static int shiftRPCLoad = 0;

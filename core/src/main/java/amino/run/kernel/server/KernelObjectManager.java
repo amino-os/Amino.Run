@@ -14,7 +14,7 @@ import java.util.logging.Logger;
  * @author iyzhang
  */
 public class KernelObjectManager {
-    Logger logger = Logger.getLogger(KernelObjectManager.class.getName());
+    private static final Logger logger = Logger.getLogger(KernelObjectManager.class.getName());
     private ConcurrentHashMap<KernelOID, KernelObject> objects;
 
     public KernelObjectManager() {

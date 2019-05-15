@@ -37,7 +37,8 @@ public class TwoPCCohortPolicy extends DefaultPolicy {
         protected final SandboxProvider sandboxProvider = new AppObjectSandboxProvider();
         protected TransactionManager transactionManager;
 
-        private static Logger logger = Logger.getLogger(TwoPCCohortServerPolicy.class.getName());
+        private static final Logger logger =
+                Logger.getLogger(TwoPCCohortServerPolicy.class.getName());
 
         @Override
         public void onCreate(GroupPolicy group) {

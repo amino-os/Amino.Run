@@ -65,7 +65,7 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
     }
 
     public static class ServerPolicy extends LoadBalancedFrontendPolicy.ServerPolicy {
-        private static Logger logger = Logger.getLogger(ServerPolicy.class.getName());
+        private static final Logger logger = Logger.getLogger(ServerPolicy.class.getName());
         private int replicationRateInMs = REPLICA_CREATE_MIN_TIME_IN_MSEC; // for n milliseconds
         private int replicaCount = 1; // 1 replica in n milliseconds
         private Semaphore replicaCreateLimiter;

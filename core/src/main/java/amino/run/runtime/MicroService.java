@@ -47,7 +47,7 @@ import org.apache.harmony.rmi.common.RMIUtil;
 // TODO: There are many methods that can be moved to helper or util classes. Move them into
 // appropriate classes.
 public class MicroService {
-    static Logger logger = Logger.getLogger(MicroService.class.getName());
+    private static final Logger logger = Logger.getLogger(MicroService.class.getName());
 
     /**
      * Creates a microservice.

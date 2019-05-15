@@ -79,7 +79,6 @@ public class LoadBalancedFrontendPolicy extends DefaultPolicy {
     public static class ClientPolicy extends DefaultPolicy.DefaultClientPolicy {
         private int index;
         protected ArrayList<Policy.ServerPolicy> replicaList;
-        private static Logger logger = Logger.getLogger(ClientPolicy.class.getName());
 
         @Override
         public Object onRPC(String method, ArrayList<Object> params) throws Exception {
@@ -109,7 +108,7 @@ public class LoadBalancedFrontendPolicy extends DefaultPolicy {
      * @author SrinivasChilveri
      */
     public static class ServerPolicy extends DefaultPolicy.DefaultServerPolicy {
-        private static Logger logger = Logger.getLogger(ServerPolicy.class.getName());
+        private static final Logger logger = Logger.getLogger(ServerPolicy.class.getName());
         // we can read from default config or annotations
         protected int maxConcurrentReq = DEFAULT_MAX_CONCURRENT_REQUESTS;
         protected Semaphore limiter;
@@ -155,7 +154,7 @@ public class LoadBalancedFrontendPolicy extends DefaultPolicy {
      * @author SrinivasChilveri
      */
     public static class GroupPolicy extends DefaultPolicy.DefaultGroupPolicy {
-        private static Logger logger = Logger.getLogger(GroupPolicy.class.getName());
+        private static final Logger logger = Logger.getLogger(GroupPolicy.class.getName());
         private int replicaCount = DEFAULT_REPLICA_COUNT; // we can read from config or annotations
 
         @Override

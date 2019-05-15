@@ -4,7 +4,6 @@ import amino.run.common.ObjectHandler;
 import amino.run.kernel.common.KernelObjectMigratingException;
 import java.util.ArrayList;
 import java.util.concurrent.Semaphore;
-import java.util.logging.Logger;
 
 /**
  * A single MicroService kernel object that can receive RPCs. These are stored in the MicroService
@@ -17,7 +16,6 @@ public class KernelObject extends ObjectHandler {
     private static final int MAX_CONCURRENT_RPCS = 100;
     private Boolean coalesced;
     private Semaphore rpcCounter;
-    private static Logger logger = Logger.getLogger(KernelObject.class.getName());
 
     public KernelObject(Object obj) {
         super(obj);

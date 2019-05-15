@@ -7,7 +7,7 @@ import java.util.logging.Logger;
 
 /** 2PC Coordinator based on thread local storage */
 public class TLS2PCCoordinator implements TwoPCCoordinator {
-    private static Logger logger = Logger.getLogger(TLS2PCCoordinator.class.getName());
+    private static final Logger logger = Logger.getLogger(TLS2PCCoordinator.class.getName());
 
     private final TransactionValidator validator;
     private final TwoPCLocalParticipants localParticipantsManager = new TwoPCLocalParticipants();

@@ -43,7 +43,7 @@ public class DHTPolicy extends DefaultPolicy {
     }
 
     public static class ClientPolicy extends DefaultClientPolicy {
-        private static Logger logger = Logger.getLogger(ClientPolicy.class.getName());
+        private static final Logger logger = Logger.getLogger(ClientPolicy.class.getName());
         private DHTChord dhtChord;
 
         @Override
@@ -65,7 +65,7 @@ public class DHTPolicy extends DefaultPolicy {
     public static class ServerPolicy extends DefaultServerPolicy {}
 
     public static class GroupPolicy extends DefaultGroupPolicy {
-        private static Logger logger = Logger.getLogger(GroupPolicy.class.getName());
+        private static final Logger logger = Logger.getLogger(GroupPolicy.class.getName());
         private int numOfShards = DEFAULT_NUM_OF_SHARDS;
         private DHTChord dhtChord;
 

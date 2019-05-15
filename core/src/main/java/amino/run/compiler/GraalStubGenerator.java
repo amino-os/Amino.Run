@@ -10,7 +10,7 @@ public class GraalStubGenerator {
     private Value prototype;
     private String fileName;
     private String lang;
-    private static Logger logger = Logger.getLogger(GraalStubGenerator.class.getName());
+    private static final Logger logger = Logger.getLogger(GraalStubGenerator.class.getName());
     private static String stubSuffix = "_Stub";
     private static String packageName;
     private static String[] supportedLangs = {"js", "python", "ruby"};

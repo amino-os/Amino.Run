@@ -39,7 +39,7 @@ public final class StateManager {
         RENEW_LOCK
     }
 
-    private final Logger logger = Logger.getLogger(State.Master.class.getName());
+    private static final Logger logger = Logger.getLogger(State.Master.class.getName());
 
     private final State SLAVE_STATE;
     private final State MASTER_STATE;

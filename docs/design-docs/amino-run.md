@@ -52,10 +52,10 @@ public interface OMSServer extends Remote {
        
        void registerKernelServer(InetSocketAddress host) throws RemoteException, NotBoundException;
        
-       SapphireObjectID registerSapphireObject(EventHandler dispatcher) throws RemoteException;
-       SapphireReplicaID registerSapphireReplica(SapphireObjectID oid, EventHandler dispatcher) throws RemoteException, SapphireObjectNotFoundException;
-       EventHandler getSapphireObjectDispatcher(SapphireObjectID oid) throws RemoteException, SapphireObjectNotFoundException;
-       EventHandler getSapphireReplicaDispatcher(SapphireReplicaID rid) throws RemoteException, SapphireObjectNotFoundException;
+       MicroserviceID registerMicroservice(EventHandler dispatcher) throws RemoteException;
+       ReplicaID registerReplica(MicroserviceID oid, EventHandler dispatcher) throws RemoteException, MicroserviceNotFoundException;
+       EventHandler getMicroserviceDispatcher(MicroserviceID oid) throws RemoteException, MicroserviceNotFoundException;
+       EventHandler getReplicaDispatcher(ReplicaID rid) throws RemoteException, MicroserviceNotFoundException;
        
        /* Called by the client */
        public AppObjectStub getAppEntryPoint() throws RemoteException;
@@ -74,22 +74,22 @@ In the first phase, to keep things simple, we can assume that there is one singl
 
 # RMI Registry 
 
-Amino.Run uses RMI registry to discover remote objects. The following snippet shows how to register remote object *SapphireOMS*. 
+Amino.Run uses RMI registry to discover remote objects. The following snippet shows how to register remote object *io.amino.run.oms*. 
 
 ```java
-// Register SapphireOMS
+// Register io.amino.run.oms
 OMSServerImpl oms = new OMSServerImpl(args[2]);
 sapphire.oms.OMSServer omsStub = (sapphire.oms.OMSServer) UnicastRemoteObject.exportObject(oms, 0);
 Registry registry = LocateRegistry.createRegistry(port);
-registry.rebind("SapphireOMS", omsStub);
+registry.rebind("io.amino.run.oms", omsStub);
 ```
 
-Client side lookups remote object `OMSServer` by its name, i.e. *SapphireOMS*, and RMI registry returns a *stub* of `OMSServer`. Client then uses OMS server to look up Amino Run. 
+Client side lookups remote object `OMSServer` by its name, i.e. *io.amino.run.oms*, and RMI registry returns a *stub* of `OMSServer`. Client then uses OMS server to look up Amino Run. 
 
 ```java
-// Look up SapphireOMS
+// Look up io.amino.run.oms
 registry = LocateRegistry.getRegistry(args[0],Integer.parseInt(args[1]));
-OMSServer server = (OMSServer) registry.lookup("SapphireOMS");
+OMSServer server = (OMSServer) registry.lookup("io.amino.run.oms");
 
 // Look up Microservice from OMS Server
 TwitterManager tm = (TwitterManager) server.getAppEntryPoint();
@@ -133,7 +133,7 @@ Amino.Run generates many `stub` classes. The following chart shows the relations
 public final class UserManager_Stub extends sapphire.appexamples.minnietwitter.app.UserManager implements sapphire.common.AppObjectStub {
 
 	// holds a reference to client policy
-	sapphire.dms.SapphirePolicy.SapphireClientPolicy $__client = null;
+	amino.run.policy.Policy.Client $__client = null;
 
     // Implementation of addUser(String, String)
     public sapphire.appexamples.minnietwitter.app.User addUser(java.lang.String $param_String_1, java.lang.String $param_String_2)
@@ -161,9 +161,9 @@ public final class UserManager_Stub extends sapphire.appexamples.minnietwitter.a
 The `onRPC` call on `ClientPolicy` will be translated to an `onRPC` call on `ServerPolicy_Stub`.
  
 ```java
-public abstract class DefaultSapphirePolicyUpcallImpl extends sapphire.dms.SapphirePolicyLibrary {
+public abstract class DefaultPolicyUpcallImpl extends amino.run.policy.PolicyLibrary {
 
-	public abstract static class DefaultSapphireClientPolicyUpcallImpl extends sapphire.dms.SapphirePolicyLibrary.SapphireClientPolicyLibrary {
+	public abstract static class DefaultClientUpcallImpl extends amino.run.policy.PolicyLibrary.ClientLibrary {
 		public Object onRPC(String method, ArrayList<Object> params) throws Exception {
 			// The default client behavior is to just perform the RPC 
 			// to the Policy Server
@@ -177,10 +177,10 @@ public abstract class DefaultSapphirePolicyUpcallImpl extends sapphire.dms.Sapph
 		}
 	}
 	
-	public abstract static class DefaultSapphireServerPolicyUpcallImpl extends SapphireServerPolicyLibrary {
+	public abstract static class DefaultServerPolicyUpcallImpl extends ServerPolicyLibrary {
 		public Object onRPC(String method, ArrayList<Object> params) throws Exception {
 			// The default server behavior is to just invoke 
-			// the method on the Sapphire Object this Server 
+			// the method on the Microservice this Server 
 			// Policy Object manages
 			return appObject.invoke(method, params);
 		}
@@ -189,15 +189,15 @@ public abstract class DefaultSapphirePolicyUpcallImpl extends sapphire.dms.Sapph
 ```
 
 ### `ServerPolicy_Stub`
-`ServerPolicy_Stub` uses the embedded `KernelClient` to do a `makeKernelRPC` call. It tries to use `makeKernelRPC` call to invoke `DefaultSapphireServerPolicyUpcallImpl.onRPC` method on the remote kernel server.
+`ServerPolicy_Stub` uses the embedded `KernelClient` to do a `makeKernelRPC` call. It tries to use `makeKernelRPC` call to invoke `DefaultServerPolicyUpcallImpl.onRPC` method on the remote kernel server.
 
 ```java
-public final class CacheLeasePolicy$CacheLeaseServerPolicy_Stub extends sapphire.dms.cache.CacheLeasePolicy.CacheLeaseServerPolicy implements sapphire.kernel.common.KernelObjectStub {
+public final class CacheLeasePolicy$CacheLeaseServerPolicy_Stub extends amino.run.policy.cache.CacheLeasePolicy.CacheLeaseServerPolicy implements sapphire.kernel.common.KernelObjectStub {
     // Implementation of onRPC(String, ArrayList) 
     public java.lang.Object onRPC(java.lang.String $param_String_1, java.util.ArrayList $param_ArrayList_2)
             throws java.lang.Exception {
         java.util.ArrayList<Object> $__params = new java.util.ArrayList<Object>();
-        String $__method = "public java.lang.Object sapphire.dms.DefaultSapphirePolicyUpcallImpl$DefaultSapphireServerPolicyUpcallImpl.onRPC(java.lang.String,java.util.ArrayList<java.lang.Object>) throws java.lang.Exception";
+        String $__method = "public java.lang.Object amino.run.policy.DefaultPolicyUpcallImpl$DefaultServerPolicyUpcallImpl.onRPC(java.lang.String,java.util.ArrayList<java.lang.Object>) throws java.lang.Exception";
         $__params.add($param_String_1);
         $__params.add($param_ArrayList_2);
         java.lang.Object $__result = null;
@@ -286,38 +286,3 @@ Every application written using Amino.Run has one `AppEntryPoint` which is the s
 
 ![](../images/DCAP_AppEntryCreationSequence.png)
 
-# Amino.Run Advantages
-
-> While cloud storage systems simplify the task of meeting mobile/cloud requirements for range of applications (marked as general purpose in Figure 1.2), they leave significant work for application programmers. Because both client and server components are typically stateless, the application must still re-start servers (for availability), <span style="color:blue">cache locally on mobile clients (for responsiveness)</span>, spin up more servers (for scalability), <span style="color:blue">coordinate between clients and servers (for consistency)</span>, <span style="color:blue">checkpoint both clients and servers (for fault-tolerance)</span>, and <span style="color:blue">poll servers (for reactivity)</span>. Simply stated, building a mobile/cloud application using a cloud storage system is the modern-day equivalent of building a desktop application with only a file system.
-
-Systems like Kubernetes provides functionalities to restart servers, spin up more servers, etc. But Kubernetes does not provide the following features:
-
-* Cache locally on mobile clients (for responsiveness)
-* Coordinate between clients and servers (for consistency)
-* Checkpoint both clients and servers (for fault-tolerance)
-* Poll servers (for reactivity)
-
->For example, lock services (Figure 1.2) help applications provide consistency by avoiding conflicts, but programmers must still call the lock service at appropriate times to achieve consistency. Likewise, notification services help applications efficiently achieve reactivity by eliminating the need for polling; however, programmers must still send and subscribe to notifications correctly to propagate updates to other users. 
-
-DM does have value. It is much easier to write leader election logic with `etcd`'s lease API. However, even with the support from etcd, writing a correct leader election logic is still tricky and can take about 500 lines of codes. This is where DM shines. But DM logics can be added into micro-service framework as well.
-
->BaaS systems meet some mobile/cloud requirements and help programmers meet the rest. They are highly available, responsive and scalable. They offer weak or no consistency, and some provide notifications for more efficient reactivity. However, the <span style="color:blue">application must still be stateless</span>, so programmers must checkpoint to the back-end (or log to a local disk) after every operation for fault-tolerance. Finally, <span style="color:blue">programmers typically cannot run application code on the more powerful and secure cloud servers.</span>
-
-Is Amino.Run able to provide fault-tolerance to stateful applications? How does it do that? Why programmers cannot run application code on more powerful cloud servers? Are we talking about code offloading? 
-
-> Aminno.Run is designed to deploy applications across mobile devices and cloud servers. 
-# Questions
-
-* What unique competitive advantage will Amino.Run deliver? Why should developers chose Amino.Run, rather than other options like BaaS, Istio, etc?
-
-* How do Amino.Run customers use it? 
-
-* What is the relationship between Amino.Run and 'Serverless'? How do we use the Amino.Run idea to achieve Serverless anywhere and Serverless at any scale?
-
-* What is Amino.Run? A platform, a SDK, or a combination of both?
-
-* What are the key technologies behind Amino.Run?
-
-* How about we create a clone for every device on the cloud?
-
-* We need concrete examples for `peer-to-peer`, `code-offloading`, and `replication` DM. 

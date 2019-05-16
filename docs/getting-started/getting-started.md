@@ -48,8 +48,8 @@ EOF
 ### Check out from Github
 ```shell
 # checkout Amino.Run
-$ git clone https://github.com/Amino-Distributed-OS/Amino.Run
-> cd Amino.run/core
+$ git clone https://github.com/amino-os/Amino.Run
+> cd Amino.Run/core
 ```
 
 ### Build and Test the Core
@@ -88,7 +88,7 @@ $ git clone https://github.com/Amino-Distributed-OS/Amino.Run
 
 #### Generate Policy Stub
 ```shell
-> cd DCAP_Sapphire/sapphire/sapphire-core
+> cd Amino.Run/core
 > ../gradlew genStubs
 ```
 

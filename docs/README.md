@@ -87,11 +87,11 @@ transactional storage system (Amino.Sync) and a privacy and security framework
 * [Amino.Run Overview](design-docs/amino-run.md)
 * [Multi DM](design-docs/multi-DM.md)
 * [Getting started](getting-started/getting-started.md)
-* [Amino.Run Examples](https://github.com/Huawei-PaaS/DCAP-Sapphire-Examples)
+* [Amino.Run Examples](https://github.com/amino-os/Amino.Run-Demos)
 * Contributing:
   * [Setting up your developer environment](dev-setup.md)
   * [Contributing to the documentation](documentation.md)
-* [External documentation web site](http://amino.readthedocs.io)
+* [External documentation web site](http://amino-os.readthedocs.io)
 <!--
 TODO: Change the above to http://docs.amino-os.io as soon as that site and 
       redirection have been set up correctly.

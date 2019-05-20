@@ -50,7 +50,7 @@ In summary, our approach is to:
 
 1. provide a wide and expandable range of standard, re-usable,
    pluggable and production-ready Deployment Managers
-   (DMs)](DMList.md)
+   [DMs](images/DMList.png)
    to solve many common distributed computing problems (including all
    of those mentioned above) so that you can focus on application
    logic, not solving hard distributed systems challenges.

@@ -77,24 +77,22 @@ behaviors, namely:
 
 1. Client creates a new instance or obtains a reference to an existing MicroService.
 2. Client makes a call to an application method in Microservice and gets the result back.
-3. Client DM retries on failure for certain duration.
-4. Microservice replicas are sharded.
-5. Client expects the MicroService to be highly available,
-   resilient to server machine failures (provided that concurrent
-   failures are limited to a minority quorum).
-6. Client expects the MicroService to be high performance (all
-   quorum communication is on the local zone network).
-7. Client does not expect the Microservice to be resilient to zone failure.   
+3. Client application does not need to retry on network or other transient failures (as retries with timeout is automatically provided by AtLeastOnceRPC).
+4. The microservice is horizontally scalable (because sharding is provided by the DHT policy).
+5. The microservice is highly available, tolerating less than half the consensus replicas failing (as ConsensusRSM automatically, reliably and consistently replicates all method calls to all replicas of each shard).
    
 ### How it works under the hood
 
 1. Client creates an instance of a MicroService (create()).
 	1. Kernel invokes group.onCreate() on all DM's in the order of inner most DM to outer most DM.
-		1. AtLeastOnceRPCPolicy.GroupPolicy.onCreate() does nothing unusual.	
-		1. DHTPolicy.GroupPolicy.onCreate() ensures that each Microservice is distributed
-		based on the input parameters of the application method.
 		1. ConsensusRSMPolicy.GroupPolicy.onCreate() creates 2f+1 replicas (by invoking 
 		replicate(), which in turn invokes addServer on all DM's).
+		1. DHTPolicy.GroupPolicy.onCreate() creates n shards, and configures the key range for each shard.
+			1. Server creates an instance of DMs for each shard.
+			1. When creating each shard, group.onCreate() is invoked in the order of inner most DM to the last DM before the current DM (ConsensusRSMPolicy.GroupPolicy).
+			1. ConsensusRSMPolicy.GroupPolicy creates 2f+1 replicas (by invoking 
+		replicate(), which in turn invokes addServer on all DM's).
+		1. AtLeastOnceRPCPolicy.GroupPolicy.onCreate() does nothing unusual.
 2. Client starts a invocation of the application method with input parameter(s).
   	1. The above is intercepted by AtLeastOnceRPCPolicy.ClientPolicy.onRPC(), that does nothing 
 	other than server.onRPC() unless there is a failure.

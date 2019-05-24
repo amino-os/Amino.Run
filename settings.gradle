@@ -10,7 +10,7 @@ include ':dependencies:apache.harmony'
 
 // Example applications
 include ':examples' // Note: I can't seem to get gradle to include from subprojects, hence the lines below.
-include ':examples:example-minnietwitter'
+include ':examples:minnietwitter'
 include ':examples:hanksTodo'
 include ':examples:hanksTodoRuby'
 include ':examples:helloworld'

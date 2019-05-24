@@ -154,9 +154,13 @@ public class MinnieTwitterMain {
       KernelServer nodeServer = new KernelServerImpl(hostAddr, omsAddr);
 
       /* Get Twitter and User Manager */
-      MicroServiceID microServiceId =
-          server.create(
-              "amino.run.appexamples.minnietwitter.TwitterManager", new Object[0]);
+      MicroServiceSpec spec =
+              MicroServiceSpec.newBuilder()
+                      .setLang(Language.java)
+                      .setJavaClassName("amino.run.appexamples.minnietwitter.TwitterManager")
+                      .create();
+
+      MicroServiceID microServiceId = server.create(spec.toString());
       TwitterManager tm = (TwitterManager) server.acquireStub(microServiceId);
       UserManager userManager = tm.getUserManager();
       TagManager tagManager = tm.getTagManager();
@@ -266,7 +270,7 @@ public class MinnieTwitterMain {
 
     InetSocketAddress hostAddr = new InetSocketAddress(appArgs.kernelServerIP, appArgs.kernelServerPort),
     omsAddr = new InetSocketAddress(appArgs.omsIP, appArgs.omsPort);
-    ExecuteSingleUserDemo(hostAddr, omsAddr);
+    ExecuteFullDemo(hostAddr, omsAddr);
   }
   private static void printUsage(OptionsParser parser) {
       System.out.println(

@@ -18,7 +18,7 @@ import com.google.devtools.common.options.OptionsParser;
 
 public class MinnieTwitterMain {
   static final int EVENTS_PER_USER = 100;
-  static final int USERS_NUM = 1;
+  static final int USERS_NUM = 10;
   static final int TAG_NUM = 5;
 
   static final int MAX_TAGS_PER_TWEET = 2;

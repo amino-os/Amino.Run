@@ -22,7 +22,7 @@ import amino.run.kernel.server.KernelServerImpl;
 import com.google.devtools.common.options.OptionsParser;
 
 public class MinnieTwitterMain {
-  static final int EVENTS_PER_USER = 100;
+  static final int EVENTS_PER_USER = 10;
   static final int USER_COUNT = 10;
   static final int TAG_COUNT = 5;
 
@@ -234,6 +234,9 @@ public class MinnieTwitterMain {
     populate(clients[0]);
 
     // Client 1 does some basic checks that the above stuff exists.
+      /* Attach to microservice is to get reference to shared microservice. Generally it
+         is not done in the same thread which creates microservice.
+       */
     clients[1] = (TwitterManager) oms.attachTo(microServiceName);
     checkPeerTweets(clients[1]);
 
@@ -241,7 +244,16 @@ public class MinnieTwitterMain {
     clients[2] = (TwitterManager) oms.attachTo(microServiceName);
     checkFollowing(clients[2]);
 
-    // TODO: Quinton: Whooah!  There's a problem here.  No way to independently detach clients.
+    /* Detach from the shared microservice. It is necessary to explicitly call detach to
+         un-reference the microservice. This call is not required here if attach call was not
+         made above
+      TODO: Quinton: Whooah!  There's a problem here.  No way to independently detach clients.
+      What is detach supposed to be used for?  Garbage collection? But it seems that the implementation
+      of detachFrom() just deletes the one and only reference to the microservice in OMS.
+      Venu, I think you implemented this?  It all seems very wrong?
+      In addition to that, why does the creator of the microservice instance not need to
+      detach their reference.  I think this might all be broken?
+    */
     oms.detachFrom(microServiceName);
   }
 
@@ -257,7 +269,11 @@ public class MinnieTwitterMain {
       /* Get User and Tag Manager */
       UserManager userManager = tm.getUserManager();
       TagManager tagManager = tm.getTagManager();
-
+      /*
+       * TODO quinton: The rest of this function is still really horrible code.
+       * It's the original UW code, that I've just moved here, but not had time to
+       * clean up properly yet.
+       */
       /* Create the users */
       List<User> users = new ArrayList<User>();
       for (int i = 0; i < USER_COUNT; i++) {

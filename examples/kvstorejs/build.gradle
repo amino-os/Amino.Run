@@ -23,7 +23,7 @@ task runjsapp(type: Exec) {
             "${project.projectDir}/src/main/js/amino/run/appdemo/KeyValueStoreClient.js"
 }
 
-// Customise task to un Java app
+// Customise task to run Java app
 runapp {
     environment  OMS_IP: "${project.property('omsIp')}"
     environment  OMS_PORT: "${project.property('omsPort')}"

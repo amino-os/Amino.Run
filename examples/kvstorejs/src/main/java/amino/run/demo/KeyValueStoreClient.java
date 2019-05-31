@@ -1,13 +1,10 @@
 package amino.run.appdemo;
-import amino.run.appdemo.stubs.KeyValueStore_Stub;
 
+import amino.run.appdemo.stubs.KeyValueStore_Stub;
 import java.io.Serializable;
 import java.util.Date;
-import java.util.UUID;
 
-/**
- * Client class for testing {@link KeyValueStore_Stub}
- */
+/** Client class for testing {@link KeyValueStore_Stub} */
 public class KeyValueStoreClient {
     public static class TestClass implements Serializable {
         public int intValue = 0;
@@ -17,7 +14,7 @@ public class KeyValueStoreClient {
 
         public TestClass(int i) {
             intValue = i;
-            stringValue = "Value"+i;
+            stringValue = "Value" + i;
         }
 
         @Override
@@ -40,10 +37,12 @@ public class KeyValueStoreClient {
         if (null == omsPort || omsPort.isEmpty()) omsPort = "22222";
         if (null == yamlFile || yamlFile.isEmpty()) yamlFile = "KeyValueStore.yaml";
 
-        System.out.println(String.format("hostIP=%s, hostPort=%s, omsIP=%s, omsPort=%s, yamlFile=%s", hostIP, hostPort, omsIP, omsPort, yamlFile));
-        KeyValueStore_Stub store = KeyValueStore_Stub.getStub(
-                 yamlFile,
-                 omsIP, omsPort, hostIP, hostPort);
+        System.out.println(
+                String.format(
+                        "hostIP=%s, hostPort=%s, omsIP=%s, omsPort=%s, yamlFile=%s",
+                        hostIP, hostPort, omsIP, omsPort, yamlFile));
+        KeyValueStore_Stub store =
+                KeyValueStore_Stub.getStub(yamlFile, omsIP, omsPort, hostIP, hostPort);
 
         for (int i = 0; i < 5; ++i) {
             String key = "key_" + i;

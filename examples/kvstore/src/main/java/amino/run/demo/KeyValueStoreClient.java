@@ -12,13 +12,11 @@ import java.rmi.registry.LocateRegistry;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * Client class for testing {@link KeyValueStore}
- */
+/** Client class for testing {@link KeyValueStore} */
 public class KeyValueStoreClient {
     public static void main(String[] args) throws Exception {
         OptionsParser parser = OptionsParser.newOptionsParser(AppArgumentParser.class);
-        if ( args.length < 4) {
+        if (args.length < 4) {
             System.out.println("Incorrect arguments to the program");
             printUsage(parser);
             return;
@@ -26,12 +24,16 @@ public class KeyValueStoreClient {
         try {
             parser.parse(args);
         } catch (Exception e) {
-            System.out.println(e.getMessage()+System.lineSeparator()+System.lineSeparator()+
-                    "Usage: "
-                            + KeyValueStoreClient.class.getSimpleName()+System.lineSeparator()
-                            +  parser.describeOptions(
-                            Collections.<String, String>emptyMap(),
-                            OptionsParser.HelpVerbosity.LONG));
+            System.out.println(
+                    e.getMessage()
+                            + System.lineSeparator()
+                            + System.lineSeparator()
+                            + "Usage: "
+                            + KeyValueStoreClient.class.getSimpleName()
+                            + System.lineSeparator()
+                            + parser.describeOptions(
+                                    Collections.<String, String>emptyMap(),
+                                    OptionsParser.HelpVerbosity.LONG));
             return;
         }
 
@@ -60,7 +62,8 @@ public class KeyValueStoreClient {
     }
 
     private static Registry getRegistry(String omsIp, int omsPort) throws Exception {
-        new KernelServerImpl(new InetSocketAddress("127.0.0.2", 11111), new InetSocketAddress(omsIp,omsPort));
+        new KernelServerImpl(
+                new InetSocketAddress("127.0.0.2", 11111), new InetSocketAddress(omsIp, omsPort));
         java.rmi.registry.Registry rmiRegistry = LocateRegistry.getRegistry(omsIp, omsPort);
         Registry aminoRegistry = (Registry) rmiRegistry.lookup("io.amino.run.oms");
         return aminoRegistry;
@@ -79,8 +82,7 @@ public class KeyValueStoreClient {
                         + KeyValueStoreClient.class.getSimpleName()
                         + System.lineSeparator()
                         + parser.describeOptions(
-                        Collections.<String, String>emptyMap(),
-                        OptionsParser.HelpVerbosity.LONG));
+                                Collections.<String, String>emptyMap(),
+                                OptionsParser.HelpVerbosity.LONG));
     }
-
 }

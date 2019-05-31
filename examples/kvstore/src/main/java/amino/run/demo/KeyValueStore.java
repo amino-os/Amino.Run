@@ -1,15 +1,11 @@
 package amino.run.demo;
 
 import amino.run.app.MicroService;
-
 import java.io.Serializable;
 import java.util.Hashtable;
 import java.util.Map;
 
-/**
- * A Key-Value Store where keys are {@code String}s and
- * values are {@code Serializable}s.
- */
+/** A Key-Value Store where keys are {@code String}s and values are {@code Serializable}s. */
 public class KeyValueStore implements MicroService {
     private Map<String, Serializable> kvStore = new Hashtable<String, Serializable>();
 

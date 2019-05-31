@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-
 public class Tag implements Serializable {
     private String label;
     private List<Tweet> tweets;

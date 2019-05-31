@@ -1,9 +1,9 @@
 package amino.run.appexamples.minnietwitter;
 
-import amino.run.app.MicroService;
-
 import static amino.run.runtime.MicroService.delete_;
 import static amino.run.runtime.MicroService.new_;
+
+import amino.run.app.MicroService;
 
 public class TwitterManager implements MicroService {
     private UserManager userManager;

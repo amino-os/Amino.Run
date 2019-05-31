@@ -9,11 +9,9 @@ public class Util {
         ArrayList<T> sl = new ArrayList<T>();
         int n = l.size();
 
-        if (from >= n)
-            return sl;
+        if (from >= n) return sl;
 
-        if (to >= n)
-            to = n - 1;
+        if (to >= n) to = n - 1;
 
         while (from <= to) {
             sl.add(l.get(from));

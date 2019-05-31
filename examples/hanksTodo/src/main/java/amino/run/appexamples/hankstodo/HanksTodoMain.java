@@ -1,8 +1,6 @@
 package amino.run.appexamples.hankstodo;
 
-import java.net.InetSocketAddress;
-import java.rmi.registry.LocateRegistry;
-import java.util.Collections;
+import static java.lang.Thread.sleep;
 
 import amino.run.app.Language;
 import amino.run.app.MicroServiceSpec;
@@ -12,8 +10,9 @@ import amino.run.common.MicroServiceID;
 import amino.run.kernel.server.KernelServer;
 import amino.run.kernel.server.KernelServerImpl;
 import com.google.devtools.common.options.OptionsParser;
-
-import static java.lang.Thread.sleep;
+import java.net.InetSocketAddress;
+import java.rmi.registry.LocateRegistry;
+import java.util.Collections;
 
 public class HanksTodoMain {
 
@@ -119,7 +118,7 @@ public class HanksTodoMain {
                         + HanksTodoMain.class.getSimpleName()
                         + System.lineSeparator()
                         + parser.describeOptions(
-                        Collections.<String, String>emptyMap(),
-                        OptionsParser.HelpVerbosity.LONG));
+                                Collections.<String, String>emptyMap(),
+                                OptionsParser.HelpVerbosity.LONG));
     }
 }

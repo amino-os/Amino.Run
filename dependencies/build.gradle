@@ -1,6 +1,9 @@
-// Disable stub generation for dependencies and all it's sub-projects
+// Disable some tasks for dependencies and all it's sub-projects
 allprojects {
     genStubs {
-        onlyIf() { false } // Disable
+        onlyIf() { false } // Don't generate stubs
+    }
+    googleJavaFormat {
+        exclude '**' // Don't reformat, because it's vendored code
     }
 }

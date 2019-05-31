@@ -1,15 +1,13 @@
 package amino.run.appexamples.minnietwitter;
 
+import amino.run.app.MicroService;
+import amino.run.runtime.MicroServiceConfiguration;
 import java.util.ArrayList;
 import java.util.List;
 
-import amino.run.app.MicroService;
-import amino.run.runtime.MicroServiceConfiguration;
-
-
 @MicroServiceConfiguration(Policies = "amino.run.policy.atleastoncerpc.AtLeastOnceRPCPolicy")
 public class Timeline implements MicroService {
-    //private User user;
+    // private User user;
     private String userName;
 
     /* TODO: Distributed structure for the tweets? */
@@ -21,7 +19,7 @@ public class Timeline implements MicroService {
     private Timeline timelineStub;
 
     public Timeline(User user, TagManager tm) {
-        //this.user = user;
+        // this.user = user;
         this.userName = user.getUserInfo().getUsername();
         this.tm = tm;
         this.tweets = new ArrayList<TweetContainer>();
@@ -72,8 +70,7 @@ public class Timeline implements MicroService {
     public List<Tweet> getTweets(int from, int to) {
         List<TweetContainer> tc = Util.checkedSubList(tweets, from, to);
         List<Tweet> tw = new ArrayList<Tweet>();
-        for (TweetContainer c : tc)
-            tw.add(c.getTweet());
+        for (TweetContainer c : tc) tw.add(c.getTweet());
         return tw;
     }
 

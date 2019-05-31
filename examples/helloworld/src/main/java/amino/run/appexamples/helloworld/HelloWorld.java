@@ -7,7 +7,8 @@ import amino.run.runtime.MicroServiceConfiguration;
 public class HelloWorld implements MicroService {
     private String world = "World";
 
-    public HelloWorld(){}
+    public HelloWorld() {}
+
     public HelloWorld(String world) {
         this.world = world;
     }

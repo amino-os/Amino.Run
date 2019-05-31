@@ -1,16 +1,13 @@
 package amino.run.appexamples.minnietwitter;
 
-import java.security.MessageDigest;
-import java.util.Hashtable;
-import java.util.Map;
+import static amino.run.runtime.MicroService.*;
 
 import amino.run.app.MicroService;
 import amino.run.policy.dht.DHTKey;
-
-import static amino.run.runtime.MicroService.*;
-
 import amino.run.runtime.MicroServiceConfiguration;
-
+import java.security.MessageDigest;
+import java.util.Hashtable;
+import java.util.Map;
 
 @MicroServiceConfiguration(Policies = "amino.run.policy.atleastoncerpc.AtLeastOnceRPCPolicy")
 public class UserManager implements MicroService {
@@ -47,16 +44,14 @@ public class UserManager implements MicroService {
     public User login(String username, String passwd) {
         User u = users.get(new DHTKey(username));
 
-        if (u == null)
-            return null;
+        if (u == null) return null;
 
         // check password
         MessageDigest md;
         try {
             md = MessageDigest.getInstance("MD5");
             byte[] pass = md.digest(passwd.getBytes("UTF-8"));
-            if (!checkPasswords(pass, u.getUserInfo().getPassword()))
-                return null;
+            if (!checkPasswords(pass, u.getUserInfo().getPassword())) return null;
         } catch (Exception e) {
             e.printStackTrace();
             // TODO: throw exception
@@ -65,8 +60,7 @@ public class UserManager implements MicroService {
     }
 
     private boolean checkPasswords(byte[] p1, byte[] p2) {
-        if (p1.length != p2.length)
-            return false;
+        if (p1.length != p2.length) return false;
 
         for (int i = 0; i < p1.length; i++) {
             int loperand = (p1[i] & 0xff);

@@ -1,10 +1,5 @@
 package amino.run.appexamples.fundmover;
 
-import java.net.InetSocketAddress;
-import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
-import java.util.Collections;
-
 import amino.run.app.DMSpec;
 import amino.run.app.Language;
 import amino.run.app.MicroServiceSpec;
@@ -16,6 +11,10 @@ import amino.run.kernel.server.KernelServerImpl;
 import amino.run.policy.transaction.TwoPCCoordinatorPolicy;
 import amino.run.policy.transaction.TwoPCExtResourceCohortPolicy;
 import com.google.devtools.common.options.OptionsParser;
+import java.net.InetSocketAddress;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.util.Collections;
 
 public class FundmoverMain {
     public static void main(String[] args) throws RemoteException {
@@ -36,52 +35,60 @@ public class FundmoverMain {
         AppArgumentParser appArgs = parser.getOptions(AppArgumentParser.class);
 
         java.rmi.registry.Registry registry;
-        try{
+        try {
             registry = LocateRegistry.getRegistry(appArgs.omsIP, appArgs.omsPort);
             Registry server = (Registry) registry.lookup("io.amino.run.oms");
             System.out.println(server);
 
-            KernelServer nodeServer = new KernelServerImpl(new InetSocketAddress(appArgs.kernelServerIP, appArgs.kernelServerPort), new InetSocketAddress(appArgs.omsIP, appArgs.omsPort));
+            KernelServer nodeServer =
+                    new KernelServerImpl(
+                            new InetSocketAddress(appArgs.kernelServerIP, appArgs.kernelServerPort),
+                            new InetSocketAddress(appArgs.omsIP, appArgs.omsPort));
 
-            MicroServiceSpec walletSpec,bankAccountSpec,financeSpec ;
-            walletSpec= MicroServiceSpec.newBuilder()
-                         .setLang(Language.java)
-                         .setJavaClassName(Wallet.class.getName())
-                         .addDMSpec(
-                                 DMSpec.newBuilder()
-                                 .setName(TwoPCExtResourceCohortPolicy.class.getName())
-                                 .create())
-                         .create();
-            bankAccountSpec = MicroServiceSpec.newBuilder()
-                               .setLang(Language.java)
-                               .setJavaClassName(BankAccount.class.getName())
-                               .addDMSpec(
-                                       DMSpec.newBuilder()
-                                       .setName(TwoPCExtResourceCohortPolicy.class.getName())
-                                       .create())
-                               .create();
-            financeSpec = MicroServiceSpec.newBuilder()
-                           .setLang(Language.java)
-                           .setJavaClassName(Finance.class.getName())
-                           .addDMSpec(
-                                   DMSpec.newBuilder()
-                                   .setName(TwoPCCoordinatorPolicy.class.getName())
-                                   .create())
-                           .create();
+            MicroServiceSpec walletSpec, bankAccountSpec, financeSpec;
+            walletSpec =
+                    MicroServiceSpec.newBuilder()
+                            .setLang(Language.java)
+                            .setJavaClassName(Wallet.class.getName())
+                            .addDMSpec(
+                                    DMSpec.newBuilder()
+                                            .setName(TwoPCExtResourceCohortPolicy.class.getName())
+                                            .create())
+                            .create();
+            bankAccountSpec =
+                    MicroServiceSpec.newBuilder()
+                            .setLang(Language.java)
+                            .setJavaClassName(BankAccount.class.getName())
+                            .addDMSpec(
+                                    DMSpec.newBuilder()
+                                            .setName(TwoPCExtResourceCohortPolicy.class.getName())
+                                            .create())
+                            .create();
+            financeSpec =
+                    MicroServiceSpec.newBuilder()
+                            .setLang(Language.java)
+                            .setJavaClassName(Finance.class.getName())
+                            .addDMSpec(
+                                    DMSpec.newBuilder()
+                                            .setName(TwoPCCoordinatorPolicy.class.getName())
+                                            .create())
+                            .create();
 
             MicroServiceID walletMicroServiceID = server.create(walletSpec.toString());
 
-            Wallet wallet = (Wallet)server.acquireStub(walletMicroServiceID);;
+            Wallet wallet = (Wallet) server.acquireStub(walletMicroServiceID);
+            ;
 
             wallet.credit(100);
 
             MicroServiceID bankAccountMicroServiceID = server.create(bankAccountSpec.toString());
 
-            BankAccount bankaccount = (BankAccount)server.acquireStub(bankAccountMicroServiceID);
+            BankAccount bankaccount = (BankAccount) server.acquireStub(bankAccountMicroServiceID);
 
             System.out.println("creating the finance object...");
 
-            MicroServiceID financeMicroServiceID = server.create(financeSpec.toString(),wallet,bankaccount);
+            MicroServiceID financeMicroServiceID =
+                    server.create(financeSpec.toString(), wallet, bankaccount);
 
             Finance finance = (Finance) server.acquireStub(financeMicroServiceID);
 
@@ -97,13 +104,10 @@ public class FundmoverMain {
             // Verifying the rollback use case
             finance.transferFromWallet(85);
 
-        }catch (Exception e) {
+        } catch (Exception e) {
             System.out.println("---------- error occurred -----");
             System.out.println(e.toString());
-
         }
-
-
     }
 
     private static void printUsage(OptionsParser parser) {
@@ -112,7 +116,7 @@ public class FundmoverMain {
                         + FundmoverMain.class.getSimpleName()
                         + System.lineSeparator()
                         + parser.describeOptions(
-                        Collections.<String, String>emptyMap(),
-                        OptionsParser.HelpVerbosity.LONG));
+                                Collections.<String, String>emptyMap(),
+                                OptionsParser.HelpVerbosity.LONG));
     }
 }

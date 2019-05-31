@@ -1,9 +1,8 @@
 package amino.run.appexamples.hankstodo;
 
+import amino.run.app.MicroService;
 import java.util.ArrayList;
 import java.util.HashMap;
-
-import amino.run.app.MicroService;
 
 public class TodoList implements MicroService {
     HashMap<String, String> toDos;

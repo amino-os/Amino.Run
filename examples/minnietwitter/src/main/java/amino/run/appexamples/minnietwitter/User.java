@@ -1,12 +1,11 @@
 package amino.run.appexamples.minnietwitter;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import amino.run.app.MicroService;
-
 import static amino.run.runtime.MicroService.delete_;
 import static amino.run.runtime.MicroService.new_;
+
+import amino.run.app.MicroService;
+import java.util.ArrayList;
+import java.util.List;
 
 public class User implements MicroService {
     private Timeline timeline;

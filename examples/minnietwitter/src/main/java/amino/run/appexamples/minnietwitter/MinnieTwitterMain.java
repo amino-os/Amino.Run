@@ -1,5 +1,6 @@
 package amino.run.appexamples.minnietwitter;
 
+import amino.run.app.DMSpec;
 import amino.run.app.Language;
 import amino.run.app.MicroServiceSpec;
 import amino.run.app.Registry;
@@ -10,6 +11,7 @@ import amino.run.common.MicroServiceNameModificationException;
 import amino.run.common.MicroServiceNotFoundException;
 import amino.run.kernel.server.KernelServer;
 import amino.run.kernel.server.KernelServerImpl;
+import amino.run.policy.atleastoncerpc.AtLeastOnceRPCPolicy;
 import com.google.devtools.common.options.OptionsParser;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
@@ -157,6 +159,10 @@ public class MinnieTwitterMain {
                 MicroServiceSpec.newBuilder()
                         .setLang(Language.java)
                         .setJavaClassName("amino.run.appexamples.minnietwitter.TwitterManager")
+                        .addDMSpec(
+                                DMSpec.newBuilder()
+                                        .setName(AtLeastOnceRPCPolicy.class.getName())
+                                        .create())
                         .create();
 
         MicroServiceID microServiceId = oms.create(spec.toString());

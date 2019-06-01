@@ -5,12 +5,17 @@ import amino.run.policy.DefaultPolicy;
 import java.util.ArrayList;
 import java.util.concurrent.TimeoutException;
 
-// AtLeastOnceRPC: automatically retry RPCs for bounded amount of time
+/**
+ * Deployment Manager policy to automatically retry RPCs for bounded amount of time,
+ * with exponential backoff.
+ */
 public class AtLeastOnceRPCPolicy extends DefaultPolicy {
 
     public static class ClientPolicy extends DefaultClientPolicy {
         // 5s looks like a reasonable default timeout for production
         private long timeoutMilliSeconds = 5000L;
+        private long initialExponentialDelayMilliSeconds = 20L;  // Wait this long before the first retry.
+        private long exponentialMultiplier = 2L; // Double the wait before every subsequent retry.
 
         public ClientPolicy() {}
 
@@ -22,6 +27,7 @@ public class AtLeastOnceRPCPolicy extends DefaultPolicy {
         @Override
         public Object onRPC(String method, ArrayList<Object> params) throws Exception {
             long startTime = System.currentTimeMillis();
+            long delay = initialExponentialDelayMilliSeconds;
             Exception lastException = null;
             do { // Retry until timeout expires
                 try {
@@ -30,6 +36,8 @@ public class AtLeastOnceRPCPolicy extends DefaultPolicy {
                     throw e; // Don't retry on application exceptions
                 } catch (Exception e) {
                     lastException = e; // So we can throw this after the timeout.
+                    Thread.sleep(delay);
+                    delay *= exponentialMultiplier;
                     continue; // Retry all non-application exceptions, e.g. network failures.
                 }
             } while (System.currentTimeMillis() - startTime < timeoutMilliSeconds);

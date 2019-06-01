@@ -14,9 +14,12 @@ import amino.run.kernel.server.KernelServerImpl;
 import amino.run.policy.atleastoncerpc.AtLeastOnceRPCPolicy;
 import amino.run.policy.replication.ConsensusRSMPolicy;
 import com.google.devtools.common.options.OptionsParser;
+import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -72,75 +75,73 @@ public class MinnieTwitterMain {
      * (Sungwook Moon, 12/5/2017) This is a temporary method for demo to show shift policy. This
      * method adds a single user and send tweet messages for predefined times.
      */
-    private static void ExecuteSingleUserDemo(
-            InetSocketAddress hostAddr, InetSocketAddress omsAddr) {
+    private static void ExecuteSingleUserDemo(InetSocketAddress hostAddr, InetSocketAddress omsAddr)
+            throws RemoteException, NotBoundException, MicroServiceCreationException,
+                    MicroServiceNotFoundException, MicroServiceNameModificationException,
+                    UnsupportedEncodingException, NoSuchAlgorithmException {
         java.rmi.registry.Registry registry;
 
-        try {
-            registry = LocateRegistry.getRegistry(omsAddr.getHostName(), omsAddr.getPort());
-            Registry server = (Registry) registry.lookup("io.amino.run.oms");
+        registry = LocateRegistry.getRegistry(omsAddr.getHostName(), omsAddr.getPort());
+        Registry server = (Registry) registry.lookup("io.amino.run.oms");
 
-            KernelServer nodeServer = new KernelServerImpl(hostAddr, omsAddr);
+        KernelServer nodeServer = new KernelServerImpl(hostAddr, omsAddr);
 
-            /* Get Twitter and User Manager */
-            MicroServiceSpec spec =
-                    MicroServiceSpec.newBuilder()
-                            .setLang(Language.java)
-                            .setJavaClassName("amino.run.appexamples.minnietwitter.TwitterManager")
-                            .create();
+        /* Get Twitter and User Manager */
+        MicroServiceSpec spec =
+                MicroServiceSpec.newBuilder()
+                        .setLang(Language.java)
+                        .setJavaClassName("amino.run.appexamples.minnietwitter.TwitterManager")
+                        .create();
 
-            MicroServiceID microServiceId = server.create(spec.toString());
-            TwitterManager tm = (TwitterManager) server.acquireStub(microServiceId);
+        MicroServiceID microServiceId = server.create(spec.toString());
+        TwitterManager tm = (TwitterManager) server.acquireStub(microServiceId);
 
-            /* To set a name to microservice. It is required to set the name if the object has to be shared */
-            server.setName(microServiceId, "MyTwitterManager");
+        /* To set a name to microservice. It is required to set the name if the object has to be shared */
+        server.setName(microServiceId, "MyTwitterManager");
 
-            /* Attach to microservice is to get reference to shared microservice. Generally it
-            is not done in the same thread which creates microservice. In this example,
-            Twitter manager microservice is created just above in same thread. Below attach call
-            has no significance. It is just used to show the usage of API. */
-            TwitterManager tmAttached = (TwitterManager) server.attachTo("MyTwitterManager");
+        /* Attach to microservice is to get reference to shared microservice. Generally it
+        is not done in the same thread which creates microservice. In this example,
+        Twitter manager microservice is created just above in same thread. Below attach call
+        has no significance. It is just used to show the usage of API. */
+        TwitterManager tmAttached = (TwitterManager) server.attachTo("MyTwitterManager");
 
-            /* Detach from the shared microservice. It is necessary to explicitly call detach to
-            un-reference the microservice. This call is not required here if attach call was not
-            made above */
-            server.detachFrom("MyTwitterManager");
+        /* Detach from the shared microservice. It is necessary to explicitly call detach to
+        un-reference the microservice. This call is not required here if attach call was not
+        made above */
+        server.detachFrom("MyTwitterManager");
 
-            UserManager userManager = tm.getUserManager();
-            TagManager tagManager = tm.getTagManager();
+        UserManager userManager = tm.getUserManager();
+        TagManager tagManager = tm.getTagManager();
 
-            /* Create the users */
-            List<User> users = new ArrayList<User>();
-            User u = userManager.addUser("user" + 0, "user" + 0);
-            System.out.println("Added user0");
+        /* Create the users */
+        List<User> users = new ArrayList<User>();
+        User u = userManager.addUser("user" + 0, "user" + 0);
+        System.out.println("Added user0");
 
-            /* Generate events */
-            int cnt = 0;
-            u = userManager.getUser("user0");
-            Timeline t = u.getTimeline();
+        /* Generate events */
+        int cnt = 0;
+        u = userManager.getUser("user0");
+        Timeline t = u.getTimeline();
 
-            for (int i = 0; i < EVENTS_PER_USER; i++) {
-                cnt++;
-                int userId = i % USER_COUNT;
-                String tweet = getTweet(cnt);
+        for (int i = 0; i < EVENTS_PER_USER; i++) {
+            cnt++;
+            int userId = i % USER_COUNT;
+            String tweet = getTweet(cnt);
 
-                try {
-                    t.tweet(tweet);
-                } catch (Exception e) {
-                    System.out.print(", Failed ");
-                }
-                System.out.println("\n@user" + Integer.toString(userId) + " tweeted: " + tweet);
+            try {
+                t.tweet(tweet);
+            } catch (Exception e) {
+                System.out.print(", Failed ");
             }
-
-            System.out.println("Done populating!");
-
-            /* Explicit deletion from app */
-            userManager.deleteUser("user" + 0);
-            tm.deInitialize();
-            server.delete(microServiceId);
-        } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println("\n@user" + Integer.toString(userId) + " tweeted: " + tweet);
         }
+
+        System.out.println("Done populating!");
+
+        /* Explicit deletion from app */
+        userManager.deleteUser("user" + 0);
+        tm.deInitialize();
+        server.delete(microServiceId);
     }
 
     /**
@@ -284,102 +285,99 @@ public class MinnieTwitterMain {
      *
      * @param tm the TwitterManager to populate.
      */
-    private static void populate(TwitterManager tm) {
+    private static void populate(TwitterManager tm)
+            throws UnsupportedEncodingException, NoSuchAlgorithmException {
 
         List<Timeline> timelines = new ArrayList<Timeline>();
 
-        try {
-            /* Get User and Tag Manager */
-            UserManager userManager = tm.getUserManager();
-            TagManager tagManager = tm.getTagManager();
-            /*
-             * TODO quinton: The rest of this function is still really horrible code.
-             * It's the original UW code, that I've just moved here, but not had time to
-             * clean up properly yet.
-             */
-            /* Create the users */
-            List<User> users = new ArrayList<User>();
-            for (int i = 0; i < USER_COUNT; i++) {
+        /* Get User and Tag Manager */
+        UserManager userManager = tm.getUserManager();
+        TagManager tagManager = tm.getTagManager();
+        /*
+         * TODO quinton: The rest of this function is still really horrible code.
+         * It's the original UW code, that I've just moved here, but not had time to
+         * clean up properly yet.
+         */
+        /* Create the users */
+        List<User> users = new ArrayList<User>();
+        for (int i = 0; i < USER_COUNT; i++) {
+            long start = System.nanoTime();
+            User u = userManager.addUser("user" + i, "user" + i);
+            timelines.add(i, u.getTimeline());
+            long end = System.nanoTime();
+            System.out.println("Added user " + i + " in:" + ((end - start) / 1000000) + "ms");
+        }
+
+        System.out.println("Finished adding " + USER_COUNT + " users");
+
+        /* Generate events */
+        for (int i = 0; i < USER_COUNT * EVENTS_PER_USER; i++) {
+            int userId = i % USER_COUNT;
+            String event = events[gen.nextInt(events.length)];
+
+            if (event.equals("TWEET")) {
                 long start = System.nanoTime();
-                User u = userManager.addUser("user" + i, "user" + i);
-                timelines.add(i, u.getTimeline());
+                String tweet = getTweet(i);
+                Timeline t = timelines.get(userId);
+                t.tweet(tweet);
                 long end = System.nanoTime();
-                System.out.println("Added user " + i + " in:" + ((end - start) / 1000000) + "ms");
+                System.out.println(
+                        "@user"
+                                + Integer.toString(userId)
+                                + " tweeted: "
+                                + tweet
+                                + " in: "
+                                + ((end - start) / 1000000)
+                                + "ms");
+                continue;
             }
 
-            System.out.println("Finished adding " + USER_COUNT + " users");
-
-            /* Generate events */
-            for (int i = 0; i < USER_COUNT * EVENTS_PER_USER; i++) {
-                int userId = i % USER_COUNT;
-                String event = events[gen.nextInt(events.length)];
-
-                if (event.equals("TWEET")) {
-                    long start = System.nanoTime();
-                    String tweet = getTweet(i);
-                    Timeline t = timelines.get(userId);
-                    t.tweet(tweet);
+            if (event.equals("RETWEET") && userId > 0) {
+                /* Retweet one of the last 10 tweets of some user */
+                long start = System.nanoTime();
+                int id = getId(USER_COUNT);
+                List<Tweet> lastTweets = timelines.get(id).getTweets(0, 10);
+                if (lastTweets.size() > 0) {
+                    Tweet t = lastTweets.get(gen.nextInt(lastTweets.size()));
+                    timelines.get(userId).retweet(t);
                     long end = System.nanoTime();
                     System.out.println(
                             "@user"
                                     + Integer.toString(userId)
-                                    + " tweeted: "
-                                    + tweet
+                                    + " retweeted from @user"
+                                    + Integer.toString(id)
                                     + " in: "
                                     + ((end - start) / 1000000)
                                     + "ms");
-                    continue;
                 }
-
-                if (event.equals("RETWEET") && userId > 0) {
-                    /* Retweet one of the last 10 tweets of some user */
-                    long start = System.nanoTime();
-                    int id = getId(USER_COUNT);
-                    List<Tweet> lastTweets = timelines.get(id).getTweets(0, 10);
-                    if (lastTweets.size() > 0) {
-                        Tweet t = lastTweets.get(gen.nextInt(lastTweets.size()));
-                        timelines.get(userId).retweet(t);
-                        long end = System.nanoTime();
-                        System.out.println(
-                                "@user"
-                                        + Integer.toString(userId)
-                                        + " retweeted from @user"
-                                        + Integer.toString(id)
-                                        + " in: "
-                                        + ((end - start) / 1000000)
-                                        + "ms");
-                    }
-                    continue;
-                }
-
-                if (event.equals("FAVORITE") && userId > 0) {
-                    long start = System.nanoTime();
-                    /* Favorite one of the last 10 tweets of some user */
-                    int id = getId(userId);
-                    List<Tweet> lastTweets = timelines.get(id).getTweets(0, 10);
-                    if (lastTweets.size() > 0) {
-                        timelines
-                                .get(id)
-                                .favorite(
-                                        lastTweets.get(gen.nextInt(lastTweets.size())).getId(),
-                                        "user" + Integer.toString(userId));
-                        long end = System.nanoTime();
-                        System.out.println(
-                                "@user"
-                                        + Integer.toString(userId)
-                                        + " favorited from @user"
-                                        + Integer.toString(id)
-                                        + " in: "
-                                        + ((end - start) / 1000000)
-                                        + "ms");
-                    }
-                }
+                continue;
             }
 
-            System.out.println("Done populating.");
-        } catch (Exception e) {
-            e.printStackTrace();
+            if (event.equals("FAVORITE") && userId > 0) {
+                long start = System.nanoTime();
+                /* Favorite one of the last 10 tweets of some user */
+                int id = getId(userId);
+                List<Tweet> lastTweets = timelines.get(id).getTweets(0, 10);
+                if (lastTweets.size() > 0) {
+                    timelines
+                            .get(id)
+                            .favorite(
+                                    lastTweets.get(gen.nextInt(lastTweets.size())).getId(),
+                                    "user" + Integer.toString(userId));
+                    long end = System.nanoTime();
+                    System.out.println(
+                            "@user"
+                                    + Integer.toString(userId)
+                                    + " favorited from @user"
+                                    + Integer.toString(id)
+                                    + " in: "
+                                    + ((end - start) / 1000000)
+                                    + "ms");
+                }
+            }
         }
+
+        System.out.println("Done populating.");
     }
 
     public static void main(String[] args) throws Exception {

@@ -5,7 +5,9 @@ import static amino.run.runtime.MicroService.*;
 import amino.run.app.MicroService;
 import amino.run.policy.dht.DHTKey;
 import amino.run.runtime.MicroServiceConfiguration;
+import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Hashtable;
 import java.util.Map;
 
@@ -19,7 +21,8 @@ public class UserManager implements MicroService {
         this.users = new Hashtable<DHTKey, User>();
     }
 
-    public User addUser(String username, String passwd) {
+    public User addUser(String username, String passwd)
+            throws UnsupportedEncodingException, NoSuchAlgorithmException {
 
         User user = (User) new_(User.class, new UserInfo(username, passwd), tm);
         user.initialize(user);
@@ -41,21 +44,17 @@ public class UserManager implements MicroService {
     }
 
     // TODO: throws exception; test
-    public User login(String username, String passwd) {
+    public User login(String username, String passwd)
+            throws NoSuchAlgorithmException, UnsupportedEncodingException {
         User u = users.get(new DHTKey(username));
 
         if (u == null) return null;
 
         // check password
         MessageDigest md;
-        try {
-            md = MessageDigest.getInstance("MD5");
-            byte[] pass = md.digest(passwd.getBytes("UTF-8"));
-            if (!checkPasswords(pass, u.getUserInfo().getPassword())) return null;
-        } catch (Exception e) {
-            e.printStackTrace();
-            // TODO: throw exception
-        }
+        md = MessageDigest.getInstance("MD5");
+        byte[] pass = md.digest(passwd.getBytes("UTF-8"));
+        if (!checkPasswords(pass, u.getUserInfo().getPassword())) return null;
         return u;
     }
 

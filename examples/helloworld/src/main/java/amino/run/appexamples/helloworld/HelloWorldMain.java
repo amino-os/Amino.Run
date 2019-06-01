@@ -5,17 +5,23 @@ import amino.run.app.Language;
 import amino.run.app.MicroServiceSpec;
 import amino.run.app.Registry;
 import amino.run.common.ArgumentParser.AppArgumentParser;
+import amino.run.common.MicroServiceCreationException;
 import amino.run.common.MicroServiceID;
+import amino.run.common.MicroServiceNotFoundException;
 import amino.run.kernel.server.KernelServer;
 import amino.run.kernel.server.KernelServerImpl;
 import amino.run.policy.atleastoncerpc.AtLeastOnceRPCPolicy;
 import com.google.devtools.common.options.OptionsParser;
 import java.net.InetSocketAddress;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.util.Collections;
 
 public class HelloWorldMain {
-    public static void main(String[] args) {
+    public static void main(String[] args)
+            throws RemoteException, NotBoundException, MicroServiceCreationException,
+                    MicroServiceNotFoundException {
         String world = "World";
 
         OptionsParser parser = OptionsParser.newOptionsParser(AppArgumentParser.class);
@@ -45,34 +51,30 @@ public class HelloWorldMain {
             world = appArgs.appArgs;
         }
 
-        try {
-            java.rmi.registry.Registry registry =
-                    LocateRegistry.getRegistry(appArgs.omsIP, appArgs.omsPort);
-            Registry server = (Registry) registry.lookup("io.amino.run.oms");
+        java.rmi.registry.Registry registry =
+                LocateRegistry.getRegistry(appArgs.omsIP, appArgs.omsPort);
+        Registry server = (Registry) registry.lookup("io.amino.run.oms");
 
-            KernelServer nodeServer =
-                    new KernelServerImpl(
-                            new InetSocketAddress(appArgs.kernelServerIP, appArgs.kernelServerPort),
-                            new InetSocketAddress(appArgs.omsIP, appArgs.omsPort));
+        KernelServer nodeServer =
+                new KernelServerImpl(
+                        new InetSocketAddress(appArgs.kernelServerIP, appArgs.kernelServerPort),
+                        new InetSocketAddress(appArgs.omsIP, appArgs.omsPort));
 
-            MicroServiceSpec spec =
-                    MicroServiceSpec.newBuilder()
-                            .setLang(Language.java)
-                            .setJavaClassName("amino.run.appexamples.helloworld.HelloWorld")
-                            .addDMSpec(
-                                    DMSpec.newBuilder()
-                                            .setName(AtLeastOnceRPCPolicy.class.getName())
-                                            .create())
-                            .create();
+        MicroServiceSpec spec =
+                MicroServiceSpec.newBuilder()
+                        .setLang(Language.java)
+                        .setJavaClassName("amino.run.appexamples.helloworld.HelloWorld")
+                        .addDMSpec(
+                                DMSpec.newBuilder()
+                                        .setName(AtLeastOnceRPCPolicy.class.getName())
+                                        .create())
+                        .create();
 
-            MicroServiceID microServiceId = server.create(spec.toString(), world);
-            HelloWorld helloWorld = (HelloWorld) server.acquireStub(microServiceId);
-            System.out.println(helloWorld.sayHello());
+        MicroServiceID microServiceId = server.create(spec.toString(), world);
+        HelloWorld helloWorld = (HelloWorld) server.acquireStub(microServiceId);
+        System.out.println(helloWorld.sayHello());
 
-            server.delete(microServiceId);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        server.delete(microServiceId);
     }
 
     private static void printUsage(OptionsParser parser) {

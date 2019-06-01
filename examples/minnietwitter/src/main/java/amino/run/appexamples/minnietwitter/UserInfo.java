@@ -1,7 +1,9 @@
 package amino.run.appexamples.minnietwitter;
 
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 public class UserInfo implements Serializable {
     /* Unique username */
@@ -9,16 +11,12 @@ public class UserInfo implements Serializable {
     /* MDH5 of password*/
     byte[] password;
 
-    public UserInfo(String username, String passwd) {
+    public UserInfo(String username, String passwd)
+            throws NoSuchAlgorithmException, UnsupportedEncodingException {
         this.username = username;
         MessageDigest md;
-        try {
-            md = MessageDigest.getInstance("MD5");
-            this.password = md.digest(passwd.getBytes("UTF-8"));
-        } catch (Exception e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+        md = MessageDigest.getInstance("MD5");
+        this.password = md.digest(passwd.getBytes("UTF-8"));
     }
 
     public String getUsername() {

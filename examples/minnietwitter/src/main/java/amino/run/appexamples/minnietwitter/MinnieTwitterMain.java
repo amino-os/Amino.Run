@@ -12,6 +12,8 @@ import amino.run.common.MicroServiceNotFoundException;
 import amino.run.kernel.server.KernelServer;
 import amino.run.kernel.server.KernelServerImpl;
 import amino.run.policy.atleastoncerpc.AtLeastOnceRPCPolicy;
+import amino.run.policy.replication.ConsensusRSMPolicy;
+
 import com.google.devtools.common.options.OptionsParser;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
@@ -163,6 +165,10 @@ public class MinnieTwitterMain {
                                 DMSpec.newBuilder()
                                         .setName(AtLeastOnceRPCPolicy.class.getName())
                                         .create())
+                        .addDMSpec(
+                                DMSpec.newBuilder()
+                                        .setName(ConsensusRSMPolicy.class.getName())
+                                        .create())
                         .create();
 
         MicroServiceID microServiceId = oms.create(spec.toString());
@@ -247,6 +253,25 @@ public class MinnieTwitterMain {
         TwitterManager clients[] = new TwitterManager[3];
         // Start the microservice
         clients[0] = createTwitterManager(oms, microServiceName);
+
+        /* TODO: quinton: Fix this hack.
+         *
+         * For some reason, when adding a ConsensusRSMPolicy after the AtLeastOnceRPCPolicy
+         * it seems that the TwitterManager stub is returned before the TwitterManager microservice
+         * has been properly initialized.
+         * Specifically, for a few seconds, getUserManager() and getTagManager() both return null.
+         * Now looking at the implementation of TwitterManager, those fields are initialized
+         * in the one and only constructor, so could never, in theory, by null.
+         * So I assume what's happening is that the stub is being returned before the replicas
+         * created by ConsensusRSMPolicy.GroupPolicy have been properly initlialized.
+         * Until we get to the bottom of that bug, here is a simple hack to get around it for now.
+         */
+        long waitMillis = 20L;
+        long waitMaxMillis = 5000L;
+        while (waitMillis < waitMaxMillis && (clients[0].getUserManager() == null || clients[0].getTagManager() == null)) {
+            Thread.sleep(waitMillis);
+            waitMillis *= 2; // Exponential backoff
+        }
 
         // Client 0 populates a bunch of users, tweets, retweets etc
         populate(clients[0]);
@@ -378,7 +403,7 @@ public class MinnieTwitterMain {
         }
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         OptionsParser parser = OptionsParser.newOptionsParser(AppArgumentParser.class);
         if (args.length < 8) {
             System.out.println("Incorrect arguments to the program");
@@ -397,11 +422,7 @@ public class MinnieTwitterMain {
         InetSocketAddress
                 hostAddr = new InetSocketAddress(appArgs.kernelServerIP, appArgs.kernelServerPort),
                 omsAddr = new InetSocketAddress(appArgs.omsIP, appArgs.omsPort);
-        try {
-            runFullDemo(hostAddr, omsAddr);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        runFullDemo(hostAddr, omsAddr);
     }
 
     private static void printUsage(OptionsParser parser) {

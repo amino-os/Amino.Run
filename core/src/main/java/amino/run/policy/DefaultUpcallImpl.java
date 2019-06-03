@@ -27,9 +27,8 @@ public abstract class DefaultUpcallImpl extends Library {
             try {
                 ret = getServer().onRPC(method, params);
             } catch (RemoteException e) {
-                // TODO: Quinton: This looks like a bug.  RemoteExceptions are silently swallowed
-                // and null is returned.
                 setServer(getGroup().onRefRequest());
+                throw e;
             }
             return ret;
         }

@@ -56,9 +56,8 @@ public class ConsensusRSMPolicy extends DefaultPolicy {
             try {
                 ret = getServer().onRPC(method, params);
             } catch (LeaderException e) {
-
                 if (null == e.getLeader()) {
-                    throw new RemoteException("Raft leader is not elected");
+                    throw e;
                 }
 
                 setServer((ServerPolicy) e.getLeader());
@@ -72,7 +71,7 @@ public class ConsensusRSMPolicy extends DefaultPolicy {
                 if (e.getTargetException() instanceof LeaderException) {
                     LeaderException le = (LeaderException) e.getTargetException();
                     if (null == le.getLeader()) {
-                        throw new RemoteException("Raft leader is not elected");
+                        throw le;
                     }
                     setServer((ServerPolicy) le.getLeader());
                     ret = ((ServerPolicy) le.getLeader()).onRPC(method, params);
@@ -97,7 +96,7 @@ public class ConsensusRSMPolicy extends DefaultPolicy {
                         /* Store this server as reachable and use it for the rpcs to follow */
                         if (null == le.getLeader()) {
                             setServer(server);
-                            throw new RemoteException("Raft leader is not elected");
+                            throw le;
                         }
 
                         setServer(((ServerPolicy) le.getLeader()));

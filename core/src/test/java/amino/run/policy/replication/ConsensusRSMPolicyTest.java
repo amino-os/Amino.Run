@@ -204,7 +204,7 @@ public class ConsensusRSMPolicyTest extends BaseTest {
         Policy.ServerPolicy server = spy(ConsensusRSMPolicy.ServerPolicy.class);
         client.setServer(server);
         doThrow(new LeaderException("leaderException", null)).when(server).onRPC(method, params);
-        thrown.expect(RemoteException.class);
+        thrown.expect(LeaderException.class);
         client.onRPC(method, params);
     }
 
@@ -348,7 +348,7 @@ public class ConsensusRSMPolicyTest extends BaseTest {
         doThrow(new LeaderException("leaderException", null)).when(server2).onRPC(method, params);
         doReturn(new KernelOID(1)).when(server1).$__getKernelOID();
         doReturn(new KernelOID(2)).when(server2).$__getKernelOID();
-        thrown.expect(RemoteException.class);
+        thrown.expect(LeaderException.class);
         localClient.onRPC(method, params);
     }
 

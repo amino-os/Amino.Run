@@ -11,6 +11,7 @@ import amino.run.demo.KVStore;
 import amino.run.kernel.server.KernelServerImpl;
 import amino.run.policy.Upcalls;
 import amino.run.policy.dht.DHTPolicy;
+import amino.run.policy.util.consensus.raft.LeaderException;
 import java.net.InetSocketAddress;
 import java.rmi.registry.LocateRegistry;
 import java.util.ArrayList;
@@ -40,8 +41,12 @@ public class MultiDMTestCases {
     final String JAVA_CLASS_NAME = "amino.run.demo.KVStore";
     final Language DEFAULT_LANG = Language.java;
     final String POLICY_POSTFIX = "Policy";
-    // ConsensusRSM policy needs a delay for start-up.
-    final String CONSENSUS = "ConsensusRSM";
+
+    // Unless AtLeastOnceRPC policy is used, we need to explicitly retry.
+    final String AT_LEAST_ONCE_RPC = "AtLeastOnceRPC";
+    final long retryTimeoutMs = 5000L;
+    final long retryPeriodMs = 100L;
+
     final int DHT_SHARDS = 2;
     Registry registry;
     private static String regionName = "";
@@ -67,16 +72,52 @@ public class MultiDMTestCases {
             microServiceId = registry.create(spec.toString());
             KVStore store = (KVStore) registry.acquireStub(microServiceId);
 
-            // consensus DM needs some time to elect the leader other wise function call will fail
-            if (spec.getName().contains(CONSENSUS)) {
-                Thread.sleep(20000);
-            }
-
             for (int i = 0; i < 10; i++) {
                 String key = "k1_" + i;
                 String value = "v1_" + i;
-                store.set(key, value);
-                String returnValue = (String) store.get(key);
+                long startTime = System.currentTimeMillis();
+                String returnValue = "";
+                while (System.currentTimeMillis() - startTime < retryTimeoutMs) {
+                    try {
+                        store.set(key, value);
+                        returnValue = (String) store.get(key);
+                        System.out.println("Got value " + returnValue + " for key " + key);
+                        if (value.equals(returnValue)) {
+                            break; // Success, no more retries necessary
+                        }
+                    } catch (RuntimeException r) {
+                        System.out.println(
+                                "Runtime exception after "
+                                        + (System.currentTimeMillis() - startTime)
+                                        + "ms for key "
+                                        + key
+                                        + ", value "
+                                        + value
+                                        + " : "
+                                        + r.toString());
+                        if (r.getCause() != null
+                                && r.getCause()
+                                        .getClass()
+                                        .isAssignableFrom(LeaderException.class)) {
+                            System.out.println("Cause of runtime exception is LeaderException");
+                            if (!Arrays.asList(dmNames).contains(AT_LEAST_ONCE_RPC)) {
+                                // Swallow the exception and retry, after sleeping
+                                System.out.println(
+                                        "Swallowing runtime exception because AtLeastOnceRPC is not used.");
+                                Thread.sleep(retryPeriodMs);
+                            } else {
+                                System.out.println(
+                                        "Not swallowing runtime exception because AtLeastOnceRPC is used.");
+                            }
+                        } else {
+                            System.out.println(
+                                    "Not swallowing runtime exception because cause is not LeaderException");
+                        }
+                    }
+                }
+                if (System.currentTimeMillis() - startTime >= retryTimeoutMs) {
+                    System.out.println("Timed out retrying key " + key + ", value " + value);
+                }
                 Assert.assertEquals(value, returnValue);
             }
         } finally {

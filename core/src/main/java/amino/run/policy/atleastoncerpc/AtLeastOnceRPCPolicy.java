@@ -36,6 +36,8 @@ public class AtLeastOnceRPCPolicy extends DefaultPolicy {
                 } catch (AppExceptionWrapper e) {
                     throw e; // Don't retry on application exceptions
                 } catch (Exception e) {
+                    System.out.println(
+                            "AtLeastOnceRPCPolicy retrying due to " + e.getClass().getName());
                     lastException = e; // So we can throw this after the timeout.
                     Thread.sleep(delay);
                     delay *= exponentialMultiplier;

@@ -5,6 +5,7 @@ import amino.run.policy.Policy;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.lang.reflect.Modifier;
 import java.util.logging.Logger;
 import org.apache.harmony.rmi.common.RMIUtil;
@@ -12,36 +13,32 @@ import org.apache.harmony.rmi.common.RMIUtil;
 public class StubGenerator {
     private static final Logger LOGGER = Logger.getLogger(StubGenerator.class.getName());
 
-    public static void generateStub(String stubType, Class<?> c, String destFolder) {
+    public static void generateStub(String stubType, Class<?> c, String destFolder)
+            throws ClassNotFoundException, IOException {
 
         Stub s;
-        try {
-            if (stubType.equals("policy")) s = new PolicyStub(c);
-            else s = new AppStub(c);
+        if (stubType.equals("policy")) s = new PolicyStub(c);
+        else s = new AppStub(c);
 
-            File destDir = new File(destFolder);
-            if (!destDir.exists()) {
-                destDir.mkdirs();
-            }
-
-            String shortClassName = RMIUtil.getShortName(c);
-            String stubName =
-                    destFolder
-                            + File.separator
-                            + shortClassName
-                            + GlobalStubConstants.STUB_SUFFIX
-                            + ".java";
-
-            File dest = new File(stubName);
-            dest.createNewFile();
-
-            BufferedWriter out = new BufferedWriter(new FileWriter(dest));
-            out.write(s.getStubSource());
-            out.close();
-
-        } catch (Exception e) {
-            e.printStackTrace();
+        File destDir = new File(destFolder);
+        if (!destDir.exists()) {
+            destDir.mkdirs();
         }
+
+        String shortClassName = RMIUtil.getShortName(c);
+        String stubName =
+                destFolder
+                        + File.separator
+                        + shortClassName
+                        + GlobalStubConstants.STUB_SUFFIX
+                        + ".java";
+
+        File dest = new File(stubName);
+        dest.createNewFile();
+
+        BufferedWriter out = new BufferedWriter(new FileWriter(dest));
+        out.write(s.getStubSource());
+        out.close();
     }
 
     public static String removeExtension(String s) {
@@ -65,7 +62,7 @@ public class StubGenerator {
     }
 
     public static void generateStubs(String srcFolder, String packageName, String destFolder)
-            throws java.io.FileNotFoundException {
+            throws IOException, ClassNotFoundException {
         File directory = new File(srcFolder);
         File[] fList = directory.listFiles();
         if (fList == null) {
@@ -74,37 +71,32 @@ public class StubGenerator {
         }
         for (File file : fList) {
             if (file.isFile() && file.getName().endsWith(".class")) {
-                try {
-                    Class<?> c =
-                            Class.forName(
-                                    StubGenerator.removeExtension(
-                                            packageName + "." + file.getName()));
+                Class<?> c =
+                        Class.forName(
+                                StubGenerator.removeExtension(packageName + "." + file.getName()));
 
-                    if (Modifier.isAbstract(c.getModifiers())) continue;
+                if (Modifier.isAbstract(c.getModifiers())) continue;
 
-                    if (Policy.class.isAssignableFrom(c)) {
-                        Class<?>[] policyClasses = c.getDeclaredClasses();
+                if (Policy.class.isAssignableFrom(c)) {
+                    Class<?>[] policyClasses = c.getDeclaredClasses();
 
-                        Class<?> serverPolicyClass = null;
-                        Class<?> groupPolicyClass = null;
+                    Class<?> serverPolicyClass = null;
+                    Class<?> groupPolicyClass = null;
 
-                        for (Class<?> cls : policyClasses) {
-                            if (Policy.ServerPolicy.class.isAssignableFrom(cls)) {
-                                serverPolicyClass = cls;
-                                continue;
-                            }
-                            if (Policy.GroupPolicy.class.isAssignableFrom(cls)) {
-                                groupPolicyClass = cls;
-                                continue;
-                            }
+                    for (Class<?> cls : policyClasses) {
+                        if (Policy.ServerPolicy.class.isAssignableFrom(cls)) {
+                            serverPolicyClass = cls;
+                            continue;
                         }
-                        StubGenerator.generateStub("policy", serverPolicyClass, destFolder);
-                        StubGenerator.generateStub("policy", groupPolicyClass, destFolder);
-                    } else if (MicroService.class.isAssignableFrom(c))
-                        StubGenerator.generateStub("app", c, destFolder);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+                        if (Policy.GroupPolicy.class.isAssignableFrom(cls)) {
+                            groupPolicyClass = cls;
+                            continue;
+                        }
+                    }
+                    StubGenerator.generateStub("policy", serverPolicyClass, destFolder);
+                    StubGenerator.generateStub("policy", groupPolicyClass, destFolder);
+                } else if (MicroService.class.isAssignableFrom(c))
+                    StubGenerator.generateStub("app", c, destFolder);
             } else if (file.isDirectory()
                     && !file.getName().equals(GlobalStubConstants.STUB_PACKAGE_PART)) {
                 generateStubs(
@@ -122,7 +114,7 @@ public class StubGenerator {
      */
 
     /* TODO: Support for multiple packages for app stubs; right now you must run this for each app package that contains a MicroService */
-    public static void main(String args[]) throws java.io.FileNotFoundException {
+    public static void main(String args[]) throws IOException, ClassNotFoundException {
         String src = args[0];
         String pkg = args[1];
         String dst = args[2];

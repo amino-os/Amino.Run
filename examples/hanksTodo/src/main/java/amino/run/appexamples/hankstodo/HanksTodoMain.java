@@ -23,7 +23,7 @@ public class HanksTodoMain {
 
     public HanksTodoMain() {}
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         String ListName = "New List 1";
 
         OptionsParser parser = OptionsParser.newOptionsParser(AppArgumentParser.class);
@@ -43,73 +43,67 @@ public class HanksTodoMain {
 
         java.rmi.registry.Registry registry;
         AppArgumentParser appArgs = parser.getOptions(AppArgumentParser.class);
-        try {
-            registry = LocateRegistry.getRegistry(appArgs.omsIP, appArgs.omsPort);
-            Registry server = (Registry) registry.lookup("io.amino.run.oms");
+        registry = LocateRegistry.getRegistry(appArgs.omsIP, appArgs.omsPort);
+        Registry server = (Registry) registry.lookup("io.amino.run.oms");
 
-            KernelServer nodeServer =
-                    new KernelServerImpl(
-                            new InetSocketAddress(appArgs.kernelServerIP, appArgs.kernelServerPort),
-                            new InetSocketAddress(appArgs.omsIP, appArgs.omsPort));
+        KernelServer nodeServer =
+                new KernelServerImpl(
+                        new InetSocketAddress(appArgs.kernelServerIP, appArgs.kernelServerPort),
+                        new InetSocketAddress(appArgs.omsIP, appArgs.omsPort));
 
-            MicroServiceSpec spec =
-                    MicroServiceSpec.newBuilder()
-                            .setLang(Language.java)
-                            .setJavaClassName("amino.run.appexamples.hankstodo.TodoListManager")
-                            .create();
+        MicroServiceSpec spec =
+                MicroServiceSpec.newBuilder()
+                        .setLang(Language.java)
+                        .setJavaClassName("amino.run.appexamples.hankstodo.TodoListManager")
+                        .create();
 
-            MicroServiceID microServiceId = server.create(spec.toString());
-            TodoListManager tlm = (TodoListManager) server.acquireStub(microServiceId);
-            System.out.println("Received tlm: " + tlm);
+        MicroServiceID microServiceId = server.create(spec.toString());
+        TodoListManager tlm = (TodoListManager) server.acquireStub(microServiceId);
+        System.out.println("Received tlm: " + tlm);
 
-            TodoList td1 = tlm.newTodoList(ListName);
+        TodoList td1 = tlm.newTodoList(ListName);
 
-            // Consensus policy needs some time after creating new MicroService object; otherwise,
-            // leader election may fail.
-            sleep(7000);
-            System.out.println("new to do list for 1");
+        // Consensus policy needs some time after creating new MicroService object; otherwise,
+        // leader election may fail.
+        sleep(7000);
+        System.out.println("new to do list for 1");
 
-            for (int i = 0; i < REPEAT_CNT; i++) {
-                // Add to-do items.
-                for (int j = 0; j < TODO_CNT; j++) {
-                    String subject = SUBJECT_PREFIX + j;
-                    String content = String.format("%s%d<%d>", TODO_PREFIX, j, i);
-                    System.out.println(
-                            String.format(
-                                    "Adding %s. Content: %s at iteration %d", subject, content, i));
-                    td1.addToDo(subject, content);
-                }
+        for (int i = 0; i < REPEAT_CNT; i++) {
+            // Add to-do items.
+            for (int j = 0; j < TODO_CNT; j++) {
+                String subject = SUBJECT_PREFIX + j;
+                String content = String.format("%s%d<%d>", TODO_PREFIX, j, i);
+                System.out.println(
+                        String.format(
+                                "Adding %s. Content: %s at iteration %d", subject, content, i));
+                td1.addToDo(subject, content);
             }
-
-            // Retrieve to-do items.
-            System.out.println(
-                    "Please note expected String may display incorrect values depending on the policy.");
-
-            TodoList getTd = tlm.getToDoList(ListName);
-            for (int i = 0; i < TODO_CNT; i++) {
-                String expected = "";
-                for (int j = 0; j < REPEAT_CNT; j++) {
-                    if (j != 0) {
-                        expected += ", ";
-                    }
-                    expected += String.format("%s%d<%d>", TODO_PREFIX, i, j);
-                }
-                String actual = getTd.getToDo(SUBJECT_PREFIX + i);
-
-                System.out.println(String.format("Expected for %d: %s", i, expected));
-                System.out.println(String.format("Actual   for %d: %s", i, actual));
-            }
-
-            tlm.doSomething("Testing completed.");
-
-            // Delete the created microservices
-            tlm.deleteTodoList(ListName);
-            server.delete(microServiceId);
-
-        } catch (Exception e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
         }
+
+        // Retrieve to-do items.
+        System.out.println(
+                "Please note expected String may display incorrect values depending on the policy.");
+
+        TodoList getTd = tlm.getToDoList(ListName);
+        for (int i = 0; i < TODO_CNT; i++) {
+            String expected = "";
+            for (int j = 0; j < REPEAT_CNT; j++) {
+                if (j != 0) {
+                    expected += ", ";
+                }
+                expected += String.format("%s%d<%d>", TODO_PREFIX, i, j);
+            }
+            String actual = getTd.getToDo(SUBJECT_PREFIX + i);
+
+            System.out.println(String.format("Expected for %d: %s", i, expected));
+            System.out.println(String.format("Actual   for %d: %s", i, actual));
+        }
+
+        tlm.doSomething("Testing completed.");
+
+        // Delete the created microservices
+        tlm.deleteTodoList(ListName);
+        server.delete(microServiceId);
     }
 
     private static void printUsage(OptionsParser parser) {

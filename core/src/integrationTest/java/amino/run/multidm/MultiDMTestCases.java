@@ -69,7 +69,7 @@ public class MultiDMTestCases {
 
             // consensus DM needs some time to elect the leader other wise function call will fail
             if (spec.getName().contains(CONSENSUS)) {
-                Thread.sleep(5000);
+                Thread.sleep(20000);
             }
 
             for (int i = 0; i < 10; i++) {

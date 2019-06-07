@@ -9,14 +9,12 @@ import amino.run.common.MicroServiceCreationException;
 import amino.run.common.MicroServiceID;
 import amino.run.common.MicroServiceNameModificationException;
 import amino.run.common.MicroServiceNotFoundException;
-import amino.run.kernel.server.KernelServer;
 import amino.run.kernel.server.KernelServerImpl;
 import amino.run.policy.atleastoncerpc.AtLeastOnceRPCPolicy;
 import amino.run.policy.replication.ConsensusRSMPolicy;
 import com.google.devtools.common.options.OptionsParser;
 import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
-import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.security.NoSuchAlgorithmException;
@@ -67,81 +65,6 @@ public class MinnieTwitterMain {
 
     private static int getId(int max) {
         return gen.nextInt(max);
-    }
-
-    private static void printStatistics() {}
-
-    /**
-     * (Sungwook Moon, 12/5/2017) This is a temporary method for demo to show shift policy. This
-     * method adds a single user and send tweet messages for predefined times.
-     */
-    private static void ExecuteSingleUserDemo(InetSocketAddress hostAddr, InetSocketAddress omsAddr)
-            throws RemoteException, NotBoundException, MicroServiceCreationException,
-                    MicroServiceNotFoundException, MicroServiceNameModificationException,
-                    UnsupportedEncodingException, NoSuchAlgorithmException {
-        java.rmi.registry.Registry registry;
-
-        registry = LocateRegistry.getRegistry(omsAddr.getHostName(), omsAddr.getPort());
-        Registry server = (Registry) registry.lookup("io.amino.run.oms");
-
-        KernelServer nodeServer = new KernelServerImpl(hostAddr, omsAddr);
-
-        /* Get Twitter and User Manager */
-        MicroServiceSpec spec =
-                MicroServiceSpec.newBuilder()
-                        .setLang(Language.java)
-                        .setJavaClassName("amino.run.appexamples.minnietwitter.TwitterManager")
-                        .create();
-
-        MicroServiceID microServiceId = server.create(spec.toString());
-        TwitterManager tm = (TwitterManager) server.acquireStub(microServiceId);
-
-        /* To set a name to microservice. It is required to set the name if the object has to be shared */
-        server.setName(microServiceId, "MyTwitterManager");
-
-        /* Attach to microservice is to get reference to shared microservice. Generally it
-        is not done in the same thread which creates microservice. In this example,
-        Twitter manager microservice is created just above in same thread. Below attach call
-        has no significance. It is just used to show the usage of API. */
-        TwitterManager tmAttached = (TwitterManager) server.attachTo("MyTwitterManager");
-
-        /* Detach from the shared microservice. It is necessary to explicitly call detach to
-        un-reference the microservice. This call is not required here if attach call was not
-        made above */
-        server.detachFrom("MyTwitterManager");
-
-        UserManager userManager = tm.getUserManager();
-        TagManager tagManager = tm.getTagManager();
-
-        /* Create the users */
-        List<User> users = new ArrayList<User>();
-        User u = userManager.addUser("user" + 0, "user" + 0);
-        System.out.println("Added user0");
-
-        /* Generate events */
-        int cnt = 0;
-        u = userManager.getUser("user0");
-        Timeline t = u.getTimeline();
-
-        for (int i = 0; i < EVENTS_PER_USER; i++) {
-            cnt++;
-            int userId = i % USER_COUNT;
-            String tweet = getTweet(cnt);
-
-            try {
-                t.tweet(tweet);
-            } catch (Exception e) {
-                System.out.print(", Failed ");
-            }
-            System.out.println("\n@user" + Integer.toString(userId) + " tweeted: " + tweet);
-        }
-
-        System.out.println("Done populating!");
-
-        /* Explicit deletion from app */
-        userManager.deleteUser("user" + 0);
-        tm.deInitialize();
-        server.delete(microServiceId);
     }
 
     /**
@@ -278,6 +201,13 @@ public class MinnieTwitterMain {
           detach their reference.  I think this might all be broken?
         */
         oms.detachFrom(microServiceName);
+        // TODO: Quinton: Clean up properly here.
+        // There doesn't yet seem to be a good way to recursively destroy.
+        // clients[0].getUserManager().deleteUser("user" + 0);
+        // TODO: Quinton: This seems wrong.
+        // clients[0].deInitialize();
+        // TODO: Quinton: We've lost the microserviceId by this point.  Fix.
+        // oms.delete(microServiceId);
     }
 
     /**

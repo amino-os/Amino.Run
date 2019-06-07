@@ -6,15 +6,16 @@ import java.util.ArrayList;
 import java.util.concurrent.TimeoutException;
 
 /**
- * Deployment Manager policy to automatically retry RPCs for bounded amount of time,
- * with exponential backoff.
+ * Deployment Manager policy to automatically retry RPCs for bounded amount of time, with
+ * exponential backoff.
  */
 public class AtLeastOnceRPCPolicy extends DefaultPolicy {
 
     public static class ClientPolicy extends DefaultClientPolicy {
-        // 5s looks like a reasonable default timeout for production
-        private long timeoutMilliSeconds = 5000L;
-        private long initialExponentialDelayMilliSeconds = 20L;  // Wait this long before the first retry.
+        // a reasonable default timeout for production
+        private long timeoutMilliSeconds = 10000L;
+        private long initialExponentialDelayMilliSeconds =
+                20L; // Wait this long before the first retry.
         private long exponentialMultiplier = 2L; // Double the wait before every subsequent retry.
 
         public ClientPolicy() {}

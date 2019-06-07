@@ -12,6 +12,7 @@ import amino.run.common.MicroServiceNotFoundException;
 import amino.run.kernel.server.KernelServer;
 import amino.run.kernel.server.KernelServerImpl;
 import amino.run.policy.atleastoncerpc.AtLeastOnceRPCPolicy;
+import amino.run.policy.replication.ConsensusRSMPolicy;
 import com.google.devtools.common.options.OptionsParser;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
@@ -163,6 +164,10 @@ public class MinnieTwitterMain {
                                 DMSpec.newBuilder()
                                         .setName(AtLeastOnceRPCPolicy.class.getName())
                                         .create())
+                        .addDMSpec(
+                                DMSpec.newBuilder()
+                                        .setName(ConsensusRSMPolicy.class.getName())
+                                        .create())
                         .create();
 
         MicroServiceID microServiceId = oms.create(spec.toString());
@@ -247,7 +252,6 @@ public class MinnieTwitterMain {
         TwitterManager clients[] = new TwitterManager[3];
         // Start the microservice
         clients[0] = createTwitterManager(oms, microServiceName);
-
         // Client 0 populates a bunch of users, tweets, retweets etc
         populate(clients[0]);
 
@@ -378,7 +382,7 @@ public class MinnieTwitterMain {
         }
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         OptionsParser parser = OptionsParser.newOptionsParser(AppArgumentParser.class);
         if (args.length < 8) {
             System.out.println("Incorrect arguments to the program");
@@ -397,11 +401,7 @@ public class MinnieTwitterMain {
         InetSocketAddress
                 hostAddr = new InetSocketAddress(appArgs.kernelServerIP, appArgs.kernelServerPort),
                 omsAddr = new InetSocketAddress(appArgs.omsIP, appArgs.omsPort);
-        try {
-            runFullDemo(hostAddr, omsAddr);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        runFullDemo(hostAddr, omsAddr);
     }
 
     private static void printUsage(OptionsParser parser) {

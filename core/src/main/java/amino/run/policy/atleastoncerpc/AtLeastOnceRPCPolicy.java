@@ -4,6 +4,7 @@ import amino.run.common.AppExceptionWrapper;
 import amino.run.policy.DefaultPolicy;
 import java.util.ArrayList;
 import java.util.concurrent.TimeoutException;
+import java.util.logging.Logger;
 
 /**
  * Deployment Manager policy to automatically retry RPCs for bounded amount of time, with
@@ -12,6 +13,7 @@ import java.util.concurrent.TimeoutException;
 public class AtLeastOnceRPCPolicy extends DefaultPolicy {
 
     public static class ClientPolicy extends DefaultClientPolicy {
+        private static final Logger logger = Logger.getLogger(AtLeastOnceRPCPolicy.class.getName());
         // a reasonable default timeout for production
         private long timeoutMilliSeconds = 10000L;
         private long initialExponentialDelayMilliSeconds =
@@ -34,10 +36,10 @@ public class AtLeastOnceRPCPolicy extends DefaultPolicy {
                 try {
                     return super.onRPC(method, params);
                 } catch (AppExceptionWrapper e) {
+                    logger.info("Not retrying because exception is from application: " + e);
                     throw e; // Don't retry on application exceptions
                 } catch (Exception e) {
-                    System.out.println(
-                            "AtLeastOnceRPCPolicy retrying due to " + e.getClass().getName());
+                    logger.info("Retrying method " + method + " after " + delay + "ms due to " + e);
                     lastException = e; // So we can throw this after the timeout.
                     Thread.sleep(delay);
                     delay *= exponentialMultiplier;
@@ -45,7 +47,10 @@ public class AtLeastOnceRPCPolicy extends DefaultPolicy {
                 }
             } while (System.currentTimeMillis() - startTime < timeoutMilliSeconds);
             TimeoutException e =
-                    new TimeoutException("Retry timeout exceeded in AtLeastOnceRPCPolicy");
+                    new TimeoutException(
+                            "Retry timeout of "
+                                    + timeoutMilliSeconds
+                                    + "ms exceeded in AtLeastOnceRPCPolicy");
             e.initCause(lastException); // Legacy constructor lacks cause argument;
             throw e;
         }

@@ -108,10 +108,12 @@ public class MultiDMTestCases {
                             } else {
                                 System.out.println(
                                         "Not swallowing runtime exception because AtLeastOnceRPC is used.");
+                                throw r;
                             }
                         } else {
                             System.out.println(
                                     "Not swallowing runtime exception because cause is not LeaderException");
+                            throw r;
                         }
                     }
                 }

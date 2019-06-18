@@ -220,8 +220,8 @@ public class MultiDMTestCases {
     }
 
     @Test
-    public void testDHTConsensusRSMCacheLeaseAtLeastOnceRPC() throws Exception {
-        runTest("DHT", "ConsensusRSM", "CacheLease", "AtLeastOnceRPC");
+    public void testDHTAtLeastOnceRPCConsensusRSMCacheLease() throws Exception {
+        runTest("DHT", "AtLeastOnceRPC", "ConsensusRSM", "CacheLease");
     }
 
     @Test

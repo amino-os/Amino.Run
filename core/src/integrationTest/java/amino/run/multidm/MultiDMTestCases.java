@@ -16,6 +16,7 @@ import java.net.InetSocketAddress;
 import java.rmi.registry.LocateRegistry;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.logging.Logger;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
@@ -50,6 +51,7 @@ public class MultiDMTestCases {
     final int DHT_SHARDS = 2;
     Registry registry;
     private static String regionName = "";
+    private static final Logger logger = Logger.getLogger(MultiDMTestCases.class.getName());
 
     @BeforeClass
     public static void bootstrap() throws Exception {
@@ -81,12 +83,12 @@ public class MultiDMTestCases {
                     try {
                         store.set(key, value);
                         returnValue = (String) store.get(key);
-                        System.out.println("Got value " + returnValue + " for key " + key);
+                        logger.info("Got value " + returnValue + " for key " + key);
                         if (value.equals(returnValue)) {
                             break; // Success, no more retries necessary
                         }
                     } catch (RuntimeException r) {
-                        System.out.println(
+                        logger.info(
                                 "Runtime exception after "
                                         + (System.currentTimeMillis() - startTime)
                                         + "ms for key "
@@ -99,26 +101,26 @@ public class MultiDMTestCases {
                                 && r.getCause()
                                         .getClass()
                                         .isAssignableFrom(LeaderException.class)) {
-                            System.out.println("Cause of runtime exception is LeaderException");
+                            logger.info("Cause of runtime exception is LeaderException");
                             if (!Arrays.asList(dmNames).contains(AT_LEAST_ONCE_RPC)) {
                                 // Swallow the exception and retry, after sleeping
-                                System.out.println(
+                                logger.info(
                                         "Swallowing runtime exception because AtLeastOnceRPC is not used.");
                                 Thread.sleep(retryPeriodMs);
                             } else {
-                                System.out.println(
+                                logger.info(
                                         "Not swallowing runtime exception because AtLeastOnceRPC is used.");
                                 throw r;
                             }
                         } else {
-                            System.out.println(
+                            logger.info(
                                     "Not swallowing runtime exception because cause is not LeaderException");
                             throw r;
                         }
                     }
                 }
                 if (System.currentTimeMillis() - startTime >= retryTimeoutMs) {
-                    System.out.println("Timed out retrying key " + key + ", value " + value);
+                    logger.info("Timed out retrying key " + key + ", value " + value);
                 }
                 Assert.assertEquals(value, returnValue);
             }

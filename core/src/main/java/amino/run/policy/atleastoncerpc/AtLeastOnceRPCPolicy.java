@@ -15,7 +15,7 @@ public class AtLeastOnceRPCPolicy extends DefaultPolicy {
     public static class ClientPolicy extends DefaultClientPolicy {
         private static final Logger logger = Logger.getLogger(AtLeastOnceRPCPolicy.class.getName());
         // a reasonable default timeout for production
-        private long timeoutMilliSeconds = 10000L;
+        private long timeoutMilliSeconds = 20000L;
         private long initialExponentialDelayMilliSeconds =
                 20L; // Wait this long before the first retry.
         private long exponentialMultiplier = 2L; // Double the wait before every subsequent retry.

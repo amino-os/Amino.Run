@@ -16,6 +16,7 @@ import java.net.InetSocketAddress;
 import java.rmi.registry.LocateRegistry;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -45,7 +46,7 @@ public class MultiDMTestCases {
 
     // Unless AtLeastOnceRPC policy is used, we need to explicitly retry.
     final String AT_LEAST_ONCE_RPC = "AtLeastOnceRPC";
-    final long retryTimeoutMs = 5000L;
+    final long retryTimeoutMs = 10000L;
     final long retryPeriodMs = 100L;
 
     final int DHT_SHARDS = 2;
@@ -84,9 +85,7 @@ public class MultiDMTestCases {
                         store.set(key, value);
                         returnValue = (String) store.get(key);
                         logger.info("Got value " + returnValue + " for key " + key);
-                        if (value.equals(returnValue)) {
-                            break; // Success, no more retries necessary
-                        }
+                        break; // Success, no more retries necessary
                     } catch (RuntimeException r) {
                         logger.info(
                                 "Runtime exception after "
@@ -120,7 +119,7 @@ public class MultiDMTestCases {
                     }
                 }
                 if (System.currentTimeMillis() - startTime >= retryTimeoutMs) {
-                    logger.info("Timed out retrying key " + key + ", value " + value);
+                    throw new TimeoutException("Timed out retrying key " + key + ", value " + value);
                 }
                 Assert.assertEquals(value, returnValue);
             }

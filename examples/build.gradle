@@ -55,7 +55,7 @@ subprojects {
 // Added for running the Test environment consisting of OMS, 1 to 4 Kernel Servers and the test application together.
 // The environment can be launched by running below command from amino rootDir: 
 // "./gradlew :examples:hanksTodo:run" for executing the hanksTodo example.
-// The default no of Kernel Servers launched is 2 and for different number of Kernel Servers, execute with command line
+// The default number of Kernel Servers launched is 2 and for different number of Kernel Servers, execute with command line
 // parameter "KS". eg: For hanksTodo with 3 Kernel Servers: "./gradlew :examples:hanksTodo:run -PKS=3"
 // The handling has been inspired based on the below description by Tomas Lins
 // https://fbflex.wordpress.com/2013/03/14/gradle-madness-execwait-a-task-that-waits-for-commandline-calls-to-be-ready/

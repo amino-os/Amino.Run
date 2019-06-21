@@ -11,10 +11,13 @@ import amino.run.demo.KVStore;
 import amino.run.kernel.server.KernelServerImpl;
 import amino.run.policy.Upcalls;
 import amino.run.policy.dht.DHTPolicy;
+import amino.run.policy.util.consensus.raft.LeaderException;
 import java.net.InetSocketAddress;
 import java.rmi.registry.LocateRegistry;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.concurrent.TimeoutException;
+import java.util.logging.Logger;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
@@ -40,11 +43,16 @@ public class MultiDMTestCases {
     final String JAVA_CLASS_NAME = "amino.run.demo.KVStore";
     final Language DEFAULT_LANG = Language.java;
     final String POLICY_POSTFIX = "Policy";
-    // ConsensusRSM policy needs a delay for start-up.
-    final String CONSENSUS = "ConsensusRSM";
+
+    // Unless AtLeastOnceRPC policy is used, we need to explicitly retry.
+    final String AT_LEAST_ONCE_RPC = "AtLeastOnceRPC";
+    final long retryTimeoutMs = 10000L;
+    final long retryPeriodMs = 100L;
+
     final int DHT_SHARDS = 2;
     Registry registry;
     private static String regionName = "";
+    private static final Logger logger = Logger.getLogger(MultiDMTestCases.class.getName());
 
     @BeforeClass
     public static void bootstrap() throws Exception {
@@ -67,16 +75,52 @@ public class MultiDMTestCases {
             microServiceId = registry.create(spec.toString());
             KVStore store = (KVStore) registry.acquireStub(microServiceId);
 
-            // consensus DM needs some time to elect the leader other wise function call will fail
-            if (spec.getName().contains(CONSENSUS)) {
-                Thread.sleep(20000);
-            }
-
             for (int i = 0; i < 10; i++) {
                 String key = "k1_" + i;
                 String value = "v1_" + i;
-                store.set(key, value);
-                String returnValue = (String) store.get(key);
+                long startTime = System.currentTimeMillis();
+                String returnValue = "";
+                while (System.currentTimeMillis() - startTime < retryTimeoutMs) {
+                    try {
+                        store.set(key, value);
+                        returnValue = (String) store.get(key);
+                        logger.info("Got value " + returnValue + " for key " + key);
+                        break; // Success, no more retries necessary
+                    } catch (RuntimeException r) {
+                        logger.info(
+                                "Runtime exception after "
+                                        + (System.currentTimeMillis() - startTime)
+                                        + "ms for key "
+                                        + key
+                                        + ", value "
+                                        + value
+                                        + " : "
+                                        + r.toString());
+                        if (r.getCause() != null
+                                && r.getCause()
+                                        .getClass()
+                                        .isAssignableFrom(LeaderException.class)) {
+                            logger.info("Cause of runtime exception is LeaderException");
+                            if (!Arrays.asList(dmNames).contains(AT_LEAST_ONCE_RPC)) {
+                                // Swallow the exception and retry, after sleeping
+                                logger.info(
+                                        "Swallowing runtime exception because AtLeastOnceRPC is not used.");
+                                Thread.sleep(retryPeriodMs);
+                            } else {
+                                logger.info(
+                                        "Not swallowing runtime exception because AtLeastOnceRPC is used.");
+                                throw r;
+                            }
+                        } else {
+                            logger.info(
+                                    "Not swallowing runtime exception because cause is not LeaderException");
+                            throw r;
+                        }
+                    }
+                }
+                if (System.currentTimeMillis() - startTime >= retryTimeoutMs) {
+                    throw new TimeoutException("Timed out retrying key " + key + ", value " + value);
+                }
                 Assert.assertEquals(value, returnValue);
             }
         } finally {
@@ -177,8 +221,8 @@ public class MultiDMTestCases {
     }
 
     @Test
-    public void testDHTConsensusRSMCacheLeaseAtLeastOnceRPC() throws Exception {
-        runTest("DHT", "ConsensusRSM", "CacheLease", "AtLeastOnceRPC");
+    public void testDHTAtLeastOnceRPCConsensusRSMCacheLease() throws Exception {
+        runTest("DHT", "AtLeastOnceRPC", "ConsensusRSM", "CacheLease");
     }
 
     @Test

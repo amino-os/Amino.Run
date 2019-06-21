@@ -54,7 +54,6 @@ public class KeyValueStoreClient {
             store.set(key, val);
             val = store.get(key);
             System.out.println(String.format("<client>: got value %s with key %s", val, key));
-            Thread.sleep(1000);
         }
     }
 }

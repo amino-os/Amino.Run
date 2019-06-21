@@ -8,6 +8,7 @@ import amino.run.app.Language;
 import amino.run.app.MicroService;
 import amino.run.app.MicroServiceSpec;
 import amino.run.common.MicroServiceCreationException;
+import amino.run.policy.atleastoncerpc.AtLeastOnceRPCPolicy;
 import amino.run.policy.dht.DHTPolicy;
 import amino.run.policy.replication.ConsensusRSMPolicy;
 import java.util.Hashtable;
@@ -34,6 +35,8 @@ public class TodoListManager implements MicroService {
                             .setJavaClassName(TodoList.class.getName())
                             .addDMSpec(
                                     DMSpec.newBuilder().setName(DHTPolicy.class.getName()).create())
+                            .addDMSpec(
+                                    DMSpec.newBuilder().setName(AtLeastOnceRPCPolicy.class.getName()).create())
                             .addDMSpec(
                                     DMSpec.newBuilder()
                                             .setName(ConsensusRSMPolicy.class.getName())

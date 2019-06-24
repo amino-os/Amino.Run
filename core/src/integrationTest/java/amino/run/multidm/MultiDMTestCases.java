@@ -119,7 +119,8 @@ public class MultiDMTestCases {
                     }
                 }
                 if (System.currentTimeMillis() - startTime >= retryTimeoutMs) {
-                    throw new TimeoutException("Timed out retrying key " + key + ", value " + value);
+                    throw new TimeoutException(
+                            "Timed out retrying key " + key + ", value " + value);
                 }
                 Assert.assertEquals(value, returnValue);
             }

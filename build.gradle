@@ -18,7 +18,7 @@ buildscript {
          * https://issuetracker.google.com/issues/38454212
          * https://github.com/requery/requery/issues/467
          */
-        classpath 'com.android.tools.build:gradle:3.3.1'
+        classpath 'com.android.tools.build:gradle:3.4.1'
     }
 }
 
@@ -28,11 +28,11 @@ plugins {
     // 2. Run `gradlew verGJF` to verify code farmat
     // 3. More usage information can be found at
     // https://github.com/sherter/google-java-format-gradle-plugin
-    id 'com.github.sherter.google-java-format' version '0.7.1'
+    id 'com.github.sherter.google-java-format' version '0.8'
 }
 
-task wrapper(type: Wrapper) {
-    gradleVersion = '4.10.1'
+wrapper {
+    gradleVersion = '5.1.1'
 }
 
 subprojects {
@@ -134,7 +134,7 @@ subprojects {
     compileStubsJava {
         classpath = sourceSets.main.runtimeClasspath
         options.incremental = true
-        inputs.dir genStubs.outputs
+        inputs.files genStubs.outputs
     }
 
     clean {
@@ -146,12 +146,12 @@ subprojects {
 
     // Include stubs sourceSet classes in the jar file.
     jar {
-        from sourceSets.stubs.output.classesDir
+        from sourceSets.stubs.output.classesDirs
         // Java jar file depends on compile tasks of all sourceSets.
         // Currently there are two sourceSets - "main" and "stubs".
         // Java modules will have "main" and "stubs" sourceSets and
         // non-Java examples will have only "main" sourceSet.
-        inputs.dir tasks.withType(AbstractCompile)   // jar needs to be rebuilt if any compileTask gets executed.
+        dependsOn tasks.withType(AbstractCompile)   // jar needs to be rebuilt if any compileTask gets executed.
     }
 
     googleJavaFormat {
@@ -160,7 +160,7 @@ subprojects {
         // date and get regenerated and reformatted again and again.
     }
 
-    tasks.googleJavaFormat.dependsOn tasks.withType(AbstractCompile)
+    // quinton: This looks like rubbish: tasks.googleJavaFormat.dependsOn tasks.withType(AbstractCompile)
     check.dependsOn tasks.googleJavaFormat
 
     check.dependsOn tasks.withType(AbstractCompile)  // Ensure that all compileTasks are executed, as part of check.

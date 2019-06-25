@@ -36,7 +36,9 @@ public class TodoListManager implements MicroService {
                             .addDMSpec(
                                     DMSpec.newBuilder().setName(DHTPolicy.class.getName()).create())
                             .addDMSpec(
-                                    DMSpec.newBuilder().setName(AtLeastOnceRPCPolicy.class.getName()).create())
+                                    DMSpec.newBuilder()
+                                            .setName(AtLeastOnceRPCPolicy.class.getName())
+                                            .create())
                             .addDMSpec(
                                     DMSpec.newBuilder()
                                             .setName(ConsensusRSMPolicy.class.getName())

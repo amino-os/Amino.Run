@@ -27,7 +27,7 @@ import org.junit.Test;
 
 /**
  * Test multiple deployment managers (<strong>"multi-dm"</strong>) with multiple kernel servers.
-
+ *
  * <p>How to add an integration test for new combination: Specify the name of DM without 'policy'
  * suffix. i.e., runTest("DHT", "ConsensusRSM", "AtLeastOnceRPC"); If it has a new DM name, update
  * getPackageName() method to include the package name for it.
@@ -114,7 +114,8 @@ public class MultiDMTestCases {
                     }
                 }
                 if (System.currentTimeMillis() - startTime >= retryTimeoutMs) {
-                    throw new TimeoutException("Timed out retrying key " + key + ", value " + value);
+                    throw new TimeoutException(
+                            "Timed out retrying key " + key + ", value " + value);
                 }
                 Assert.assertEquals(value, returnValue);
             }
@@ -265,7 +266,6 @@ public class MultiDMTestCases {
     public void testAtLeastOnceRPCDHTLoadBalancedMasterSlaveSync() throws Exception {
         runTest("AtLeastOnceRPC", "DHT", "LoadBalancedMasterSlaveSync");
     }
-
 
     @Test
     public void testAtLeastOnceRPCLockingTransaction() throws Exception {

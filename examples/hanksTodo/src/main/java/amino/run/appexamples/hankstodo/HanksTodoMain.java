@@ -1,7 +1,5 @@
 package amino.run.appexamples.hankstodo;
 
-import static java.lang.Thread.sleep;
-
 import amino.run.app.Language;
 import amino.run.app.MicroServiceSpec;
 import amino.run.app.Registry;

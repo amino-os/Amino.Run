@@ -173,6 +173,9 @@ public class MultiDMTestCases {
      * @return package name for the given short DM name.
      */
     private String getPackageName(String name) throws Exception {
+        /*
+         * Please keep this list in alphabetical order.
+         */
         if (name.equals("AtLeastOnceRPC")) {
             return "amino.run.policy.atleastoncerpc";
         }
@@ -206,6 +209,10 @@ public class MultiDMTestCases {
 
         throw new Exception("There is no package name found for " + name);
     }
+
+    /*
+     * Please keep these tests in alphabetical order.
+     */
 
     @Test
     public void testAtLeastOnceRPC() throws Exception {

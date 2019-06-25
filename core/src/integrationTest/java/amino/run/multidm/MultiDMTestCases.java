@@ -213,6 +213,11 @@ public class MultiDMTestCases {
     }
 
     @Test
+    public void testAtLeastOnceRPCCacheLease() throws Exception {
+        runTest("AtLeastOnceRPC", "CacheLease");
+    }
+
+    @Test
     public void testAtLeastOnceRPCCacheLeaseConsensusRSM() throws Exception {
         runTest("AtLeastOnceRPC", "CacheLease", "ConsensusRSM");
     }
@@ -228,13 +233,41 @@ public class MultiDMTestCases {
     }
 
     @Test
+    public void testAtLeastOnceRPCConsensusRSM() throws Exception {
+        runTest("AtLeastOnceRPC", "ConsensusRSM");
+    }
+
+    @Test
+    @Ignore("See DM issue #618. Enable this test once resolved.")
+    public void testAtLeastOnceRPCConsensusRSMDHT() throws Exception {
+        runTest("AtLeastOnceRPC", "ConsensusRSM", "DHT");
+    }
+
+    @Test
     public void testAtLeastOnceRPCDHT() throws Exception {
         runTest("AtLeastOnceRPC", "DHT");
     }
 
     @Test
+    @Ignore("See DM issue #642. Enable this test once resolved.")
+    public void testAtLeastOnceRPCDHTConsensusRSM() throws Exception {
+        runTest("AtLeastOnceRPC", "DHT", "ConsensusRSM");
+    }
+
+    @Test
     public void testAtLeastOnceRPCDurableSerializableRPC() throws Exception {
         runTest("AtLeastOnceRPC", "DurableSerializableRPC");
+    }
+
+    @Test
+    public void testAtLeastOnceRPCDHTLoadBalancedMasterSlaveSync() throws Exception {
+        runTest("AtLeastOnceRPC", "DHT", "LoadBalancedMasterSlaveSync");
+    }
+
+
+    @Test
+    public void testAtLeastOnceRPCLockingTransaction() throws Exception {
+        runTest("AtLeastOnceRPC", "LockingTransaction");
     }
 
     @Test
@@ -249,64 +282,24 @@ public class MultiDMTestCases {
     }
 
     @Test
+    public void testAtLeastOnceRPCOptConcurrentTransact() throws Exception {
+        runTest("AtLeastOnceRPC", "OptConcurrentTransact");
+    }
+
+    @Test
     public void testAtLeastOnceRPCPeriodicCheckpoint() throws Exception {
         runTest("AtLeastOnceRPC", "PeriodicCheckpoint");
+    }
+
+    @Test
+    public void testAtLeastOnceRPCTwoPCCoordinator() throws Exception {
+        runTest("AtLeastOnceRPC", "TwoPCCoordinator");
     }
 
     @Test
     public void testAtLeastOnceRPCWriteThroughCache() throws Exception {
         runTest("AtLeastOnceRPC", "WriteThroughCache");
     }
-
-    @Test
-    public void testDHTConsensusRSM() throws Exception {
-        runTest("DHT", "ConsensusRSM");
-    }
-
-    @Test
-    @Ignore("See DM issue #618. Enable this test once resolved")
-    public void testDHTConsensusRSMAtLeastOnceRPC() throws Exception {
-        runTest("DHT", "ConsensusRSM", "AtLeastOnceRPC");
-    }
-
-    @Test
-    @Ignore("See DM issue #642. Enable this test once resolved.")
-    public void testDHTConsensusRSMAtLeastOnceRPCCacheLease() throws Exception {
-        runTest("DHT", "ConsensusRSM", "AtLeastOnceRPC", "CacheLease");
-    }
-
-    @Test
-    public void testDHTConsensusRSMCacheLease() throws Exception {
-        runTest("DHT", "ConsensusRSM", "CacheLease");
-    }
-
-    @Test
-    public void testDHTAtLeastOnceRPCConsensusRSMCacheLease() throws Exception {
-        runTest("DHT", "AtLeastOnceRPC", "ConsensusRSM", "CacheLease");
-    }
-
-    @Test
-    public void testDHTLoadBalancedMasterSlaveSync() throws Exception {
-        runTest("DHT", "LoadBalancedMasterSlaveSync");
-    }
-
-    @Test
-    public void testDHTLoadBalancedMasterSlaveSyncAtLeastOnceRPC() throws Exception {
-        runTest("DHT", "LoadBalancedMasterSlaveSync", "AtLeastOnceRPC");
-    }
-
-    @Test
-    @Ignore("See DM issue #642. Enable this test once resolved.")
-    public void testDHTLoadBalancedMasterSlaveSyncAtLeastOnceRPCCacheLease() throws Exception {
-        runTest("DHT", "LoadBalancedMasterSlaveSync", "AtLeastOnceRPC", "CacheLease");
-    }
-
-    @Test
-    @Ignore("See DM issue #642. Enable this test once resolved.")
-    public void testDHTLoadBalancedMasterSlaveSyncCacheLease() throws Exception {
-        runTest("DHT", "LoadBalancedMasterSlaveSync", "CacheLease");
-    }
-
 
     @Test
     public void testCacheLeaseAtLeastOnceRPC() throws Exception {
@@ -343,6 +336,55 @@ public class MultiDMTestCases {
     @Ignore("See DM issue #618. Enable this test once resolved.")
     public void testConsensusRSMDHTAtLeastOnceRPC() throws Exception {
         runTest("ConsensusRSM", "DHT", "AtLeastOnceRPC");
+    }
+
+    @Test
+    public void testDHTAtLeastOnceRPCConsensusRSMCacheLease() throws Exception {
+        runTest("DHT", "AtLeastOnceRPC", "ConsensusRSM", "CacheLease");
+    }
+
+    @Test
+    public void testDHTConsensusRSM() throws Exception {
+        runTest("DHT", "ConsensusRSM");
+    }
+
+    @Test
+    @Ignore("See DM issue #618. Enable this test once resolved")
+    public void testDHTConsensusRSMAtLeastOnceRPC() throws Exception {
+        runTest("DHT", "ConsensusRSM", "AtLeastOnceRPC");
+    }
+
+    @Test
+    @Ignore("See DM issue #642. Enable this test once resolved.")
+    public void testDHTConsensusRSMAtLeastOnceRPCCacheLease() throws Exception {
+        runTest("DHT", "ConsensusRSM", "AtLeastOnceRPC", "CacheLease");
+    }
+
+    @Test
+    public void testDHTConsensusRSMCacheLease() throws Exception {
+        runTest("DHT", "ConsensusRSM", "CacheLease");
+    }
+
+    @Test
+    public void testDHTLoadBalancedMasterSlaveSync() throws Exception {
+        runTest("DHT", "LoadBalancedMasterSlaveSync");
+    }
+
+    @Test
+    public void testDHTLoadBalancedMasterSlaveSyncAtLeastOnceRPC() throws Exception {
+        runTest("DHT", "LoadBalancedMasterSlaveSync", "AtLeastOnceRPC");
+    }
+
+    @Test
+    @Ignore("See DM issue #642. Enable this test once resolved.")
+    public void testDHTLoadBalancedMasterSlaveSyncAtLeastOnceRPCCacheLease() throws Exception {
+        runTest("DHT", "LoadBalancedMasterSlaveSync", "AtLeastOnceRPC", "CacheLease");
+    }
+
+    @Test
+    @Ignore("See DM issue #642. Enable this test once resolved.")
+    public void testDHTLoadBalancedMasterSlaveSyncCacheLease() throws Exception {
+        runTest("DHT", "LoadBalancedMasterSlaveSync", "CacheLease");
     }
 
     @AfterClass

@@ -15,7 +15,7 @@ public class Wallet implements MicroService, TransactionManager {
     private Boolean isStart = false;
 
     private static final String JDBC_DRIVER = "org.mariadb.jdbc.Driver";
-    private static final String DB_URL = "jdbc:mariadb://172.17.0.2/fundmover";
+    private static final String DB_URL = "jdbc:mariadb://127.0.0.1:3306/fundmover";
     private static final String USER = "root";
     private static final String PASS = "mysecretpw";
 

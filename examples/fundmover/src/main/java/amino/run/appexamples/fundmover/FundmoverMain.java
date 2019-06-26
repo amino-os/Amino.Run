@@ -77,7 +77,6 @@ public class FundmoverMain {
             MicroServiceID walletMicroServiceID = server.create(walletSpec.toString());
 
             Wallet wallet = (Wallet) server.acquireStub(walletMicroServiceID);
-            ;
 
             wallet.credit(100);
 

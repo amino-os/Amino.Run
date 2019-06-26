@@ -4,7 +4,7 @@
   BankAccount and Wallet class extends the TwoPCExtResourceCohortPolicy DM and 
   Finance class extends the TwoPCCoordinatorPolicy DM. 
 
-#Setup  
+# Setup
 Follow the below steps to build and configure the MariaDB
 
 1. docker pull mariadb/server:latest

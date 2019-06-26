@@ -26,12 +26,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 /**
- * Test <strong>multi-dm</strong> deployment managers, DHT & ConsensusRSM , DHT &
- * LoadBalancedMasterSlaveSync, AtLeastOnceRPC & DHT & ConsensusRSM , AtLeastOnceRPC & DHT &
- * LoadBalancedMasterSlaveSync with multiple kernel servers are covered here.
- *
- * <p>Every test in this class tests microservice specifications in <code>
- * src/integrationTest/resources/specs/multi-dm</code> directory.
+ * Test multiple deployment managers (<strong>"multi-dm"</strong>) with multiple kernel servers.
  *
  * <p>How to add an integration test for new combination: Specify the name of DM without 'policy'
  * suffix. i.e., runTest("DHT", "ConsensusRSM", "AtLeastOnceRPC"); If it has a new DM name, update
@@ -119,7 +114,8 @@ public class MultiDMTestCases {
                     }
                 }
                 if (System.currentTimeMillis() - startTime >= retryTimeoutMs) {
-                    throw new TimeoutException("Timed out retrying key " + key + ", value " + value);
+                    throw new TimeoutException(
+                            "Timed out retrying key " + key + ", value " + value);
                 }
                 Assert.assertEquals(value, returnValue);
             }
@@ -270,7 +266,6 @@ public class MultiDMTestCases {
     public void testAtLeastOnceRPCDHTLoadBalancedMasterSlaveSync() throws Exception {
         runTest("AtLeastOnceRPC", "DHT", "LoadBalancedMasterSlaveSync");
     }
-
 
     @Test
     public void testAtLeastOnceRPCLockingTransaction() throws Exception {

@@ -24,8 +24,8 @@ public final class AppStub extends Stub {
         TreeSet<MethodStub> ms = new TreeSet<MethodStub>();
 
         for (Method m : stubClass.getDeclaredMethods()) {
-            // Add public methods to methods vector
-            if (Modifier.isPublic(m.getModifiers())) {
+            // Add public non static methods to methods vector
+            if (Modifier.isPublic(m.getModifiers()) && !Modifier.isStatic(m.getModifiers())) {
                 ms.add(new MethodStub((Method) m));
             }
         }

@@ -42,4 +42,8 @@ public class SO implements MicroService, ExplicitMigrator {
 
     @Override
     public void migrateTo(InetSocketAddress destinationAddr) throws MigrationException {}
+
+    public static String[] getPolicies() {
+        return SO.class.getAnnotation(MicroServiceConfiguration.class).Policies();
+    }
 }

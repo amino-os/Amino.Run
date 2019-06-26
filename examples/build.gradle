@@ -132,18 +132,16 @@ subprojects {
             println "Launched Kernel Server 4. !!!"
         }
     }
-    task runenvapp(dependsOn: ksTask) {
-        // If any failures in 'runapp' task then 'runenvapp' task also should fail.
+
+    task run (dependsOn: ksTask) {
+        //If any failures in 'runapp' task then 'runenvapp' task also should fail.
         finalizedBy 'runapp'
-        // 'cleanup' task should run after runapp task always. Currently it is running after 'runapp' task.
+        // 'cleanup' task should run after runapp task always. Currently it is running after runapp task.
         // Dont move this task before 'runapp' task.
         finalizedBy 'cleanup'
     }
 
-    task run (dependsOn: runenvapp) {
-    }
-
-    task cleanup (dependsOn: runenvapp) {
+    task cleanup () {
         // Need to cleanup all the background processes which were launched, before exiting.
         doLast {
             def ports = ["$omsPort", "$kernelServerPort", "$kernelServerPort2", "$kernelServerPort3", "$kernelServerPort4"]

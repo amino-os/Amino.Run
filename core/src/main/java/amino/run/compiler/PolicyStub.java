@@ -22,8 +22,8 @@ public class PolicyStub extends Stub {
                 && (!ancestorClass.getSimpleName().equals("GroupPolicyLibrary"))) {
 
             for (Method m : ancestorClass.getDeclaredMethods()) {
-                // Add public methods to methods vector
-                if (Modifier.isPublic(m.getModifiers())) {
+                // Add public non static methods to methods vector
+                if (Modifier.isPublic(m.getModifiers()) && !Modifier.isStatic(m.getModifiers())) {
                     ms.add(new MethodStub(m));
                 }
             }

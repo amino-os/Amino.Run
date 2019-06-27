@@ -26,6 +26,7 @@ import amino.run.policy.transaction.TwoPCCoordinatorPolicy;
 import amino.run.policy.util.consensus.raft.LeaderException;
 import java.net.InetSocketAddress;
 import java.rmi.registry.LocateRegistry;
+import java.util.Collection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.TimeoutException;
@@ -35,6 +36,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
+import org.junit.runners.Parameterized;
+import org.junit.runner.RunWith;
 import org.junit.Test;
 
 /**
@@ -46,6 +49,7 @@ import org.junit.Test;
  */
 // TODO: Current integration tests only check the result back to client. Ideally, it should check
 // each kernel server to verify whether RPC was made to intended kernel servers.
+@RunWith(Parameterized.class)
 public class MultiDMTestCases {
     final String JAVA_CLASS_NAME = "amino.run.demo.KVStore";
     final Language DEFAULT_LANG = Language.java;
@@ -58,6 +62,17 @@ public class MultiDMTestCases {
     Registry registry;
     private static String regionName = "";
     private static final Logger logger = Logger.getLogger(MultiDMTestCases.class.getName());
+
+    private static Class[] allDmClasses = {
+            AtLeastOnceRPCPolicy.class,
+            // TODO: quinton: CacheLeasePolicy.class,
+            ConsensusRSMPolicy.class
+            // DHTPolicy.class,
+            // LoadBalancedMasterSlaveSyncPolicy.class,
+    };
+
+    @Parameterized.Parameter(0)
+    public Class dmClasses[] = new Class[0];
 
     @BeforeClass
     public static void bootstrap() throws Exception {
@@ -73,7 +88,26 @@ public class MultiDMTestCases {
                 new InetSocketAddress(hostIp, hostPort), new InetSocketAddress(omsIp, omsPort));
     }
 
-    private void runTest(Class<? extends Policy>... dmClasses) throws Exception {
+    // create test data - one row per DM combination
+    @Parameterized.Parameters(name = "{index}: Test with dms={0}")
+    public static Collection<Object[]> data() {
+        ArrayList<Object[]> data = new ArrayList<Object[]>(); // TODO: quinton: change to Class
+        // Add all combinations of two DMs
+        for(Class first: allDmClasses) {
+            for(Class second: allDmClasses) {
+                if (!first.equals(second)) { // Don't test DMs in combination with themselves
+                    data.add(new Class[][] { new Class[] {first, second} });
+                }
+            }
+        }
+        // Explicitly add some extra combinations of more than 2 DMs
+        // TODO: quinton: data.add(new Class[]{ AtLeastOnceRPCPolicy.class, CacheLeasePolicy.class, ConsensusRSMPolicy.class });
+        return data;
+    }
+
+
+    @Test
+    public void runTest() throws Exception {
         MicroServiceID microServiceId = null;
         try {
             MicroServiceSpec spec = createMultiDMTestSpec(dmClasses);
@@ -169,6 +203,7 @@ public class MultiDMTestCases {
      * Please keep these tests in alphabetical order.
      */
 
+    /* TODO: Quinton: Replace all tests with data
     @Test
     public void testAtLeastOnceRPC() throws Exception {
         runTest(AtLeastOnceRPCPolicy.class);
@@ -376,6 +411,7 @@ public class MultiDMTestCases {
     public void testDHTLoadBalancedMasterSlaveSyncCacheLease() throws Exception {
         runTest(DHTPolicy.class, LoadBalancedMasterSlaveSyncPolicy.class, CacheLeasePolicy.class);
     }
+    */
 
     @AfterClass
     public static void cleanUp() {

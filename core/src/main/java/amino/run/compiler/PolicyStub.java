@@ -297,15 +297,21 @@ public class PolicyStub extends Stub {
      * Returns the KernelRPC stub implementation code based on whether the method is a DM method or
      * Application method.
      *
+     * @param m
      * @param isDMMethod
      * @return Stub code for RPC call based on method type.
      */
     public String getMethodRPCContent(MethodStub m, boolean isDMMethod) {
         if (m.retType.equals(Void.TYPE)) {
-            if (isDMMethod) return "$__makeKernelDMRPC($__method, $__params);";
+            if (isDMMethod) {
+                return "$__makeKernelDMRPC($__method, $__params);";
+            }
             return "$__makeKernelRPC($__method, $__params);";
         }
-        if (isDMMethod) return "$__result = $__makeKernelDMRPC($__method, $__params);";
+
+        if (isDMMethod) {
+            return "$__result = $__makeKernelDMRPC($__method, $__params);";
+        }
         return "$__result = $__makeKernelRPC($__method, $__params);";
     }
 

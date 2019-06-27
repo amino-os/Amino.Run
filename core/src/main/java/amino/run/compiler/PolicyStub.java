@@ -235,7 +235,8 @@ public class PolicyStub extends Stub {
         }
 
         // Write return statement.
-        buffer.append(indenter.indent() + "java.lang.Object $__result = null;" + EOLN);
+        if (!m.retType.equals(Void.TYPE))
+            buffer.append(indenter.indent() + "java.lang.Object $__result = null;" + EOLN);
 
         /* If method do not throw generic exception. Catch all the exceptions in the stub and rethrow
         them based on exceptions method is allowed to throw. Runtime exceptions are thrown to app
@@ -245,13 +246,13 @@ public class PolicyStub extends Stub {
             buffer.append(indenter.indent() + "try {" + EOLN);
             buffer.append(
                     indenter.tIncrease()
-                            + getMethodRPCContent(isDMMethod)
+                            + getMethodRPCContent(m, isDMMethod)
                             + EOLN); //$NON-NLS-1$ //$NON-NLS-2$
 
         } else {
             buffer.append(
                     indenter.indent()
-                            + getMethodRPCContent(isDMMethod)
+                            + getMethodRPCContent(m, isDMMethod)
                             + EOLN); //$NON-NLS-1$ //$NON-NLS-2$
         }
 
@@ -299,12 +300,13 @@ public class PolicyStub extends Stub {
      * @param isDMMethod
      * @return Stub code for RPC call based on method type.
      */
-    public String getMethodRPCContent(boolean isDMMethod) {
-        if (isDMMethod == true) {
-            return "$__result = $__makeKernelDMRPC($__method, $__params);";
-        } else {
-            return "$__result = $__makeKernelRPC($__method, $__params);";
+    public String getMethodRPCContent(MethodStub m, boolean isDMMethod) {
+        if (m.retType.equals(Void.TYPE)) {
+            if (isDMMethod) return "$__makeKernelDMRPC($__method, $__params);";
+            return "$__makeKernelRPC($__method, $__params);";
         }
+        if (isDMMethod) return "$__result = $__makeKernelDMRPC($__method, $__params);";
+        return "$__result = $__makeKernelRPC($__method, $__params);";
     }
 
     private void addServerPolicyContent(StringBuilder buffer) {

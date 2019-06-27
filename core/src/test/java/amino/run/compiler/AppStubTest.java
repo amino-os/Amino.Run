@@ -13,7 +13,8 @@ public class AppStubTest {
 
         TreeSet<Stub.MethodStub> stubMethods = appStub.getMethods();
         for (Stub.MethodStub methodStub : stubMethods) {
-            Assert.assertNotEquals(methodStub.getName(), "getPolicies");
+            // Assert to check for static method generation in App stub methods set.
+            Assert.assertNotEquals(methodStub.getName(), "staticMethod");
         }
     }
 }

@@ -43,7 +43,12 @@ public class SO implements MicroService, ExplicitMigrator {
     @Override
     public void migrateTo(InetSocketAddress destinationAddr) throws MigrationException {}
 
-    public static String[] getPolicies() {
-        return SO.class.getAnnotation(MicroServiceConfiguration.class).Policies();
+    /**
+     * Method declared to check static method generation in App stub methods.
+     *
+     * @return true
+     */
+    public static Boolean staticMethod() {
+        return true;
     }
 }

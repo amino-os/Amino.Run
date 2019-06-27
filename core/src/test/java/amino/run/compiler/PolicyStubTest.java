@@ -13,6 +13,7 @@ public class PolicyStubTest {
 
         TreeSet<Stub.MethodStub> stubMethods = appStub.getMethods();
         for (Stub.MethodStub methodStub : stubMethods) {
+            // Assert to check for static method generation in Server policy stub methods set.
             Assert.assertNotEquals(methodStub.getName(), "getPolicyName");
         }
     }
@@ -23,6 +24,7 @@ public class PolicyStubTest {
 
         TreeSet<Stub.MethodStub> stubMethods = appStub.getMethods();
         for (Stub.MethodStub methodStub : stubMethods) {
+            // Assert to check for static method generation in Group policy stub methods set.
             Assert.assertNotEquals(methodStub.getName(), "getPolicyName");
         }
     }

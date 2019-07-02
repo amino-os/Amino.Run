@@ -33,11 +33,11 @@ import java.util.logging.Logger;
  */
 public class KernelClient {
     /* Random bytes to measure the data transfer time */
-    /* TODO: Need to check if size of data need to be increased to get the better data transfer rates. Sometimes, empty
-    heartbeats are taking longer time than heartbeat with 2k arbitrary data. Thus, resulting in negative data transfer
-    rate */
-    private static final int RANDOM_DATA_SIZE = 2 * 1024;
-    private static final byte[] randomBytes = new byte[RANDOM_DATA_SIZE];
+    /* TODO: This size of data to be sent depends on link capacity. 1000Mbps link can send 1000/8 = 125MegaBytes of data
+    * in a sec. We should programmatically get this data size instead of hardcoding */
+    private static final int DATA_SIZE_IN_MB = 125; // size in MegaBytes
+    private static final int DATA_SIZE_IN_BYTES = DATA_SIZE_IN_MB * 1024 * 1024; // size in Bytes
+    private static final byte[] randomBytes = new byte[DATA_SIZE_IN_BYTES];
 
     static {
         new Random().nextBytes(randomBytes);
@@ -258,7 +258,7 @@ public class KernelClient {
                 + processing time + Optionally connection establishment time */
                 /* Return time = Response Serialization + Network Delay + Deserialization + Get current nano time at end */
                 /* Forward time would be comparatively higher than return time. But to avoid the clock sync issues
-                between client and server, took the round trip time and half of it considered as latency
+                between client and server, took the round trip time(RTT) as latency
                  */
                 long t1 = System.nanoTime();
                 server.receiveHeartBeat();
@@ -267,13 +267,10 @@ public class KernelClient {
                 /* Measure data transfer rate by sending some arbitrary data */
                 server.receiveHeartBeat(randomBytes);
                 long t3 = System.nanoTime();
-                metric.latency = (t2 - t1) / 2;
+                metric.latency = (t2 - t1); // RTT
 
-                /* TODO: T3-T2(heartbeat with data) is sometimes smaller than T2-T1(empty heartbeat). Need to relook */
-                /* Data transfer rate in Mbps */
-                metric.rate =
-                        ((RANDOM_DATA_SIZE * 8 * 1000.0 * 1000.0)
-                                / (((t3 - t2) - (t2 - t1)) * 1024.0 * 1024.0));
+                /* Data transfer rate in Megabits/Sec */
+                metric.rate = (DATA_SIZE_IN_MB * 8.0) / ((t3 - t2) / (1000.0 * 1000.0 * 1000.0));
 
                 servers.get(entry.getKey()).referenceCount = referenceCount;
 

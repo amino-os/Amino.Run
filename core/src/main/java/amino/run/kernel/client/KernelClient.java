@@ -33,9 +33,9 @@ import java.util.logging.Logger;
  */
 public class KernelClient {
     /* Random bytes to measure the data transfer time */
-    /* TODO: This size of data to be sent depends on link capacity. 1000Mbps link can send 1000/8 = 125MegaBytes of data
-    * in a sec. We should programmatically get this data size instead of hardcoding */
-    private static final int DATA_SIZE_IN_MB = 125; // size in MegaBytes
+    /* TODO: This size of data to be sent depends on link capacity. 1000Mbps link can send 1000/8 = 125 MegaBytes of
+    data in a sec. */
+    private static final int DATA_SIZE_IN_MB = 1; // size in MegaBytes
     private static final int DATA_SIZE_IN_BYTES = DATA_SIZE_IN_MB * 1024 * 1024; // size in Bytes
     private static final byte[] randomBytes = new byte[DATA_SIZE_IN_BYTES];
 
@@ -269,8 +269,21 @@ public class KernelClient {
                 long t3 = System.nanoTime();
                 metric.latency = (t2 - t1); // RTT
 
+                /* NOTE: sendTimes variable is number of times, we can send DATA_SIZE_IN_MB of data in 1 second */
+                /* Theoretically, on 1000Mbps link, if we send 1MB of data in a single message, we can send
+                125 such messages in a second. So, sendTimes should be 125. But, In reality,  we have latency involved
+                in sending these multiple messages(i.e., can send < 125 messages in second).
+                So sendTimes should be 1000000000.0 nanosec /((t3 - t2) - Latency);
+                t2 - t1 gives Latency in nanoseconds and is calculated above.
+                And this latency is ignored in calculating actual sendTimes to avoid -ve values. Because, randomly time
+                taken to make null rpc(empty message) is more than time taken to make rpc with data. Reason could be,
+                Either link speed is comparatively of higher magnitude than our chosen DATA_SIZE_IN_MB.
+                Or probably, RMI thread scheduling/dispatching is delayed on send/receive ends for empty message.
+                 */
+                double sendTimes = 1000000000.0/(t3 - t2);
+
                 /* Data transfer rate in Megabits/Sec */
-                metric.rate = (DATA_SIZE_IN_MB * 8.0) / ((t3 - t2) / (1000.0 * 1000.0 * 1000.0));
+                metric.rate = sendTimes * DATA_SIZE_IN_MB * 8.0;
 
                 servers.get(entry.getKey()).referenceCount = referenceCount;
 

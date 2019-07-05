@@ -1,9 +1,9 @@
 package amino.run.app;
 
+import com.google.common.base.Objects;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import org.yaml.snakeyaml.Yaml;
 
 /**
@@ -79,11 +79,11 @@ public class NodeSelectorSpec implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         NodeSelectorSpec that = (NodeSelectorSpec) o;
-        return Objects.equals(nodeSelectorTerms, that.nodeSelectorTerms);
+        return Objects.equal(nodeSelectorTerms, that.nodeSelectorTerms);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(nodeSelectorTerms);
+        return Objects.hashCode(nodeSelectorTerms);
     }
 }

@@ -36,11 +36,11 @@ public class HelloWorldMain {
         } catch (Exception e) {
             System.out.println(
                     e.getMessage()
-                            + System.lineSeparator()
-                            + System.lineSeparator()
+                            + System.getProperty("line.separator")
+                            + System.getProperty("line.separator")
                             + "Usage: "
                             + HelloWorldMain.class.getSimpleName()
-                            + System.lineSeparator()
+                            + System.getProperty("line.separator")
                             + parser.describeOptions(
                                     Collections.<String, String>emptyMap(),
                                     OptionsParser.HelpVerbosity.LONG));
@@ -81,7 +81,7 @@ public class HelloWorldMain {
         System.out.println(
                 "Usage: java -cp <classpath> "
                         + HelloWorldMain.class.getSimpleName()
-                        + System.lineSeparator()
+                        + System.getProperty("line.separator")
                         + parser.describeOptions(
                                 Collections.<String, String>emptyMap(),
                                 OptionsParser.HelpVerbosity.LONG));

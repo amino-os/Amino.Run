@@ -13,10 +13,11 @@ import amino.run.policy.serializability.TransactionException;
 import java.io.File;
 import java.net.InetSocketAddress;
 import java.net.URL;
-import java.nio.file.Files;
 import java.rmi.registry.LocateRegistry;
 import java.util.List;
 import java.util.concurrent.*;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
 import org.junit.*;
 
 /**
@@ -52,10 +53,9 @@ public class SimpleDMIntegrationTest {
     }
 
     private MicroServiceSpec readMicroServiceSpec(File file) throws Exception {
-        List<String> lines = Files.readAllLines(file.toPath());
-        String yamlStr = String.join("\n", lines);
-        MicroServiceSpec spec = MicroServiceSpec.fromYaml(yamlStr);
-        return spec;
+        List<String> lines = FileUtils.readLines(file);
+        String yamlStr = StringUtils.join(lines, "\n");
+        return MicroServiceSpec.fromYaml(yamlStr);
     }
 
     /**

@@ -1,6 +1,6 @@
 package amino.run.policy.transaction;
 
-import java.util.Objects;
+import com.google.common.base.Objects;
 
 /** utility class for 2PC primitive verbs */
 class TwoPCPrimitive {
@@ -15,7 +15,7 @@ class TwoPCPrimitive {
      * @return the check result
      */
     static boolean isVoteRequest(String methodName) {
-        return Objects.equals(methodName, VoteReq);
+        return Objects.equal(methodName, VoteReq);
     }
 
     /**
@@ -25,7 +25,7 @@ class TwoPCPrimitive {
      * @return the check result
      */
     static boolean isCommit(String methodName) {
-        return Objects.equals(methodName, Commit);
+        return Objects.equal(methodName, Commit);
     }
 
     /**
@@ -35,6 +35,6 @@ class TwoPCPrimitive {
      * @return the check result
      */
     static boolean isAbort(String methodName) {
-        return Objects.equals(methodName, Abort);
+        return Objects.equal(methodName, Abort);
     }
 }

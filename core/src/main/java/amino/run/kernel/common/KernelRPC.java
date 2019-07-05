@@ -1,6 +1,7 @@
 package amino.run.kernel.common;
 
 import amino.run.graal.io.*;
+import com.google.common.base.Objects;
 import java.io.Serializable;
 import java.util.*;
 import org.graalvm.polyglot.*;
@@ -55,13 +56,13 @@ public class KernelRPC implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         KernelRPC kernelRPC = (KernelRPC) o;
-        return Objects.equals(oid, kernelRPC.oid)
-                && Objects.equals(method, kernelRPC.method)
-                && Objects.equals(params, kernelRPC.params);
+        return Objects.equal(oid, kernelRPC.oid)
+                && Objects.equal(method, kernelRPC.method)
+                && Objects.equal(params, kernelRPC.params);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(oid, method, params);
+        return Objects.hashCode(oid, method, params);
     }
 }

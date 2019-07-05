@@ -1,7 +1,7 @@
 package amino.run.policy.scalability.masterslave;
 
+import com.google.common.base.Objects;
 import java.io.Serializable;
-import java.util.Objects;
 
 /** @author terryz */
 public class MethodInvocationResponse implements Serializable {
@@ -47,13 +47,13 @@ public class MethodInvocationResponse implements Serializable {
         if (this == o) return true;
         if (!(o instanceof MethodInvocationResponse)) return false;
         MethodInvocationResponse that = (MethodInvocationResponse) o;
-        return getReturnCode() == that.getReturnCode()
-                && Objects.equals(getResult(), that.getResult());
+        return Objects.equal(returnCode, that.getReturnCode())
+                && Objects.equal(result, that.getResult());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getReturnCode(), getResult());
+        return Objects.hashCode(returnCode, result);
     }
 
     @Override

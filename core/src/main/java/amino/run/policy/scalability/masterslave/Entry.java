@@ -1,7 +1,7 @@
 package amino.run.policy.scalability.masterslave;
 
+import com.google.common.base.Objects;
 import java.io.Serializable;
-import java.util.Objects;
 
 /** @author terryz */
 public abstract class Entry implements Serializable {
@@ -48,6 +48,6 @@ public abstract class Entry implements Serializable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(getTerm(), getIndex());
+        return Objects.hashCode(getTerm(), getIndex());
     }
 }

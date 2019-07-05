@@ -5,11 +5,11 @@ import amino.run.common.MicroServiceReplicaNotFoundException;
 import amino.run.kernel.common.KernelObjectStub;
 import amino.run.policy.Policy;
 import amino.run.policy.util.ResettableTimer;
+import com.google.common.base.Objects;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.TimerTask;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -44,7 +44,7 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
 
         @Override
         public int hashCode() {
-            return Objects.hash(replicationRateInMs);
+            return Objects.hashCode(replicationRateInMs);
         }
     }
 

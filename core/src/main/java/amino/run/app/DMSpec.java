@@ -3,6 +3,7 @@ package amino.run.app;
 import static amino.run.policy.Upcalls.PolicyConfig;
 
 import amino.run.policy.Upcalls;
+import com.google.common.base.Objects;
 import java.io.Serializable;
 import java.util.*;
 import org.yaml.snakeyaml.Yaml;
@@ -80,12 +81,12 @@ public final class DMSpec implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         DMSpec dmSpec = (DMSpec) o;
-        return Objects.equals(name, dmSpec.name) && Objects.equals(configs, dmSpec.configs);
+        return Objects.equal(name, dmSpec.name) && Objects.equal(configs, dmSpec.configs);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, configs);
+        return Objects.hashCode(name, configs);
     }
 
     @Override

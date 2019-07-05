@@ -7,8 +7,9 @@ import amino.run.kernel.server.KernelServerImpl;
 import amino.run.oms.OMSServerImpl;
 import java.io.*;
 import java.net.Socket;
-import java.nio.file.Files;
 import java.util.List;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
 
 public class IntegrationTestBase {
     public static String omsIp = "127.0.0.1";
@@ -48,7 +49,7 @@ public class IntegrationTestBase {
         }
         while (socket != null) {
             try {
-                System.out.printf("Waiting for socket %d\n!", port);
+                System.out.printf("Waiting for socket close %d\n!", port);
                 socket = new Socket(ip, port);
                 try {
                     sleep(100);
@@ -84,8 +85,19 @@ public class IntegrationTestBase {
                     Integer.toString(port)
                 };
 
-        ProcessBuilder builder = new ProcessBuilder(args);
-        Process process = builder.inheritIO().start();
+        System.out.printf(
+                "Starting OMS at %s:%d with command line \'%s\'\n",
+                ip, port, StringUtils.join(args, ","));
+
+        Process process = new ProcessBuilder(args).start();
+
+        // Must read the command STDOUT otherwise command is hanging.
+        // 1.7 Java version has processBuilder.inhertIO() will read the logs and print on console.
+        StreamReader error = new StreamReader(process.getErrorStream(), "ERROR");
+        StreamReader output = new StreamReader(process.getInputStream(), "");
+
+        error.start();
+        output.start();
 
         waitForSockListen(ip, port);
         return process;
@@ -130,9 +142,17 @@ public class IntegrationTestBase {
 
         System.out.printf(
                 "Starting kernel server at %s:%d with command line \'%s\'\n",
-                ip, port, String.join(",", args));
-        ProcessBuilder builder = new ProcessBuilder(args);
-        Process process = builder.inheritIO().start();
+                ip, port, StringUtils.join(args, ","));
+
+        Process process = new ProcessBuilder(args).start();
+
+        // Must read the command STDOUT otherwise command is hanging.
+        // 1.7 Java version has processBuilder.inhertIO() will read the logs and print on console.
+        StreamReader error = new StreamReader(process.getErrorStream(), "ERROR");
+        StreamReader output = new StreamReader(process.getInputStream(), "");
+
+        error.start();
+        output.start();
 
         waitForSockListen(ip, port);
         return process;
@@ -166,15 +186,12 @@ public class IntegrationTestBase {
     }
 
     public static MicroServiceSpec readMicroServiceSpec(File file) throws Exception {
-        List<String> lines = Files.readAllLines(file.toPath());
-        String yamlStr = String.join("\n", lines);
-        MicroServiceSpec spec = MicroServiceSpec.fromYaml(yamlStr);
-
-        return spec;
+        List<String> lines = FileUtils.readLines(file);
+        String yamlStr = StringUtils.join(lines, "\n");
+        return MicroServiceSpec.fromYaml(yamlStr);
     }
 
     public static void killOmsAndKernelServers() {
-
         for (int i = 0; i < ksPort.length; i++) {
             if (kernelServerProcess[i] != null) {
                 kernelServerProcess[i].destroy();
@@ -185,6 +202,38 @@ public class IntegrationTestBase {
         if (omsProcess != null) {
             omsProcess.destroy();
             waitForSockClose(omsIp, omsPort);
+        }
+    }
+}
+
+/**
+ * This class is created for reading the command output and print on console. Must read the command
+ * STDOUT otherwise command is hanging. 1.7 Java version has processBuilder.inhertIO() will read the
+ * logs and print on console.
+ */
+class StreamReader extends Thread {
+    InputStream is;
+    String type;
+
+    StreamReader(InputStream is, String type) {
+        this.is = is;
+        this.type = type;
+    }
+
+    @Override
+    public void run() {
+        try {
+            InputStreamReader isr = new InputStreamReader(is);
+            BufferedReader br = new BufferedReader(isr);
+            String line = null;
+            while ((line = br.readLine()) != null) {
+                // TODO: stream output is not printing in console currently. give --info for debug
+                // ex: [./gradlew clean build --info]
+                System.out.println(type + line);
+            }
+
+        } catch (IOException ioe) {
+            System.out.println(ioe.toString());
         }
     }
 }

@@ -5,6 +5,7 @@ import amino.run.common.MicroServiceReplicaNotFoundException;
 import amino.run.kernel.common.KernelObjectStub;
 import amino.run.policy.DefaultPolicy;
 import amino.run.policy.Policy;
+import com.google.common.base.Objects;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -13,7 +14,6 @@ import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Logger;
 
@@ -57,7 +57,7 @@ public class LoadBalancedFrontendPolicy extends DefaultPolicy {
 
         @Override
         public int hashCode() {
-            return Objects.hash(maxConcurrentReq, replicaCount);
+            return Objects.hashCode(maxConcurrentReq, replicaCount);
         }
     }
 

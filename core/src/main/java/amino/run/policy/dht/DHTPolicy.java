@@ -5,11 +5,11 @@ import amino.run.common.MicroServiceReplicaNotFoundException;
 import amino.run.common.NoKernelServerFoundException;
 import amino.run.policy.DefaultPolicy;
 import amino.run.policy.Policy;
+import com.google.common.base.Objects;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -38,7 +38,7 @@ public class DHTPolicy extends DefaultPolicy {
 
         @Override
         public int hashCode() {
-            return Objects.hash(numOfShards);
+            return Objects.hashCode(numOfShards);
         }
     }
 

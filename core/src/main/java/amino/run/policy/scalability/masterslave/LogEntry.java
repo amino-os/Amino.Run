@@ -1,7 +1,7 @@
 package amino.run.policy.scalability.masterslave;
 
+import com.google.common.base.Objects;
 import java.io.Serializable;
-import java.util.Objects;
 
 /**
  * Log entry is the basic unit for logging and replication.
@@ -30,12 +30,12 @@ public class LogEntry extends Entry implements Serializable {
         if (!(o instanceof LogEntry)) return false;
         if (!super.equals(o)) return false;
         LogEntry logEntry = (LogEntry) o;
-        return Objects.equals(getRequest(), logEntry.getRequest());
+        return Objects.equal(request, logEntry.getRequest());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), getRequest());
+        return Objects.hashCode(super.hashCode(), getRequest());
     }
 
     public static final class Builder {

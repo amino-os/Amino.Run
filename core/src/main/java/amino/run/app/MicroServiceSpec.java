@@ -1,9 +1,9 @@
 package amino.run.app;
 
+import com.google.common.base.Objects;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import org.yaml.snakeyaml.Yaml;
 
 /**
@@ -153,17 +153,17 @@ public class MicroServiceSpec implements Serializable {
         if (o == null || getClass() != o.getClass()) return false;
         MicroServiceSpec that = (MicroServiceSpec) o;
         return lang == that.lang
-                && Objects.equals(name, that.name)
-                && Objects.equals(javaClassName, that.javaClassName)
-                && Objects.equals(sourceFileLocation, that.sourceFileLocation)
-                && Objects.equals(constructorName, that.constructorName)
-                && Objects.equals(dmList, that.dmList)
-                && Objects.equals(nodeSelectorSpec, that.nodeSelectorSpec);
+                && Objects.equal(name, that.name)
+                && Objects.equal(javaClassName, that.javaClassName)
+                && Objects.equal(sourceFileLocation, that.sourceFileLocation)
+                && Objects.equal(constructorName, that.constructorName)
+                && Objects.equal(dmList, that.dmList)
+                && Objects.equal(nodeSelectorSpec, that.nodeSelectorSpec);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(
+        return Objects.hashCode(
                 lang,
                 name,
                 javaClassName,

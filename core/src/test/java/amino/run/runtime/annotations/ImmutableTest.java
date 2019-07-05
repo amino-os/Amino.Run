@@ -10,10 +10,10 @@ public class ImmutableTest {
     public void testImmutableAnnotation() throws Exception {
         Clazz clazz = new Clazz();
         Method method = clazz.getClass().getDeclaredMethod("immutableOperation");
-        Assert.assertNotNull(method.getDeclaredAnnotation(Immutable.class));
+        Assert.assertNotNull(method.getAnnotation(Immutable.class));
 
         method = clazz.getClass().getDeclaredMethod("mutableOperation");
-        Assert.assertNull(method.getDeclaredAnnotation(Immutable.class));
+        Assert.assertNull(method.getAnnotation(Immutable.class));
     }
 
     public static class Clazz {

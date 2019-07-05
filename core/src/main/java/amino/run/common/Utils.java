@@ -178,7 +178,7 @@ public class Utils {
 
         try {
             Method method = clazz.getMethod(methodName, paramTypes);
-            return method.getDeclaredAnnotation(Immutable.class) != null;
+            return method.getAnnotation(Immutable.class) != null;
         } catch (NoSuchMethodException e) {
             throw new IllegalStateException(
                     String.format(
@@ -189,7 +189,7 @@ public class Utils {
     }
 
     public static boolean isImmutableMethod(Method method) {
-        return method.getDeclaredAnnotation(Immutable.class) != null;
+        return method.getAnnotation(Immutable.class) != null;
     }
 
     /**

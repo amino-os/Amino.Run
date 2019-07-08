@@ -7,6 +7,7 @@ import amino.run.app.Language;
 import amino.run.app.MicroServiceSpec;
 import amino.run.app.Registry;
 import amino.run.common.MicroServiceID;
+import amino.run.common.Utils;
 import amino.run.demo.KVStore;
 import amino.run.kernel.server.KernelServerImpl;
 import amino.run.policy.Policy;
@@ -29,8 +30,12 @@ import java.rmi.registry.LocateRegistry;
 import java.util.Collection;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.concurrent.TimeoutException;
+import java.util.List;
 import java.util.logging.Logger;
+import java.util.Set;
+import java.util.HashSet;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
@@ -65,11 +70,17 @@ public class MultiDMTestCases {
 
     private static Class[] allDmClasses = {
             AtLeastOnceRPCPolicy.class,
-            // TODO: quinton: CacheLeasePolicy.class,
-            ConsensusRSMPolicy.class
+            // CacheLeasePolicy.class,
+            ConsensusRSMPolicy.class,
             // DHTPolicy.class,
             // LoadBalancedMasterSlaveSyncPolicy.class,
     };
+
+    private static Class[][] ignoredCombinations= {
+            { ConsensusRSMPolicy.class, AtLeastOnceRPCPolicy.class }, // TODO: quinton, just testing
+            { ConsensusRSMPolicy.class, DHTPolicy.class},
+    };
+
 
     @Parameterized.Parameter(0)
     public Class dmClasses[] = new Class[0];
@@ -91,17 +102,26 @@ public class MultiDMTestCases {
     // create test data - one row per DM combination
     @Parameterized.Parameters(name = "{index}: Test with dms={0}")
     public static Collection<Object[]> data() {
-        ArrayList<Object[]> data = new ArrayList<Object[]>(); // TODO: quinton: change to Class
+        Utils.ArrayToStringComparator comparator = new Utils.ArrayToStringComparator();
+        ArrayList<Object[]> data = new ArrayList<Object[]>();
+        Arrays.sort(ignoredCombinations, comparator);
         // Add all combinations of two DMs
         for(Class first: allDmClasses) {
             for(Class second: allDmClasses) {
                 if (!first.equals(second)) { // Don't test DMs in combination with themselves
-                    data.add(new Class[][] { new Class[] {first, second} });
+                    Class[] combo = new Class[] {first, second};
+                    if (Arrays.binarySearch(ignoredCombinations, combo, comparator) >= 0) {
+                        data.add(new Class[][] { new Class[] { first, second } } );
+                    }
                 }
             }
         }
         // Explicitly add some extra combinations of more than 2 DMs
         // TODO: quinton: data.add(new Class[]{ AtLeastOnceRPCPolicy.class, CacheLeasePolicy.class, ConsensusRSMPolicy.class });
+        // Explicitly remove all ignored combinations.
+        List<Class[]> ignored = Arrays.asList(ignoredCombinations);
+        data.removeAll(ignored);
+        logger.info("Using data: Combinations: " + data.size() + ", DM classes: " + data.toString());
         return data;
     }
 

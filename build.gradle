@@ -18,7 +18,7 @@ buildscript {
          * https://issuetracker.google.com/issues/38454212
          * https://github.com/requery/requery/issues/467
          */
-        classpath 'com.android.tools.build:gradle:3.3.1'
+        classpath 'com.android.tools.build:gradle:3.4.1'
     }
 }
 
@@ -31,9 +31,11 @@ plugins {
     id 'com.github.sherter.google-java-format' version '0.7.1'
 }
 
+/* TODO: quinton: remove
 task wrapper(type: Wrapper) {
     gradleVersion = '4.10.1'
 }
+*/
 
 subprojects {
     repositories {
@@ -146,7 +148,7 @@ subprojects {
 
     // Include stubs sourceSet classes in the jar file.
     jar {
-        from sourceSets.stubs.output.classesDir
+        from sourceSets.stubs.output.classesDirs
         // Java jar file depends on compile tasks of all sourceSets.
         // Currently there are two sourceSets - "main" and "stubs".
         // Java modules will have "main" and "stubs" sourceSets and

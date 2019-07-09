@@ -111,14 +111,14 @@ task compileSampleSO(type: JavaCompile) {
     source = file(project.projectDir.toString() + '/src/test/java/amino/run/sampleSO')
     exclude('**/*_Stub*')  // Added for excluding older Stub files, while compiling Sample SO package.
     classpath = sourceSets.main.runtimeClasspath
-    destinationDir = sourceSets.test.output.classesDir
+    destinationDir = sourceSets.test.output.classesDirs[0]
     options.incremental = true
 }
 
 task genUnitTestStubs(type :JavaExec){
     dependsOn compileSampleSO
     main = "amino.run.compiler.StubGenerator"
-    classpath += files(sourceSets.test.output.classesDir)
+    classpath sourceSets.test.output.classesDirs
 
     def pkg = 'amino.run.sampleSO'
     def src = file(project.buildDir.toString() + '/classes/java/test/amino/run/sampleSO/')
@@ -146,7 +146,7 @@ task compileGraalTestStubs(type: JavaCompile) {
     dependsOn genGraalTestStubs
     source = "$projectDir/src/test/java/amino/run/stubs"
     classpath = sourceSets.main.runtimeClasspath
-    destinationDir = sourceSets.test.output.classesDir
+    destinationDir = sourceSets.test.output.classesDirs[0]
     options.incremental = true
     inputs.dir genGraalTestStubs.outputs
     outputs.dir destinationDir
@@ -156,14 +156,14 @@ task compileIntegTestDemoPkg(type: JavaCompile) {
     source = file(project.projectDir.toString() + '/src/integrationTest/java/amino/run/demo/')
     exclude('**/*_Stub*')  // Added for excluding older Stub files, while compiling Integration Test Demo package.
     classpath = sourceSets.integrationTest.compileClasspath
-    destinationDir = sourceSets.integrationTest.output.classesDir
+    destinationDir = sourceSets.integrationTest.output.classesDirs[0]
     options.incremental = true
 }
 
 task genIntegTestStubs(type :JavaExec) {
     dependsOn compileIntegTestDemoPkg
     main = "amino.run.compiler.StubGenerator"
-    classpath += files(sourceSets.integrationTest.output.classesDir)
+    classpath sourceSets.integrationTest.output.classesDirs
 
     def pkg = 'amino.run.demo'
     def src = file(project.buildDir.toString() + '/classes/java/integrationTest/amino/run/demo')

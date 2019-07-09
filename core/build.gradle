@@ -81,7 +81,7 @@ def getGraalVmVersion = { ->
 
 // Check that the installed GraalVM version matches the the standard version we use for this project.
 task checkGraalVmVersion {
-    inputs.property('graalVmVersion', null)
+    inputs.property('graalVmVersion', 'null')
     inputs.property('actualVersion', { getGraalVmVersion() })
     doLast {
         def requiredVersion = project.property('graalVmVersion')
@@ -191,10 +191,10 @@ compileJava.dependsOn checkGraalVmVersion
 compileTestJava {
     dependsOn compileStubsJava
     dependsOn compileGraalTestStubs
-    dependsOn genUnitTestStubs
+    // TODO: quinton: debug: dependsOn genUnitTestStubs
     classpath += sourceSets.stubs.output
 }
-compileIntegrationTestJava.dependsOn genIntegTestStubs
+// TODO: quinton: debug compileIntegrationTestJava.dependsOn genIntegTestStubs
 
 integTest.mustRunAfter test
 check.dependsOn integTest

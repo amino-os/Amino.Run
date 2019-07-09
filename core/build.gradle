@@ -133,12 +133,14 @@ task genUnitTestStubs(type :JavaExec){
 task genGraalTestStubs(type: JavaExec) {
     dependsOn compileJava
     main = "amino.run.compiler.GraalStubGenerator"
-    def microServicePath = "$projectDir/src/test/resources/student.js"
+    def microServiceDir = "$projectDir/src/test/resources/"
+    def microServiceFile = "student.js"
+    def microServicePath = microServiceDir + microServiceFile
     def outPath = "$projectDir/src/test/java"
     def packageName = "amino.run.stubs"
     def microServiceClasses = "Student"
     args microServicePath, outPath, packageName, microServiceClasses
-    inputs.dir microServicePath   // Declare inputs, so gradle will run if they have been changed
+    inputs.dir microServiceDir   // Declare inputs, so gradle will run if they have been changed
     outputs.dir outPath + "/amino/run/stubs" // Declare outputs, so gradle will run if they have been changed
 }
 // Task for Graal Test stubs compilation
@@ -148,7 +150,7 @@ task compileGraalTestStubs(type: JavaCompile) {
     classpath = sourceSets.main.runtimeClasspath
     destinationDir = sourceSets.test.output.classesDirs[0]
     options.incremental = true
-    inputs.dir genGraalTestStubs.outputs
+    // TODO: quinton: shouldn't need this: inputs.dir genGraalTestStubs.outputs
     outputs.dir destinationDir
 }
 

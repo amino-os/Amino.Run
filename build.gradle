@@ -136,7 +136,8 @@ subprojects {
     compileStubsJava {
         classpath = sourceSets.main.runtimeClasspath
         options.incremental = true
-        inputs.dir genStubs.outputs
+        dependsOn genStubs
+        // TODO: quinton: replaced by above: inputs.dir genStubs.outputs
     }
 
     clean {
@@ -153,7 +154,7 @@ subprojects {
         // Currently there are two sourceSets - "main" and "stubs".
         // Java modules will have "main" and "stubs" sourceSets and
         // non-Java examples will have only "main" sourceSet.
-        inputs.dir tasks.withType(AbstractCompile)   // jar needs to be rebuilt if any compileTask gets executed.
+        // TODO: quinton: debug: inputs.dir tasks.withType(AbstractCompile)   // jar needs to be rebuilt if any compileTask gets executed.
     }
 
     googleJavaFormat {

@@ -2,7 +2,6 @@ package amino.run.policy.scalability.masterslave;
 
 import static amino.run.policy.scalability.masterslave.MethodInvocationRequest.MethodType.IMMUTABLE;
 
-import com.google.common.base.Objects;
 import java.io.Serializable;
 import java.util.ArrayList;
 
@@ -79,15 +78,25 @@ public final class MethodInvocationRequest implements Serializable {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof MethodInvocationRequest)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
         MethodInvocationRequest that = (MethodInvocationRequest) o;
-        return Objects.equal(clientId, that.getClientId())
-                && Objects.equal(requestId, that.getRequestId());
+
+        if (!clientId.equals(that.clientId)) {
+            return false;
+        }
+        return requestId.equals(that.requestId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(clientId, requestId);
+        int result = clientId.hashCode();
+        result = 31 * result + requestId.hashCode();
+        return result;
     }
 }

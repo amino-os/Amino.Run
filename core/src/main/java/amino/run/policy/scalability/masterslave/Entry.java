@@ -1,6 +1,5 @@
 package amino.run.policy.scalability.masterslave;
 
-import com.google.common.base.Objects;
 import java.io.Serializable;
 
 /** @author terryz */
@@ -40,14 +39,25 @@ public abstract class Entry implements Serializable {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Entry)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
         Entry entry = (Entry) o;
-        return getTerm() == entry.getTerm() && getIndex() == entry.getIndex();
+
+        if (term != entry.term) {
+            return false;
+        }
+        return index == entry.index;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(getTerm(), getIndex());
+        int result = (int) (term ^ (term >>> 32));
+        result = 31 * result + (int) (index ^ (index >>> 32));
+        return result;
     }
 }

@@ -117,8 +117,8 @@ subprojects {
         //TODO: Need to find a better way for setting JAVA6_HOME and 'bootstrapClasspath' automatically.
         // TODO:If JDK1.6 is not installed in system then should through error because we are enforcing to use JDK1.6
         // set JAVA6_HOME path to JDK 1.6. [export JAVA6_HOME={jdk1.6 path}
-        if ((JavaVersion.VERSION_1_6 == sourceCompatibility)
-                && (System.env.JAVA6_HOME) != null) {
+        if (JavaVersion.VERSION_1_6.equals(javaVersion)
+                && System.env.JAVA6_HOME != null) {
             options.fork = true
             options.bootstrapClasspath = files("$System.env.JAVA6_HOME/jre/lib/rt.jar")
         }

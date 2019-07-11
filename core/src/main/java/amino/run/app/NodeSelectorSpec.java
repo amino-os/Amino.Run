@@ -1,6 +1,5 @@
 package amino.run.app;
 
-import com.google.common.base.Objects;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -76,14 +75,20 @@ public class NodeSelectorSpec implements Serializable {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
         NodeSelectorSpec that = (NodeSelectorSpec) o;
-        return Objects.equal(nodeSelectorTerms, that.nodeSelectorTerms);
+
+        return nodeSelectorTerms.equals(that.nodeSelectorTerms);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(nodeSelectorTerms);
+        return nodeSelectorTerms.hashCode();
     }
 }

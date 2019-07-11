@@ -5,7 +5,6 @@ import amino.run.common.MicroServiceReplicaNotFoundException;
 import amino.run.kernel.common.KernelObjectStub;
 import amino.run.policy.DefaultPolicy;
 import amino.run.policy.Policy;
-import com.google.common.base.Objects;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -48,16 +47,26 @@ public class LoadBalancedFrontendPolicy extends DefaultPolicy {
 
         @Override
         public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+
             Config config = (Config) o;
-            return maxConcurrentReq == config.maxConcurrentReq
-                    && replicaCount == config.replicaCount;
+
+            if (maxConcurrentReq != config.maxConcurrentReq) {
+                return false;
+            }
+            return replicaCount == config.replicaCount;
         }
 
         @Override
         public int hashCode() {
-            return Objects.hashCode(maxConcurrentReq, replicaCount);
+            int result = maxConcurrentReq;
+            result = 31 * result + replicaCount;
+            return result;
         }
     }
 

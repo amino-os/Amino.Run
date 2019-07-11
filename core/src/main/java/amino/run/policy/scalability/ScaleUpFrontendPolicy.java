@@ -5,7 +5,6 @@ import amino.run.common.MicroServiceReplicaNotFoundException;
 import amino.run.kernel.common.KernelObjectStub;
 import amino.run.policy.Policy;
 import amino.run.policy.util.ResettableTimer;
-import com.google.common.base.Objects;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -36,15 +35,20 @@ public class ScaleUpFrontendPolicy extends LoadBalancedFrontendPolicy {
 
         @Override
         public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+
             Config config = (Config) o;
             return replicationRateInMs == config.replicationRateInMs;
         }
 
         @Override
         public int hashCode() {
-            return Objects.hashCode(replicationRateInMs);
+            return replicationRateInMs;
         }
     }
 

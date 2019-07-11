@@ -161,23 +161,6 @@ public class MinnieTwitterMain {
         }
     }
 
-    /**
-     * TODO: should find best alternative for a InetSocketAddress.getHostString()
-     * InetSocketAddress.getHostString() which is 1.7 API.
-     *
-     * @param omsAddr
-     * @return
-     */
-    private static String getHostString(InetSocketAddress omsAddr) {
-        if (omsAddr.getHostName() != null) {
-            return omsAddr.getHostName();
-        }
-        if (omsAddr.getAddress() != null) {
-            return omsAddr.getAddress().getHostAddress();
-        }
-        return null;
-    }
-
     private static void runFullDemo(InetSocketAddress hostAddr, InetSocketAddress omsAddr)
             throws Exception {
         // First find OMS
@@ -186,8 +169,9 @@ public class MinnieTwitterMain {
                 hostAddr,
                 omsAddr); // TODO quinton: This is the so-called fake kernel server. Figure out a
         // better way.  This is messy.
-        rmiRegistry = LocateRegistry.getRegistry(getHostString(omsAddr), omsAddr.getPort());
+        rmiRegistry = LocateRegistry.getRegistry(omsAddr.getHostName(), omsAddr.getPort());
         Registry oms = (Registry) rmiRegistry.lookup("io.amino.run.oms");
+
         String microServiceName = "MyTwitterManager";
         TwitterManager clients[] = new TwitterManager[3];
         // Start the microservice

@@ -89,14 +89,13 @@ public class IntegrationTestBase {
                 "Starting OMS at %s:%d with command line \'%s\'\n",
                 ip, port, StringUtils.join(args, ","));
 
-        Process process = new ProcessBuilder(args).start();
+        Process process = new ProcessBuilder(args).redirectErrorStream(true).start();
 
         // Must read the command STDOUT otherwise command is hanging.
+        // Link:https://stackoverflow.com/questions/3285408/java-processbuilder-resultant-process-hangs
         // 1.7 Java version has processBuilder.inhertIO() will read the logs and print on console.
-        StreamReader error = new StreamReader(process.getErrorStream(), "ERROR");
-        StreamReader output = new StreamReader(process.getInputStream(), "");
+        StreamReader output = new StreamReader(process.getInputStream());
 
-        error.start();
         output.start();
 
         waitForSockListen(ip, port);
@@ -144,14 +143,13 @@ public class IntegrationTestBase {
                 "Starting kernel server at %s:%d with command line \'%s\'\n",
                 ip, port, StringUtils.join(args, ","));
 
-        Process process = new ProcessBuilder(args).start();
+        Process process = new ProcessBuilder(args).redirectErrorStream(true).start();
 
         // Must read the command STDOUT otherwise command is hanging.
+        // Link:https://stackoverflow.com/questions/3285408/java-processbuilder-resultant-process-hangs
         // 1.7 Java version has processBuilder.inhertIO() will read the logs and print on console.
-        StreamReader error = new StreamReader(process.getErrorStream(), "ERROR");
-        StreamReader output = new StreamReader(process.getInputStream(), "");
+        StreamReader output = new StreamReader(process.getInputStream());
 
-        error.start();
         output.start();
 
         waitForSockListen(ip, port);
@@ -213,11 +211,9 @@ public class IntegrationTestBase {
  */
 class StreamReader extends Thread {
     InputStream is;
-    String type;
 
-    StreamReader(InputStream is, String type) {
+    StreamReader(InputStream is) {
         this.is = is;
-        this.type = type;
     }
 
     @Override
@@ -227,9 +223,11 @@ class StreamReader extends Thread {
             BufferedReader br = new BufferedReader(isr);
             String line = null;
             while ((line = br.readLine()) != null) {
-                // TODO: stream output is not printing in console currently. give --info for debug
+                // TODO:System.out.println need to replace with logger.info
+                // TODO: stream output is not printing in console currently. give --info for console
+                // output
                 // ex: [./gradlew clean build --info]
-                System.out.println(type + line);
+                System.out.println(line);
             }
 
         } catch (IOException ioe) {

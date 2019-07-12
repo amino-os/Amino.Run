@@ -10,40 +10,31 @@ import amino.run.common.MicroServiceID;
 import amino.run.common.Utils;
 import amino.run.demo.KVStore;
 import amino.run.kernel.server.KernelServerImpl;
-import amino.run.policy.Policy;
-import amino.run.policy.Upcalls;
-import amino.run.policy.atleastoncerpc.AtLeastOnceRPCPolicy;
 import amino.run.policy.cache.CacheLeasePolicy;
 import amino.run.policy.cache.WriteThroughCachePolicy;
+import amino.run.policy.Upcalls;
+import amino.run.policy.atleastoncerpc.AtLeastOnceRPCPolicy;
+import amino.run.policy.cache.WriteThroughCachePolicy;
 import amino.run.policy.checkpoint.durableserializable.DurableSerializableRPCPolicy;
-import amino.run.policy.checkpoint.periodiccheckpoint.PeriodicCheckpointPolicy;
 import amino.run.policy.dht.DHTPolicy;
 import amino.run.policy.replication.ConsensusRSMPolicy;
-import amino.run.policy.scalability.LoadBalancedFrontendPolicy;
-import amino.run.policy.scalability.LoadBalancedMasterSlaveSyncPolicy;
-import amino.run.policy.serializability.LockingTransactionPolicy;
-import amino.run.policy.serializability.OptConcurrentTransactPolicy;
-import amino.run.policy.transaction.TwoPCCoordinatorPolicy;
 import amino.run.policy.util.consensus.raft.LeaderException;
 import java.net.InetSocketAddress;
 import java.rmi.registry.LocateRegistry;
-import java.util.Collection;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.concurrent.TimeoutException;
 import java.util.List;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
-import java.util.Set;
-import java.util.HashSet;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.runners.Parameterized;
-import org.junit.runner.RunWith;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 /**
  * Test multiple deployment managers (<strong>"multi-dm"</strong>) with multiple kernel servers.
@@ -69,18 +60,20 @@ public class MultiDMTestCases {
     private static final Logger logger = Logger.getLogger(MultiDMTestCases.class.getName());
 
     private static Class[] allDmClasses = {
-            AtLeastOnceRPCPolicy.class,
-            // CacheLeasePolicy.class,
-            ConsensusRSMPolicy.class,
-            // DHTPolicy.class,
-            // LoadBalancedMasterSlaveSyncPolicy.class,
+        AtLeastOnceRPCPolicy.class,
+        CacheLeasePolicy.class,
+        ConsensusRSMPolicy.class,
+            WriteThroughCachePolicy.class,
+            DurableSerializableRPCPolicy.class
+
+        // DHTPolicy.class,
+        // LoadBalancedMasterSlaveSyncPolicy.class,
     };
 
-    private static Class[][] ignoredCombinations= {
-            { ConsensusRSMPolicy.class, AtLeastOnceRPCPolicy.class }, // TODO: quinton, just testing
-            { ConsensusRSMPolicy.class, DHTPolicy.class},
+    private static Class[][] ignoredCombinations = {
+        {ConsensusRSMPolicy.class, AtLeastOnceRPCPolicy.class}, // TODO: quinton, just testing
+        {ConsensusRSMPolicy.class, DHTPolicy.class},
     };
-
 
     @Parameterized.Parameter(0)
     public Class dmClasses[] = new Class[0];
@@ -105,26 +98,46 @@ public class MultiDMTestCases {
         Utils.ArrayToStringComparator comparator = new Utils.ArrayToStringComparator();
         ArrayList<Object[]> data = new ArrayList<Object[]>();
         Arrays.sort(ignoredCombinations, comparator);
+        logger.info("Ignored combinations: " + Arrays.toString(ignoredCombinations));
         // Add all combinations of two DMs
-        for(Class first: allDmClasses) {
-            for(Class second: allDmClasses) {
+        for (Class first : allDmClasses) {
+            for (Class second : allDmClasses) {
                 if (!first.equals(second)) { // Don't test DMs in combination with themselves
                     Class[] combo = new Class[] {first, second};
-                    if (Arrays.binarySearch(ignoredCombinations, combo, comparator) >= 0) {
-                        data.add(new Class[][] { new Class[] { first, second } } );
+                    int foundIndex = Arrays.binarySearch(ignoredCombinations, combo, comparator);
+                    logger.info("Found Index: " + foundIndex + " for " + first.getName() + ", " + second.getName());
+                    if (Arrays.binarySearch(ignoredCombinations, combo, comparator) < 0) {
+                        data.add( new Object[] {combo} );
                     }
                 }
             }
         }
         // Explicitly add some extra combinations of more than 2 DMs
-        // TODO: quinton: data.add(new Class[]{ AtLeastOnceRPCPolicy.class, CacheLeasePolicy.class, ConsensusRSMPolicy.class });
+        Collections.addAll(data,
+                new Object[] { new Class[] { AtLeastOnceRPCPolicy.class, CacheLeasePolicy.class, ConsensusRSMPolicy.class } },
+                new Object[] { new Class[] { AtLeastOnceRPCPolicy.class, CacheLeasePolicy.class, DHTPolicy.class, ConsensusRSMPolicy.class } }
+                /*
+                AtLeastOnceRPCCacheLeaseDHTConsensusRSM,
+                AtLeastOnceRPCCacheLeaseLoadBalancedMasterSlaveSync,
+                AtLeastOnceRPCDHT, // TODO: quinton: Remove as it's only 2 DM's
+                AtLeastOnceRPCDurableSerializableRPC, // TODO: quinton: Remove as it's only 2 DM's
+                AtLeastOnceRPCDHTLoadBalancedMasterSlaveSync,
+                AtLeastOnceRPCLockingTransaction, // TODO: quinton: Remove as it's only 2 DM's
+                CacheLeaseAtLeastOnceRPCDHTConsensusRSM,
+                CacheLeaseDHTLoadBalancedMasterSlaveSync,
+                CacheLeaseDHTConsensusRSM,
+                DHTAtLeastOnceRPCConsensusRSMCacheLease,
+                DHTConsensusRSMCacheLease,
+                DHTLoadBalancedMasterSlaveSyncAtLeastOnceRPC,
+                */
+        );
         // Explicitly remove all ignored combinations.
         List<Class[]> ignored = Arrays.asList(ignoredCombinations);
         data.removeAll(ignored);
-        logger.info("Using data: Combinations: " + data.size() + ", DM classes: " + data.toString());
+        logger.info(
+                "Using data: Combinations: " + data.size() + ", DM classes: " + data.toString());
         return data;
     }
-
 
     @Test
     public void runTest() throws Exception {

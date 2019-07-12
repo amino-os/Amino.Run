@@ -35,50 +35,44 @@ public class Utils {
     private Utils() {} // // so that nobody can accidentally create a Utils object
 
     /**
-     * Safe, efficient Comparator for arrays of Objects, by Quinton.
-     * Where necessary, toString() is involked on array elements to determine ordering.
-     * Unfortunately there's no easier way to do this using the Java standard library, as far
-     * as I can determine.  Crazy! See https://www.geeksforgeeks.org/comparator-interface-java/
+     * Safe, efficient Comparator for arrays of Objects, by Quinton. Where necessary, toString() is
+     * involked on array elements to determine ordering. Unfortunately there's no easier way to do
+     * this using the Java standard library, as far as I can determine. Crazy! See
+     * https://www.geeksforgeeks.org/comparator-interface-java/
      */
     public static class ArrayToStringComparator implements Comparator<Object[]> {
         public int compare(Object[] a, Object[] b) {
             if (a == null && b == null) {
                 return 0; // If both arrays are null, consider them equal.
-            }
-            else if (a != null) { // We can index into a
+            } else if (a != null) { // We can index into a
                 if (b == null) {
                     return +1; // a is not null, and b is null, consider a > b
-                }
-                else { // Compare a and b element-wise, until a difference is found.
-                    for(int i = 0; i < a.length && i < b.length ; i++) {
+                } else { // Compare a and b element-wise, until a difference is found.
+                    for (int i = 0; i < a.length && i < b.length; i++) {
                         if (a[i] == null) {
                             if (b[i] != null) {
                                 return -1;
-                            }
-                            else {
+                            } else {
                                 continue; // a[i] == b[i] == null, so keep looking
                             }
-                        }
-                        else {
+                        } else {
                             if (b[i] == null) {
                                 return +1;
                             }
                             int comparison = a[i].toString().compareTo(b[i].toString());
-                            if (comparison == 0){
+                            if (comparison == 0) {
                                 continue;
-                            }
-                            else {
+                            } else {
                                 return comparison;
                             }
                         }
                     }
                     /* We dropped out of the loop because we got to the end of a and/or b
-                       without finding a difference, so the longer of a or b is greater.
-                     */
+                      without finding a difference, so the longer of a or b is greater.
+                    */
                     return Integer.compare(a.length, b.length);
                 }
-            }
-            else {  // a is null, and b is not null
+            } else { // a is null, and b is not null
                 return -1;
             }
         }
@@ -87,7 +81,8 @@ public class Utils {
     public static class ObjectCloner { // see
         // https://www.javaworld.com/article/2077578/learn-java/java-tip-76--an-alternative-to-the-deep-copy-technique.html
         // returns a deep copy of an object
-        private ObjectCloner() {} // // so that nobody can accidentally creates an ObjectCloner object
+        private
+        ObjectCloner() {} // // so that nobody can accidentally creates an ObjectCloner object
 
         public static Serializable deepCopy(Serializable oldObj)
                 throws IOException, ClassNotFoundException {

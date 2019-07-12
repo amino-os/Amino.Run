@@ -7,15 +7,29 @@ sourceSets {
         java {
             compileClasspath += main.output + test.output
             runtimeClasspath += main.output + stubs.output + test.output
+            // TODO: quinton: surely this is implicit and can be removed?
             srcDir file('src/integrationTest/java')
         }
+        // TODO: quinton: surely this is implicit and can be removed?
         resources.srcDir file('src/integrationTest/resources')
+    }
+    /*
+     * Generate integration test stubs into a separate source set, to avoid circular dependencies etc.
+     */
+    integrationTestStubs {
+        java {
+            compileClasspath += main.output + test.output + integrationTest.output
+            runtimeClasspath += main.output + stubs.output + test.output
+        }
     }
 }
 
 configurations {
     integrationTestCompile.extendsFrom testCompile
     integrationTestRuntime.extendsFrom testRuntime
+    integrationTestStubsCompile.extendsFrom testCompile
+    integrationTestStubsRuntime.extendsFrom testRuntime
+
 }
 
 dependencies {
@@ -92,11 +106,6 @@ task checkGraalVmVersion {
     }
 }
 
-task integTest(type: Test) {
-    testClassesDirs = sourceSets.integrationTest.output.classesDirs
-    classpath = sourceSets.integrationTest.runtimeClasspath
-}
-
 // Customize DM stub generation
 genStubs {
     def pkg = 'amino.run.policy'
@@ -128,6 +137,15 @@ task genUnitTestStubs(type :JavaExec){
     outputs.dir dst
 }
 
+task compileSampleSOStubs(type: JavaCompile) {
+    dependsOn genUnitTestStubs
+    source = file(project.projectDir.toString() + '/src/test/java/amino/run/sampleSO/stubs')
+    classpath = sourceSets.main.runtimeClasspath
+    classpath += sourceSets.test.output
+    destinationDir = sourceSets.test.output.classesDirs[0]
+    options.incremental = true
+}
+
 // Task for Graal Test Stubs Generation:
 // Run `gradlew genGraalTestStubs` to generate Graal test stub files
 task genGraalTestStubs(type: JavaExec) {
@@ -150,7 +168,6 @@ task compileGraalTestStubs(type: JavaCompile) {
     classpath = sourceSets.main.runtimeClasspath
     destinationDir = sourceSets.test.output.classesDirs[0]
     options.incremental = true
-    // TODO: quinton: shouldn't need this: inputs.dir genGraalTestStubs.outputs
     outputs.dir destinationDir
 }
 
@@ -169,10 +186,17 @@ task genIntegTestStubs(type :JavaExec) {
 
     def pkg = 'amino.run.demo'
     def src = file(project.buildDir.toString() + '/classes/java/integrationTest/amino/run/demo')
-    def dst = file(project.projectDir.toString() + '/src/integrationTest/java/amino/run/demo/stubs')
+    def dst = file(project.projectDir.toString() + '/src/integrationTestStubs/java/amino/run/demo/stubs')
     args src.toString(), pkg, dst.toString()
     inputs.dir src // Declare inputs, so gradle will run if they have been changed
     outputs.dir dst // Declare outputs, so gradle will run if they have been changed
+}
+
+task integTest(type: Test) {
+    dependsOn compileIntegrationTestStubsJava
+    testClassesDirs = sourceSets.integrationTest.output.classesDirs
+    classpath += sourceSets.integrationTest.runtimeClasspath
+    classpath += sourceSets.integrationTestStubs.output
 }
 
 clean {
@@ -189,14 +213,29 @@ jar {
     baseName project.property('mavenArtifactId')
 }
 
-compileJava.dependsOn checkGraalVmVersion
+compileJava {
+    dependsOn checkGraalVmVersion
+}
+
 compileTestJava {
     dependsOn compileStubsJava
     dependsOn compileGraalTestStubs
-    // TODO: quinton: debug: dependsOn genUnitTestStubs
+    dependsOn stubsClasses
     classpath += sourceSets.stubs.output
 }
-// TODO: quinton: debug compileIntegrationTestJava.dependsOn genIntegTestStubs
+
+test {
+    dependsOn compileSampleSOStubs
+}
+
+
+compileIntegrationTestJava {
+    dependsOn stubsClasses
+}
+
+compileIntegrationTestStubsJava {
+    dependsOn genIntegTestStubs
+}
 
 integTest.mustRunAfter test
 check.dependsOn integTest

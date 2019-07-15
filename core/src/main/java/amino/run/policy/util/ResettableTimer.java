@@ -35,6 +35,13 @@ public class ResettableTimer {
         timer.schedule(task, delay);
     }
 
+    /** Reset the timer with given delay */
+    public void reset(long delay) {
+        this.cancel();
+        this.delay = delay;
+        this.start();
+    }
+
     /** Reset the timer. */
     public void reset() {
         this.cancel();

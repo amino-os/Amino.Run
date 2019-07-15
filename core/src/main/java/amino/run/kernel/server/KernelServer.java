@@ -5,6 +5,7 @@ import amino.run.common.AppObjectStub;
 import amino.run.common.MicroServiceCreationException;
 import amino.run.common.MicroServiceNotFoundException;
 import amino.run.common.MicroServiceReplicaNotFoundException;
+import amino.run.kernel.client.KernelClient.RandomData;
 import amino.run.kernel.common.KernelOID;
 import amino.run.kernel.common.KernelObjectMigratingException;
 import amino.run.kernel.common.KernelObjectNotFoundException;
@@ -42,13 +43,13 @@ public interface KernelServer extends Remote {
     /**
      * Receive HeartBeat with random bytes to measure data transfer time
      *
-     * @param randomBytes
+     * @param data
      * @throws RemoteException
      */
-    void receiveHeartBeat(byte[] randomBytes) throws RemoteException;
+    void receiveHeartBeat(RandomData data) throws RemoteException;
 
     /**
-     * Receive HeartBeat with empty data to measure latency between kernel servers
+     * Receive HeartBeat with no arguments to measure latency between kernel servers
      *
      * @throws RemoteException
      */

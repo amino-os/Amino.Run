@@ -9,6 +9,7 @@ import amino.run.common.MicroServiceNotFoundException;
 import amino.run.common.MicroServiceReplicaNotFoundException;
 import amino.run.common.Notification;
 import amino.run.kernel.client.KernelClient;
+import amino.run.kernel.client.KernelClient.RandomData;
 import amino.run.kernel.common.*;
 import amino.run.oms.OMSServer;
 import amino.run.policy.Library;
@@ -55,10 +56,6 @@ public class KernelServerImpl implements KernelServer {
 
     // heartbeat timer
     private ResettableTimer ksHeartbeatSendTimer;
-
-    // Metrics measurement timer
-    private ResettableTimer metricsMeasurementTimer;
-    static final long METRIC_POLL_PERIOD_IN_MS = 1000; /* Metrics poll period in ms */
 
     public KernelServerImpl(InetSocketAddress host, InetSocketAddress omsHost) {
         OMSServer oms = null;
@@ -409,12 +406,12 @@ public class KernelServerImpl implements KernelServer {
     /**
      * Receive HeartBeat with random bytes to measure data transfer time
      *
-     * @param randomBytes
+     * @param data
      */
     @Override
-    public void receiveHeartBeat(byte[] randomBytes) {}
+    public void receiveHeartBeat(RandomData data) {}
 
-    /** Receive HeartBeat with empty data to measure latency between kernel servers */
+    /** Receive HeartBeat with no arguments to measure latency between kernel servers */
     @Override
     public void receiveHeartBeat() {}
 
@@ -465,12 +462,8 @@ public class KernelServerImpl implements KernelServer {
             // Register against OMS
             ServerInfo srvInfo = createServerInfo(host, ksArgs.labels);
             server.setRegion(srvInfo.getRegion());
-            oms.registerKernelServer(srvInfo);
-
             srvInfo.metrics = server.client.getMetrics();
-
-            // Start measuring metrics
-            server.startMetricsMeasurement();
+            oms.registerKernelServer(srvInfo);
 
             // Start HeartBeat timer
             server.startHeartBeat(srvInfo);
@@ -485,20 +478,6 @@ public class KernelServerImpl implements KernelServer {
                     "Failed to start kernel server: " + e.getMessage() + System.lineSeparator());
             printUsage(parser);
         }
-    }
-
-    /** Method to start periodic measurement of kernel server metrics */
-    private void startMetricsMeasurement() {
-        metricsMeasurementTimer =
-                new ResettableTimer(
-                        new TimerTask() {
-                            public void run() {
-                                client.measureServerMetrics();
-                                metricsMeasurementTimer.reset();
-                            }
-                        },
-                        METRIC_POLL_PERIOD_IN_MS);
-        metricsMeasurementTimer.start();
     }
 
     private void startHeartBeat(final ServerInfo srvInfo) {

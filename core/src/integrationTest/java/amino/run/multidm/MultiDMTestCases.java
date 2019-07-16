@@ -16,8 +16,15 @@ import amino.run.policy.Upcalls;
 import amino.run.policy.atleastoncerpc.AtLeastOnceRPCPolicy;
 import amino.run.policy.cache.WriteThroughCachePolicy;
 import amino.run.policy.checkpoint.durableserializable.DurableSerializableRPCPolicy;
+import amino.run.policy.checkpoint.periodiccheckpoint.PeriodicCheckpointPolicy;
 import amino.run.policy.dht.DHTPolicy;
 import amino.run.policy.replication.ConsensusRSMPolicy;
+import amino.run.policy.scalability.LoadBalancedFrontendPolicy;
+import amino.run.policy.scalability.LoadBalancedMasterSlaveSyncPolicy;
+import amino.run.policy.serializability.LockingTransactionPolicy;
+import amino.run.policy.serializability.OptConcurrentTransactPolicy;
+import amino.run.policy.serializability.SerializableRPCPolicy;
+import amino.run.policy.transaction.TwoPCCoordinatorPolicy;
 import amino.run.policy.util.consensus.raft.LeaderException;
 import java.net.InetSocketAddress;
 import java.rmi.registry.LocateRegistry;
@@ -38,45 +45,137 @@ import org.junit.runners.Parameterized;
 
 /**
  * Test multiple deployment managers (<strong>"multi-dm"</strong>) with multiple kernel servers.
- *
- * <p>How to add an integration test for new combination: Specify the name of DM without 'policy'
- * suffix. i.e., runTest(DHTPolicy.class, ConsensusRSMPolicy.class, AtLeastOnceRPCPolicy.class); If
- * it has a new DM name, update getPackageName() method to include the package name for it.
+ * 
+ * TODO: Current integration tests only check the results returned back to the client. Ideally, 
+ * they should check each kernel server to verify whether RPCs were made to intended kernel servers.
  */
-// TODO: Current integration tests only check the result back to client. Ideally, it should check
-// each kernel server to verify whether RPC was made to intended kernel servers.
 @RunWith(Parameterized.class)
 public class MultiDMTestCases {
     final String JAVA_CLASS_NAME = "amino.run.demo.KVStore";
     final Language DEFAULT_LANG = Language.java;
 
     // Unless AtLeastOnceRPC policy is used, we need to explicitly retry.
-    final long retryTimeoutMs = 10000L;
-    final long retryPeriodMs = 100L;
+    final long RETRY_TIMEOUT_MS = 10000L;
+    final long RETRY_PERIOD_MS = 1000L;
 
     final int DHT_SHARDS = 2;
     Registry registry;
     private static String regionName = "";
     private static final Logger logger = Logger.getLogger(MultiDMTestCases.class.getName());
 
+    /**
+     * Array of all DM classes to be tested.  Every binary combination (i.e. 2) of these DM's
+     * will be tested unless explicitly ignored below.
+     */
     private static Class[] allDmClasses = {
         AtLeastOnceRPCPolicy.class,
         CacheLeasePolicy.class,
         ConsensusRSMPolicy.class,
-            WriteThroughCachePolicy.class,
-            DurableSerializableRPCPolicy.class
-
-        // DHTPolicy.class,
-        // LoadBalancedMasterSlaveSyncPolicy.class,
+            DurableSerializableRPCPolicy.class,
+            DHTPolicy.class,
+            LoadBalancedMasterSlaveSyncPolicy.class,
+            LockingTransactionPolicy.class,
+            OptConcurrentTransactPolicy.class,
+            PeriodicCheckpointPolicy.class,
+            SerializableRPCPolicy.class,
+            TwoPCCoordinatorPolicy.class,
+            WriteThroughCachePolicy.class
     };
 
+    /**
+     * Array of additional combinations of DM's to be tested.
+     * Because the number of combinations of 3 or more DM's is so large,
+     * we do not automatically test all possible combinations of 3 or more,
+     * only those combinations listed here.
+     */
+    private static Class[][] additionalCombinations = {
+            { AtLeastOnceRPCPolicy.class, CacheLeasePolicy.class, ConsensusRSMPolicy.class },
+            { AtLeastOnceRPCPolicy.class, CacheLeasePolicy.class, DHTPolicy.class, ConsensusRSMPolicy.class },
+            { AtLeastOnceRPCPolicy.class, CacheLeasePolicy.class, LoadBalancedMasterSlaveSyncPolicy.class },
+            { AtLeastOnceRPCPolicy.class, ConsensusRSMPolicy.class, DHTPolicy.class },
+            { AtLeastOnceRPCPolicy.class, DHTPolicy.class, LoadBalancedMasterSlaveSyncPolicy.class },
+            { AtLeastOnceRPCPolicy.class, DHTPolicy.class, ConsensusRSMPolicy.class },
+            { CacheLeasePolicy.class, AtLeastOnceRPCPolicy.class, DHTPolicy.class, ConsensusRSMPolicy.class },
+            { CacheLeasePolicy.class, DHTPolicy.class, LoadBalancedMasterSlaveSyncPolicy.class },
+            { CacheLeasePolicy.class, DHTPolicy.class, ConsensusRSMPolicy.class },
+            { ConsensusRSMPolicy.class, DHTPolicy.class, AtLeastOnceRPCPolicy.class },
+            { DHTPolicy.class, AtLeastOnceRPCPolicy.class, ConsensusRSMPolicy.class, CacheLeasePolicy.class },
+            { DHTPolicy.class, ConsensusRSMPolicy.class, CacheLeasePolicy.class },
+            { DHTPolicy.class, ConsensusRSMPolicy.class, AtLeastOnceRPCPolicy.class, CacheLeasePolicy.class },
+            { DHTPolicy.class, LoadBalancedMasterSlaveSyncPolicy.class, AtLeastOnceRPCPolicy.class },
+            { DHTPolicy.class, LoadBalancedMasterSlaveSyncPolicy.class, AtLeastOnceRPCPolicy.class, CacheLeasePolicy.class }
+    };
+
+    /**
+     * Array of all combinations of DM that should not be tested.
+     * Typically these are known not to work.  When adding to this list, please
+     * include the reason why the combination is known not to work, and an issue number
+     * to track fixing the problem.
+     */
     private static Class[][] ignoredCombinations = {
-        {ConsensusRSMPolicy.class, AtLeastOnceRPCPolicy.class}, // TODO: quinton, just testing
-        {ConsensusRSMPolicy.class, DHTPolicy.class},
+            /* See DM issue #618. Enable this test once resolved. */
+            { AtLeastOnceRPCPolicy.class, ConsensusRSMPolicy.class, DHTPolicy.class },
+            /* See DM issue #642. Enable this test once resolved. */
+            { AtLeastOnceRPCPolicy.class, DHTPolicy.class, ConsensusRSMPolicy.class },
+            /* See DM issue #642. Enable this test once resolved. */
+            { AtLeastOnceRPCPolicy.class, LoadBalancedFrontendPolicy.class },
+            /* See DM issue #618. Enable this test once resolved. */
+            { ConsensusRSMPolicy.class, DHTPolicy.class },
+            /* See DM issue #618. Enable this test once resolved. */
+            { ConsensusRSMPolicy.class, DHTPolicy.class, AtLeastOnceRPCPolicy.class },
+            /* TimeoutException: Timed out retrying key k1_0, value v1_0 at runTest(MultiDMTestCases.java:278) */
+            { ConsensusRSMPolicy.class, DurableSerializableRPCPolicy.class },
+            /* LeaderException: Current Leader is 00000000-0000-0000-0000-000000000000 */
+            { ConsensusRSMPolicy.class, LoadBalancedMasterSlaveSyncPolicy.class },
+            /* TimeoutException: Timed out retrying key k1_0, value v1_0 at runTest(MultiDMTestCases.java:278) */
+            { ConsensusRSMPolicy.class,  PeriodicCheckpointPolicy.class },
+            /* TransactionAbortException: Distributed transaction has been rolled back. execution had error. */
+            { ConsensusRSMPolicy.class, TwoPCCoordinatorPolicy.class },
+            /* TimeoutException: Timed out retrying key k1_0, value v1_0 at MultiDMTestCases.runTest(MultiDMTestCases.java:278) */
+            { DHTPolicy.class, AtLeastOnceRPCPolicy.class, ConsensusRSMPolicy.class, CacheLeasePolicy.class },
+            /* See DM issue #618. Enable this test once resolved */
+            { DHTPolicy.class, ConsensusRSMPolicy.class, AtLeastOnceRPCPolicy.class },
+            /* See DM issue #642. Enable this test once resolved. */
+            { DHTPolicy.class, ConsensusRSMPolicy.class, AtLeastOnceRPCPolicy.class, CacheLeasePolicy.class },
+            /* See DM issue #642. Enable this test once resolved. */
+            { DHTPolicy.class, LoadBalancedMasterSlaveSyncPolicy.class, AtLeastOnceRPCPolicy.class, CacheLeasePolicy.class },
+            /* LeaseNotAvailableException: Could not get lease */
+            { LoadBalancedMasterSlaveSyncPolicy.class, CacheLeasePolicy.class },
+            /* java.lang.NullPointerException */
+            { LoadBalancedMasterSlaveSyncPolicy.class, ConsensusRSMPolicy.class },
+            /* AssertionError at amino.run.policy.Library$ClientPolicyLibrary.extractAppContext(Library.java:87) */
+            { LoadBalancedMasterSlaveSyncPolicy.class, DHTPolicy.class },
+            /* AssertionError at amino.run.policy.Library$ClientPolicyLibrary.extractAppContext(Library.java:87) */
+            { LoadBalancedMasterSlaveSyncPolicy.class, LockingTransactionPolicy.class },
+            /* AssertionError at amino.run.policy.Library$ClientPolicyLibrary.extractAppContext(Library.java:87) */
+            { LoadBalancedMasterSlaveSyncPolicy.class, OptConcurrentTransactPolicy.class },
+            /* AssertionError at amino.run.policy.Library$ClientPolicyLibrary.extractAppContext(Library.java:87) */
+            { LoadBalancedMasterSlaveSyncPolicy.class, WriteThroughCachePolicy.class },
+            /* MicroServiceCreationException casused by KernelObjectMigratingException */
+            { OptConcurrentTransactPolicy.class, ConsensusRSMPolicy.class },
+            /* MicroServiceCreationException casused by KernelObjectMigratingException */
+            { OptConcurrentTransactPolicy.class, DHTPolicy.class },
+            /* MicroServiceCreationException casused by KernelObjectMigratingException */
+            { OptConcurrentTransactPolicy.class, LoadBalancedMasterSlaveSyncPolicy.class },
+            /* java.lang.NullPointerException */
+            { TwoPCCoordinatorPolicy.class, ConsensusRSMPolicy.class },
+            /* java.lang.NullPointerException */
+            { TwoPCCoordinatorPolicy.class, DHTPolicy.class },
+            /* TransactionAlreadyStartedException: nested transaction is unsupported. */
+            { TwoPCCoordinatorPolicy.class, DurableSerializableRPCPolicy.class },
+            /* TransactionAlreadyStartedException: nested transaction is unsupported. */
+            { TwoPCCoordinatorPolicy.class, PeriodicCheckpointPolicy.class },
+            /* TransactionAlreadyStartedException: nested transaction is unsupported. */
+            { TwoPCCoordinatorPolicy.class, LockingTransactionPolicy.class },
+            /* TransactionAlreadyStartedException: nested transaction is unsupported. */
+            { TwoPCCoordinatorPolicy.class, WriteThroughCachePolicy.class },
+            /* java.lang.NullPointerException */
+            { TwoPCCoordinatorPolicy.class, LoadBalancedMasterSlaveSyncPolicy.class }
+
     };
 
     @Parameterized.Parameter(0)
-    public Class dmClasses[] = new Class[0];
+    public Collection<Class> dmClasses;
 
     @BeforeClass
     public static void bootstrap() throws Exception {
@@ -94,9 +193,9 @@ public class MultiDMTestCases {
 
     // create test data - one row per DM combination
     @Parameterized.Parameters(name = "{index}: Test with dms={0}")
-    public static Collection<Object[]> data() {
+    public static Collection<Collection<Class>> data() {
         Utils.ArrayToStringComparator comparator = new Utils.ArrayToStringComparator();
-        ArrayList<Object[]> data = new ArrayList<Object[]>();
+        ArrayList<Collection<Class>> data = new ArrayList<Collection<Class>>();
         Arrays.sort(ignoredCombinations, comparator);
         logger.info("Ignored combinations: " + Arrays.toString(ignoredCombinations));
         // Add all combinations of two DMs
@@ -107,33 +206,19 @@ public class MultiDMTestCases {
                     int foundIndex = Arrays.binarySearch(ignoredCombinations, combo, comparator);
                     logger.info("Found Index: " + foundIndex + " for " + first.getName() + ", " + second.getName());
                     if (Arrays.binarySearch(ignoredCombinations, combo, comparator) < 0) {
-                        data.add( new Object[] {combo} );
+                        data.add( Arrays.asList(combo));
                     }
                 }
             }
         }
         // Explicitly add some extra combinations of more than 2 DMs
-        Collections.addAll(data,
-                new Object[] { new Class[] { AtLeastOnceRPCPolicy.class, CacheLeasePolicy.class, ConsensusRSMPolicy.class } },
-                new Object[] { new Class[] { AtLeastOnceRPCPolicy.class, CacheLeasePolicy.class, DHTPolicy.class, ConsensusRSMPolicy.class } }
-                /*
-                AtLeastOnceRPCCacheLeaseDHTConsensusRSM,
-                AtLeastOnceRPCCacheLeaseLoadBalancedMasterSlaveSync,
-                AtLeastOnceRPCDHT, // TODO: quinton: Remove as it's only 2 DM's
-                AtLeastOnceRPCDurableSerializableRPC, // TODO: quinton: Remove as it's only 2 DM's
-                AtLeastOnceRPCDHTLoadBalancedMasterSlaveSync,
-                AtLeastOnceRPCLockingTransaction, // TODO: quinton: Remove as it's only 2 DM's
-                CacheLeaseAtLeastOnceRPCDHTConsensusRSM,
-                CacheLeaseDHTLoadBalancedMasterSlaveSync,
-                CacheLeaseDHTConsensusRSM,
-                DHTAtLeastOnceRPCConsensusRSMCacheLease,
-                DHTConsensusRSMCacheLease,
-                DHTLoadBalancedMasterSlaveSyncAtLeastOnceRPC,
-                */
-        );
+        for(Class[] combo: additionalCombinations) {
+            data.add(Arrays.asList(combo));
+        }
         // Explicitly remove all ignored combinations.
-        List<Class[]> ignored = Arrays.asList(ignoredCombinations);
-        data.removeAll(ignored);
+        for(Class[] combo: ignoredCombinations) {
+            data.remove(Arrays.asList(combo));
+        }
         logger.info(
                 "Using data: Combinations: " + data.size() + ", DM classes: " + data.toString());
         return data;
@@ -144,6 +229,7 @@ public class MultiDMTestCases {
         MicroServiceID microServiceId = null;
         try {
             MicroServiceSpec spec = createMultiDMTestSpec(dmClasses);
+
             microServiceId = registry.create(spec.toString());
             KVStore store = (KVStore) registry.acquireStub(microServiceId);
 
@@ -177,7 +263,7 @@ public class MultiDMTestCases {
                                 // Swallow the exception and retry, after sleeping
                                 logger.info(
                                         "Swallowing runtime exception because AtLeastOnceRPC is not used.");
-                                Thread.sleep(retryPeriodMs);
+                                Thread.sleep(RETRY_PERIOD_MS);
                             } else {
                                 logger.info(
                                         "Not swallowing runtime exception because AtLeastOnceRPC is used.");
@@ -209,7 +295,7 @@ public class MultiDMTestCases {
      * @param names variable arguments of DM names (that needs to be converted to actual DM name)
      * @return created spec based on input DM names
      */
-    private MicroServiceSpec createMultiDMTestSpec(Class... dmClasses) throws Exception {
+    private MicroServiceSpec createMultiDMTestSpec(Collection<Class> dmClasses) throws Exception {
         MicroServiceSpec spec =
                 MicroServiceSpec.newBuilder()
                         .setName(JAVA_CLASS_NAME)
@@ -231,220 +317,6 @@ public class MultiDMTestCases {
 
         return spec;
     }
-
-    /*
-     * Please keep these tests in alphabetical order.
-     */
-
-    /* TODO: Quinton: Replace all tests with data
-    @Test
-    public void testAtLeastOnceRPC() throws Exception {
-        runTest(AtLeastOnceRPCPolicy.class);
-    }
-
-    @Test
-    public void testAtLeastOnceRPCCacheLease() throws Exception {
-        runTest(AtLeastOnceRPCPolicy.class, CacheLeasePolicy.class);
-    }
-
-    @Test
-    public void testAtLeastOnceRPCCacheLeaseConsensusRSM() throws Exception {
-        runTest(AtLeastOnceRPCPolicy.class, CacheLeasePolicy.class, ConsensusRSMPolicy.class);
-    }
-
-    @Test
-    public void testAtLeastOnceRPCCacheLeaseDHTConsensusRSM() throws Exception {
-        runTest(
-                AtLeastOnceRPCPolicy.class,
-                CacheLeasePolicy.class,
-                DHTPolicy.class,
-                ConsensusRSMPolicy.class);
-    }
-
-    @Test
-    public void testAtLeastOnceRPCCacheLeaseLoadBalancedMasterSlaveSync() throws Exception {
-        runTest(
-                AtLeastOnceRPCPolicy.class,
-                CacheLeasePolicy.class,
-                LoadBalancedMasterSlaveSyncPolicy.class);
-    }
-
-    @Test
-    public void testAtLeastOnceRPCConsensusRSM() throws Exception {
-        runTest(AtLeastOnceRPCPolicy.class, ConsensusRSMPolicy.class);
-    }
-
-    @Test
-    @Ignore("See DM issue #618. Enable this test once resolved.")
-    public void testAtLeastOnceRPCConsensusRSMDHT() throws Exception {
-        runTest(AtLeastOnceRPCPolicy.class, ConsensusRSMPolicy.class, DHTPolicy.class);
-    }
-
-    @Test
-    public void testAtLeastOnceRPCDHT() throws Exception {
-        runTest(AtLeastOnceRPCPolicy.class, DHTPolicy.class);
-    }
-
-    @Test
-    @Ignore("See DM issue #642. Enable this test once resolved.")
-    public void testAtLeastOnceRPCDHTConsensusRSM() throws Exception {
-        runTest(AtLeastOnceRPCPolicy.class, DHTPolicy.class, ConsensusRSMPolicy.class);
-    }
-
-    @Test
-    public void testAtLeastOnceRPCDurableSerializableRPC() throws Exception {
-        runTest(AtLeastOnceRPCPolicy.class, DurableSerializableRPCPolicy.class);
-    }
-
-    @Test
-    public void testAtLeastOnceRPCDHTLoadBalancedMasterSlaveSync() throws Exception {
-        runTest(
-                AtLeastOnceRPCPolicy.class,
-                DHTPolicy.class,
-                LoadBalancedMasterSlaveSyncPolicy.class);
-    }
-
-    @Test
-    public void testAtLeastOnceRPCLockingTransaction() throws Exception {
-        runTest(AtLeastOnceRPCPolicy.class, LockingTransactionPolicy.class);
-    }
-
-    @Test
-    @Ignore("See DM issue #642. Enable this test once resolved.")
-    public void testAtLeastOnceRPCLoadBalancedFrontend() throws Exception {
-        runTest(AtLeastOnceRPCPolicy.class, LoadBalancedFrontendPolicy.class);
-    }
-
-    @Test
-    public void testAtLeastOnceRPCLoadBalancedMasterSlaveSync() throws Exception {
-        runTest(AtLeastOnceRPCPolicy.class, LoadBalancedMasterSlaveSyncPolicy.class);
-    }
-
-    @Test
-    public void testAtLeastOnceRPCOptConcurrentTransact() throws Exception {
-        runTest(AtLeastOnceRPCPolicy.class, OptConcurrentTransactPolicy.class);
-    }
-
-    @Test
-    public void testAtLeastOnceRPCPeriodicCheckpoint() throws Exception {
-        runTest(AtLeastOnceRPCPolicy.class, PeriodicCheckpointPolicy.class);
-    }
-
-    @Test
-    public void testAtLeastOnceRPCTwoPCCoordinator() throws Exception {
-        runTest(AtLeastOnceRPCPolicy.class, TwoPCCoordinatorPolicy.class);
-    }
-
-    @Test
-    public void testAtLeastOnceRPCWriteThroughCache() throws Exception {
-        runTest(AtLeastOnceRPCPolicy.class, WriteThroughCachePolicy.class);
-    }
-
-    @Test
-    public void testCacheLeaseAtLeastOnceRPC() throws Exception {
-        runTest(CacheLeasePolicy.class, AtLeastOnceRPCPolicy.class);
-    }
-
-    @Test
-    public void testCacheLeaseAtLeastOnceRPCDHTConsensusRSM() throws Exception {
-        runTest(
-                CacheLeasePolicy.class,
-                AtLeastOnceRPCPolicy.class,
-                DHTPolicy.class,
-                ConsensusRSMPolicy.class);
-    }
-
-    @Test
-    public void testCacheLeaseDHT() throws Exception {
-        runTest(CacheLeasePolicy.class, DHTPolicy.class);
-    }
-
-    @Test
-    public void testCacheLeaseDHTLoadBalancedMasterSlaveSync() throws Exception {
-        runTest(CacheLeasePolicy.class, DHTPolicy.class, LoadBalancedMasterSlaveSyncPolicy.class);
-    }
-
-    @Test
-    public void testCacheLeaseDHTConsensusRSM() throws Exception {
-        runTest(CacheLeasePolicy.class, DHTPolicy.class, ConsensusRSMPolicy.class);
-    }
-
-    @Test
-    @Ignore("See DM issue #618. Enable this test once resolved.")
-    public void testConsensusRSMDHT() throws Exception {
-        runTest(ConsensusRSMPolicy.class, DHTPolicy.class);
-    }
-
-    @Test
-    @Ignore("See DM issue #618. Enable this test once resolved.")
-    public void testConsensusRSMDHTAtLeastOnceRPC() throws Exception {
-        runTest(ConsensusRSMPolicy.class, DHTPolicy.class, AtLeastOnceRPCPolicy.class);
-    }
-
-    @Test
-    public void testDHTAtLeastOnceRPCConsensusRSMCacheLease() throws Exception {
-        runTest(
-                DHTPolicy.class,
-                AtLeastOnceRPCPolicy.class,
-                ConsensusRSMPolicy.class,
-                CacheLeasePolicy.class);
-    }
-
-    @Test
-    public void testDHTConsensusRSM() throws Exception {
-        runTest(DHTPolicy.class, ConsensusRSMPolicy.class);
-    }
-
-    @Test
-    @Ignore("See DM issue #618. Enable this test once resolved")
-    public void testDHTConsensusRSMAtLeastOnceRPC() throws Exception {
-        runTest(DHTPolicy.class, ConsensusRSMPolicy.class, AtLeastOnceRPCPolicy.class);
-    }
-
-    @Test
-    @Ignore("See DM issue #642. Enable this test once resolved.")
-    public void testDHTConsensusRSMAtLeastOnceRPCCacheLease() throws Exception {
-        runTest(
-                DHTPolicy.class,
-                ConsensusRSMPolicy.class,
-                AtLeastOnceRPCPolicy.class,
-                CacheLeasePolicy.class);
-    }
-
-    @Test
-    public void testDHTConsensusRSMCacheLease() throws Exception {
-        runTest(DHTPolicy.class, ConsensusRSMPolicy.class, CacheLeasePolicy.class);
-    }
-
-    @Test
-    public void testDHTLoadBalancedMasterSlaveSync() throws Exception {
-        runTest(DHTPolicy.class, LoadBalancedMasterSlaveSyncPolicy.class);
-    }
-
-    @Test
-    public void testDHTLoadBalancedMasterSlaveSyncAtLeastOnceRPC() throws Exception {
-        runTest(
-                DHTPolicy.class,
-                LoadBalancedMasterSlaveSyncPolicy.class,
-                AtLeastOnceRPCPolicy.class);
-    }
-
-    @Test
-    @Ignore("See DM issue #642. Enable this test once resolved.")
-    public void testDHTLoadBalancedMasterSlaveSyncAtLeastOnceRPCCacheLease() throws Exception {
-        runTest(
-                DHTPolicy.class,
-                LoadBalancedMasterSlaveSyncPolicy.class,
-                AtLeastOnceRPCPolicy.class,
-                CacheLeasePolicy.class);
-    }
-
-    @Test
-    @Ignore("See DM issue #642. Enable this test once resolved.")
-    public void testDHTLoadBalancedMasterSlaveSyncCacheLease() throws Exception {
-        runTest(DHTPolicy.class, LoadBalancedMasterSlaveSyncPolicy.class, CacheLeasePolicy.class);
-    }
-    */
 
     @AfterClass
     public static void cleanUp() {

@@ -12,7 +12,7 @@ import java.io.Serializable;
  */
 public class NodeMetric implements Serializable {
     public long latency; // Latency between kernel servers in nanoseconds
-    public double rate; // Data transfer rate between kernel servers in Mbps
+    public long rate; // Data transfer rate between kernel servers in Bytes/Sec
 
     @Override
     public String toString() {

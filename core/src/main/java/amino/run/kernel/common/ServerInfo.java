@@ -8,10 +8,8 @@ import amino.run.kernel.server.KernelServerImpl;
 import java.io.Serializable;
 import java.net.InetSocketAddress;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /** {@code ServerInfo} contains meta data of a kernel server. */
 public class ServerInfo implements Serializable {
@@ -82,44 +80,12 @@ public class ServerInfo implements Serializable {
 
     private void writeObject(java.io.ObjectOutputStream s) throws java.io.IOException {
         s.defaultWriteObject();
-        int metricsLen = metrics.size();
-        s.writeInt(metricsLen);
-        if (metricsLen == 0) {
-            return;
-        }
-        Iterator<Map.Entry<InetSocketAddress, NodeMetric>> iterator = metrics.entrySet().iterator();
-        while (iterator.hasNext() && metricsLen-- > 0) {
-            Map.Entry entry = iterator.next();
-            NodeMetric metric = (NodeMetric) entry.getValue();
-            /* Encode the values only if is measured since last reported time */
-            if (metric.latency != 0) {
-                s.writeObject(entry.getKey());
-                s.writeObject(metric);
-
-                /* Reset the node metrics values after encoding */
-                metric.latency = 0;
-                metric.rate = 0;
-            }
-        }
-        s.writeObject(null);
-        s.writeObject(null);
+        GlobalKernelReferences.nodeServer.getKernelClient().writeMetrics(s);
     }
 
     private void readObject(java.io.ObjectInputStream s)
             throws java.io.IOException, ClassNotFoundException {
         s.defaultReadObject();
-        int metricsLen = s.readInt();
-        metrics = new ConcurrentHashMap<InetSocketAddress, NodeMetric>(metricsLen);
-        if (metricsLen == 0) {
-            return;
-        }
-        while (metricsLen-- > 0) {
-            InetSocketAddress host = (InetSocketAddress) s.readObject();
-            NodeMetric metric = (NodeMetric) s.readObject();
-            if (host == null || metric == null) {
-                return;
-            }
-            metrics.put(host, metric);
-        }
+        metrics = GlobalKernelReferences.nodeServer.getKernelClient().readMetrics(s);
     }
 }

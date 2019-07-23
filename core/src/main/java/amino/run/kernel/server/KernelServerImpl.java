@@ -270,6 +270,8 @@ public class KernelServerImpl implements KernelServer {
             logger.severe(msg);
             throw new RemoteException(
                     "Failed to create policy stub object on destination server.", e);
+        } catch (KernelServerNotFoundException e) {
+            throw new RemoteException(e.toString(), e);
         }
 
         // Remove the associated KernelObjects from the local KernelServer.
@@ -462,7 +464,6 @@ public class KernelServerImpl implements KernelServer {
             // Register against OMS
             ServerInfo srvInfo = createServerInfo(host, ksArgs.labels);
             server.setRegion(srvInfo.getRegion());
-            srvInfo.metrics = server.client.getMetrics();
             oms.registerKernelServer(srvInfo);
 
             // Start HeartBeat timer

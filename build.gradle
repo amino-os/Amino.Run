@@ -18,7 +18,7 @@ buildscript {
          * https://issuetracker.google.com/issues/38454212
          * https://github.com/requery/requery/issues/467
          */
-        classpath 'com.android.tools.build:gradle:3.3.1'
+        classpath 'com.android.tools.build:gradle:3.4.1'
     }
 }
 
@@ -28,11 +28,7 @@ plugins {
     // 2. Run `gradlew verGJF` to verify code farmat
     // 3. More usage information can be found at
     // https://github.com/sherter/google-java-format-gradle-plugin
-    id 'com.github.sherter.google-java-format' version '0.7.1'
-}
-
-task wrapper(type: Wrapper) {
-    gradleVersion = '4.10.1'
+    id 'com.github.sherter.google-java-format' version '0.8'
 }
 
 subprojects {
@@ -166,9 +162,9 @@ subprojects {
 
     // Configure "stubs" sourceSet compile task, with additional rules.
     compileStubsJava {
-        classpath = sourceSets.main.runtimeClasspath
+        classpath += sourceSets.main.runtimeClasspath
         options.incremental = true
-        inputs.dir genStubs.outputs
+        dependsOn genStubs
     }
 
     clean {
@@ -178,14 +174,15 @@ subprojects {
         }
     }
 
-    // Include stubs sourceSet classes in the jar file.
+    /*
+        jar
+        Depends on: classes
+        Assembles the production JAR file, based on the classes and resources attached to the main
+        source set.
+    */
     jar {
-        from sourceSets.stubs.output.classesDir
-        // Java jar file depends on compile tasks of all sourceSets.
-        // Currently there are two sourceSets - "main" and "stubs".
-        // Java modules will have "main" and "stubs" sourceSets and
-        // non-Java examples will have only "main" sourceSet.
-        inputs.dir tasks.withType(AbstractCompile)   // jar needs to be rebuilt if any compileTask gets executed.
+        // Also include stubs sourceSet classes in the jar file.
+        from sourceSets.stubs.output.classesDirs
     }
 
     googleJavaFormat {

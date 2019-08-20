@@ -406,16 +406,21 @@ public class KernelServerImpl implements KernelServer {
     }
 
     /**
-     * Receive HeartBeat with random bytes to measure data transfer time
+     * An RPC with random data bytes. This method is invoked by RPC client to calculate the data
+     * transfer rate based on the amount of data used as argument to the method and the time taken
+     * to return this call
      *
      * @param data
      */
     @Override
-    public void receiveHeartBeat(RandomData data) {}
+    public void randomDataRPC(RandomData data) {}
 
-    /** Receive HeartBeat with no arguments to measure latency between kernel servers */
+    /**
+     * An empty RPC with no arguments and returns nothing. This method is invoked by RPC client to
+     * measure the time taken to return this call
+     */
     @Override
-    public void receiveHeartBeat() {}
+    public void emptyRPC() {}
 
     /** Send HeartBeats to OMS. */
     private void sendHeartBeat(ServerInfo srvinfo) {

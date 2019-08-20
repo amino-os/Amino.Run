@@ -41,19 +41,22 @@ public interface KernelServer extends Remote {
     void updateAvailableKernelServers(List<InetSocketAddress> serverList) throws RemoteException;
 
     /**
-     * Receive HeartBeat with random bytes to measure data transfer time
+     * An RPC with random data bytes. This method is invoked by RPC client to calculate the data
+     * transfer rate based on the amount of data used as argument to the method and the time taken
+     * to return this call
      *
      * @param data
      * @throws RemoteException
      */
-    void receiveHeartBeat(RandomData data) throws RemoteException;
+    void randomDataRPC(RandomData data) throws RemoteException;
 
     /**
-     * Receive HeartBeat with no arguments to measure latency between kernel servers
+     * An empty RPC with no arguments and returns nothing. This method is invoked by RPC client to
+     * measure the time taken to return this call
      *
      * @throws RemoteException
      */
-    void receiveHeartBeat() throws RemoteException;
+    void emptyRPC() throws RemoteException;
 
     /**
      * Create microservice in kernel server

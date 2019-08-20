@@ -39,9 +39,14 @@ import java.util.logging.Logger;
  */
 public class KernelClient {
     private static final int MIN_METRIC_POLL_PERIOD_MS = 1000; /* Minimum metrics poll period */
-    private static final int MAX_METRIC_POLL_PERIOD_MS = 128000; /* Maximum metrics poll period */
+    /* Maximum metrics poll period. It is arbitrarily chosen as 128seconds(~2min)i.e., 2 power 7. Node metric poll
+     * period starts from MIN_METRIC_POLL_PERIOD_MS and is gradually increased by multiples of 2, upon every consecutive
+     * MIN_STABLE_DATA_RATE_TIMES samples. And poll period is limited to not exceed 128sec so that, even if a node moves
+     * between networks of different speeds (e.g. from wifi to 3G or vice verse) or if it's link gets congested, then
+     * polling node shall not take more than ~2min to detect the change */
+    private static final int MAX_METRIC_POLL_PERIOD_MS = 128000;
     private static final int RANDOM_BYTE_LEN = 1024; /* Length of random bytes array */
-    /* Random byte array used to send in heartbeats */
+    /* Random byte array used to send data with randomRPC method */
     private static final byte[] randomBytes = new byte[RANDOM_BYTE_LEN];
 
     static {
@@ -49,12 +54,13 @@ public class KernelClient {
     }
 
     /**
-     * Data holder class. Instance of it is used in heartbeats. This class just has a length field
-     * in it to specify the amount of data i.e., bytes to be sent in heartbeats. Custom serializer
-     * and deserializer are used to encode and decode actual data bytes to be sent/received in
-     * heartbeats. This way, though we actually have a static randomBytes array of RANDOM_BYTE_LEN
-     * i.e., 1024 we can send/receive much more data of customized lengths( multiples of
-     * RANDOM_BYTE_LEN) in heartbeats and avoid using array/string of huge size.
+     * Data holder class. Instance of it is used as argument to {@link
+     * amino.run.kernel.server.KernelServer#randomDataRPC(RandomData)}. This class just has a length
+     * field in it to specify the amount of data i.e., bytes to be sent. Custom serializer and
+     * deserializer are used to encode and decode actual data bytes to be sent/received. This way,
+     * though we actually have a static randomBytes array of RANDOM_BYTE_LEN i.e., 1024 we can
+     * send/receive much more data of customized lengths( multiples of RANDOM_BYTE_LEN) and avoid
+     * using array/string of huge size.
      */
     public static class RandomData implements Serializable {
         private transient int len = RANDOM_BYTE_LEN; /* Length of data to be sent to server */
@@ -95,20 +101,24 @@ public class KernelClient {
     /** Stub for the OMS */
     private OMSServer oms;
 
-    /* Maximum number of consecutive heartbeat miss allowed */
-    private static final int MAX_FAILED_HEARTBEATS = 3;
+    /* Maximum number of consecutive RPC failures allowed */
+    private static final int MAX_RPC_FAILURE = 3;
 
-    /* Class to hold remote kernel server info. This class is accessible only within this outer class(KernelClient) */
+    /**
+     * Class to hold remote kernel server info. This class is accessible only within its outer class
+     * {@link amino.run.kernel.client.KernelClient}
+     */
     private final class KernelServerInfo {
         private InetSocketAddress serverAddress; /* Host address of kernel server */
         private KernelServer remoteRef; /* Remote reference to the kernel server */
-        /* This count is used to remove a server when it fails to send heartbeats for MAX_FAILED_HEARTBEATS times consecutively */
-        private int failedHeartbeats; /* Consecutive failed heartbeat count */
+        /* Consecutive failed RPC count. This count is used to remove a server when RPCs failed for MAX_RPC_FAILURE times consecutively. */
+        private int failedRPCCount;
 
         /* Minimum samples to consider data rates as consistent. */
         private static final int MIN_STABLE_DATA_RATE_TIMES = 10;
         private int stableDataRateTimes; /* Number of consecutive stable data transfer rates */
-        private RandomData data; /* Amount of random data sent to server in heartbeats */
+        /* Amount of random data sent to server with randomDataRPC method invocation */
+        private RandomData data;
 
         private int metricPollPeriod = MIN_METRIC_POLL_PERIOD_MS; /* Poll period */
         private NodeMetric metric; /* Node metric to server */
@@ -163,15 +173,15 @@ public class KernelClient {
     }
 
     /**
-     * Removes cached remote kernel server information for the given host, if it has missed
-     * heartbeats for {@link amino.run.kernel.client.KernelClient#MAX_FAILED_HEARTBEATS} times
+     * Removes cached remote kernel server information for the given host, if RPCs to server has
+     * failed for {@link amino.run.kernel.client.KernelClient#MAX_RPC_FAILURE} times consecutively
      *
      * @param host
      */
     private void removeHost(InetSocketAddress host) {
         KernelServerInfo server = servers.get(host);
         if (server != null) {
-            if ((server.failedHeartbeats > MAX_FAILED_HEARTBEATS)) {
+            if ((server.failedRPCCount > MAX_RPC_FAILURE)) {
                 servers.remove(host);
             }
         }
@@ -393,20 +403,19 @@ public class KernelClient {
              * Return time = Response Serialization + Network Delay + Deserialization + Get current nano time at end.
              */
 
-            /* Make an empty heartbeat to ensure session is established and cached before measurement */
-            serverInfo.remoteRef.receiveHeartBeat();
+            /* Make an empty RPC to ensure session is established and cached before measurement */
+            serverInfo.remoteRef.emptyRPC();
 
             /* Measure latency */
             long t1 = System.nanoTime();
-            serverInfo.remoteRef.receiveHeartBeat();
+            serverInfo.remoteRef.emptyRPC();
             long t2 = System.nanoTime();
 
             /* Measure data transfer rate by sending some arbitrary data */
-            serverInfo.remoteRef.receiveHeartBeat(serverInfo.data);
+            serverInfo.remoteRef.randomDataRPC(serverInfo.data);
             long t3 = System.nanoTime();
             if (t3 - t2 < t2 - t1) {
-                /* Probably data size is too small relative to line latency. Double the data size and try in the next
-                 * heartbeat period */
+                /* Probably data size is too small relative to line latency. Double the data size and try at next period */
                 serverInfo.data.len *= 2;
                 serverInfo.stableDataRateTimes = 0;
                 serverInfo.metricPollPeriod = MIN_METRIC_POLL_PERIOD_MS;
@@ -422,7 +431,7 @@ public class KernelClient {
                     serverInfo.metricPollPeriod <<= 1;
                 }
                 serverInfo.stableDataRateTimes = 0;
-                /* TODO: Can try reducing the length and get to an optimum length required to send in heartbeats. */
+                /* TODO: Can try reducing the length and get to an optimum length required to send */
             }
 
             serverInfo.stableDataRateTimes++;
@@ -433,8 +442,8 @@ public class KernelClient {
             serverInfo.metric.rate =
                     (long) (serverInfo.data.len * (1000000000.0 / ((t3 - t2) - (t2 - t1))));
 
-            /* Reset consecutive failed heartbeat count to 0 upon successful heartbeat */
-            serverInfo.failedHeartbeats = 0;
+            /* Reset consecutive failed RPC count to 0 upon successful RPC */
+            serverInfo.failedRPCCount = 0;
             logger.fine(
                     String.format(
                             "To host[%s]: Latency=%dns, Data Rate=%dBytes/Sec, Data Length=%d",
@@ -445,8 +454,8 @@ public class KernelClient {
         } catch (RemoteException e) {
             logger.warning(
                     String.format("Kernel server %s is not reachable", serverInfo.serverAddress));
-            /* Increment consecutive failed heartbeat count */
-            serverInfo.failedHeartbeats++;
+            /* Increment consecutive failed RPC count */
+            serverInfo.failedRPCCount++;
             removeHost(serverInfo.serverAddress);
         }
 

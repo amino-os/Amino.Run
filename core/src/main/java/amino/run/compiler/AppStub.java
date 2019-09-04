@@ -64,6 +64,11 @@ public final class AppStub extends Stub {
         StringBuilder buffer = new StringBuilder();
         buffer.append(
                 indenter.indent()
+                        + "transient amino.run.common.AppObjectStub.Context $__context = null;"
+                        + EOLN);
+
+        buffer.append(
+                indenter.indent()
                         + "amino.run.common.MicroServiceID $__microServiceId = null;"
                         + EOLN);
         buffer.append(
@@ -156,6 +161,30 @@ public final class AppStub extends Stub {
                         + EOLN
                         + EOLN);
 
+        buffer.append(
+                indenter.indent()
+                        + "private void readObject(java.io.ObjectInputStream inputStream) throws java.lang.ClassNotFoundException, java.io.IOException {"
+                        + EOLN);
+        buffer.append(indenter.tIncrease() + "inputStream.defaultReadObject();" + EOLN);
+        buffer.append(
+                indenter.tIncrease()
+                        + "$__context = new amino.run.common.AppObjectStub.Context(java.util.UUID.randomUUID(), amino.run.kernel.common.GlobalKernelReferences.nodeServer.getLocalHost());"
+                        + EOLN
+                        + indenter.indent()
+                        + "}"
+                        + EOLN
+                        + EOLN);
+        buffer.append(
+                indenter.indent()
+                        + "private void writeObject(java.io.ObjectOutputStream outputStream) throws java.io.IOException {"
+                        + EOLN);
+        buffer.append(
+                indenter.tIncrease()
+                        + "outputStream.defaultWriteObject();"
+                        + EOLN
+                        + indenter.indent()
+                        + "}");
+
         return buffer.toString();
     }
 
@@ -222,6 +251,11 @@ public final class AppStub extends Stub {
                         + EOLN);
 
         buffer.append(indenter.indent() + "} else {" + EOLN); // $NON-NLS-1$
+
+        buffer.append(
+                indenter.tIncrease(tabWidth)
+                        + "amino.run.common.AppObjectStub.context.set($__context);"
+                        + EOLN);
         buffer.append(
                 indenter.tIncrease(tabWidth)
                         + "java.util.ArrayList<Object> $__params = new java.util.ArrayList<Object>();"

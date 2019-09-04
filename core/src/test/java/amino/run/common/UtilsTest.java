@@ -10,7 +10,9 @@ import amino.run.runtime.annotations.Immutable;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.UUID;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -150,8 +152,10 @@ public class UtilsTest {
         KernelOID oid = new KernelOID(10);
         ArrayList<Object> params = new ArrayList<Object>();
         params.add("hello");
-
-        KernelRPC expected = new KernelRPC(oid, "method", params);
+        AppObjectStub.Context context =
+                new AppObjectStub.Context(
+                        UUID.randomUUID(), new InetSocketAddress("localhost", 10000));
+        KernelRPC expected = new KernelRPC(context, oid, "method", params);
 
         byte[] bytes = Utils.toBytes(expected);
         KernelRPC actual = (KernelRPC) Utils.toObject(bytes);

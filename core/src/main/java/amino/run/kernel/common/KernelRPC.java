@@ -1,5 +1,6 @@
 package amino.run.kernel.common;
 
+import amino.run.common.AppObjectStub;
 import amino.run.graal.io.*;
 import java.io.Serializable;
 import java.util.*;
@@ -11,14 +12,22 @@ import org.graalvm.polyglot.*;
  * @author iyzhang
  */
 public class KernelRPC implements Serializable {
+    private AppObjectStub.Context context;
     private KernelOID oid;
     private String method;
     private ArrayList<Object> params;
 
-    public KernelRPC(KernelOID oid, String method, ArrayList<Object> params) throws Exception {
+    public KernelRPC(
+            AppObjectStub.Context context, KernelOID oid, String method, ArrayList<Object> params)
+            throws Exception {
+        this.context = context;
         this.oid = oid;
         this.method = method;
         this.params = params;
+    }
+
+    public AppObjectStub.Context getContext() {
+        return context;
     }
 
     public KernelOID getOID() {

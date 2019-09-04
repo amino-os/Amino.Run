@@ -22,6 +22,7 @@ import amino.run.kernel.common.GlobalKernelReferences;
 import amino.run.kernel.common.KernelOID;
 import amino.run.kernel.common.KernelObjectFactory;
 import amino.run.kernel.common.KernelObjectNotFoundException;
+import amino.run.kernel.metric.RPCMetric;
 import amino.run.kernel.server.KernelServerImpl;
 import amino.run.oms.OMSServer;
 import amino.run.policy.Policy.ServerPolicy;
@@ -32,6 +33,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.harmony.rmi.common.RMIUtil;
@@ -397,6 +400,26 @@ public abstract class Library implements Upcalls {
                 logger.severe(e.getMessage());
                 // TODO (Sungwook, 2018-10-2): Investigate whether exception should be thrown.
             }
+        }
+
+        /**
+         * Get and returns the collected RPC metrics from the kernel object. And clears the metrics
+         * collected so far.
+         *
+         * @return Map of RPC metrics for all clients collected after last notification until now
+         * @throws KernelObjectNotFoundException
+         */
+        public Map<UUID, RPCMetric> getRPCMetrics() throws KernelObjectNotFoundException {
+            ConcurrentHashMap<UUID, RPCMetric> metrics =
+                    kernel().getKernelObject($__getKernelOID()).getMetrics();
+            ConcurrentHashMap<UUID, RPCMetric> cloneCopy;
+            // TODO: Better to avoid the clone copy. Need to check if we can return cumulative
+            // metrics instead of metrics from last expiry.
+            synchronized (metrics) {
+                cloneCopy = new ConcurrentHashMap<UUID, RPCMetric>(metrics);
+                metrics.clear();
+            }
+            return cloneCopy;
         }
 
         /**

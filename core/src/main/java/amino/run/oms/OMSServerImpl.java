@@ -108,6 +108,17 @@ public class OMSServerImpl implements OMSServer, Registry {
     @Override
     public void registerKernelServer(ServerInfo info) throws RemoteException, NotBoundException {
         serverManager.registerKernelServer(info);
+
+        /* After registering the new kernel server, notify all the kernel servers about all the available kernel servers
+        in a separate thread */
+        new Thread(
+                        new Runnable() {
+                            @Override
+                            public void run() {
+                                notifyAvailableKernelServers();
+                            }
+                        })
+                .start();
     }
 
     @Override
@@ -132,10 +143,27 @@ public class OMSServerImpl implements OMSServer, Registry {
      *
      * @param spec
      * @return
-     * @throws RemoteException
      */
-    public List<InetSocketAddress> getServers(NodeSelectorSpec spec) throws RemoteException {
+    public List<InetSocketAddress> getServers(NodeSelectorSpec spec) {
         return serverManager.getServers(spec);
+    }
+
+    /** Notify all the kernel servers about all the available kernel servers */
+    private void notifyAvailableKernelServers() {
+        List<InetSocketAddress> servers = getServers(null);
+        for (InetSocketAddress host : servers) {
+            try {
+                KernelServer server = serverManager.getServer(host);
+                if (server != null) {
+                    server.updateAvailableKernelServers(servers);
+                }
+            } catch (RemoteException e) {
+                /* Log warning and continue to update for other servers */
+                logger.severe(
+                        String.format(
+                                "Failed to update available kernel server list to host %s", host));
+            }
+        }
     }
 
     @Override
@@ -305,9 +333,8 @@ public class OMSServerImpl implements OMSServer, Registry {
             registry.rebind("io.amino.run.oms", omsStub);
 
             /* Create an instance of kernel server and export kernel server service */
-            KernelServer localKernelServer =
-                    new KernelServerImpl(
-                            new InetSocketAddress(omsArgs.omsIP, omsArgs.omsPort), oms);
+            InetSocketAddress host = new InetSocketAddress(omsArgs.omsIP, omsArgs.omsPort);
+            KernelServer localKernelServer = new KernelServerImpl(host, host, oms);
             KernelServer localKernelServerStub =
                     (KernelServer)
                             UnicastRemoteObject.exportObject(

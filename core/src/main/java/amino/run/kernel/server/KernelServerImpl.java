@@ -9,6 +9,7 @@ import amino.run.common.MicroServiceNotFoundException;
 import amino.run.common.MicroServiceReplicaNotFoundException;
 import amino.run.common.Notification;
 import amino.run.kernel.client.KernelClient;
+import amino.run.kernel.client.KernelClient.RandomData;
 import amino.run.kernel.common.*;
 import amino.run.oms.OMSServer;
 import amino.run.policy.Library;
@@ -42,6 +43,7 @@ public class KernelServerImpl implements KernelServer {
     public static String DEFAULT_REGION = "default-region";
     public static String REGION_KEY = "region";
 
+    private InetSocketAddress omsHost;
     private InetSocketAddress host;
     private String region;
     /** manager for kernel objects that live on this server */
@@ -65,15 +67,16 @@ public class KernelServerImpl implements KernelServer {
         } catch (Exception e) {
             logger.severe("Could not find OMS: " + e.toString());
         }
-        init(host, oms);
+        init(host, omsHost, oms);
     }
 
-    public KernelServerImpl(InetSocketAddress host, OMSServer oms) {
-        init(host, oms);
+    public KernelServerImpl(InetSocketAddress host, InetSocketAddress omsHost, OMSServer oms) {
+        init(host, omsHost, oms);
     }
 
-    private void init(InetSocketAddress host, OMSServer oms) {
+    private void init(InetSocketAddress host, InetSocketAddress omsHost, OMSServer oms) {
         this.oms = oms;
+        this.omsHost = omsHost;
         this.host = host;
         objectManager = new KernelObjectManager();
         client = new KernelClient(oms);
@@ -86,6 +89,19 @@ public class KernelServerImpl implements KernelServer {
 
     public String getRegion() {
         return this.region;
+    }
+
+    public InetSocketAddress getOmsHost() {
+        return omsHost;
+    }
+
+    /**
+     * This method checks whether heartbeat timer exist between OMS and Kernel Server
+     *
+     * @return Returns True, If timer exists. Else, False
+     */
+    public boolean isHeartBeatExist() {
+        return ksHeartbeatSendTimer != null;
     }
 
     /** RPC INTERFACES * */
@@ -269,6 +285,8 @@ public class KernelServerImpl implements KernelServer {
             logger.severe(msg);
             throw new RemoteException(
                     "Failed to create policy stub object on destination server.", e);
+        } catch (KernelServerNotFoundException e) {
+            throw new RemoteException(e.toString(), e);
         }
 
         // Remove the associated KernelObjects from the local KernelServer.
@@ -285,6 +303,16 @@ public class KernelServerImpl implements KernelServer {
         } while ((appObject != null)
                 && ((objectStub = appObject.getObject()) != null)
                 && (objectStub instanceof KernelObjectStub));
+    }
+
+    /**
+     * Update this kernel server with list of available kernel servers managed by OMS
+     *
+     * @param servers
+     */
+    @Override
+    public void updateAvailableKernelServers(List<InetSocketAddress> servers) {
+        client.updateAvailableKernelServers(servers);
     }
 
     /**
@@ -391,6 +419,23 @@ public class KernelServerImpl implements KernelServer {
     public MemoryStatThread getMemoryStatThread() {
         return new MemoryStatThread();
     }
+
+    /**
+     * An RPC with random data bytes. This method is invoked by RPC client to calculate the data
+     * transfer rate based on the amount of data used as argument to the method and the time taken
+     * to return this call
+     *
+     * @param data
+     */
+    @Override
+    public void randomDataRPC(RandomData data) {}
+
+    /**
+     * An empty RPC with no arguments and returns nothing. This method is invoked by RPC client to
+     * measure the time taken to return this call
+     */
+    @Override
+    public void emptyRPC() {}
 
     /** Send HeartBeats to OMS. */
     private void sendHeartBeat(ServerInfo srvinfo) {

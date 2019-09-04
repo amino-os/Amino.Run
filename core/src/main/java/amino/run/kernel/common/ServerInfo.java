@@ -3,6 +3,7 @@ package amino.run.kernel.common;
 import amino.run.app.NodeSelectorSpec;
 import amino.run.app.NodeSelectorTerm;
 import amino.run.app.Requirement;
+import amino.run.kernel.metric.NodeMetric;
 import amino.run.kernel.server.KernelServerImpl;
 import java.io.Serializable;
 import java.net.InetSocketAddress;
@@ -27,6 +28,8 @@ public class ServerInfo implements Serializable {
     public String getRegion() {
         return labels.get(KernelServerImpl.REGION_KEY);
     }
+
+    public transient Map<InetSocketAddress, NodeMetric> metrics;
 
     public void addLabels(Map keyValues) {
         if (keyValues == null) {
@@ -73,5 +76,16 @@ public class ServerInfo implements Serializable {
             }
         }
         return !requirements.isEmpty();
+    }
+
+    private void writeObject(java.io.ObjectOutputStream s) throws java.io.IOException {
+        s.defaultWriteObject();
+        GlobalKernelReferences.nodeServer.getKernelClient().writeMetrics(s);
+    }
+
+    private void readObject(java.io.ObjectInputStream s)
+            throws java.io.IOException, ClassNotFoundException {
+        s.defaultReadObject();
+        metrics = GlobalKernelReferences.nodeServer.getKernelClient().readMetrics(s);
     }
 }

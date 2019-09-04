@@ -43,6 +43,7 @@ public class KernelServerImpl implements KernelServer {
     public static String DEFAULT_REGION = "default-region";
     public static String REGION_KEY = "region";
 
+    private InetSocketAddress omsHost;
     private InetSocketAddress host;
     private String region;
     /** manager for kernel objects that live on this server */
@@ -66,15 +67,16 @@ public class KernelServerImpl implements KernelServer {
         } catch (Exception e) {
             logger.severe("Could not find OMS: " + e.toString());
         }
-        init(host, oms);
+        init(host, omsHost, oms);
     }
 
-    public KernelServerImpl(InetSocketAddress host, OMSServer oms) {
-        init(host, oms);
+    public KernelServerImpl(InetSocketAddress host, InetSocketAddress omsHost, OMSServer oms) {
+        init(host, omsHost, oms);
     }
 
-    private void init(InetSocketAddress host, OMSServer oms) {
+    private void init(InetSocketAddress host, InetSocketAddress omsHost, OMSServer oms) {
         this.oms = oms;
+        this.omsHost = omsHost;
         this.host = host;
         objectManager = new KernelObjectManager();
         client = new KernelClient(oms);
@@ -87,6 +89,19 @@ public class KernelServerImpl implements KernelServer {
 
     public String getRegion() {
         return this.region;
+    }
+
+    public InetSocketAddress getOmsHost() {
+        return omsHost;
+    }
+
+    /**
+     * This method checks whether heartbeat timer exist between OMS and Kernel Server
+     *
+     * @return Returns True, If timer exists. Else, False
+     */
+    public boolean isHeartBeatExist() {
+        return ksHeartbeatSendTimer != null;
     }
 
     /** RPC INTERFACES * */

@@ -333,9 +333,8 @@ public class OMSServerImpl implements OMSServer, Registry {
             registry.rebind("io.amino.run.oms", omsStub);
 
             /* Create an instance of kernel server and export kernel server service */
-            KernelServer localKernelServer =
-                    new KernelServerImpl(
-                            new InetSocketAddress(omsArgs.omsIP, omsArgs.omsPort), oms);
+            InetSocketAddress host = new InetSocketAddress(omsArgs.omsIP, omsArgs.omsPort);
+            KernelServer localKernelServer = new KernelServerImpl(host, host, oms);
             KernelServer localKernelServerStub =
                     (KernelServer)
                             UnicastRemoteObject.exportObject(

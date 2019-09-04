@@ -129,15 +129,31 @@ public class KernelClient {
             this.remoteRef = remoteRef;
             this.metric = new NodeMetric();
             data = new RandomData();
-            metricsTimer =
-                    new ResettableTimer(
-                            new TimerTask() {
-                                public void run() {
-                                    measureMetrics(KernelServerInfo.this);
-                                }
-                            },
-                            metricPollPeriod);
-            metricsTimer.start();
+
+            /* Criteria to measure node metrics:
+             * 1. Metrics measurement and reporting to OMS happens only if local kernel server is registered to OMS.
+             * In general, App client creates a dummy local kernel server which are meant to route RPC calls through it
+             * to remote kernel server where MicroService it interacts reside. But that local kernel server is not
+             * registered to OMS and do not send heartbeats to OMS. Such App clients do not allow deployment of
+             * MicroServices on them(and also do not participate in automatic migration of MicroService). Hence, they
+             * don't measure node metrics.
+             *
+             * 2. And there exists a collocated kernel server within OMS too(where DM Group policy objects reside).
+             * Metrics measurement to that kernel server should be avoided because, we neither deploy MicroService on it
+             * nor do automatic migration of MicroService on to it.
+             * */
+            if (!GlobalKernelReferences.nodeServer.getOmsHost().equals(serverAddress)
+                    && GlobalKernelReferences.nodeServer.isHeartBeatExist()) {
+                metricsTimer =
+                        new ResettableTimer(
+                                new TimerTask() {
+                                    public void run() {
+                                        measureMetrics(KernelServerInfo.this);
+                                    }
+                                },
+                                metricPollPeriod);
+                metricsTimer.start();
+            }
         }
     }
 

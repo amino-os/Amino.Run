@@ -413,8 +413,8 @@ public abstract class Library implements Upcalls {
             ConcurrentHashMap<UUID, RPCMetric> metrics =
                     kernel().getKernelObject($__getKernelOID()).getMetrics();
             ConcurrentHashMap<UUID, RPCMetric> cloneCopy;
-            // TODO: Better to avoid the clone copy. Need to check if we can return cumulative
-            // metrics instead of metrics from last expiry.
+            /* TODO: Better to avoid the clone copy. Need to check if we can return cumulative metrics instead of
+            metrics from last expiry. */
             synchronized (metrics) {
                 cloneCopy = new ConcurrentHashMap<UUID, RPCMetric>(metrics);
                 metrics.clear();
@@ -519,6 +519,7 @@ public abstract class Library implements Upcalls {
     }
 
     public abstract static class GroupPolicyLibrary implements GroupUpcalls {
+        private static final Logger logger = Logger.getLogger(GroupPolicyLibrary.class.getName());
         protected String appObjectClassName;
         protected ArrayList<Object> params;
         protected KernelOID oid;
@@ -576,6 +577,28 @@ public abstract class Library implements Upcalls {
                 }
             }
             return serversInRegion;
+        }
+
+        /**
+         * Updates the microservice metrics to OMS
+         *
+         * @param replicaId
+         * @param metrics
+         * @throws RemoteException
+         */
+        public void updateMetric(ReplicaID replicaId, Map<UUID, RPCMetric> metrics)
+                throws RemoteException {
+            try {
+                oms().updateMetric(replicaId, metrics);
+            } catch (MicroServiceNotFoundException e) {
+                logger.warning(
+                        String.format(
+                                "Microservice %s not found. Exception: %s", replicaId.getOID(), e));
+            } catch (MicroServiceReplicaNotFoundException e) {
+                logger.warning(
+                        String.format(
+                                "Microservice replica %s not found. Exception: %s", replicaId, e));
+            }
         }
 
         public void $__setKernelOID(KernelOID oid) {

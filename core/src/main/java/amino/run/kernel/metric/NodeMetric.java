@@ -16,6 +16,6 @@ public class NodeMetric implements Serializable {
 
     @Override
     public String toString() {
-        return "NodeMetric{" + "latency(ns)=" + latency + ", rate(Mbps)=" + rate + '}';
+        return "NodeMetric{" + "latency(ns)=" + latency + ", rate(Bps)=" + rate + '}';
     }
 }

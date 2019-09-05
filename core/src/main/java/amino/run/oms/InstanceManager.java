@@ -6,7 +6,10 @@ import amino.run.common.MicroServiceNotFoundException;
 import amino.run.common.MicroServiceReplicaNotFoundException;
 import amino.run.common.ReplicaID;
 import amino.run.kernel.common.KernelOID;
+import amino.run.kernel.metric.RPCMetric;
+import amino.run.oms.metric.MicroServiceMetric;
 import amino.run.runtime.EventHandler;
+import java.net.InetSocketAddress;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -24,6 +27,7 @@ public class InstanceManager {
     private Map<KernelOID, EventHandler> groupDispatchers;
     private AppObjectStub objectStub;
     private HashMap<ReplicaID, EventHandler> replicaDispatchers;
+    private HashMap<ReplicaID, MicroServiceMetric> replicaMetrics;
     private Random oidGenerator;
 
     /**
@@ -40,6 +44,7 @@ public class InstanceManager {
         groupDispatchers =
                 Collections.synchronizedMap(new LinkedHashMap<KernelOID, EventHandler>());
         replicaDispatchers = new HashMap<ReplicaID, EventHandler>();
+        replicaMetrics = new HashMap<ReplicaID, MicroServiceMetric>();
         oidGenerator = new Random(new Date().getTime());
         referenceCount = new AtomicInteger(1);
     }
@@ -141,6 +146,7 @@ public class InstanceManager {
     public ReplicaID addReplica(EventHandler dispatcher) {
         ReplicaID rid = generateReplicaID();
         replicaDispatchers.put(rid, dispatcher);
+        replicaMetrics.put(rid, new MicroServiceMetric(rid));
         return rid;
     }
 
@@ -151,6 +157,34 @@ public class InstanceManager {
      */
     public void removeReplica(ReplicaID replicaId) {
         replicaDispatchers.remove(replicaId);
+        replicaMetrics.remove(replicaId);
+    }
+
+    /**
+     * Updates the replica metrics of this microservice instance
+     *
+     * @param replicaId
+     * @param metrics
+     * @throws MicroServiceReplicaNotFoundException
+     */
+    public void updateMetric(ReplicaID replicaId, Map<UUID, RPCMetric> metrics)
+            throws MicroServiceReplicaNotFoundException {
+        MicroServiceMetric metric = replicaMetrics.get(replicaId);
+        if (metric == null) {
+            throw new MicroServiceReplicaNotFoundException(
+                    String.format("Failed to find microservice replica %s", replicaId));
+        }
+        metric.updateMetric(metrics);
+    }
+
+    /**
+     * Get the replica metrics of this microservice instance
+     *
+     * @param replicaId
+     * @return
+     */
+    public Map<InetSocketAddress, RPCMetric> getMetric(ReplicaID replicaId) {
+        return replicaMetrics.get(replicaId).getMetric();
     }
 
     /**
@@ -167,6 +201,7 @@ public class InstanceManager {
     public void clear() {
         groupDispatchers.clear();
         replicaDispatchers.clear();
+        replicaMetrics.clear();
     }
 
     public MicroServiceID getOid() {

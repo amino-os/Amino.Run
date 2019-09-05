@@ -17,7 +17,8 @@ public class RPCMetric implements Serializable {
     public final UUID callerId; /* Client for which below data is measured */
     public final InetSocketAddress clientHost; /* Kernel server address on client */
     public long dataSize; /* Aggregation of RPC call data IN and OUT in bytes. */
-    /* Time taken to process the RPC in nanoseconds. Time difference from the moment RPC call has arrived until it is returned */
+    /* Time taken to process the RPC in nanoseconds. Time difference from the moment RPC call has arrived until it is
+    returned */
     public long elapsedTime;
 
     public RPCMetric(UUID callerId, InetSocketAddress host) {

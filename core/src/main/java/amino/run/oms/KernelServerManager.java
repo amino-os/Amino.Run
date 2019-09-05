@@ -5,7 +5,9 @@ import amino.run.app.NodeSelectorSpec;
 import amino.run.kernel.common.GlobalKernelReferences;
 import amino.run.kernel.common.KernelServerNotFoundException;
 import amino.run.kernel.common.ServerInfo;
+import amino.run.kernel.metric.NodeMetric;
 import amino.run.kernel.server.KernelServer;
+import amino.run.oms.metric.KernelServerMetric;
 import amino.run.policy.util.ResettableTimer;
 import java.net.InetSocketAddress;
 import java.rmi.NotBoundException;
@@ -28,12 +30,13 @@ public class KernelServerManager {
         private ServerInfo config; // Registration information of kernel server
         private ResettableTimer heartBeatTimer; // HeartBeat timer
         private KernelServer remoteRef; // Remote reference to kernel server
+        private KernelServerMetric metric; // Metrics
 
-        private KernelServerInfo(
-                ServerInfo config, KernelServer remoteRef, ResettableTimer heartBeatTimer) {
+        private KernelServerInfo(ServerInfo config, KernelServer remoteRef, ResettableTimer timer) {
             this.config = config;
-            this.heartBeatTimer = heartBeatTimer;
+            this.heartBeatTimer = timer;
             this.remoteRef = remoteRef;
+            this.metric = new KernelServerMetric(config.getHost());
         }
     }
 
@@ -114,15 +117,28 @@ public class KernelServerManager {
                 String.format(
                         "Received HeartBeat from kernel server: %s in region %s", host, region));
 
-        KernelServerInfo kernelServerInfo = servers.get(host);
-        if (kernelServerInfo != null) {
-            kernelServerInfo.heartBeatTimer.reset();
-            return;
-        }
+        KernelServerInfo kernelServerInfo = getKernelServer(host);
+        kernelServerInfo.heartBeatTimer.reset();
+        kernelServerInfo.metric.updateMetric(srvinfo.metrics);
+        return;
+    }
 
-        String message = String.format("Kernel server: %s do not exist in region %s", host, region);
-        logger.severe(message);
-        throw new KernelServerNotFoundException(message);
+    /**
+     * Gets the kernel server for the given host
+     *
+     * @param host
+     * @return
+     * @throws KernelServerNotFoundException
+     */
+    private KernelServerInfo getKernelServer(InetSocketAddress host)
+            throws KernelServerNotFoundException {
+        KernelServerInfo kernelServerInfo = servers.get(host);
+        if (kernelServerInfo == null) {
+            String message = String.format("Kernel server: %s not found", host);
+            logger.warning(message);
+            throw new KernelServerNotFoundException(message);
+        }
+        return kernelServerInfo;
     }
 
     /**
@@ -180,5 +196,29 @@ public class KernelServerManager {
         // In future we can consider some other specific things to select the
         // best one among the list
         return hosts.get(randgen.nextInt(hosts.size()));
+    }
+
+    /**
+     * Gets the kernel server's available processor count
+     *
+     * @param host
+     * @return
+     * @throws KernelServerNotFoundException
+     */
+    public int getKernelServerProcessorCount(InetSocketAddress host)
+            throws KernelServerNotFoundException {
+        return getKernelServer(host).config.processorCount;
+    }
+
+    /**
+     * Get the kernel server metric
+     *
+     * @param host
+     * @return
+     * @throws KernelServerNotFoundException
+     */
+    public Map<InetSocketAddress, NodeMetric> getKernelServerMetric(InetSocketAddress host)
+            throws KernelServerNotFoundException {
+        return getKernelServer(host).metric.getMetric();
     }
 }

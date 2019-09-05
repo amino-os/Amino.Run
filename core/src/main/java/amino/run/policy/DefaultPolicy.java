@@ -155,8 +155,8 @@ public class DefaultPolicy extends Policy {
         public void onNotification(Notification notification) throws RemoteException {
             if (notification instanceof MetricsNotification) {
                 MetricsNotification object = (MetricsNotification) notification;
-                // TODO: Store these metrics to make them available for statistics and decision
-                // making module
+                /* Store these metrics to make them available for statistics and decision making module */
+                updateMetric(object.replicaId, object.metrics);
                 return;
             }
         }

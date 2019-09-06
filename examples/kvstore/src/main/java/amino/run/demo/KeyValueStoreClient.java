@@ -6,7 +6,6 @@ import amino.run.common.MicroServiceID;
 import amino.run.kernel.server.KernelServerImpl;
 import com.google.devtools.common.options.OptionsParser;
 import java.io.File;
-import java.net.InetSocketAddress;
 import java.nio.file.Files;
 import java.rmi.registry.LocateRegistry;
 import java.util.Arrays;
@@ -16,6 +15,7 @@ import java.util.List;
 /** Client class for testing {@link KeyValueStore} */
 public class KeyValueStoreClient {
     private static final String APP_NAME = "KVStoreApp";
+
     public static void main(String[] args) throws Exception {
         OptionsParser parser = OptionsParser.newOptionsParser(AppArgumentParser.class);
         if (args.length < 4) {
@@ -67,7 +67,8 @@ public class KeyValueStoreClient {
             }
 
             // TODO: Currently for collecting metric on logging server sleep is introduced.
-            //  When metric server will be available new application will get added to demonstrate metric collection
+            //  When metric server will be available new application will get added to demonstrate
+            // metric collection
             Thread.sleep(200000);
         } finally {
             if (oid != null) {
@@ -101,7 +102,8 @@ public class KeyValueStoreClient {
                                 OptionsParser.HelpVerbosity.LONG));
     }
 
-    private static NodeSelectorTerm getNodeSelectorTerm(String key, Operator operator, String... labels) {
+    private static NodeSelectorTerm getNodeSelectorTerm(
+            String key, Operator operator, String... labels) {
         NodeSelectorTerm term = new NodeSelectorTerm();
         term.addMatchRequirements(getRequirement(key, operator, labels));
         return term;
@@ -114,7 +116,8 @@ public class KeyValueStoreClient {
         return new Requirement(key, operator, Arrays.asList(labels));
     }
 
-    private static NodeSelectorSpec getNodeSelectorSpec(String key, Operator operator, String... labels) {
+    private static NodeSelectorSpec getNodeSelectorSpec(
+            String key, Operator operator, String... labels) {
         NodeSelectorSpec spec = new NodeSelectorSpec();
         spec.addNodeSelectorTerms(getNodeSelectorTerm(key, operator, labels));
         return spec;

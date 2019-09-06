@@ -6,8 +6,8 @@ import amino.run.common.MicroServiceReplicaNotFoundException;
 import amino.run.common.ReplicaID;
 import amino.run.kernel.common.KernelOID;
 import amino.run.kernel.common.KernelServerNotFoundException;
-import amino.run.kernel.common.metric.NodeMetric;
-import amino.run.kernel.common.metric.RPCMetric;
+import amino.run.kernel.metric.NodeMetric;
+import amino.run.kernel.metric.RPCMetric;
 import amino.run.oms.KernelServerManager;
 import amino.run.oms.MicroServiceManager;
 import amino.run.policy.DefaultPolicy;
@@ -77,8 +77,7 @@ public class MetricWatcher {
                                                         bestCandidateReplicaIds.toArray())));
 
                                 // try to migrate one of best replica candidate
-                                for (ReplicaID bestCandidateReplicaId :
-                                        bestCandidateReplicaIds) {
+                                for (ReplicaID bestCandidateReplicaId : bestCandidateReplicaIds) {
                                     // TODO check if recently migrated (check for cool down
                                     //  time)
                                     if (migrate(bestCandidateReplicaId)) {
@@ -228,7 +227,7 @@ public class MetricWatcher {
         long data;
         NodeMetric nodeMetric;
         for (Map.Entry<InetSocketAddress, RPCMetric> replicaMetric : replicaMetrics.entrySet()) {
-            averageExecutionTime += replicaMetric.getValue().processTime;
+            averageExecutionTime += replicaMetric.getValue().elapsedTime;
 
             data = replicaMetric.getValue().dataSize;
             nodeMetric = replicaNodeMetric.get(replicaMetric.getKey());

@@ -4,8 +4,8 @@ import amino.run.common.MicroServiceNotFoundException;
 import amino.run.common.ReplicaID;
 import amino.run.kernel.common.GlobalKernelReferences;
 import amino.run.kernel.common.KernelServerNotFoundException;
-import amino.run.kernel.common.metric.NodeMetric;
-import amino.run.kernel.common.metric.RPCMetric;
+import amino.run.kernel.metric.NodeMetric;
+import amino.run.kernel.metric.RPCMetric;
 import amino.run.oms.KernelServerManager;
 import amino.run.oms.MicroServiceManager;
 import java.net.InetSocketAddress;
@@ -66,6 +66,11 @@ public class MigrationPredictor {
                                 ks, getOptimizedTime(replicaID, currentKernelServer, ks)));
             }
         } catch (RemoteException e) {
+            // TODO: Add logs for this exception
+            e.printStackTrace();
+            return currentKernelServer;
+        } catch (KernelServerNotFoundException e) {
+            // TODO: Add logs for this exception
             e.printStackTrace();
             return currentKernelServer;
         }
@@ -85,7 +90,8 @@ public class MigrationPredictor {
     private long getOptimizedTime(
             ReplicaID replicaID,
             InetSocketAddress currentKernelServer,
-            InetSocketAddress futureKernelServer) {
+            InetSocketAddress futureKernelServer)
+            throws KernelServerNotFoundException {
         long totalTimeOptimization = 0;
 
         // get replica metric with respect to kernel clients
@@ -97,10 +103,12 @@ public class MigrationPredictor {
             return 0;
         }
 
-        // get current kernelServer CPU
-        int currentKernelServerCPUCores = serverManager.getKernelServerCPU(currentKernelServer);
+        // get current kernelServer processor count
+        int currentKernelServerCPUCores =
+                serverManager.getKernelServerProcessorCount(currentKernelServer);
         // get future kernel server CPU
-        int futureKernelServerCPUCores = serverManager.getKernelServerCPU((futureKernelServer));
+        int futureKernelServerCPUCores =
+                serverManager.getKernelServerProcessorCount(futureKernelServer);
 
         // get node metrics
         Map<InetSocketAddress, NodeMetric> currentKernelServerMetrics;
@@ -124,7 +132,7 @@ public class MigrationPredictor {
         for (Map.Entry<InetSocketAddress, RPCMetric> kernelClientMetrics :
                 replicaMetrics.entrySet()) {
             kernelClient = kernelClientMetrics.getKey();
-            currentProcessingTime = kernelClientMetrics.getValue().processTime;
+            currentProcessingTime = kernelClientMetrics.getValue().elapsedTime;
             futureProcessingTime =
                     (currentProcessingTime * currentKernelServerCPUCores)
                             / futureKernelServerCPUCores;

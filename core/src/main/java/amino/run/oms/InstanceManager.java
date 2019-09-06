@@ -10,11 +10,13 @@ import amino.run.kernel.metric.RPCMetric;
 import amino.run.oms.metric.MicroServiceMetric;
 import amino.run.runtime.EventHandler;
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
@@ -226,5 +228,9 @@ public class InstanceManager {
 
     public int getReferenceCount() {
         return referenceCount.get();
+    }
+
+    public List<ReplicaID> getReplicaIDs() {
+        return new ArrayList<ReplicaID>(replicaDispatchers.keySet());
     }
 }

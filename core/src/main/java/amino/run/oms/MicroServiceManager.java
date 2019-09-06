@@ -12,6 +12,7 @@ import amino.run.runtime.EventHandler;
 import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -322,5 +323,17 @@ public class MicroServiceManager {
     public int decrRefCountAndGet(MicroServiceID microServiceId)
             throws MicroServiceNotFoundException {
         return getInstance(microServiceId).decrRefCountAndGet();
+    }
+
+    /**
+     * Get the replica ids of micro service
+     *
+     * @param microServiceId
+     * @return
+     * @throws MicroServiceNotFoundException
+     */
+    public List<ReplicaID> getReplicaIDs(MicroServiceID microServiceId)
+            throws MicroServiceNotFoundException {
+        return getInstance(microServiceId).getReplicaIDs();
     }
 }

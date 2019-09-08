@@ -113,7 +113,7 @@ public class FundmoverMain {
         System.out.println(
                 "Usage: java -cp <classpath> "
                         + FundmoverMain.class.getSimpleName()
-                        + System.lineSeparator()
+                        + System.getProperty("line.separator")
                         + parser.describeOptions(
                                 Collections.<String, String>emptyMap(),
                                 OptionsParser.HelpVerbosity.LONG));

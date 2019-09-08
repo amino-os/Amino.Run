@@ -77,15 +77,26 @@ public final class DMSpec implements Serializable {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
         DMSpec dmSpec = (DMSpec) o;
-        return Objects.equals(name, dmSpec.name) && Objects.equals(configs, dmSpec.configs);
+
+        if (name != null ? !name.equals(dmSpec.name) : dmSpec.name != null) {
+            return false;
+        }
+        return configs.equals(dmSpec.configs);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, configs);
+        int result = name != null ? name.hashCode() : 0;
+        result = 31 * result + configs.hashCode();
+        return result;
     }
 
     @Override

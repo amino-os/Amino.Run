@@ -3,7 +3,6 @@ package amino.run.app;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import org.yaml.snakeyaml.Yaml;
 
 /**
@@ -76,14 +75,20 @@ public class NodeSelectorSpec implements Serializable {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
         NodeSelectorSpec that = (NodeSelectorSpec) o;
-        return Objects.equals(nodeSelectorTerms, that.nodeSelectorTerms);
+
+        return nodeSelectorTerms.equals(that.nodeSelectorTerms);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(nodeSelectorTerms);
+        return nodeSelectorTerms.hashCode();
     }
 }

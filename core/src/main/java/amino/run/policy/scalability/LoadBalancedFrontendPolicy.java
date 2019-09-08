@@ -13,7 +13,6 @@ import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Logger;
 
@@ -48,16 +47,26 @@ public class LoadBalancedFrontendPolicy extends DefaultPolicy {
 
         @Override
         public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+
             Config config = (Config) o;
-            return maxConcurrentReq == config.maxConcurrentReq
-                    && replicaCount == config.replicaCount;
+
+            if (maxConcurrentReq != config.maxConcurrentReq) {
+                return false;
+            }
+            return replicaCount == config.replicaCount;
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(maxConcurrentReq, replicaCount);
+            int result = maxConcurrentReq;
+            result = 31 * result + replicaCount;
+            return result;
         }
     }
 

@@ -105,7 +105,7 @@ public class HanksTodoMain {
         System.out.println(
                 "Usage: java -cp <classpath> "
                         + HanksTodoMain.class.getSimpleName()
-                        + System.lineSeparator()
+                        + System.getProperty("line.separator")
                         + parser.describeOptions(
                                 Collections.<String, String>emptyMap(),
                                 OptionsParser.HelpVerbosity.LONG));

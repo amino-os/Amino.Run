@@ -7,10 +7,11 @@ import amino.run.kernel.server.KernelServerImpl;
 import com.google.devtools.common.options.OptionsParser;
 import java.io.File;
 import java.net.InetSocketAddress;
-import java.nio.file.Files;
 import java.rmi.registry.LocateRegistry;
 import java.util.Collections;
 import java.util.List;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
 
 /** Client class for testing {@link KeyValueStore} */
 public class KeyValueStoreClient {
@@ -26,11 +27,11 @@ public class KeyValueStoreClient {
         } catch (Exception e) {
             System.out.println(
                     e.getMessage()
-                            + System.lineSeparator()
-                            + System.lineSeparator()
+                            + System.getProperty("line.separator")
+                            + System.getProperty("line.separator")
                             + "Usage: "
                             + KeyValueStoreClient.class.getSimpleName()
-                            + System.lineSeparator()
+                            + System.getProperty("line.separator")
                             + parser.describeOptions(
                                     Collections.<String, String>emptyMap(),
                                     OptionsParser.HelpVerbosity.LONG));
@@ -72,15 +73,15 @@ public class KeyValueStoreClient {
     private static String getSpec() throws Exception {
         ClassLoader classLoader = new KeyValueStoreClient().getClass().getClassLoader();
         File file = new File(classLoader.getResource("KeyValueStore.yaml").getFile());
-        List<String> lines = Files.readAllLines(file.toPath());
-        return String.join("\n", lines);
+        List<String> lines = FileUtils.readLines(file);
+        return StringUtils.join(lines, "\n");
     }
 
     private static void printUsage(OptionsParser parser) {
         System.out.println(
                 "Usage: java -cp <classpath> "
                         + KeyValueStoreClient.class.getSimpleName()
-                        + System.lineSeparator()
+                        + System.getProperty("line.separator")
                         + parser.describeOptions(
                                 Collections.<String, String>emptyMap(),
                                 OptionsParser.HelpVerbosity.LONG));

@@ -28,6 +28,7 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * MicroService Kernel Server. Runs on every MicroService node, knows how to talk to the OMS,
@@ -201,7 +202,7 @@ public class KernelServerImpl implements KernelServer {
                 Level.INFO,
                 String.format(
                         "Finished adding microservice for %s with %s",
-                        oid, String.join(", ", serverPolicies)));
+                        oid, StringUtils.join(serverPolicies, ", ")));
     }
 
     /** LOCAL INTERFACES * */
@@ -463,7 +464,7 @@ public class KernelServerImpl implements KernelServer {
             parser.parse(args);
 
         } catch (Exception e) {
-            System.out.println(e.getMessage() + System.lineSeparator());
+            System.out.println(e.getMessage() + System.getProperty("line.separator"));
             printUsage(parser);
             return;
         }
@@ -496,7 +497,9 @@ public class KernelServerImpl implements KernelServer {
             logger.info(String.format("Kernel server ready at port(%s)!", ksArgs.kernelServerPort));
         } catch (Exception e) {
             System.err.println(
-                    "Failed to start kernel server: " + e.getMessage() + System.lineSeparator());
+                    "Failed to start kernel server: "
+                            + e.getMessage()
+                            + System.getProperty("line.separator"));
             printUsage(parser);
         }
     }
@@ -526,7 +529,7 @@ public class KernelServerImpl implements KernelServer {
         System.out.println(
                 "Usage: java -cp <classpath> "
                         + KernelServerImpl.class.getName()
-                        + System.lineSeparator()
+                        + System.getProperty("line.separator")
                         + parser.describeOptions(
                                 Collections.<String, String>emptyMap(),
                                 OptionsParser.HelpVerbosity.LONG));

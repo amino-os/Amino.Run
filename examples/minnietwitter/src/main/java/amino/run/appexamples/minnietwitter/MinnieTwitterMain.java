@@ -169,7 +169,7 @@ public class MinnieTwitterMain {
                 hostAddr,
                 omsAddr); // TODO quinton: This is the so-called fake kernel server. Figure out a
         // better way.  This is messy.
-        rmiRegistry = LocateRegistry.getRegistry(omsAddr.getHostString(), omsAddr.getPort());
+        rmiRegistry = LocateRegistry.getRegistry(omsAddr.getHostName(), omsAddr.getPort());
         Registry oms = (Registry) rmiRegistry.lookup("io.amino.run.oms");
 
         String microServiceName = "MyTwitterManager";
@@ -336,7 +336,7 @@ public class MinnieTwitterMain {
         System.out.println(
                 "Usage: java -cp <classpath> "
                         + MinnieTwitterMain.class.getSimpleName()
-                        + System.lineSeparator()
+                        + System.getProperty("line.separator")
                         + parser.describeOptions(
                                 Collections.<String, String>emptyMap(),
                                 OptionsParser.HelpVerbosity.LONG));

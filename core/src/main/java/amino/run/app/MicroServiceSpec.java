@@ -3,7 +3,6 @@ package amino.run.app;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import org.yaml.snakeyaml.Yaml;
 
 /**
@@ -149,28 +148,54 @@ public class MicroServiceSpec implements Serializable {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
         MicroServiceSpec that = (MicroServiceSpec) o;
-        return lang == that.lang
-                && Objects.equals(name, that.name)
-                && Objects.equals(javaClassName, that.javaClassName)
-                && Objects.equals(sourceFileLocation, that.sourceFileLocation)
-                && Objects.equals(constructorName, that.constructorName)
-                && Objects.equals(dmList, that.dmList)
-                && Objects.equals(nodeSelectorSpec, that.nodeSelectorSpec);
+
+        if (lang != that.lang) {
+            return false;
+        }
+        if (name != null ? !name.equals(that.name) : that.name != null) {
+            return false;
+        }
+        if (javaClassName != null
+                ? !javaClassName.equals(that.javaClassName)
+                : that.javaClassName != null) {
+            return false;
+        }
+        if (sourceFileLocation != null
+                ? !sourceFileLocation.equals(that.sourceFileLocation)
+                : that.sourceFileLocation != null) {
+            return false;
+        }
+        if (constructorName != null
+                ? !constructorName.equals(that.constructorName)
+                : that.constructorName != null) {
+            return false;
+        }
+        if (!dmList.equals(that.dmList)) {
+            return false;
+        }
+        return nodeSelectorSpec != null
+                ? nodeSelectorSpec.equals(that.nodeSelectorSpec)
+                : that.nodeSelectorSpec == null;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(
-                lang,
-                name,
-                javaClassName,
-                sourceFileLocation,
-                constructorName,
-                dmList,
-                nodeSelectorSpec);
+        int result = lang != null ? lang.hashCode() : 0;
+        result = 31 * result + (name != null ? name.hashCode() : 0);
+        result = 31 * result + (javaClassName != null ? javaClassName.hashCode() : 0);
+        result = 31 * result + (sourceFileLocation != null ? sourceFileLocation.hashCode() : 0);
+        result = 31 * result + (constructorName != null ? constructorName.hashCode() : 0);
+        result = 31 * result + dmList.hashCode();
+        result = 31 * result + (nodeSelectorSpec != null ? nodeSelectorSpec.hashCode() : 0);
+        return result;
     }
 
     @Override

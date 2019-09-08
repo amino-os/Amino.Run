@@ -9,7 +9,6 @@ import java.net.InetSocketAddress;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -30,15 +29,20 @@ public class DHTPolicy extends DefaultPolicy {
 
         @Override
         public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+
             Config config = (Config) o;
             return numOfShards == config.numOfShards;
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(numOfShards);
+            return numOfShards;
         }
     }
 

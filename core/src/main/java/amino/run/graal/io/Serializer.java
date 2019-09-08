@@ -1,6 +1,7 @@
 package amino.run.graal.io;
 
 import amino.run.app.Language;
+import java.io.Closeable;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -22,7 +23,7 @@ enum GraalType {
     DUPLICATE
 }
 
-public class Serializer implements AutoCloseable {
+public class Serializer implements Closeable {
     private static final Logger logger = Logger.getLogger(Serializer.class.getName());
 
     // TODO: should do identity better than toString

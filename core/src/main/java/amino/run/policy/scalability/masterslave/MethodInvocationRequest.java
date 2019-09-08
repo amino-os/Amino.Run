@@ -4,7 +4,6 @@ import static amino.run.policy.scalability.masterslave.MethodInvocationRequest.M
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Objects;
 
 /**
  * Method invocation request on App Objects.
@@ -79,15 +78,25 @@ public final class MethodInvocationRequest implements Serializable {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof MethodInvocationRequest)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
         MethodInvocationRequest that = (MethodInvocationRequest) o;
-        return Objects.equals(getClientId(), that.getClientId())
-                && Objects.equals(getRequestId(), that.getRequestId());
+
+        if (!clientId.equals(that.clientId)) {
+            return false;
+        }
+        return requestId.equals(that.requestId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getClientId(), getRequestId());
+        int result = clientId.hashCode();
+        result = 31 * result + requestId.hashCode();
+        return result;
     }
 }

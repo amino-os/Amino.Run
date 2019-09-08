@@ -3,6 +3,7 @@ package amino.run.graal.io;
 import static amino.run.common.Utils.getGraalContext;
 
 import amino.run.app.Language;
+import java.io.Closeable;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,7 +14,7 @@ import java.util.Map;
 import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.Value;
 
-public class Deserializer implements AutoCloseable {
+public class Deserializer implements Closeable {
 
     private DataInputStream in;
     public Map<Integer, Value> seenCache;
@@ -143,7 +144,7 @@ public class Deserializer implements AutoCloseable {
         return;
     }
 
-    public void close() throws Exception {
+    public void close() throws IOException {
         if (in != null) {
             in.close();
             in = null;

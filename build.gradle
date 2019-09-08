@@ -104,17 +104,51 @@ subprojects {
         classpath += sourceSets.main.runtimeClasspath
     }
 
-    // Added for enforcing Java 1.6 version compatibility.
-    // Note that this will not result in compilation failure unless JDK 1.6 or less is used.
-    // GraalVM supports from JDK 1.8; therefore, it doesn't have an effect except IDE inspector
-    // may show incompatible APIs for higher version than JDK 1.6.
-    tasks.withType(JavaCompile) {
-        def javaVersion = JavaVersion.VERSION_1_6
-        sourceCompatibility = javaVersion
-        targetCompatibility = javaVersion
-        options.bootstrapClasspath = files("$System.env.JAVA_HOME/jre/lib/rt.jar")
+    def getJdkVersion = { ->
+        def javaErrOut = new PipedOutputStream()
+        def grepIn = new PipedInputStream(javaErrOut)
+        def grepOut = new PipedOutputStream()
+        def awkIn = new PipedInputStream(grepOut)
+        def awkOut = new ByteArrayOutputStream()
+        def jdk6path = project.property('jdk6Path')
+        exec {
+            workingDir jdk6path + '/jre/bin'
+            commandLine './java', '-version'
+            errorOutput = javaErrOut
+        }
+        exec {
+            commandLine 'grep', 'version'
+            standardInput = grepIn
+            standardOutput = grepOut
+        }
+        exec {
+            commandLine 'awk', '{print $3}'
+            standardInput = awkIn
+            standardOutput = awkOut
+        }
+        return awkOut.toString().trim()
     }
-    
+
+    // Added for enforcing Java 1.6 version compatibility.
+    tasks.withType(JavaCompile) {
+        def jdk6path = project.property('jdk6Path')
+        def jdkFolder = new File(jdk6path +"/jre")
+        if(!jdkFolder.exists()) {
+            throw new GradleException("JDK 1.6 path is not set. Please set 'jdk6Path' project property in gradle.properties file")
+        }
+
+        //Check whether jdk is 1.6 or not
+        def jdkVersion =  getJdkVersion()
+        if(!jdkVersion.contains("1.6")) {
+            throw new GradleException("jdk6Path project property is set with JDK '" + jdkVersion.substring(1, 4) + "' path. Please set it with JDK 1.6 path.")
+        }
+
+        sourceCompatibility = JavaVersion.VERSION_1_6
+        targetCompatibility = JavaVersion.VERSION_1_6
+        options.fork = true
+        options.bootstrapClasspath = files(jdk6path + "/jre/lib/rt.jar")
+    }
+
     // SourceSet for generated stubs
     sourceSets {
         stubs

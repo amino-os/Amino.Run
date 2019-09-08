@@ -334,7 +334,7 @@ public class OMSServerImpl implements OMSServer, Registry {
         try {
             parser.parse(args);
         } catch (Exception e) {
-            System.out.println(e.getMessage() + System.lineSeparator());
+            System.out.println(e.getMessage() + System.getProperty("line.separator"));
             printUsage(parser);
             return;
         }
@@ -471,7 +471,7 @@ public class OMSServerImpl implements OMSServer, Registry {
         System.out.println(
                 "Usage: java -cp <classpath> "
                         + OMSServerImpl.class.getSimpleName()
-                        + System.lineSeparator()
+                        + System.getProperty("line.separator")
                         + parser.describeOptions(
                                 Collections.<String, String>emptyMap(),
                                 OptionsParser.HelpVerbosity.LONG));

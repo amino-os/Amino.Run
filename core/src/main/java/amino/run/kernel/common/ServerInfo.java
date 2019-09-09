@@ -17,8 +17,11 @@ public class ServerInfo implements Serializable {
 
     private Map<String, String> labels = new HashMap<String, String>();
 
+    public int processorCount; // Available processor count
+
     public ServerInfo(InetSocketAddress addr) {
         this.host = addr;
+        this.processorCount = Runtime.getRuntime().availableProcessors();
     }
 
     public InetSocketAddress getHost() {
@@ -30,8 +33,6 @@ public class ServerInfo implements Serializable {
     }
 
     public transient Map<InetSocketAddress, NodeMetric> metrics;
-
-    public int processorCount; // Available processor count
 
     public void addLabels(Map keyValues) {
         if (keyValues == null) {

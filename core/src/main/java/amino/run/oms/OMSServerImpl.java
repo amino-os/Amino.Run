@@ -344,9 +344,9 @@ public class OMSServerImpl implements OMSServer, Registry {
 
         OMSArgumentParser omsArgs = parser.getOptions(OMSArgumentParser.class);
         System.setProperty("java.rmi.server.hostname", omsArgs.omsIP);
-
+        OMSServerImpl oms = null;
         try {
-            OMSServerImpl oms = new OMSServerImpl();
+            oms = new OMSServerImpl();
             OMSServer omsStub =
                     (OMSServer) UnicastRemoteObject.exportObject(oms, omsArgs.servicePort);
             java.rmi.registry.Registry registry = LocateRegistry.createRegistry(omsArgs.omsPort);
@@ -373,6 +373,10 @@ public class OMSServerImpl implements OMSServer, Registry {
                 logger.fine("   " + address.getHostName() + ":" + address.getPort());
             }
         } catch (Exception e) {
+            // stop metric watcher time
+            if (oms != null && oms.metricWatcher != null) {
+                oms.metricWatcher.stop();
+            }
             logger.severe("OMS server exception: " + e.toString());
             e.printStackTrace();
         }

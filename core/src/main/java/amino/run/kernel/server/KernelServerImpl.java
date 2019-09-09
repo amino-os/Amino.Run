@@ -483,7 +483,6 @@ public class KernelServerImpl implements KernelServer {
 
             // Register against OMS
             ServerInfo srvInfo = createServerInfo(host, ksArgs.labels);
-            srvInfo.processorCount = Runtime.getRuntime().availableProcessors();
             server.setRegion(srvInfo.getRegion());
             oms.registerKernelServer(srvInfo);
 

@@ -1,7 +1,9 @@
 package amino.run.compiler;
 
 import java.io.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.graalvm.polyglot.*;
@@ -30,8 +32,11 @@ public class GraalStubGenerator {
 
         // Evaluate all polyglot files recursively.
         File f = new File(inputFile);
+
         List<File> files = new ArrayList<File>();
         getFilesRecursively(files, f);
+        logger.log(Level.INFO,
+                String.format("Found %d files in %s", files.size(), inputFile));
         for (File sub : files) {
             loadFile(sub, polyglot);
         }
@@ -104,6 +109,7 @@ public class GraalStubGenerator {
         if (fileName.endsWith(".py")) return "python";
 
         // TODO: test and add support for other languages.
+        // TODO: quinton: Should throw an exception here, not return an empty string.
         return "";
     }
 
@@ -322,8 +328,9 @@ public class GraalStubGenerator {
         if (lang.equals("js")) {
             Value val = prototype.getMember("getMemberKeys");
             if (val != null) {
-                Map<String, String> jsAttributes = val.execute().as(Map.class);
-                attributes = jsAttributes.values();
+                Value memberKeys = val.execute();
+                logger.log( Level.INFO, String.format("memberKeys: %s", memberKeys.toString()));
+                attributes = memberKeys.as(List.class);
             } else {
                 throw new NoSuchMethodException(
                         className + ".js" + " must have getMemberKeys() function");
@@ -332,8 +339,11 @@ public class GraalStubGenerator {
         } else {
             attributes = prototype.getMemberKeys();
         }
-
+        logger.log( Level.INFO,
+                String.format("Found %d functions for class %s", attributes.size(), className));
         for (String m : attributes) {
+            logger.log( Level.INFO,
+                    String.format("Function found: %s.%s", className, m));
             // Graal Value has lots of self defined function, let's skip them.
             // TODO: need to find a good way to skip graal self-defined functions.
             if (m.startsWith("__")) {

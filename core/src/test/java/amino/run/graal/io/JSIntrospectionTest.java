@@ -50,7 +50,8 @@ public class JSIntrospectionTest {
         String buddyName = "Bob";
 
         // Create a student
-        Value Student = polyglot.eval("js", JS_Code);
+        polyglot.eval("js", JS_Code);
+        Value Student = polyglot.eval("js", "Student");
         Value student = Student.newInstance();
         student.getMember("setId").execute(studentId);
         student.getMember("setName").execute(studentName);

@@ -373,7 +373,7 @@ public class OMSServerImpl implements OMSServer, Registry {
                 logger.fine("   " + address.getHostName() + ":" + address.getPort());
             }
         } catch (Exception e) {
-            // stop metric watcher time
+            // stop metric watch timer
             if (oms != null && oms.metricWatcher != null) {
                 oms.metricWatcher.stop();
             }

@@ -40,11 +40,10 @@ public class MetricWatcher {
     private MigrationPredictor predictor;
     private transient ResettableTimer timer;
     private TreeSet<AbstractMap.SimpleEntry<ReplicaID, Long>>
-            replicaHeap; // should only used in getBestCandidates for selecting best microservice
-    // replica for migration
+            replicaHeap; /* should only used in getBestCandidates for selecting best microservice replica for migration */
     private final int MAX_TOP_CANDIDATE = 3;
     /** Metric watch timer interval */
-    public final int METRIC_WATCH_INTERVAL = 30000; // in milli seconds
+    public final int METRIC_WATCH_INTERVAL = 30000; /* in milli seconds */
 
     public MetricWatcher(
             KernelServerManager serverManager, MicroServiceManager microServiceManager) {
@@ -61,14 +60,14 @@ public class MetricWatcher {
                                 if (replicaStat1.getValue() < replicaStat2.getValue()) return 1;
                                 else if (replicaStat1.getValue() > replicaStat2.getValue())
                                     return -1;
-                                return 0;
+                                else return 0;
                             }
                         });
         timer =
                 new ResettableTimer(
                         new TimerTask() {
                             public void run() {
-                                // get replica list
+                                /* get replica list */
                                 List<ReplicaID> replicaIDs = getReplicaIDs();
                                 if (replicaIDs.isEmpty()) {
                                     logger.info("Replica not available for migration");
@@ -76,7 +75,7 @@ public class MetricWatcher {
                                     return;
                                 }
 
-                                // get best candidates for migration
+                                /* get best candidates for migration */
                                 List<ReplicaID> bestCandidateReplicaIds =
                                         getBestCandidates(replicaIDs);
                                 logger.fine(
@@ -85,11 +84,9 @@ public class MetricWatcher {
                                                 Arrays.toString(
                                                         bestCandidateReplicaIds.toArray())));
 
-                                // try to migrate one of best replica candidate
+                                /* try to migrate one of best replica candidate */
                                 for (ReplicaID bestCandidateReplicaId : bestCandidateReplicaIds) {
-                                    // TODO check if recently migrated (check for cool down
-                                    //  time)
-
+                                    /* TODO check if recently migrated (check for cool down time) */
                                     try {
                                         if (tryMigrate(bestCandidateReplicaId)) {
                                             break;
@@ -99,17 +96,15 @@ public class MetricWatcher {
                                                 String.format(
                                                         "Skipping Replica [%s] for migration as micro service not found",
                                                         bestCandidateReplicaId));
-                                        e.printStackTrace();
                                     } catch (MicroServiceReplicaNotFoundException e) {
                                         logger.warning(
                                                 String.format(
                                                         "Skipping Replica [%s] for migration as micro service replica not found",
                                                         bestCandidateReplicaId));
-                                        e.printStackTrace();
                                     }
                                 }
 
-                                // reset timer if no migration
+                                /*  reset timer */
                                 timer.reset();
                             }
                         },
@@ -131,11 +126,11 @@ public class MetricWatcher {
      */
     private boolean tryMigrate(ReplicaID replicaID)
             throws MicroServiceNotFoundException, MicroServiceReplicaNotFoundException {
-        // get replica instance event handler
+        /* get replica instance event handler */
         EventHandler replica = microServiceManager.getReplicaDispatcher(replicaID);
         InetSocketAddress currentKernelServer = replica.getHost();
 
-        // predict new kernel server
+        /* predict new kernel server */
         InetSocketAddress kernelServer =
                 predictor.getBestKernelServer(replicaID, currentKernelServer);
         logger.fine(
@@ -143,14 +138,14 @@ public class MetricWatcher {
                         "Replica [%s] should migrate from %s to %s",
                         replicaID, currentKernelServer, kernelServer));
 
-        // skipping migration if same kernel server selected
+        /* skipping migration if same kernel server selected */
         if (kernelServer.equals(currentKernelServer)) {
             logger.info(
                     "Skipping migration as predicted kernel server is same as replica kernel server");
             return false;
         }
 
-        // trigger migration
+        /* trigger migration*/
         return triggerMigration(replicaID, kernelServer);
     }
 
@@ -163,8 +158,8 @@ public class MetricWatcher {
     private synchronized List<ReplicaID> getBestCandidates(List<ReplicaID> replicas) {
         List<ReplicaID> bestCandidates = new ArrayList<ReplicaID>();
 
-        // calculate processing time for each replica and add them in sorted
-        // heap
+        /* calculate processing time for each replica and add them in sorted
+        heap */
         for (ReplicaID replicaID : replicas) {
             try {
                 replicaHeap.add(
@@ -175,31 +170,23 @@ public class MetricWatcher {
                         String.format(
                                 "Skipping Replica [%s] evaluation as micro service not found",
                                 replicaID));
-                e.printStackTrace();
             } catch (MicroServiceReplicaNotFoundException e) {
                 logger.warning(
                         String.format(
                                 "Skipping Replica [%s] evaluation as micro service replica not found",
                                 replicaID));
-                e.printStackTrace();
-            } catch (KernelServerNotFoundException e) {
-                logger.warning(
-                        String.format(
-                                "Skipping Replica [%s] evaluation as micro service replica's kernel server not available",
-                                replicaID));
-                e.printStackTrace();
             }
         }
 
-        // add and print best replica and their processing time in sorted order
+        /* add and print best replica and their processing time in sorted order */
         for (AbstractMap.SimpleEntry<ReplicaID, Long> replicaStat : replicaHeap) {
-            logger.fine(String.format("Replica status : [%s]", replicaStat));
-            if (bestCandidates.size() <= MAX_TOP_CANDIDATE) {
-                bestCandidates.add(replicaStat.getKey());
+            if (bestCandidates.size() >= MAX_TOP_CANDIDATE) {
+                break;
             }
+            bestCandidates.add(replicaStat.getKey());
         }
 
-        // clear replica heap
+        /* clear replica heap*/
         replicaHeap.clear();
         return bestCandidates;
     }
@@ -214,7 +201,10 @@ public class MetricWatcher {
     private boolean triggerMigration(ReplicaID replicaID, InetSocketAddress kernelServer) {
         MicroServiceID microServiceID = replicaID.getOID();
 
-        // start migration
+        /* Start migration
+           TODO: Currently only root group policy Replicas are getting migrated. Need to improve
+            multi DM chaining for multiple group policy linking and expose interface to retrieve group policy based on ReplicaID.
+        */
         try {
             KernelOID koid = microServiceManager.getRootGroupId(microServiceID);
             EventHandler groupPolicyEventHandler =
@@ -227,17 +217,18 @@ public class MetricWatcher {
                     String.format(
                             "Failed to migrate replica [%s] as micro service not found",
                             replicaID));
-            e.printStackTrace();
             return false;
         } catch (RemoteException e) {
             logger.warning(
                     String.format(
                             "Failed to migrate replica [%s] with remote exception : %s",
                             replicaID, e.getMessage()));
-            e.printStackTrace();
             return false;
         }
 
+        logger.info(
+                String.format(
+                        "Replica [%s] migrated to kernel server [%s]", replicaID, kernelServer));
         return true;
     }
 
@@ -251,8 +242,7 @@ public class MetricWatcher {
      * @throws KernelServerNotFoundException
      */
     private long avgProcessingTime(ReplicaID replicaID)
-            throws MicroServiceNotFoundException, MicroServiceReplicaNotFoundException,
-                    KernelServerNotFoundException {
+            throws MicroServiceNotFoundException, MicroServiceReplicaNotFoundException {
         /*
            To measure time consumption by vertex Vk we use the following formula
            t(k) = T(k) + summation { ( S(k,i) + S(i,k) ) / R(k,i) + L(k,i) }
@@ -265,17 +255,17 @@ public class MetricWatcher {
            L(k,i) => latency between kernel client i to kernel server k
         */
 
-        // get current kernel server for replica
+        /* get current kernel server for replica */
         InetSocketAddress currentKernelServer =
                 microServiceManager.getReplicaDispatcher(replicaID).getHost();
 
-        // get metrics stat of RPC processing time from different kernel client
-        // TODO currently considering processing time from different kernel client for simplicity.
-        //  Need to get processing time within micro service replica
+        /* get metrics stat of RPC processing time from different kernel client
+        TODO currently considering processing time from different kernel client for simplicity.
+         Need to get processing time within micro service replica */
         Map<InetSocketAddress, RPCMetric> replicaMetrics =
                 microServiceManager.getMicroServiceMetric(replicaID);
 
-        // calculate time factor impact on RPC with latency and bandwidth
+        /* calculate time factor impact on RPC with latency and bandwidth */
         long totElapsedTime = 0;
         long rttSum = 0;
         long dataSize;
@@ -285,16 +275,14 @@ public class MetricWatcher {
             totElapsedTime += replicaMetric.getValue().elapsedTime;
 
             dataSize = replicaMetric.getValue().dataSize;
-            // kernel server metrics for which RPC data is getting processed
+            /* kernel server metrics for which RPC data is getting processed */
             try {
                 ksMetric = serverManager.getKernelServerMetric(replicaMetric.getKey());
             } catch (KernelServerNotFoundException e) {
-                // typical scenario like end user application(kvstore, minnieTwitter) where kernel
-                // client is utilized by micro service
-                // but kernel server do not run. In such scenario RPC metrics are collected against
-                // kernel client
-                // but as the client is not part of kernel server so no node metric are collected.
-                // Hence ignoring time computation
+                /* typical scenario like end user application(kvstore, minnieTwitter) where kernel
+                client is utilized by micro service but kernel server do not run. In such scenario
+                RPC metrics are collected against kernel client but as the client is not part of
+                kernel server so no node metric are collected. Hence ignoring time computation */
                 logger.info(
                         String.format(
                                 "skipping kernel client [%s] not part of kernel server",
@@ -326,16 +314,14 @@ public class MetricWatcher {
         List<MicroServiceID> microServiceIDS;
         try {
             microServiceIDS = microServiceManager.getAllMicroServices();
-
         } catch (RemoteException e) {
             logger.warning(
                     "Failed to get micro service replicas. Skipping replicas in migration evaluation");
-            e.printStackTrace();
             return replicaIDs;
         }
 
-        // TODO Assuming all replica can migrate. In future, user can
-        //  restrict replica migration to specific set of replica.
+        /* TODO Assuming all replica can migrate. In future, user can
+        restrict replica migration to specific set of replica. */
         for (MicroServiceID microServiceID : microServiceIDS) {
             try {
                 replicaIDs.addAll(microServiceManager.getReplicaIDs(microServiceID));

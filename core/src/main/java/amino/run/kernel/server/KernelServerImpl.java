@@ -517,7 +517,7 @@ public class KernelServerImpl implements KernelServer {
         if (!labels.containsKey(KernelServerImpl.REGION_KEY)) {
             labels.put(KernelServerImpl.REGION_KEY, KernelServerImpl.DEFAULT_REGION);
         }
-        ServerInfo srvInfo = new ServerInfo(host);
+        ServerInfo srvInfo = new ServerInfo(host, Runtime.getRuntime().availableProcessors());
         srvInfo.addLabels(labels);
         return srvInfo;
     }

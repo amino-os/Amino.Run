@@ -17,11 +17,11 @@ public class ServerInfo implements Serializable {
 
     private Map<String, String> labels = new HashMap<String, String>();
 
-    public int processorCount; // Available processor count
+    public int processorCount; /* available processor count */
 
-    public ServerInfo(InetSocketAddress addr) {
+    public ServerInfo(InetSocketAddress addr, int processorCount) {
         this.host = addr;
-        this.processorCount = Runtime.getRuntime().availableProcessors();
+        this.processorCount = processorCount;
     }
 
     public InetSocketAddress getHost() {

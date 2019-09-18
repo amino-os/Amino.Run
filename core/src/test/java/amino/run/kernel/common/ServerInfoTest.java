@@ -9,7 +9,7 @@ public class ServerInfoTest {
 
     @Test(expected = NullPointerException.class)
     public void addLabelsWithNull() {
-        ServerInfo server = new ServerInfo(null);
+        ServerInfo server = new ServerInfo(null, 0);
         server.addLabels(null);
     }
     // TODO add Server info test for node selection

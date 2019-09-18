@@ -54,7 +54,8 @@ public class WriterTest {
         String buddyName = "Bob";
 
         // Create a student
-        Value Student = polyglotCtx.eval("js", JS_Code);
+        polyglotCtx.eval("js", JS_Code);
+        Value Student = polyglotCtx.eval("js", "Student");
         Value student = Student.newInstance();
         student.getMember("setId").execute(studentId);
         student.getMember("setName").execute(studentName);

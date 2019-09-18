@@ -170,3 +170,11 @@ task run {
 genStubs {
     onlyIf() { false } // Disable
 }
+
+clean {
+    delete genStubs.outputs.files // Add generated stubs to what the clean task must delete
+    doLast {
+        logger.info('Clean will delete ' + clean.targetFiles.asCollection())
+    }
+}
+

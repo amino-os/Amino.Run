@@ -9,6 +9,7 @@ subprojects {
 
     // Common rules for all JavaExec tasks, are added before execution.
     tasks.withType(JavaExec).whenTaskAdded {
+        enableAssertions true
         classpath += sourceSets.stubs.runtimeClasspath
         jvmArgs '-Djava.util.logging.config.file=' + project.projectDir + '/../../logging.properties'
         args project.property('omsIpFlag'), project.property('omsIp'), project.property('omsPortFlag'), project.property('omsPort')

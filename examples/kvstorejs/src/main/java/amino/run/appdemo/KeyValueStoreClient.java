@@ -2,7 +2,9 @@ package amino.run.appdemo;
 
 import amino.run.appdemo.stubs.KeyValueStore_Stub;
 import java.io.Serializable;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 
 /** Client class for testing {@link KeyValueStore_Stub} */
 public class KeyValueStoreClient {
@@ -47,13 +49,16 @@ public class KeyValueStoreClient {
         for (int i = 0; i < 5; ++i) {
             String key = "key_" + i;
             Object val = "val_" + i;
-            if (i % 2 == 0) val = new Date();
+            if (i % 2 == 0) {
+                val = new GregorianCalendar(1969,0,20,4,20,0).getTime();
+            }
             else val = new TestClass(i);
 
             System.out.println(String.format("<client>: setting %s = %s", key, val));
             store.set(key, val);
-            val = store.get(key);
-            System.out.println(String.format("<client>: got value %s with key %s", val, key));
+            Object retrievedVal = store.get(key);
+            System.out.println(String.format("<client>: got value %s with key %s", retrievedVal, key));
+            assert val.equals(retrievedVal) : "Retrieved value is not equal to set value - see https://github.com/amino-os/Amino.Run/issues/725#issuecomment-532772106";
         }
     }
 }

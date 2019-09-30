@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.graalvm.polyglot.Value;
 
@@ -59,7 +60,7 @@ public class Serializer implements AutoCloseable {
             // out.writeInt(seenInd);
             seenInd++;
         }*/
-
+        logger.log(Level.INFO, String.format("serializing: %s", v));
         if (v.isBoolean()) {
             logger.fine("found boolean: " + v);
             out.writeInt(GraalType.BOOLEAN.ordinal());
@@ -109,7 +110,7 @@ public class Serializer implements AutoCloseable {
     }
 
     private Value getInstanceVariable(Value v, String s) {
-        switch (lang) {
+        switch (lang) {// TODO: quinton: What about all the other languages!
             case ruby:
                 s = s.replaceAll(":", "");
                 return v.getMember("instance_variable_get").execute(s);
@@ -120,7 +121,7 @@ public class Serializer implements AutoCloseable {
     }
 
     private String getClassName(Value v) {
-        switch (lang) {
+        switch (lang) { // TODO: quinton: What about all the other languages!
             case ruby:
                 return v.getMetaObject().toString();
             case js:
@@ -135,7 +136,7 @@ public class Serializer implements AutoCloseable {
                     return v.getMetaObject().toString();
                 }
         }
-        return "INVALID_LANG";
+        return "INVALID_LANG"; // TODO: quinton: Throw an exeception!
     }
 
     private List<String> getMemberVariables(Value v) {
@@ -150,7 +151,7 @@ public class Serializer implements AutoCloseable {
             case js:
                 return new ArrayList<String>(v.getMemberKeys());
         }
-        return new ArrayList<String>();
+        return new ArrayList<String>(); // TODO: quinton: What about all the other languages!
     }
 
     public void close() throws IOException {

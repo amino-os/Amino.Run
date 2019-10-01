@@ -269,7 +269,9 @@ public class KernelServerManagerTest {
                     }
                 };
         for (int i = 0; i < numOfServers; i++) {
-            final ServerInfo s = new ServerInfo(new InetSocketAddress(i));
+            final ServerInfo s =
+                    new ServerInfo(
+                            new InetSocketAddress(i), Runtime.getRuntime().availableProcessors());
             HashMap labels = new HashMap();
             labels.put(LABEL1_PREFIX + i, LABEL1_PREFIX + i);
             labels.put(LABEL2_PREFIX + i, LABEL2_PREFIX + i);

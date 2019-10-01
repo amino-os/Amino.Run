@@ -8,5 +8,3 @@ dmList:
   name: amino.run.policy.scalability.LoadBalancedMasterSlaveSyncPolicy
 javaClassName: amino.run.demo.KeyValueStore
 lang: java
-name: null
-sourceFileLocation: null

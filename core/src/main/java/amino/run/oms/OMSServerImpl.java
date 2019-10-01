@@ -20,6 +20,7 @@ import amino.run.kernel.common.ServerInfo;
 import amino.run.kernel.metric.RPCMetric;
 import amino.run.kernel.server.KernelServer;
 import amino.run.kernel.server.KernelServerImpl;
+import amino.run.oms.migrationdecision.MetricWatcher;
 import amino.run.policy.Policy;
 import amino.run.runtime.EventHandler;
 import amino.run.runtime.MicroService;
@@ -50,6 +51,7 @@ public class OMSServerImpl implements OMSServer, Registry {
     private GlobalKernelObjectManager kernelObjectManager;
     private KernelServerManager serverManager;
     private MicroServiceManager objectManager;
+    private MetricWatcher metricWatcher;
 
     public static String OMS_IP_OPT = "--oms-ip";
     public static String OMS_PORT_OPT = "--oms-port";
@@ -61,6 +63,7 @@ public class OMSServerImpl implements OMSServer, Registry {
         kernelObjectManager = new GlobalKernelObjectManager();
         serverManager = new KernelServerManager();
         objectManager = new MicroServiceManager();
+        metricWatcher = new MetricWatcher(serverManager, objectManager);
     }
 
     /** KERNEL METHODS * */
@@ -341,9 +344,9 @@ public class OMSServerImpl implements OMSServer, Registry {
 
         OMSArgumentParser omsArgs = parser.getOptions(OMSArgumentParser.class);
         System.setProperty("java.rmi.server.hostname", omsArgs.omsIP);
-
+        OMSServerImpl oms = null;
         try {
-            OMSServerImpl oms = new OMSServerImpl();
+            oms = new OMSServerImpl();
             OMSServer omsStub =
                     (OMSServer) UnicastRemoteObject.exportObject(oms, omsArgs.servicePort);
             java.rmi.registry.Registry registry = LocateRegistry.createRegistry(omsArgs.omsPort);
@@ -358,6 +361,9 @@ public class OMSServerImpl implements OMSServer, Registry {
                                     localKernelServer, omsArgs.servicePort);
             registry.rebind("io.amino.run.kernelserver", localKernelServerStub);
 
+            // start metric watcher
+            oms.metricWatcher.start();
+
             // Log being used in examples gradle task "run", hence modify accordingly.
             logger.info(String.format("OMS ready at port (%s)!", omsArgs.omsPort));
 
@@ -367,6 +373,10 @@ public class OMSServerImpl implements OMSServer, Registry {
                 logger.fine("   " + address.getHostName() + ":" + address.getPort());
             }
         } catch (Exception e) {
+            // stop metric watch timer
+            if (oms != null && oms.metricWatcher != null) {
+                oms.metricWatcher.stop();
+            }
             logger.severe("OMS server exception: " + e.toString());
             e.printStackTrace();
         }

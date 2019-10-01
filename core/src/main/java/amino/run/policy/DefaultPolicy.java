@@ -158,6 +158,24 @@ public class DefaultPolicy extends Policy {
                 /* Store these metrics to make them available for statistics and decision making module */
                 updateMetric(object.replicaId, object.metrics);
                 return;
+            } else if (notification instanceof MigrationNotification) {
+                MigrationNotification migrationNotification = (MigrationNotification) notification;
+
+                /*Migrate replica to kernel server receive in notification */
+                ReplicaID replicaID = migrationNotification.replicaId;
+                ServerPolicy serverPolicy = getServer(replicaID);
+                if (serverPolicy == null) {
+                    throw new RemoteException(
+                            String.format("Replica [%s] not available", replicaID));
+                }
+
+                try {
+                    pin(serverPolicy, migrationNotification.kernelServer);
+                } catch (MicroServiceReplicaNotFoundException e) {
+                    throw new RemoteException(e.getMessage());
+                } catch (MicroServiceNotFoundException e) {
+                    throw new RemoteException(e.getMessage());
+                }
             }
         }
 

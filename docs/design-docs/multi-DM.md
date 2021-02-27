@@ -4,9 +4,11 @@ Multiple DM's may be associated with each MicroService.  This
 document describes some combinations of DM's, and 
 how these combinations behave and might be useful.
 
+The basic DM's are described in [DM List](DM-list.md).
+
 In general, DM's in the same category are mutually exclusive, and it
-does not usually make sense to combine them.  For example, KeepInCloud
-and KeepOnDevice do not make sense together - choose one or the other.
+does not usually make sense to combine them.  For example, PeriodicCheckpoint
+and ExplicitCheckpoint do not make sense together - choose one or the other.
 Similarly, choose between LockingTransactions and
 OptimisticTransactions, and not both.  
 
@@ -20,7 +22,9 @@ behaviors, namely:
 2. All replicas remain in a given cloud zone (KeepInCloud).
 3. Multi-operation read-write transactions using server-side locking
    (LockingTransactions)
-   
+
+# Example combinations
+
 ## KeepInCloud + LockingTransactions + ConsensusRSM
 
 ### Desired behavior
@@ -39,14 +43,14 @@ behaviors, namely:
    
 ### How it works under the hood
 
-1. Client creates an instance of a MicroService (_new()).
+1. Client creates an instance of a MicroService (create()).
   1. Kernel invokes group.onCreate() on all DM's (some handwaving
      here, but I think we can make it work).
 	 1. KeepInCloud.group.onCreate() ensures that all replicas are in
         the required cloud zone.
 	 1. LockingTransactions.group.onCreate() does nothing unusual.
      1. ConsensusRSM.group.onCreate() creates 2f+1 replicas (by invoking
-     sapphire_replicate, which in turn invokes addServer on all DM's).
+     replicate(), which in turn invokes addServer on all DM's).
 2. Client starts a locking transaction, by calling startTransaction()
    on the MicroService
   1. The above is intercepted by KeepInCloud.client.onRPC(), that does nothing
@@ -66,3 +70,55 @@ behaviors, namely:
      LockingTransactions.client - to ensure that the lock identifier
      is consistent across all replicas.  This change should be
      straightforward.
+     
+## AtLeastOnceRPC + DHT + ConsensusRSM
+
+### Desired behavior
+
+1. Client creates a new instance or obtains a reference to an existing MicroService.
+2. Client makes a call to an application method in Microservice and gets the result back.
+3. Client application does not need to retry on network or other transient failures (as retries with timeout is automatically provided by AtLeastOnceRPC).
+4. The microservice is horizontally scalable (because sharding is provided by the DHT policy).
+5. The microservice is highly available, tolerating less than half the consensus replicas failing (as ConsensusRSM automatically, reliably and consistently replicates all method calls to all replicas of each shard).
+   
+### How it works under the hood
+
+1. Client creates an instance of a MicroService (create()).
+	1. Kernel invokes group.onCreate() on all DM's in the order of inner most DM to outer most DM.
+		1. ConsensusRSMPolicy.GroupPolicy.onCreate() creates 2f+1 replicas (by invoking 
+		replicate(), which in turn invokes addServer on all DM's).
+		1. DHTPolicy.GroupPolicy.onCreate() creates n shards, and configures the key range for each shard.
+			1. Server creates an instance of DMs for each shard.
+			1. When creating each shard, group.onCreate() is invoked in the order of inner most DM to the last DM before the current DM (ConsensusRSMPolicy.GroupPolicy).
+			1. ConsensusRSMPolicy.GroupPolicy creates 2f+1 replicas (by invoking 
+		replicate(), which in turn invokes addServer on all DM's).
+		1. AtLeastOnceRPCPolicy.GroupPolicy.onCreate() does nothing unusual.
+2. Client starts a invocation of the application method with input parameter(s).
+  	1. The above is intercepted by AtLeastOnceRPCPolicy.ClientPolicy.onRPC(), that does nothing 
+	other than server.onRPC() unless there is a failure.
+  	1. The above is intercepted by DHTPolicy.ClientPolicy.onRPC() 
+	that finds a responsible node based on the application parameter.
+  	1. The above is intercepted by ConsensusRSM.ClientPolicy.onRPC(), that calls the server policy
+	of the leader node which invokes the RAFT consensus algorithm across all replicas to ensure that
+	the RPC call is committed against the quorum
+  	1. The last DM in the DM client chain (ConsensusRMM.ClientPolicy.onRPC()) calls the chosen server.
+3. Server starts a invocation of the application method with stacked parameters.
+  	1. The server unravels the parameters which resolves ConsensusRSM.ServerPolicy.onRPC()
+  	1. ConsensusRSM.ServerPolicy.onRPC() calls the leader (itself) and followers (replcas).
+  	1. When above DM invokes for the method in application object, it calls 
+	the DHTPolicy.ServerPolicy.onRPC() as the application object references the DHTPolicy.ServerPolicy.
+  	1. DHTPolicy.ServerPolicy.onRPC() invokes the application object which calls the 
+	AtLeastOnceRPCPolicy.ServerPolicy.onRPC() as the application object references the 
+	AtLeastOnceRPCPolicy.ServerPolicy.
+  	1. Finally, AtLeastOnceRPCPolicy.ServerPolicy.onRPC() invokes the actual appplication object.
+4. Result of the application method call is propagated back via the DM chain it has went through 
+(at the leader node and the follower nodes).
+  	1. Result from the application object is returned to the AtLeastOnceRPCPolicy.ServerPolicy.onRPC().
+  	1. Above result is returned to the DHTPolicy.ServerPolicy.onRPC().
+  	1. Above result is returned to the ConsensusRSM.ServerPolicy.onRPC().
+5. Result of the server side call is returned to the client.
+ 	1. Above result is returned to the ConsensusRSM.ClientPolicy.onRPC().
+  	1. Above result is returned to the DHTPolicy.ClientPolicy.onRPC().
+  	1. Above result is returned to the AtLeastOnceRPCPolicy.ClientPolicy.onRPC().
+  	1. Above result is returned to the application.
+	
